@@ -9,11 +9,9 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
@@ -205,7 +203,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => Task.FromResult(stream));
                 }
 
-                return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator(DashboardUIPath).ModifyHtml("dummy.html", stream, null, _appHost.ApplicationVersion, null));
+                return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator(DashboardUIPath).ModifyHtml("dummy.html", stream, null, _appHost.ApplicationVersionString, null));
             }
 
             throw new ResourceNotFoundException();
@@ -342,7 +340,7 @@ namespace MediaBrowser.WebDashboard.Api
                 cacheDuration = TimeSpan.FromDays(365);
             }
 
-            var cacheKey = (_appHost.ApplicationVersion + (localizationCulture ?? string.Empty) + path).GetMD5();
+            var cacheKey = (_appHost.ApplicationVersionString + (localizationCulture ?? string.Empty) + path).GetMD5();
 
             // html gets modified on the fly
             if (contentType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
@@ -364,7 +362,7 @@ namespace MediaBrowser.WebDashboard.Api
         private Task<Stream> GetResourceStream(string basePath, string virtualPath, string localizationCulture)
         {
             return GetPackageCreator(basePath)
-                .GetResource(virtualPath, null, localizationCulture, _appHost.ApplicationVersion);
+                .GetResource(virtualPath, null, localizationCulture, _appHost.ApplicationVersionString);
         }
 
         private PackageCreator GetPackageCreator(string basePath)
@@ -400,7 +398,7 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyDirectory(inputPath, targetPath);
             }
 
-            var appVersion = _appHost.ApplicationVersion;
+            var appVersion = _appHost.ApplicationVersionString;
 
             await DumpHtml(packageCreator, inputPath, targetPath, mode, appVersion);
 
@@ -425,7 +423,7 @@ namespace MediaBrowser.WebDashboard.Api
         private async Task DumpFile(PackageCreator packageCreator, string resourceVirtualPath, string destinationFilePath, string mode, string appVersion)
         {
             using (var stream = await packageCreator.GetResource(resourceVirtualPath, mode, null, appVersion).ConfigureAwait(false))
-            using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            using (var fs = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 await stream.CopyToAsync(fs);
             }

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Api.UserLibrary;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -17,15 +18,14 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using static MediaBrowser.Common.HexHelper;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -692,35 +692,33 @@ namespace MediaBrowser.Api.LiveTv
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IUserManager _userManager;
-        private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly IAuthorizationContext _authContext;
         private readonly ISessionContext _sessionContext;
-        private readonly ICryptoProvider _cryptographyProvider;
         private readonly IStreamHelper _streamHelper;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         public LiveTvService(
-            ICryptoProvider crypto,
+            ILogger<LiveTvService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IMediaSourceManager mediaSourceManager,
             IStreamHelper streamHelper,
             ILiveTvManager liveTvManager,
             IUserManager userManager,
-            IServerConfigurationManager config,
             IHttpClient httpClient,
             ILibraryManager libraryManager,
             IDtoService dtoService,
             IAuthorizationContext authContext,
             ISessionContext sessionContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _cryptographyProvider = crypto;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
             _liveTvManager = liveTvManager;
             _userManager = userManager;
-            _config = config;
             _httpClient = httpClient;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
@@ -887,8 +885,9 @@ namespace MediaBrowser.Api.LiveTv
         {
             // SchedulesDirect requires a SHA1 hash of the user's password
             // https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#obtain-a-token
-            using (SHA1 sha = SHA1.Create()) {
-                return ToHexString(
+            using (SHA1 sha = SHA1.Create())
+            {
+                return Hex.Encode(
                     sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
             }
         }
@@ -910,17 +909,17 @@ namespace MediaBrowser.Api.LiveTv
 
             config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(request.Id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
 
-            _config.SaveConfiguration("livetv", config);
+            ServerConfigurationManager.SaveConfiguration("livetv", config);
         }
 
         private LiveTvOptions GetConfiguration()
         {
-            return _config.GetConfiguration<LiveTvOptions>("livetv");
+            return ServerConfigurationManager.GetConfiguration<LiveTvOptions>("livetv");
         }
 
         private void UpdateConfiguration(LiveTvOptions options)
         {
-            _config.SaveConfiguration("livetv", options);
+            ServerConfigurationManager.SaveConfiguration("livetv", options);
         }
 
         public async Task<object> Get(GetLineups request)

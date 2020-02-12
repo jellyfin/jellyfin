@@ -1,9 +1,11 @@
 using System.Threading;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -61,7 +63,13 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
-        public DisplayPreferencesService(IJsonSerializer jsonSerializer, IDisplayPreferencesRepository displayPreferencesManager)
+        public DisplayPreferencesService(
+            ILogger<DisplayPreferencesService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IJsonSerializer jsonSerializer,
+            IDisplayPreferencesRepository displayPreferencesManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _jsonSerializer = jsonSerializer;
             _displayPreferencesManager = displayPreferencesManager;

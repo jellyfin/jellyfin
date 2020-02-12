@@ -1,49 +1,45 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// http://kodi.wiki/view/Advancedsettings.xml#video
+    /// <see href="http://kodi.wiki/view/Advancedsettings.xml#video" />.
     /// </summary>
-    public class CleanStringParser
+    public static class CleanStringParser
     {
-        public CleanStringResult Clean(string name, IEnumerable<Regex> expressions)
+        public static bool TryClean(string name, IReadOnlyList<Regex> expressions, out ReadOnlySpan<char> newName)
         {
-            var hasChanged = false;
-
-            foreach (var exp in expressions)
+            var len = expressions.Count;
+            for (int i = 0; i < len; i++)
             {
-                var result = Clean(name, exp);
-
-                if (!string.IsNullOrEmpty(result.Name))
+                if (TryClean(name, expressions[i], out newName))
                 {
-                    name = result.Name;
-                    hasChanged = hasChanged || result.HasChanged;
+                    return true;
                 }
             }
 
-            return new CleanStringResult
-            {
-                Name = name,
-                HasChanged = hasChanged
-            };
+            newName = ReadOnlySpan<char>.Empty;
+            return false;
         }
 
-        private static CleanStringResult Clean(string name, Regex expression)
+        private static bool TryClean(string name, Regex expression, out ReadOnlySpan<char> newName)
         {
-            var result = new CleanStringResult();
-
             var match = expression.Match(name);
-
-            if (match.Success)
+            int index = match.Index;
+            if (match.Success && index != 0)
             {
-                result.HasChanged = true;
-                name = name.Substring(0, match.Index);
+                newName = name.AsSpan().Slice(0, match.Index);
+                return true;
             }
 
-            result.Name = name;
-            return result;
+            newName = string.Empty;
+            return false;
         }
     }
 }

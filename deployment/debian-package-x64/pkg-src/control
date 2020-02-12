@@ -3,12 +3,14 @@ Section: misc
 Priority: optional
 Maintainer: Jellyfin Team <team@jellyfin.org>
 Build-Depends:  debhelper (>= 9),
-                dotnet-sdk-2.2,
+                dotnet-sdk-3.1,
                 libc6-dev,
                 libcurl4-openssl-dev,
                 libfontconfig1-dev,
                 libfreetype6-dev,
-                libssl-dev
+                libssl-dev,
+                wget,
+                npm | nodejs
 Standards-Version: 3.9.4
 Homepage: https://jellyfin.media/
 Vcs-Git: https://github.org/jellyfin/jellyfin.git

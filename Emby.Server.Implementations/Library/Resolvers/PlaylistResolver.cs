@@ -1,10 +1,12 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {

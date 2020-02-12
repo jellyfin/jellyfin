@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (File.Exists(responseCachePath)
                 && _fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
             {
-                var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true);
+                var stream = new FileStream(responseCachePath, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
                 return new HttpResponseInfo
                 {
@@ -220,7 +220,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
-                StreamDefaults.DefaultFileStreamBufferSize,
+                IODefaults.FileStreamBufferSize,
                 true))
             {
                 await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
@@ -282,6 +282,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             };
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseInfo> Post(HttpRequestOptions options)
             => SendAsync(options, HttpMethod.Post);
 
@@ -325,7 +326,7 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             if (options.LogErrorResponseBody)
             {
-                var msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                string msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 _logger.LogError("HTTP request failed with message: {Message}", msg);
             }
 

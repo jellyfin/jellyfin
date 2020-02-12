@@ -1,20 +1,22 @@
 namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
-    /// Enum TaskState
+    /// Enum TaskState.
     /// </summary>
     public enum TaskState
     {
         /// <summary>
-        /// The idle
+        /// The idle.
         /// </summary>
         Idle,
+
         /// <summary>
-        /// The cancelling
+        /// The cancelling.
         /// </summary>
         Cancelling,
+
         /// <summary>
-        /// The running
+        /// The running.
         /// </summary>
         Running
     }

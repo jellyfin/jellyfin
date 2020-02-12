@@ -1,10 +1,13 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
-using MediaBrowser.Model.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Class PackageVersionInfo
+    /// Class PackageVersionInfo.
     /// </summary>
     public class PackageVersionInfo
     {
@@ -36,7 +39,7 @@ namespace MediaBrowser.Model.Updates
         /// Had to make this an interpreted property since Protobuf can't handle Version
         /// </summary>
         /// <value>The version.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public Version Version
         {
             get

@@ -3,7 +3,7 @@ FROM fedora:29
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/fedora-package-x64
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=2.2
+ARG SDK_VERSION=3.1
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -12,16 +12,12 @@ ENV ARTIFACT_DIR=/dist
 RUN dnf update -y
 
 # Install build dependencies
-RUN dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs wget git
+RUN dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs-yarn
 
 # Install DotNET SDK
 RUN dnf copr enable -y @dotnet-sig/dotnet \
  && rpmdev-setuptree \
  && dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION}
-
-# Install yarn package manager
-RUN wget -q -O /etc/yum.repos.d/yarn.repo https://dl.yarnpkg.com/rpm/yarn.repo \
- && dnf install -y yarn
 
 # Create symlinks and directories
 RUN ln -sf ${PLATFORM_DIR}/docker-build.sh /docker-build.sh \

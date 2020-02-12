@@ -1,5 +1,4 @@
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -12,6 +11,17 @@ namespace MediaBrowser.Providers.Movies
 {
     public class MovieMetadataService : MetadataService<Movie, MovieInfo>
     {
+        public MovieMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+        {
+        }
+
+        /// <inheritdoc />
         protected override bool IsFullLocalMetadata(Movie item)
         {
             if (string.IsNullOrWhiteSpace(item.Overview))
@@ -25,6 +35,7 @@ namespace MediaBrowser.Providers.Movies
             return base.IsFullLocalMetadata(item);
         }
 
+        /// <inheritdoc />
         protected override void MergeData(MetadataResult<Movie> source, MetadataResult<Movie> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
@@ -37,40 +48,5 @@ namespace MediaBrowser.Providers.Movies
                 targetItem.CollectionName = sourceItem.CollectionName;
             }
         }
-
-        public MovieMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
-        }
     }
-
-    public class TrailerMetadataService : MetadataService<Trailer, TrailerInfo>
-    {
-        protected override bool IsFullLocalMetadata(Trailer item)
-        {
-            if (string.IsNullOrWhiteSpace(item.Overview))
-            {
-                return false;
-            }
-            if (!item.ProductionYear.HasValue)
-            {
-                return false;
-            }
-            return base.IsFullLocalMetadata(item);
-        }
-
-        protected override void MergeData(MetadataResult<Trailer> source, MetadataResult<Trailer> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
-        {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-
-            if (replaceData || target.Item.TrailerTypes.Length == 0)
-            {
-                target.Item.TrailerTypes = source.Item.TrailerTypes;
-            }
-        }
-
-        public TrailerMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
-        }
-    }
-
 }

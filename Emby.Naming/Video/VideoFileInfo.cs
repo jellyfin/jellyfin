@@ -1,7 +1,9 @@
+using MediaBrowser.Model.Entities;
+
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// Represents a single video file
+    /// Represents a single video file.
     /// </summary>
     public class VideoFileInfo
     {
@@ -30,10 +32,10 @@ namespace Emby.Naming.Video
         public int? Year { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the extra, e.g. trailer, theme song, behing the scenes, etc.
+        /// Gets or sets the type of the extra, e.g. trailer, theme song, behind the scenes, etc.
         /// </summary>
         /// <value>The type of the extra.</value>
-        public string ExtraType { get; set; }
+        public ExtraType? ExtraType { get; set; }
 
         /// <summary>
         /// Gets or sets the extra rule.
@@ -66,7 +68,7 @@ namespace Emby.Naming.Video
         public string StubType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type.
+        /// Gets or sets a value indicating whether this instance is a directory.
         /// </summary>
         /// <value>The type.</value>
         public bool IsDirectory { get; set; }
@@ -77,6 +79,7 @@ namespace Emby.Naming.Video
         /// <value>The file name without extension.</value>
         public string FileNameWithoutExtension => !IsDirectory ? System.IO.Path.GetFileNameWithoutExtension(Path) : System.IO.Path.GetFileName(Path);
 
+        /// <inheritdoc />
         public override string ToString()
         {
             // Makes debugging easier

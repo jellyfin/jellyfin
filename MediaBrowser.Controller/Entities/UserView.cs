@@ -1,49 +1,51 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class UserView : Folder, IHasCollectionType
     {
+        /// <inheritdoc />
         public string ViewType { get; set; }
+
+        /// <inheritdoc />
         public new Guid DisplayParentId { get; set; }
 
+        /// <inheritdoc />
         public Guid? UserId { get; set; }
 
         public static ITVSeriesManager TVSeriesManager;
 
-        [IgnoreDataMember]
+        /// <inheritdoc />
+        [JsonIgnore]
         public string CollectionType => ViewType;
 
+        /// <inheritdoc />
         public override IEnumerable<Guid> GetIdsForAncestorQuery()
         {
-            var list = new List<Guid>();
-
             if (!DisplayParentId.Equals(Guid.Empty))
             {
-                list.Add(DisplayParentId);
+                yield return DisplayParentId;
             }
             else if (!ParentId.Equals(Guid.Empty))
             {
-                list.Add(ParentId);
+                yield return ParentId;
             }
             else
             {
-                list.Add(Id);
+                yield return Id;
             }
-
-            return list;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
         public override int GetChildCount(User user)
@@ -167,7 +169,7 @@ namespace MediaBrowser.Controller.Entities
             return Task.CompletedTask;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
     }
 }

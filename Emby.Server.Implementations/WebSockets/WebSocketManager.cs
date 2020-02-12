@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -39,12 +37,12 @@ namespace Emby.Server.Implementations.WebSockets
             do
             {
                 var buffer = WebSocket.CreateServerBuffer(BufferSize);
-                result = await webSocket.ReceiveAsync(buffer, cancellationToken);
+                result = await webSocket.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
                 message.AddRange(buffer.Array.Take(result.Count));
 
                 if (result.EndOfMessage)
                 {
-                    await ProcessMessage(message.ToArray(), taskCompletionSource);
+                    await ProcessMessage(message.ToArray(), taskCompletionSource).ConfigureAwait(false);
                     message.Clear();
                 }
             } while (!taskCompletionSource.Task.IsCompleted &&
@@ -53,8 +51,10 @@ namespace Emby.Server.Implementations.WebSockets
 
             if (webSocket.State == WebSocketState.Open)
             {
-                await webSocket.CloseAsync(result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
-                    result.CloseStatusDescription, cancellationToken);
+                await webSocket.CloseAsync(
+                    result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                    result.CloseStatusDescription,
+                    cancellationToken).ConfigureAwait(false);
             }
         }
 

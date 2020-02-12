@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
@@ -8,7 +9,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -30,13 +30,13 @@ namespace MediaBrowser.Controller.Entities.Audio
             AlbumArtists = Array.Empty<string>();
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public MusicArtist MusicArtist => GetMusicArtist(new DtoOptions(true));
 
         public MusicArtist GetMusicArtist(DtoOptions options)
@@ -58,23 +58,23 @@ namespace MediaBrowser.Controller.Entities.Audio
             return null;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsCumulativeRunTimeTicks => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string AlbumArtist => AlbumArtists.FirstOrDefault();
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
 
         /// <summary>
         /// Gets the tracks.
         /// </summary>
         /// <value>The tracks.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public IEnumerable<Audio> Tracks => GetRecursiveChildren(i => i is Audio).Cast<Audio>();
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)

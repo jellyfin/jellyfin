@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -16,17 +15,17 @@ namespace MediaBrowser.Providers.TV
 {
     public class DummySeasonProvider
     {
-        private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        public DummySeasonProvider(IServerConfigurationManager config, ILogger logger, ILocalizationManager localization, ILibraryManager libraryManager, IFileSystem fileSystem)
+        public DummySeasonProvider(
+            ILogger logger,
+            ILocalizationManager localization,
+            ILibraryManager libraryManager,
+            IFileSystem fileSystem)
         {
-            _config = config;
             _logger = logger;
             _localization = localization;
             _libraryManager = libraryManager;
@@ -127,9 +126,22 @@ namespace MediaBrowser.Providers.TV
             bool isVirtualItem,
             CancellationToken cancellationToken)
         {
-            var seasonName = seasonNumber == 0 ?
-                _libraryManager.GetLibraryOptions(series).SeasonZeroDisplayName :
-                (seasonNumber.HasValue ? string.Format(_localization.GetLocalizedString("NameSeasonNumber"), seasonNumber.Value.ToString(_usCulture)) : _localization.GetLocalizedString("NameSeasonUnknown"));
+            string seasonName;
+            if (seasonNumber == null)
+            {
+                seasonName = _localization.GetLocalizedString("NameSeasonUnknown");
+            }
+            else if (seasonNumber == 0)
+            {
+                seasonName = _libraryManager.GetLibraryOptions(series).SeasonZeroDisplayName;
+            }
+            else
+            {
+                seasonName = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("NameSeasonNumber"),
+                    seasonNumber.Value);
+            }
 
             _logger.LogInformation("Creating Season {0} entry for {1}", seasonName, series.Name);
 
@@ -137,7 +149,9 @@ namespace MediaBrowser.Providers.TV
             {
                 Name = seasonName,
                 IndexNumber = seasonNumber,
-                Id = _libraryManager.GetNewItemId((series.Id + (seasonNumber ?? -1).ToString(_usCulture) + seasonName), typeof(Season)),
+                Id = _libraryManager.GetNewItemId(
+                    series.Id + (seasonNumber ?? -1).ToString(CultureInfo.InvariantCulture) + seasonName,
+                    typeof(Season)),
                 IsVirtualItem = isVirtualItem,
                 SeriesId = series.Id,
                 SeriesName = series.Name
@@ -147,7 +161,7 @@ namespace MediaBrowser.Providers.TV
 
             series.AddChild(season, cancellationToken);
 
-            await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem)), cancellationToken).ConfigureAwait(false);
+            await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)), cancellationToken).ConfigureAwait(false);
 
             return season;
         }

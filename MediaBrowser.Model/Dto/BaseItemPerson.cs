@@ -1,9 +1,9 @@
-using MediaBrowser.Model.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// This is used by the api to get information about a Person within a BaseItem
+    /// This is used by the api to get information about a Person within a BaseItem.
     /// </summary>
     public class BaseItemPerson
     {
@@ -41,7 +41,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool HasPrimaryImage => PrimaryImageTag != null;
     }
 }

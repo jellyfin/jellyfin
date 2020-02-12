@@ -1,9 +1,9 @@
-; Shows a lot of debug information while compiling
-; This can be removed once stable.
-!verbose 4
-SetCompressor lzma
+!verbose 3
+SetCompressor /SOLID bzip2
 ShowInstDetails show
 ShowUninstDetails show
+Unicode True
+
 ;--------------------------------
 !define SF_USELECTED  0 ; used to check selected options status, rest are inherited from Sections.nsh
 
@@ -16,11 +16,14 @@ ShowUninstDetails show
 ; Global variables that we'll use
     Var _JELLYFINVERSION_
     Var _JELLYFINDATADIR_
+    Var _SETUPTYPE_
     Var _INSTALLSERVICE_
     Var _SERVICESTART_
     Var _SERVICEACCOUNTTYPE_
     Var _EXISTINGINSTALLATION_
     Var _EXISTINGSERVICE_
+    Var _MAKESHORTCUTS_
+    Var _FOLDEREXISTS_
 ;
 !ifdef x64
     !define ARCH "x64"
@@ -86,7 +89,12 @@ ShowUninstDetails show
     !insertmacro MUI_PAGE_WELCOME
 ; License Page
     !insertmacro MUI_PAGE_LICENSE "$%InstallLocation%\LICENSE" ; picking up generic GPL
+
+; Setup Type Page
+    Page custom ShowSetupTypePage SetupTypePage_Config
+    
 ; Components Page
+    !define MUI_PAGE_CUSTOMFUNCTION_PRE HideComponentsPage
     !insertmacro MUI_PAGE_COMPONENTS
     !define MUI_PAGE_CUSTOMFUNCTION_PRE HideInstallDirectoryPage ; Controls when to hide / show
     !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Install folder" ; shows just above the folder selection dialog
@@ -102,6 +110,7 @@ ShowUninstDetails show
     !insertmacro MUI_PAGE_DIRECTORY
 
 ; Custom Dialogs
+    !include "dialogs\setuptype.nsdinc"
     !include "dialogs\service-config.nsdinc"
     !include "dialogs\confirmation.nsdinc"
 
@@ -155,7 +164,9 @@ Section "!Jellyfin Server (required)" InstallJellyfinServer
 
     SetOutPath "$INSTDIR"
 
+    File "/oname=icon.ico" "${UXPATH}\branding\NSIS\modern-install.ico"
     File /r $%InstallLocation%\*
+    
 
 ; Write the InstallFolder, DataFolder, Network Service info into the registry for later use
     WriteRegExpandStr HKLM "${REG_CONFIG_KEY}" "InstallFolder" "$INSTDIR"
@@ -170,7 +181,7 @@ Section "!Jellyfin Server (required)" InstallJellyfinServer
     WriteRegExpandStr HKLM "${REG_UNINST_KEY}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
     WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayIcon" '"$INSTDIR\Uninstall.exe",0'
     WriteRegStr HKLM "${REG_UNINST_KEY}" "Publisher" "The Jellyfin Project"
-    WriteRegStr HKLM "${REG_UNINST_KEY}" "URLInfoAbout" "https://jellyfin.media/"
+    WriteRegStr HKLM "${REG_UNINST_KEY}" "URLInfoAbout" "https://jellyfin.org/"
     WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayVersion" "$_JELLYFINVERSION_"
     WriteRegDWORD HKLM "${REG_UNINST_KEY}" "NoModify" 1
     WriteRegDWORD HKLM "${REG_UNINST_KEY}" "NoRepair" 1
@@ -180,12 +191,12 @@ Section "!Jellyfin Server (required)" InstallJellyfinServer
 SectionEnd
 
 Section "Jellyfin Server Service" InstallService
-
+${If} $_INSTALLSERVICE_ == "Yes" ; Only run this if we're going to install the service!
     ExecWait '"$INSTDIR\nssm.exe" statuscode JellyfinServer' $0
     DetailPrint "Jellyfin Server service statuscode, $0"
     ${If} $0 == 0
         InstallRetry:
-        ExecWait '"$INSTDIR\nssm.exe" install JellyfinServer "$INSTDIR\jellyfin.exe" --datadir \"$_JELLYFINDATADIR_\"' $0
+        ExecWait '"$INSTDIR\nssm.exe" install JellyfinServer "$INSTDIR\jellyfin.exe" --service --datadir \"$_JELLYFINDATADIR_\"' $0
         ${If} $0 <> 0
             !insertmacro ShowError "Could not install the Jellyfin Server service." InstallRetry
         ${EndIf}
@@ -201,7 +212,7 @@ Section "Jellyfin Server Service" InstallService
         DetailPrint "Jellyfin Server Service setting (Application), $0"
 
         ConfigureAppParametersRetry:
-        ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer AppParameters --datadir \"$_JELLYFINDATADIR_\"' $0
+        ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer AppParameters --service --datadir \"$_JELLYFINDATADIR_\"' $0
         ${If} $0 <> 0
             !insertmacro ShowError "Could not configure the Jellyfin Server service." ConfigureAppParametersRetry
         ${EndIf}
@@ -241,6 +252,15 @@ Section "Jellyfin Server Service" InstallService
         DetailPrint "Jellyfin Server service account change, $0"
     ${EndIf}
 
+    Sleep 3000
+    ConfigureDefaultAppExit:
+        ExecWait '"$INSTDIR\nssm.exe" set JellyfinServer AppExit Default Exit' $0
+        ${If} $0 <> 0
+            !insertmacro ShowError "Could not configure the Jellyfin Server service app exit action." ConfigureDefaultAppExit
+        ${EndIf}
+        DetailPrint "Jellyfin Server service exit action set, $0"
+${EndIf}
+
 SectionEnd
 
 Section "-start service" StartService
@@ -253,6 +273,16 @@ ${AndIf} $_INSTALLSERVICE_ == "Yes"
     ${EndIf}
     DetailPrint "Jellyfin Server service start, $0"
 ${EndIf}
+SectionEnd
+
+Section "Create Shortcuts" CreateWinShortcuts
+    ${If} $_MAKESHORTCUTS_ == "Yes"
+        CreateDirectory "$SMPROGRAMS\Jellyfin Server"
+        CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin (View Console).lnk" "$INSTDIR\jellyfin.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0 SW_SHOWMAXIMIZED
+        CreateShortCut "$SMPROGRAMS\Jellyfin Server\Jellyfin Tray App.lnk" "$INSTDIR\jellyfintray.exe" "" "$INSTDIR\icon.ico" 0
+        ;CreateShortCut "$DESKTOP\Jellyfin Server.lnk" "$INSTDIR\jellyfin.exe" "--datadir $\"$_JELLYFINDATADIR_$\"" "$INSTDIR\icon.ico" 0 SW_SHOWMINIMIZED
+        CreateShortCut "$DESKTOP\Jellyfin Server\Jellyfin Server.lnk" "$INSTDIR\jellyfintray.exe" "" "$INSTDIR\icon.ico" 0
+    ${EndIf}
 SectionEnd
 
 ;--------------------------------
@@ -275,6 +305,7 @@ Section "Uninstall"
 
     ReadRegStr $INSTDIR HKLM "${REG_CONFIG_KEY}" "InstallFolder"  ; read the installation folder
     ReadRegStr $_JELLYFINDATADIR_ HKLM "${REG_CONFIG_KEY}" "DataFolder"  ; read the data folder
+    ReadRegStr $_SERVICEACCOUNTTYPE_ HKLM "${REG_CONFIG_KEY}" "ServiceAccountType"  ; read the account name
 
     DetailPrint "Jellyfin Install location: $INSTDIR"
     DetailPrint "Jellyfin Data folder: $_JELLYFINDATADIR_"
@@ -307,13 +338,18 @@ Section "Uninstall"
 
     Sleep 3000 ; Give time for Windows to catchup
 
-    NoServiceUninstall: ; existing install was present but no service was detected
+    NoServiceUninstall: ; existing install was present but no service was detected. Remove shortcuts if account is set to none
+        ${If} $_SERVICEACCOUNTTYPE_ == "None"
+            RMDir /r "$SMPROGRAMS\Jellyfin Server"
+            Delete "$DESKTOP\Jellyfin Server.lnk"
+            DetailPrint "Removed old shortcuts..."
+        ${EndIf}
 
     Delete "$INSTDIR\*.*"
     RMDir /r /REBOOTOK "$INSTDIR\jellyfin-web"
     Delete "$INSTDIR\Uninstall.exe"
     RMDir /r /REBOOTOK "$INSTDIR"
-
+    
     DeleteRegKey HKLM "Software\Jellyfin"
     DeleteRegKey HKLM "${REG_UNINST_KEY}"
 
@@ -326,6 +362,7 @@ Function .onInit
     StrCpy $_SERVICEACCOUNTTYPE_ "NetworkService"
     StrCpy $_EXISTINGINSTALLATION_ "No"
     StrCpy $_EXISTINGSERVICE_ "No"
+    StrCpy $_MAKESHORTCUTS_ "No"
 
     SetShellVarContext current
     StrCpy $_JELLYFINDATADIR_ "$%ProgramData%\Jellyfin\Server"
@@ -353,6 +390,16 @@ Function .onInit
     StrCpy $_EXISTINGINSTALLATION_ "Yes" ; Set our flag to be used later
     SectionSetText ${InstallJellyfinServer} "Upgrade Jellyfin Server (required)" ; Change install text to "Upgrade"
 
+  ; check if service was run using Network Service account
+    ClearErrors
+    ReadRegStr $_SERVICEACCOUNTTYPE_ HKLM "${REG_CONFIG_KEY}" "ServiceAccountType" ; in case of error _SERVICEACCOUNTTYPE_ will be NetworkService as default
+
+    ClearErrors
+    ReadRegStr $_JELLYFINDATADIR_ HKLM "${REG_CONFIG_KEY}" "DataFolder" ; in case of error, the default holds
+
+    ; Hide sections which will not be needed in case of previous install
+    ; SectionSetText ${InstallService} ""
+
 ; check if there is a service called Jellyfin, there should be
 ; hack : nssm statuscode Jellyfin will return non zero return code in case it exists
     ExecWait '"$INSTDIR\nssm.exe" statuscode JellyfinServer' $0
@@ -363,18 +410,17 @@ Function .onInit
     StrCpy $_EXISTINGSERVICE_ "Yes"
     StrCpy $_INSTALLSERVICE_ "Yes"
     StrCpy $_SERVICESTART_ "Yes"
+    StrCpy $_MAKESHORTCUTS_ "No"
+    SectionSetText ${CreateWinShortcuts} ""
 
-    ; check if service was run using Network Service account
-    ClearErrors
-    ReadRegStr $_SERVICEACCOUNTTYPE_ HKLM "${REG_CONFIG_KEY}" "ServiceAccountType" ; in case of error _SERVICEACCOUNTTYPE_ will be NetworkService as default
-
-    ClearErrors
-    ReadRegStr $_JELLYFINDATADIR_ HKLM "${REG_CONFIG_KEY}" "DataFolder" ; in case of error, the default holds
-
-    ; Hide sections which will not be needed in case of previous install
-    ; SectionSetText ${InstallService} ""
-
+  
     NoService: ; existing install was present but no service was detected
+        ${If} $_SERVICEACCOUNTTYPE_ == "None"
+            StrCpy $_SETUPTYPE_ "Basic"
+            StrCpy $_INSTALLSERVICE_ "No"
+            StrCpy $_SERVICESTART_ "No"
+            StrCpy $_MAKESHORTCUTS_ "Yes"
+        ${EndIf}
 
 ; Let the user know that we'll upgrade and provide an option to quit.
     MessageBox MB_OKCANCEL|MB_ICONINFORMATION "Existing installation of Jellyfin Server was detected, it'll be upgraded, settings will be retained. \
@@ -383,8 +429,7 @@ Function .onInit
 
     ProceedWithUpgrade:
 
-    NoExisitingInstall:
-; by this time, the variables have been correctly set to reflect previous install details
+    NoExisitingInstall: ; by this time, the variables have been correctly set to reflect previous install details
 
 FunctionEnd
 
@@ -413,6 +458,25 @@ Function HideConfirmationPage
     ${EndIf}
 FunctionEnd
 
+Function HideSetupTypePage
+    ${If} $_EXISTINGINSTALLATION_ == "Yes" ; Existing installation detected, so don't ask for SetupType
+        Abort
+    ${EndIf}
+FunctionEnd
+
+Function HideComponentsPage
+     ${If} $_SETUPTYPE_ == "Basic" ; Basic installation chosen, don't show components choice
+        Abort
+    ${EndIf}
+FunctionEnd
+
+; Setup Type dialog show function
+Function ShowSetupTypePage
+  Call HideSetupTypePage
+  Call fnc_setuptype_Create
+  nsDialogs::Show
+FunctionEnd
+
 ; Service Config dialog show function
 Function ShowServiceConfigPage
   Call HideServiceConfigPage
@@ -431,6 +495,46 @@ FunctionEnd
 Var StartServiceAfterInstall
 Var UseNetworkServiceAccount
 Var UseLocalSystemAccount
+Var BasicInstall
+
+
+Function SetupTypePage_Config
+${NSD_GetState} $hCtl_setuptype_BasicInstall $BasicInstall
+ IfFileExists "$LOCALAPPDATA\Jellyfin" folderfound foldernotfound ; if the folder exists, use this, otherwise, go with new default
+        folderfound:
+            StrCpy $_FOLDEREXISTS_ "Yes"
+            Goto InstallCheck
+        foldernotfound:
+            StrCpy $_FOLDEREXISTS_ "No"
+            Goto InstallCheck
+
+InstallCheck:
+${If} $BasicInstall == 1
+    StrCpy $_SETUPTYPE_ "Basic"
+    StrCpy $_INSTALLSERVICE_ "No"
+    StrCpy $_SERVICESTART_ "No"
+    StrCpy $_SERVICEACCOUNTTYPE_ "None"
+    StrCpy $_MAKESHORTCUTS_ "Yes"
+    ${If} $_FOLDEREXISTS_ == "Yes"
+        StrCpy $_JELLYFINDATADIR_ "$LOCALAPPDATA\Jellyfin\"
+    ${EndIf}
+${Else}
+    StrCpy $_SETUPTYPE_ "Advanced"
+    StrCpy $_INSTALLSERVICE_ "Yes"
+    StrCpy $_MAKESHORTCUTS_ "No"
+    ${If} $_FOLDEREXISTS_ == "Yes"
+            MessageBox MB_OKCANCEL|MB_ICONINFORMATION "An existing data folder was detected.\
+            $\r$\nBasic Setup is highly recommended.\
+            $\r$\nIf you proceed, you will need to set up Jellyfin again." IDOK GoAhead IDCANCEL GoBack
+        GoBack:
+            Abort
+    ${EndIf}
+        GoAhead:
+            StrCpy $_JELLYFINDATADIR_ "$%ProgramData%\Jellyfin\Server"
+            SectionSetText ${CreateWinShortcuts} ""
+${EndIf}
+    
+FunctionEnd
 
 Function ServiceConfigPage_Config
 ${NSD_GetState} $hCtl_service_config_StartServiceAfterInstall $StartServiceAfterInstall

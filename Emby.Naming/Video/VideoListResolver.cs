@@ -1,9 +1,13 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.Video
@@ -29,7 +33,7 @@ namespace Emby.Naming.Video
             // Filter out all extras, otherwise they could cause stacks to not be resolved
             // See the unit test TestStackedWithTrailer
             var nonExtras = videoInfos
-                .Where(i => string.IsNullOrEmpty(i.ExtraType))
+                .Where(i => i.ExtraType == null)
                 .Select(i => new FileSystemMetadata
                 {
                     FullName = i.Path,
@@ -37,20 +41,19 @@ namespace Emby.Naming.Video
                 });
 
             var stackResult = new StackResolver(_options)
-                .Resolve(nonExtras);
+                .Resolve(nonExtras).ToList();
 
             var remainingFiles = videoInfos
-                .Where(i => !stackResult.Stacks.Any(s => s.ContainsFile(i.Path, i.IsDirectory)))
+                .Where(i => !stackResult.Any(s => s.ContainsFile(i.Path, i.IsDirectory)))
                 .ToList();
 
             var list = new List<VideoInfo>();
 
-            foreach (var stack in stackResult.Stacks)
+            foreach (var stack in stackResult)
             {
-                var info = new VideoInfo
+                var info = new VideoInfo(stack.Name)
                 {
-                    Files = stack.Files.Select(i => videoResolver.Resolve(i, stack.IsDirectoryStack)).ToList(),
-                    Name = stack.Name
+                    Files = stack.Files.Select(i => videoResolver.Resolve(i, stack.IsDirectoryStack)).ToList()
                 };
 
                 info.Year = info.Files[0].Year;
@@ -76,15 +79,14 @@ namespace Emby.Naming.Video
             }
 
             var standaloneMedia = remainingFiles
-                .Where(i => string.IsNullOrEmpty(i.ExtraType))
+                .Where(i => i.ExtraType == null)
                 .ToList();
 
             foreach (var media in standaloneMedia)
             {
-                var info = new VideoInfo
+                var info = new VideoInfo(media.Name)
                 {
-                    Files = new List<VideoFileInfo> { media },
-                    Name = media.Name
+                    Files = new List<VideoFileInfo> { media }
                 };
 
                 info.Year = info.Files[0].Year;
@@ -124,7 +126,8 @@ namespace Emby.Naming.Video
                             .Except(extras)
                             .ToList();
 
-                        info.Extras.AddRange(extras);
+                        extras.AddRange(info.Extras);
+                        info.Extras = extras;
                     }
                 }
 
@@ -137,7 +140,8 @@ namespace Emby.Naming.Video
                     .Except(extrasByFileName)
                     .ToList();
 
-                info.Extras.AddRange(extrasByFileName);
+                extrasByFileName.AddRange(info.Extras);
+                info.Extras = extrasByFileName;
             }
 
             // If there's only one video, accept all trailers
@@ -145,10 +149,11 @@ namespace Emby.Naming.Video
             if (list.Count == 1)
             {
                 var trailers = remainingFiles
-                    .Where(i => string.Equals(i.ExtraType, "trailer", StringComparison.OrdinalIgnoreCase))
+                    .Where(i => i.ExtraType == ExtraType.Trailer)
                     .ToList();
 
-                list[0].Extras.AddRange(trailers);
+                trailers.AddRange(list[0].Extras);
+                list[0].Extras = trailers;
 
                 remainingFiles = remainingFiles
                     .Except(trailers)
@@ -156,14 +161,13 @@ namespace Emby.Naming.Video
             }
 
             // Whatever files are left, just add them
-            list.AddRange(remainingFiles.Select(i => new VideoInfo
+            list.AddRange(remainingFiles.Select(i => new VideoInfo(i.Name)
             {
                 Files = new List<VideoFileInfo> { i },
-                Name = i.Name,
                 Year = i.Year
             }));
 
-            return list.OrderBy(i => i.Name);
+            return list;
         }
 
         private IEnumerable<VideoInfo> GetVideosGroupedByVersion(List<VideoInfo> videos)
@@ -187,9 +191,18 @@ namespace Emby.Naming.Video
 
                 list.Add(ordered[0]);
 
-                list[0].AlternateVersions = ordered.Skip(1).Select(i => i.Files[0]).ToList();
+                var alternateVersionsLen = ordered.Count - 1;
+                var alternateVersions = new VideoFileInfo[alternateVersionsLen];
+                for (int i = 0; i < alternateVersionsLen; i++)
+                {
+                    alternateVersions[i] = ordered[i + 1].Files[0];
+                }
+
+                list[0].AlternateVersions = alternateVersions;
                 list[0].Name = folderName;
-                list[0].Extras.AddRange(ordered.Skip(1).SelectMany(i => i.Extras));
+                var extras = ordered.Skip(1).SelectMany(i => i.Extras).ToList();
+                extras.AddRange(list[0].Extras);
+                list[0].Extras = extras;
 
                 return list;
             }
@@ -226,7 +239,7 @@ namespace Emby.Naming.Video
             }
 
             return remainingFiles
-                .Where(i => !string.IsNullOrEmpty(i.ExtraType))
+                .Where(i => i.ExtraType == null)
                 .Where(i => baseNames.Any(b => i.FileNameWithoutExtension.StartsWith(b, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
         }

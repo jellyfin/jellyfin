@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             return ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
         }
 
-        public string Name => "Scan media library";
+        public string Name => "Scan Media Library";
 
         public string Description => "Scans your media library for new files and refreshes metadata.";
 

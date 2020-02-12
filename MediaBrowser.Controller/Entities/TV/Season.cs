@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.TV
@@ -15,22 +15,22 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Season : Folder, IHasSeries, IHasLookupInfo<SeasonInfo>
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsPreSorted => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsDateLastMediaAdded => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override Guid DisplayParentId => SeriesId;
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -71,7 +71,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// This Episode's Series Instance
         /// </summary>
         /// <value>The series.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public Series Series
         {
             get
@@ -85,7 +85,7 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string SeriesPath
         {
             get
@@ -179,13 +179,13 @@ namespace MediaBrowser.Controller.Entities.TV
             return UnratedItem.Series;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string SeriesName { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public Guid SeriesId { get; set; }
 
         public string FindSeriesPresentationUniqueKey()

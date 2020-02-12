@@ -1,3 +1,6 @@
+#pragma warning disable SA1600
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -35,7 +38,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.LiveTv
 {
     /// <summary>
-    /// Class LiveTvManager
+    /// Class LiveTvManager.
     /// </summary>
     public class LiveTvManager : ILiveTvManager, IDisposable
     {
@@ -209,16 +212,16 @@ namespace Emby.Server.Implementations.LiveTv
 
             var orderBy = internalQuery.OrderBy.ToList();
 
-            orderBy.AddRange(query.SortBy.Select(i => new ValueTuple<string, SortOrder>(i, query.SortOrder ?? SortOrder.Ascending)));
+            orderBy.AddRange(query.SortBy.Select(i => (i, query.SortOrder ?? SortOrder.Ascending)));
 
             if (query.EnableFavoriteSorting)
             {
-                orderBy.Insert(0, new ValueTuple<string, SortOrder>(ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
+                orderBy.Insert(0, (ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
             }
 
             if (!internalQuery.OrderBy.Any(i => string.Equals(i.Item1, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase)))
             {
-                orderBy.Add(new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending));
+                orderBy.Add((ItemSortBy.SortName, SortOrder.Ascending));
             }
 
             internalQuery.OrderBy = orderBy.ToArray();
@@ -304,9 +307,12 @@ namespace Emby.Server.Implementations.LiveTv
         }
 
         private ILiveTvService GetService(string name)
-        {
-            return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
-        }
+            => Array.Find(_services, x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))
+                ?? throw new KeyNotFoundException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "No service with the name '{0}' can be found.",
+                        name));
 
         private static void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
         {
@@ -772,22 +778,22 @@ namespace Emby.Server.Implementations.LiveTv
 
             var topFolder = GetInternalLiveTvFolder(cancellationToken);
 
-            if (query.OrderBy.Length == 0)
+            if (query.OrderBy.Count == 0)
             {
                 if (query.IsAiring ?? false)
                 {
                     // Unless something else was specified, order by start date to take advantage of a specialized index
-                    query.OrderBy = new ValueTuple<string, SortOrder>[]
+                    query.OrderBy = new[]
                     {
-                        new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending)
+                        (ItemSortBy.StartDate, SortOrder.Ascending)
                     };
                 }
                 else
                 {
                     // Unless something else was specified, order by start date to take advantage of a specialized index
-                    query.OrderBy = new ValueTuple<string, SortOrder>[]
+                    query.OrderBy = new[]
                     {
-                        new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending)
+                        (ItemSortBy.StartDate, SortOrder.Ascending)
                     };
                 }
             }
@@ -871,7 +877,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) },
+                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { topFolder.Id },
                 DtoOptions = options,
                 GenreIds = query.GenreIds
@@ -1226,12 +1232,13 @@ namespace Emby.Server.Implementations.LiveTv
                         currentChannel.AddTag("Kids");
                     }
 
-                    //currentChannel.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
-                    await currentChannel.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_logger, _fileSystem))
-                    {
-                        ForceSave = true
-
-                    }, cancellationToken).ConfigureAwait(false);
+                    currentChannel.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
+                    await currentChannel.RefreshMetadata(
+                        new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                        {
+                            ForceSave = true
+                        },
+                        cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1245,7 +1252,7 @@ namespace Emby.Server.Implementations.LiveTv
                 numComplete++;
                 double percent = numComplete / (double)allChannelsList.Count;
 
-                progress.Report(85 * percent + 15);
+                progress.Report((85 * percent) + 15);
             }
 
             progress.Report(100);
@@ -1278,12 +1285,14 @@ namespace Emby.Server.Implementations.LiveTv
 
                     if (item != null)
                     {
-                        _libraryManager.DeleteItem(item, new DeleteOptions
-                        {
-                            DeleteFileLocation = false,
-                            DeleteFromExternalProvider = false
-
-                        }, false);
+                        _libraryManager.DeleteItem(
+                            item,
+                            new DeleteOptions
+                            {
+                                DeleteFileLocation = false,
+                                DeleteFromExternalProvider = false
+                            },
+                            false);
                     }
                 }
 
@@ -1393,7 +1402,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsVirtualItem = false,
                 Limit = limit,
                 StartIndex = query.StartIndex,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
+                OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
@@ -1891,7 +1900,7 @@ namespace Emby.Server.Implementations.LiveTv
                 MaxStartDate = now,
                 MinEndDate = now,
                 Limit = channelIds.Length,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.StartDate, SortOrder.Ascending) },
+                OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Id },
                 DtoOptions = options
 
@@ -2301,8 +2310,10 @@ namespace Emby.Server.Implementations.LiveTv
             if (provider == null)
             {
                 throw new ResourceNotFoundException(
-                    string.Format("Couldn't find provider of type: '{0}'", info.Type)
-                );
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Couldn't find provider of type: '{0}'",
+                        info.Type));
             }
 
             await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);

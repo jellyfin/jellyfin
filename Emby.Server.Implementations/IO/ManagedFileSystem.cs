@@ -1,7 +1,10 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,7 +17,7 @@ using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 namespace Emby.Server.Implementations.IO
 {
     /// <summary>
-    /// Class ManagedFileSystem
+    /// Class ManagedFileSystem.
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
@@ -77,20 +80,20 @@ namespace Emby.Server.Implementations.IO
 
         public virtual string MakeAbsolutePath(string folderPath, string filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath)
-                // stream
-                || filePath.Contains("://"))
+            // path is actually a stream
+            if (string.IsNullOrWhiteSpace(filePath) || filePath.Contains("://", StringComparison.Ordinal))
             {
                 return filePath;
             }
 
             if (filePath.Length > 3 && filePath[1] == ':' && filePath[2] == '/')
             {
-                return filePath; // absolute local path
+                // absolute local path
+                return filePath;
             }
 
             // unc path
-            if (filePath.StartsWith("\\\\"))
+            if (filePath.StartsWith("\\\\", StringComparison.Ordinal))
             {
                 return filePath;
             }
@@ -98,16 +101,19 @@ namespace Emby.Server.Implementations.IO
             var firstChar = filePath[0];
             if (firstChar == '/')
             {
-                // For this we don't really know.
+                // for this we don't really know
                 return filePath;
             }
-            if (firstChar == '\\') //relative path
+
+            // relative path
+            if (firstChar == '\\')
             {
                 filePath = filePath.Substring(1);
             }
+
             try
             {
-                return Path.Combine(Path.GetFullPath(folderPath), filePath);
+                return Path.GetFullPath(Path.Combine(folderPath, filePath));
             }
             catch (ArgumentException)
             {
@@ -128,11 +134,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="shortcutPath">The shortcut path.</param>
         /// <param name="target">The target.</param>
-        /// <exception cref="ArgumentNullException">
-        /// shortcutPath
-        /// or
-        /// target
-        /// </exception>
+        /// <exception cref="ArgumentNullException">The shortcutPath or target is null.</exception>
         public virtual void CreateShortcut(string shortcutPath, string target)
         {
             if (string.IsNullOrEmpty(shortcutPath))
@@ -278,11 +280,11 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Takes a filename and removes invalid characters
+        /// Takes a filename and removes invalid characters.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException">The filename is null.</exception>
         public virtual string GetValidFilename(string filename)
         {
             var builder = new StringBuilder(filename);
@@ -363,90 +365,9 @@ namespace Emby.Server.Implementations.IO
             return GetLastWriteTimeUtc(GetFileSystemInfo(path));
         }
 
-        /// <summary>
-        /// Gets the file stream.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="mode">The mode.</param>
-        /// <param name="access">The access.</param>
-        /// <param name="share">The share.</param>
-        /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
-        /// <returns>FileStream.</returns>
-        public virtual Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, bool isAsync = false)
-        {
-            if (isAsync)
-            {
-                return GetFileStream(path, mode, access, share, FileOpenOptions.Asynchronous);
-            }
-
-            return GetFileStream(path, mode, access, share, FileOpenOptions.None);
-        }
-
-        public virtual Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions)
-            => new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 4096, GetFileOptions(fileOpenOptions));
-
-        private static FileOptions GetFileOptions(FileOpenOptions mode)
-        {
-            var val = (int)mode;
-            return (FileOptions)val;
-        }
-
-        private static FileMode GetFileMode(FileOpenMode mode)
-        {
-            switch (mode)
-            {
-                //case FileOpenMode.Append:
-                //    return FileMode.Append;
-                case FileOpenMode.Create:
-                    return FileMode.Create;
-                case FileOpenMode.CreateNew:
-                    return FileMode.CreateNew;
-                case FileOpenMode.Open:
-                    return FileMode.Open;
-                case FileOpenMode.OpenOrCreate:
-                    return FileMode.OpenOrCreate;
-                //case FileOpenMode.Truncate:
-                //    return FileMode.Truncate;
-                default:
-                    throw new Exception("Unrecognized FileOpenMode");
-            }
-        }
-
-        private static FileAccess GetFileAccess(FileAccessMode mode)
-        {
-            switch (mode)
-            {
-                //case FileAccessMode.ReadWrite:
-                //    return FileAccess.ReadWrite;
-                case FileAccessMode.Write:
-                    return FileAccess.Write;
-                case FileAccessMode.Read:
-                    return FileAccess.Read;
-                default:
-                    throw new Exception("Unrecognized FileAccessMode");
-            }
-        }
-
-        private static FileShare GetFileShare(FileShareMode mode)
-        {
-            switch (mode)
-            {
-                case FileShareMode.ReadWrite:
-                    return FileShare.ReadWrite;
-                case FileShareMode.Write:
-                    return FileShare.Write;
-                case FileShareMode.Read:
-                    return FileShare.Read;
-                case FileShareMode.None:
-                    return FileShare.None;
-                default:
-                    throw new Exception("Unrecognized FileShareMode");
-            }
-        }
-
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
+            if (OperatingSystem.Id != OperatingSystemId.Windows)
             {
                 return;
             }
@@ -470,7 +391,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetReadOnly(string path, bool isReadOnly)
         {
-            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
+            if (OperatingSystem.Id != OperatingSystemId.Windows)
             {
                 return;
             }
@@ -494,7 +415,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
-            if (OperatingSystem.Id != MediaBrowser.Model.System.OperatingSystemId.Windows)
+            if (OperatingSystem.Id != OperatingSystemId.Windows)
             {
                 return;
             }
@@ -777,7 +698,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetExecutable(string path)
         {
-            if (OperatingSystem.Id == MediaBrowser.Model.System.OperatingSystemId.Darwin)
+            if (OperatingSystem.Id == OperatingSystemId.Darwin)
             {
                 RunProcess("chmod", "+x \"" + path + "\"", Path.GetDirectoryName(path));
             }

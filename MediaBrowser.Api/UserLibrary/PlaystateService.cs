@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -102,10 +103,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "MediaSourceId", Description = "The id of the MediaSource", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MediaSourceId { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
-        /// </summary>
-        /// <value><c>true</c> if likes; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "CanSeek", Description = "Indicates if the client can seek", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool CanSeek { get; set; }
 
@@ -233,7 +230,17 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly ISessionContext _sessionContext;
         private readonly IAuthorizationContext _authContext;
 
-        public PlaystateService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, ISessionManager sessionManager, ISessionContext sessionContext, IAuthorizationContext authContext)
+        public PlaystateService(
+            ILogger<PlaystateService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IUserManager userManager,
+            IUserDataManager userDataRepository,
+            ILibraryManager libraryManager,
+            ISessionManager sessionManager,
+            ISessionContext sessionContext,
+            IAuthorizationContext authContext)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
@@ -256,7 +263,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         private UserItemDataDto MarkPlayed(MarkPlayedItem request)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(Guid.Parse(request.UserId));
 
             DateTime? datePlayed = null;
 
@@ -406,7 +413,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         private UserItemDataDto MarkUnplayed(MarkUnplayedItem request)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(Guid.Parse(request.UserId));
 
             var session = GetSession(_sessionContext);
 

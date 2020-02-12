@@ -1,21 +1,33 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+#nullable enable
+
 namespace Emby.Naming.Video
 {
-    public class CleanDateTimeResult
+    public readonly struct CleanDateTimeResult
     {
+        public CleanDateTimeResult(string name, int? year)
+        {
+            Name = name;
+            Year = year;
+        }
+
+        public CleanDateTimeResult(string name)
+        {
+            Name = name;
+            Year = null;
+        }
+
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string Name { get; }
+
         /// <summary>
-        /// Gets or sets the year.
+        /// Gets the year.
         /// </summary>
         /// <value>The year.</value>
-        public int? Year { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has changed.
-        /// </summary>
-        /// <value><c>true</c> if this instance has changed; otherwise, <c>false</c>.</value>
-        public bool HasChanged { get; set; }
+        public int? Year { get; }
     }
 }

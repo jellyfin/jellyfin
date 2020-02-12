@@ -1,13 +1,16 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Globalization;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -19,12 +22,10 @@ namespace Emby.Dlna.PlayTo
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IHttpClient _httpClient;
-        private readonly IServerConfigurationManager _config;
 
-        public SsdpHttpClient(IHttpClient httpClient, IServerConfigurationManager config)
+        public SsdpHttpClient(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _config = config;
         }
 
         public async Task<XDocument> SendCommandAsync(
@@ -64,7 +65,9 @@ namespace Emby.Dlna.PlayTo
             }
 
             if (!serviceUrl.StartsWith("/"))
+            {
                 serviceUrl = "/" + serviceUrl;
+            }
 
             return baseUrl + serviceUrl;
         }
@@ -90,7 +93,7 @@ namespace Emby.Dlna.PlayTo
             options.RequestHeaders["NT"] = "upnp:event";
             options.RequestHeaders["TIMEOUT"] = "Second-" + timeOut.ToString(_usCulture);
 
-            using (await _httpClient.SendAsync(options, "SUBSCRIBE").ConfigureAwait(false))
+            using (await _httpClient.SendAsync(options, new HttpMethod("SUBSCRIBE")).ConfigureAwait(false))
             {
 
             }
@@ -110,7 +113,7 @@ namespace Emby.Dlna.PlayTo
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
 
-            using (var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {

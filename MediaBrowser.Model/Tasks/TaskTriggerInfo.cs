@@ -1,9 +1,12 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 
 namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
-    /// Class TaskTriggerInfo
+    /// Class TaskTriggerInfo.
     /// </summary>
     public class TaskTriggerInfo
     {

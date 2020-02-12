@@ -1,3 +1,7 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
+using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -15,17 +19,19 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             _config = config;
         }
 
+        /// <inheritdoc />
         public string GetServiceXml()
         {
             return new MediaReceiverRegistrarXmlBuilder().GetXml();
         }
 
-        public ControlResponse ProcessControlRequest(ControlRequest request)
+        /// <inheritdoc />
+        public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
             return new ControlHandler(
                 _config,
                 Logger)
-                .ProcessControlRequest(request);
+                .ProcessControlRequestAsync(request);
         }
     }
 }

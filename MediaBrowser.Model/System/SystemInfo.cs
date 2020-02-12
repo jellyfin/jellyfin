@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Runtime.InteropServices;
 using MediaBrowser.Model.Updates;
@@ -110,9 +113,9 @@ namespace MediaBrowser.Model.System
         public string InternalMetadataPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the transcoding temporary path.
+        /// Gets or sets the transcode path.
         /// </summary>
-        /// <value>The transcoding temporary path.</value>
+        /// <value>The transcode path.</value>
         public string TranscodingTempPath { get; set; }
 
         /// <summary>

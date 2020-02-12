@@ -3,7 +3,7 @@ using System;
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
-    /// Interface IIsoMount
+    /// Interface IIsoMount.
     /// </summary>
     public interface IIsoMount : IDisposable
     {

@@ -1,7 +1,9 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -15,23 +17,19 @@ namespace Emby.Server.Implementations.Data
     public class SqliteUserDataRepository : BaseSqliteRepository, IUserDataRepository
     {
         public SqliteUserDataRepository(
-            ILoggerFactory loggerFactory,
+            ILogger<SqliteUserDataRepository> logger,
             IApplicationPaths appPaths)
-            : base(loggerFactory.CreateLogger(nameof(SqliteUserDataRepository)))
+            : base(logger)
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "library.db");
         }
 
-        /// <summary>
-        /// Gets the name of the repository
-        /// </summary>
-        /// <value>The name.</value>
+        /// <inheritdoc />
         public string Name => "SQLite";
 
         /// <summary>
-        /// Opens the connection to the database
+        /// Opens the connection to the database.
         /// </summary>
-        /// <returns>Task.</returns>
         public void Initialize(IUserManager userManager, SemaphoreSlim dbLock, SQLiteDatabaseConnection dbConnection)
         {
             WriteLock.Dispose();
@@ -97,7 +95,7 @@ namespace Emby.Server.Implementations.Data
                         continue;
                     }
 
-                    statement.TryBind("@UserId", user.Id.ToGuidBlob());
+                    statement.TryBind("@UserId", user.Id.ToByteArray());
                     statement.TryBind("@InternalUserId", user.InternalId);
 
                     statement.MoveNext();

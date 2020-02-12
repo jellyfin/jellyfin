@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using MediaBrowser.Model.Dto;
 
@@ -159,7 +162,6 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions[] MetadataOptions { get; set; }
 
-        public bool EnableAutomaticRestart { get; set; }
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
@@ -172,16 +174,18 @@ namespace MediaBrowser.Model.Configuration
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     // If baseUrl is empty, set an empty prefix string
-                    value = string.Empty;
+                    _baseUrl = string.Empty;
+                    return;
                 }
-                else if (!value.StartsWith("/"))
+
+                if (value[0] != '/')
                 {
                     // If baseUrl was not configured with a leading slash, append one for consistency
                     value = "/" + value;
                 }
 
                 // Normalize the end of the string
-                if (value.EndsWith("/"))
+                if (value[value.Length - 1] == '/')
                 {
                     // If baseUrl was configured with a trailing slash, remove it for consistency
                     value = value.Remove(value.Length - 1);
@@ -231,7 +235,6 @@ namespace MediaBrowser.Model.Configuration
             LocalNetworkSubnets = Array.Empty<string>();
             LocalNetworkAddresses = Array.Empty<string>();
             CodecsUsed = Array.Empty<string>();
-            ImageExtractionTimeoutMs = 0;
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = true;
@@ -248,7 +251,6 @@ namespace MediaBrowser.Model.Configuration
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
 
-            EnableAutomaticRestart = true;
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 

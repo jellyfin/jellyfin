@@ -1,52 +1,16 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Video;
+using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.Common
 {
     public class NamingOptions
     {
-        public string[] AudioFileExtensions { get; set; }
-
-        public string[] AlbumStackingPrefixes { get; set; }
-
-        public string[] SubtitleFileExtensions { get; set; }
-
-        public char[] SubtitleFlagDelimiters { get; set; }
-
-        public string[] SubtitleForcedFlags { get; set; }
-
-        public string[] SubtitleDefaultFlags { get; set; }
-
-        public EpisodeExpression[] EpisodeExpressions { get; set; }
-
-        public string[] EpisodeWithoutSeasonExpressions { get; set; }
-
-        public string[] EpisodeMultiPartExpressions { get; set; }
-
-        public string[] VideoFileExtensions { get; set; }
-
-        public string[] StubFileExtensions { get; set; }
-
-        public string[] AudioBookPartsExpressions { get; set; }
-
-        public StubTypeRule[] StubTypes { get; set; }
-
-        public char[] VideoFlagDelimiters { get; set; }
-
-        public Format3DRule[] Format3DRules { get; set; }
-
-        public string[] VideoFileStackingExpressions { get; set; }
-
-        public string[] CleanDateTimes { get; set; }
-
-        public string[] CleanStrings { get; set; }
-
-        public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
-
-        public ExtraRule[] VideoExtraRules { get; set; }
-
         public NamingOptions()
         {
             VideoFileExtensions = new[]
@@ -173,13 +137,12 @@ namespace Emby.Naming.Common
 
             CleanDateTimes = new[]
             {
-                @"(.+[^ _\,\.\(\)\[\]\-])[ _\.\(\)\[\]\-]+(19[0-9][0-9]|20[0-1][0-9])([ _\,\.\(\)\[\]\-][^0-9]|$)"
+                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19\d{2}|20\d{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19\d{2}|20\d{2})*"
             };
 
             CleanStrings = new[]
             {
-                @"[ _\,\.\(\)\[\]\-](ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|x264|h264|xvid|xvidvd|xxx|www.www|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
-                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
+                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|x264|h264|xvid|xvidvd|xxx|www.www|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
                 @"(\[.*\])"
             };
 
@@ -311,6 +274,14 @@ namespace Emby.Naming.Common
                     }
                 },
 
+                // This isn't a Kodi naming rule, but the expression below causes false positives,
+                // so we make sure this one gets tested first.
+                // "Foo Bar 889"
+                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>[\w\s]+?)\s(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*[^\\\/]*$")
+                {
+                    IsNamed = true
+                },
+
                 new EpisodeExpression("[\\\\/\\._ \\[\\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\\.[1-9])(?![0-9]))?)([^\\\\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
@@ -328,28 +299,33 @@ namespace Emby.Naming.Common
 
                 // *** End Kodi Standard Naming
 
-                new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3})[^\\\/]*$")
+                // [bar] Foo - 1 [baz]
+                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[-\s_]+(?<epnumber>\d+).*$")
+                {
+                    IsNamed = true
+                },
+                new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>\d+)[xX](?<epnumber>\d+)[^\\\/]*$")
                 {
                     IsNamed = true
                 },
 
-                new EpisodeExpression(@".*(\\|\/)[sS](?<seasonnumber>\d{1,4})[x,X]?[eE](?<epnumber>\d{1,3})[^\\\/]*$")
+                new EpisodeExpression(@".*(\\|\/)[sS](?<seasonnumber>\d+)[x,X]?[eE](?<epnumber>\d+)[^\\\/]*$")
                 {
                     IsNamed = true
                 },
 
-                new EpisodeExpression(@".*(\\|\/)(?<seriesname>((?![sS]?\d{1,4}[xX]\d{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d{1,3}))[^\\\/]*$")
+                new EpisodeExpression(@".*(\\|\/)(?<seriesname>((?![sS]?\d{1,4}[xX]\d{1,3})[^\\\/])*)?([sS]?(?<seasonnumber>\d{1,4})[xX](?<epnumber>\d+))[^\\\/]*$")
                 {
                     IsNamed = true
                 },
 
-                new EpisodeExpression(@".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})[^\\\/]*$")
+                new EpisodeExpression(@".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d+)[^\\\/]*$")
                 {
                     IsNamed = true
                 },
 
                 // "01.avi"
-                new EpisodeExpression(@".*[\\\/](?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*\.\w+$")
+                new EpisodeExpression(@".*[\\\/](?<epnumber>\d+)(-(?<endingepnumber>\d+))*\.\w+$")
                 {
                     IsOptimistic = true,
                     IsNamed = true
@@ -407,126 +383,126 @@ namespace Emby.Naming.Common
             {
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Filename,
                     Token = "trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Suffix,
                     Token = ".trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "_trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "trailer",
+                    ExtraType = ExtraType.Trailer,
                     RuleType = ExtraRuleType.Suffix,
                     Token = " trailer",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Filename,
                     Token = "sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Suffix,
                     Token = ".sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "_sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "sample",
+                    ExtraType = ExtraType.Sample,
                     RuleType = ExtraRuleType.Suffix,
                     Token = " sample",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "themesong",
+                    ExtraType = ExtraType.ThemeSong,
                     RuleType = ExtraRuleType.Filename,
                     Token = "theme",
                     MediaType = MediaType.Audio
                 },
                 new ExtraRule
                 {
-                    ExtraType = "scene",
+                    ExtraType = ExtraType.Scene,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-scene",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "clip",
+                    ExtraType = ExtraType.Clip,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-clip",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "interview",
+                    ExtraType = ExtraType.Interview,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-interview",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "behindthescenes",
+                    ExtraType = ExtraType.BehindTheScenes,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-behindthescenes",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "deletedscene",
+                    ExtraType = ExtraType.DeletedScene,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-deleted",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "featurette",
+                    ExtraType = ExtraType.Clip,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-featurette",
                     MediaType = MediaType.Video
                 },
                 new ExtraRule
                 {
-                    ExtraType = "short",
+                    ExtraType = ExtraType.Clip,
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-short",
                     MediaType = MediaType.Video
@@ -654,9 +630,9 @@ namespace Emby.Naming.Common
                 @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})((-| - )?[xXeE](?<endingepnumber>\d{1,3}))+[^\\\/]*$",
                 @".*(\\|\/)(?<seriesname>[^\\\/]*)[sS](?<seasonnumber>\d{1,4})[xX\.]?[eE](?<epnumber>\d{1,3})(-[xX]?[eE]?(?<endingepnumber>\d{1,3}))+[^\\\/]*$"
             }.Select(i => new EpisodeExpression(i)
-                {
-                    IsNamed = true
-                }).ToArray();
+            {
+                IsNamed = true
+            }).ToArray();
 
             VideoFileExtensions = extensions
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -665,11 +641,54 @@ namespace Emby.Naming.Common
             Compile();
         }
 
+        public string[] AudioFileExtensions { get; set; }
+
+        public string[] AlbumStackingPrefixes { get; set; }
+
+        public string[] SubtitleFileExtensions { get; set; }
+
+        public char[] SubtitleFlagDelimiters { get; set; }
+
+        public string[] SubtitleForcedFlags { get; set; }
+
+        public string[] SubtitleDefaultFlags { get; set; }
+
+        public EpisodeExpression[] EpisodeExpressions { get; set; }
+
+        public string[] EpisodeWithoutSeasonExpressions { get; set; }
+
+        public string[] EpisodeMultiPartExpressions { get; set; }
+
+        public string[] VideoFileExtensions { get; set; }
+
+        public string[] StubFileExtensions { get; set; }
+
+        public string[] AudioBookPartsExpressions { get; set; }
+
+        public StubTypeRule[] StubTypes { get; set; }
+
+        public char[] VideoFlagDelimiters { get; set; }
+
+        public Format3DRule[] Format3DRules { get; set; }
+
+        public string[] VideoFileStackingExpressions { get; set; }
+
+        public string[] CleanDateTimes { get; set; }
+
+        public string[] CleanStrings { get; set; }
+
+        public EpisodeExpression[] MultipleEpisodeExpressions { get; set; }
+
+        public ExtraRule[] VideoExtraRules { get; set; }
+
         public Regex[] VideoFileStackingRegexes { get; private set; }
+
         public Regex[] CleanDateTimeRegexes { get; private set; }
+
         public Regex[] CleanStringRegexes { get; private set; }
 
         public Regex[] EpisodeWithoutSeasonRegexes { get; private set; }
+
         public Regex[] EpisodeMultiPartRegexes { get; private set; }
 
         public void Compile()

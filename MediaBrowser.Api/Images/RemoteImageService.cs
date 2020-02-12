@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -16,6 +16,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Images
 {
@@ -108,13 +109,20 @@ namespace MediaBrowser.Api.Images
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
 
-        private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
 
-        public RemoteImageService(IProviderManager providerManager, IDtoService dtoService, IServerApplicationPaths appPaths, IHttpClient httpClient, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public RemoteImageService(
+            ILogger<RemoteImageService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IProviderManager providerManager,
+            IServerApplicationPaths appPaths,
+            IHttpClient httpClient,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _providerManager = providerManager;
-            _dtoService = dtoService;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
@@ -266,11 +274,9 @@ namespace MediaBrowser.Api.Images
 
                 Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
                 using (var stream = result.Content)
+                using (var filestream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
                 {
-                    using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                    {
-                        await stream.CopyToAsync(filestream).ConfigureAwait(false);
-                    }
+                    await stream.CopyToAsync(filestream).ConfigureAwait(false);
                 }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));

@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
@@ -33,10 +32,10 @@ namespace MediaBrowser.Controller.Entities
             PhysicalFolderIds = Array.Empty<Guid>();
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
         public override bool CanDelete()
@@ -144,10 +143,10 @@ namespace MediaBrowser.Controller.Entities
         /// Allow different display preferences for each collection folder
         /// </summary>
         /// <value>The display prefs id.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override Guid DisplayPreferencesId => Id;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string[] PhysicalLocations => PhysicalLocationsList;
 
         public override bool IsSaveLocalMetadataEnabled()
@@ -172,7 +171,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var locations = PhysicalLocations;
 
-                var newLocations = CreateResolveArgs(new DirectoryService(Logger, FileSystem), false).PhysicalLocations;
+                var newLocations = CreateResolveArgs(new DirectoryService(FileSystem), false).PhysicalLocations;
 
                 if (!locations.SequenceEqual(newLocations))
                 {
@@ -311,7 +310,7 @@ namespace MediaBrowser.Controller.Entities
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The actual children.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override IEnumerable<BaseItem> Children => GetActualChildren();
 
         public IEnumerable<BaseItem> GetActualChildren()
@@ -361,7 +360,7 @@ namespace MediaBrowser.Controller.Entities
             return result;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
     }
 }

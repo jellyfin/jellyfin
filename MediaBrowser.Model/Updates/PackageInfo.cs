@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Class PackageInfo
+    /// Class PackageInfo.
     /// </summary>
     public class PackageInfo
     {
@@ -150,7 +151,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the versions.
         /// </summary>
         /// <value>The versions.</value>
-        public PackageVersionInfo[] versions { get; set; }
+        public IReadOnlyList<PackageVersionInfo> versions { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable in application store].
@@ -169,7 +170,7 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         public PackageInfo()
         {
-            versions = new PackageVersionInfo[] { };
+            versions = Array.Empty<PackageVersionInfo>();
         }
     }
 }

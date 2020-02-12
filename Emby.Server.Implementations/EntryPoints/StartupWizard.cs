@@ -8,21 +8,28 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
-    /// Class StartupWizard
+    /// Class StartupWizard.
     /// </summary>
     public class StartupWizard : IServerEntryPoint
     {
         /// <summary>
-        /// The _app host
+        /// The app host.
         /// </summary>
         private readonly IServerApplicationHost _appHost;
+
         /// <summary>
-        /// The _user manager
+        /// The user manager.
         /// </summary>
         private readonly ILogger _logger;
 
         private IServerConfigurationManager _config;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StartupWizard"/> class.
+        /// </summary>
+        /// <param name="appHost">The application host.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="config">The configuration manager.</param>
         public StartupWizard(IServerApplicationHost appHost, ILogger logger, IServerConfigurationManager config)
         {
             _appHost = appHost;
@@ -30,9 +37,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _config = config;
         }
 
-        /// <summary>
-        /// Runs this instance.
-        /// </summary>
+        /// <inheritdoc />
         public Task RunAsync()
         {
             if (!_appHost.CanLaunchWebBrowser)
@@ -57,9 +62,7 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
         }

@@ -2,6 +2,8 @@
 CONFIG := Release
 TERM := xterm
 SHELL := /bin/bash
+WEB_TARGET := $(CURDIR)/MediaBrowser.WebDashboard/jellyfin-web
+WEB_VERSION := $(shell sed -n -e 's/^version: "\(.*\)"/\1/p' $(CURDIR)/build.yaml)
 
 HOST_ARCH := $(shell arch)
 BUILD_ARCH := ${DEB_HOST_MULTIARCH}
@@ -39,12 +41,25 @@ override_dh_auto_test:
 override_dh_clistrip:
 
 override_dh_auto_build:
+	echo $(WEB_VERSION)
+	# Clone down and build Web frontend
+	mkdir -p $(WEB_TARGET)
+	wget -O web-src.tgz https://github.com/jellyfin/jellyfin-web/archive/v$(WEB_VERSION).tar.gz || wget -O web-src.tgz https://github.com/jellyfin/jellyfin-web/archive/master.tar.gz
+	mkdir -p $(CURDIR)/web
+	tar -xzf web-src.tgz -C $(CURDIR)/web/ --strip 1
+	cd $(CURDIR)/web/ && npm install yarn
+	cd $(CURDIR)/web/ && node_modules/yarn/bin/yarn install
+	mv $(CURDIR)/web/dist/* $(WEB_TARGET)/
+	# Build the application
 	dotnet publish --configuration $(CONFIG) --output='$(CURDIR)/usr/lib/jellyfin/bin' --self-contained --runtime $(DOTNETRUNTIME) \
 		"-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" Jellyfin.Server
 
 override_dh_auto_clean:
 	dotnet clean -maxcpucount:1 --configuration $(CONFIG) Jellyfin.Server || true
+	rm -f  '$(CURDIR)/web-src.tgz'
 	rm -rf '$(CURDIR)/usr'
+	rm -rf '$(CURDIR)/web'
+	rm -rf '$(WEB_TARGET)'
 
 # Force the service name to jellyfin even if we're building jellyfin-nightly
 override_dh_installinit:

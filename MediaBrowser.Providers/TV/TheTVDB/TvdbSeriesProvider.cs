@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -170,11 +169,16 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             return result?.Data.First().Id.ToString();
         }
 
+        /// <summary>
+        /// Check whether a dictionary of provider IDs includes an entry for a valid TV metadata provider.
+        /// </summary>
+        /// <param name="seriesProviderIds">The dictionary to check.</param>
+        /// <returns>True, if the dictionary contains a valid TV provider ID, otherwise false.</returns>
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            return seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out _) ||
-                   seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out _) ||
-                   seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out _);
+            return seriesProviderIds.ContainsKey(MetadataProviders.Tvdb.ToString()) ||
+                   seriesProviderIds.ContainsKey(MetadataProviders.Imdb.ToString()) ||
+                   seriesProviderIds.ContainsKey(MetadataProviders.Zap2It.ToString());
         }
 
         /// <summary>

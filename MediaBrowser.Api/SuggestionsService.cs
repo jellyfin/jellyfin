@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -8,6 +9,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -39,7 +41,15 @@ namespace MediaBrowser.Api
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
 
-        public SuggestionsService(IDtoService dtoService, IAuthorizationContext authContext, IUserManager userManager, ILibraryManager libraryManager)
+        public SuggestionsService(
+            ILogger<SuggestionsService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IDtoService dtoService,
+            IAuthorizationContext authContext,
+            IUserManager userManager,
+            ILibraryManager libraryManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _dtoService = dtoService;
             _authContext = authContext;

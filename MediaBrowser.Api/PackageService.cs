@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Updates;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -118,12 +118,15 @@ namespace MediaBrowser.Api
     public class PackageService : BaseApiService
     {
         private readonly IInstallationManager _installationManager;
-        private readonly IApplicationHost _appHost;
 
-        public PackageService(IInstallationManager installationManager, IApplicationHost appHost)
+        public PackageService(
+            ILogger<PackageService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IInstallationManager installationManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _installationManager = installationManager;
-            _appHost = appHost;
         }
 
         /// <summary>
@@ -131,18 +134,13 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        ///
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
         public object Get(GetPackage request)
         {
-            var packages = _installationManager.GetAvailablePackages(CancellationToken.None, applicationVersion: typeof(PackageService).Assembly.GetName().Version).Result;
-
-            var result = packages.FirstOrDefault(p => string.Equals(p.guid, request.AssemblyGuid ?? "none", StringComparison.OrdinalIgnoreCase))
-                         ?? packages.FirstOrDefault(p => p.name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
+            var packages = _installationManager.GetAvailablePackages().GetAwaiter().GetResult();
+            var result = _installationManager.FilterPackages(
+                packages,
+                request.Name,
+                string.IsNullOrEmpty(request.AssemblyGuid) ? default : Guid.Parse(request.AssemblyGuid)).FirstOrDefault();
 
             return ToOptimizedResult(result);
         }
@@ -154,18 +152,13 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetPackages request)
         {
-            IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages(CancellationToken.None, false, request.PackageType, typeof(PackageService).Assembly.GetName().Version).ConfigureAwait(false);
+            IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(request.TargetSystems))
             {
                 var apps = request.TargetSystems.Split(',').Select(i => (PackageTargetSystem)Enum.Parse(typeof(PackageTargetSystem), i, true));
 
                 packages = packages.Where(p => apps.Contains(p.targetSystem));
-            }
-
-            if (request.IsPremium.HasValue)
-            {
-                packages = packages.Where(p => p.isPremium == request.IsPremium.Value);
             }
 
             if (request.IsAdult.HasValue)
@@ -188,13 +181,21 @@ namespace MediaBrowser.Api
         /// <exception cref="ResourceNotFoundException"></exception>
         public async Task Post(InstallPackage request)
         {
-            var package = string.IsNullOrEmpty(request.Version) ?
-                await _installationManager.GetLatestCompatibleVersion(request.Name, request.AssemblyGuid, typeof(PackageService).Assembly.GetName().Version, request.UpdateClass).ConfigureAwait(false) :
-                await _installationManager.GetPackage(request.Name, request.AssemblyGuid, request.UpdateClass, Version.Parse(request.Version)).ConfigureAwait(false);
+            var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
+            var package = _installationManager.GetCompatibleVersions(
+                    packages,
+                    request.Name,
+                    string.IsNullOrEmpty(request.AssemblyGuid) ? Guid.Empty : Guid.Parse(request.AssemblyGuid),
+                    string.IsNullOrEmpty(request.Version) ? null : Version.Parse(request.Version),
+                    request.UpdateClass).FirstOrDefault();
 
             if (package == null)
             {
-                throw new ResourceNotFoundException(string.Format("Package not found: {0}", request.Name));
+                throw new ResourceNotFoundException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Package not found: {0}",
+                        request.Name));
             }
 
             await _installationManager.InstallPackage(package);

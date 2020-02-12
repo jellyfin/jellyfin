@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -26,8 +28,6 @@ namespace MediaBrowser.Providers.Music
 
         public static AudioDbAlbumProvider Current;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClient httpClient, IJsonSerializer json)
         {
             _config = config;
@@ -38,11 +38,18 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
-        {
-            return Task.FromResult((IEnumerable<RemoteSearchResult>)new List<RemoteSearchResult>());
-        }
+        /// <inheritdoc />
+        public string Name => "TheAudioDB";
 
+        /// <inheritdoc />
+        // After music brainz
+        public int Order => 1;
+
+        /// <inheritdoc />
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
+            => Task.FromResult(Enumerable.Empty<RemoteSearchResult>());
+
+        /// <inheritdoc />
         public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicAlbum>();
@@ -77,7 +84,7 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrEmpty(result.intYearReleased))
             {
-                item.ProductionYear = int.Parse(result.intYearReleased, _usCulture);
+                item.ProductionYear = int.Parse(result.intYearReleased, CultureInfo.InvariantCulture);
             }
 
             if (!string.IsNullOrEmpty(result.strGenre))
@@ -126,8 +133,6 @@ namespace MediaBrowser.Providers.Music
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
-        public string Name => "TheAudioDB";
-
         internal Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
         {
             var xmlPath = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
@@ -155,20 +160,17 @@ namespace MediaBrowser.Providers.Music
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            using (var httpResponse = await _httpClient.SendAsync(new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken
-
-            }, "GET").ConfigureAwait(false))
-            {
-                using (var response = httpResponse.Content)
+            using (var httpResponse = await _httpClient.SendAsync(
+                new HttpRequestOptions
                 {
-                    using (var xmlFileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                    {
-                        await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
-                    }
-                }
+                    Url = url,
+                    CancellationToken = cancellationToken
+                },
+                HttpMethod.Get).ConfigureAwait(false))
+            using (var response = httpResponse.Content)
+            using (var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
+            {
+                await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
             }
         }
 
@@ -192,8 +194,6 @@ namespace MediaBrowser.Providers.Music
 
             return Path.Combine(dataPath, "album.json");
         }
-        // After music brainz
-        public int Order => 1;
 
         public class Album
         {
@@ -242,6 +242,7 @@ namespace MediaBrowser.Providers.Music
             public List<Album> album { get; set; }
         }
 
+        /// <inheritdoc />
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

@@ -19,16 +19,17 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class ChapterImagesTask
+    /// Class ChapterImagesTask.
     /// </summary>
     public class ChapterImagesTask : IScheduledTask
     {
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
+
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
@@ -53,12 +54,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] {
-
+            return new[]
+            {
                 new TaskTriggerInfo
                 {
                     Type = TaskTriggerInfo.TriggerDaily,
@@ -69,7 +70,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -88,7 +89,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 SourceTypes = new SourceType[] { SourceType.Library },
                 HasChapterImages = false,
                 IsVirtualItem = false
-
             })
                 .OfType<Video>()
                 .ToList();
@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 previouslyFailedImages = new List<string>();
             }
 
-            var directoryService = new DirectoryService(_logger, _fileSystem);
+            var directoryService = new DirectoryService(_fileSystem);
 
             foreach (var video in videos)
             {
@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
-        public string Name => "Chapter image extraction";
+        public string Name => "Extract Chapter Images";
 
         public string Description => "Creates thumbnails for videos that have chapters.";
 

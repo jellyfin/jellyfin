@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Entities
         public LinkedChildType Type { get; set; }
         public string LibraryItemId { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string Id { get; set; }
 
         /// <summary>

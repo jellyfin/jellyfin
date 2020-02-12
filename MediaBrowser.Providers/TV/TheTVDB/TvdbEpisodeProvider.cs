@@ -35,9 +35,8 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         {
             var list = new List<RemoteSearchResult>();
 
-            // The search query must either provide an episode number or date
-            if (!searchInfo.IndexNumber.HasValue
-                || !searchInfo.PremiereDate.HasValue
+            // Either an episode number or date must be provided; and the dictionary of provider ids must be valid
+            if ((searchInfo.IndexNumber == null && searchInfo.PremiereDate == null)
                 || !TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds))
             {
                 return list;

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -31,12 +32,6 @@ namespace MediaBrowser.Api.Playback
     public abstract class BaseStreamingService : BaseApiService
     {
         protected virtual bool EnableOutputInSubFolder => false;
-
-        /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        protected IServerConfigurationManager ServerConfigurationManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the user manager.
@@ -68,8 +63,6 @@ namespace MediaBrowser.Api.Playback
 
         protected IDeviceManager DeviceManager { get; private set; }
 
-        protected ISubtitleEncoder SubtitleEncoder { get; private set; }
-
         protected IMediaSourceManager MediaSourceManager { get; private set; }
 
         protected IJsonSerializer JsonSerializer { get; private set; }
@@ -88,33 +81,34 @@ namespace MediaBrowser.Api.Playback
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
         protected BaseStreamingService(
-            IServerConfigurationManager serverConfig,
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
-            IAuthorizationContext authorizationContext)
+            IAuthorizationContext authorizationContext,
+            EncodingHelper encodingHelper)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            ServerConfigurationManager = serverConfig;
             UserManager = userManager;
             LibraryManager = libraryManager;
             IsoManager = isoManager;
             MediaEncoder = mediaEncoder;
             FileSystem = fileSystem;
             DlnaManager = dlnaManager;
-            SubtitleEncoder = subtitleEncoder;
             DeviceManager = deviceManager;
             MediaSourceManager = mediaSourceManager;
             JsonSerializer = jsonSerializer;
             AuthorizationContext = authorizationContext;
 
-            EncodingHelper = new EncodingHelper(MediaEncoder, FileSystem, SubtitleEncoder);
+            EncodingHelper = encodingHelper;
         }
 
         /// <summary>
@@ -141,7 +135,7 @@ namespace MediaBrowser.Api.Playback
 
             var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             var ext = outputFileExtension.ToLowerInvariant();
-            var folder = ServerConfigurationManager.ApplicationPaths.TranscodingTempPath;
+            var folder = ServerConfigurationManager.GetTranscodePath();
 
             if (EnableOutputInSubFolder)
             {
@@ -150,8 +144,6 @@ namespace MediaBrowser.Api.Playback
 
             return Path.Combine(folder, filename + ext);
         }
-
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         protected virtual string GetDefaultEncoderPreset()
         {
@@ -215,7 +207,7 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+            var encodingOptions = ServerConfigurationManager.GetEncodingOptions();
 
             var process = new Process()
             {
@@ -269,7 +261,7 @@ namespace MediaBrowser.Api.Playback
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, logFilePrefix + "-" + Guid.NewGuid() + ".txt");
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            Stream logStream = FileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true);
+            Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(Request.AbsoluteUri + Environment.NewLine + Environment.NewLine + JsonSerializer.SerializeToString(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await logStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
@@ -289,16 +281,21 @@ namespace MediaBrowser.Api.Playback
                 throw;
             }
 
+            Logger.LogDebug("Launched ffmpeg process");
             state.TranscodingJob = transcodingJob;
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             _ = new JobLogger(Logger).StartStreamingLog(state, process.StandardError.BaseStream, logStream);
 
             // Wait for the file to exist before proceeeding
-            while (!File.Exists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)
+            var ffmpegTargetFile = state.WaitForPath ?? outputPath;
+            Logger.LogDebug("Waiting for the creation of {0}", ffmpegTargetFile);
+            while (!File.Exists(ffmpegTargetFile) && !transcodingJob.HasExited)
             {
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
+
+            Logger.LogDebug("File {0} created or transcoding has finished", ffmpegTargetFile);
 
             if (state.IsInputVideo && transcodingJob.Type == TranscodingJobType.Progressive && !transcodingJob.HasExited)
             {
@@ -314,6 +311,7 @@ namespace MediaBrowser.Api.Playback
             {
                 StartThrottler(state, transcodingJob);
             }
+            Logger.LogDebug("StartFfMpeg() finished successfully");
 
             return transcodingJob;
         }
@@ -581,8 +579,8 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
-        /// Parses query parameters as StreamOptions
-        /// <summary>
+        /// Parses query parameters as StreamOptions.
+        /// </summary>
         /// <param name="request">The stream request.</param>
         private void ParseStreamOptions(StreamRequest request)
         {
@@ -761,13 +759,13 @@ namespace MediaBrowser.Api.Playback
 
                 if (mediaSource == null)
                 {
-                    var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false)).ToList();
+                    var mediaSources = await MediaSourceManager.GetPlaybackMediaSources(LibraryManager.GetItemById(request.Id), null, false, false, cancellationToken).ConfigureAwait(false);
 
                     mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                        ? mediaSources[0]
                        : mediaSources.Find(i => string.Equals(i.Id, request.MediaSourceId));
 
-                    if (mediaSource == null && request.MediaSourceId.Equals(request.Id))
+                    if (mediaSource == null && Guid.Parse(request.MediaSourceId) == request.Id)
                     {
                         mediaSource = mediaSources[0];
                     }
@@ -839,7 +837,7 @@ namespace MediaBrowser.Api.Playback
                 ? GetOutputFileExtension(state)
                 : ('.' + state.OutputContainer);
 
-            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+            var encodingOptions = ServerConfigurationManager.GetEncodingOptions();
 
             state.OutputFilePath = GetOutputFilePath(state, encodingOptions, ext);
 

@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -42,6 +45,11 @@ namespace Emby.Server.Implementations.Library
         {
             var user = _userManager.GetUserById(query.UserId);
 
+            if (user == null)
+            {
+                throw new ArgumentException("User Id specified in the query does not exist.", nameof(query));
+            }
+
             var folders = _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
                 .OfType<Folder>()
@@ -54,7 +62,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var folder in folders)
             {
                 var collectionFolder = folder as ICollectionFolder;
-                var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
+                var folderViewType = collectionFolder?.CollectionType;
 
                 if (UserView.IsUserSpecific(folder))
                 {
@@ -130,16 +138,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     var index = orders.IndexOf(i.Id.ToString("N", CultureInfo.InvariantCulture));
 
-                    if (index == -1)
+                    if (index == -1
+                        && i is UserView view
+                        && view.DisplayParentId != Guid.Empty)
                     {
-                        var view = i as UserView;
-                        if (view != null)
-                        {
-                            if (!view.DisplayParentId.Equals(Guid.Empty))
-                            {
-                                index = orders.IndexOf(view.DisplayParentId.ToString("N", CultureInfo.InvariantCulture));
-                            }
-                        }
+                        index = orders.IndexOf(view.DisplayParentId.ToString("N", CultureInfo.InvariantCulture));
                     }
 
                     return index == -1 ? int.MaxValue : index;
@@ -340,7 +343,7 @@ namespace Emby.Server.Implementations.Library
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
+                OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
                 IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,

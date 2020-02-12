@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Entities
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
         public override bool CanDelete()
@@ -63,13 +63,13 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool EnableAlphaNumericSorting => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAncestors => false;
 
         public static string GetPath(string name)
@@ -133,59 +133,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return hasChanges;
-        }
-    }
-
-    /// <summary>
-    /// This is the small Person stub that is attached to BaseItems
-    /// </summary>
-    public class PersonInfo : IHasProviderIds
-    {
-        public PersonInfo()
-        {
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        public Guid ItemId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name { get; set; }
-        /// <summary>
-        /// Gets or sets the role.
-        /// </summary>
-        /// <value>The role.</value>
-        public string Role { get; set; }
-        /// <summary>
-        /// Gets or sets the type.
-        /// </summary>
-        /// <value>The type.</value>
-        public string Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the sort order - ascending
-        /// </summary>
-        /// <value>The sort order.</value>
-        public int? SortOrder { get; set; }
-
-        public string ImageUrl { get; set; }
-
-        public Dictionary<string, string> ProviderIds { get; set; }
-
-        /// <summary>
-        /// Returns a <see cref="string" /> that represents this instance.
-        /// </summary>
-        /// <returns>A <see cref="string" /> that represents this instance.</returns>
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        public bool IsType(string type)
-        {
-            return string.Equals(Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(Role, type, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

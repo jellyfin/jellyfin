@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
@@ -28,7 +27,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -50,6 +48,21 @@ namespace Emby.Server.Implementations.Data
 
         private readonly TypeMapper _typeMapper;
         private readonly JsonSerializerOptions _jsonOptions;
+
+        static SqliteItemRepository()
+        {
+            var queryPrefixText = new StringBuilder();
+            queryPrefixText.Append("insert into mediaattachments (");
+            foreach (var column in _mediaAttachmentSaveColumns)
+            {
+                queryPrefixText.Append(column)
+                    .Append(',');
+            }
+
+            queryPrefixText.Length -= 1;
+            queryPrefixText.Append(") values ");
+            _mediaAttachmentInsertPrefix = queryPrefixText.ToString();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -94,6 +107,8 @@ namespace Emby.Server.Implementations.Data
         {
             const string CreateMediaStreamsTableCommand
                     = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+            const string CreateMediaAttachmentsTableCommand
+                    = "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))";
 
             string[] queries =
             {
@@ -116,6 +131,7 @@ namespace Emby.Server.Implementations.Data
                 "create table if not exists " + ChaptersTableName + " (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
 
                 CreateMediaStreamsTableCommand,
+                CreateMediaAttachmentsTableCommand,
 
                 "pragma shrink_memory"
             };
@@ -423,6 +439,19 @@ namespace Emby.Server.Implementations.Data
             "ColorTransfer"
         };
 
+        private static readonly string[] _mediaAttachmentSaveColumns =
+        {
+            "ItemId",
+            "AttachmentIndex",
+            "Codec",
+            "CodecTag",
+            "Comment",
+            "Filename",
+            "MIMEType"
+        };
+
+        private static readonly string _mediaAttachmentInsertPrefix;
+
         private static string GetSaveItemCommandText()
         {
             var saveColumns = new []
@@ -549,7 +578,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var saveImagesStatement = base.PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
                     {
-                        saveImagesStatement.TryBind("@Id", item.Id.ToGuidBlob());
+                        saveImagesStatement.TryBind("@Id", item.Id.ToByteArray());
                         saveImagesStatement.TryBind("@Images", SerializeImages(item));
 
                         saveImagesStatement.MoveNext();
@@ -659,12 +688,14 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveItem(BaseItem item, BaseItem topParent, string userDataKey, IStatement saveItemStatement)
         {
-            saveItemStatement.TryBind("@guid", item.Id);
-            saveItemStatement.TryBind("@type", item.GetType().FullName);
+            Type type = item.GetType();
 
-            if (TypeRequiresDeserialization(item.GetType()))
+            saveItemStatement.TryBind("@guid", item.Id);
+            saveItemStatement.TryBind("@type", type.FullName);
+
+            if (TypeRequiresDeserialization(type))
             {
-                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, _jsonOptions));
+                saveItemStatement.TryBind("@data", JsonSerializer.SerializeToUtf8Bytes(item, type, _jsonOptions));
             }
             else
             {
@@ -1178,7 +1209,7 @@ namespace Emby.Server.Implementations.Data
         {
             if (id == Guid.Empty)
             {
-                throw new ArgumentException(nameof(id), "Guid can't be empty");
+                throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
             CheckDisposed();
@@ -1989,7 +2020,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(chapters));
             }
 
-            var idBlob = id.ToGuidBlob();
+            var idBlob = id.ToByteArray();
 
             using (var connection = GetConnection())
             {
@@ -2832,8 +2863,8 @@ namespace Emby.Server.Implementations.Data
                             BindSimilarParams(query, statement);
                             BindSearchParams(query, statement);
 
-                                // Running this again will bind the params
-                                GetWhereClauses(query, statement);
+                            // Running this again will bind the params
+                            GetWhereClauses(query, statement);
 
                             var hasEpisodeAttributes = HasEpisodeAttributes(query);
                             var hasServiceName = HasServiceName(query);
@@ -2882,14 +2913,14 @@ namespace Emby.Server.Implementations.Data
 
         private string GetOrderByText(InternalItemsQuery query)
         {
+            var orderBy = query.OrderBy;
             if (string.IsNullOrEmpty(query.SearchTerm))
             {
-                int oldLen = query.OrderBy.Length;
-
-                if (query.SimilarTo != null && oldLen == 0)
+                int oldLen = orderBy.Count;
+                if (oldLen == 0 && query.SimilarTo != null)
                 {
                     var arr = new (string, SortOrder)[oldLen + 2];
-                    query.OrderBy.CopyTo(arr, 0);
+                    orderBy.CopyTo(arr, 0);
                     arr[oldLen] = ("SimilarityScore", SortOrder.Descending);
                     arr[oldLen + 1] = (ItemSortBy.Random, SortOrder.Ascending);
                     query.OrderBy = arr;
@@ -2897,16 +2928,15 @@ namespace Emby.Server.Implementations.Data
             }
             else
             {
-                query.OrderBy = new []
+                query.OrderBy = new[]
                 {
                     ("SearchScore", SortOrder.Descending),
                     (ItemSortBy.SortName, SortOrder.Ascending)
                 };
             }
 
-            var orderBy = query.OrderBy;
 
-            if (orderBy.Length == 0)
+            if (orderBy.Count == 0)
             {
                 return string.Empty;
             }
@@ -2914,14 +2944,8 @@ namespace Emby.Server.Implementations.Data
             return " ORDER BY " + string.Join(",", orderBy.Select(i =>
             {
                 var columnMap = MapOrderByField(i.Item1, query);
-                var columnAscending = i.Item2 == SortOrder.Ascending;
-                const bool enableOrderInversion = false;
-                if (columnMap.Item2 && enableOrderInversion)
-                {
-                    columnAscending = !columnAscending;
-                }
 
-                var sortOrder = columnAscending ? "ASC" : "DESC";
+                var sortOrder = i.Item2 == SortOrder.Ascending ? "ASC" : "DESC";
 
                 return columnMap.Item1 + " " + sortOrder;
             }));
@@ -3768,7 +3792,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, personId.ToGuidBlob());
+                        statement.TryBind(paramName, personId.ToByteArray());
                     }
                     index++;
                 }
@@ -3979,7 +4003,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidBlob());
+                        statement.TryBind(paramName, artistId.ToByteArray());
                     }
                     index++;
                 }
@@ -3998,7 +4022,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=1))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidBlob());
+                        statement.TryBind(paramName, artistId.ToByteArray());
                     }
                     index++;
                 }
@@ -4017,7 +4041,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("((select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from itemvalues where ItemId=Guid and Type=0) AND (select CleanName from TypedBaseItems where guid=" + paramName + ") not in (select CleanValue from itemvalues where ItemId=Guid and Type=1))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidBlob());
+                        statement.TryBind(paramName, artistId.ToByteArray());
                     }
                     index++;
                 }
@@ -4036,7 +4060,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("Album in (select Name from typedbaseitems where guid=" + paramName + ")");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, albumId.ToGuidBlob());
+                        statement.TryBind(paramName, albumId.ToByteArray());
                     }
                     index++;
                 }
@@ -4055,7 +4079,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(guid not in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type<=1))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, artistId.ToGuidBlob());
+                        statement.TryBind(paramName, artistId.ToByteArray());
                     }
                     index++;
                 }
@@ -4074,7 +4098,7 @@ namespace Emby.Server.Implementations.Data
                     clauses.Add("(guid in (select itemid from itemvalues where CleanValue = (select CleanName from TypedBaseItems where guid=" + paramName + ") and Type=2))");
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, genreId.ToGuidBlob());
+                        statement.TryBind(paramName, genreId.ToByteArray());
                     }
                     index++;
                 }
@@ -4145,7 +4169,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (statement != null)
                     {
-                        statement.TryBind(paramName, studioId.ToGuidBlob());
+                        statement.TryBind(paramName, studioId.ToByteArray());
                     }
                     index++;
                 }
@@ -4600,10 +4624,20 @@ namespace Emby.Server.Implementations.Data
 
             if (query.ExcludeInheritedTags.Length > 0)
             {
-                var tagValues = query.ExcludeInheritedTags.Select(i => "'" + GetCleanValue(i) + "'");
-                var tagValuesList = string.Join(",", tagValues);
-
-                whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + tagValuesList + ")) is null)");
+                var paramName = "@ExcludeInheritedTags";
+                if (statement == null)
+                {
+                    int index = 0;
+                    string excludedTags = string.Join(",", query.ExcludeInheritedTags.Select(t => paramName + index++));
+                    whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
+                }
+                else
+                {
+                    for (int index = 0; index < query.ExcludeInheritedTags.Length; index++)
+                    {
+                        statement.TryBind(paramName + index, GetCleanValue(query.ExcludeInheritedTags[index]));
+                    }
+                }
             }
 
             if (query.SeriesStatuses.Length > 0)
@@ -4921,7 +4955,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 connection.RunInTransaction(db =>
                 {
-                    var idBlob = id.ToGuidBlob();
+                    var idBlob = id.ToByteArray();
 
                     // Delete people
                     ExecuteWithSingleParam(db, "delete from People where ItemId=@Id", idBlob);
@@ -5040,7 +5074,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 whereClauses.Add("ItemId=@ItemId");
                 if (statement != null)
                 {
-                    statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
+                    statement.TryBind("@ItemId", query.ItemId.ToByteArray());
                 }
             }
             if (!query.AppearsInItemId.Equals(Guid.Empty))
@@ -5048,7 +5082,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 whereClauses.Add("Name in (Select Name from People where ItemId=@AppearsInItemId)");
                 if (statement != null)
                 {
-                    statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToGuidBlob());
+                    statement.TryBind("@AppearsInItemId", query.AppearsInItemId.ToByteArray());
                 }
             }
             var queryPersonTypes = query.PersonTypes.Where(IsValidPersonType).ToList();
@@ -5117,7 +5151,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var itemIdBlob = itemId.ToGuidBlob();
+            var itemIdBlob = itemId.ToByteArray();
 
             // First delete
             deleteAncestorsStatement.Reset();
@@ -5151,7 +5185,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                     var ancestorId = ancestorIds[i];
 
-                    statement.TryBind("@AncestorId" + index, ancestorId.ToGuidBlob());
+                    statement.TryBind("@AncestorId" + index, ancestorId.ToByteArray());
                     statement.TryBind("@AncestorIdText" + index, ancestorId.ToString("N", CultureInfo.InvariantCulture));
                 }
 
@@ -5616,7 +5650,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             CheckDisposed();
 
-            var guidBlob = itemId.ToGuidBlob();
+            var guidBlob = itemId.ToByteArray();
 
             // First delete
             db.Execute("delete from ItemValues where ItemId=@Id", guidBlob);
@@ -5640,10 +5674,13 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 {
                     if (isSubsequentRow)
                     {
-                        insertText.Append(",");
+                        insertText.Append(',');
                     }
 
-                    insertText.AppendFormat("(@ItemId, @Type{0}, @Value{0}, @CleanValue{0})", i.ToString(CultureInfo.InvariantCulture));
+                    insertText.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        "(@ItemId, @Type{0}, @Value{0}, @CleanValue{0})",
+                        i);
                     isSubsequentRow = true;
                 }
 
@@ -5696,7 +5733,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 connection.RunInTransaction(db =>
                 {
-                    var itemIdBlob = itemId.ToGuidBlob();
+                    var itemIdBlob = itemId.ToByteArray();
 
                     // First delete chapters
                     db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
@@ -5815,7 +5852,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                 using (var statement = PrepareStatement(connection, cmdText))
                 {
-                    statement.TryBind("@ItemId", query.ItemId.ToGuidBlob());
+                    statement.TryBind("@ItemId", query.ItemId.ToByteArray());
 
                     if (query.Type.HasValue)
                     {
@@ -5857,7 +5894,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 connection.RunInTransaction(db =>
                 {
-                    var itemIdBlob = id.ToGuidBlob();
+                    var itemIdBlob = id.ToByteArray();
 
                     // First delete chapters
                     db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);
@@ -6126,6 +6163,176 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 item.localizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.localizedDefault = _localization.GetLocalizedString("Default");
                 item.localizedForced = _localization.GetLocalizedString("Forced");
+            }
+
+            return item;
+        }
+
+        public List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
+        {
+            CheckDisposed();
+
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            var cmdText = "select "
+                        + string.Join(",", _mediaAttachmentSaveColumns)
+                        + " from mediaattachments where"
+                        + " ItemId=@ItemId";
+
+            if (query.Index.HasValue)
+            {
+                cmdText += " AND AttachmentIndex=@AttachmentIndex";
+            }
+
+            cmdText += " order by AttachmentIndex ASC";
+
+            var list = new List<MediaAttachment>();
+            using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, cmdText))
+            {
+                statement.TryBind("@ItemId", query.ItemId.ToByteArray());
+
+                if (query.Index.HasValue)
+                {
+                    statement.TryBind("@AttachmentIndex", query.Index.Value);
+                }
+
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    list.Add(GetMediaAttachment(row));
+                }
+            }
+
+            return list;
+        }
+
+        public void SaveMediaAttachments(
+            Guid id,
+            IReadOnlyList<MediaAttachment> attachments,
+            CancellationToken cancellationToken)
+        {
+            CheckDisposed();
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException(nameof(id));
+            }
+
+            if (attachments == null)
+            {
+                throw new ArgumentNullException(nameof(attachments));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using (var connection = GetConnection())
+            {
+                connection.RunInTransaction(db =>
+                {
+                    var itemIdBlob = id.ToByteArray();
+
+                    db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
+
+                    InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
+
+                }, TransactionMode);
+            }
+        }
+
+        private void InsertMediaAttachments(
+            byte[] idBlob,
+            IReadOnlyList<MediaAttachment> attachments,
+            IDatabaseConnection db,
+            CancellationToken cancellationToken)
+        {
+            const int InsertAtOnce = 10;
+
+            for (var startIndex = 0; startIndex < attachments.Count; startIndex += InsertAtOnce)
+            {
+                var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
+
+                var endIndex = Math.Min(attachments.Count, startIndex + InsertAtOnce);
+
+                for (var i = startIndex; i < endIndex; i++)
+                {
+                    var index = i.ToString(CultureInfo.InvariantCulture);
+                    insertText.Append("(@ItemId, ");
+
+                    foreach (var column in _mediaAttachmentSaveColumns.Skip(1))
+                    {
+                        insertText.Append("@" + column + index + ",");
+                    }
+
+                    insertText.Length -= 1;
+
+                    insertText.Append("),");
+                }
+
+                insertText.Length--;
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                using (var statement = PrepareStatement(db, insertText.ToString()))
+                {
+                    statement.TryBind("@ItemId", idBlob);
+
+                    for (var i = startIndex; i < endIndex; i++)
+                    {
+                        var index = i.ToString(CultureInfo.InvariantCulture);
+
+                        var attachment = attachments[i];
+
+                        statement.TryBind("@AttachmentIndex" + index, attachment.Index);
+                        statement.TryBind("@Codec" + index, attachment.Codec);
+                        statement.TryBind("@CodecTag" + index, attachment.CodecTag);
+                        statement.TryBind("@Comment" + index, attachment.Comment);
+                        statement.TryBind("@FileName" + index, attachment.FileName);
+                        statement.TryBind("@MimeType" + index, attachment.MimeType);
+                    }
+
+                    statement.Reset();
+                    statement.MoveNext();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the attachment.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns>MediaAttachment</returns>
+        private MediaAttachment GetMediaAttachment(IReadOnlyList<IResultSetValue> reader)
+        {
+            var item = new MediaAttachment
+            {
+                Index = reader[1].ToInt()
+            };
+
+            if (reader[2].SQLiteType != SQLiteType.Null)
+            {
+                item.Codec = reader[2].ToString();
+            }
+
+            if (reader[2].SQLiteType != SQLiteType.Null)
+            {
+                item.CodecTag = reader[3].ToString();
+            }
+
+            if (reader[4].SQLiteType != SQLiteType.Null)
+            {
+                item.Comment = reader[4].ToString();
+            }
+
+            if (reader[6].SQLiteType != SQLiteType.Null)
+            {
+                item.FileName = reader[5].ToString();
+            }
+
+            if (reader[6].SQLiteType != SQLiteType.Null)
+            {
+                item.MimeType = reader[6].ToString();
             }
 
             return item;

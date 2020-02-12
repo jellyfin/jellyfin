@@ -1,3 +1,7 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+#nullable enable
+
 using System;
 using System.IO;
 using System.Linq;
@@ -15,7 +19,7 @@ namespace Emby.Naming.TV
             _options = options;
         }
 
-        public EpisodeInfo Resolve(
+        public EpisodeInfo? Resolve(
             string path,
             bool isDirectory,
             bool? isNamed = null,
@@ -23,14 +27,9 @@ namespace Emby.Naming.TV
             bool? supportsAbsoluteNumbers = null,
             bool fillExtendedInfo = true)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
             bool isStub = false;
-            string container = null;
-            string stubType = null;
+            string? container = null;
+            string? stubType = null;
 
             if (!isDirectory)
             {
@@ -38,17 +37,13 @@ namespace Emby.Naming.TV
                 // Check supported extensions
                 if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    var stubResult = StubResolver.ResolveFile(path, _options);
-
-                    isStub = stubResult.IsStub;
-
                     // It's not supported. Check stub extensions
-                    if (!isStub)
+                    if (!StubResolver.TryResolveFile(path, _options, out stubType))
                     {
                         return null;
                     }
 
-                    stubType = stubResult.StubType;
+                    isStub = true;
                 }
 
                 container = extension.TrimStart('.');

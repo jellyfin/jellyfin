@@ -1,4 +1,6 @@
-using System;
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System.Collections.Generic;
 using System.Linq;
 using Emby.Server.Implementations.Images;
@@ -76,7 +78,6 @@ namespace Emby.Server.Implementations.Collections
                 .Where(i => i != null)
                 .GroupBy(x => x.Id)
                 .Select(x => x.First())
-                .OrderBy(i => Guid.NewGuid())
                 .ToList();
         }
 

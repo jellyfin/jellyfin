@@ -182,7 +182,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = _fileSystem.GetFileStream(source, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
+            var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, true);
 
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
@@ -328,7 +328,7 @@ namespace MediaBrowser.Providers.Manager
 
             return GetImageProviders(item, libraryOptions, options,
                     new ImageRefreshOptions(
-                        new DirectoryService(_logger, _fileSystem)),
+                        new DirectoryService(_fileSystem)),
                     includeDisabled)
                 .OfType<IRemoteImageProvider>();
         }
@@ -507,7 +507,7 @@ namespace MediaBrowser.Providers.Manager
 
             var imageProviders = GetImageProviders(dummy, libraryOptions, options,
                                     new ImageRefreshOptions(
-                                        new DirectoryService(_logger, _fileSystem)),
+                                        new DirectoryService(_fileSystem)),
                                     true)
                                 .ToList();
 

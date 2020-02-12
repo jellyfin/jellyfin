@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -121,10 +122,18 @@ namespace MediaBrowser.Api
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _json;
 
-        public ItemLookupService(IProviderManager providerManager, IServerApplicationPaths appPaths, IFileSystem fileSystem, ILibraryManager libraryManager, IJsonSerializer json)
+        public ItemLookupService(
+            ILogger<ItemLookupService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager,
+            IJsonSerializer json)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _providerManager = providerManager;
-            _appPaths = appPaths;
+            _appPaths = serverConfigurationManager.ApplicationPaths;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _json = json;
@@ -227,15 +236,17 @@ namespace MediaBrowser.Api
             //item.ProductionYear = request.ProductionYear;
             //item.Name = request.Name;
 
-            return _providerManager.RefreshFullItem(item, new MetadataRefreshOptions(new DirectoryService(Logger, _fileSystem))
-            {
-                MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                ReplaceAllMetadata = true,
-                ReplaceAllImages = request.ReplaceAllImages,
-                SearchResult = request
-
-            }, CancellationToken.None);
+            return _providerManager.RefreshFullItem(
+                item,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ReplaceAllMetadata = true,
+                    ReplaceAllImages = request.ReplaceAllImages,
+                    SearchResult = request
+                },
+                CancellationToken.None);
         }
 
         /// <summary>
@@ -294,11 +305,9 @@ namespace MediaBrowser.Api
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
+            using (var filestream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
             {
-                using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                {
-                    await stream.CopyToAsync(filestream).ConfigureAwait(false);
-                }
+                await stream.CopyToAsync(filestream).ConfigureAwait(false);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
@@ -311,9 +320,6 @@ namespace MediaBrowser.Api
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
         private string GetFullCachePath(string filename)
-        {
-            return Path.Combine(_appPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
-        }
-
+            => Path.Combine(_appPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
     }
 }

@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -116,7 +119,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var statement = db.PrepareStatement("insert into LocalUsersv2 (guid, data) values (@guid, @data)"))
                     {
-                        statement.TryBind("@guid", user.Id.ToGuidBlob());
+                        statement.TryBind("@guid", user.Id.ToByteArray());
                         statement.TryBind("@data", serialized);
 
                         statement.MoveNext();

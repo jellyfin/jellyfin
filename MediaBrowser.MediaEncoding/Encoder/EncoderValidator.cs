@@ -18,7 +18,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_qsv",
             "hevc_qsv",
             "mpeg2_qsv",
+            "mpeg2_mmal",
+            "mpeg4_mmal",
             "vc1_qsv",
+            "vc1_mmal",
             "h264_cuvid",
             "hevc_cuvid",
             "dts",
@@ -26,6 +29,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "aac",
             "mp3",
             "h264",
+            "h264_mmal",
             "hevc"
         };
 
@@ -51,7 +55,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_vaapi",
             "hevc_vaapi",
             "h264_v4l2m2m",
-            "ac3"
+            "ac3",
+            "h264_amf",
+            "hevc_amf"
         };
 
         // Try and use the individual library versions to determine a FFmpeg version

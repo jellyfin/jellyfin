@@ -16,33 +16,46 @@ using MediaBrowser.Model.Tasks;
 namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
-    /// Class WebSocketEvents
+    /// Class WebSocketEvents.
     /// </summary>
     public class ServerEventNotifier : IServerEntryPoint
     {
         /// <summary>
-        /// The _user manager
+        /// The user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _installation manager
+        /// The installation manager.
         /// </summary>
         private readonly IInstallationManager _installationManager;
 
         /// <summary>
-        /// The _kernel
+        /// The kernel.
         /// </summary>
         private readonly IServerApplicationHost _appHost;
 
         /// <summary>
-        /// The _task manager
+        /// The task manager.
         /// </summary>
         private readonly ITaskManager _taskManager;
 
         private readonly ISessionManager _sessionManager;
 
-        public ServerEventNotifier(IServerApplicationHost appHost, IUserManager userManager, IInstallationManager installationManager, ITaskManager taskManager, ISessionManager sessionManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServerEventNotifier"/> class.
+        /// </summary>
+        /// <param name="appHost">The application host.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="installationManager">The installation manager.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        public ServerEventNotifier(
+            IServerApplicationHost appHost,
+            IUserManager userManager,
+            IInstallationManager installationManager,
+            ITaskManager taskManager,
+            ISessionManager sessionManager)
         {
             _userManager = userManager;
             _installationManager = installationManager;
@@ -51,47 +64,48 @@ namespace Emby.Server.Implementations.EntryPoints
             _sessionManager = sessionManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
-            _userManager.UserDeleted += userManager_UserDeleted;
-            _userManager.UserUpdated += userManager_UserUpdated;
-            _userManager.UserPolicyUpdated += _userManager_UserPolicyUpdated;
-            _userManager.UserConfigurationUpdated += _userManager_UserConfigurationUpdated;
+            _userManager.UserDeleted += OnUserDeleted;
+            _userManager.UserUpdated += OnUserUpdated;
+            _userManager.UserPolicyUpdated += OnUserPolicyUpdated;
+            _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
 
-            _appHost.HasPendingRestartChanged += kernel_HasPendingRestartChanged;
+            _appHost.HasPendingRestartChanged += OnHasPendingRestartChanged;
 
-            _installationManager.PluginUninstalled += InstallationManager_PluginUninstalled;
-            _installationManager.PackageInstalling += _installationManager_PackageInstalling;
-            _installationManager.PackageInstallationCancelled += _installationManager_PackageInstallationCancelled;
-            _installationManager.PackageInstallationCompleted += _installationManager_PackageInstallationCompleted;
-            _installationManager.PackageInstallationFailed += _installationManager_PackageInstallationFailed;
+            _installationManager.PluginUninstalled += OnPluginUninstalled;
+            _installationManager.PackageInstalling += OnPackageInstalling;
+            _installationManager.PackageInstallationCancelled += OnPackageInstallationCancelled;
+            _installationManager.PackageInstallationCompleted += OnPackageInstallationCompleted;
+            _installationManager.PackageInstallationFailed += OnPackageInstallationFailed;
 
-            _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+            _taskManager.TaskCompleted += OnTaskCompleted;
 
             return Task.CompletedTask;
         }
 
-        void _installationManager_PackageInstalling(object sender, InstallationEventArgs e)
+        private void OnPackageInstalling(object sender, InstallationEventArgs e)
         {
             SendMessageToAdminSessions("PackageInstalling", e.InstallationInfo);
         }
 
-        void _installationManager_PackageInstallationCancelled(object sender, InstallationEventArgs e)
+        private void OnPackageInstallationCancelled(object sender, InstallationEventArgs e)
         {
             SendMessageToAdminSessions("PackageInstallationCancelled", e.InstallationInfo);
         }
 
-        void _installationManager_PackageInstallationCompleted(object sender, InstallationEventArgs e)
+        private void OnPackageInstallationCompleted(object sender, InstallationEventArgs e)
         {
             SendMessageToAdminSessions("PackageInstallationCompleted", e.InstallationInfo);
         }
 
-        void _installationManager_PackageInstallationFailed(object sender, InstallationFailedEventArgs e)
+        private void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
             SendMessageToAdminSessions("PackageInstallationFailed", e.InstallationInfo);
         }
 
-        void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
+        private void OnTaskCompleted(object sender, TaskCompletionEventArgs e)
         {
             SendMessageToAdminSessions("ScheduledTaskEnded", e.Result);
         }
@@ -101,7 +115,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void InstallationManager_PluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        private void OnPluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
         {
             SendMessageToAdminSessions("PluginUninstalled", e.Argument.GetPluginInfo());
         }
@@ -111,7 +125,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void kernel_HasPendingRestartChanged(object sender, EventArgs e)
+        private void OnHasPendingRestartChanged(object sender, EventArgs e)
         {
             _sessionManager.SendRestartRequiredNotification(CancellationToken.None);
         }
@@ -121,7 +135,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void userManager_UserUpdated(object sender, GenericEventArgs<User> e)
+        private void OnUserUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
 
@@ -133,19 +147,19 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void userManager_UserDeleted(object sender, GenericEventArgs<User> e)
+        private void OnUserDeleted(object sender, GenericEventArgs<User> e)
         {
             SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N", CultureInfo.InvariantCulture));
         }
 
-        void _userManager_UserPolicyUpdated(object sender, GenericEventArgs<User> e)
+        private void OnUserPolicyUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
 
             SendMessageToUserSession(e.Argument, "UserPolicyUpdated", dto);
         }
 
-        void _userManager_UserConfigurationUpdated(object sender, GenericEventArgs<User> e)
+        private void OnUserConfigurationUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
 
@@ -156,7 +170,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             try
             {
-                await _sessionManager.SendMessageToAdminSessions(name, data, CancellationToken.None);
+                await _sessionManager.SendMessageToAdminSessions(name, data, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception)
             {
@@ -168,7 +182,11 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             try
             {
-                await _sessionManager.SendMessageToUserSessions(new List<Guid> { user.Id }, name, data, CancellationToken.None);
+                await _sessionManager.SendMessageToUserSessions(
+                    new List<Guid> { user.Id },
+                    name,
+                    data,
+                    CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception)
             {
@@ -176,12 +194,11 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -192,18 +209,20 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (dispose)
             {
-                _userManager.UserDeleted -= userManager_UserDeleted;
-                _userManager.UserUpdated -= userManager_UserUpdated;
-                _userManager.UserPolicyUpdated -= _userManager_UserPolicyUpdated;
-                _userManager.UserConfigurationUpdated -= _userManager_UserConfigurationUpdated;
+                _userManager.UserDeleted -= OnUserDeleted;
+                _userManager.UserUpdated -= OnUserUpdated;
+                _userManager.UserPolicyUpdated -= OnUserPolicyUpdated;
+                _userManager.UserConfigurationUpdated -= OnUserConfigurationUpdated;
 
-                _installationManager.PluginUninstalled -= InstallationManager_PluginUninstalled;
-                _installationManager.PackageInstalling -= _installationManager_PackageInstalling;
-                _installationManager.PackageInstallationCancelled -= _installationManager_PackageInstallationCancelled;
-                _installationManager.PackageInstallationCompleted -= _installationManager_PackageInstallationCompleted;
-                _installationManager.PackageInstallationFailed -= _installationManager_PackageInstallationFailed;
+                _installationManager.PluginUninstalled -= OnPluginUninstalled;
+                _installationManager.PackageInstalling -= OnPackageInstalling;
+                _installationManager.PackageInstallationCancelled -= OnPackageInstallationCancelled;
+                _installationManager.PackageInstallationCompleted -= OnPackageInstallationCompleted;
+                _installationManager.PackageInstallationFailed -= OnPackageInstallationFailed;
 
-                _appHost.HasPendingRestartChanged -= kernel_HasPendingRestartChanged;
+                _appHost.HasPendingRestartChanged -= OnHasPendingRestartChanged;
+
+                _taskManager.TaskCompleted -= OnTaskCompleted;
             }
         }
     }

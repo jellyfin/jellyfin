@@ -11,22 +11,10 @@ namespace MediaBrowser.Controller
         string RootFolderPath { get; }
 
         /// <summary>
-        /// Gets the application resources path. This is the path to the folder containing resources that are deployed as part of the application
-        /// </summary>
-        /// <value>The application resources path.</value>
-        string ApplicationResourcesPath { get; }
-
-        /// <summary>
         /// Gets the path to the default user view directory.  Used if no specific user view is defined.
         /// </summary>
         /// <value>The default user views path.</value>
         string DefaultUserViewsPath { get; }
-
-        /// <summary>
-        /// Gets the path to localization data.
-        /// </summary>
-        /// <value>The localization path.</value>
-        string LocalizationPath { get; }
 
         /// <summary>
         /// Gets the path to the People directory
@@ -83,20 +71,17 @@ namespace MediaBrowser.Controller
         string UserConfigurationDirectoryPath { get; }
 
         /// <summary>
-        /// Gets the transcoding temporary path.
-        /// </summary>
-        /// <value>The transcoding temporary path.</value>
-        string TranscodingTempPath { get; }
-
-        /// <summary>
         /// Gets the internal metadata path.
         /// </summary>
         /// <value>The internal metadata path.</value>
         string InternalMetadataPath { get; }
+
         string VirtualInternalMetadataPath { get; }
 
+        /// <summary>
+        /// Gets the path to the artists directory.
+        /// </summary>
+        /// <value>The artists path.</value>
         string ArtistsPath { get; }
-
-        string GetTranscodingTempPath();
     }
 }

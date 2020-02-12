@@ -20,9 +20,8 @@ namespace MediaBrowser.Providers.Music
             ILogger logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            IUserDataManager userDataManager,
             ILibraryManager libraryManager)
-            : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
         }
 
@@ -37,10 +36,7 @@ namespace MediaBrowser.Providers.Music
 
         /// <inheritdoc />
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(MusicAlbum item)
-        {
-            return item.GetRecursiveChildren(i => i is Audio)
-                        .ToList();
-        }
+            => item.GetRecursiveChildren(i => i is Audio);
 
         /// <inheritdoc />
         protected override ItemUpdateType UpdateMetadataFromChildren(MusicAlbum item, IList<BaseItem> children, bool isFullRefresh, ItemUpdateType currentUpdateType)
@@ -53,20 +49,18 @@ namespace MediaBrowser.Providers.Music
                 {
                     var name = children.Select(i => i.Album).FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
-                    if (!string.IsNullOrEmpty(name))
+                    if (!string.IsNullOrEmpty(name)
+                        && !string.Equals(item.Name, name, StringComparison.Ordinal))
                     {
-                        if (!string.Equals(item.Name, name, StringComparison.Ordinal))
-                        {
-                            item.Name = name;
-                            updateType = updateType | ItemUpdateType.MetadataEdit;
-                        }
+                        item.Name = name;
+                        updateType |= ItemUpdateType.MetadataEdit;
                     }
                 }
 
                 var songs = children.Cast<Audio>().ToArray();
 
-                updateType = updateType | SetAlbumArtistFromSongs(item, songs);
-                updateType = updateType | SetArtistsFromSongs(item, songs);
+                updateType |= SetAlbumArtistFromSongs(item, songs);
+                updateType |= SetArtistsFromSongs(item, songs);
             }
 
             return updateType;

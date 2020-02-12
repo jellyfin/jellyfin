@@ -9,7 +9,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface IUserDataManager
+    /// Interface IUserDataManager.
     /// </summary>
     public interface IUserDataManager
     {
@@ -26,13 +26,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="userData">The user data.</param>
         /// <param name="reason">The reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
         void SaveUserData(User userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
         UserItemData GetUserData(User user, BaseItem item);
 
-        UserItemData GetUserData(string userId, BaseItem item);
         UserItemData GetUserData(Guid userId, BaseItem item);
 
         /// <summary>

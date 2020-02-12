@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using Emby.Server.Implementations.AppBase;
 using MediaBrowser.Common.Configuration;
@@ -14,11 +14,10 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Configuration
 {
     /// <summary>
-    /// Class ServerConfigurationManager
+    /// Class ServerConfigurationManager.
     /// </summary>
     public class ServerConfigurationManager : BaseConfigurationManager, IServerConfigurationManager
     {
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfigurationManager" /> class.
         /// </summary>
@@ -32,6 +31,9 @@ namespace Emby.Server.Implementations.Configuration
             UpdateMetadataPath();
         }
 
+        /// <summary>
+        /// Configuration updating event.
+        /// </summary>
         public event EventHandler<GenericEventArgs<ServerConfiguration>> ConfigurationUpdating;
 
         /// <summary>
@@ -62,13 +64,6 @@ namespace Emby.Server.Implementations.Configuration
             base.OnConfigurationUpdated();
         }
 
-        public override void AddParts(IEnumerable<IConfigurationFactory> factories)
-        {
-            base.AddParts(factories);
-
-            UpdateTranscodePath();
-        }
-
         /// <summary>
         /// Updates the metadata path.
         /// </summary>
@@ -81,28 +76,6 @@ namespace Emby.Server.Implementations.Configuration
             else
             {
                 ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = Configuration.MetadataPath;
-            }
-        }
-
-        /// <summary>
-        /// Updates the transcoding temporary path.
-        /// </summary>
-        private void UpdateTranscodePath()
-        {
-            var encodingConfig = this.GetConfiguration<EncodingOptions>("encoding");
-
-            ((ServerApplicationPaths)ApplicationPaths).TranscodingTempPath = string.IsNullOrEmpty(encodingConfig.TranscodingTempPath) ?
-                null :
-                Path.Combine(encodingConfig.TranscodingTempPath, "transcodes");
-        }
-
-        protected override void OnNamedConfigurationUpdated(string key, object configuration)
-        {
-            base.OnNamedConfigurationUpdated(key, configuration);
-
-            if (string.Equals(key, "encoding", StringComparison.OrdinalIgnoreCase))
-            {
-                UpdateTranscodePath();
             }
         }
 
@@ -123,12 +96,11 @@ namespace Emby.Server.Implementations.Configuration
             base.ReplaceConfiguration(newConfiguration);
         }
 
-
         /// <summary>
         /// Validates the SSL certificate.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="FileNotFoundException">The certificate path doesn't exist.</exception>
         private void ValidateSslCertificate(BaseApplicationConfiguration newConfig)
         {
             var serverConfig = (ServerConfiguration)newConfig;
@@ -136,12 +108,16 @@ namespace Emby.Server.Implementations.Configuration
             var newPath = serverConfig.CertificatePath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(Configuration.CertificatePath ?? string.Empty, newPath))
+                && !string.Equals(Configuration.CertificatePath, newPath, StringComparison.Ordinal))
             {
                 // Validate
                 if (!File.Exists(newPath))
                 {
-                    throw new FileNotFoundException(string.Format("Certificate file '{0}' does not exist.", newPath));
+                    throw new FileNotFoundException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Certificate file '{0}' does not exist.",
+                            newPath));
                 }
             }
         }
@@ -150,24 +126,32 @@ namespace Emby.Server.Implementations.Configuration
         /// Validates the metadata path.
         /// </summary>
         /// <param name="newConfig">The new configuration.</param>
-        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException">The new config path doesn't exist.</exception>
         private void ValidateMetadataPath(ServerConfiguration newConfig)
         {
             var newPath = newConfig.MetadataPath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(Configuration.MetadataPath ?? string.Empty, newPath))
+                && !string.Equals(Configuration.MetadataPath, newPath,  StringComparison.Ordinal))
             {
                 // Validate
                 if (!Directory.Exists(newPath))
                 {
-                    throw new FileNotFoundException(string.Format("{0} does not exist.", newPath));
+                    throw new DirectoryNotFoundException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0} does not exist.",
+                            newPath));
                 }
 
                 EnsureWriteAccess(newPath);
             }
         }
 
+        /// <summary>
+        /// Sets all configuration values to their optimal values.
+        /// </summary>
+        /// <returns>If the configuration changed.</returns>
         public bool SetOptimalValues()
         {
             var config = Configuration;

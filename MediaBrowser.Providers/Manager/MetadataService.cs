@@ -23,16 +23,14 @@ namespace MediaBrowser.Providers.Manager
         protected readonly ILogger Logger;
         protected readonly IProviderManager ProviderManager;
         protected readonly IFileSystem FileSystem;
-        protected readonly IUserDataManager UserDataManager;
         protected readonly ILibraryManager LibraryManager;
 
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
-            UserDataManager = userDataManager;
             LibraryManager = libraryManager;
         }
 
@@ -44,7 +42,7 @@ namespace MediaBrowser.Providers.Manager
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error getting file {path}", path);
+                Logger.LogError(ex, "Error getting file {Path}", path);
                 return null;
             }
         }
@@ -75,7 +73,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
+            var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
             var localImagesFailed = false;
 
             var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();

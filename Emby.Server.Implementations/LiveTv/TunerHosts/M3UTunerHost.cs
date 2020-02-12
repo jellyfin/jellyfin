@@ -114,11 +114,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
                 {
-                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost, _streamHelper);
+                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClient, Logger, Config, _appHost, _streamHelper);
                 }
             }
 
-            return new LiveStream(mediaSource, info, FileSystem, Logger, Config.ApplicationPaths, _streamHelper);
+            return new LiveStream(mediaSource, info, FileSystem, Logger, Config, _streamHelper);
         }
 
         public async Task Validate(TunerHostInfo info)

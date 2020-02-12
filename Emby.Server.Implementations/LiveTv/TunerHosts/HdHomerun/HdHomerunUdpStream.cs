@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -33,11 +34,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             int numTuners,
             IFileSystem fileSystem,
             ILogger logger,
-            IServerApplicationPaths appPaths,
+            IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
             INetworkManager networkManager,
             IStreamHelper streamHelper)
-            : base(mediaSource, tunerHostInfo, fileSystem, logger, appPaths, streamHelper)
+            : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
             _appHost = appHost;
             _networkManager = networkManager;

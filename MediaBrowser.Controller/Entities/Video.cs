@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -25,23 +24,23 @@ namespace MediaBrowser.Controller.Entities
         ISupportsPlaceHolders,
         IHasMediaSources
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string PrimaryVersionId { get; set; }
 
         public string[] AdditionalParts { get; set; }
         public string[] LocalAlternateVersions { get; set; }
         public LinkedChild[] LinkedAlternateVersions { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPositionTicksResume
         {
             get
@@ -90,7 +89,7 @@ namespace MediaBrowser.Controller.Entities
             return base.CreatePresentationUniqueKey();
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsThemeMedia => true;
 
         /// <summary>
@@ -137,7 +136,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The video3 D format.</value>
         public Video3DFormat? Video3DFormat { get; set; }
 
-        public string[] GetPlayableStreamFileNames(IMediaEncoder mediaEncoder)
+        public string[] GetPlayableStreamFileNames()
         {
             var videoType = VideoType;
 
@@ -153,7 +152,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 return Array.Empty<string>();
             }
-            return mediaEncoder.GetPlayableStreamFileNames(Path, videoType);
+
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -180,10 +180,10 @@ namespace MediaBrowser.Controller.Entities
             return IsFileProtocol;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public int MediaSourceCount
         {
             get
@@ -200,10 +200,10 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool IsStacked => AdditionalParts.Length > 0;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool HasLocalAlternateVersions => LocalAlternateVersions.Length > 0;
 
         public IEnumerable<Guid> GetAdditionalPartIds()
@@ -218,7 +218,7 @@ namespace MediaBrowser.Controller.Entities
 
         public static ILiveTvManager LiveTvManager { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override SourceType SourceType
         {
             get
@@ -247,7 +247,7 @@ namespace MediaBrowser.Controller.Entities
             return base.CanDelete();
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool IsCompleteMedia
         {
             get
@@ -261,7 +261,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         protected virtual bool EnableDefaultVideoUserDataKeys => true;
 
         public override List<string> GetUserDataKeys()
@@ -338,7 +338,7 @@ namespace MediaBrowser.Controller.Entities
                 .OrderBy(i => i.SortName);
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string ContainingFolderPath
         {
             get
@@ -360,7 +360,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string FileNameWithoutExtension
         {
             get
@@ -432,14 +432,14 @@ namespace MediaBrowser.Controller.Entities
         /// Gets a value indicating whether [is3 D].
         /// </summary>
         /// <value><c>true</c> if [is3 D]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool Is3D => Video3DFormat.HasValue;
 
         /// <summary>
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Video;
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)

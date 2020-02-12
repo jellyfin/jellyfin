@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Model.System;
+using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller
 {
@@ -70,13 +71,15 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
-        /// <param name="host">The host.</param>
-        /// <returns>System.String.</returns>
-        string GetLocalApiUrl(string host);
+        /// <param name="hostname">The hostname.</param>
+        /// <returns>The local API URL.</returns>
+        string GetLocalApiUrl(ReadOnlySpan<char> hostname);
 
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
+        /// <param name="address">The IP address.</param>
+        /// <returns>The local API URL.</returns>
         string GetLocalApiUrl(IPAddress address);
 
         void LaunchUrl(string url);
@@ -87,5 +90,9 @@ namespace MediaBrowser.Controller
 
         string ExpandVirtualPath(string path);
         string ReverseVirtualPath(string path);
+
+        Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);
+
+        Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next);
     }
 }

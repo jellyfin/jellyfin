@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -16,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
@@ -49,19 +49,25 @@ namespace MediaBrowser.Api
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
         private readonly ILocalizationManager _localizationManager;
-        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
-        public ItemUpdateService(IFileSystem fileSystem, ILibraryManager libraryManager, IProviderManager providerManager, ILocalizationManager localizationManager, IServerConfigurationManager config)
+        public ItemUpdateService(
+            ILogger<ItemUpdateService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager,
+            IProviderManager providerManager,
+            ILocalizationManager localizationManager)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _libraryManager = libraryManager;
             _providerManager = providerManager;
             _localizationManager = localizationManager;
-            _config = config;
             _fileSystem = fileSystem;
         }
 
-        public async Task<object> Get(GetMetadataEditorInfo request)
+        public object Get(GetMetadataEditorInfo request)
         {
             var item = _libraryManager.GetItemById(request.ItemId);
 
@@ -101,7 +107,7 @@ namespace MediaBrowser.Api
             var item = _libraryManager.GetItemById(request.ItemId);
             var path = item.ContainingFolderPath;
 
-            var types = _config.Configuration.ContentTypes
+            var types = ServerConfigurationManager.Configuration.ContentTypes
                 .Where(i => !string.IsNullOrWhiteSpace(i.Name))
                 .Where(i => !string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -115,8 +121,8 @@ namespace MediaBrowser.Api
                 });
             }
 
-            _config.Configuration.ContentTypes = types.ToArray();
-            _config.SaveConfiguration();
+            ServerConfigurationManager.Configuration.ContentTypes = types.ToArray();
+            ServerConfigurationManager.SaveConfiguration();
         }
 
         private List<NameValuePair> GetContentTypeOptions(bool isForItem)
@@ -225,13 +231,15 @@ namespace MediaBrowser.Api
 
             if (displayOrderChanged)
             {
-                _providerManager.QueueRefresh(series.Id, new MetadataRefreshOptions(new DirectoryService(Logger, _fileSystem))
-                {
-                    MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                    ReplaceAllMetadata = true
-
-                }, RefreshPriority.High);
+                _providerManager.QueueRefresh(
+                    series.Id,
+                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    {
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                        ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                        ReplaceAllMetadata = true
+                    },
+                    RefreshPriority.High);
             }
         }
 

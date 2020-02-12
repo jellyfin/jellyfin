@@ -8,11 +8,14 @@ param(
     [switch]$GenerateZip,
     [string]$InstallLocation = "./dist/jellyfin-win-nsis",
     [string]$UXLocation = "../jellyfin-ux",
+    [switch]$InstallTrayApp,
     [ValidateSet('Debug','Release')][string]$BuildType = 'Release',
     [ValidateSet('Quiet','Minimal', 'Normal')][string]$DotNetVerbosity = 'Minimal',
     [ValidateSet('win','win7', 'win8','win81','win10')][string]$WindowsVersion = 'win',
     [ValidateSet('x64','x86', 'arm', 'arm64')][string]$Architecture = 'x64'
 )
+
+$ProgressPreference = 'SilentlyContinue' # Speedup all downloads by hiding progress bars.
 
 #PowershellCore and *nix check to make determine which temp dir to use.
 if(($PSVersionTable.PSEdition -eq 'Core') -and (-not $IsWindows)){
@@ -43,7 +46,8 @@ function Build-JellyFin {
 function Install-FFMPEG {
     param(
         [string]$ResolvedInstallLocation,
-        [string]$Architecture
+        [string]$Architecture,
+        [string]$FFMPEGVersionX86 = "ffmpeg-4.2.1-win32-shared"
     )
     Write-Verbose "Checking Architecture"
     if($Architecture -notin @('x86','x64')){
@@ -54,7 +58,7 @@ function Install-FFMPEG {
          Invoke-WebRequest -Uri https://repo.jellyfin.org/releases/server/windows/ffmpeg/jellyfin-ffmpeg.zip -UseBasicParsing -OutFile "$tempdir/ffmpeg.zip" | Write-Verbose
     }else{
          Write-Verbose "Downloading 32 bit FFMPEG"
-         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-4.0.2-win32-shared.zip -UseBasicParsing -OutFile "$tempdir/ffmpeg.zip" | Write-Verbose
+         Invoke-WebRequest -Uri https://ffmpeg.zeranoe.com/builds/win32/shared/$FFMPEGVersionX86.zip -UseBasicParsing -OutFile "$tempdir/ffmpeg.zip" | Write-Verbose
     }
 
     Expand-Archive "$tempdir/ffmpeg.zip" -DestinationPath "$tempdir/ffmpeg/" -Force | Write-Verbose
@@ -65,7 +69,7 @@ function Install-FFMPEG {
         }
     }else{
         Write-Verbose "Copying Binaries to Jellyfin location"
-        Get-ChildItem "$tempdir/ffmpeg/ffmpeg-4.0.2-win32-shared/bin" | ForEach-Object {
+        Get-ChildItem "$tempdir/ffmpeg/$FFMPEGVersionX86/bin" | ForEach-Object {
             Copy-Item $_.FullName -Destination $installLocation | Write-Verbose
         }
     }
@@ -84,8 +88,9 @@ function Install-NSSM {
         Write-Warning "NSSM will not be installed"
     }else{
          Write-Verbose "Downloading NSSM"
-         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-         Invoke-WebRequest -Uri https://nssm.cc/ci/nssm-2.24-101-g897c7ad.zip -UseBasicParsing -OutFile "$tempdir/nssm.zip" | Write-Verbose
+         # [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+         # Temporary workaround, file is hosted in an azure blob with a custom domain in front for brevity
+         Invoke-WebRequest -Uri http://files.evilt.win/nssm/nssm-2.24-101-g897c7ad.zip -UseBasicParsing -OutFile "$tempdir/nssm.zip" | Write-Verbose
     }
 
     Expand-Archive "$tempdir/nssm.zip" -DestinationPath "$tempdir/nssm/" -Force | Write-Verbose
@@ -131,6 +136,23 @@ function Cleanup-NSIS {
     Remove-Item "$tempdir/nsis/" -Recurse -Force -ErrorAction Continue | Write-Verbose
     Remove-Item "$tempdir/nsis.zip" -Force -ErrorAction Continue | Write-Verbose
 }
+
+function Install-TrayApp {
+    param(
+        [string]$ResolvedInstallLocation,
+        [string]$Architecture
+    )
+    Write-Verbose "Checking Architecture"
+    if($Architecture -ne 'x64'){
+        Write-Warning "No builds available for your selected architecture of $Architecture"
+        Write-Warning "The tray app will not be available."
+    }else{
+        Write-Verbose "Downloading Tray App and copying to Jellyfin location"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri https://github.com/jellyfin/jellyfin-windows-tray/releases/latest/download/JellyfinTray.exe -UseBasicParsing -OutFile "$installLocation/JellyfinTray.exe" | Write-Verbose
+    }
+}
+
 if(-not $SkipJellyfinBuild.IsPresent -and -not ($InstallNSIS -eq $true)){
     Write-Verbose "Starting Build Process: Selected Environment is $WindowsVersion-$Architecture"
     Build-JellyFin
@@ -142,6 +164,10 @@ if($InstallFFMPEG.IsPresent -or ($InstallFFMPEG -eq $true)){
 if($InstallNSSM.IsPresent -or ($InstallNSSM -eq $true)){
     Write-Verbose "Starting NSSM Install"
     Install-NSSM $ResolvedInstallLocation $Architecture
+}
+if($InstallTrayApp.IsPresent -or ($InstallTrayApp -eq $true)){
+    Write-Verbose "Downloading Windows Tray App"
+    Install-TrayApp $ResolvedInstallLocation $Architecture
 }
 #Copy-Item .\deployment\windows\install-jellyfin.ps1 $ResolvedInstallLocation\install-jellyfin.ps1
 #Copy-Item .\deployment\windows\install.bat $ResolvedInstallLocation\install.bat

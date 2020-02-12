@@ -1,3 +1,7 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+#nullable enable
+
 using System;
 using System.IO;
 using System.Linq;
@@ -7,24 +11,21 @@ namespace Emby.Naming.Video
 {
     public static class StubResolver
     {
-        public static StubResult ResolveFile(string path, NamingOptions options)
+        public static bool TryResolveFile(string path, NamingOptions options, out string? stubType)
         {
+            stubType = default;
+
             if (path == null)
             {
-                return default(StubResult);
+                return false;
             }
 
             var extension = Path.GetExtension(path);
 
             if (!options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
             {
-                return default(StubResult);
+                return false;
             }
-
-            var result = new StubResult()
-            {
-                IsStub = true
-            };
 
             path = Path.GetFileNameWithoutExtension(path);
             var token = Path.GetExtension(path).TrimStart('.');
@@ -33,12 +34,12 @@ namespace Emby.Naming.Video
             {
                 if (string.Equals(rule.Token, token, StringComparison.OrdinalIgnoreCase))
                 {
-                    result.StubType = rule.StubType;
-                    break;
+                    stubType = rule.StubType;
+                    return true;
                 }
             }
 
-            return result;
+            return true;
         }
     }
 }

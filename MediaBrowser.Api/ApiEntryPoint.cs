@@ -10,12 +10,8 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -23,31 +19,28 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class ServerEntryPoint
+    /// Class ServerEntryPoint.
     /// </summary>
     public class ApiEntryPoint : IServerEntryPoint
     {
         /// <summary>
-        /// The instance
+        /// The instance.
         /// </summary>
         public static ApiEntryPoint Instance;
 
         /// <summary>
-        /// Gets or sets the logger.
+        /// The logger.
         /// </summary>
-        /// <value>The logger.</value>
-        internal ILogger Logger { get; private set; }
-        internal IHttpResultFactory ResultFactory { get; private set; }
+        private ILogger _logger;
 
         /// <summary>
-        /// The application paths
+        /// The configuration manager.
         /// </summary>
-        private readonly IServerConfigurationManager _config;
+        private IServerConfigurationManager _serverConfigurationManager;
 
         private readonly ISessionManager _sessionManager;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaSourceManager _mediaSourceManager;
-        public readonly IProcessFactory ProcessFactory;
 
         /// <summary>
         /// The active transcoding jobs
@@ -72,20 +65,16 @@ namespace MediaBrowser.Api
             ISessionManager sessionManager,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
-            IMediaSourceManager mediaSourceManager,
-            IProcessFactory processFactory,
-            IHttpResultFactory resultFactory)
+            IMediaSourceManager mediaSourceManager)
         {
-            Logger = logger;
+            _logger = logger;
             _sessionManager = sessionManager;
-            _config = config;
+            _serverConfigurationManager = config;
             _fileSystem = fileSystem;
             _mediaSourceManager = mediaSourceManager;
-            ProcessFactory = processFactory;
-            ResultFactory = resultFactory;
 
-            _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
-            _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
+            _sessionManager.PlaybackProgress += OnPlaybackProgress;
+            _sessionManager.PlaybackStart += OnPlaybackStart;
 
             Instance = this;
         }
@@ -119,7 +108,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        private void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+        private void OnPlaybackStart(object sender, PlaybackProgressEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
             {
@@ -127,7 +116,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private void OnPlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
             {
@@ -144,25 +133,12 @@ namespace MediaBrowser.Api
             {
                 DeleteEncodedMediaCache();
             }
-            catch (FileNotFoundException)
-            {
-                // Don't clutter the log
-            }
-            catch (IOException)
-            {
-                // Don't clutter the log
-            }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error deleting encoded media cache");
+                _logger.LogError(ex, "Error deleting encoded media cache");
             }
 
             return Task.CompletedTask;
-        }
-
-        public EncodingOptions GetEncodingOptions()
-        {
-            return ConfigurationManagerExtensions.GetConfiguration<EncodingOptions>(_config, "encoding");
         }
 
         /// <summary>
@@ -170,8 +146,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private void DeleteEncodedMediaCache()
         {
-            var path = _config.ApplicationPaths.GetTranscodingTempPath();
-
+            var path = _serverConfigurationManager.GetTranscodePath();
             if (!Directory.Exists(path))
             {
                 return;
@@ -183,9 +158,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
@@ -228,8 +201,8 @@ namespace MediaBrowser.Api
             _activeTranscodingJobs.Clear();
             _transcodingLocks.Clear();
 
-            _sessionManager.PlaybackProgress -= _sessionManager_PlaybackProgress;
-            _sessionManager.PlaybackStart -= _sessionManager_PlaybackStart;
+            _sessionManager.PlaybackProgress -= OnPlaybackProgress;
+            _sessionManager.PlaybackStart -= OnPlaybackStart;
 
             _disposed = true;
         }
@@ -261,7 +234,7 @@ namespace MediaBrowser.Api
         {
             lock (_activeTranscodingJobs)
             {
-                var job = new TranscodingJob(Logger)
+                var job = new TranscodingJob(_logger)
                 {
                     Type = type,
                     Path = path,
@@ -415,12 +388,13 @@ namespace MediaBrowser.Api
         public void OnTranscodeEndRequest(TranscodingJob job)
         {
             job.ActiveRequestCount--;
-            Logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
+            _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
             if (job.ActiveRequestCount <= 0)
             {
                 PingTimer(job, false);
             }
         }
+
         internal void PingTranscodingJob(string playSessionId, bool? isUserPaused)
         {
             if (string.IsNullOrEmpty(playSessionId))
@@ -428,7 +402,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentNullException(nameof(playSessionId));
             }
 
-            Logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
+            _logger.LogDebug("PingTranscodingJob PlaySessionId={0} isUsedPaused: {1}", playSessionId, isUserPaused);
 
             List<TranscodingJob> jobs;
 
@@ -443,9 +417,10 @@ namespace MediaBrowser.Api
             {
                 if (isUserPaused.HasValue)
                 {
-                    Logger.LogDebug("Setting job.IsUserPaused to {0}. jobId: {1}", isUserPaused, job.Id);
+                    _logger.LogDebug("Setting job.IsUserPaused to {0}. jobId: {1}", isUserPaused, job.Id);
                     job.IsUserPaused = isUserPaused.Value;
                 }
+
                 PingTimer(job, true);
             }
         }
@@ -498,7 +473,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            Logger.LogInformation("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
+            _logger.LogInformation("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
             await KillTranscodingJob(job, true, path => true);
         }
@@ -567,7 +542,7 @@ namespace MediaBrowser.Api
         {
             job.DisposeKillTimer();
 
-            Logger.LogDebug("KillTranscodingJob - JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
+            _logger.LogDebug("KillTranscodingJob - JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
             lock (_activeTranscodingJobs)
             {
@@ -599,14 +574,14 @@ namespace MediaBrowser.Api
                 {
                     try
                     {
-                        Logger.LogInformation("Stopping ffmpeg process with q command for {Path}", job.Path);
+                        _logger.LogInformation("Stopping ffmpeg process with q command for {Path}", job.Path);
 
                         process.StandardInput.WriteLine("q");
 
                         // Need to wait because killing is asynchronous
                         if (!process.WaitForExit(5000))
                         {
-                            Logger.LogInformation("Killing ffmpeg process for {Path}", job.Path);
+                            _logger.LogInformation("Killing ffmpeg process for {Path}", job.Path);
                             process.Kill();
                         }
                     }
@@ -629,7 +604,7 @@ namespace MediaBrowser.Api
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error closing live stream for {Path}", job.Path);
+                    _logger.LogError(ex, "Error closing live stream for {Path}", job.Path);
                 }
             }
         }
@@ -641,7 +616,7 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            Logger.LogInformation("Deleting partial stream file(s) {Path}", path);
+            _logger.LogInformation("Deleting partial stream file(s) {Path}", path);
 
             await Task.Delay(delayMs).ConfigureAwait(false);
 
@@ -656,19 +631,15 @@ namespace MediaBrowser.Api
                     DeleteHlsPartialStreamFiles(path);
                 }
             }
-            catch (FileNotFoundException)
-            {
-
-            }
             catch (IOException ex)
             {
-                Logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
+                _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
 
                 await DeletePartialStreamFiles(path, jobType, retryCount + 1, 500).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
+                _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
             }
         }
 
@@ -678,7 +649,10 @@ namespace MediaBrowser.Api
         /// <param name="outputFilePath">The output file path.</param>
         private void DeleteProgressivePartialStreamFiles(string outputFilePath)
         {
-            _fileSystem.DeleteFile(outputFilePath);
+            if (File.Exists(outputFilePath))
+            {
+                _fileSystem.DeleteFile(outputFilePath);
+            }
         }
 
         /// <summary>
@@ -693,178 +667,24 @@ namespace MediaBrowser.Api
             var filesToDelete = _fileSystem.GetFilePaths(directory)
                 .Where(f => f.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1);
 
-            Exception e = null;
-
+            List<Exception> exs = null;
             foreach (var file in filesToDelete)
             {
                 try
                 {
-                    Logger.LogDebug("Deleting HLS file {0}", file);
+                    _logger.LogDebug("Deleting HLS file {0}", file);
                     _fileSystem.DeleteFile(file);
-                }
-                catch (FileNotFoundException)
-                {
-
                 }
                 catch (IOException ex)
                 {
-                    e = ex;
-                    Logger.LogError(ex, "Error deleting HLS file {Path}", file);
+                    (exs ??= new List<Exception>(4)).Add(ex);
+                    _logger.LogError(ex, "Error deleting HLS file {Path}", file);
                 }
             }
 
-            if (e != null)
+            if (exs != null)
             {
-                throw e;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Class TranscodingJob
-    /// </summary>
-    public class TranscodingJob
-    {
-        /// <summary>
-        /// Gets or sets the play session identifier.
-        /// </summary>
-        /// <value>The play session identifier.</value>
-        public string PlaySessionId { get; set; }
-        /// <summary>
-        /// Gets or sets the live stream identifier.
-        /// </summary>
-        /// <value>The live stream identifier.</value>
-        public string LiveStreamId { get; set; }
-
-        public bool IsLiveOutput { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path.
-        /// </summary>
-        /// <value>The path.</value>
-        public MediaSourceInfo MediaSource { get; set; }
-        public string Path { get; set; }
-        /// <summary>
-        /// Gets or sets the type.
-        /// </summary>
-        /// <value>The type.</value>
-        public TranscodingJobType Type { get; set; }
-        /// <summary>
-        /// Gets or sets the process.
-        /// </summary>
-        /// <value>The process.</value>
-        public Process Process { get; set; }
-        public ILogger Logger { get; private set; }
-        /// <summary>
-        /// Gets or sets the active request count.
-        /// </summary>
-        /// <value>The active request count.</value>
-        public int ActiveRequestCount { get; set; }
-        /// <summary>
-        /// Gets or sets the kill timer.
-        /// </summary>
-        /// <value>The kill timer.</value>
-        private Timer KillTimer { get; set; }
-
-        public string DeviceId { get; set; }
-
-        public CancellationTokenSource CancellationTokenSource { get; set; }
-
-        public object ProcessLock = new object();
-
-        public bool HasExited { get; set; }
-        public bool IsUserPaused { get; set; }
-
-        public string Id { get; set; }
-
-        public float? Framerate { get; set; }
-        public double? CompletionPercentage { get; set; }
-
-        public long? BytesDownloaded { get; set; }
-        public long? BytesTranscoded { get; set; }
-        public int? BitRate { get; set; }
-
-        public long? TranscodingPositionTicks { get; set; }
-        public long? DownloadPositionTicks { get; set; }
-
-        public TranscodingThrottler TranscodingThrottler { get; set; }
-
-        private readonly object _timerLock = new object();
-
-        public DateTime LastPingDate { get; set; }
-        public int PingTimeout { get; set; }
-
-        public TranscodingJob(ILogger logger)
-        {
-            Logger = logger;
-        }
-
-        public void StopKillTimer()
-        {
-            lock (_timerLock)
-            {
-                if (KillTimer != null)
-                {
-                    KillTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                }
-            }
-        }
-
-        public void DisposeKillTimer()
-        {
-            lock (_timerLock)
-            {
-                if (KillTimer != null)
-                {
-                    KillTimer.Dispose();
-                    KillTimer = null;
-                }
-            }
-        }
-
-        public void StartKillTimer(Action<object> callback)
-        {
-            StartKillTimer(callback, PingTimeout);
-        }
-
-        public void StartKillTimer(Action<object> callback, int intervalMs)
-        {
-            if (HasExited)
-            {
-                return;
-            }
-
-            lock (_timerLock)
-            {
-                if (KillTimer == null)
-                {
-                    Logger.LogDebug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
-                    KillTimer = new Timer(new TimerCallback(callback), this, intervalMs, Timeout.Infinite);
-                }
-                else
-                {
-                    Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
-                    KillTimer.Change(intervalMs, Timeout.Infinite);
-                }
-            }
-        }
-
-        public void ChangeKillTimerIfStarted()
-        {
-            if (HasExited)
-            {
-                return;
-            }
-
-            lock (_timerLock)
-            {
-                if (KillTimer != null)
-                {
-                    var intervalMs = PingTimeout;
-
-                    Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
-                    KillTimer.Change(intervalMs, Timeout.Infinite);
-                }
+                throw new AggregateException("Error deleting HLS files", exs);
             }
         }
     }

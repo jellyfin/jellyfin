@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -15,34 +16,28 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     /// </summary>
     public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTask
     {
-        /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        private ServerApplicationPaths ApplicationPaths { get; set; }
-
         private readonly ILogger _logger;
-
+        private readonly IConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteTranscodeFileTask" /> class.
         /// </summary>
-        public DeleteTranscodeFileTask(ServerApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        public DeleteTranscodeFileTask(ILogger logger, IFileSystem fileSystem, IConfigurationManager configurationManager)
         {
-            ApplicationPaths = appPaths;
             _logger = logger;
             _fileSystem = fileSystem;
+            _configurationManager = configurationManager;
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers() => new List<TaskTriggerInfo>();
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -52,21 +47,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             var minDateModified = DateTime.UtcNow.AddDays(-1);
             progress.Report(50);
 
-            try
-            {
-                DeleteTempFilesFromDirectory(cancellationToken, ApplicationPaths.TranscodingTempPath, minDateModified, progress);
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // No biggie here. Nothing to delete
-            }
+            DeleteTempFilesFromDirectory(cancellationToken, _configurationManager.GetTranscodePath(), minDateModified, progress);
 
             return Task.CompletedTask;
         }
 
-
         /// <summary>
-        /// Deletes the transcoded temp files from directory with a last write time less than a given date
+        /// Deletes the transcoded temp files from directory with a last write time less than a given date.
         /// </summary>
         /// <param name="cancellationToken">The task cancellation token.</param>
         /// <param name="directory">The directory.</param>
@@ -138,13 +125,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
-        public string Name => "Transcoding temp cleanup";
+        public string Name => "Clean Transcode Directory";
 
-        public string Description => "Deletes transcoding temp files older than 24 hours.";
+        public string Description => "Deletes transcode files more than one day old.";
 
         public string Category => "Maintenance";
 
-        public string Key => "DeleteTranscodingTempFiles";
+        public string Key => "DeleteTranscodeFiles";
 
         public bool IsHidden => false;
 

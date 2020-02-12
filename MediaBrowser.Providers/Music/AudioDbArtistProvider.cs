@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -37,11 +39,18 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
-        {
-            return Task.FromResult((IEnumerable<RemoteSearchResult>)new List<RemoteSearchResult>());
-        }
+        /// <inheritdoc />
+        public string Name => "TheAudioDB";
 
+        /// <inheritdoc />
+        // After musicbrainz
+        public int Order => 1;
+
+        /// <inheritdoc />
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
+            => Task.FromResult(Enumerable.Empty<RemoteSearchResult>());
+
+        /// <inheritdoc />
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>();
@@ -114,20 +123,16 @@ namespace MediaBrowser.Providers.Music
             item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
-        public string Name => "TheAudioDB";
-
         internal Task EnsureArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
         {
             var xmlPath = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
             var fileInfo = _fileSystem.GetFileSystemInfo(xmlPath);
 
-            if (fileInfo.Exists)
+            if (fileInfo.Exists
+                && (DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
             {
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
-                {
-                    return Task.CompletedTask;
-                }
+                return Task.CompletedTask;
             }
 
             return DownloadArtistInfo(musicBrainzId, cancellationToken);
@@ -141,22 +146,21 @@ namespace MediaBrowser.Providers.Music
 
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
-            using (var httpResponse = await _httpClient.SendAsync(new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                BufferContent = true
-
-            }, "GET").ConfigureAwait(false))
-            {
-                using (var response = httpResponse.Content)
+            using (var httpResponse = await _httpClient.SendAsync(
+                new HttpRequestOptions
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    BufferContent = true
+                },
+                HttpMethod.Get).ConfigureAwait(false))
+            using (var response = httpResponse.Content)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                    using (var xmlFileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
-                    {
-                        await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
-                    }
+                using (var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
+                {
+                    await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
                 }
             }
         }
@@ -168,11 +172,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="musicBrainzArtistId">The music brainz artist identifier.</param>
         /// <returns>System.String.</returns>
         private static string GetArtistDataPath(IApplicationPaths appPaths, string musicBrainzArtistId)
-        {
-            var dataPath = Path.Combine(GetArtistDataPath(appPaths), musicBrainzArtistId);
-
-            return dataPath;
-        }
+            => Path.Combine(GetArtistDataPath(appPaths), musicBrainzArtistId);
 
         /// <summary>
         /// Gets the artist data path.
@@ -180,11 +180,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="appPaths">The application paths.</param>
         /// <returns>System.String.</returns>
         private static string GetArtistDataPath(IApplicationPaths appPaths)
-        {
-            var dataPath = Path.Combine(appPaths.CachePath, "audiodb-artist");
-
-            return dataPath;
-        }
+            => Path.Combine(appPaths.CachePath, "audiodb-artist");
 
         internal static string GetArtistInfoPath(IApplicationPaths appPaths, string musicBrainzArtistId)
         {
@@ -242,9 +238,8 @@ namespace MediaBrowser.Providers.Music
         {
             public List<Artist> artists { get; set; }
         }
-        // After musicbrainz
-        public int Order => 1;
 
+        /// <inheritdoc />
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

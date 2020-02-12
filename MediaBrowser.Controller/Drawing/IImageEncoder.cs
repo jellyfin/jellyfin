@@ -11,6 +11,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <value>The supported input formats.</value>
         IReadOnlyCollection<string> SupportedInputFormats { get; }
+
         /// <summary>
         /// Gets the supported output formats.
         /// </summary>
@@ -18,9 +19,9 @@ namespace MediaBrowser.Controller.Drawing
         IReadOnlyCollection<ImageFormat> SupportedOutputFormats { get; }
 
         /// <summary>
-        /// Gets the name.
+        /// Gets the display name for the encoder.
         /// </summary>
-        /// <value>The name.</value>
+        /// <value>The display name.</value>
         string Name { get; }
 
         /// <summary>
@@ -35,17 +36,22 @@ namespace MediaBrowser.Controller.Drawing
         /// <value><c>true</c> if [supports image encoding]; otherwise, <c>false</c>.</value>
         bool SupportsImageEncoding { get; }
 
+        /// <summary>
+        /// Get the dimensions of an image from the filesystem.
+        /// </summary>
+        /// <param name="path">The filepath of the image.</param>
+        /// <returns>The image dimensions.</returns>
         ImageDimensions GetImageSize(string path);
 
         /// <summary>
-        /// Encodes the image.
+        /// Encode an image.
         /// </summary>
         string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
 
         /// <summary>
-        /// Creates the image collage.
+        /// Create an image collage.
         /// </summary>
-        /// <param name="options">The options.</param>
+        /// <param name="options">The options to use when creating the collage.</param>
         void CreateImageCollage(ImageCollageOptions options);
     }
 }

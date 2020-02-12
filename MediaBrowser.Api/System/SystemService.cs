@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -103,13 +104,19 @@ namespace MediaBrowser.Api.System
         /// Initializes a new instance of the <see cref="SystemService" /> class.
         /// </summary>
         /// <param name="appHost">The app host.</param>
-        /// <param name="appPaths">The application paths.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <exception cref="ArgumentNullException">jsonSerializer</exception>
-        public SystemService(IServerApplicationHost appHost, IApplicationPaths appPaths, IFileSystem fileSystem, INetworkManager network)
+        public SystemService(
+            ILogger<SystemService> logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
+            IServerApplicationHost appHost,
+            IFileSystem fileSystem,
+            INetworkManager network)
+            : base(logger, serverConfigurationManager, httpResultFactory)
         {
+            _appPaths = serverConfigurationManager.ApplicationPaths;
             _appHost = appHost;
-            _appPaths = appPaths;
             _fileSystem = fileSystem;
             _network = network;
         }
@@ -163,10 +170,10 @@ namespace MediaBrowser.Api.System
             // For older files, assume fully static
             if (file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1))
             {
-                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.Read);
+                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.Read);
             }
 
-            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.ReadWrite);
+            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.ReadWrite);
         }
 
         /// <summary>

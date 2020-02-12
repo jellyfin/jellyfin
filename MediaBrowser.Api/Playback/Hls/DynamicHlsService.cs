@@ -16,7 +16,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
@@ -94,33 +93,37 @@ namespace MediaBrowser.Api.Playback.Hls
     [Authenticated]
     public class DynamicHlsService : BaseHlsService
     {
-
         public DynamicHlsService(
-            IServerConfigurationManager serverConfig,
+            ILogger logger,
+            IServerConfigurationManager serverConfigurationManager,
+            IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ILibraryManager libraryManager,
             IIsoManager isoManager,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
             IDlnaManager dlnaManager,
-            ISubtitleEncoder subtitleEncoder,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
-            INetworkManager networkManager)
-            : base(serverConfig,
+            INetworkManager networkManager,
+            EncodingHelper encodingHelper)
+            : base(
+                logger,
+                serverConfigurationManager,
+                httpResultFactory,
                 userManager,
                 libraryManager,
                 isoManager,
                 mediaEncoder,
                 fileSystem,
                 dlnaManager,
-                subtitleEncoder,
                 deviceManager,
                 mediaSourceManager,
                 jsonSerializer,
-                authorizationContext)
+                authorizationContext,
+                encodingHelper)
         {
             NetworkManager = networkManager;
         }
@@ -192,6 +195,7 @@ namespace MediaBrowser.Api.Playback.Hls
             if (File.Exists(segmentPath))
             {
                 job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                Logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
             }
 
@@ -207,6 +211,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     transcodingLock.Release();
                     released = true;
+                    Logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
                     return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
@@ -243,6 +248,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                             request.StartTimeTicks = GetStartPositionTicks(state, requestedIndex);
 
+                            state.WaitForPath = segmentPath;
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
@@ -277,7 +283,7 @@ namespace MediaBrowser.Api.Playback.Hls
             //    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             //}
 
-            Logger.LogInformation("returning {0}", segmentPath);
+            Logger.LogDebug("returning {0} [general case]", segmentPath);
             job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
         }
@@ -458,56 +464,68 @@ namespace MediaBrowser.Api.Playback.Hls
             TranscodingJob transcodingJob,
             CancellationToken cancellationToken)
         {
-            var segmentFileExists = File.Exists(segmentPath);
-
-            // If all transcoding has completed, just return immediately
-            if (transcodingJob != null && transcodingJob.HasExited && segmentFileExists)
+            var segmentExists = File.Exists(segmentPath);
+            if (segmentExists)
             {
-                return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
-            }
+                if (transcodingJob != null && transcodingJob.HasExited)
+                {
+                    // Transcoding job is over, so assume all existing files are ready
+                    Logger.LogDebug("serving up {0} as transcode is over", segmentPath);
+                    return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
+                }
 
-            if (segmentFileExists)
-            {
                 var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
 
                 // If requested segment is less than transcoding position, we can't transcode backwards, so assume it's ready
                 if (segmentIndex < currentTranscodingIndex)
                 {
+                    Logger.LogDebug("serving up {0} as transcode index {1} is past requested point {2}", segmentPath, currentTranscodingIndex, segmentIndex);
                     return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
                 }
             }
 
-            var segmentFilename = Path.GetFileName(segmentPath);
-
-            while (!cancellationToken.IsCancellationRequested)
+            var nextSegmentPath = GetSegmentPath(state, playlistPath, segmentIndex + 1);
+            if (transcodingJob != null)
             {
-                try
+                while (!cancellationToken.IsCancellationRequested && !transcodingJob.HasExited)
                 {
-                    var text = File.ReadAllText(playlistPath, Encoding.UTF8);
-
-                    // If it appears in the playlist, it's done
-                    if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                    // To be considered ready, the segment file has to exist AND
+                    // either the transcoding job should be done or next segment should also exist
+                    if (segmentExists)
                     {
-                        if (!segmentFileExists)
+                        if (transcodingJob.HasExited || File.Exists(nextSegmentPath))
                         {
-                            segmentFileExists = File.Exists(segmentPath);
-                        }
-                        if (segmentFileExists)
-                        {
+                            Logger.LogDebug("serving up {0} as it deemed ready", segmentPath);
                             return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
                         }
-                        //break;
                     }
-                }
-                catch (IOException)
-                {
-                    // May get an error if the file is locked
+                    else
+                    {
+                        segmentExists = File.Exists(segmentPath);
+                        if (segmentExists)
+                        {
+                            continue; // avoid unnecessary waiting if segment just became available
+                        }
+                    }
+
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                if (!File.Exists(segmentPath))
+                {
+                    Logger.LogWarning("cannot serve {0} as transcoding quit before we got there", segmentPath);
+                }
+                else
+                {
+                    Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            else
+            {
+                Logger.LogWarning("cannot serve {0} as it doesn't exist and no transcode is running", segmentPath);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
             return await GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob).ConfigureAwait(false);
         }
 
@@ -518,9 +536,10 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 Path = segmentPath,
-                FileShare = FileShareMode.ReadWrite,
+                FileShare = FileShare.ReadWrite,
                 OnComplete = () =>
                 {
+                    Logger.LogDebug("finished serving {0}", segmentPath);
                     if (transcodingJob != null)
                     {
                         transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? segmentEndingPositionTicks, segmentEndingPositionTicks);
@@ -909,13 +928,37 @@ namespace MediaBrowser.Api.Playback.Hls
             else
             {
                 var keyFrameArg = string.Format(
+                    CultureInfo.InvariantCulture,
                     " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
                     GetStartNumber(state) * state.SegmentLength,
-                    state.SegmentLength.ToString(CultureInfo.InvariantCulture));
+                    state.SegmentLength);
+                if (state.TargetFramerate.HasValue)
+                {
+                    // This is to make sure keyframe interval is limited to our segment,
+                    // as forcing keyframes is not enough.
+                    // Example: we encoded half of desired length, then codec detected
+                    // scene cut and inserted a keyframe; next forced keyframe would
+                    // be created outside of segment, which breaks seeking.
+                    keyFrameArg += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -g {0} -keyint_min {0}",
+                        (int)(state.SegmentLength * state.TargetFramerate)
+                    );
+                }
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset()) + keyFrameArg;
+                args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset());
+
+                // Unable to force key frames to h264_qsv transcode
+                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv");
+                }
+                else
+                {
+                    args += " " + keyFrameArg;
+                }
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
@@ -955,6 +998,15 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var threads = EncodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec);
 
+            if (state.BaseRequest.BreakOnNonKeyFrames)
+            {
+                // FIXME: this is actually a workaround, as ideally it really should be the client which decides whether non-keyframe
+                //        breakpoints are supported; but current implementation always uses "ffmpeg input seeking" which is liable
+                //        to produce a missing part of video stream before first keyframe is encountered, which may lead to
+                //        awkward cases like a few starting HLS segments having no video whatsoever, which breaks hls.js
+                Logger.LogInformation("Current HLS implementation doesn't support non-keyframe breaks but one is requested, ignoring that request");
+                state.BaseRequest.BreakOnNonKeyFrames = false;
+            }
             var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             // If isEncoding is true we're actually starting ffmpeg
@@ -965,14 +1017,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
-            var timeDeltaParam = string.Empty;
-
-            if (isEncoding && state.TargetFramerate > 0)
-            {
-                float startTime = 1 / (state.TargetFramerate.Value * 2);
-                timeDeltaParam = string.Format(CultureInfo.InvariantCulture, "-segment_time_delta {0:F3}", startTime);
-            }
-
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
             {
@@ -980,7 +1024,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             return string.Format(
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format {11} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f hls -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -hls_time {6} -individual_header_trailer 0 -hls_segment_type {7} -start_number {8} -hls_segment_filename \"{9}\" -hls_playlist_type vod -hls_list_size 0 -y \"{10}\"",
                 inputModifier,
                 EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
@@ -988,11 +1032,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 GetVideoArguments(state, encodingOptions),
                 GetAudioArguments(state, encodingOptions),
                 state.SegmentLength.ToString(CultureInfo.InvariantCulture),
+                segmentFormat,
                 startNumberParam,
-                outputPath,
                 outputTsArg,
-                timeDeltaParam,
-                segmentFormat
+                outputPath
             ).Trim();
         }
     }

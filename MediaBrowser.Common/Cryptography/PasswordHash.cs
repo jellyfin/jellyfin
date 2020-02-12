@@ -1,10 +1,10 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using static MediaBrowser.Common.HexHelper;
 
 namespace MediaBrowser.Common.Cryptography
 {
@@ -16,24 +16,24 @@ namespace MediaBrowser.Common.Cryptography
     public class PasswordHash
     {
         private readonly Dictionary<string, string> _parameters;
+        private readonly byte[] _salt;
+        private readonly byte[] _hash;
 
         public PasswordHash(string id, byte[] hash)
             : this(id, hash, Array.Empty<byte>())
         {
-
         }
 
         public PasswordHash(string id, byte[] hash, byte[] salt)
             : this(id, hash, salt, new Dictionary<string, string>())
         {
-
         }
 
         public PasswordHash(string id, byte[] hash, byte[] salt, Dictionary<string, string> parameters)
         {
             Id = id;
-            Hash = hash;
-            Salt = salt;
+            _hash = hash;
+            _salt = salt;
             _parameters = parameters;
         }
 
@@ -46,28 +46,27 @@ namespace MediaBrowser.Common.Cryptography
         /// <summary>
         /// Gets the additional parameters used by the hash function.
         /// </summary>
-        /// <value></value>
         public IReadOnlyDictionary<string, string> Parameters => _parameters;
 
         /// <summary>
         /// Gets the salt used for hashing the password.
         /// </summary>
         /// <value>Returns the salt used for hashing the password.</value>
-        public byte[] Salt { get; }
+        public ReadOnlySpan<byte> Salt => _salt;
 
         /// <summary>
         /// Gets the hashed password.
         /// </summary>
         /// <value>Return the hashed password.</value>
-        public byte[] Hash { get; }
+        public ReadOnlySpan<byte> Hash => _hash;
 
-        public static PasswordHash Parse(string storageString)
+        public static PasswordHash Parse(string hashString)
         {
-            string[] splitted = storageString.Split('$');
             // The string should at least contain the hash function and the hash itself
+            string[] splitted = hashString.Split('$');
             if (splitted.Length < 3)
             {
-                throw new ArgumentException("String doesn't contain enough segments", nameof(storageString));
+                throw new ArgumentException("String doesn't contain enough segments", nameof(hashString));
             }
 
             // Start at 1, the first index shouldn't contain any data
@@ -78,7 +77,7 @@ namespace MediaBrowser.Common.Cryptography
 
             // Optional parameters
             Dictionary<string, string> parameters = new Dictionary<string, string>();
-            if (splitted[index].IndexOf('=') != -1)
+            if (splitted[index].IndexOf('=', StringComparison.Ordinal) != -1)
             {
                 foreach (string paramset in splitted[index++].Split(','))
                 {
@@ -99,16 +98,17 @@ namespace MediaBrowser.Common.Cryptography
 
             byte[] hash;
             byte[] salt;
+
             // Check if the string also contains a salt
             if (splitted.Length - index == 2)
             {
-                salt = FromHexString(splitted[index++]);
-                hash = FromHexString(splitted[index++]);
+                salt = Hex.Decode(splitted[index++]);
+                hash = Hex.Decode(splitted[index++]);
             }
             else
             {
                 salt = Array.Empty<byte>();
-                hash = FromHexString(splitted[index++]);
+                hash = Hex.Decode(splitted[index++]);
             }
 
             return new PasswordHash(id, hash, salt, parameters);
@@ -124,10 +124,10 @@ namespace MediaBrowser.Common.Cryptography
             stringBuilder.Append('$');
             foreach (var pair in _parameters)
             {
-                stringBuilder.Append(pair.Key);
-                stringBuilder.Append('=');
-                stringBuilder.Append(pair.Value);
-                stringBuilder.Append(',');
+                stringBuilder.Append(pair.Key)
+                    .Append('=')
+                    .Append(pair.Value)
+                    .Append(',');
             }
 
             // Remove last ','
@@ -137,21 +137,19 @@ namespace MediaBrowser.Common.Cryptography
         /// <inheritdoc />
         public override string ToString()
         {
-            var str = new StringBuilder();
-            str.Append('$');
-            str.Append(Id);
+            var str = new StringBuilder()
+                .Append('$')
+                .Append(Id);
             SerializeParameters(str);
 
-            if (Salt.Length != 0)
+            if (_salt.Length != 0)
             {
-                str.Append('$');
-                str.Append(ToHexString(Salt));
+                str.Append('$')
+                    .Append(Hex.Encode(_salt, false));
             }
 
-            str.Append('$');
-            str.Append(ToHexString(Hash));
-
-            return str.ToString();
+            return str.Append('$')
+                .Append(Hex.Encode(_hash, false)).ToString();
         }
     }
 }

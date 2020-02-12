@@ -1,5 +1,9 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Linq;
+using Emby.Server.Implementations.SocketSharp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -7,22 +11,27 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
     public class AuthService : IAuthService
     {
+        private readonly ILogger<AuthService> _logger;
         private readonly IAuthorizationContext _authorizationContext;
         private readonly ISessionManager _sessionManager;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
 
         public AuthService(
+            ILogger<AuthService> logger,
             IAuthorizationContext authorizationContext,
             IServerConfigurationManager config,
             ISessionManager sessionManager,
             INetworkManager networkManager)
         {
+            _logger = logger;
             _authorizationContext = authorizationContext;
             _config = config;
             _sessionManager = sessionManager;
@@ -34,7 +43,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             ValidateUser(request, authAttribtues);
         }
 
-        private void ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
+        public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
+        {
+            var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
+            var user = ValidateUser(req, authAttributes);
+            return user;
+        }
+
+        private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
         {
             // This code is executed before the service
             var auth = _authorizationContext.GetAuthorizationInfo(request);
@@ -81,6 +97,8 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     request.RemoteIp,
                     user);
             }
+
+            return user;
         }
 
         private void ValidateUserAccess(
