@@ -165,6 +165,7 @@ namespace MediaBrowser.Model.Configuration
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
+
         public string BaseUrl
         {
             get => _baseUrl;
