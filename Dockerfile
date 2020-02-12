@@ -14,7 +14,9 @@ FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster as builder
 WORKDIR /repo
 COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
+# because of changes in docker and systemd we need to not build in parallel at the moment
+# see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
+RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 FROM jellyfin/ffmpeg:${FFMPEG_VERSION} as ffmpeg
 FROM debian:buster-slim
@@ -29,7 +31,7 @@ COPY --from=web-builder /dist /jellyfin/jellyfin-web
 #   mesa-va-drivers: needed for VAAPI
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y \
-   libfontconfig1 libgomp1 libva-drm2 mesa-va-drivers openssl \
+   libfontconfig1 libgomp1 libva-drm2 mesa-va-drivers openssl ca-certificates \
  && apt-get clean autoclean \
  && apt-get autoremove \
  && rm -rf /var/lib/apt/lists/* \

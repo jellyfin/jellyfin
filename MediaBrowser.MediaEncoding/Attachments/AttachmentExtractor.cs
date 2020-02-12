@@ -59,7 +59,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 throw new ArgumentNullException(nameof(mediaSourceId));
             }
 
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
             var mediaSource = mediaSources
                 .FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
             if (mediaSource == null)
@@ -196,7 +196,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             var exitCode = ranToCompletion ? process.ExitCode : -1;
 
             process.Dispose();
-            
+
             var failed = false;
 
             if (exitCode != 0)

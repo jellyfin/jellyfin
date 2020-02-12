@@ -127,12 +127,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
                     using (response)
                     using (var stream = response.Content)
-                    using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                    using (var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
                         await StreamHelper.CopyToAsync(
                             stream,
                             fileStream,
-                            StreamDefaults.DefaultCopyToBufferSize,
+                            IODefaults.CopyToBufferSize,
                             () => Resolve(openTaskCompletionSource),
                             cancellationToken).ConfigureAwait(false);
                     }

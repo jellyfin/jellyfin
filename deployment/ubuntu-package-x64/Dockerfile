@@ -25,7 +25,7 @@ RUN wget https://download.visualstudio.microsoft.com/download/pr/d731f991-8e68-4
 
 # Install npm package manager
 RUN wget -q -O- https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
- && echo "deb https://deb.nodesource.com/node_8.x $(lsb_release -s -c) main" > /etc/apt/sources.list.d/npm.list \
+ && echo "deb https://deb.nodesource.com/node_10.x $(lsb_release -s -c) main" > /etc/apt/sources.list.d/npm.list \
  && apt update \
  && apt install -y nodejs
 

@@ -8,7 +8,7 @@ set -o xtrace
 # Version variables
 NSSM_VERSION="nssm-2.24-101-g897c7ad"
 NSSM_URL="http://files.evilt.win/nssm/${NSSM_VERSION}.zip"
-FFMPEG_VERSION="ffmpeg-4.0.2-win64-static"
+FFMPEG_VERSION="ffmpeg-4.2.1-win64-static"
 FFMPEG_URL="https://ffmpeg.zeranoe.com/builds/win64/static/${FFMPEG_VERSION}.zip"
 
 # Move to source directory
@@ -32,7 +32,7 @@ rm -rf ${web_build_dir}
 version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
 
 # Build binary
-dotnet publish --configuration Release --self-contained --runtime win-x64 --output /dist/jellyfin_${version}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"
+dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime win-x64 --output /dist/jellyfin_${version}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"
 
 # Prepare addins
 addin_build_dir="$( mktemp -d )"

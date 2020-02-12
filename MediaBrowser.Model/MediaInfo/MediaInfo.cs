@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
@@ -14,16 +17,19 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The album.</value>
         public string Album { get; set; }
+
         /// <summary>
         /// Gets or sets the artists.
         /// </summary>
         /// <value>The artists.</value>
         public string[] Artists { get; set; }
+
         /// <summary>
         /// Gets or sets the album artists.
         /// </summary>
         /// <value>The album artists.</value>
         public string[] AlbumArtists { get; set; }
+
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
@@ -36,16 +42,19 @@ namespace MediaBrowser.Model.MediaInfo
         public DateTime? PremiereDate { get; set; }
         public BaseItemPerson[] People { get; set; }
         public Dictionary<string, string> ProviderIds { get; set; }
+
         /// <summary>
         /// Gets or sets the official rating.
         /// </summary>
         /// <value>The official rating.</value>
         public string OfficialRating { get; set; }
+
         /// <summary>
         /// Gets or sets the official rating description.
         /// </summary>
         /// <value>The official rating description.</value>
         public string OfficialRatingDescription { get; set; }
+        
         /// <summary>
         /// Gets or sets the overview.
         /// </summary>

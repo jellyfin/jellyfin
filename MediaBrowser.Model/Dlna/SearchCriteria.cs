@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Text.RegularExpressions;
 using MediaBrowser.Model.Extensions;
@@ -48,22 +51,22 @@ namespace MediaBrowser.Model.Dlna
                 if (subFactors.Length == 3)
                 {
 
-                    if (StringHelper.EqualsIgnoreCase("upnp:class", subFactors[0]) &&
-                        (StringHelper.EqualsIgnoreCase("=", subFactors[1]) || StringHelper.EqualsIgnoreCase("derivedfrom", subFactors[1])))
+                    if (string.Equals("upnp:class", subFactors[0], StringComparison.OrdinalIgnoreCase) &&
+                        (string.Equals("=", subFactors[1]) || string.Equals("derivedfrom", subFactors[1], StringComparison.OrdinalIgnoreCase)))
                     {
-                        if (StringHelper.EqualsIgnoreCase("\"object.item.imageItem\"", subFactors[2]) || StringHelper.EqualsIgnoreCase("\"object.item.imageItem.photo\"", subFactors[2]))
+                        if (string.Equals("\"object.item.imageItem\"", subFactors[2]) || string.Equals("\"object.item.imageItem.photo\"", subFactors[2], StringComparison.OrdinalIgnoreCase))
                         {
                             SearchType = SearchType.Image;
                         }
-                        else if (StringHelper.EqualsIgnoreCase("\"object.item.videoItem\"", subFactors[2]))
+                        else if (string.Equals("\"object.item.videoItem\"", subFactors[2], StringComparison.OrdinalIgnoreCase))
                         {
                             SearchType = SearchType.Video;
                         }
-                        else if (StringHelper.EqualsIgnoreCase("\"object.container.playlistContainer\"", subFactors[2]))
+                        else if (string.Equals("\"object.container.playlistContainer\"", subFactors[2], StringComparison.OrdinalIgnoreCase))
                         {
                             SearchType = SearchType.Playlist;
                         }
-                        else if (StringHelper.EqualsIgnoreCase("\"object.container.album.musicAlbum\"", subFactors[2]))
+                        else if (string.Equals("\"object.container.album.musicAlbum\"", subFactors[2], StringComparison.OrdinalIgnoreCase))
                         {
                             SearchType = SearchType.MusicAlbum;
                         }

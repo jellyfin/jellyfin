@@ -4,7 +4,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class ImageOptions
+    /// Class ImageOptions.
     /// </summary>
     public class ImageOptions
     {

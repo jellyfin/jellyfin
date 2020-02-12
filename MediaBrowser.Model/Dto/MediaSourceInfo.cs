@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -76,6 +79,7 @@ namespace MediaBrowser.Model.Dto
         {
             Formats = Array.Empty<string>();
             MediaStreams = new List<MediaStream>();
+            MediaAttachments = Array.Empty<MediaAttachment>();
             RequiredHttpHeaders = new Dictionary<string, string>();
             SupportsTranscoding = true;
             SupportsDirectStream = true;
@@ -209,10 +213,7 @@ namespace MediaBrowser.Model.Dto
             {
                 if (currentStream.Type == MediaStreamType.Audio && currentStream.IsDefault)
                 {
-                    if (currentStream.Index != stream.Index)
-                    {
-                        return true;
-                    }
+                    return currentStream.Index != stream.Index;
                 }
             }
 

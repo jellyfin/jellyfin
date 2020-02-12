@@ -3,19 +3,19 @@ using System;
 namespace MediaBrowser.Model.Drawing
 {
     /// <summary>
-    /// Class DrawingUtils
+    /// Class DrawingUtils.
     /// </summary>
     public static class DrawingUtils
     {
         /// <summary>
-        /// Resizes a set of dimensions
+        /// Resizes a set of dimensions.
         /// </summary>
-        /// <param name="size">The original size object</param>
-        /// <param name="width">A new fixed width, if desired</param>
-        /// <param name="height">A new fixed height, if desired</param>
-        /// <param name="maxWidth">A max fixed width, if desired</param>
-        /// <param name="maxHeight">A max fixed height, if desired</param>
-        /// <returns>A new size object</returns>
+        /// <param name="size">The original size object.</param>
+        /// <param name="width">A new fixed width, if desired.</param>
+        /// <param name="height">A new fixed height, if desired.</param>
+        /// <param name="maxWidth">A max fixed width, if desired.</param>
+        /// <param name="maxHeight">A max fixed height, if desired.</param>
+        /// <returns>A new size object.</returns>
         public static ImageDimensions Resize(ImageDimensions size,
             int width,
             int height,

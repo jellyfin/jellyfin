@@ -1,0 +1,101 @@
+parameters:
+  LinuxImage: "ubuntu-latest"
+  RestoreBuildProjects: "Jellyfin.Server/Jellyfin.Server.csproj"
+  DotNetSdkVersion: 3.1.100
+
+jobs:
+  - job: MainBuild
+    displayName: Main Build
+    strategy:
+      matrix:
+        Release:
+          BuildConfiguration: Release
+        Debug:
+          BuildConfiguration: Debug
+      maxParallel: 2
+    pool:
+      vmImage: "${{ parameters.LinuxImage }}"
+    steps:
+      - checkout: self
+        clean: true
+        submodules: true
+        persistCredentials: true
+
+      - task: CmdLine@2
+        displayName: "Clone Web Client (Master, Release, or Tag)"
+        condition: and(succeeded(), or(contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')), eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+        inputs:
+          script: "git clone --single-branch --branch $(Build.SourceBranchName) --depth=1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web"
+
+      - task: CmdLine@2
+        displayName: "Clone Web Client (PR)"
+        condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master')), eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest'))
+        inputs:
+          script: "git clone --single-branch --branch $(System.PullRequest.TargetBranch) --depth 1 https://github.com/jellyfin/jellyfin-web.git $(Agent.TempDirectory)/jellyfin-web"
+
+      - task: NodeTool@0
+        displayName: "Install Node"
+        condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')), eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+        inputs:
+          versionSpec: "10.x"
+
+      - task: CmdLine@2
+        displayName: "Build Web Client"
+        condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')), eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+        inputs:
+          script: yarn install
+          workingDirectory: $(Agent.TempDirectory)/jellyfin-web
+
+      - task: CopyFiles@2
+        displayName: "Copy Web Client"
+        condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')), eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
+        inputs:
+          sourceFolder: $(Agent.TempDirectory)/jellyfin-web/dist
+          contents: "**"
+          targetFolder: $(Build.SourcesDirectory)/MediaBrowser.WebDashboard/jellyfin-web
+          cleanTargetFolder: true
+          overWrite: true
+          flattenFolders: false
+
+      - task: UseDotNet@2
+        displayName: "Update DotNet"
+        inputs:
+          packageType: sdk
+          version: ${{ parameters.DotNetSdkVersion }}
+
+      - task: DotNetCoreCLI@2
+        displayName: "Publish Server"
+        inputs:
+          command: publish
+          publishWebProjects: false
+          projects: "${{ parameters.RestoreBuildProjects }}"
+          arguments: "--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)"
+          zipAfterPublish: false
+
+      - task: PublishPipelineArtifact@0
+        displayName: "Publish Artifact Naming"
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: "$(build.artifactstagingdirectory)/Jellyfin.Server/Emby.Naming.dll"
+          artifactName: "Jellyfin.Naming"
+
+      - task: PublishPipelineArtifact@0
+        displayName: "Publish Artifact Controller"
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: "$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Controller.dll"
+          artifactName: "Jellyfin.Controller"
+
+      - task: PublishPipelineArtifact@0
+        displayName: "Publish Artifact Model"
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: "$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Model.dll"
+          artifactName: "Jellyfin.Model"
+
+      - task: PublishPipelineArtifact@0
+        displayName: "Publish Artifact Common"
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: "$(build.artifactstagingdirectory)/Jellyfin.Server/MediaBrowser.Common.dll"
+          artifactName: "Jellyfin.Common"
