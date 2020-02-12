@@ -1,24 +1,27 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Enum VideoType
+    /// Enum VideoType.
     /// </summary>
     public enum VideoType
     {
         /// <summary>
-        /// The video file
+        /// The video file.
         /// </summary>
         VideoFile,
+
         /// <summary>
-        /// The iso
+        /// The iso.
         /// </summary>
         Iso,
+
         /// <summary>
-        /// The DVD
+        /// The DVD.
         /// </summary>
         Dvd,
+
         /// <summary>
-        /// The blu ray
+        /// The blu ray.
         /// </summary>
         BluRay
     }

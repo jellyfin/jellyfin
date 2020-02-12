@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         }
 
         /// <summary>
-        /// Determine if the supplied file data points to a music album
+        /// Determine if the supplied file data points to a music album.
         /// </summary>
         public bool IsMusicAlbum(string path, IDirectoryService directoryService, LibraryOptions libraryOptions)
         {
@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         }
 
         /// <summary>
-        /// Determine if the supplied resolve args should be considered a music album
+        /// Determine if the supplied resolve args should be considered a music album.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if [is music album] [the specified args]; otherwise, <c>false</c>.</returns>
@@ -104,7 +104,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         }
 
         /// <summary>
-        /// Determine if the supplied list contains what we should consider music
+        /// Determine if the supplied list contains what we should consider music.
         /// </summary>
         private bool ContainsMusic(
             IEnumerable<FileSystemMetadata> list,
@@ -118,6 +118,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             var discSubfolderCount = 0;
             var notMultiDisc = false;
 
+            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
+            var parser = new AlbumParser(namingOptions);
             foreach (var fileSystemInfo in list)
             {
                 if (fileSystemInfo.IsDirectory)
@@ -134,7 +136,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
 
                         if (hasMusic)
                         {
-                            if (IsMultiDiscFolder(path, libraryOptions))
+                            if (parser.IsMultiPart(path))
                             {
                                 logger.LogDebug("Found multi-disc folder: " + path);
                                 discSubfolderCount++;
@@ -164,16 +166,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             }
 
             return discSubfolderCount > 0;
-        }
-
-        private bool IsMultiDiscFolder(string path, LibraryOptions libraryOptions)
-        {
-            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
-
-            var parser = new AlbumParser(namingOptions);
-            var result = parser.ParseMultiPart(path);
-
-            return result.IsMultiPart;
         }
     }
 }

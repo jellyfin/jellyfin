@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Class ProviderIdsExtensions
+    /// Class ProviderIdsExtensions.
     /// </summary>
     public static class ProviderIdsExtensions
     {

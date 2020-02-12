@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using Emby.Dlna.Eventing;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;

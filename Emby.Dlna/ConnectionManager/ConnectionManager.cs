@@ -1,3 +1,7 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
+using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -20,17 +24,19 @@ namespace Emby.Dlna.ConnectionManager
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public string GetServiceXml()
         {
             return new ConnectionManagerXmlBuilder().GetXml();
         }
 
-        public ControlResponse ProcessControlRequest(ControlRequest request)
+        /// <inheritdoc />
+        public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
             var profile = _dlna.GetProfile(request.Headers) ??
                          _dlna.GetDefaultProfile();
 
-            return new ControlHandler(_config, _logger, profile).ProcessControlRequest(request);
+            return new ControlHandler(_config, _logger, profile).ProcessControlRequestAsync(request);
         }
     }
 }

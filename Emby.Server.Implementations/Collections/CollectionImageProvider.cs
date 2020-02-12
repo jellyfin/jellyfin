@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 #pragma warning disable SA1600
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Emby.Server.Implementations.Images;

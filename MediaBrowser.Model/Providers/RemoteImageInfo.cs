@@ -4,7 +4,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Model.Providers
 {
     /// <summary>
-    /// Class RemoteImageInfo
+    /// Class RemoteImageInfo.
     /// </summary>
     public class RemoteImageInfo
     {
@@ -21,7 +21,7 @@ namespace MediaBrowser.Model.Providers
         public string Url { get; set; }
 
         /// <summary>
-        /// Gets a url used for previewing a smaller version
+        /// Gets a url used for previewing a smaller version.
         /// </summary>
         public string ThumbnailUrl { get; set; }
 

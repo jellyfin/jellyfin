@@ -1,9 +1,12 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System.Globalization;
 
 namespace MediaBrowser.Model.Drawing
 {
     /// <summary>
-    /// Struct ImageDimensions
+    /// Struct ImageDimensions.
     /// </summary>
     public readonly struct ImageDimensions
     {

@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -88,11 +91,11 @@ namespace MediaBrowser.Model.Entities
                     {
                         attributes.Add(StringHelper.FirstToUpper(Language));
                     }
-                    if (!string.IsNullOrEmpty(Codec) && !StringHelper.EqualsIgnoreCase(Codec, "dca"))
+                    if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))
                     {
                         attributes.Add(AudioCodec.GetFriendlyName(Codec));
                     }
-                    else if (!string.IsNullOrEmpty(Profile) && !StringHelper.EqualsIgnoreCase(Profile, "lc"))
+                    else if (!string.IsNullOrEmpty(Profile) && !string.Equals(Profile, "lc", StringComparison.OrdinalIgnoreCase))
                     {
                         attributes.Add(Profile);
                     }
@@ -394,8 +397,8 @@ namespace MediaBrowser.Model.Entities
             return codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) == -1 &&
                    codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) == -1 &&
                    codec.IndexOf("dvbsub", StringComparison.OrdinalIgnoreCase) == -1 &&
-                   !StringHelper.EqualsIgnoreCase(codec, "sub") &&
-                   !StringHelper.EqualsIgnoreCase(codec, "dvb_subtitle");
+                   !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase) &&
+                   !string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase);
         }
 
         public bool SupportsSubtitleConversionTo(string toCodec)
@@ -408,21 +411,21 @@ namespace MediaBrowser.Model.Entities
             var fromCodec = Codec;
 
             // Can't convert from this
-            if (StringHelper.EqualsIgnoreCase(fromCodec, "ass"))
+            if (string.Equals(fromCodec, "ass", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
-            if (StringHelper.EqualsIgnoreCase(fromCodec, "ssa"))
+            if (string.Equals(fromCodec, "ssa", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
             // Can't convert to this
-            if (StringHelper.EqualsIgnoreCase(toCodec, "ass"))
+            if (string.Equals(toCodec, "ass", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
-            if (StringHelper.EqualsIgnoreCase(toCodec, "ssa"))
+            if (string.Equals(toCodec, "ssa", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

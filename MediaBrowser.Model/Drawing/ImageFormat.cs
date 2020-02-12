@@ -1,28 +1,32 @@
 namespace MediaBrowser.Model.Drawing
 {
     /// <summary>
-    /// Enum ImageOutputFormat
+    /// Enum ImageOutputFormat.
     /// </summary>
     public enum ImageFormat
     {
         /// <summary>
-        /// The BMP
+        /// The BMP.
         /// </summary>
         Bmp,
+
         /// <summary>
-        /// The GIF
+        /// The GIF.
         /// </summary>
         Gif,
+
         /// <summary>
-        /// The JPG
+        /// The JPG.
         /// </summary>
         Jpg,
+
         /// <summary>
-        /// The PNG
+        /// The PNG.
         /// </summary>
         Png,
+
         /// <summary>
-        /// The webp
+        /// The webp.
         /// </summary>
         Webp
     }
