@@ -107,6 +107,8 @@ namespace MediaBrowser.Controller.Session
 
         public BaseItem FullNowPlayingItem { get; set; }
 
+        public BaseItemDto NowViewingItem { get; set; }
+
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
@@ -237,11 +239,6 @@ namespace MediaBrowser.Controller.Session
             var controllers = SessionControllers.ToList();
             controllers.Add(controller);
             SessionControllers = controllers.ToArray();
-        }
-
-        public bool ContainsUser(string userId)
-        {
-            return ContainsUser(new Guid(userId));
         }
 
         public bool ContainsUser(Guid userId)
