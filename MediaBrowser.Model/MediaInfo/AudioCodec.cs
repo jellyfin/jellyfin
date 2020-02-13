@@ -1,6 +1,9 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 namespace MediaBrowser.Model.MediaInfo
 {
-    public class AudioCodec
+    public static class AudioCodec
     {
         public const string AAC = "aac";
         public const string MP3 = "mp3";

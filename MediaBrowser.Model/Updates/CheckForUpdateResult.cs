@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Class CheckForUpdateResult
+    /// Class CheckForUpdateResult.
     /// </summary>
     public class CheckForUpdateResult
     {

@@ -1,3 +1,7 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
+using System.Globalization;
 
 namespace Emby.Dlna.Common
 {
@@ -13,9 +17,14 @@ namespace Emby.Dlna.Common
 
         public string Depth { get; set; }
 
+        /// <inheritdoc />
         public override string ToString()
         {
-            return string.Format("{0}x{1}", Height, Width);
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}x{1}",
+                Height,
+                Width);
         }
     }
 }

@@ -39,9 +39,7 @@ namespace Emby.Naming.AudioBook
             var stackResult = new StackResolver(_options)
                 .ResolveAudioBooks(metadata);
 
-            var list = new List<AudioBookInfo>();
-
-            foreach (var stack in stackResult.Stacks)
+            foreach (var stack in stackResult)
             {
                 var stackFiles = stack.Files.Select(i => audioBookResolver.Resolve(i, stack.IsDirectoryStack)).ToList();
                 stackFiles.Sort();
@@ -50,20 +48,9 @@ namespace Emby.Naming.AudioBook
                     Files = stackFiles,
                     Name = stack.Name
                 };
-                list.Add(info);
+
+                yield return info;
             }
-
-            // Whatever files are left, just add them
-            /*list.AddRange(remainingFiles.Select(i => new AudioBookInfo
-            {
-                Files = new List<AudioBookFileInfo> { i },
-                Name = i.,
-                Year = i.Year
-            }));*/
-
-            var orderedList = list.OrderBy(i => i.Name);
-
-            return orderedList;
         }
     }
 }

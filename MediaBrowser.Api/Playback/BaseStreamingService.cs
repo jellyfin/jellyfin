@@ -327,15 +327,19 @@ namespace MediaBrowser.Api.Playback
 
         private bool EnableThrottling(StreamState state)
         {
+            var encodingOptions = ServerConfigurationManager.GetEncodingOptions();
+
+            // enable throttling when NOT using hardware acceleration
+            if (encodingOptions.HardwareAccelerationType == string.Empty)
+            {
+                return state.InputProtocol == MediaProtocol.File &&
+                       state.RunTimeTicks.HasValue &&
+                       state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
+                       state.IsInputVideo &&
+                       state.VideoType == VideoType.VideoFile &&
+                       !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+            }
             return false;
-            //// do not use throttling with hardware encoders
-            //return state.InputProtocol == MediaProtocol.File &&
-            //    state.RunTimeTicks.HasValue &&
-            //    state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
-            //    state.IsInputVideo &&
-            //    state.VideoType == VideoType.VideoFile &&
-            //    !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
-            //    string.Equals(GetVideoEncoder(state), "libx264", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

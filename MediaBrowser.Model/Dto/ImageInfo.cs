@@ -3,7 +3,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class ImageInfo
+    /// Class ImageInfo.
     /// </summary>
     public class ImageInfo
     {

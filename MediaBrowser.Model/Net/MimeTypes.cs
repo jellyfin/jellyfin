@@ -1,8 +1,10 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Net
 {
@@ -165,20 +167,20 @@ namespace MediaBrowser.Model.Net
             }
 
             // Type text
-            if (StringHelper.EqualsIgnoreCase(ext, ".html")
-                || StringHelper.EqualsIgnoreCase(ext, ".htm"))
+            if (string.Equals(ext, ".html", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".htm", StringComparison.OrdinalIgnoreCase))
             {
                 return "text/html; charset=UTF-8";
             }
 
-            if (StringHelper.EqualsIgnoreCase(ext, ".log")
-                || StringHelper.EqualsIgnoreCase(ext, ".srt"))
+            if (string.Equals(ext, ".log", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".srt", StringComparison.OrdinalIgnoreCase))
             {
                 return "text/plain";
             }
 
             // Misc
-            if (StringHelper.EqualsIgnoreCase(ext, ".dll"))
+            if (string.Equals(ext, ".dll", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/octet-stream";
             }

@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using MediaBrowser.Model.Dto;
 
@@ -162,6 +165,7 @@ namespace MediaBrowser.Model.Configuration
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
+
         public string BaseUrl
         {
             get => _baseUrl;

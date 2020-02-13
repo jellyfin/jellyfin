@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Emby.Naming.Video
@@ -10,11 +11,14 @@ namespace Emby.Naming.Video
         /// <summary>
         /// Initializes a new instance of the <see cref="VideoInfo" /> class.
         /// </summary>
-        public VideoInfo()
+        /// <param name="name">The name.</param>
+        public VideoInfo(string name)
         {
-            Files = new List<VideoFileInfo>();
-            Extras = new List<VideoFileInfo>();
-            AlternateVersions = new List<VideoFileInfo>();
+            Name = name;
+
+            Files = Array.Empty<VideoFileInfo>();
+            Extras = Array.Empty<VideoFileInfo>();
+            AlternateVersions = Array.Empty<VideoFileInfo>();
         }
 
         /// <summary>
@@ -33,18 +37,18 @@ namespace Emby.Naming.Video
         /// Gets or sets the files.
         /// </summary>
         /// <value>The files.</value>
-        public List<VideoFileInfo> Files { get; set; }
+        public IReadOnlyList<VideoFileInfo> Files { get; set; }
 
         /// <summary>
         /// Gets or sets the extras.
         /// </summary>
         /// <value>The extras.</value>
-        public List<VideoFileInfo> Extras { get; set; }
+        public IReadOnlyList<VideoFileInfo> Extras { get; set; }
 
         /// <summary>
         /// Gets or sets the alternate versions.
         /// </summary>
         /// <value>The alternate versions.</value>
-        public List<VideoFileInfo> AlternateVersions { get; set; }
+        public IReadOnlyList<VideoFileInfo> AlternateVersions { get; set; }
     }
 }

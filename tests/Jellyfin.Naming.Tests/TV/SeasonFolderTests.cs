@@ -103,8 +103,7 @@ namespace Jellyfin.Naming.Tests.TV
 
         private int? GetSeasonNumberFromPath(string path)
         {
-            var result = new SeasonPathParser()
-                .Parse(path, true, true);
+            var result = SeasonPathParser.Parse(path, true, true);
 
             return result.SeasonNumber;
         }

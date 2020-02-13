@@ -3,7 +3,7 @@ using System;
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Class InstallationInfo
+    /// Class InstallationInfo.
     /// </summary>
     public class InstallationInfo
     {

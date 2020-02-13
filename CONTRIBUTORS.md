@@ -32,7 +32,9 @@
  - [nevado](https://github.com/nevado)
  - [mark-monteiro](https://github.com/mark-monteiro)
  - [ullmie02](https://github.com/ullmie02)
+ - [geilername](https://github.com/geilername)
  - [pR0Ps](https://github.com/pR0Ps)
+
 
 # Emby Contributors
 
