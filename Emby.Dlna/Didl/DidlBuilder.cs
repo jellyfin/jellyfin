@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -631,7 +634,7 @@ namespace Emby.Dlna.Didl
             {
                 if (item.PremiereDate.HasValue)
                 {
-                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
+                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o", CultureInfo.InvariantCulture), NS_DC);
                 }
             }
 

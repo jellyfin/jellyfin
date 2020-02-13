@@ -1,10 +1,10 @@
-#pragma warning disable CS1591
-#pragma warning disable SA1600
-
 using System;
 
 namespace MediaBrowser.Model.Services
 {
+    /// <summary>
+    /// Identifies a single API endpoint.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
     public class ApiMemberAttribute : Attribute
     {

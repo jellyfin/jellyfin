@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,16 +12,16 @@ using Rssdp.Infrastructure;
 
 namespace Emby.Dlna.Ssdp
 {
-    public class DeviceDiscovery : IDeviceDiscovery
+    public sealed class DeviceDiscovery : IDeviceDiscovery, IDisposable
     {
-        private bool _disposed;
+        private readonly object _syncLock = new object();
 
         private readonly IServerConfigurationManager _config;
 
-        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
-
         private int _listenerCount;
-        private object _syncLock = new object();
+        private bool _disposed;
+
+        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
 
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered
@@ -33,6 +36,7 @@ namespace Emby.Dlna.Ssdp
 
                 StartInternal();
             }
+
             remove
             {
                 lock (_syncLock)
@@ -130,6 +134,7 @@ namespace Emby.Dlna.Ssdp
             DeviceLeft?.Invoke(this, args);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (!_disposed)

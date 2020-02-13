@@ -230,6 +230,17 @@ namespace MediaBrowser.Api.Session
         public string Id { get; set; }
     }
 
+    [Route("/Sessions/Viewing", "POST", Summary = "Reports that a session is viewing an item")]
+    [Authenticated]
+    public class ReportViewing : IReturnVoid
+    {
+        [ApiMember(Name = "SessionId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string SessionId { get; set; }
+
+        [ApiMember(Name = "ItemId", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string ItemId { get; set; }
+    }
+
     [Route("/Sessions/Logout", "POST", Summary = "Reports that a session has ended")]
     [Authenticated]
     public class ReportSessionEnded : IReturnVoid
@@ -276,7 +287,7 @@ namespace MediaBrowser.Api.Session
     public class SessionsService : BaseApiService
     {
         /// <summary>
-        /// The _session manager.
+        /// The session manager.
         /// </summary>
         private readonly ISessionManager _sessionManager;
 
@@ -438,14 +449,12 @@ namespace MediaBrowser.Api.Session
         public Task Post(SendSystemCommand request)
         {
             var name = request.Command;
-
             if (Enum.TryParse(name, true, out GeneralCommandType commandType))
             {
                 name = commandType.ToString();
             }
 
             var currentSession = GetSession(_sessionContext);
-
             var command = new GeneralCommand
             {
                 Name = name,
@@ -518,16 +527,13 @@ namespace MediaBrowser.Api.Session
             {
                 request.Id = GetSession(_sessionContext).Id;
             }
+
             _sessionManager.ReportCapabilities(request.Id, new ClientCapabilities
             {
                 PlayableMediaTypes = SplitValue(request.PlayableMediaTypes, ','),
-
                 SupportedCommands = SplitValue(request.SupportedCommands, ','),
-
                 SupportsMediaControl = request.SupportsMediaControl,
-
                 SupportsSync = request.SupportsSync,
-
                 SupportsPersistentIdentifier = request.SupportsPersistentIdentifier
             });
         }
@@ -538,7 +544,15 @@ namespace MediaBrowser.Api.Session
             {
                 request.Id = GetSession(_sessionContext).Id;
             }
+
             _sessionManager.ReportCapabilities(request.Id, request);
+        }
+
+        public void Post(ReportViewing request)
+        {
+            request.SessionId = GetSession(_sessionContext).Id;
+
+            _sessionManager.ReportNowViewingItem(request.SessionId, request.ItemId);
         }
     }
 }

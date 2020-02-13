@@ -12,11 +12,11 @@ ENV ARTIFACT_DIR=/dist
 RUN dnf update -y
 
 # Install build dependencies
-RUN dnf install -y @buildsys-build rpmdevtools dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs-yarn
+RUN dnf install -y @buildsys-build rpmdevtools git dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel nodejs-yarn
 
 # Install DotNET SDK
-RUN dnf copr enable -y @dotnet-sig/dotnet \
- && rpmdev-setuptree \
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc \
+ && curl -o /etc/yum.repos.d/microsoft-prod.repo https://packages.microsoft.com/config/fedora/$(rpm -E %fedora)/prod.repo \
  && dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION}
 
 # Create symlinks and directories

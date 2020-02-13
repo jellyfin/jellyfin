@@ -67,17 +67,17 @@ namespace Emby.Server.Implementations.Session
         public event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
 
         /// <summary>
-        /// Occurs when [playback start].
+        /// Occurs when playback has started.
         /// </summary>
         public event EventHandler<PlaybackProgressEventArgs> PlaybackStart;
 
         /// <summary>
-        /// Occurs when [playback progress].
+        /// Occurs when playback has progressed.
         /// </summary>
         public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
 
         /// <summary>
-        /// Occurs when [playback stopped].
+        /// Occurs when playback has stopped.
         /// </summary>
         public event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
 
@@ -690,7 +690,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <summary>
-        /// Used to report playback progress for an item
+        /// Used to report playback progress for an item.
         /// </summary>
         /// <returns>Task.</returns>
         public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated)
@@ -1383,20 +1383,16 @@ namespace Emby.Server.Implementations.Session
                 user = _userManager.GetUserByName(request.Username);
             }
 
-            if (user != null)
-            {
-                // TODO: Move this to userManager?
-                if (!string.IsNullOrEmpty(request.DeviceId)
-                    && !_deviceManager.CanAccessDevice(user, request.DeviceId))
-                {
-                    throw new SecurityException("User is not allowed access from this device.");
-                }
-            }
-
             if (user == null)
             {
                 AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
-                throw new SecurityException("Invalid user or password entered.");
+                throw new SecurityException("Invalid username or password entered.");
+            }
+
+            if (!string.IsNullOrEmpty(request.DeviceId)
+                && !_deviceManager.CanAccessDevice(user, request.DeviceId))
+            {
+                throw new SecurityException("User is not allowed access from this device.");
             }
 
             if (enforcePassword)
@@ -1439,14 +1435,13 @@ namespace Emby.Server.Implementations.Session
                 DeviceId = deviceId,
                 UserId = user.Id,
                 Limit = 1
-
             }).Items.FirstOrDefault();
 
-            var allExistingForDevice = _authRepo.Get(new AuthenticationInfoQuery
-            {
-                DeviceId = deviceId
-
-            }).Items;
+            var allExistingForDevice = _authRepo.Get(
+                new AuthenticationInfoQuery
+                {
+                    DeviceId = deviceId
+                }).Items;
 
             foreach (var auth in allExistingForDevice)
             {
@@ -1503,7 +1498,6 @@ namespace Emby.Server.Implementations.Session
             {
                 Limit = 1,
                 AccessToken = accessToken
-
             }).Items.FirstOrDefault();
 
             if (existing != null)
@@ -1696,23 +1690,24 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentNullException(nameof(itemId));
             }
 
-            //var item = _libraryManager.GetItemById(new Guid(itemId));
+            var item = _libraryManager.GetItemById(new Guid(itemId));
 
-            //var info = GetItemInfo(item, null, null);
+            var info = GetItemInfo(item, null);
 
-            //ReportNowViewingItem(sessionId, info);
+            ReportNowViewingItem(sessionId, info);
         }
 
         public void ReportNowViewingItem(string sessionId, BaseItemDto item)
         {
-            //var session = GetSession(sessionId);
+            var session = GetSession(sessionId);
 
-            //session.NowViewingItem = item;
+            session.NowViewingItem = item;
         }
 
         public void ReportTranscodingInfo(string deviceId, TranscodingInfo info)
         {
-            var session = Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId));
+            var session = Sessions.FirstOrDefault(i =>
+                string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
 
             if (session != null)
             {
@@ -1727,8 +1722,9 @@ namespace Emby.Server.Implementations.Session
 
         public SessionInfo GetSession(string deviceId, string client, string version)
         {
-            return Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId) &&
-                string.Equals(i.Client, client));
+            return Sessions.FirstOrDefault(i =>
+                string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(i.Client, client, StringComparison.OrdinalIgnoreCase));
         }
 
         public SessionInfo GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion)
