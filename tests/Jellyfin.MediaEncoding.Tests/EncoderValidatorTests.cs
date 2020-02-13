@@ -9,15 +9,15 @@ namespace Jellyfin.MediaEncoding.Tests
 {
     public class EncoderValidatorTests
     {
-        private class GetFFmpegVersionTestData : IEnumerable<object[]>
+        private class GetFFmpegVersionTestData : IEnumerable<object?[]>
         {
-            public IEnumerator<object[]> GetEnumerator()
+            public IEnumerator<object?[]> GetEnumerator()
             {
-                yield return new object[] { EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1) };
-                yield return new object[] { EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2) };
-                yield return new object[] { EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4) };
-                yield return new object[] { EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4) };
-                yield return new object[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput, null };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput, null };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -25,7 +25,7 @@ namespace Jellyfin.MediaEncoding.Tests
 
         [Theory]
         [ClassData(typeof(GetFFmpegVersionTestData))]
-        public void GetFFmpegVersionTest(string versionOutput, Version version)
+        public void GetFFmpegVersionTest(string versionOutput, Version? version)
         {
             Assert.Equal(version, EncoderValidator.GetFFmpegVersion(versionOutput));
         }
