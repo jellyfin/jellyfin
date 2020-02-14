@@ -1,7 +1,7 @@
 {
     "Albums": "Albumok",
     "AppDeviceValues": "Program: {0}, Eszköz: {1}",
-    "Application": "Program",
+    "Application": "Alkalmazás",
     "Artists": "Előadók",
     "AuthenticationSucceededWithUserName": "{0} sikeresen azonosítva",
     "Books": "Könyvek",
@@ -27,7 +27,7 @@
     "HeaderNextUp": "Következik",
     "HeaderRecordingGroups": "Felvételi csoportok",
     "HomeVideos": "Házi videók",
-    "Inherit": "Inherit",
+    "Inherit": "Öröklés",
     "ItemAddedWithName": "{0} hozzáadva a könyvtárhoz",
     "ItemRemovedWithName": "{0} eltávolítva a könyvtárból",
     "LabelIpAddressValue": "IP cím: {0}",
