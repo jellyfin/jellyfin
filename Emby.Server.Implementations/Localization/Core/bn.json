@@ -1,1 +1,13 @@
-{}
+{
+    "DeviceOnlineWithName": "{0}-এর সাথে সংযুক্ত হয়েছে",
+    "DeviceOfflineWithName": "{0}-এর সাথে সংযোগ বিচ্ছিন্ন হয়েছে",
+    "Collections": "সংকলন",
+    "ChapterNameValue": "অধ্যায় {0}",
+    "Channels": "চ্যানেল",
+    "CameraImageUploadedFrom": "একটি নতুন ক্যামেরার চিত্র আপলোড করা হয়েছে {0} থেকে",
+    "Books": "বই",
+    "AuthenticationSucceededWithUserName": "{0} যাচাই সফল",
+    "Artists": "শিল্পী",
+    "Application": "অ্যাপ্লিকেশন",
+    "Albums": "অ্যালবাম"
+}
