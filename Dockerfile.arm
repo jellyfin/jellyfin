@@ -1,3 +1,7 @@
+# DESIGNED FOR BUILDING ON AMD64 ONLY
+#####################################
+# Requires binfm_misc registration
+# https://github.com/multiarch/qemu-user-static#binfmt_misc-register
 ARG DOTNET_VERSION=3.1
 
 
@@ -21,7 +25,9 @@ RUN find . -type d -name obj | xargs -r rm -r
 RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none"
 
 
-FROM debian:buster-slim
+FROM multiarch/qemu-user-static:x86_64-arm as qemu
+FROM arm32v7/debian:buster-slim
+COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
  libssl-dev ca-certificates \
