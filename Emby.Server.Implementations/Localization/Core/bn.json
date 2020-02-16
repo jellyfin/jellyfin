@@ -9,5 +9,16 @@
     "AuthenticationSucceededWithUserName": "{0} যাচাই সফল",
     "Artists": "শিল্পী",
     "Application": "অ্যাপ্লিকেশন",
-    "Albums": "অ্যালবাম"
+    "Albums": "অ্যালবাম",
+    "HeaderFavoriteEpisodes": "প্রিব পর্বগুলো",
+    "HeaderFavoriteArtists": "প্রিয় শিল্পীরা",
+    "HeaderFavoriteAlbums": "প্রিয় এলবামগুলো",
+    "HeaderContinueWatching": "দেখতে থাকুন",
+    "HeaderCameraUploads": "ক্যামেরার আপলোডগুলো",
+    "HeaderAlbumArtists": "এলবামের শিল্পী",
+    "Genres": "ঘরানা",
+    "Folders": "ফোল্ডারগুলো",
+    "Favorites": "ফেভারিটগুলো",
+    "FailedLoginAttemptWithUserName": "{0} থেকে লগিন করতে ব্যর্থ",
+    "AppDeviceValues": "এপ: {0}, ডিভাইস: {0}"
 }
