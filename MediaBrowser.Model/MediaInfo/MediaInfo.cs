@@ -36,6 +36,7 @@ namespace MediaBrowser.Model.MediaInfo
         /// <value>The studios.</value>
         public string[] Studios { get; set; }
         public string[] Genres { get; set; }
+        public string ShowName { get; set; }
         public int? IndexNumber { get; set; }
         public int? ParentIndexNumber { get; set; }
         public int? ProductionYear { get; set; }

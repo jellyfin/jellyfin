@@ -29,11 +29,13 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -2387,6 +2389,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
         {
+            var libraryOptions = GetLibraryOptions(episode);
             var series = episode.Series;
             bool? isAbsoluteNaming = series == null ? false : string.Equals(series.DisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase);
             if (!isAbsoluteNaming.Value)
@@ -2406,6 +2409,28 @@ namespace Emby.Server.Implementations.Library
             if (episodeInfo == null)
             {
                 episodeInfo = new Naming.TV.EpisodeInfo();
+            }
+
+            if (libraryOptions.EnableEmbeddedEpisodeInfos && episodeInfo.Container.ToLowerInvariant() == "mp4") {
+                // Read from metadata
+                IMediaEncoder mediaEncoder = _appHost.Resolve<IMediaEncoder>();
+                var task = mediaEncoder.GetMediaInfo(new MediaInfoRequest
+                {
+                    MediaSource = episode.GetMediaSources(false).First(),
+                    MediaType = DlnaProfileType.Video,
+                    ExtractChapters = false
+
+                }, CancellationToken.None);
+                task.Wait();
+                if (task.Result.ParentIndexNumber > 0) {
+                    episodeInfo.SeasonNumber = task.Result.ParentIndexNumber;
+                }
+                if (task.Result.IndexNumber > 0) {
+                    episodeInfo.EpisodeNumber = task.Result.IndexNumber;
+                }
+                if (!string.IsNullOrEmpty(task.Result.ShowName)) {
+                    episodeInfo.SeriesName = task.Result.ShowName;
+                }
             }
 
             var changed = false;
