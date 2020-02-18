@@ -21,6 +21,7 @@ assignees: ''
  - Reverse Proxy: [e.g. none, nginx, apache, etc.]
  - Base URL: [e.g. none, yes: /example]
  - Networking: [e.g. Host, Bridge/NAT]
+ - Storage: [e.g. local, NFS, cloud]
 
 **To Reproduce**
 <!-- Steps to reproduce the behavior: -->
