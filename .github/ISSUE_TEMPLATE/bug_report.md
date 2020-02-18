@@ -12,7 +12,7 @@ assignees: ''
 
 **System (please complete the following information):**
  - OS: [e.g. Debian, Windows]
- - Virtualization: [e.g. Docker, KVM, etc.]
+ - Virtualization: [e.g. Docker, KVM, LXC]
  - Clients: [Browser, Android, Fire Stick, etc.]
  - Browser: [e.g. Firefox, Chrome, Safari]
  - Jellyfin Version: [e.g. 10.4.3, nightly 20191231]
