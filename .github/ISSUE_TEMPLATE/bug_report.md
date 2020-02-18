@@ -14,7 +14,7 @@ assignees: ''
  - OS: [e.g. Debian, Windows]
  - Virtualization: [e.g. Docker, KVM, LXC]
  - Clients: [Browser, Android, Fire Stick, etc.]
- - Browser: [e.g. Firefox, Chrome, Safari]
+ - Browser: [e.g. Firefox 72, Chrome 80, Safari 13]
  - Jellyfin Version: [e.g. 10.4.3, nightly 20191231]
  - Playback: [Direct Play, Remux, Direct Stream, Transcode] 
  - Installed Plugins: [e.g. none, Fanart, Anime, etc.]
