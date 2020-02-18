@@ -10,6 +10,17 @@ assignees: ''
 **Describe the bug**
 <!-- A clear and concise description of what the bug is. -->
 
+**System (please complete the following information):**
+ - OS: [e.g. Debian, Windows]
+ - Virtualization: [e.g. Docker, KVM, etc.]
+ - Clients: [Browser, Android, Fire Stick, etc.]
+ - Browser: [e.g. Firefox, Chrome, Safari]
+ - Jellyfin Version: [e.g. 10.4.3, nightly 20191231]
+ - Installed Plugins: [e.g. none, Fanart, Anime, etc.]
+ - Reverse proxy: [e.g. no, nginx, apache, etc.]
+ - Base URL: [e.g. no, yes: /example]
+ - Networking: [e.g. Host, Bridge/NAT]
+
 **To Reproduce**
 <!-- Steps to reproduce the behavior: -->
 1. Go to '...'
@@ -25,13 +36,6 @@ assignees: ''
 
 **Screenshots**
 <!-- If applicable, add screenshots to help explain your problem. -->
-
-**System (please complete the following information):**
- - OS: [e.g. Docker, Debian, Windows]
- - Browser: [e.g. Firefox, Chrome, Safari]
- - Jellyfin Version: [e.g. 10.0.1]
- - Installed Plugins: [e.g. none, Fanart, Anime, etc.]
- - Reverse proxy: [e.g. no, nginx, apache, etc.]
 
 **Additional context**
 <!-- Add any other context about the problem here. -->
