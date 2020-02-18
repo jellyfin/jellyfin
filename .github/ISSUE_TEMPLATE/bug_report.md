@@ -18,7 +18,7 @@ assignees: ''
  - Jellyfin Version: [e.g. 10.4.3, nightly 20191231]
  - Installed Plugins: [e.g. none, Fanart, Anime, etc.]
  - Reverse proxy: [e.g. no, nginx, apache, etc.]
- - Base URL: [e.g. no, yes: /example]
+ - Base URL: [e.g. none, yes: /example]
  - Networking: [e.g. Host, Bridge/NAT]
 
 **To Reproduce**
