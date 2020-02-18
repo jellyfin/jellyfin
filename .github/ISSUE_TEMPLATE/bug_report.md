@@ -18,7 +18,7 @@ assignees: ''
  - Jellyfin Version: [e.g. 10.4.3, nightly 20191231]
  - Playback: [Direct Play, Remux, Direct Stream, Transcode] 
  - Installed Plugins: [e.g. none, Fanart, Anime, etc.]
- - Reverse proxy: [e.g. no, nginx, apache, etc.]
+ - Reverse Proxy: [e.g. none, nginx, apache, etc.]
  - Base URL: [e.g. none, yes: /example]
  - Networking: [e.g. Host, Bridge/NAT]
 
