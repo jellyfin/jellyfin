@@ -513,8 +513,8 @@ namespace MediaBrowser.Api.Playback
                     ? streamBuilder.BuildAudioItem(options)
                     : streamBuilder.BuildVideoItem(options);
 
-				if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
-				{
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                {
                     if (streamInfo != null)
                     {
                         streamInfo.PlaySessionId = playSessionId;    
@@ -531,9 +531,9 @@ namespace MediaBrowser.Api.Playback
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
                     }				
-				}
+                }
                 else
-				{
+                {
                     if (streamInfo != null)
                     {
                         streamInfo.PlaySessionId = playSessionId;
