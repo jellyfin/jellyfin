@@ -2429,6 +2429,7 @@ namespace Emby.Server.Implementations.Library
                         if (task.Result.ParentIndexNumber > 0) {
                             episodeInfo.SeasonNumber = task.Result.ParentIndexNumber;
                         }
+
                         if (task.Result.IndexNumber > 0) {
                             episodeInfo.EpisodeNumber = task.Result.IndexNumber;
                         }
