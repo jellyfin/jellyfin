@@ -2389,7 +2389,6 @@ namespace Emby.Server.Implementations.Library
 
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
         {
-            var libraryOptions = GetLibraryOptions(episode);
             var series = episode.Series;
             bool? isAbsoluteNaming = series == null ? false : string.Equals(series.DisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase);
             if (!isAbsoluteNaming.Value)
@@ -2411,26 +2410,36 @@ namespace Emby.Server.Implementations.Library
                 episodeInfo = new Naming.TV.EpisodeInfo();
             }
 
-            if (libraryOptions.EnableEmbeddedEpisodeInfos && episodeInfo.Container.ToLowerInvariant() == "mp4") {
-                // Read from metadata
-                IMediaEncoder mediaEncoder = _appHost.Resolve<IMediaEncoder>();
-                var task = mediaEncoder.GetMediaInfo(new MediaInfoRequest
-                {
-                    MediaSource = episode.GetMediaSources(false).First(),
-                    MediaType = DlnaProfileType.Video,
-                    ExtractChapters = false
+            try
+            {
+                var libraryOptions = GetLibraryOptions(episode);
+                if (libraryOptions.EnableEmbeddedEpisodeInfos && episodeInfo.Container.ToLowerInvariant() == "mp4") {
+                    // Read from metadata
+                    IMediaEncoder mediaEncoder = _appHost.Resolve<IMediaEncoder>();
+                    var task = mediaEncoder.GetMediaInfo(new MediaInfoRequest
+                    {
+                        MediaSource = episode.GetMediaSources(false).First(),
+                        MediaType = DlnaProfileType.Video,
+                        ExtractChapters = false
 
-                }, CancellationToken.None);
-                task.Wait();
-                if (task.Result.ParentIndexNumber > 0) {
-                    episodeInfo.SeasonNumber = task.Result.ParentIndexNumber;
+                    }, CancellationToken.None);
+                    task.Wait();
+                    if (task.IsCompletedSuccessfully) {
+                        if (task.Result.ParentIndexNumber > 0) {
+                            episodeInfo.SeasonNumber = task.Result.ParentIndexNumber;
+                        }
+                        if (task.Result.IndexNumber > 0) {
+                            episodeInfo.EpisodeNumber = task.Result.IndexNumber;
+                        }
+                        if (!string.IsNullOrEmpty(task.Result.ShowName)) {
+                            episodeInfo.SeriesName = task.Result.ShowName;
+                        }
+                    }
                 }
-                if (task.Result.IndexNumber > 0) {
-                    episodeInfo.EpisodeNumber = task.Result.IndexNumber;
-                }
-                if (!string.IsNullOrEmpty(task.Result.ShowName)) {
-                    episodeInfo.SeriesName = task.Result.ShowName;
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading the episode informations with ffprobe. Episode: {episodeInfo}", episodeInfo.Path);
             }
 
             var changed = false;
