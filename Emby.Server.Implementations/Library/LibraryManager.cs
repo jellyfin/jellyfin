@@ -2413,7 +2413,8 @@ namespace Emby.Server.Implementations.Library
             try
             {
                 var libraryOptions = GetLibraryOptions(episode);
-                if (libraryOptions.EnableEmbeddedEpisodeInfos && episodeInfo.Container.ToLowerInvariant() == "mp4") {
+                if (libraryOptions.EnableEmbeddedEpisodeInfos && string.Equals(episodeInfo.Container, "mp4", StringComparison.OrdinalIgnoreCase))
+                {
                     // Read from metadata
                     IMediaEncoder mediaEncoder = _appHost.Resolve<IMediaEncoder>();
                     var task = mediaEncoder.GetMediaInfo(new MediaInfoRequest
