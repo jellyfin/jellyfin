@@ -1,10 +1,13 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Class PackageVersionInfo
+    /// Class PackageVersionInfo.
     /// </summary>
     public class PackageVersionInfo
     {

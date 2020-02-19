@@ -1401,20 +1401,16 @@ namespace Emby.Server.Implementations.Session
                 user = _userManager.GetUserByName(request.Username);
             }
 
-            if (user != null)
-            {
-                // TODO: Move this to userManager?
-                if (!string.IsNullOrEmpty(request.DeviceId)
-                    && !_deviceManager.CanAccessDevice(user, request.DeviceId))
-                {
-                    throw new SecurityException("User is not allowed access from this device.");
-                }
-            }
-
             if (user == null)
             {
                 AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
-                throw new SecurityException("Invalid user or password entered.");
+                throw new SecurityException("Invalid username or password entered.");
+            }
+
+            if (!string.IsNullOrEmpty(request.DeviceId)
+                && !_deviceManager.CanAccessDevice(user, request.DeviceId))
+            {
+                throw new SecurityException("User is not allowed access from this device.");
             }
 
             if (enforcePassword)
@@ -1727,16 +1723,16 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public void ReportNowViewingItem(string sessionId, BaseItemDto item)
         {
-            throw new NotImplementedException();
+            var session = GetSession(sessionId);
 
-            // var session = GetSession(sessionId);
-            // session.NowViewingItem = item;
+            session.NowViewingItem = item;
         }
 
         /// <inheritdoc />
         public void ReportTranscodingInfo(string deviceId, TranscodingInfo info)
         {
-            var session = Sessions.FirstOrDefault(i => string.Equals(i.DeviceId, deviceId, StringComparison.Ordinal));
+            var session = Sessions.FirstOrDefault(i =>
+                string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
 
             if (session != null)
             {
@@ -1752,8 +1748,11 @@ namespace Emby.Server.Implementations.Session
 
         /// <inheritdoc />
         public SessionInfo GetSession(string deviceId, string client, string version)
-            => Sessions.FirstOrDefault(
-                i => string.Equals(i.DeviceId, deviceId, StringComparison.Ordinal) && string.Equals(i.Client, client, StringComparison.Ordinal));
+        {
+            return Sessions.FirstOrDefault(i =>
+                string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(i.Client, client, StringComparison.OrdinalIgnoreCase));
+        }
 
         /// <inheritdoc />
         public SessionInfo GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion)

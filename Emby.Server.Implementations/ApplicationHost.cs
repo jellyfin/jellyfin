@@ -1533,7 +1533,7 @@ namespace Emby.Server.Implementations
             string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
             if (baseUrl.Length != 0)
             {
-                url.Append('/').Append(baseUrl);
+                url.Append(baseUrl);
             }
 
             return url.ToString();

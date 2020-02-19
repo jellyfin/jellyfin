@@ -5,7 +5,7 @@ using MediaBrowser.Model.Users;
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class UserDto
+    /// Class UserDto.
     /// </summary>
     public class UserDto : IItemDto, IHasServerId
     {
@@ -58,6 +58,9 @@ namespace MediaBrowser.Model.Dto
         /// <value><c>true</c> if this instance has configured easy password; otherwise, <c>false</c>.</value>
         public bool HasConfiguredEasyPassword { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether async login is enabled or not.
+        /// </summary>
         public bool? EnableAutoLogin { get; set; }
 
         /// <summary>
@@ -99,6 +102,7 @@ namespace MediaBrowser.Model.Dto
             Policy = new UserPolicy();
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return Name ?? base.ToString();

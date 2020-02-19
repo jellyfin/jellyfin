@@ -1,12 +1,12 @@
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
-    /// Class BrowseRequest
+    /// Class BrowseRequest.
     /// </summary>
     public class BrowseRequest
     {
         /// <summary>
-        /// Artist, Genre, Studio, Person, or any kind of BaseItem
+        /// Artist, Genre, Studio, Person, or any kind of BaseItem.
         /// </summary>
         /// <value>The type of the item.</value>
         public string ItemType { get; set; }
