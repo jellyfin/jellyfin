@@ -2422,8 +2422,7 @@ namespace Emby.Server.Implementations.Library
                     var mediaInfo = _mediaEncoder.GetMediaInfo(new MediaInfoRequest
                     {
                         MediaSource = episode.GetMediaSources(false)[0],
-                        MediaType = DlnaProfileType.Video,
-                        ExtractChapters = false
+                        MediaType = DlnaProfileType.Video
                     }, CancellationToken.None).GetAwaiter().GetResult();
                     if (mediaInfo.ParentIndexNumber > 0) {
                         episodeInfo.SeasonNumber = mediaInfo.ParentIndexNumber;
