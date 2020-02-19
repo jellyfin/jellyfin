@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.Library
         public bool IsScanRunning { get; private set; }
 
         private IServerApplicationHost _appHost;
-        private IMediaEncoder _mediaEncoder;
+        private readonly IMediaEncoder _mediaEncoder;
 
         /// <summary>
         /// The _library items cache
