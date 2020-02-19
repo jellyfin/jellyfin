@@ -10,7 +10,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class JobLogger
     {
-        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
         private readonly ILogger _logger;
 
         public JobLogger(ILogger logger)
@@ -29,7 +28,27 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                        ParseLogLine(line, state);
+                        var (framerate, transcodingPosition, bytesTranscoded, bitRate) = ParseLogLine(line);
+
+                        double? percent = null;
+                        if (transcodingPosition.HasValue)
+                        {
+                            var startMs = state.BaseRequest.StartTimeTicks.HasValue
+                                ? TimeSpan.FromTicks(state.BaseRequest.StartTimeTicks.Value).TotalMilliseconds
+                                : 0;
+
+                            var totalMs = state.RunTimeTicks.HasValue
+                                ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds
+                                : 0;
+
+                            var currentMs = startMs + transcodingPosition.Value.TotalMilliseconds;
+                            percent = 100.0 * currentMs / totalMs;
+                        }
+
+                        if (framerate.HasValue || percent.HasValue)
+                        {
+                            state.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
+                        }
 
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
@@ -57,105 +76,50 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        private void ParseLogLine(string line, EncodingJobInfo state)
+        internal static (float? framerate,TimeSpan? transcodingPosition, long? bytesTranscoded, int? bitRate) ParseLogLine(ReadOnlySpan<char> logLine)
         {
             float? framerate = null;
-            double? percent = null;
             TimeSpan? transcodingPosition = null;
             long? bytesTranscoded = null;
             int? bitRate = null;
 
-            var parts = line.Split(' ');
+            var val = GetParameterValue(logLine, "fps=");
+            if (float.TryParse(val, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var f)) { framerate = f; }
 
-            var totalMs = state.RunTimeTicks.HasValue
-                ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds
-                : 0;
+            val = GetParameterValue(logLine, "time=");
+            if (TimeSpan.TryParse(val, NumberFormatInfo.InvariantInfo, out var ts)) { transcodingPosition = ts;}
 
-            var startMs = state.BaseRequest.StartTimeTicks.HasValue
-                ? TimeSpan.FromTicks(state.BaseRequest.StartTimeTicks.Value).TotalMilliseconds
-                : 0;
-
-            for (var i = 0; i < parts.Length; i++)
+            val = GetParameterValue(logLine, "size=");
+            var idx = val.IndexOf("kb");
+            if (idx > 0)
             {
-                var part = parts[i];
-
-                if (string.Equals(part, "fps=", StringComparison.OrdinalIgnoreCase) &&
-                    (i + 1 < parts.Length))
-                {
-                    var rate = parts[i + 1];
-
-                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
-                    {
-                        framerate = val;
-                    }
-                }
-                else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
-                {
-                    var rate = part.Split(new[] { '=' }, 2)[^1];
-
-                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
-                    {
-                        framerate = val;
-                    }
-                }
-                else if (state.RunTimeTicks.HasValue &&
-                    part.StartsWith("time=", StringComparison.OrdinalIgnoreCase))
-                {
-                    var time = part.Split(new[] { '=' }, 2).Last();
-
-                    if (TimeSpan.TryParse(time, _usCulture, out var val))
-                    {
-                        var currentMs = startMs + val.TotalMilliseconds;
-
-                        percent = 100.0 * currentMs / totalMs;
-
-                        transcodingPosition = val;
-                    }
-                }
-                else if (part.StartsWith("size=", StringComparison.OrdinalIgnoreCase))
-                {
-                    var size = part.Split(new[] { '=' }, 2).Last();
-
-                    int? scale = null;
-                    if (size.IndexOf("kb", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        scale = 1024;
-                        size = size.Replace("kb", string.Empty, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (scale.HasValue)
-                    {
-                        if (long.TryParse(size, NumberStyles.Any, _usCulture, out var val))
-                        {
-                            bytesTranscoded = val * scale.Value;
-                        }
-                    }
-                }
-                else if (part.StartsWith("bitrate=", StringComparison.OrdinalIgnoreCase))
-                {
-                    var rate = part.Split(new[] { '=' }, 2).Last();
-
-                    int? scale = null;
-                    if (rate.IndexOf("kbits/s", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        scale = 1024;
-                        rate = rate.Replace("kbits/s", string.Empty, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (scale.HasValue)
-                    {
-                        if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
-                        {
-                            bitRate = (int)Math.Ceiling(val * scale.Value);
-                        }
-                    }
-                }
+                val = val.Slice(0,idx);
+                if (long.TryParse(val, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var sz)) { bytesTranscoded = sz * 1024; }
             }
 
-            if (framerate.HasValue || percent.HasValue)
+            val = GetParameterValue(logLine, "bitrate=");
+            idx = val.IndexOf("kbit/s");
+            if (idx > 0)
             {
-                state.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
+                val = val.Slice(0,idx);
+                if (float.TryParse(val, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var br)) { bitRate = (int)Math.Ceiling(br * 1000); }
             }
+
+            return (framerate, transcodingPosition, bytesTranscoded, bitRate);
+        }
+
+        private static ReadOnlySpan<char> GetParameterValue(ReadOnlySpan<char> logLine, ReadOnlySpan<char> parameterKey)
+        {
+            var idx = logLine.IndexOf(parameterKey, StringComparison.OrdinalIgnoreCase);
+            if(idx < 0)
+                return null;
+
+            var rest = logLine.Slice(idx + parameterKey.Length).TrimStart();
+            idx = rest.IndexOf(' ');
+            if(idx < 0)
+                return null;
+
+            return rest.Slice(0,idx);
         }
     }
 }
