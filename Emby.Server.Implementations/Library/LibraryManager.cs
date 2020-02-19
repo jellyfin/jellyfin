@@ -2433,6 +2433,7 @@ namespace Emby.Server.Implementations.Library
                         if (task.Result.IndexNumber > 0) {
                             episodeInfo.EpisodeNumber = task.Result.IndexNumber;
                         }
+
                         if (!string.IsNullOrEmpty(task.Result.ShowName)) {
                             episodeInfo.SeriesName = task.Result.ShowName;
                         }
