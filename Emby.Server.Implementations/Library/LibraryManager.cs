@@ -2421,7 +2421,7 @@ namespace Emby.Server.Implementations.Library
                     // Read from metadata
                     var mediaInfo = _mediaEncoder.GetMediaInfo(new MediaInfoRequest
                     {
-                        MediaSource = episode.GetMediaSources(false).First(),
+                        MediaSource = episode.GetMediaSources(false)[0],
                         MediaType = DlnaProfileType.Video,
                         ExtractChapters = false
                     }, CancellationToken.None).GetAwaiter().GetResult();
