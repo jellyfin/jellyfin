@@ -98,6 +98,7 @@ namespace Emby.Server.Implementations.LiveTv
                         item.Id.ToString("N", CultureInfo.InvariantCulture),
                         source.Id ?? string.Empty
                     };
+
                     source.OpenToken = string.Join(StreamIdDelimeterString, openKeys);
                 }
 
@@ -113,6 +114,7 @@ namespace Emby.Server.Implementations.LiveTv
             return list;
         }
 
+        /// <inheritdoc />
         public async Task<ILiveStream> OpenMediaSource(string openToken, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);

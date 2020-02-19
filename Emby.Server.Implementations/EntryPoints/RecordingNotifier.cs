@@ -28,10 +28,11 @@ namespace Emby.Server.Implementations.EntryPoints
             _liveTvManager = liveTvManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
-            _liveTvManager.TimerCancelled += LiveTvManagerTimerCancelled;
-            _liveTvManager.SeriesTimerCancelled += LiveTvManagerSeriesTimerCancelled;
+            _liveTvManager.TimerCancelled += OnLiveTvManagerTimerCancelled;
+            _liveTvManager.SeriesTimerCancelled += OnLiveTvManagerSeriesTimerCancelled;
             _liveTvManager.TimerCreated += OnLiveTvManagerTimerCreated;
             _liveTvManager.SeriesTimerCreated += OnLiveTvManagerSeriesTimerCreated;
 
@@ -48,12 +49,12 @@ namespace Emby.Server.Implementations.EntryPoints
             SendMessage("TimerCreated", e.Argument);
         }
 
-        private void LiveTvManagerSeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void OnLiveTvManagerSeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("SeriesTimerCancelled", e.Argument);
         }
 
-        private void LiveTvManagerTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void OnLiveTvManagerTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("TimerCancelled", e.Argument);
         }
@@ -66,10 +67,6 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 await _sessionManager.SendMessageToUserSessions(users, name, info, CancellationToken.None).ConfigureAwait(false);
             }
-            catch (ObjectDisposedException)
-            {
-                // TODO Log exception or Investigate and properly fix.
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending message");
@@ -79,8 +76,8 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public void Dispose()
         {
-            _liveTvManager.TimerCancelled -= LiveTvManagerTimerCancelled;
-            _liveTvManager.SeriesTimerCancelled -= LiveTvManagerSeriesTimerCancelled;
+            _liveTvManager.TimerCancelled -= OnLiveTvManagerTimerCancelled;
+            _liveTvManager.SeriesTimerCancelled -= OnLiveTvManagerSeriesTimerCancelled;
             _liveTvManager.TimerCreated -= OnLiveTvManagerTimerCreated;
             _liveTvManager.SeriesTimerCreated -= OnLiveTvManagerSeriesTimerCreated;
         }
