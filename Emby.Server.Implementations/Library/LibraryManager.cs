@@ -2424,15 +2424,18 @@ namespace Emby.Server.Implementations.Library
                         MediaSource = episode.GetMediaSources(false)[0],
                         MediaType = DlnaProfileType.Video
                     }, CancellationToken.None).GetAwaiter().GetResult();
-                    if (mediaInfo.ParentIndexNumber > 0) {
+                    if (mediaInfo.ParentIndexNumber > 0)
+                    {
                         episodeInfo.SeasonNumber = mediaInfo.ParentIndexNumber;
                     }
 
-                    if (mediaInfo.IndexNumber > 0) {
+                    if (mediaInfo.IndexNumber > 0)
+                    {
                         episodeInfo.EpisodeNumber = mediaInfo.IndexNumber;
                     }
 
-                    if (!string.IsNullOrEmpty(mediaInfo.ShowName)) {
+                    if (!string.IsNullOrEmpty(mediaInfo.ShowName))
+                    {
                         episodeInfo.SeriesName = mediaInfo.ShowName;
                     }
                 }
