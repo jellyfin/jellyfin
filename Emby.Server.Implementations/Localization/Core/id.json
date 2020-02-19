@@ -86,5 +86,10 @@
     "FailedLoginAttemptWithUserName": "Percobaan login gagal dari {0}",
     "CameraImageUploadedFrom": "Sebuah gambar baru telah diunggah dari {0}",
     "DeviceOfflineWithName": "{0} telah terputus",
-    "DeviceOnlineWithName": "{0} telah terhubung"
+    "DeviceOnlineWithName": "{0} telah terhubung",
+    "NotificationOptionVideoPlaybackStopped": "Pemutaran video berhenti",
+    "NotificationOptionVideoPlayback": "Pemutaran video dimulai",
+    "NotificationOptionAudioPlaybackStopped": "Pemutaran audio berhenti",
+    "NotificationOptionAudioPlayback": "Pemutaran audio dimulai",
+    "MixedContent": "Konten campur"
 }
