@@ -2422,7 +2422,6 @@ namespace Emby.Server.Implementations.Library
                         MediaSource = episode.GetMediaSources(false).First(),
                         MediaType = DlnaProfileType.Video,
                         ExtractChapters = false
-
                     }, CancellationToken.None);
                     task.Wait();
                     if (task.IsCompletedSuccessfully) {
