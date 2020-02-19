@@ -566,7 +566,7 @@ namespace MediaBrowser.Api.Playback
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
                     }
-				}
+                }
             }
 
             foreach (var attachment in mediaSource.MediaAttachments)
