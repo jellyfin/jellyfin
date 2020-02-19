@@ -30,5 +30,11 @@ namespace MediaBrowser.Model.Querying
         {
             Items = Array.Empty<T>();
         }
+
+        public QueryResult(IReadOnlyList<T> items)
+        {
+            Items = items;
+            TotalRecordCount = items.Count;
+        }
     }
 }
