@@ -6,11 +6,21 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class SeasonNumberTests
     {
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
+        [Theory]
+        [InlineData("The Daily Show/The Daily Show 25x22 - [WEBDL-720p][AAC 2.0][x264] Noah Baumbach-TBS.mkv", 25)]
+        public void GetSeasonNumberFromEpisodeFileTest(string path, int? expected)
+        {
+            var result = new EpisodeResolver(_namingOptions)
+                .Resolve(path, false);
+
+            Assert.Equal(expected, result.SeasonNumber);
+        }
+
         private int? GetSeasonNumberFromEpisodeFile(string path)
         {
-            var options = new NamingOptions();
-
-            var result = new EpisodeResolver(options)
+            var result = new EpisodeResolver(_namingOptions)
                 .Resolve(path, false);
 
             return result.SeasonNumber;
