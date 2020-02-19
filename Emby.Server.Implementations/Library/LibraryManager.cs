@@ -143,6 +143,7 @@ namespace Emby.Server.Implementations.Library
         public bool IsScanRunning { get; private set; }
 
         private IServerApplicationHost _appHost;
+        private IMediaEncoder _mediaEncoder;
 
         /// <summary>
         /// The _library items cache
@@ -176,7 +177,8 @@ namespace Emby.Server.Implementations.Library
             Func<ILibraryMonitor> libraryMonitorFactory,
             IFileSystem fileSystem,
             Func<IProviderManager> providerManagerFactory,
-            Func<IUserViewManager> userviewManager)
+            Func<IUserViewManager> userviewManager,
+            IMediaEncoder mediaEncoder)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger(nameof(LibraryManager));
@@ -188,6 +190,7 @@ namespace Emby.Server.Implementations.Library
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
             _userviewManager = userviewManager;
+            _mediaEncoder = mediaEncoder;
 
             _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -2416,26 +2419,22 @@ namespace Emby.Server.Implementations.Library
                 if (libraryOptions.EnableEmbeddedEpisodeInfos && string.Equals(episodeInfo.Container, "mp4", StringComparison.OrdinalIgnoreCase))
                 {
                     // Read from metadata
-                    IMediaEncoder mediaEncoder = _appHost.Resolve<IMediaEncoder>();
-                    var task = mediaEncoder.GetMediaInfo(new MediaInfoRequest
+                    var mediaInfo = _mediaEncoder.GetMediaInfo(new MediaInfoRequest
                     {
                         MediaSource = episode.GetMediaSources(false).First(),
                         MediaType = DlnaProfileType.Video,
                         ExtractChapters = false
-                    }, CancellationToken.None);
-                    task.Wait();
-                    if (task.IsCompletedSuccessfully) {
-                        if (task.Result.ParentIndexNumber > 0) {
-                            episodeInfo.SeasonNumber = task.Result.ParentIndexNumber;
-                        }
+                    }, CancellationToken.None).GetAwaiter().GetResult();
+                    if (mediaInfo.ParentIndexNumber > 0) {
+                        episodeInfo.SeasonNumber = mediaInfo.ParentIndexNumber;
+                    }
 
-                        if (task.Result.IndexNumber > 0) {
-                            episodeInfo.EpisodeNumber = task.Result.IndexNumber;
-                        }
+                    if (mediaInfo.IndexNumber > 0) {
+                        episodeInfo.EpisodeNumber = mediaInfo.IndexNumber;
+                    }
 
-                        if (!string.IsNullOrEmpty(task.Result.ShowName)) {
-                            episodeInfo.SeriesName = task.Result.ShowName;
-                        }
+                    if (!string.IsNullOrEmpty(mediaInfo.ShowName)) {
+                        episodeInfo.SeriesName = mediaInfo.ShowName;
                     }
                 }
             }
