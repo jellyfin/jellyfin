@@ -136,30 +136,14 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetItemById(Guid id);
 
         /// <summary>
-        /// Gets the intros.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{System.String}.</returns>
-        Task<IEnumerable<Video>> GetIntros(BaseItem item, User user);
-
-        /// <summary>
-        /// Gets all intro files.
-        /// </summary>
-        /// <returns>IEnumerable{System.String}.</returns>
-        IEnumerable<string> GetAllIntroFiles();
-
-        /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="rules">The rules.</param>
         /// <param name="resolvers">The resolvers.</param>
-        /// <param name="introProviders">The intro providers.</param>
         /// <param name="itemComparers">The item comparers.</param>
         /// <param name="postscanTasks">The postscan tasks.</param>
         void AddParts(IEnumerable<IResolverIgnoreRule> rules,
             IEnumerable<IItemResolver> resolvers,
-            IEnumerable<IIntroProvider> introProviders,
             IEnumerable<IBaseItemComparer> itemComparers,
             IEnumerable<ILibraryPostScanTask> postscanTasks);
 

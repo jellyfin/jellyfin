@@ -57,7 +57,9 @@ namespace MediaBrowser.Api.UserLibrary
     /// <summary>
     /// Class GetIntros
     /// </summary>
+    // TODO: Remove
     [Route("/Users/{UserId}/Items/{Id}/Intros", "GET", Summary = "Gets intros to play before the main media item plays")]
+    [Obsolete]
     public class GetIntros : IReturn<QueryResult<BaseItemDto>>
     {
         /// <summary>
@@ -461,22 +463,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
+        // TODO: Remove
+        [Obsolete]
         public async Task<object> Get(GetIntros request)
         {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var item = string.IsNullOrEmpty(request.Id) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(request.Id);
-
-            var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
-
-            var dtoOptions = GetDtoOptions(_authContext, request);
-
-            var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user)).ToArray();
-
             var result = new QueryResult<BaseItemDto>
             {
-                Items = dtos,
-                TotalRecordCount = dtos.Length
+                Items = Array.Empty<BaseItemDto>(),
+                TotalRecordCount = 0
             };
 
             return ToOptimizedResult(result);

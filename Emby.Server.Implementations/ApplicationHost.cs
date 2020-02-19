@@ -1063,7 +1063,6 @@ namespace Emby.Server.Implementations
             LibraryManager.AddParts(
                 GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),
-                GetExports<IIntroProvider>(),
                 GetExports<IBaseItemComparer>(),
                 GetExports<ILibraryPostScanTask>());
 
