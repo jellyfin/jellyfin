@@ -24,7 +24,7 @@ using Microsoft.Net.Http.Headers;
 namespace MediaBrowser.Api.Images
 {
     /// <summary>
-    /// Class GetItemImage
+    /// Class GetItemImage.
     /// </summary>
     [Route("/Items/{Id}/Images", "GET", Summary = "Gets information about an item's images")]
     [Authenticated]
@@ -558,21 +558,6 @@ namespace MediaBrowser.Api.Images
                 throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", displayText, request.Type));
             }
 
-            IImageEnhancer[] supportedImageEnhancers;
-            if (_imageProcessor.ImageEnhancers.Count > 0)
-            {
-                if (item == null)
-                {
-                    item = _libraryManager.GetItemById(itemId);
-                }
-
-                supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.GetSupportedEnhancers(item, request.Type).ToArray() : Array.Empty<IImageEnhancer>();
-            }
-            else
-            {
-                supportedImageEnhancers = Array.Empty<IImageEnhancer>();
-            }
-
             bool cropwhitespace;
             if (request.CropWhitespace.HasValue)
             {
@@ -598,25 +583,25 @@ namespace MediaBrowser.Api.Images
                 {"realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*"}
             };
 
-            return GetImageResult(item,
+            return GetImageResult(
+                item,
                 itemId,
                 request,
                 imageInfo,
                 cropwhitespace,
                 outputFormats,
-                supportedImageEnhancers,
                 cacheDuration,
                 responseHeaders,
                 isHeadRequest);
         }
 
-        private async Task<object> GetImageResult(BaseItem item,
+        private async Task<object> GetImageResult(
+            BaseItem item,
             Guid itemId,
             ImageRequest request,
             ItemImageInfo image,
             bool cropwhitespace,
             IReadOnlyCollection<ImageFormat> supportedFormats,
-            IReadOnlyCollection<IImageEnhancer> enhancers,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
             bool isHeadRequest)
@@ -624,7 +609,6 @@ namespace MediaBrowser.Api.Images
             var options = new ImageProcessingOptions
             {
                 CropWhiteSpace = cropwhitespace,
-                Enhancers = enhancers,
                 Height = request.Height,
                 ImageIndex = request.Index ?? 0,
                 Image = image,
