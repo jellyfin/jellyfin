@@ -29,11 +29,13 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -141,6 +143,7 @@ namespace Emby.Server.Implementations.Library
         public bool IsScanRunning { get; private set; }
 
         private IServerApplicationHost _appHost;
+        private readonly IMediaEncoder _mediaEncoder;
 
         /// <summary>
         /// The _library items cache
@@ -174,7 +177,8 @@ namespace Emby.Server.Implementations.Library
             Func<ILibraryMonitor> libraryMonitorFactory,
             IFileSystem fileSystem,
             Func<IProviderManager> providerManagerFactory,
-            Func<IUserViewManager> userviewManager)
+            Func<IUserViewManager> userviewManager,
+            IMediaEncoder mediaEncoder)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger(nameof(LibraryManager));
@@ -186,6 +190,7 @@ namespace Emby.Server.Implementations.Library
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
             _userviewManager = userviewManager;
+            _mediaEncoder = mediaEncoder;
 
             _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -2406,6 +2411,38 @@ namespace Emby.Server.Implementations.Library
             if (episodeInfo == null)
             {
                 episodeInfo = new Naming.TV.EpisodeInfo();
+            }
+
+            try
+            {
+                var libraryOptions = GetLibraryOptions(episode);
+                if (libraryOptions.EnableEmbeddedEpisodeInfos && string.Equals(episodeInfo.Container, "mp4", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Read from metadata
+                    var mediaInfo = _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+                    {
+                        MediaSource = episode.GetMediaSources(false)[0],
+                        MediaType = DlnaProfileType.Video
+                    }, CancellationToken.None).GetAwaiter().GetResult();
+                    if (mediaInfo.ParentIndexNumber > 0)
+                    {
+                        episodeInfo.SeasonNumber = mediaInfo.ParentIndexNumber;
+                    }
+
+                    if (mediaInfo.IndexNumber > 0)
+                    {
+                        episodeInfo.EpisodeNumber = mediaInfo.IndexNumber;
+                    }
+
+                    if (!string.IsNullOrEmpty(mediaInfo.ShowName))
+                    {
+                        episodeInfo.SeriesName = mediaInfo.ShowName;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading the episode informations with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
             }
 
             var changed = false;

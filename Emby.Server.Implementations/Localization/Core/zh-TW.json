@@ -50,7 +50,7 @@
     "NotificationOptionCameraImageUploaded": "相機相片已上傳",
     "NotificationOptionInstallationFailed": "安裝失敗",
     "NotificationOptionNewLibraryContent": "已新增新內容",
-    "NotificationOptionPluginError": "擴充元件安裝失敗",
+    "NotificationOptionPluginError": "擴充元件錯誤",
     "NotificationOptionPluginInstalled": "擴充元件已安裝",
     "NotificationOptionPluginUninstalled": "擴充元件已移除",
     "NotificationOptionPluginUpdateInstalled": "已更新擴充元件",
