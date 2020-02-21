@@ -277,7 +277,7 @@ namespace Emby.Naming.Common
                 // This isn't a Kodi naming rule, but the expression below causes false positives,
                 // so we make sure this one gets tested first.
                 // "Foo Bar 889"
-                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>[\w\s]+?)\s(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*[^\\\/]*$")
+                new EpisodeExpression(@".*[\\\/](?![Ee]pisode)(?<seriesname>[\w\s]+?)\s(?<epnumber>\d{1,3})(-(?<endingepnumber>\d{2,3}))*[^\\\/x]*$")
                 {
                     IsNamed = true
                 },

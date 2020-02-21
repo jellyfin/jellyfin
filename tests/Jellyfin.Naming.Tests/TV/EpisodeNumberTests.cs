@@ -6,6 +6,21 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class EpisodeNumberTests
     {
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
+        [Theory]
+        [InlineData("Watchmen (2019)/Watchmen 1x03 [WEBDL-720p][EAC3 5.1][h264][-TBS] - She Was Killed by Space Junk.mkv", 3)]
+        [InlineData("The Daily Show/The Daily Show 25x22 - [WEBDL-720p][AAC 2.0][x264] Noah Baumbach-TBS.mkv", 22)]
+        [InlineData("Castle Rock 2x01 Que el rio siga su curso [WEB-DL HULU 1080p h264 Dual DD5.1 Subs].mkv", 1)]
+        [InlineData("After Life 1x06 Episodio 6 [WEB-DL NF 1080p h264 Dual DD 5.1 Sub].mkv", 6)]
+        public void GetEpisodeNumberFromFileTest(string path, int? expected)
+        {
+            var result = new EpisodePathParser(_namingOptions)
+                .Parse(path, false);
+
+            Assert.Equal(expected, result.EpisodeNumber);
+        }
+
         [Fact]
         public void TestEpisodeNumber1()
         {
@@ -382,9 +397,7 @@ namespace Jellyfin.Naming.Tests.TV
 
         private int? GetEpisodeNumberFromFile(string path)
         {
-            var options = new NamingOptions();
-
-            var result = new EpisodePathParser(options)
+            var result = new EpisodePathParser(_namingOptions)
                 .Parse(path, false);
 
             return result.EpisodeNumber;
