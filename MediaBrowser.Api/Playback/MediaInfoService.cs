@@ -501,7 +501,7 @@ namespace MediaBrowser.Api.Playback
                     {
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
                     }
-				}
+                }
             }
 
             if (mediaSource.SupportsTranscoding)
