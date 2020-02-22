@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Plugins.MusicBrainz;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -22,6 +23,12 @@ namespace MediaBrowser.Providers.Music
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
         {
+            // TODO maybe remove when artist metadata can be disabled
+            if (!Plugin.Instance.Configuration.Enable)
+            {
+                return Enumerable.Empty<RemoteSearchResult>();
+            }
+
             var musicBrainzId = searchInfo.GetMusicBrainzArtistId();
 
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
@@ -226,6 +233,12 @@ namespace MediaBrowser.Providers.Music
                 Item = new MusicArtist()
             };
 
+            // TODO maybe remove when artist metadata can be disabled
+            if (!Plugin.Instance.Configuration.Enable)
+            {
+                return result;
+            }
+
             var musicBrainzId = id.GetMusicBrainzArtistId();
 
             if (string.IsNullOrWhiteSpace(musicBrainzId))
@@ -237,8 +250,12 @@ namespace MediaBrowser.Providers.Music
                 if (singleResult != null)
                 {
                     musicBrainzId = singleResult.GetProviderId(MetadataProviders.MusicBrainzArtist);
-                    //result.Item.Name = singleResult.Name;
                     result.Item.Overview = singleResult.Overview;
+
+                    if (Plugin.Instance.Configuration.ReplaceArtistName)
+                    {
+                        result.Item.Name = singleResult.Name;
+                    }
                 }
             }
 

@@ -198,6 +198,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                     return true;
                 }
             }
+
             return base.RequiresRefresh();
         }
 
