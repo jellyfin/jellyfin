@@ -36,6 +36,7 @@ namespace MediaBrowser.Model.Configuration
             VaapiDevice = "/dev/dri/renderD128";
             H264Crf = 23;
             H265Crf = 28;
+            DeinterlaceMethod = "bobandweave";
             EnableHardwareEncoding = true;
             EnableSubtitleExtraction = true;
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };

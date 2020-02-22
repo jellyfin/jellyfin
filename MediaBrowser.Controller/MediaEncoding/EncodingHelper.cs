@@ -2011,7 +2011,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else
                 {
-                    filters.Add("yadif=1:-1:0");
+                    filters.Add("yadif=0:-1:0");
                 }
             }
 
