@@ -847,7 +847,10 @@ namespace Emby.Server.Implementations
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(UserViewManager);
 
-            NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
+            NotificationManager = new NotificationManager(
+                LoggerFactory.CreateLogger<NotificationManager>(),
+                UserManager,
+                ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
