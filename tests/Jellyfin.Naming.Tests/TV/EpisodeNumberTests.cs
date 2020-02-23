@@ -22,8 +22,6 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("Season 2/Elementary - 02x03-04-15 - Ep Name.mp4", 3)]
         [InlineData("Season 1/S01xE02 blah.avi", 2)]
         [InlineData("Season 1/seriesname S01E02 blah.avi", 2)]
-        /// This does not seem to be the correct value or is it?
-       g
         [InlineData("Season 2/Episode - 16.avi", 16)]
         [InlineData("Season 2/Episode 16.avi", 16)]
         [InlineData("Season 2/Episode 16 - Some Title.avi", 16)]
@@ -73,20 +71,13 @@ namespace Jellyfin.Naming.Tests.TV
         //[InlineData("Season 4/Uchuu.Senkan.Yamato.2199.E03.avi", 3)]
         //[InlineData("Season 2/7 12 Angry Men.avi", 7)]
         //[InlineData("Season 02/02x03x04x15 - Ep Name.mp4", 2)]
+        //[InlineData("Season 2/[HorribleSubs] Hunter X Hunter - 136 [720p].mkv", 136)]
         public void GetEpisodeNumberFromFileTest(string path, int? expected)
         {
             var result = new EpisodePathParser(_namingOptions)
                 .Parse(path, false);
 
             Assert.Equal(expected, result.EpisodeNumber);
-        }
-
-        private int? GetEpisodeNumberFromFile(string path)
-        {
-            var result = new EpisodePathParser(_namingOptions)
-                .Parse(path, false);
-
-            return result.EpisodeNumber;
         }
     }
 }
