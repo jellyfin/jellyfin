@@ -311,7 +311,7 @@ namespace MediaBrowser.Api.Playback
             {
                 StartThrottler(state, transcodingJob);
             }
-            Logger.LogError("StartFfMpeg() finished successfully");
+            Logger.LogInformation("StartFfMpeg() finished successfully");
 
             return transcodingJob;
         }
