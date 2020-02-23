@@ -2006,7 +2006,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        public void SaveChapters(Guid id, List<ChapterInfo> chapters)
+        public void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters)
         {
             CheckDisposed();
 
@@ -2035,22 +2035,24 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void InsertChapters(byte[] idBlob, List<ChapterInfo> chapters, IDatabaseConnection db)
+        private void InsertChapters(byte[] idBlob, IReadOnlyList<ChapterInfo> chapters, IDatabaseConnection db)
         {
             var startIndex = 0;
             var limit = 100;
             var chapterIndex = 0;
 
+            const string StartInsertText = "insert into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath, ImageDateModified) values ";
+            var insertText = new StringBuilder(StartInsertText, 256);
+
             while (startIndex < chapters.Count)
             {
-                var insertText = new StringBuilder("insert into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath, ImageDateModified) values ");
-
                 var endIndex = Math.Min(chapters.Count, startIndex + limit);
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
                     insertText.AppendFormat("(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
                 }
+
                 insertText.Length -= 1; // Remove last ,
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
@@ -2077,6 +2079,7 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 startIndex += limit;
+                insertText.Length = StartInsertText.Length;
             }
         }
 

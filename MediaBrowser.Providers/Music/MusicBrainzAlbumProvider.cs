@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -776,7 +777,7 @@ namespace MediaBrowser.Providers.Music
                 _logger.LogDebug("GetMusicBrainzResponse: Time since previous request: {0} ms", _stopWatchMusicBrainz.ElapsedMilliseconds);
                 _stopWatchMusicBrainz.Restart();
 
-                response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+                response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
 
                 // We retry a finite number of times, and only whilst MB is indcating 503 (throttling)
             }

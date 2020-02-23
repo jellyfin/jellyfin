@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,7 +31,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
-        public static IUserManager UserManager { get; set; }
         public static IUserViewManager UserViewManager { get; set; }
 
         /// <summary>
@@ -620,7 +622,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     EnableImages = false
                 }
-
             }).TotalRecordCount;
         }
 
@@ -1672,7 +1673,6 @@ namespace MediaBrowser.Controller.Entities
                     {
                         EnableImages = false
                     }
-
                 });
 
                 double unplayedCount = unplayedQueryResult.TotalRecordCount;
