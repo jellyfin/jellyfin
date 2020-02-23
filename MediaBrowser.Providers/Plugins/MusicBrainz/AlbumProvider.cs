@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.Music
         /// Be prudent, use a value slightly above the minimun required.
         /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
         /// </summary>
-        private readonly long _musicBrainzQueryIntervalMs = 1050u;
+        private readonly long _musicBrainzQueryIntervalMs;
 
         /// <summary>
         /// For each single MB lookup/search, this is the maximum number of
