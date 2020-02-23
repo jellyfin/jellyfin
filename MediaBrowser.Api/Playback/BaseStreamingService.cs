@@ -281,7 +281,7 @@ namespace MediaBrowser.Api.Playback
                 throw;
             }
 
-            Logger.LogDebug("Launched ffmpeg process");
+            Logger.LogError("Launched ffmpeg process");
             state.TranscodingJob = transcodingJob;
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
@@ -311,7 +311,7 @@ namespace MediaBrowser.Api.Playback
             {
                 StartThrottler(state, transcodingJob);
             }
-            Logger.LogDebug("StartFfMpeg() finished successfully");
+            Logger.LogError("StartFfMpeg() finished successfully");
 
             return transcodingJob;
         }
