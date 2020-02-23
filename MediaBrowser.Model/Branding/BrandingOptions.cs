@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 namespace MediaBrowser.Model.Branding
 {
@@ -10,7 +9,7 @@ namespace MediaBrowser.Model.Branding
         /// </summary>
         /// <value>The login disclaimer.</value>
         public string LoginDisclaimer { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the custom CSS.
         /// </summary>

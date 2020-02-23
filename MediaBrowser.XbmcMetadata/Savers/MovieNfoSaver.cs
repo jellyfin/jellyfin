@@ -14,9 +14,27 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
+    /// <summary>
+    /// Nfo saver for movies.
+    /// </summary>
     public class MovieNfoSaver : BaseNfoSaver
     {
-        public MovieNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieNfoSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="logger">The logger.</param>
+        public MovieNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger<MovieNfoSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
@@ -25,7 +43,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         protected override string GetLocalSavePath(BaseItem item)
             => GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault();
 
-        public static IEnumerable<string> GetMovieSavePaths(ItemInfo item)
+        internal static IEnumerable<string> GetMovieSavePaths(ItemInfo item)
         {
             if (item.VideoType == VideoType.Dvd && !item.IsPlaceHolder)
             {
@@ -42,13 +60,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
             else
             {
-                // http://kodi.wiki/view/NFO_files/Movies
-                // movie.nfo will override all and any .nfo files in the same folder as the media files if you use the "Use foldernames for lookups" setting. If you don't, then moviename.nfo is used
-                //if (!item.IsInMixedFolder && item.ItemType == typeof(Movie))
-                //{
-                //    list.Add(Path.Combine(item.ContainingFolderPath, "movie.nfo"));
-                //}
-
                 yield return Path.ChangeExtension(item.Path, ".nfo");
 
                 if (!item.IsInMixedFolder)
@@ -95,6 +106,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString("artist", artist);
                 }
+
                 if (!string.IsNullOrEmpty(musicVideo.Album))
                 {
                     writer.WriteElementString("album", musicVideo.Album);
