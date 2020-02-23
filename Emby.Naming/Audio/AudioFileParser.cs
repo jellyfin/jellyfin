@@ -8,19 +8,12 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.Audio
 {
-    public class AudioFileParser
+    public static class AudioFileParser
     {
-        private readonly NamingOptions _options;
-
-        public AudioFileParser(NamingOptions options)
-        {
-            _options = options;
-        }
-
-        public bool IsAudioFile(string path)
+        public static bool IsAudioFile(string path, NamingOptions options)
         {
             var extension = Path.GetExtension(path) ?? string.Empty;
-            return _options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            return options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

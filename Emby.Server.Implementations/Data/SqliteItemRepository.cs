@@ -3521,20 +3521,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
-            if (includeTypes.Length == 1)
-            {
-                whereClauses.Add("type=@type");
-                if (statement != null)
-                {
-                    statement.TryBind("@type", includeTypes[0]);
-                }
-            }
-            else if (includeTypes.Length > 1)
-            {
-                var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'"));
-                whereClauses.Add($"type in ({inClause})");
-            }
-
             // Only specify excluded types if no included types are specified
             if (includeTypes.Length == 0)
             {
@@ -3552,6 +3538,19 @@ namespace Emby.Server.Implementations.Data
                     var inClause = string.Join(",", excludeTypes.Select(i => "'" + i + "'"));
                     whereClauses.Add($"type not in ({inClause})");
                 }
+            }
+            else if (includeTypes.Length == 1)
+            {
+                whereClauses.Add("type=@type");
+                if (statement != null)
+                {
+                    statement.TryBind("@type", includeTypes[0]);
+                }
+            }
+            else if (includeTypes.Length > 1)
+            {
+                var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'"));
+                whereClauses.Add($"type in ({inClause})");
             }
 
             if (query.ChannelIds.Length == 1)
@@ -4927,7 +4926,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         // Not crazy about having this all the way down here, but at least it's in one place
         readonly Dictionary<string, string[]> _types = GetTypeMapDictionary();
 
-        private IEnumerable<string> MapIncludeItemTypes(string value)
+        private string[] MapIncludeItemTypes(string value)
         {
             if (_types.TryGetValue(value, out string[] result))
             {
@@ -5611,32 +5610,32 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             return counts;
         }
 
-        private List<Tuple<int, string>> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
+        private List<(int, string)> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
         {
-            var list = new List<Tuple<int, string>>();
+            var list = new List<(int, string)>();
 
             if (item is IHasArtist hasArtist)
             {
-                list.AddRange(hasArtist.Artists.Select(i => new Tuple<int, string>(0, i)));
+                list.AddRange(hasArtist.Artists.Select(i => (0, i)));
             }
 
             if (item is IHasAlbumArtist hasAlbumArtist)
             {
-                list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => new Tuple<int, string>(1, i)));
+                list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (1, i)));
             }
 
-            list.AddRange(item.Genres.Select(i => new Tuple<int, string>(2, i)));
-            list.AddRange(item.Studios.Select(i => new Tuple<int, string>(3, i)));
-            list.AddRange(item.Tags.Select(i => new Tuple<int, string>(4, i)));
+            list.AddRange(item.Genres.Select(i => (2, i)));
+            list.AddRange(item.Studios.Select(i => (3, i)));
+            list.AddRange(item.Tags.Select(i => (4, i)));
 
             // keywords was 5
 
-            list.AddRange(inheritedTags.Select(i => new Tuple<int, string>(6, i)));
+            list.AddRange(inheritedTags.Select(i => (6, i)));
 
             return list;
         }
 
-        private void UpdateItemValues(Guid itemId, List<Tuple<int, string>> values, IDatabaseConnection db)
+        private void UpdateItemValues(Guid itemId, List<(int, string)> values, IDatabaseConnection db)
         {
             if (itemId.Equals(Guid.Empty))
             {
@@ -5658,7 +5657,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             InsertItemValues(guidBlob, values, db);
         }
 
-        private void InsertItemValues(byte[] idBlob, List<Tuple<int, string>> values, IDatabaseConnection db)
+        private void InsertItemValues(byte[] idBlob, List<(int, string)> values, IDatabaseConnection db)
         {
             var startIndex = 0;
             var limit = 100;

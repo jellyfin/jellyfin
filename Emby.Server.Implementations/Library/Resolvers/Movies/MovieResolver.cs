@@ -436,7 +436,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             if (result.Items.Count == 1)
             {
                 var videoPath = result.Items[0].Path;
-                var hasPhotos = photos.Any(i => !PhotoResolver.IsOwnedByResolvedMedia(LibraryManager, libraryOptions, videoPath, i.Name));
+                var hasPhotos = photos.Any(i => !PhotoResolver.IsOwnedByResolvedMedia(LibraryManager, videoPath, i.Name));
 
                 if (!hasPhotos)
                 {
@@ -446,8 +446,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     return movie;
                 }
             }
-
-            if (result.Items.Count == 0 && multiDiscFolders.Count > 0)
+            else if (result.Items.Count == 0 && multiDiscFolders.Count > 0)
             {
                 return GetMultiDiscMovie<T>(multiDiscFolders, directoryService);
             }
@@ -519,14 +518,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
+            int additionalPartsLen = folderPaths.Count - 1;
+            var additionalParts = new string[additionalPartsLen];
+            folderPaths.CopyTo(1, additionalParts, 0, additionalPartsLen);
+
             var returnVideo = new T
             {
                 Path = folderPaths[0],
-
-                AdditionalParts = folderPaths.Skip(1).ToArray(),
-
+                AdditionalParts = additionalParts,
                 VideoType = videoTypes[0],
-
                 Name = result[0].Name
             };
 

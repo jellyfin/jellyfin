@@ -194,7 +194,7 @@ namespace Emby.Naming.Video
             }
         }
 
-        private string GetRegexInput(FileSystemMetadata file)
+        private static string GetRegexInput(FileSystemMetadata file)
         {
             // For directories, dummy up an extension otherwise the expressions will fail
             var input = !file.IsDirectory
@@ -204,7 +204,7 @@ namespace Emby.Naming.Video
             return Path.GetFileName(input);
         }
 
-        private Match FindMatch(FileSystemMetadata input, Regex regex, int offset)
+        private static Match FindMatch(FileSystemMetadata input, Regex regex, int offset)
         {
             var regexInput = GetRegexInput(input);
 
