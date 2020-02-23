@@ -250,11 +250,11 @@ namespace MediaBrowser.Api.Playback
             {
                 if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
-                    logFilePrefix = "ffmpeg-directstream";
+                    logFilePrefix = "ffmpeg-remux";
                 }
                 else
                 {
-                    logFilePrefix = "ffmpeg-remux";
+                    logFilePrefix = "ffmpeg-directstream";
                 }
             }
 
