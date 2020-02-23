@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -78,9 +77,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Determine if the supplied file data points to a music album.
         /// </summary>
-        public bool IsMusicAlbum(string path, IDirectoryService directoryService, LibraryOptions libraryOptions)
+        public bool IsMusicAlbum(string path, IDirectoryService directoryService)
         {
-            return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _fileSystem, libraryOptions, _libraryManager);
+            return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _fileSystem, _libraryManager);
         }
 
         /// <summary>
@@ -94,7 +93,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             if (args.IsDirectory)
             {
                 // if (args.Parent is MusicArtist) return true;  //saves us from testing children twice
-                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _fileSystem, args.GetLibraryOptions(), _libraryManager))
+                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _fileSystem, _libraryManager))
                 {
                     return true;
                 }
@@ -112,7 +111,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             IDirectoryService directoryService,
             ILogger logger,
             IFileSystem fileSystem,
-            LibraryOptions libraryOptions,
             ILibraryManager libraryManager)
         {
             var discSubfolderCount = 0;
@@ -132,7 +130,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                         }
 
                         var path = fileSystemInfo.FullName;
-                        var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryOptions, libraryManager);
+                        var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
 
                         if (hasMusic)
                         {
@@ -153,7 +151,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 {
                     var fullName = fileSystemInfo.FullName;
 
-                    if (libraryManager.IsAudioFile(fullName, libraryOptions))
+                    if (libraryManager.IsAudioFile(fullName))
                     {
                         return true;
                     }

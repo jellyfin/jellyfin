@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -23,9 +21,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// The logger.
         /// </summary>
         private readonly ILogger _logger;
-        private readonly ISocketFactory _socketFactory;
         private readonly IServerApplicationHost _appHost;
-        private readonly IJsonSerializer _json;
 
         /// <summary>
         /// The UDP server.
@@ -64,7 +60,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _cancellationTokenSource.Cancel();
             _udpServer.Dispose();
-
+            _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
             _udpServer = null;
 

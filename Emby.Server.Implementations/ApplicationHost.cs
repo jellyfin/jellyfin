@@ -819,7 +819,18 @@ namespace Emby.Server.Implementations
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
-            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, this, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            SessionManager = new SessionManager(
+                LoggerFactory.CreateLogger<SessionManager>(),
+                UserDataManager,
+                LibraryManager,
+                UserManager,
+                musicManager,
+                DtoService,
+                ImageProcessor,
+                this,
+                AuthenticationRepository,
+                DeviceManager,
+                MediaSourceManager);
             serviceCollection.AddSingleton(SessionManager);
 
             serviceCollection.AddSingleton<IDlnaManager>(
@@ -836,7 +847,10 @@ namespace Emby.Server.Implementations
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(UserViewManager);
 
-            NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
+            NotificationManager = new NotificationManager(
+                LoggerFactory.CreateLogger<NotificationManager>(),
+                UserManager,
+                ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
@@ -1073,8 +1087,6 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataProvider>(),
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>());
-
-            ImageProcessor.ImageEnhancers = GetExports<IImageEnhancer>();
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 

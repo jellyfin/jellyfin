@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (!string.IsNullOrWhiteSpace(userInfo))
             {
                 _logger.LogWarning("Found userInfo in url: {0} ... url: {1}", userInfo, url);
-                url = url.Replace(userInfo + '@', string.Empty);
+                url = url.Replace(userInfo + '@', string.Empty, StringComparison.Ordinal);
             }
 
             var request = new HttpRequestMessage(method, url);

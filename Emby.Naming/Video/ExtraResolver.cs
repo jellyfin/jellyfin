@@ -32,7 +32,7 @@ namespace Emby.Naming.Video
 
             if (rule.MediaType == MediaType.Audio)
             {
-                if (!new AudioFileParser(_options).IsAudioFile(path))
+                if (!AudioFileParser.IsAudioFile(path, _options))
                 {
                     return result;
                 }
