@@ -186,7 +186,7 @@ namespace Emby.Server.Implementations.Playlists
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }
 
-            var playlistItems = playlist.LinkedChildren.ToList();
+            var playlistItems = playlist.LinkedChildren;
 
             foreach (var item in playlistItems)
             {
@@ -226,7 +226,7 @@ namespace Emby.Server.Implementations.Playlists
 
             foreach (var item in items)
             {
-                if (PlaylistHasItem(playlistId, item.Id.ToString()) == false)
+                if (!PlaylistHasItem(playlistId, item.Id.ToString()))
                 {
                     list.Add(LinkedChild.Create(item));
                 }
@@ -255,7 +255,6 @@ namespace Emby.Server.Implementations.Playlists
                 },
                 RefreshPriority.High);
         }
-
 
         public void RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds)
         {

@@ -50,6 +50,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [use HTTPS]; otherwise, <c>false</c>.</value>
         public bool EnableHttps { get; set; }
+
         public bool EnableNormalizedItemByNameIds { get; set; }
 
         /// <summary>
@@ -57,6 +58,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The value pointing to the file system where the ssl certificate is located..</value>
         public string CertificatePath { get; set; }
+
         public string CertificatePassword { get; set; }
 
         /// <summary>
@@ -66,8 +68,11 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         public bool AutoRunWebApp { get; set; }
+
         public bool EnableRemoteAccess { get; set; }
+
         public bool CameraUploadUpgraded { get; set; }
+
         public bool CollectionsUpgraded { get; set; }
 
         /// <summary>
@@ -83,6 +88,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The metadata path.</value>
         public string MetadataPath { get; set; }
+
         public string MetadataNetworkPath { get; set; }
 
         /// <summary>
@@ -204,23 +210,35 @@ namespace MediaBrowser.Model.Configuration
         public int RemoteClientBitrateLimit { get; set; }
 
         public bool EnableFolderView { get; set; }
+
         public bool EnableGroupingIntoCollections { get; set; }
+
         public bool DisplaySpecialsWithinSeasons { get; set; }
+
         public string[] LocalNetworkSubnets { get; set; }
+
         public string[] LocalNetworkAddresses { get; set; }
+
         public string[] CodecsUsed { get; set; }
+
         public bool IgnoreVirtualInterfaces { get; set; }
+
         public bool EnableExternalContentInSuggestions { get; set; }
+
         public bool RequireHttps { get; set; }
+
         public bool IsBehindProxy { get; set; }
+
         public bool EnableNewOmdbSupport { get; set; }
 
         public string[] RemoteIPFilter { get; set; }
+
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; }
+
         public bool EnableSimpleArtistDetection { get; set; }
 
         public string[] UninstalledPlugins { get; set; }
@@ -288,24 +306,24 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "MusicVideo",
-                    DisabledMetadataFetchers = new [] { "The Open Movie Database" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database" }
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "Series",
-                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "TheMovieDb" }
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "TheMovieDb" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "MusicAlbum",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "MusicArtist",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
                 },
                 new MetadataOptions
                 {
@@ -314,13 +332,13 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "Season",
-                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
                 },
                 new MetadataOptions
                 {
                     ItemType = "Episode",
-                    DisabledMetadataFetchers = new [] { "The Open Movie Database", "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database", "TheMovieDb" }
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database", "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
         }
@@ -329,6 +347,7 @@ namespace MediaBrowser.Model.Configuration
     public class PathSubstitution
     {
         public string From { get; set; }
+
         public string To { get; set; }
     }
 }
