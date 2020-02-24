@@ -285,7 +285,7 @@ namespace MediaBrowser.Api.Playback
             state.TranscodingJob = transcodingJob;
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            _ = new JobLogger(Logger).StartStreamingLog(state, process.StandardError.BaseStream, logStream);
+            _ = new FFmpegJobLogger(Logger).StartStreamingLog(process.StandardError.BaseStream, logStream, state.ReportTranscodingProgress);
 
             // Wait for the file to exist before proceeeding
             var ffmpegTargetFile = state.WaitForPath ?? outputPath;

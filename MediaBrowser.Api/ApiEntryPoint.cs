@@ -250,15 +250,30 @@ namespace MediaBrowser.Api
 
                 _activeTranscodingJobs.Add(job);
 
-                ReportTranscodingProgress(job, state, null, null, null, null, null);
+                ReportTranscodingProgress(job, state, null, null, null, null);
 
                 return job;
             }
         }
 
-        public void ReportTranscodingProgress(TranscodingJob job, StreamState state, TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
+        public void ReportTranscodingProgress(TranscodingJob job, StreamState state, TimeSpan? transcodingPosition, float? framerate, long? bytesTranscoded, int? bitRate)
         {
             var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : (long?)null;
+
+            double? percentComplete = null;
+            if (transcodingPosition.HasValue)
+            {
+                var startMs = state.BaseRequest.StartTimeTicks.HasValue
+                    ? TimeSpan.FromTicks(state.BaseRequest.StartTimeTicks.Value).TotalMilliseconds
+                    : 0;
+
+                var totalMs = state.RunTimeTicks.HasValue
+                    ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds
+                    : 0;
+
+                var currentMs = startMs + transcodingPosition.Value.TotalMilliseconds;
+                percentComplete = 100.0 * currentMs / totalMs;
+            }
 
             if (job != null)
             {

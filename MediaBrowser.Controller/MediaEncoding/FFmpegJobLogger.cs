@@ -1,23 +1,22 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
-    public class JobLogger
+    public class FFmpegJobLogger
     {
         private readonly ILogger _logger;
 
-        public JobLogger(ILogger logger)
+        public FFmpegJobLogger(ILogger logger)
         {
             _logger = logger;
         }
 
-        public async Task StartStreamingLog(EncodingJobInfo state, Stream source, Stream target)
+        public async Task StartStreamingLog(Stream source, Stream target, Action<TimeSpan?, float?, long?, int?> progressCallback)
         {
             try
             {
@@ -28,26 +27,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                        var (framerate, transcodingPosition, bytesTranscoded, bitRate) = ParseLogLine(line);
-
-                        double? percent = null;
-                        if (transcodingPosition.HasValue)
+                        if(line.StartsWith("frame="))
                         {
-                            var startMs = state.BaseRequest.StartTimeTicks.HasValue
-                                ? TimeSpan.FromTicks(state.BaseRequest.StartTimeTicks.Value).TotalMilliseconds
-                                : 0;
-
-                            var totalMs = state.RunTimeTicks.HasValue
-                                ? TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds
-                                : 0;
-
-                            var currentMs = startMs + transcodingPosition.Value.TotalMilliseconds;
-                            percent = 100.0 * currentMs / totalMs;
-                        }
-
-                        if (framerate.HasValue || percent.HasValue)
-                        {
-                            state.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
+                            var (framerate, transcodingPosition, bytesTranscoded, bitRate) = ParseLogLine(line);
+                            if (framerate.HasValue || transcodingPosition.HasValue)
+                            {
+                                progressCallback(transcodingPosition, framerate, bytesTranscoded, bitRate);
+                            }
                         }
 
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
@@ -76,20 +62,21 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
-        internal static (float? framerate,TimeSpan? transcodingPosition, long? bytesTranscoded, int? bitRate) ParseLogLine(ReadOnlySpan<char> logLine)
+        internal static (float? framerate, TimeSpan? transcodingPosition, long? bytesTranscoded, int? bitRate) ParseLogLine(ReadOnlySpan<char> logLine)
         {
             float? framerate = null;
             TimeSpan? transcodingPosition = null;
             long? bytesTranscoded = null;
             int? bitRate = null;
 
-            var val = GetParameterValue(logLine, "fps=");
+            // Parameter search have to be in same order as they occur in FFmpeg progress log
+            var val = GetParameterValue(ref logLine, "fps=");
             if (float.TryParse(val, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var f)) { framerate = f; }
 
-            val = GetParameterValue(logLine, "time=");
+            val = GetParameterValue(ref logLine, "time=");
             if (TimeSpan.TryParse(val, NumberFormatInfo.InvariantInfo, out var ts)) { transcodingPosition = ts;}
 
-            val = GetParameterValue(logLine, "size=");
+            val = GetParameterValue(ref logLine, "size=");
             var idx = val.IndexOf("kb");
             if (idx > 0)
             {
@@ -97,7 +84,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (long.TryParse(val, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var sz)) { bytesTranscoded = sz * 1024; }
             }
 
-            val = GetParameterValue(logLine, "bitrate=");
+            val = GetParameterValue(ref logLine, "bitrate=");
             idx = val.IndexOf("kbit/s");
             if (idx > 0)
             {
@@ -108,16 +95,22 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (framerate, transcodingPosition, bytesTranscoded, bitRate);
         }
 
-        private static ReadOnlySpan<char> GetParameterValue(ReadOnlySpan<char> logLine, ReadOnlySpan<char> parameterKey)
+        private static ReadOnlySpan<char> GetParameterValue(ref ReadOnlySpan<char> logLine, ReadOnlySpan<char> parameterKey)
         {
             var idx = logLine.IndexOf(parameterKey, StringComparison.OrdinalIgnoreCase);
             if(idx < 0)
+            {
                 return null;
+            }
 
             var rest = logLine.Slice(idx + parameterKey.Length).TrimStart();
             idx = rest.IndexOf(' ');
             if(idx < 0)
+            {
                 return null;
+            }
+
+            logLine = rest.Slice(idx+1);
 
             return rest.Slice(0,idx);
         }
