@@ -222,7 +222,7 @@ namespace Jellyfin.Server
 
         private static IWebHostBuilder CreateWebHostBuilder(ApplicationHost appHost, IServiceCollection serviceCollection)
         {
-            return new WebHostBuilder()
+            var webhostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
                     var addresses = appHost.ServerConfigurationManager
@@ -260,13 +260,20 @@ namespace Jellyfin.Server
                         }
                     }
                 })
-                .UseContentRoot(appHost.ContentRoot)
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
                     services.TryAdd(serviceCollection);
                 })
                 .UseStartup<Startup>();
+
+            // Set the root directory for static content, if one exists
+            if (!string.IsNullOrEmpty(appHost.ContentRoot))
+            {
+                webhostBuilder.UseContentRoot(appHost.ContentRoot);
+            }
+
+            return webhostBuilder;
         }
 
         /// <summary>
@@ -383,7 +390,7 @@ namespace Jellyfin.Server
             // webDir
             // IF      --webdir
             // ELSE IF $JELLYFIN_WEB_DIR
-            // ELSE    use <bindir>/jellyfin-web
+            // ELSE    <bindir>/jellyfin-web
             var webDir = options.WebDir;
 
             if (string.IsNullOrEmpty(webDir))
@@ -395,6 +402,13 @@ namespace Jellyfin.Server
                     // Use default location under ResourcesPath
                     webDir = Path.Combine(AppContext.BaseDirectory, "jellyfin-web");
                 }
+            }
+
+            // Reset webDir if the directory does not exist, or is empty
+            if (!Directory.Exists(webDir) || !Directory.GetFiles(webDir).Any())
+            {
+                _logger.LogInformation("Server will not host static content because the web content directory does not exist or is empty: {ContentRoot}", webDir);
+                webDir = null;
             }
 
             // logDir

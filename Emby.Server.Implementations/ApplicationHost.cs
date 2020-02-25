@@ -240,7 +240,7 @@ namespace Emby.Server.Implementations
         public int HttpsPort { get; private set; }
 
         /// <summary>
-        /// Gets the content root for the webhost.
+        /// Gets the content root for the webhost. If the webhost is not serving static web content, this will be null.
         /// </summary>
         public string ContentRoot { get; private set; }
 

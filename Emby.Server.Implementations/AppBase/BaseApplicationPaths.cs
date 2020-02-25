@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <summary>
         /// Gets the path to the web UI resources folder.
         /// </summary>
-        /// <value>The web UI resources path.</value>
+        /// <value>The web UI resources path, or null if the server is not hosting any web content.</value>
         public string WebPath { get; }
 
         /// <summary>
