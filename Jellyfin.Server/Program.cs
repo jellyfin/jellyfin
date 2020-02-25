@@ -392,7 +392,6 @@ namespace Jellyfin.Server
             // ELSE IF $JELLYFIN_WEB_DIR
             // ELSE    <bindir>/jellyfin-web
             var webDir = options.WebDir;
-
             if (string.IsNullOrEmpty(webDir))
             {
                 webDir = Environment.GetEnvironmentVariable("JELLYFIN_WEB_DIR");
@@ -407,7 +406,6 @@ namespace Jellyfin.Server
             // Reset webDir if the directory does not exist, or is empty
             if (!Directory.Exists(webDir) || !Directory.GetFiles(webDir).Any())
             {
-                _logger.LogInformation("Server will not host static content because the web content directory does not exist or is empty: {ContentRoot}", webDir);
                 webDir = null;
             }
 

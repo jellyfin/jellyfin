@@ -9,7 +9,7 @@ namespace Emby.Server.Implementations
     public static class ConfigurationOptions
     {
         /// <summary>
-        /// Gets the default configuration options.
+        /// Gets a new copy of the default configuration options.
         /// </summary>
         public static Dictionary<string, string> DefaultConfiguration => new Dictionary<string, string>
         {
