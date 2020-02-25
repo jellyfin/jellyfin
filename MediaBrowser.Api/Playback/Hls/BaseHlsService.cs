@@ -170,6 +170,7 @@ namespace MediaBrowser.Api.Playback.Hls
         private string GetLivePlaylistText(string path, int segmentLength)
         {
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var reader = new StreamReader(stream))
             {
                 var text = reader.ReadToEnd();
 

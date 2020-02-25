@@ -322,7 +322,7 @@ namespace MediaBrowser.Api.Images
                     var fileInfo = _fileSystem.GetFileInfo(info.Path);
                     length = fileInfo.Length;
 
-                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info, true);
+                    var size = _imageProcessor.GetImageDimensions(item, info, true);
                     width = size.Width;
                     height = size.Height;
 
@@ -521,10 +521,7 @@ namespace MediaBrowser.Api.Images
                 }
             }
 
-            if (request.PercentPlayed.HasValue)
-            {
-                request.UnplayedCount = null;
-            }
+            if (request.PercentPlayed.HasValue) request.UnplayedCount = null;
 
             if (request.UnplayedCount.HasValue
                 && request.UnplayedCount.Value <= 0)
@@ -534,40 +531,24 @@ namespace MediaBrowser.Api.Images
 
             if (item == null)
             {
-                item = _libraryManager.GetItemById(itemId);
-
-                if (item == null)
-                {
-                    throw new ResourceNotFoundException($"Item {itemId.ToString("N", CultureInfo.InvariantCulture)} not found.");
-                }
+                item = _libraryManager.GetItemById(itemId) ??
+                       throw new ResourceNotFoundException($"Item {itemId.ToString("N", CultureInfo.InvariantCulture)} not found.");
             }
 
             var imageInfo = GetImageInfo(request, item);
             if (imageInfo == null)
             {
-                // TODO: Unless GetImageInfo modifies item to be null, this check is redundant
-                var displayText = item == null ? itemId.ToString() : item.Name;
+                var displayText = item.Name;
                 throw new ResourceNotFoundException($"{displayText} does not have an image of type {request.Type}");
             }
 
-            bool cropwhitespace;
-            if (request.CropWhitespace.HasValue)
-            {
-                cropwhitespace = request.CropWhitespace.Value;
-            }
-            else
-            {
-                cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
-            }
+            var cropWhiteSpace = request.CropWhitespace ?? request.Type == ImageType.Logo || request.Type == ImageType.Art;
 
             var outputFormats = GetOutputFormats(request);
 
             TimeSpan? cacheDuration = null;
 
-            if (!string.IsNullOrEmpty(request.Tag))
-            {
-                cacheDuration = TimeSpan.FromDays(365);
-            }
+            if (!string.IsNullOrEmpty(request.Tag)) cacheDuration = TimeSpan.FromDays(365);
 
             var responseHeaders = new Dictionary<string, string>
             {
@@ -580,7 +561,7 @@ namespace MediaBrowser.Api.Images
                 itemId,
                 request,
                 imageInfo,
-                cropWhitespace,
+                cropWhiteSpace,
                 outputFormats,
                 cacheDuration,
                 responseHeaders,
@@ -600,7 +581,7 @@ namespace MediaBrowser.Api.Images
         {
             var options = new ImageProcessingOptions
             {
-                CropWhiteSpace = cropwhitespace,
+                CropWhiteSpace = cropWhitespace,
                 Height = request.Height,
                 ImageIndex = request.Index ?? 0,
                 Image = image,
@@ -630,10 +611,9 @@ namespace MediaBrowser.Api.Images
                 ContentType = mimeType,
                 DateLastModified = dateModified,
                 IsHeadRequest = isHeadRequest,
-                Path = imageResult.Item1,
+                Path = path,
 
                 FileShare = FileShare.Read
-
             }).ConfigureAwait(false);
         }
 
@@ -653,9 +633,9 @@ namespace MediaBrowser.Api.Images
             var supportedFormats = Request.AcceptTypes ?? Array.Empty<string>();
             if (supportedFormats.Length > 0)
             {
-                for (int i = 0; i < supportedFormats.Length; i++)
+                for (var i = 0; i < supportedFormats.Length; i++)
                 {
-                    int index = supportedFormats[i].IndexOf(';');
+                    var index = supportedFormats[i].IndexOf(';');
                     if (index != -1)
                     {
                         supportedFormats[i] = supportedFormats[i].Substring(0, index);
@@ -699,15 +679,9 @@ namespace MediaBrowser.Api.Images
         {
             var mimeType = "image/" + format;
 
-            if (requestAcceptTypes.Contains(mimeType))
-            {
-                return true;
-            }
+            if (requestAcceptTypes.Contains(mimeType)) return true;
 
-            if (acceptAll && requestAcceptTypes.Contains("*/*"))
-            {
-                return true;
-            }
+            if (acceptAll && requestAcceptTypes.Contains("*/*")) return true;
 
             return string.Equals(Request.QueryString["accept"], format, StringComparison.OrdinalIgnoreCase);
         }
@@ -735,24 +709,23 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task.</returns>
         public async Task PostImage(BaseItem entity, Stream inputStream, ImageType imageType, string mimeType)
         {
-            using (var reader = new StreamReader(inputStream))
+            using var reader = new StreamReader(inputStream);
+
+            var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+            var bytes = Convert.FromBase64String(text);
+
+            var memoryStream = new MemoryStream(bytes)
             {
-                var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+                Position = 0
+            };
 
-                var bytes = Convert.FromBase64String(text);
+            // Handle image/png; charset=utf-8
+            mimeType = mimeType.Split(';').FirstOrDefault();
 
-                var memoryStream = new MemoryStream(bytes)
-                {
-                    Position = 0
-                };
+            await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
 
-                // Handle image/png; charset=utf-8
-                mimeType = mimeType.Split(';').FirstOrDefault();
-
-                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
-
-                entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
-            }
+            entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
     }
 }
