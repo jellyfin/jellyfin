@@ -227,7 +227,12 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            foreach (var mediaSource in info?.MediaSources ?? new MediaSourceInfo[0])
+            if (info == null)
+            {
+                return info;
+            }
+
+            foreach (var mediaSource in info.MediaSources)
             {
                 NormalizeMediaSourceContainer(mediaSource, profile, DlnaProfileType.Video);
             }
@@ -514,7 +519,12 @@ namespace MediaBrowser.Api.Playback
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
                         mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                        if (!allowAudioStreamCopy) mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+
+                        if (!allowAudioStreamCopy)
+                        {
+                            mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        }
+
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
 
@@ -533,14 +543,24 @@ namespace MediaBrowser.Api.Playback
                             streamInfo.StartPositionTicks = startTimeTicks;
                             mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
 
-                            if (!allowVideoStreamCopy) mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                            if (!allowAudioStreamCopy) mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                            if (!allowVideoStreamCopy)
+                            {
+                                mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                            }
+
+                            if (!allowAudioStreamCopy)
+                            {
+                                mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                            }
 
                             mediaSource.TranscodingContainer = streamInfo.Container;
                             mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         }
 
-                        if (!allowAudioStreamCopy) mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        if (!allowAudioStreamCopy)
+                        {
+                            mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        }
 
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;

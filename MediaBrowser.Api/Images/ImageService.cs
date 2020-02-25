@@ -521,7 +521,10 @@ namespace MediaBrowser.Api.Images
                 }
             }
 
-            if (request.PercentPlayed.HasValue) request.UnplayedCount = null;
+            if (request.PercentPlayed.HasValue)
+            {
+                request.UnplayedCount = null;
+            }
 
             if (request.UnplayedCount.HasValue
                 && request.UnplayedCount.Value <= 0)
@@ -532,15 +535,11 @@ namespace MediaBrowser.Api.Images
             if (item == null)
             {
                 item = _libraryManager.GetItemById(itemId) ??
-                       throw new ResourceNotFoundException($"Item {itemId.ToString("N", CultureInfo.InvariantCulture)} not found.");
+                       throw new ResourceNotFoundException(string.Format("Item {0} not found.", itemId.ToString("N", CultureInfo.InvariantCulture)));
             }
 
-            var imageInfo = GetImageInfo(request, item);
-            if (imageInfo == null)
-            {
-                var displayText = item.Name;
-                throw new ResourceNotFoundException($"{displayText} does not have an image of type {request.Type}");
-            }
+            var imageInfo = GetImageInfo(request, item) ??
+                            throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
 
             var cropWhiteSpace = request.CropWhitespace ?? request.Type == ImageType.Logo || request.Type == ImageType.Art;
 
@@ -548,7 +547,10 @@ namespace MediaBrowser.Api.Images
 
             TimeSpan? cacheDuration = null;
 
-            if (!string.IsNullOrEmpty(request.Tag)) cacheDuration = TimeSpan.FromDays(365);
+            if (!string.IsNullOrEmpty(request.Tag))
+            {
+                cacheDuration = TimeSpan.FromDays(365);
+            }
 
             var responseHeaders = new Dictionary<string, string>
             {
@@ -679,9 +681,11 @@ namespace MediaBrowser.Api.Images
         {
             var mimeType = "image/" + format;
 
-            if (requestAcceptTypes.Contains(mimeType)) return true;
-
-            if (acceptAll && requestAcceptTypes.Contains("*/*")) return true;
+            if (requestAcceptTypes.Contains(mimeType)
+                || (acceptAll && requestAcceptTypes.Contains("*/*")))
+            {
+                return true;
+            }
 
             return string.Equals(Request.QueryString["accept"], format, StringComparison.OrdinalIgnoreCase);
         }

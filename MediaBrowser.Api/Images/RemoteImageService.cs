@@ -260,29 +260,26 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task.</returns>
         private async Task DownloadImage(string url, Guid urlHash, string pointerCachePath)
         {
-            using (var result = await _httpClient.GetResponse(new HttpRequestOptions
+            using var result = await _httpClient.GetResponse(new HttpRequestOptions
             {
                 Url = url,
                 BufferContent = false,
-            }).ConfigureAwait(false))
+            }).ConfigureAwait(false);
+
+            var ext = result.ContentType.Split('/').Last();
+
+            var fullCachePath = GetFullCachePath(urlHash + "." + ext);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
+
+            await using (var stream = result.Content)
             {
-                var ext = result.ContentType.Split('/').Last();
-
-                var fullCachePath = GetFullCachePath(urlHash + "." + ext);
-
-                // TODO: Path.GetDirectoryName can return null
-                Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-
-                using (var stream = result.Content)
-                using (var filestream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
-                {
-                    await stream.CopyToAsync(filestream).ConfigureAwait(false);
-                }
-
-                // TODO: Path.GetDirectoryName can return null
-                Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
-                File.WriteAllText(pointerCachePath, fullCachePath);
+                await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
             }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
+            File.WriteAllText(pointerCachePath, fullCachePath);
         }
 
         /// <summary>
