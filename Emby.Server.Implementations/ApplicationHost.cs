@@ -212,14 +212,14 @@ namespace Emby.Server.Implementations
         public IFileSystem FileSystemManager { get; set; }
 
         /// <inheritdoc />
-        public PackageVersionClass SystemUpdateLevel
+        public ReleaseChannel SystemUpdateLevel
         {
             get
             {
-#if BETA
-                return PackageVersionClass.Beta;
+#if NIGHTLY
+                return PackageChannel.Nightly;
 #else
-                return PackageVersionClass.Release;
+                return ReleaseChannel.Stable;
 #endif
             }
         }
@@ -1003,7 +1003,7 @@ namespace Emby.Server.Implementations
             AuthenticatedAttribute.AuthService = AuthService;
         }
 
-        private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
+        private async void PluginInstalled(object sender, GenericEventArgs<VersionInfo> args)
         {
             string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
             var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)

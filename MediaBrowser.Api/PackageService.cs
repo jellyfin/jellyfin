@@ -42,23 +42,6 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class GetPackages : IReturn<PackageInfo[]>
     {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "PackageType", Description = "Optional package type filter (System/UserInstalled)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string PackageType { get; set; }
-
-        [ApiMember(Name = "TargetSystems", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string TargetSystems { get; set; }
-
-        [ApiMember(Name = "IsPremium", Description = "Optional. Filter by premium status", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? IsPremium { get; set; }
-
-        [ApiMember(Name = "IsAdult", Description = "Optional. Filter by package that contain adult content.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? IsAdult { get; set; }
-
-        public bool? IsAppStoreEnabled { get; set; }
     }
 
     /// <summary>
@@ -94,7 +77,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The update class.</value>
         [ApiMember(Name = "UpdateClass", Description = "Optional update class (Dev, Beta, Release). Defaults to Release.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public PackageVersionClass UpdateClass { get; set; }
+        public ReleaseChannel UpdateClass { get; set; }
     }
 
     /// <summary>
@@ -153,23 +136,6 @@ namespace MediaBrowser.Api
         public async Task<object> Get(GetPackages request)
         {
             IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
-
-            if (!string.IsNullOrEmpty(request.TargetSystems))
-            {
-                var apps = request.TargetSystems.Split(',').Select(i => (PackageTargetSystem)Enum.Parse(typeof(PackageTargetSystem), i, true));
-
-                packages = packages.Where(p => apps.Contains(p.targetSystem));
-            }
-
-            if (request.IsAdult.HasValue)
-            {
-                packages = packages.Where(p => p.adult == request.IsAdult.Value);
-            }
-
-            if (request.IsAppStoreEnabled.HasValue)
-            {
-                packages = packages.Where(p => p.enableInAppStore == request.IsAppStoreEnabled.Value);
-            }
 
             return ToOptimizedResult(packages.ToArray());
         }

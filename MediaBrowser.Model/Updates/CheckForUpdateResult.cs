@@ -17,13 +17,13 @@ namespace MediaBrowser.Model.Updates
         /// <value>The available version.</value>
         public string AvailableVersion
         {
-            get => Package != null ? Package.versionStr : "0.0.0.1";
+            get => Package != null ? Package.versionString : "0.0.0.1";
             set { } // need this for the serializer
         }
 
         /// <summary>
         /// Get or sets package information for an available update
         /// </summary>
-        public PackageVersionInfo Package { get; set; }
+        public VersionInfo Package { get; set; }
     }
 }

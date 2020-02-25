@@ -35,7 +35,6 @@ namespace MediaBrowser.Common.Extensions
             {
                 return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
             }
-
 #pragma warning restore CA5351
         }
     }

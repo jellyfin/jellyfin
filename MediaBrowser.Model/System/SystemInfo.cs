@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.System
     /// </summary>
     public class SystemInfo : PublicSystemInfo
     {
-        public PackageVersionClass SystemUpdateLevel { get; set; }
+        public ReleaseChannel SystemUpdateLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the display name of the operating system.

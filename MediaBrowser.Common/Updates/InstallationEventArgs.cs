@@ -9,6 +9,6 @@ namespace MediaBrowser.Common.Updates
     {
         public InstallationInfo InstallationInfo { get; set; }
 
-        public PackageVersionInfo PackageVersionInfo { get; set; }
+        public VersionInfo VersionInfo { get; set; }
     }
 }

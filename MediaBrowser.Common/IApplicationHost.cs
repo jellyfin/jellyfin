@@ -50,8 +50,8 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Gets the version class of the system.
         /// </summary>
-        /// <value><see cref="PackageVersionClass.Release" /> or <see cref="PackageVersionClass.Beta" />.</value>
-        PackageVersionClass SystemUpdateLevel { get; }
+        /// <value><see cref="ReleaseChannel.Stable" /> or <see cref="ReleaseChannel.Nightly" />.</value>
+        ReleaseChannel SystemUpdateLevel { get; }
 
         /// <summary>
         /// Gets the application version.

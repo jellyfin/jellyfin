@@ -35,6 +35,6 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the update class.
         /// </summary>
         /// <value>The update class.</value>
-        public PackageVersionClass UpdateClass { get; set; }
+        public ReleaseChannel UpdateClass { get; set; }
     }
 }
