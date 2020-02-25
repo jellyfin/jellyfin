@@ -1,11 +1,13 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
-    /// Interface IFileSystem
+    /// Interface IFileSystem.
     /// </summary>
     public interface IFileSystem
     {
@@ -97,20 +99,6 @@ namespace MediaBrowser.Model.IO
         /// <param name="path">The path.</param>
         /// <returns>DateTime.</returns>
         DateTime GetLastWriteTimeUtc(string path);
-
-        /// <summary>
-        /// Gets the file stream.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="mode">The mode.</param>
-        /// <param name="access">The access.</param>
-        /// <param name="share">The share.</param>
-        /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
-        /// <returns>FileStream.</returns>
-        Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, bool isAsync = false);
-
-        Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share,
-            FileOpenOptions fileOpenOptions);
 
         /// <summary>
         /// Swaps the files.
@@ -217,129 +205,5 @@ namespace MediaBrowser.Model.IO
         void SetAttributes(string path, bool isHidden, bool readOnly);
         List<FileSystemMetadata> GetDrives();
         void SetExecutable(string path);
-    }
-
-    //TODO Investigate if can be replaced by the one from System.IO ?
-    public enum FileOpenMode
-    {
-        //
-        // Summary:
-        //     Specifies that the operating system should create a new file. This requires System.Security.Permissions.FileIOPermissionAccess.Write
-        //     permission. If the file already exists, an System.IO.IOException exception is
-        //     thrown.
-        CreateNew = 1,
-        //
-        // Summary:
-        //     Specifies that the operating system should create a new file. If the file already
-        //     exists, it will be overwritten. This requires System.Security.Permissions.FileIOPermissionAccess.Write
-        //     permission. FileMode.Create is equivalent to requesting that if the file does
-        //     not exist, use System.IO.FileMode.CreateNew; otherwise, use System.IO.FileMode.Truncate.
-        //     If the file already exists but is a hidden file, an System.UnauthorizedAccessException
-        //     exception is thrown.
-        Create = 2,
-        //
-        // Summary:
-        //     Specifies that the operating system should open an existing file. The ability
-        //     to open the file is dependent on the value specified by the System.IO.FileAccess
-        //     enumeration. A System.IO.FileNotFoundException exception is thrown if the file
-        //     does not exist.
-        Open = 3,
-        //
-        // Summary:
-        //     Specifies that the operating system should open a file if it exists; otherwise,
-        //     a new file should be created. If the file is opened with FileAccess.Read, System.Security.Permissions.FileIOPermissionAccess.Read
-        //     permission is required. If the file access is FileAccess.Write, System.Security.Permissions.FileIOPermissionAccess.Write
-        //     permission is required. If the file is opened with FileAccess.ReadWrite, both
-        //     System.Security.Permissions.FileIOPermissionAccess.Read and System.Security.Permissions.FileIOPermissionAccess.Write
-        //     permissions are required.
-        OpenOrCreate = 4
-    }
-
-    public enum FileAccessMode
-    {
-        //
-        // Summary:
-        //     Read access to the file. Data can be read from the file. Combine with Write for
-        //     read/write access.
-        Read = 1,
-        //
-        // Summary:
-        //     Write access to the file. Data can be written to the file. Combine with Read
-        //     for read/write access.
-        Write = 2
-    }
-
-    public enum FileShareMode
-    {
-        //
-        // Summary:
-        //     Declines sharing of the current file. Any request to open the file (by this process
-        //     or another process) will fail until the file is closed.
-        None = 0,
-        //
-        // Summary:
-        //     Allows subsequent opening of the file for reading. If this flag is not specified,
-        //     any request to open the file for reading (by this process or another process)
-        //     will fail until the file is closed. However, even if this flag is specified,
-        //     additional permissions might still be needed to access the file.
-        Read = 1,
-        //
-        // Summary:
-        //     Allows subsequent opening of the file for writing. If this flag is not specified,
-        //     any request to open the file for writing (by this process or another process)
-        //     will fail until the file is closed. However, even if this flag is specified,
-        //     additional permissions might still be needed to access the file.
-        Write = 2,
-        //
-        // Summary:
-        //     Allows subsequent opening of the file for reading or writing. If this flag is
-        //     not specified, any request to open the file for reading or writing (by this process
-        //     or another process) will fail until the file is closed. However, even if this
-        //     flag is specified, additional permissions might still be needed to access the
-        //     file.
-        ReadWrite = 3
-    }
-
-    //
-    // Summary:
-    //     Represents advanced options for creating a System.IO.FileStream object.
-    [Flags]
-    public enum FileOpenOptions
-    {
-        //
-        // Summary:
-        //     Indicates that the system should write through any intermediate cache and go
-        //     directly to disk.
-        WriteThrough = int.MinValue,
-        //
-        // Summary:
-        //     Indicates that no additional options should be used when creating a System.IO.FileStream
-        //     object.
-        None = 0,
-        //
-        // Summary:
-        //     Indicates that a file is encrypted and can be decrypted only by using the same
-        //     user account used for encryption.
-        Encrypted = 16384,
-        //
-        // Summary:
-        //     Indicates that a file is automatically deleted when it is no longer in use.
-        DeleteOnClose = 67108864,
-        //
-        // Summary:
-        //     Indicates that the file is to be accessed sequentially from beginning to end.
-        //     The system can use this as a hint to optimize file caching. If an application
-        //     moves the file pointer for random access, optimum caching may not occur; however,
-        //     correct operation is still guaranteed.
-        SequentialScan = 134217728,
-        //
-        // Summary:
-        //     Indicates that the file is accessed randomly. The system can use this as a hint
-        //     to optimize file caching.
-        RandomAccess = 268435456,
-        //
-        // Summary:
-        //     Indicates that a file can be used for asynchronous reading and writing.
-        Asynchronous = 1073741824
     }
 }

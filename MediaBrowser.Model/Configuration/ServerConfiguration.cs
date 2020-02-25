@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using MediaBrowser.Model.Dto;
 
@@ -159,10 +162,10 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions[] MetadataOptions { get; set; }
 
-        public bool EnableAutomaticRestart { get; set; }
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
+
         public string BaseUrl
         {
             get => _baseUrl;
@@ -249,7 +252,6 @@ namespace MediaBrowser.Model.Configuration
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
 
-            EnableAutomaticRestart = true;
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 

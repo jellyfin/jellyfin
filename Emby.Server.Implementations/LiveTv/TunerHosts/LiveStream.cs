@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -96,7 +99,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite,
-                StreamDefaults.DefaultFileStreamBufferSize,
+                IODefaults.FileStreamBufferSize,
                 allowAsyncFileRead ? FileOptions.SequentialScan | FileOptions.Asynchronous : FileOptions.SequentialScan);
 
         public Task DeleteTempFiles()
@@ -199,7 +202,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 await StreamHelper.CopyToAsync(
                     inputStream,
                     stream,
-                    StreamDefaults.DefaultCopyToBufferSize,
+                    IODefaults.CopyToBufferSize,
                     emptyReadLimit,
                     cancellationToken).ConfigureAwait(false);
             }

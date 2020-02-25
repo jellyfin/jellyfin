@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return null;
                     }
 
-                    if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, args.GetLibraryOptions(), false))
+                    if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, false))
                     {
                         return new Series
                         {
@@ -123,24 +123,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             IFileSystem fileSystem,
             ILogger logger,
             ILibraryManager libraryManager,
-            LibraryOptions libraryOptions,
             bool isTvContentType)
         {
             foreach (var child in fileSystemChildren)
             {
-                //if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                //{
-                //    //logger.LogDebug("Igoring series file or folder marked hidden: {0}", child.FullName);
-                //    continue;
-                //}
-
-                // Can't enforce this because files saved by Bitcasa are always marked System
-                //if ((attributes & FileAttributes.System) == FileAttributes.System)
-                //{
-                //    logger.LogDebug("Igoring series subfolder marked system: {0}", child.FullName);
-                //    continue;
-                //}
-
                 if (child.IsDirectory)
                 {
                     if (IsSeasonFolder(child.FullName, isTvContentType, libraryManager))
@@ -152,7 +138,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 else
                 {
                     string fullName = child.FullName;
-                    if (libraryManager.IsVideoFile(fullName, libraryOptions))
+                    if (libraryManager.IsVideoFile(fullName))
                     {
                         if (isTvContentType)
                         {
@@ -203,7 +189,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
         private static bool IsSeasonFolder(string path, bool isTvContentType, ILibraryManager libraryManager)
         {
-            var seasonNumber = new SeasonPathParser().Parse(path, isTvContentType, isTvContentType).SeasonNumber;
+            var seasonNumber = SeasonPathParser.Parse(path, isTvContentType, isTvContentType).SeasonNumber;
 
             return seasonNumber.HasValue;
         }

@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -15,21 +14,17 @@ namespace Emby.Server.Implementations.EntryPoints
     /// </summary>
     public class RefreshUsersMetadata : IScheduledTask, IConfigurableScheduledTask
     {
-        private readonly ILogger _logger;
-
         /// <summary>
         /// The user manager.
         /// </summary>
         private readonly IUserManager _userManager;
-
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshUsersMetadata" /> class.
         /// </summary>
-        public RefreshUsersMetadata(ILogger logger, IUserManager userManager, IFileSystem fileSystem)
+        public RefreshUsersMetadata(IUserManager userManager, IFileSystem fileSystem)
         {
-            _logger = logger;
             _userManager = userManager;
             _fileSystem = fileSystem;
         }

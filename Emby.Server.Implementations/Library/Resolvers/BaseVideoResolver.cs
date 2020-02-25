@@ -80,6 +80,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                             };
                             break;
                         }
+
                         if (IsBluRayDirectory(child.FullName, filename, args.DirectoryService))
                         {
                             videoInfo = parser.ResolveDirectory(args.Path);
@@ -137,7 +138,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     return null;
                 }
 
-                if (LibraryManager.IsVideoFile(args.Path, args.GetLibraryOptions()) || videoInfo.IsStub)
+                if (LibraryManager.IsVideoFile(args.Path) || videoInfo.IsStub)
                 {
                     var path = args.Path;
 

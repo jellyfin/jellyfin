@@ -1,57 +1,38 @@
-using System;
-using System.Text;
-
 namespace MediaBrowser.Model.Extensions
 {
     /// <summary>
-    /// Isolating these helpers allow this entire project to be easily converted to Java
+    /// Helper methods for manipulating strings.
     /// </summary>
     public static class StringHelper
     {
         /// <summary>
-        /// Equalses the ignore case.
+        /// Returns the string with the first character as uppercase.
         /// </summary>
-        /// <param name="str1">The STR1.</param>
-        /// <param name="str2">The STR2.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public static bool EqualsIgnoreCase(string str1, string str2)
+        /// <param name="str">The input string.</param>
+        /// <returns>The string with the first character as uppercase.</returns>
+        public static string FirstToUpper(string str)
         {
-            return string.Equals(str1, str2, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Replaces the specified STR.
-        /// </summary>
-        /// <param name="str">The STR.</param>
-        /// <param name="oldValue">The old value.</param>
-        /// <param name="newValue">The new value.</param>
-        /// <param name="comparison">The comparison.</param>
-        /// <returns>System.String.</returns>
-        public static string Replace(this string str, string oldValue, string newValue, StringComparison comparison)
-        {
-            var sb = new StringBuilder();
-
-            var previousIndex = 0;
-            var index = str.IndexOf(oldValue, comparison);
-
-            while (index != -1)
+            if (string.IsNullOrEmpty(str))
             {
-                sb.Append(str.Substring(previousIndex, index - previousIndex));
-                sb.Append(newValue);
-                index += oldValue.Length;
-
-                previousIndex = index;
-                index = str.IndexOf(oldValue, index, comparison);
+                return string.Empty;
             }
 
-            sb.Append(str.Substring(previousIndex));
+            if (char.IsUpper(str[0]))
+            {
+                return str;
+            }
 
-            return sb.ToString();
-        }
-
-        public static string FirstToUpper(this string str)
-        {
-            return string.IsNullOrEmpty(str) ? string.Empty : str.Substring(0, 1).ToUpperInvariant() + str.Substring(1);
+            return string.Create(
+                str.Length,
+                str,
+                (chars, buf) =>
+                {
+                    chars[0] = char.ToUpperInvariant(buf[0]);
+                    for (int i = 1; i < chars.Length; i++)
+                    {
+                        chars[i] = buf[i];
+                    }
+                });
         }
     }
 }

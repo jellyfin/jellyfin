@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 
 namespace Emby.Dlna.Eventing
@@ -13,6 +16,8 @@ namespace Emby.Dlna.Eventing
 
         public long TriggerCount { get; set; }
 
+        public bool IsExpired => SubscriptionTime.AddSeconds(TimeoutSeconds) >= DateTime.UtcNow;
+
         public void IncrementTriggerCount()
         {
             if (TriggerCount == long.MaxValue)
@@ -22,7 +27,5 @@ namespace Emby.Dlna.Eventing
 
             TriggerCount++;
         }
-
-        public bool IsExpired => SubscriptionTime.AddSeconds(TimeoutSeconds) >= DateTime.UtcNow;
     }
 }

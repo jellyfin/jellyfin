@@ -5,7 +5,7 @@
             {
                 "Name": "Console",
                 "Args": {
-                    "outputTemplate": "[{Timestamp:HH:mm:ss}] [{Level:u3}] {ThreadId} {SourceContext}: {Message:lj} {NewLine}{Exception}"
+                    "outputTemplate": "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
                 }
             },
             {
@@ -20,7 +20,7 @@
                                 "retainedFileCountLimit": 3,
                                 "rollOnFileSizeLimit": true,
                                 "fileSizeLimitBytes": 100000000,
-                                "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {ThreadId} {SourceContext}:{Message} {NewLine}{Exception}"
+                                "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}"
                             }
                         }
                     ]

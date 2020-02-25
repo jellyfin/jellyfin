@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Globalization;
 using System.Linq;
@@ -21,7 +24,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
-    class PlayToManager : IDisposable
+    public class PlayToManager : IDisposable
     {
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
@@ -64,10 +67,10 @@ namespace Emby.Dlna.PlayTo
 
         public void Start()
         {
-            _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
+            _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
-        async void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             if (_disposed)
             {
@@ -231,7 +234,7 @@ namespace Emby.Dlna.PlayTo
 
         public void Dispose()
         {
-            _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
+            _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
 
             try
             {

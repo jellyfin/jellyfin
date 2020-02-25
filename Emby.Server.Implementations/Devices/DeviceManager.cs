@@ -142,11 +142,10 @@ namespace Emby.Server.Implementations.Devices
 
         public QueryResult<DeviceInfo> GetDevices(DeviceQuery query)
         {
-            var sessions = _authRepo.Get(new AuthenticationInfoQuery
+            IEnumerable<AuthenticationInfo> sessions = _authRepo.Get(new AuthenticationInfoQuery
             {
                 //UserId = query.UserId
                 HasUser = true
-
             }).Items;
 
             // TODO: DeviceQuery doesn't seem to be used from client. Not even Swagger.
@@ -154,23 +153,19 @@ namespace Emby.Server.Implementations.Devices
             {
                 var val = query.SupportsSync.Value;
 
-                sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == val).ToArray();
+                sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == val);
             }
 
             if (!query.UserId.Equals(Guid.Empty))
             {
                 var user = _userManager.GetUserById(query.UserId);
 
-                sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId)).ToArray();
+                sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
             }
 
             var array = sessions.Select(ToDeviceInfo).ToArray();
 
-            return new QueryResult<DeviceInfo>
-            {
-                Items = array,
-                TotalRecordCount = array.Length
-            };
+            return new QueryResult<DeviceInfo>(array);
         }
 
         private DeviceInfo ToDeviceInfo(AuthenticationInfo authInfo)
@@ -186,7 +181,7 @@ namespace Emby.Server.Implementations.Devices
                 LastUserName = authInfo.UserName,
                 Name = authInfo.DeviceName,
                 DateLastActivity = authInfo.DateLastActivity,
-                IconUrl = caps == null ? null : caps.IconUrl
+                IconUrl = caps?.IconUrl
             };
         }
 
@@ -243,7 +238,7 @@ namespace Emby.Server.Implementations.Devices
 
             try
             {
-                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
                 }

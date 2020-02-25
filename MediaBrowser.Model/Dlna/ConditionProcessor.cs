@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Globalization;
 using MediaBrowser.Model.Extensions;
@@ -169,9 +172,9 @@ namespace MediaBrowser.Model.Dlna
                         return ListHelper.ContainsIgnoreCase(expected.Split('|'), currentValue);
                     }
                 case ProfileConditionType.Equals:
-                    return StringHelper.EqualsIgnoreCase(currentValue, expected);
+                    return string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
                 case ProfileConditionType.NotEquals:
-                    return !StringHelper.EqualsIgnoreCase(currentValue, expected);
+                    return !string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
                 default:
                     throw new InvalidOperationException("Unexpected ProfileConditionType: " + condition.Condition);
             }
