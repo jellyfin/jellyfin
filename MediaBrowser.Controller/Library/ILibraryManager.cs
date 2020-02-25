@@ -484,6 +484,13 @@ namespace MediaBrowser.Controller.Library
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
         List<BaseItem> GetItemList(InternalItemsQuery query);
 
+        /// <summary>
+        /// Gets the items ordered by their ids.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
+        List<BaseItem> GetItemListOrdered(InternalItemsQuery query);
+
         List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent);
 
         /// <summary>
@@ -497,6 +504,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
         QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets the items result ordered by their ids.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
+        QueryResult<BaseItem> GetItemsResultOrdered(InternalItemsQuery query);
 
         /// <summary>
         /// Ignores the file.
