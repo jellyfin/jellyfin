@@ -1,7 +1,10 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>
-    /// Used to control the data that gets attached to DtoBaseItems
+    /// Used to control the data that gets attached to DtoBaseItems.
     /// </summary>
     public enum ItemFields
     {

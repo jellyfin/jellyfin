@@ -1,20 +1,22 @@
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Enum PackageType
+    /// Enum PackageType.
     /// </summary>
     public enum PackageTargetSystem
     {
         /// <summary>
-        /// Server
+        /// Server.
         /// </summary>
         Server,
+
         /// <summary>
-        /// MB Theater
+        /// MB Theater.
         /// </summary>
         MBTheater,
+
         /// <summary>
-        /// MB Classic
+        /// MB Classic.
         /// </summary>
         MBClassic
     }

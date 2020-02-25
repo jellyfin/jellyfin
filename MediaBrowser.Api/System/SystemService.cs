@@ -170,12 +170,12 @@ namespace MediaBrowser.Api.System
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
             // For older files, assume fully static
-            return ResultFactory.GetStaticFileResult(
-                Request,
-                file.FullName,
-                file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1)
-                    ? FileShareMode.Read
-                    : FileShareMode.ReadWrite);
+            if (file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1))
+            {
+                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.Read);
+            }
+
+            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.ReadWrite);
         }
 
         /// <summary>

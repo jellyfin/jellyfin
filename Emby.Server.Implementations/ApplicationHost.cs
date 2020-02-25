@@ -599,7 +599,7 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            JsonSerializer = new JsonSerializer(FileSystemManager);
+            JsonSerializer = new JsonSerializer();
 
             if (Plugins != null)
             {
@@ -755,7 +755,18 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(UserManager);
 
-            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
+            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
+                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
+                ServerConfigurationManager,
+                FileSystemManager,
+                ProcessFactory,
+                LocalizationManager,
+                () => SubtitleEncoder,
+                _configuration,
+                StartupOptions.FFmpegPath);
+            serviceCollection.AddSingleton(MediaEncoder);
+
+            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager, MediaEncoder);
             serviceCollection.AddSingleton(LibraryManager);
 
             var musicManager = new MusicManager(LibraryManager);
@@ -808,7 +819,18 @@ namespace Emby.Server.Implementations
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
-            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, this, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            SessionManager = new SessionManager(
+                LoggerFactory.CreateLogger<SessionManager>(),
+                UserDataManager,
+                LibraryManager,
+                UserManager,
+                musicManager,
+                DtoService,
+                ImageProcessor,
+                this,
+                AuthenticationRepository,
+                DeviceManager,
+                MediaSourceManager);
             serviceCollection.AddSingleton(SessionManager);
 
             serviceCollection.AddSingleton<IDlnaManager>(
@@ -825,24 +847,16 @@ namespace Emby.Server.Implementations
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(UserViewManager);
 
-            NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
+            NotificationManager = new NotificationManager(
+                LoggerFactory.CreateLogger<NotificationManager>(),
+                UserManager,
+                ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
-
-            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
-                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
-                ServerConfigurationManager,
-                FileSystemManager,
-                ProcessFactory,
-                LocalizationManager,
-                () => SubtitleEncoder,
-                _configuration,
-                StartupOptions.FFmpegPath);
-            serviceCollection.AddSingleton(MediaEncoder);
 
             EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
@@ -1007,7 +1021,7 @@ namespace Emby.Server.Implementations
         {
             string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
             var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
-                        .Select(x => Assembly.LoadFrom(x))
+                        .Select(Assembly.LoadFrom)
                         .SelectMany(x => x.ExportedTypes)
                         .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
                         .ToArray();
@@ -1073,8 +1087,6 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataProvider>(),
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>());
-
-            ImageProcessor.ImageEnhancers = GetExports<IImageEnhancer>();
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
@@ -1522,7 +1534,7 @@ namespace Emby.Server.Implementations
             string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
             if (baseUrl.Length != 0)
             {
-                url.Append('/').Append(baseUrl);
+                url.Append(baseUrl);
             }
 
             return url.ToString();
@@ -1705,29 +1717,6 @@ namespace Emby.Server.Implementations
             var list = _plugins.ToList();
             list.Remove(plugin);
             _plugins = list.ToArray();
-        }
-
-        /// <summary>
-        /// This returns localhost in the case of no external dns, and the hostname if the
-        /// dns is prefixed with a valid Uri prefix.
-        /// </summary>
-        /// <param name="externalDns">The external dns prefix to get the hostname of.</param>
-        /// <returns>The hostname in <paramref name="externalDns"/>.</returns>
-        private static string GetHostnameFromExternalDns(string externalDns)
-        {
-            if (string.IsNullOrEmpty(externalDns))
-            {
-                return "localhost";
-            }
-
-            try
-            {
-                return new Uri(externalDns).Host;
-            }
-            catch
-            {
-                return externalDns;
-            }
         }
 
         public virtual void LaunchUrl(string url)

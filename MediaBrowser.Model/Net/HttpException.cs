@@ -4,7 +4,7 @@ using System.Net;
 namespace MediaBrowser.Model.Net
 {
     /// <summary>
-    /// Class HttpException
+    /// Class HttpException.
     /// </summary>
     public class HttpException : Exception
     {

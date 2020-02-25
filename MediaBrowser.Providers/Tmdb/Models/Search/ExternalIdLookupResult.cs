@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using MediaBrowser.Providers.Movies;
 
 namespace MediaBrowser.Providers.Tmdb.Models.Search
 {

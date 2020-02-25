@@ -248,7 +248,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             //            ContentType = contentType,
             //            IsHeadRequest = isHeadRequest,
             //            Path = outputPath,
-            //            FileShare = FileShareMode.ReadWrite,
+            //            FileShare = FileShare.ReadWrite,
             //            OnComplete = () =>
             //            {
             //                if (transcodingJob != null)

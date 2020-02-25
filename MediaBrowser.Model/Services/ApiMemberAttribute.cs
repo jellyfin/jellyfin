@@ -2,6 +2,9 @@ using System;
 
 namespace MediaBrowser.Model.Services
 {
+    /// <summary>
+    /// Identifies a single API endpoint.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
     public class ApiMemberAttribute : Attribute
     {

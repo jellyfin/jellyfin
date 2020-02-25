@@ -1,52 +1,48 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv
 {
     public class LiveTvMediaSourceProvider : IMediaSourceProvider
     {
+        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
+        private const char StreamIdDelimeter = '_';
+        private const string StreamIdDelimeterString = "_";
+
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly ILogger _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationHost _appHost;
-        private IApplicationPaths _appPaths;
 
-        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IApplicationPaths appPaths, IJsonSerializer jsonSerializer, ILoggerFactory loggerFactory, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerApplicationHost appHost)
+        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, ILogger<LiveTvMediaSourceProvider> logger, IMediaSourceManager mediaSourceManager, IServerApplicationHost appHost)
         {
             _liveTvManager = liveTvManager;
-            _jsonSerializer = jsonSerializer;
+            _logger = logger;
             _mediaSourceManager = mediaSourceManager;
-            _mediaEncoder = mediaEncoder;
             _appHost = appHost;
-            _logger = loggerFactory.CreateLogger(GetType().Name);
-            _appPaths = appPaths;
         }
 
         public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
-            var baseItem = (BaseItem)item;
-
-            if (baseItem.SourceType == SourceType.LiveTV)
+            if (item.SourceType == SourceType.LiveTV)
             {
                 var activeRecordingInfo = _liveTvManager.GetActiveRecordingInfo(item.Path);
 
-                if (string.IsNullOrEmpty(baseItem.Path) || activeRecordingInfo != null)
+                if (string.IsNullOrEmpty(item.Path) || activeRecordingInfo != null)
                 {
                     return GetMediaSourcesInternal(item, activeRecordingInfo, cancellationToken);
                 }
@@ -54,10 +50,6 @@ namespace Emby.Server.Implementations.LiveTv
 
             return Task.FromResult<IEnumerable<MediaSourceInfo>>(Array.Empty<MediaSourceInfo>());
         }
-
-        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
-        private const char StreamIdDelimeter = '_';
-        private const string StreamIdDelimeterString = "_";
 
         private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(BaseItem item, ActiveRecordingInfo activeRecordingInfo, CancellationToken cancellationToken)
         {
@@ -91,7 +83,7 @@ namespace Emby.Server.Implementations.LiveTv
             foreach (var source in list)
             {
                 source.Type = MediaSourceType.Default;
-                source.BufferMs = source.BufferMs ?? 1500;
+                source.BufferMs ??= 1500;
 
                 if (source.RequiresOpening || forceRequireOpening)
                 {
@@ -100,11 +92,14 @@ namespace Emby.Server.Implementations.LiveTv
 
                 if (source.RequiresOpening)
                 {
-                    var openKeys = new List<string>();
-                    openKeys.Add(item.GetType().Name);
-                    openKeys.Add(item.Id.ToString("N", CultureInfo.InvariantCulture));
-                    openKeys.Add(source.Id ?? string.Empty);
-                    source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray());
+                    var openKeys = new List<string>
+                    {
+                        item.GetType().Name,
+                        item.Id.ToString("N", CultureInfo.InvariantCulture),
+                        source.Id ?? string.Empty
+                    };
+
+                    source.OpenToken = string.Join(StreamIdDelimeterString, openKeys);
                 }
 
                 // Dummy this up so that direct play checks can still run
@@ -114,11 +109,12 @@ namespace Emby.Server.Implementations.LiveTv
                 }
             }
 
-            _logger.LogDebug("MediaSources: {0}", _jsonSerializer.SerializeToString(list));
+            _logger.LogDebug("MediaSources: {@MediaSources}", list);
 
             return list;
         }
 
+        /// <inheritdoc />
         public async Task<ILiveStream> OpenMediaSource(string openToken, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);

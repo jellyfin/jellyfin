@@ -240,7 +240,7 @@ namespace MediaBrowser.Api
     public class UserService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
@@ -278,14 +278,11 @@ namespace MediaBrowser.Api
                 });
             }
 
-            return Get(
-                new GetUsers
-                {
-                    IsHidden = false,
-                    IsDisabled = false,
-                },
-                true,
-                true);
+            return Get(new GetUsers
+            {
+                IsHidden = false,
+                IsDisabled = false
+            }, true, true);
         }
 
         /// <summary>
@@ -398,10 +395,11 @@ namespace MediaBrowser.Api
                 throw new MethodNotAllowedException("Hashed-only passwords are not valid for this API.");
             }
 
+            // Password should always be null
             return Post(new AuthenticateUserByName
             {
                 Username = user.Name,
-                Password = null, // This should always be null
+                Password = null,
                 Pw = request.Pw
             });
         }

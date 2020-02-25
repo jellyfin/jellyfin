@@ -21,70 +21,85 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Notifications
 {
     /// <summary>
-    /// Creates notifications for various system events
+    /// Creates notifications for various system events.
     /// </summary>
-    public class Notifications : IServerEntryPoint
+    public class NotificationEntryPoint : IServerEntryPoint
     {
         private readonly ILogger _logger;
-
+        private readonly IActivityManager _activityManager;
+        private readonly ILocalizationManager _localization;
         private readonly INotificationManager _notificationManager;
-
         private readonly ILibraryManager _libraryManager;
         private readonly IServerApplicationHost _appHost;
-
-        private Timer LibraryUpdateTimer { get; set; }
-        private readonly object _libraryChangedSyncLock = new object();
-
         private readonly IConfigurationManager _config;
-        private readonly ILocalizationManager _localization;
-        private readonly IActivityManager _activityManager;
+
+        private readonly object _libraryChangedSyncLock = new object();
+        private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
+
+        private Timer? _libraryUpdateTimer;
 
         private string[] _coreNotificationTypes;
 
-        public Notifications(
+        private bool _disposed = false;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NotificationEntryPoint" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="activityManager">The activity manager.</param>
+        /// <param name="localization">The localization manager.</param>
+        /// <param name="notificationManager">The notification manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="appHost">The application host.</param>
+        /// <param name="config">The configuration manager.</param>
+        public NotificationEntryPoint(
+            ILogger<NotificationEntryPoint> logger,
             IActivityManager activityManager,
             ILocalizationManager localization,
-            ILogger logger,
             INotificationManager notificationManager,
             ILibraryManager libraryManager,
             IServerApplicationHost appHost,
             IConfigurationManager config)
         {
             _logger = logger;
+            _activityManager = activityManager;
+            _localization = localization;
             _notificationManager = notificationManager;
             _libraryManager = libraryManager;
             _appHost = appHost;
             _config = config;
-            _localization = localization;
-            _activityManager = activityManager;
 
             _coreNotificationTypes = new CoreNotificationTypes(localization).GetNotificationTypes().Select(i => i.Type).ToArray();
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
-            _libraryManager.ItemAdded += _libraryManager_ItemAdded;
-            _appHost.HasPendingRestartChanged += _appHost_HasPendingRestartChanged;
-            _appHost.HasUpdateAvailableChanged += _appHost_HasUpdateAvailableChanged;
-            _activityManager.EntryCreated += _activityManager_EntryCreated;
+            _libraryManager.ItemAdded += OnLibraryManagerItemAdded;
+            _appHost.HasPendingRestartChanged += OnAppHostHasPendingRestartChanged;
+            _appHost.HasUpdateAvailableChanged += OnAppHostHasUpdateAvailableChanged;
+            _activityManager.EntryCreated += OnActivityManagerEntryCreated;
 
             return Task.CompletedTask;
         }
 
-        private async void _appHost_HasPendingRestartChanged(object sender, EventArgs e)
+        private async void OnAppHostHasPendingRestartChanged(object sender, EventArgs e)
         {
             var type = NotificationType.ServerRestartRequired.ToString();
 
             var notification = new NotificationRequest
             {
                 NotificationType = type,
-                Name = string.Format(_localization.GetLocalizedString("ServerNameNeedsToBeRestarted"), _appHost.Name)
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("ServerNameNeedsToBeRestarted"),
+                    _appHost.Name)
             };
 
             await SendNotification(notification, null).ConfigureAwait(false);
         }
 
-        private async void _activityManager_EntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
+        private async void OnActivityManagerEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
         {
             var entry = e.Argument;
 
@@ -117,7 +132,7 @@ namespace Emby.Notifications
             return _config.GetConfiguration<NotificationOptions>("notifications");
         }
 
-        private async void _appHost_HasUpdateAvailableChanged(object sender, EventArgs e)
+        private async void OnAppHostHasUpdateAvailableChanged(object sender, EventArgs e)
         {
             if (!_appHost.HasUpdateAvailable)
             {
@@ -136,8 +151,7 @@ namespace Emby.Notifications
             await SendNotification(notification, null).ConfigureAwait(false);
         }
 
-        private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
-        private void _libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        private void OnLibraryManagerItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -146,14 +160,17 @@ namespace Emby.Notifications
 
             lock (_libraryChangedSyncLock)
             {
-                if (LibraryUpdateTimer == null)
+                if (_libraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, 5000,
-                                                   Timeout.Infinite);
+                    _libraryUpdateTimer = new Timer(
+                        LibraryUpdateTimerCallback,
+                        null,
+                        5000,
+                        Timeout.Infinite);
                 }
                 else
                 {
-                    LibraryUpdateTimer.Change(5000, Timeout.Infinite);
+                    _libraryUpdateTimer.Change(5000, Timeout.Infinite);
                 }
 
                 _itemsAdded.Add(e.Item);
@@ -188,7 +205,8 @@ namespace Emby.Notifications
             {
                 items = _itemsAdded.ToList();
                 _itemsAdded.Clear();
-                DisposeLibraryUpdateTimer();
+                _libraryUpdateTimer!.Dispose(); // Shouldn't be null as it just set off this callback
+                _libraryUpdateTimer = null;
             }
 
             items = items.Take(10).ToList();
@@ -198,7 +216,10 @@ namespace Emby.Notifications
                 var notification = new NotificationRequest
                 {
                     NotificationType = NotificationType.NewLibraryContent.ToString(),
-                    Name = string.Format(_localization.GetLocalizedString("ValueHasBeenAddedToLibrary"), GetItemName(item)),
+                    Name = string.Format(
+                        CultureInfo.InvariantCulture,
+                        _localization.GetLocalizedString("ValueHasBeenAddedToLibrary"),
+                        GetItemName(item)),
                     Description = item.Overview
                 };
 
@@ -206,6 +227,11 @@ namespace Emby.Notifications
             }
         }
 
+        /// <summary>
+        /// Creates a human readable name for the item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>A human readable name for the item.</returns>
         public static string GetItemName(BaseItem item)
         {
             var name = item.Name;
@@ -219,6 +245,7 @@ namespace Emby.Notifications
                         episode.IndexNumber.Value,
                         name);
                 }
+
                 if (episode.ParentIndexNumber.HasValue)
                 {
                     name = string.Format(
@@ -228,7 +255,6 @@ namespace Emby.Notifications
                         name);
                 }
             }
-
 
             if (item is IHasSeries hasSeries)
             {
@@ -257,7 +283,7 @@ namespace Emby.Notifications
             return name;
         }
 
-        private async Task SendNotification(NotificationRequest notification, BaseItem relatedItem)
+        private async Task SendNotification(NotificationRequest notification, BaseItem? relatedItem)
         {
             try
             {
@@ -269,23 +295,37 @@ namespace Emby.Notifications
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            DisposeLibraryUpdateTimer();
-
-            _libraryManager.ItemAdded -= _libraryManager_ItemAdded;
-            _appHost.HasPendingRestartChanged -= _appHost_HasPendingRestartChanged;
-            _appHost.HasUpdateAvailableChanged -= _appHost_HasUpdateAvailableChanged;
-            _activityManager.EntryCreated -= _activityManager_EntryCreated;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        private void DisposeLibraryUpdateTimer()
+        /// <summary>
+        /// Releases unmanaged and optionally managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
         {
-            if (LibraryUpdateTimer != null)
+            if (_disposed)
             {
-                LibraryUpdateTimer.Dispose();
-                LibraryUpdateTimer = null;
+                return;
             }
+
+            if (disposing)
+            {
+                _libraryUpdateTimer?.Dispose();
+            }
+
+            _libraryUpdateTimer = null;
+
+            _libraryManager.ItemAdded -= OnLibraryManagerItemAdded;
+            _appHost.HasPendingRestartChanged -= OnAppHostHasPendingRestartChanged;
+            _appHost.HasUpdateAvailableChanged -= OnAppHostHasUpdateAvailableChanged;
+            _activityManager.EntryCreated -= OnActivityManagerEntryCreated;
+
+            _disposed = true;
         }
     }
 }

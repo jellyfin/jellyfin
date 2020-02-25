@@ -1,3 +1,5 @@
+# DESIGNED FOR BUILDING ON AMD64 ONLY
+#####################################
 # Requires binfm_misc registration
 # https://github.com/multiarch/qemu-user-static#binfmt_misc-register
 ARG DOTNET_VERSION=3.1
@@ -5,7 +7,7 @@ ARG DOTNET_VERSION=3.1
 
 FROM node:alpine as web-builder
 ARG JELLYFIN_WEB_VERSION=master
-RUN apk add curl \
+RUN apk add curl git \
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
  && yarn install \
@@ -24,10 +26,11 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 
 
 FROM multiarch/qemu-user-static:x86_64-arm as qemu
-FROM debian:stretch-slim-arm32v7
+FROM arm32v7/debian:buster-slim
 COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
+ libssl-dev ca-certificates \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media

@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -5,7 +8,6 @@ using System.Linq;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 
@@ -153,18 +155,18 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 // Try to keep the url clean by omitting defaults
-                if (StringHelper.EqualsIgnoreCase(pair.Name, "StartTimeTicks") &&
-                    StringHelper.EqualsIgnoreCase(pair.Value, "0"))
+                if (string.Equals(pair.Name, "StartTimeTicks", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(pair.Value, "0", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
-                if (StringHelper.EqualsIgnoreCase(pair.Name, "SubtitleStreamIndex") &&
-                    StringHelper.EqualsIgnoreCase(pair.Value, "-1"))
+                if (string.Equals(pair.Name, "SubtitleStreamIndex", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(pair.Value, "-1", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
-                if (StringHelper.EqualsIgnoreCase(pair.Name, "Static") &&
-                    StringHelper.EqualsIgnoreCase(pair.Value, "false"))
+                if (string.Equals(pair.Name, "Static", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(pair.Value, "false", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -192,7 +194,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (MediaType == DlnaProfileType.Audio)
             {
-                if (StringHelper.EqualsIgnoreCase(SubProtocol, "hls"))
+                if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
                 {
                     return string.Format("{0}/audio/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
                 }
@@ -200,7 +202,7 @@ namespace MediaBrowser.Model.Dlna
                 return string.Format("{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
             }
 
-            if (StringHelper.EqualsIgnoreCase(SubProtocol, "hls"))
+            if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Format("{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
             }
@@ -237,7 +239,7 @@ namespace MediaBrowser.Model.Dlna
 
             long startPositionTicks = item.StartPositionTicks;
 
-            var isHls = StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls");
+            var isHls = string.Equals(item.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase);
 
             if (isHls)
             {
@@ -370,7 +372,7 @@ namespace MediaBrowser.Model.Dlna
             var list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
-            long startPositionTicks = StringHelper.EqualsIgnoreCase(SubProtocol, "hls")
+            long startPositionTicks = string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase)
                 ? 0
                 : (PlayMethod == PlayMethod.Transcode && !CopyTimestamps ? StartPositionTicks : 0);
 
@@ -435,7 +437,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (info.DeliveryMethod == SubtitleDeliveryMethod.External)
             {
-                if (MediaSource.Protocol == MediaProtocol.File || !StringHelper.EqualsIgnoreCase(stream.Codec, subtitleProfile.Format) || !stream.IsExternal)
+                if (MediaSource.Protocol == MediaProtocol.File || !string.Equals(stream.Codec, subtitleProfile.Format, StringComparison.OrdinalIgnoreCase) || !stream.IsExternal)
                 {
                     info.Url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
                         baseUrl,
@@ -802,7 +804,7 @@ namespace MediaBrowser.Model.Dlna
 
                 foreach (string codec in AudioCodecs)
                 {
-                    if (StringHelper.EqualsIgnoreCase(codec, inputCodec))
+                    if (string.Equals(codec, inputCodec, StringComparison.OrdinalIgnoreCase))
                     {
                         return string.IsNullOrEmpty(codec) ? new string[] { } : new[] { codec };
                     }
@@ -827,7 +829,7 @@ namespace MediaBrowser.Model.Dlna
 
                 foreach (string codec in VideoCodecs)
                 {
-                    if (StringHelper.EqualsIgnoreCase(codec, inputCodec))
+                    if (string.Equals(codec, inputCodec, StringComparison.OrdinalIgnoreCase))
                     {
                         return string.IsNullOrEmpty(codec) ? new string[] { } : new[] { codec };
                     }
@@ -884,7 +886,7 @@ namespace MediaBrowser.Model.Dlna
         {
             get
             {
-                var defaultValue = StringHelper.EqualsIgnoreCase(Container, "m2ts")
+                var defaultValue = string.Equals(Container, "m2ts", StringComparison.OrdinalIgnoreCase)
                     ? TransportStreamTimestamp.Valid
                     : TransportStreamTimestamp.None;
 

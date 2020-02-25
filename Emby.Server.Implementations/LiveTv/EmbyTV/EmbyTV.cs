@@ -30,7 +30,6 @@ using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
@@ -427,7 +426,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             foreach (NameValuePair mapping in mappings)
             {
-                if (StringHelper.EqualsIgnoreCase(mapping.Name, channelId))
+                if (string.Equals(mapping.Name, channelId, StringComparison.OrdinalIgnoreCase))
                 {
                     return mapping.Value;
                 }
@@ -1664,10 +1663,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _fileSystem, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _processFactory, _config);
+                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _processFactory, _config);
             }
 
-            return new DirectRecorder(_logger, _httpClient, _fileSystem, _streamHelper);
+            return new DirectRecorder(_logger, _httpClient, _streamHelper);
         }
 
         private void OnSuccessfulRecording(TimerInfo timer, string path)
@@ -1888,7 +1887,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = _fileSystem.GetFileStream(nfoPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 var settings = new XmlWriterSettings
                 {
@@ -1952,7 +1951,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = _fileSystem.GetFileStream(nfoPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
             {
                 var settings = new XmlWriterSettings
                 {

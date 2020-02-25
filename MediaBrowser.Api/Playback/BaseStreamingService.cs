@@ -250,18 +250,18 @@ namespace MediaBrowser.Api.Playback
             {
                 if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
-                    logFilePrefix = "ffmpeg-directstream";
+                    logFilePrefix = "ffmpeg-remux";
                 }
                 else
                 {
-                    logFilePrefix = "ffmpeg-remux";
+                    logFilePrefix = "ffmpeg-directstream";
                 }
             }
 
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, logFilePrefix + "-" + Guid.NewGuid() + ".txt");
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            Stream logStream = FileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true);
+            Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(Request.AbsoluteUri + Environment.NewLine + Environment.NewLine + JsonSerializer.SerializeToString(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await logStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
@@ -327,15 +327,19 @@ namespace MediaBrowser.Api.Playback
 
         private bool EnableThrottling(StreamState state)
         {
+            var encodingOptions = ServerConfigurationManager.GetEncodingOptions();
+
+            // enable throttling when NOT using hardware acceleration
+            if (encodingOptions.HardwareAccelerationType == string.Empty)
+            {
+                return state.InputProtocol == MediaProtocol.File &&
+                       state.RunTimeTicks.HasValue &&
+                       state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
+                       state.IsInputVideo &&
+                       state.VideoType == VideoType.VideoFile &&
+                       !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+            }
             return false;
-            //// do not use throttling with hardware encoders
-            //return state.InputProtocol == MediaProtocol.File &&
-            //    state.RunTimeTicks.HasValue &&
-            //    state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
-            //    state.IsInputVideo &&
-            //    state.VideoType == VideoType.VideoFile &&
-            //    !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) &&
-            //    string.Equals(GetVideoEncoder(state), "libx264", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

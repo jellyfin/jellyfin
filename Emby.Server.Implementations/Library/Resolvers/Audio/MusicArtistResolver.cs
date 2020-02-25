@@ -80,14 +80,17 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             }
 
             // Avoid mis-identifying top folders
-            if (args.Parent.IsRoot) return null;
+            if (args.Parent.IsRoot)
+            {
+                return null;
+            }
 
             var directoryService = args.DirectoryService;
 
             var albumResolver = new MusicAlbumResolver(_logger, _fileSystem, _libraryManager);
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Where(i => i.IsDirectory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService, args.GetLibraryOptions())) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Where(i => i.IsDirectory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService)) ? new MusicArtist() : null;
         }
     }
 }

@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1600
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
@@ -18,6 +21,7 @@ namespace MediaBrowser.Model.Configuration
         public bool ImportMissingEpisodes { get; set; }
         public bool EnableAutomaticSeriesGrouping { get; set; }
         public bool EnableEmbeddedTitles { get; set; }
+        public bool EnableEmbeddedEpisodeInfos { get; set; }
 
         public int AutomaticRefreshIntervalDays { get; set; }
 

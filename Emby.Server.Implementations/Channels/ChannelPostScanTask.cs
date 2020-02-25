@@ -35,14 +35,6 @@ namespace Emby.Server.Implementations.Channels
             return Task.CompletedTask;
         }
 
-        public static string GetUserDistinctValue(User user)
-        {
-            var channels = user.Policy.EnabledChannels
-                .OrderBy(i => i);
-
-            return string.Join("|", channels);
-        }
-
         private void CleanDatabase(CancellationToken cancellationToken)
         {
             var installedChannelIds = ((ChannelManager)_channelManager).GetInstalledChannelIds();
@@ -75,19 +67,23 @@ namespace Emby.Server.Implementations.Channels
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-
-                }, false);
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             // Finally, delete the channel itself
-            _libraryManager.DeleteItem(channel, new DeleteOptions
-            {
-                DeleteFileLocation = false
-
-            }, false);
+            _libraryManager.DeleteItem(
+                channel,
+                new DeleteOptions
+                {
+                    DeleteFileLocation = false
+                },
+                false);
         }
     }
 }

@@ -29,14 +29,15 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
@@ -54,6 +55,9 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
+        private NamingOptions _namingOptions;
+        private string[] _videoFileExtensions;
+
         /// <summary>
         /// Gets or sets the postscan tasks.
         /// </summary>
@@ -139,6 +143,7 @@ namespace Emby.Server.Implementations.Library
         public bool IsScanRunning { get; private set; }
 
         private IServerApplicationHost _appHost;
+        private readonly IMediaEncoder _mediaEncoder;
 
         /// <summary>
         /// The _library items cache
@@ -172,7 +177,8 @@ namespace Emby.Server.Implementations.Library
             Func<ILibraryMonitor> libraryMonitorFactory,
             IFileSystem fileSystem,
             Func<IProviderManager> providerManagerFactory,
-            Func<IUserViewManager> userviewManager)
+            Func<IUserViewManager> userviewManager,
+            IMediaEncoder mediaEncoder)
         {
             _appHost = appHost;
             _logger = loggerFactory.CreateLogger(nameof(LibraryManager));
@@ -184,6 +190,7 @@ namespace Emby.Server.Implementations.Library
             _fileSystem = fileSystem;
             _providerManagerFactory = providerManagerFactory;
             _userviewManager = userviewManager;
+            _mediaEncoder = mediaEncoder;
 
             _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -708,10 +715,10 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Creates the root media folder
+        /// Creates the root media folder.
         /// </summary>
         /// <returns>AggregateFolder.</returns>
-        /// <exception cref="InvalidOperationException">Cannot create the root folder until plugins have loaded</exception>
+        /// <exception cref="InvalidOperationException">Cannot create the root folder until plugins have loaded.</exception>
         public AggregateFolder CreateRootFolder()
         {
             var rootFolderPath = ConfigurationManager.ApplicationPaths.RootFolderPath;
@@ -822,7 +829,6 @@ namespace Emby.Server.Implementations.Library
         {
             // If this returns multiple items it could be tricky figuring out which one is correct.
             // In most cases, the newest one will be and the others obsolete but not yet cleaned up
-
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException(nameof(path));
@@ -842,7 +848,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Person
+        /// Gets the person.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Person}.</returns>
@@ -852,7 +858,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Studio
+        /// Gets the studio.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Studio}.</returns>
@@ -877,7 +883,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets the genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
@@ -887,7 +893,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets the genre.
+        /// Gets the music genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{MusicGenre}.</returns>
@@ -897,7 +903,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Year
+        /// Gets the year.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
@@ -1074,9 +1080,9 @@ namespace Emby.Server.Implementations.Library
 
             var innerProgress = new ActionableProgress<double>();
 
-            innerProgress.RegisterAction(pct => progress.Report(pct * .96));
+            innerProgress.RegisterAction(pct => progress.Report(pct * pct * 0.96));
 
-            // Now validate the entire media library
+            // Validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true).ConfigureAwait(false);
 
             progress.Report(96);
@@ -1085,7 +1091,6 @@ namespace Emby.Server.Implementations.Library
 
             innerProgress.RegisterAction(pct => progress.Report(96 + (pct * .04)));
 
-            // Run post-scan tasks
             await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
@@ -1136,7 +1141,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error running postscan task");
+                    _logger.LogError(ex, "Error running post-scan task");
                 }
 
                 numComplete++;
@@ -1169,7 +1174,6 @@ namespace Emby.Server.Implementations.Library
 
             return _fileSystem.GetDirectoryPaths(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath)
                 .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders, refreshQueue))
-                .OrderBy(i => i.Name)
                 .ToList();
         }
 
@@ -1401,24 +1405,31 @@ namespace Emby.Server.Implementations.Library
 
         private void SetTopParentOrAncestorIds(InternalItemsQuery query)
         {
-            if (query.AncestorIds.Length == 0)
+            var ancestorIds = query.AncestorIds;
+            int len = ancestorIds.Length;
+            if (len == 0)
             {
                 return;
             }
 
-            var parents = query.AncestorIds.Select(i => GetItemById(i)).ToList();
-
-            if (parents.All(i => i is ICollectionFolder || i is UserView))
+            var parents = new BaseItem[len];
+            for (int i = 0; i < len; i++)
             {
-                // Optimize by querying against top level views
-                query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
-                query.AncestorIds = Array.Empty<Guid>();
-
-                // Prevent searching in all libraries due to empty filter
-                if (query.TopParentIds.Length == 0)
+                parents[i] = GetItemById(ancestorIds[i]);
+                if (!(parents[i] is ICollectionFolder || parents[i] is UserView))
                 {
-                    query.TopParentIds = new[] { Guid.NewGuid() };
+                    return;
                 }
+            }
+
+            // Optimize by querying against top level views
+            query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
+            query.AncestorIds = Array.Empty<Guid>();
+
+            // Prevent searching in all libraries due to empty filter
+            if (query.TopParentIds.Length == 0)
+            {
+                query.TopParentIds = new[] { Guid.NewGuid() };
             }
         }
 
@@ -1580,7 +1591,7 @@ namespace Emby.Server.Implementations.Library
         public async Task<IEnumerable<Video>> GetIntros(BaseItem item, User user)
         {
             var tasks = IntroProviders
-                .OrderBy(i => i.GetType().Name.IndexOf("Default", StringComparison.OrdinalIgnoreCase) == -1 ? 0 : 1)
+                .OrderBy(i => i.GetType().Name.Contains("Default", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
                 .Take(1)
                 .Select(i => GetIntros(i, item, user));
 
@@ -2358,33 +2369,22 @@ namespace Emby.Server.Implementations.Library
             new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
-        public bool IsVideoFile(string path, LibraryOptions libraryOptions)
+        /// <inheritdoc />
+        public bool IsVideoFile(string path)
         {
             var resolver = new VideoResolver(GetNamingOptions());
             return resolver.IsVideoFile(path);
         }
 
-        public bool IsVideoFile(string path)
-        {
-            return IsVideoFile(path, new LibraryOptions());
-        }
-
-        public bool IsAudioFile(string path, LibraryOptions libraryOptions)
-        {
-            var parser = new AudioFileParser(GetNamingOptions());
-            return parser.IsAudioFile(path);
-        }
-
+        /// <inheritdoc />
         public bool IsAudioFile(string path)
-        {
-            return IsAudioFile(path, new LibraryOptions());
-        }
+            => AudioFileParser.IsAudioFile(path, GetNamingOptions());
 
+        /// <inheritdoc />
         public int? GetSeasonNumberFromPath(string path)
-        {
-            return new SeasonPathParser().Parse(path, true, true).SeasonNumber;
-        }
+            => SeasonPathParser.Parse(path, true, true).SeasonNumber;
 
+        /// <inheritdoc />
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
         {
             var series = episode.Series;
@@ -2406,6 +2406,38 @@ namespace Emby.Server.Implementations.Library
             if (episodeInfo == null)
             {
                 episodeInfo = new Naming.TV.EpisodeInfo();
+            }
+
+            try
+            {
+                var libraryOptions = GetLibraryOptions(episode);
+                if (libraryOptions.EnableEmbeddedEpisodeInfos && string.Equals(episodeInfo.Container, "mp4", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Read from metadata
+                    var mediaInfo = _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+                    {
+                        MediaSource = episode.GetMediaSources(false)[0],
+                        MediaType = DlnaProfileType.Video
+                    }, CancellationToken.None).GetAwaiter().GetResult();
+                    if (mediaInfo.ParentIndexNumber > 0)
+                    {
+                        episodeInfo.SeasonNumber = mediaInfo.ParentIndexNumber;
+                    }
+
+                    if (mediaInfo.IndexNumber > 0)
+                    {
+                        episodeInfo.EpisodeNumber = mediaInfo.IndexNumber;
+                    }
+
+                    if (!string.IsNullOrEmpty(mediaInfo.ShowName))
+                    {
+                        episodeInfo.SeriesName = mediaInfo.ShowName;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading the episode informations with ffprobe. Episode: {EpisodeInfo}", episodeInfo.Path);
             }
 
             var changed = false;
@@ -2509,20 +2541,10 @@ namespace Emby.Server.Implementations.Library
 
         public NamingOptions GetNamingOptions()
         {
-            return GetNamingOptionsInternal();
-        }
-
-        private NamingOptions _namingOptions;
-        private string[] _videoFileExtensions;
-
-        private NamingOptions GetNamingOptionsInternal()
-        {
             if (_namingOptions == null)
             {
-                var options = new NamingOptions();
-
-                _namingOptions = options;
-                _videoFileExtensions = _namingOptions.VideoFileExtensions.ToArray();
+                _namingOptions = new NamingOptions();
+                _videoFileExtensions = _namingOptions.VideoFileExtensions;
             }
 
             return _namingOptions;
@@ -2533,11 +2555,10 @@ namespace Emby.Server.Implementations.Library
             var resolver = new VideoResolver(GetNamingOptions());
 
             var result = resolver.CleanDateTime(name);
-            var cleanName = resolver.CleanString(result.Name);
 
             return new ItemLookupInfo
             {
-                Name = cleanName.Name,
+                Name = resolver.TryCleanString(result.Name, out var newName) ? newName.ToString() : result.Name,
                 Year = result.Year
             };
         }

@@ -62,7 +62,6 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestMultiEdition3()
         {
-            // This is currently not supported and will fail, but we should try to figure it out
             var files = new[]
             {
                 @"/movies/The Phantom of the Opera (1925)/The Phantom of the Opera (1925) - 1925 version.mkv",

@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -169,7 +168,7 @@ namespace Jellyfin.Server
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NullImageEncoder(),
+                GetImageEncoder(appPaths),
                 new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
                 appConfig);
             try
@@ -192,8 +191,6 @@ namespace Jellyfin.Server
                     _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
                     throw;
                 }
-
-                appHost.ImageProcessor.ImageEncoder = GetImageEncoder(appPaths, appHost.LocalizationManager);
 
                 await appHost.RunStartupTasksAsync().ConfigureAwait(false);
 
@@ -238,7 +235,7 @@ namespace Jellyfin.Server
                     {
                         foreach (var address in addresses)
                         {
-                            _logger.LogInformation("Kestrel listening on {ipaddr}", address);
+                            _logger.LogInformation("Kestrel listening on {IpAddress}", address);
                             options.Listen(address, appHost.HttpPort);
 
                             if (appHost.EnableHttps && appHost.Certificate != null)
@@ -443,20 +440,18 @@ namespace Jellyfin.Server
             if (!File.Exists(configPath))
             {
                 // For some reason the csproj name is used instead of the assembly name
-                using (Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath))
+                await using Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath);
+                if (resource == null)
                 {
-                    if (resource == null)
-                    {
-                        throw new InvalidOperationException(
-                            string.Format(
-                                CultureInfo.InvariantCulture,
-                                "Invalid resource path: '{0}'",
-                                ResourcePath));
-                    }
-
-                    using Stream dst = File.Open(configPath, FileMode.CreateNew);
-                    await resource.CopyToAsync(dst).ConfigureAwait(false);
+                    throw new InvalidOperationException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Invalid resource path: '{0}'",
+                            ResourcePath));
                 }
+
+                await using Stream dst = File.Open(configPath, FileMode.CreateNew);
+                await resource.CopyToAsync(dst).ConfigureAwait(false);
             }
 
             return new ConfigurationBuilder()
@@ -481,11 +476,11 @@ namespace Jellyfin.Server
             catch (Exception ex)
             {
                 Serilog.Log.Logger = new LoggerConfiguration()
-                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] {ThreadId} {SourceContext}: {Message:lj} {NewLine}{Exception}")
+                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
                     .WriteTo.Async(x => x.File(
                         Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
                         rollingInterval: RollingInterval.Day,
-                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {ThreadId} {SourceContext}:{Message} {NewLine}{Exception}"))
+                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}"))
                     .Enrich.FromLogContext()
                     .Enrich.WithThreadId()
                     .CreateLogger();
@@ -494,9 +489,7 @@ namespace Jellyfin.Server
             }
         }
 
-        private static IImageEncoder GetImageEncoder(
-            IApplicationPaths appPaths,
-            ILocalizationManager localizationManager)
+        private static IImageEncoder GetImageEncoder(IApplicationPaths appPaths)
         {
             try
             {
@@ -505,8 +498,7 @@ namespace Jellyfin.Server
 
                 return new SkiaEncoder(
                     _loggerFactory.CreateLogger<SkiaEncoder>(),
-                    appPaths,
-                    localizationManager);
+                    appPaths);
             }
             catch (Exception ex)
             {

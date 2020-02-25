@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Api.Session
+namespace MediaBrowser.Api.Sessions
 {
     /// <summary>
     /// Class SessionInfoWebSocketListener

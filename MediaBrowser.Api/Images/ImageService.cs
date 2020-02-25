@@ -24,7 +24,7 @@ using Microsoft.Net.Http.Headers;
 namespace MediaBrowser.Api.Images
 {
     /// <summary>
-    /// Class GetItemImage
+    /// Class GetItemImage.
     /// </summary>
     [Route("/Items/{Id}/Images", "GET", Summary = "Gets information about an item's images")]
     [Authenticated]
@@ -550,23 +550,15 @@ namespace MediaBrowser.Api.Images
                 throw new ResourceNotFoundException($"{displayText} does not have an image of type {request.Type}");
             }
 
-            IImageEnhancer[] supportedImageEnhancers;
-            if (_imageProcessor.ImageEnhancers.Count > 0)
+            bool cropwhitespace;
+            if (request.CropWhitespace.HasValue)
             {
-                // TODO: Unless GetImageInfo modifies item to be null, this check is always false
-                if (item == null)
-                {
-                    item = _libraryManager.GetItemById(itemId);
-                }
-
-                supportedImageEnhancers = request.EnableImageEnhancers ? _imageProcessor.GetSupportedEnhancers(item, request.Type).ToArray() : Array.Empty<IImageEnhancer>();
+                cropwhitespace = request.CropWhitespace.Value;
             }
             else
             {
-                supportedImageEnhancers = Array.Empty<IImageEnhancer>();
+                cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
             }
-
-            var cropWhitespace = request.CropWhitespace ?? request.Type == ImageType.Logo || request.Type == ImageType.Art;
 
             var outputFormats = GetOutputFormats(request);
 
@@ -583,33 +575,32 @@ namespace MediaBrowser.Api.Images
                 {"realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*"}
             };
 
-            return GetImageResult(item,
+            return GetImageResult(
+                item,
                 itemId,
                 request,
                 imageInfo,
                 cropWhitespace,
                 outputFormats,
-                supportedImageEnhancers,
                 cacheDuration,
                 responseHeaders,
                 isHeadRequest);
         }
 
-        private async Task<object> GetImageResult(BaseItem item,
+        private async Task<object> GetImageResult(
+            BaseItem item,
             Guid itemId,
             ImageRequest request,
             ItemImageInfo image,
             bool cropWhitespace,
             IReadOnlyCollection<ImageFormat> supportedFormats,
-            IReadOnlyCollection<IImageEnhancer> enhancers,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
             bool isHeadRequest)
         {
             var options = new ImageProcessingOptions
             {
-                CropWhiteSpace = cropWhitespace,
-                Enhancers = enhancers,
+                CropWhiteSpace = cropwhitespace,
                 Height = request.Height,
                 ImageIndex = request.Index ?? 0,
                 Image = image,
@@ -639,8 +630,10 @@ namespace MediaBrowser.Api.Images
                 ContentType = mimeType,
                 DateLastModified = dateModified,
                 IsHeadRequest = isHeadRequest,
-                Path = path,
-                FileShare = FileShareMode.Read,
+                Path = imageResult.Item1,
+
+                FileShare = FileShare.Read
+
             }).ConfigureAwait(false);
         }
 
