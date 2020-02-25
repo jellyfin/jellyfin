@@ -412,10 +412,12 @@ namespace MediaBrowser.Api.Playback
                     user.Policy.EnableAudioPlaybackTranscoding);
             }
 
+            // Beginning of Playback Determination: Attempt DirectPlay first
             if (mediaSource.SupportsDirectPlay)
             {
-                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource)
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
                 {
+                    mediaSource.SupportsDirectPlay = false;
                 }
                 else
                 {
@@ -462,36 +464,43 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
-                options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
-
-                if (item is Audio)
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
                 {
-                    if (!user.Policy.EnableAudioPlaybackTranscoding)
-                    {
-                        options.ForceDirectStream = true;
-                    }
+                    mediaSource.SupportsDirectStream = false;
                 }
-                else if (item is Video)
+                else
                 {
-                    if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                    options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
+                    
+                    if (item is Audio)
                     {
-                        options.ForceDirectStream = true;
+                        if (!user.Policy.EnableAudioPlaybackTranscoding)
+                        {
+                            options.ForceDirectStream = true;
+                        }
                     }
-                }
+                    else if (item is Video)
+                    {
+                        if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                        {
+                            options.ForceDirectStream = true;
+                        }
+                    }
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
                     ? streamBuilder.BuildAudioItem(options)
                     : streamBuilder.BuildVideoItem(options);
 
-                if (streamInfo == null || !streamInfo.IsDirectStream)
-                {
-                    mediaSource.SupportsDirectStream = false;
-                }
+                    if (streamInfo == null || !streamInfo.IsDirectStream)
+                    {
+                        mediaSource.SupportsDirectStream = false;
+                    }
 
-                if (streamInfo != null)
-                {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    if (streamInfo != null)
+                    {
+                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    }
                 }
             }
 
@@ -504,18 +513,46 @@ namespace MediaBrowser.Api.Playback
                     ? streamBuilder.BuildAudioItem(options)
                     : streamBuilder.BuildVideoItem(options);
 
-                if (streamInfo != null)
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
                 {
-                    streamInfo.PlaySessionId = playSessionId;
-
-                    if (streamInfo.PlayMethod == PlayMethod.Transcode)
+                    if (streamInfo != null)
                     {
+                        streamInfo.PlaySessionId = playSessionId;    
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
-
-                        if (!allowVideoStreamCopy)
+                        mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                        if (!allowAudioStreamCopy)
                         {
-                            mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                            mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        }
+                        mediaSource.TranscodingContainer = streamInfo.Container;
+                        mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
+                        
+                        // Do this after the above so that StartPositionTicks is set
+                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    }				
+                }
+                else
+                {
+                    if (streamInfo != null)
+                    {
+                        streamInfo.PlaySessionId = playSessionId;
+
+                        if (streamInfo.PlayMethod == PlayMethod.Transcode)
+                        {
+                            streamInfo.StartPositionTicks = startTimeTicks;
+                            mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+
+                            if (!allowVideoStreamCopy)
+                            {
+                                mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                            }
+                            if (!allowAudioStreamCopy)
+                            {
+                                mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                            }
+                            mediaSource.TranscodingContainer = streamInfo.Container;
+                            mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         }
 
                         if (!allowAudioStreamCopy)
@@ -525,10 +562,10 @@ namespace MediaBrowser.Api.Playback
 
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-                    }
 
-                    // Do this after the above so that StartPositionTicks is set
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        // Do this after the above so that StartPositionTicks is set
+                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    }
                 }
             }
 
