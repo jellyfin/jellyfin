@@ -468,9 +468,16 @@ namespace Jellyfin.Server
                 await resource.CopyToAsync(dst).ConfigureAwait(false);
             }
 
+            // Use the swagger API page as the default redirect path if not hosting the jellyfin-web content
+            var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
+            if (string.IsNullOrEmpty(appPaths.WebPath))
+            {
+                inMemoryDefaultConfig["HttpListenerHost:DefaultRedirectPath"] = "swagger/index.html";
+            }
+
             return new ConfigurationBuilder()
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
-                .AddInMemoryCollection(ConfigurationOptions.Configuration)
+                .AddInMemoryCollection(inMemoryDefaultConfig)
                 .AddJsonFile("logging.json", false, true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .Build();
