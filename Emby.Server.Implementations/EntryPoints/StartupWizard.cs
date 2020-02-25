@@ -36,7 +36,11 @@ namespace Emby.Server.Implementations.EntryPoints
                 return Task.CompletedTask;
             }
 
-            if (!_config.Configuration.IsStartupWizardCompleted)
+            if (!_appHost.IsHostingContent)
+            {
+                BrowserLauncher.OpenSwaggerPage(_appHost);
+            }
+            else if (!_config.Configuration.IsStartupWizardCompleted)
             {
                 BrowserLauncher.OpenWebApp(_appHost);
             }

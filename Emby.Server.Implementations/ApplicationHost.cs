@@ -244,6 +244,9 @@ namespace Emby.Server.Implementations
         /// </summary>
         public string ContentRoot { get; private set; }
 
+        /// <inheritdoc/>
+        public bool IsHostingContent => ContentRoot != null;
+
         /// <summary>
         /// Gets the server configuration manager.
         /// </summary>
