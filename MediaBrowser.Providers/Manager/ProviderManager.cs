@@ -970,9 +970,8 @@ namespace MediaBrowser.Providers.Manager
             var id = item.Id;
             _logger.LogInformation("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
 
-            if (_activeRefreshes.ContainsKey(id))
+            if (_activeRefreshes.TryAdd(id, progress))
             {
-                _activeRefreshes[id] = progress;
                 RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
             }
             else
