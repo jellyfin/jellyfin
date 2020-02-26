@@ -268,7 +268,7 @@ namespace Jellyfin.Server
                 .UseStartup<Startup>();
 
             // Set the root directory for static content, if one exists
-            if (!string.IsNullOrEmpty(appHost.ContentRoot))
+            if (appHost.IsHostingContent)
             {
                 webhostBuilder.UseContentRoot(appHost.ContentRoot);
             }
