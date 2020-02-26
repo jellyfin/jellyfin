@@ -1262,7 +1262,7 @@ namespace Emby.Server.Implementations.Library
             return item;
         }
 
-        private List<BaseItem> GetItemListInternal(InternalItemsQuery query, bool allowExternalContent, bool orderByIds)
+        public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
         {
             if (query.Recursive && query.ParentId != Guid.Empty)
             {
@@ -1278,21 +1278,12 @@ namespace Emby.Server.Implementations.Library
                 AddUserToQuery(query, query.User, allowExternalContent);
             }
 
-            return ItemRepository.GetItemList(query, orderByIds);
-        }
-        public List<BaseItem> GetItemList(InternalItemsQuery query, bool allowExternalContent)
-        {
-            return GetItemListInternal(query, allowExternalContent, false);
+            return ItemRepository.GetItemList(query);
         }
 
         public List<BaseItem> GetItemList(InternalItemsQuery query)
         {
             return GetItemList(query, true);
-        }
-
-        public List<BaseItem> GetItemListOrdered(InternalItemsQuery query)
-        {
-            return GetItemListInternal(query, false, true);
         }
 
         public int GetCount(InternalItemsQuery query)
@@ -1326,7 +1317,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return ItemRepository.GetItemList(query, false);
+            return ItemRepository.GetItemList(query);
         }
 
         public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
@@ -1338,12 +1329,12 @@ namespace Emby.Server.Implementations.Library
 
             if (query.EnableTotalRecordCount)
             {
-                return ItemRepository.GetItems(query, false);
+                return ItemRepository.GetItems(query);
             }
 
             return new QueryResult<BaseItem>
             {
-                Items = ItemRepository.GetItemList(query, false).ToArray()
+                Items = ItemRepository.GetItemList(query).ToArray()
             };
         }
 
@@ -1453,7 +1444,7 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetAlbumArtists(query);
         }
 
-        private QueryResult<BaseItem> GetItemsResultInternal(InternalItemsQuery query, bool orderByIds)
+        public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query)
         {
             if (query.Recursive && !query.ParentId.Equals(Guid.Empty))
             {
@@ -1471,24 +1462,15 @@ namespace Emby.Server.Implementations.Library
 
             if (query.EnableTotalRecordCount)
             {
-                return ItemRepository.GetItems(query, orderByIds);
+                return ItemRepository.GetItems(query);
             }
 
-            var list = ItemRepository.GetItemList(query, orderByIds);
+            var list = ItemRepository.GetItemList(query);
 
             return new QueryResult<BaseItem>
             {
                 Items = list
             };
-        }
-        public QueryResult<BaseItem> GetItemsResult(InternalItemsQuery query)
-        {
-            return GetItemsResultInternal(query, false);
-        }
-
-        public QueryResult<BaseItem> GetItemsResultOrdered(InternalItemsQuery query)
-        {
-            return GetItemsResultInternal(query, true);
         }
 
         private void SetTopParentIdsOrAncestors(InternalItemsQuery query, List<BaseItem> parents)

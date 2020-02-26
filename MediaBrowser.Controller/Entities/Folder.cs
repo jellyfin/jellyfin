@@ -579,7 +579,7 @@ namespace MediaBrowser.Controller.Entities
                 Parent = this,
                 GroupByPresentationUniqueKey = false,
                 DtoOptions = new DtoOptions(true)
-            }, false);
+            });
         }
 
         public virtual int GetChildCount(User user)
@@ -811,7 +811,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.ItemIds.Length > 0)
             {
-                return LibraryManager.GetItemsResultOrdered(query);
+                return LibraryManager.GetItemsResult(query);
             }
 
             return GetItemsInternal(query);
@@ -823,7 +823,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.ItemIds.Length > 0)
             {
-                return LibraryManager.GetItemListOrdered(query);
+                return LibraryManager.GetItemList(query);
             }
 
             return GetItemsInternal(query).Items;

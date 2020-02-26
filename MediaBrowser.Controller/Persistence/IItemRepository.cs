@@ -103,9 +103,8 @@ namespace MediaBrowser.Controller.Persistence
         /// Gets the items.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <param name="orderByIds">Whether to order items by their ids.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        QueryResult<BaseItem> GetItems(InternalItemsQuery query, bool orderByIds);
+        QueryResult<BaseItem> GetItems(InternalItemsQuery query);
 
         /// <summary>
         /// Gets the item ids list.
@@ -146,9 +145,8 @@ namespace MediaBrowser.Controller.Persistence
         /// Gets the item list.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <param name="orderByIds">Whether order the items by their ids.</param>
         /// <returns>List&lt;BaseItem&gt;.</returns>
-        List<BaseItem> GetItemList(InternalItemsQuery query, bool orderByIds);
+        List<BaseItem> GetItemList(InternalItemsQuery query);
 
         /// <summary>
         /// Updates the inherited values.
