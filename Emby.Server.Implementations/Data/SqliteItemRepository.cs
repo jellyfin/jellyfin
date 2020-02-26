@@ -2580,7 +2580,7 @@ namespace Emby.Server.Implementations.Data
             return count;
         }
 
-        public List<BaseItem> GetItemList(InternalItemsQuery query, bool orderByIds)
+        public List<BaseItem> GetItemList(InternalItemsQuery query)
         {
             if (query == null)
             {
@@ -2610,7 +2610,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             commandText += GetGroupBy(query)
-                        + GetOrderByText(query, orderByIds);
+                        + GetOrderByText(query);
 
             if (query.Limit.HasValue || query.StartIndex.HasValue)
             {
@@ -2756,7 +2756,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public QueryResult<BaseItem> GetItems(InternalItemsQuery query, bool orderByIds)
+        public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
             if (query == null)
             {
@@ -2767,7 +2767,7 @@ namespace Emby.Server.Implementations.Data
 
             if (!query.EnableTotalRecordCount || (!query.Limit.HasValue && (query.StartIndex ?? 0) == 0))
             {
-                var returnList = GetItemList(query, orderByIds);
+                var returnList = GetItemList(query);
                 return new QueryResult<BaseItem>
                 {
                     Items = returnList,
@@ -2796,7 +2796,7 @@ namespace Emby.Server.Implementations.Data
 
             commandText += whereText
                         + GetGroupBy(query)
-                        + GetOrderByText(query, orderByIds);
+                        + GetOrderByText(query);
 
             if (query.Limit.HasValue || query.StartIndex.HasValue)
             {
@@ -2911,7 +2911,7 @@ namespace Emby.Server.Implementations.Data
             return result;
         }
 
-        private string GetOrderByText(InternalItemsQuery query, bool orderByIds)
+        private string GetOrderByText(InternalItemsQuery query)
         {
             var orderBy = query.OrderBy;
             if (string.IsNullOrEmpty(query.SearchTerm))
@@ -2923,25 +2923,16 @@ namespace Emby.Server.Implementations.Data
                     orderBy.CopyTo(arr, 0);
                     arr[oldLen] = ("SimilarityScore", SortOrder.Descending);
                     arr[oldLen + 1] = (ItemSortBy.Random, SortOrder.Ascending);
-                    orderBy = query.OrderBy = arr;
+                    query.OrderBy = arr;
                 }
             }
             else
             {
-                orderBy = query.OrderBy = new[]
+                query.OrderBy = new[]
                 {
                     ("SearchScore", SortOrder.Descending),
                     (ItemSortBy.SortName, SortOrder.Ascending)
                 };
-            }
-
-            if (orderByIds)
-            {
-                int oldLen = orderBy.Count;
-                var arr = new (string, SortOrder)[oldLen + 1];
-                orderBy.CopyTo(arr, 0);
-                arr[oldLen] = ("guid", SortOrder.Ascending);
-                orderBy = query.OrderBy = arr;
             }
 
 
@@ -3059,7 +3050,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             commandText += GetGroupBy(query)
-                        + GetOrderByText(query, false);
+                        + GetOrderByText(query);
 
             if (query.Limit.HasValue || query.StartIndex.HasValue)
             {
@@ -3123,7 +3114,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             commandText += GetGroupBy(query)
-                        + GetOrderByText(query, false);
+                        + GetOrderByText(query);
 
             if (query.Limit.HasValue || query.StartIndex.HasValue)
             {
@@ -3207,7 +3198,7 @@ namespace Emby.Server.Implementations.Data
 
             commandText += whereText
                         + GetGroupBy(query)
-                        + GetOrderByText(query, false);
+                        + GetOrderByText(query);
 
             if (query.Limit.HasValue || query.StartIndex.HasValue)
             {
@@ -5425,7 +5416,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             if (query.SimilarTo != null || !string.IsNullOrEmpty(query.SearchTerm))
             {
-                commandText += GetOrderByText(query, false);
+                commandText += GetOrderByText(query);
             }
             else
             {
