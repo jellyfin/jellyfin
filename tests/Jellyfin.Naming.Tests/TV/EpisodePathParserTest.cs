@@ -33,7 +33,9 @@ namespace Jellyfin.Naming.Tests.TV
         // TODO: [InlineData("/Season 4/Uchuu.Senkan.Yamato.2199.E03.avi", "Uchuu Senkan Yamoto 2199", 4, 3)]
         // TODO: [InlineData("The Daily Show/The Daily Show 25x22 - [WEBDL-720p][AAC 2.0][x264] Noah Baumbach-TBS.mkv", "The Daily Show", 25, 22)]
         // TODO: [InlineData("Watchmen (2019)/Watchmen 1x03 [WEBDL-720p][EAC3 5.1][h264][-TBS] - She Was Killed by Space Junk.mkv", "Watchmen (2019)", 1, 3)]
+        // TODO: [InlineData("/The.Legend.of.Condor.Heroes.2017.V2.web-dl.1080p.h264.aac-hdctv/The.Legend.of.Condor.Heroes.2017.E07.V2.web-dl.1080p.h264.aac-hdctv.mkv", "The Legend of Condor Heroes 2017", 1, 7)]
         public void ParseEpisodesCorrectly(string path, string name, int season, int episode)
+
         {
             NamingOptions o = new NamingOptions();
             EpisodePathParser p = new EpisodePathParser(o);
@@ -42,24 +44,6 @@ namespace Jellyfin.Naming.Tests.TV
             Assert.True(res.Success);
             Assert.Equal(name, res.SeriesName);
             Assert.Equal(season, res.SeasonNumber);
-            Assert.Equal(episode, res.EpisodeNumber);
-        }
-
-        [Theory]
-        [InlineData("/media/Foo/Foo 889", "Foo", 889)]
-        [InlineData("/media/Foo/[Bar] Foo Baz - 11 [1080p]", "Foo Baz", 11)]
-        [InlineData("D:\\media\\Foo\\Foo 889", "Foo", 889)]
-        [InlineData("D:\\media\\Foo\\[Bar] Foo Baz - 11 [1080p]", "Foo Baz", 11)]
-        // TODO: [InlineData("/The.Legend.of.Condor.Heroes.2017.V2.web-dl.1080p.h264.aac-hdctv/The.Legend.of.Condor.Heroes.2017.E07.V2.web-dl.1080p.h264.aac-hdctv.mkv", "The Legend of Condor Heroes 2017", 1, 7)]
-        public void ParseEpisodeWithoutSeason(string path, string name, int episode)
-        {
-            NamingOptions o = new NamingOptions();
-            EpisodePathParser p = new EpisodePathParser(o);
-            var res = p.Parse(path, true, fillExtendedInfo: true);
-
-            Assert.True(res.Success);
-            Assert.Equal(name, res.SeriesName);
-            Assert.Null(res.SeasonNumber);
             Assert.Equal(episode, res.EpisodeNumber);
         }
     }
