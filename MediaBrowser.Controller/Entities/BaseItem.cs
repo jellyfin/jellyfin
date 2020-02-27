@@ -392,7 +392,7 @@ namespace MediaBrowser.Controller.Entities
                 var thisChunk = new StringBuilder();
                 bool isNumeric = char.IsDigit(thisCh);
 
-                while ((thisMarker < s1.Length) && (char.IsDigit(thisCh) == isNumeric))
+                while (thisMarker < s1.Length && char.IsDigit(thisCh) == isNumeric)
                 {
                     thisChunk.Append(thisCh);
                     thisMarker++;

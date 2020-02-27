@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Sorting
                 var thatChunk = new StringBuilder();
                 bool thisNumeric = char.IsDigit(thisCh), thatNumeric = char.IsDigit(thatCh);
 
-                while ((thisMarker < s1.Length) && (char.IsDigit(thisCh) == thisNumeric))
+                while (thisMarker < s1.Length && char.IsDigit(thisCh) == thisNumeric)
                 {
                     thisChunk.Append(thisCh);
                     thisMarker++;
@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Sorting
                     }
                 }
 
-                while ((thatMarker < s2.Length) && (char.IsDigit(thatCh) == thatNumeric))
+                while (thatMarker < s2.Length && char.IsDigit(thatCh) == thatNumeric)
                 {
                     thatChunk.Append(thatCh);
                     thatMarker++;
