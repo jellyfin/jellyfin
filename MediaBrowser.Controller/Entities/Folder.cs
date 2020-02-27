@@ -807,6 +807,56 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
+        private class OneTimeQueue<T>
+        {
+            private List<T> items;
+            private int start;
+            public OneTimeQueue(int capacity)
+            {
+                items = new List<T>(capacity);
+                start = 0;
+            }
+            public OneTimeQueue(int capacity, T first)
+            {
+                items = new List<T>(capacity);
+                items.Add(first);
+                start = 0;
+            }
+            public void Enqueue(T item)
+            {
+                items.Add(item);
+            }
+            public T Dequeue()
+            {
+                start++;
+                return items[start - 1];
+            }
+        }
+
+        private IReadOnlyList<BaseItem> SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
+        {
+            var ids = query.ItemIds.ToList();
+            var positions = new Dictionary<Guid, OneTimeQueue<int>>(ids.Count);
+            for (int i = 0; i < ids.Count; i++)
+            {
+                if (positions.TryGetValue(ids[i], out var q))
+                {
+                    q.Enqueue(i);
+                } 
+                else
+                {
+                    positions.Add(ids[i], new OneTimeQueue<int>(4 /* wild guess */, i));
+                }
+            }
+
+            var newItems = new BaseItem[ids.Count];
+            foreach(var item in items)
+            {
+                newItems[positions[item.Id].Dequeue()] = item;
+            }
+            return newItems;
+        }
+
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
             if (query.ItemIds.Length > 0)
@@ -815,9 +865,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
                 {
-                    var ids = query.ItemIds.ToList();
-                    // Try to preserve order, "Play To" relies on it
-                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
+                    result.Items = SortItemsByRequest(query, result.Items);
                 }
                 return result;
             }
@@ -835,9 +883,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
                 {
-                    var ids = query.ItemIds.ToList();
-                    // Try to preserve order, "Play To" relies on it
-                    return result.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
+                    return SortItemsByRequest(query, result);
                 }
                 return result.ToArray();
             }
