@@ -1,13 +1,41 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Plugins;
+﻿using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz
 {
     public class PluginConfiguration : BasePluginConfiguration
     {
-        public string Server { get; set; } = "https://www.musicbrainz.org";
+        private string server = Plugin.Instance.DefaultServer;
 
-        public long RateLimit { get; set; } = 1000u;
+        private long rateLimit = Plugin.Instance.DefaultRateLimit;
+
+        public string Server
+        {
+            get
+            {
+                return server;
+            }
+
+            set
+            {
+                server = value.TrimEnd('/');
+            }
+        }
+
+        public long RateLimit
+        {
+            get
+            {
+                return rateLimit;
+            }
+
+            set
+            {
+                if (value < 2000u && server == Plugin.Instance.DefaultServer)
+                {
+                    RateLimit = Plugin.Instance.DefaultRateLimit;
+                }
+            }
+        }
 
         public bool Enable { get; set; }
 

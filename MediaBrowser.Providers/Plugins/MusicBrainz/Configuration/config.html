@@ -9,12 +9,12 @@
             <div class="content-primary">
                 <form class="musicBrainzConfigForm">
                     <div class="inputContainer">
-                        <input is="emby-input" type="text" id="server" label="Server:" />
-                        <div class="fieldDescription">This can either be a mirror of the official server or a custom server.</div>
+                        <input is="emby-input" type="text" id="server" required label="Server" />
+                        <div class="fieldDescription">This can be a mirror of the official server or even a custom server.</div>
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" type="number" id="rateLimit" pattern="[0-9]*" required min="400" max="10000" label="Rate Limit:" />
-                        <div class="fieldDescription">Span of time between each request in milliseconds.</div>
+                        <input is="emby-input" type="number" id="rateLimit" pattern="[0-9]*" required min="0" max="10000" label="Rate Limit" />
+                        <div class="fieldDescription">Span of time between requests in milliseconds. The official server is limited to one request every two seconds.</div>
                     </div>
                     <label class="checkboxContainer">
                         <input is="emby-checkbox" type="checkbox" id="enable" />
