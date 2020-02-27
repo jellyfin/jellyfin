@@ -809,9 +809,17 @@ namespace MediaBrowser.Controller.Entities
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
-            if (query.ItemIds.Length > 0)
+            if (query.ItemIds.Length > 1)
             {
-                return LibraryManager.GetItemsResult(query);
+                var result = LibraryManager.GetItemsResult(query);
+
+                if (query.OrderBy.Count == 0)
+                {
+                    var ids = query.ItemIds.ToList();
+                    // Try to preserve order, "Play To" relies on it
+                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
+                }
+                return result;
             }
 
             return GetItemsInternal(query);
@@ -821,9 +829,17 @@ namespace MediaBrowser.Controller.Entities
         {
             query.EnableTotalRecordCount = false;
 
-            if (query.ItemIds.Length > 0)
+            if (query.ItemIds.Length > 1)
             {
-                return LibraryManager.GetItemList(query);
+                var result = LibraryManager.GetItemList(query);
+
+                if (query.OrderBy.Count == 0)
+                {
+                    var ids = query.ItemIds.ToList();
+                    // Try to preserve order, "Play To" relies on it
+                    return result.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
+                }
+                return result.ToArray();
             }
 
             return GetItemsInternal(query).Items;
