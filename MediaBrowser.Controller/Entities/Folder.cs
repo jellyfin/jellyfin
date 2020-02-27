@@ -809,11 +809,11 @@ namespace MediaBrowser.Controller.Entities
 
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
-            if (query.ItemIds.Length > 1)
+            if (query.ItemIds.Length > 0)
             {
                 var result = LibraryManager.GetItemsResult(query);
 
-                if (query.OrderBy.Count == 0)
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
                 {
                     var ids = query.ItemIds.ToList();
                     // Try to preserve order, "Play To" relies on it
@@ -829,11 +829,11 @@ namespace MediaBrowser.Controller.Entities
         {
             query.EnableTotalRecordCount = false;
 
-            if (query.ItemIds.Length > 1)
+            if (query.ItemIds.Length > 0)
             {
                 var result = LibraryManager.GetItemList(query);
 
-                if (query.OrderBy.Count == 0)
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
                 {
                     var ids = query.ItemIds.ToList();
                     // Try to preserve order, "Play To" relies on it
