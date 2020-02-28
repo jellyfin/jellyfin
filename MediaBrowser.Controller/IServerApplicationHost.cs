@@ -17,11 +17,6 @@ namespace MediaBrowser.Controller
         event EventHandler HasUpdateAvailableChanged;
 
         /// <summary>
-        /// Gets a value indicating whether the server is hosting the static web content from jellyfin-web.
-        /// </summary>
-        bool IsHostingContent { get; }
-
-        /// <summary>
         /// Gets the system info.
         /// </summary>
         /// <returns>SystemInfo.</returns>

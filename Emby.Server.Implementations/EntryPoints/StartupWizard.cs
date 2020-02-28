@@ -2,7 +2,9 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Browser;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Plugins;
+using Microsoft.Extensions.Configuration;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -36,7 +38,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return Task.CompletedTask;
             }
 
-            if (!_appHost.IsHostingContent)
+            if (_appHost.Resolve<IConfiguration>().IsNoWebContent())
             {
                 BrowserLauncher.OpenSwaggerPage(_appHost);
             }

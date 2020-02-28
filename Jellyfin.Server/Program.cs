@@ -19,7 +19,7 @@ using Emby.Server.Implementations.Networking;
 using Jellyfin.Drawing.Skia;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Globalization;
+using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -177,7 +177,7 @@ namespace Jellyfin.Server
                 ServiceCollection serviceCollection = new ServiceCollection();
                 await appHost.InitAsync(serviceCollection).ConfigureAwait(false);
 
-                var host = CreateWebHostBuilder(appHost, serviceCollection).Build();
+                var host = CreateWebHostBuilder(appHost, serviceCollection, appConfig).Build();
 
                 // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = host.Services;
@@ -221,7 +221,7 @@ namespace Jellyfin.Server
             }
         }
 
-        private static IWebHostBuilder CreateWebHostBuilder(ApplicationHost appHost, IServiceCollection serviceCollection)
+        private static IWebHostBuilder CreateWebHostBuilder(ApplicationHost appHost, IServiceCollection serviceCollection, IConfiguration appConfig)
         {
             var webhostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -268,9 +268,18 @@ namespace Jellyfin.Server
                 })
                 .UseStartup<Startup>();
 
-            // Set the root directory for static content, if one exists
-            if (appHost.IsHostingContent)
+            if (!appConfig.IsNoWebContent())
             {
+                // Fail startup if the web content does not exist
+                if (!Directory.Exists(appHost.ContentRoot) || !Directory.GetFiles(appHost.ContentRoot).Any())
+                {
+                    throw new InvalidOperationException(
+                        "The server is expected to host web content, but the provided content directory is either " +
+                        $"invalid or empty: {appHost.ContentRoot}. If you do not want to host web content with the " +
+                        $"server, you may set the '{MediaBrowser.Controller.Extensions.ConfigurationExtensions.NoWebContentKey}' flag.");
+                }
+
+                // Configure the web host to host the static web content
                 webhostBuilder.UseContentRoot(appHost.ContentRoot);
             }
 
@@ -402,12 +411,6 @@ namespace Jellyfin.Server
                     // Use default location under ResourcesPath
                     webDir = Path.Combine(AppContext.BaseDirectory, "jellyfin-web");
                 }
-            }
-
-            // Reset webDir if the directory does not exist, or is empty
-            if (!Directory.Exists(webDir) || !Directory.GetFiles(webDir).Any())
-            {
-                webDir = null;
             }
 
             // logDir
