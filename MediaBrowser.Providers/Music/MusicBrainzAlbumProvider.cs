@@ -23,6 +23,11 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
         /// <summary>
+        /// The settings key for a setting that specifies the base URL to use for sending requests to MusicBrainz.
+        /// </summary>
+        public const string BaseUrlKey = "MusicBrainz:BaseUrl";
+
+        /// <summary>
         /// The Jellyfin user-agent is unrestricted but source IP must not exceed
         /// one request per second, therefore we rate limit to avoid throttling.
         /// Be prudent, use a value slightly above the minimun required.
@@ -57,7 +62,7 @@ namespace MediaBrowser.Providers.Music
             _appHost = appHost;
             _logger = logger;
 
-            _musicBrainzBaseUrl = configuration["MusicBrainz:BaseUrl"];
+            _musicBrainzBaseUrl = configuration[BaseUrlKey];
 
             // Use a stopwatch to ensure we don't exceed the MusicBrainz rate limit
             _stopWatchMusicBrainz.Start();

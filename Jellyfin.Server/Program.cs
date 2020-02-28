@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Drawing;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
 using Jellyfin.Drawing.Skia;
@@ -470,7 +471,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (string.IsNullOrEmpty(appPaths.WebPath))
             {
-                inMemoryDefaultConfig["HttpListenerHost:DefaultRedirectPath"] = "swagger/index.html";
+                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
             }
 
             return new ConfigurationBuilder()

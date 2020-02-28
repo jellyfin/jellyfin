@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Emby.Server.Implementations.HttpServer;
+using MediaBrowser.Providers.Music;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Emby.Server.Implementations
@@ -13,8 +15,8 @@ namespace Emby.Server.Implementations
         /// </summary>
         public static Dictionary<string, string> DefaultConfiguration => new Dictionary<string, string>
         {
-            { "HttpListenerHost:DefaultRedirectPath", "web/index.html" },
-            { "MusicBrainz:BaseUrl", "https://www.musicbrainz.org" },
+            { HttpListenerHost.DefaultRedirectKey, "web/index.html" },
+            { MusicBrainzAlbumProvider.BaseUrlKey, "https://www.musicbrainz.org" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" }
         };

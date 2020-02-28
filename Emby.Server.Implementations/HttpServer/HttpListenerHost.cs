@@ -30,6 +30,12 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : IHttpServer, IDisposable
     {
+        /// <summary>
+        /// The settings key for a setting that specifies the default redirect path
+        /// to use for requests where the URL base prefix is invalid or missing.
+        /// </summary>
+        public const string DefaultRedirectKey = "HttpListenerHost:DefaultRedirectPath";
+
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
@@ -58,7 +64,7 @@ namespace Emby.Server.Implementations.HttpServer
             _appHost = applicationHost;
             _logger = logger;
             _config = config;
-            _defaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
+            _defaultRedirectPath = configuration[DefaultRedirectKey];
             _baseUrlPrefix = _config.Configuration.BaseUrl;
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
