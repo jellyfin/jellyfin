@@ -807,52 +807,27 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        private class OneTimeQueue<T>
-        {
-            private List<T> items;
-            private int start;
-            public OneTimeQueue(int capacity)
-            {
-                items = new List<T>(capacity);
-                start = 0;
-            }
-            public OneTimeQueue(int capacity, T first)
-            {
-                items = new List<T>(capacity);
-                items.Add(first);
-                start = 0;
-            }
-            public void Enqueue(T item)
-            {
-                items.Add(item);
-            }
-            public T Dequeue()
-            {
-                start++;
-                return items[start - 1];
-            }
-        }
-
         private IReadOnlyList<BaseItem> SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
         {
             var ids = query.ItemIds;
-            var positions = new Dictionary<Guid, OneTimeQueue<int>>(ids.Length);
+            int size = items.Count;
+
+            // ids can potentially contain non-unique guids, but query result cannot,
+            // so we include only first occurrence of each guid
+            var positions = new Dictionary<Guid, int>(size);
+            int index = 0;
             for (int i = 0; i < ids.Length; i++)
             {
-                if (positions.TryGetValue(ids[i], out var q))
+                if (positions.TryAdd(ids[i], index))
                 {
-                    q.Enqueue(i);
-                } 
-                else
-                {
-                    positions.Add(ids[i], new OneTimeQueue<int>(4 /* wild guess */, i));
+                    index++;
                 }
             }
 
-            var newItems = new BaseItem[ids.Count];
+            var newItems = new BaseItem[size];
             foreach(var item in items)
             {
-                newItems[positions[item.Id].Dequeue()] = item;
+                newItems[positions[item.Id]] = item;
             }
             return newItems;
         }
