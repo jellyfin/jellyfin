@@ -15,6 +15,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         public static Dictionary<string, string> DefaultConfiguration => new Dictionary<string, string>
         {
+            { NoWebContentKey, bool.FalseString },
             { HttpListenerHost.DefaultRedirectKey, "web/index.html" },
             { MusicBrainzAlbumProvider.BaseUrlKey, "https://www.musicbrainz.org" },
             { FfmpegProbeSizeKey, "1G" },

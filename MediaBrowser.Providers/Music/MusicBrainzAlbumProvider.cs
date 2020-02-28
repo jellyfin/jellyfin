@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
         /// <summary>
-        /// The settings key for a setting that specifies the base URL to use for sending requests to MusicBrainz.
+        /// The key for a setting that specifies the base URL to use for sending requests to MusicBrainz.
         /// </summary>
         public const string BaseUrlKey = "MusicBrainz:BaseUrl";
 

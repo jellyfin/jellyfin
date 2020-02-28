@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.HttpServer
     public class HttpListenerHost : IHttpServer, IDisposable
     {
         /// <summary>
-        /// The settings key for a setting that specifies the default redirect path
+        /// The key for a setting that specifies the default redirect path
         /// to use for requests where the URL base prefix is invalid or missing.
         /// </summary>
         public const string DefaultRedirectKey = "HttpListenerHost:DefaultRedirectPath";
