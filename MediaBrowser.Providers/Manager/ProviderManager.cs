@@ -970,20 +970,18 @@ namespace MediaBrowser.Providers.Manager
             var id = item.Id;
             _logger.LogInformation("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
 
-            if (_activeRefreshes.TryAdd(id, progress))
-            {
-                RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
-            }
-            else
-            {
-                // TODO: Need to hunt down the conditions for this happening
-                throw new Exception(
+            // TODO: Need to hunt down the conditions for this happening
+            _activeRefreshes.AddOrUpdate(
+                id,
+                (_) => throw new Exception(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Refresh for item {0} {1} is not in progress",
                         item.GetType().Name,
-                        item.Id.ToString("N", CultureInfo.InvariantCulture)));
-            }
+                        item.Id.ToString("N", CultureInfo.InvariantCulture))),
+                (_, _) => progress);
+
+            RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
         }
 
         private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
