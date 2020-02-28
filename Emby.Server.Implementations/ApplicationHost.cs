@@ -328,8 +328,6 @@ namespace Emby.Server.Implementations
 
         private IMediaSourceManager MediaSourceManager { get; set; }
 
-        private readonly IConfiguration _configuration;
-
         /// <summary>
         /// Gets the installation manager.
         /// </summary>
@@ -367,11 +365,8 @@ namespace Emby.Server.Implementations
             IStartupOptions options,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
-            INetworkManager networkManager,
-            IConfiguration configuration)
+            INetworkManager networkManager)
         {
-            _configuration = configuration;
-
             XmlSerializer = new MyXmlSerializer();
 
             NetworkManager = networkManager;
@@ -587,7 +582,8 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public async Task InitAsync(IServiceCollection serviceCollection)
+        /// <inheritdoc/>
+        public async Task InitAsync(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
@@ -620,7 +616,7 @@ namespace Emby.Server.Implementations
 
             DiscoverTypes();
 
-            await RegisterResources(serviceCollection).ConfigureAwait(false);
+            await RegisterResources(serviceCollection, startupConfig).ConfigureAwait(false);
 
             ContentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
             if (string.IsNullOrEmpty(ContentRoot))
@@ -659,7 +655,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected async Task RegisterResources(IServiceCollection serviceCollection)
+        protected async Task RegisterResources(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
             serviceCollection.AddMemoryCache();
 
@@ -762,7 +758,7 @@ namespace Emby.Server.Implementations
                 ProcessFactory,
                 LocalizationManager,
                 () => SubtitleEncoder,
-                _configuration,
+                startupConfig,
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
 
@@ -784,7 +780,7 @@ namespace Emby.Server.Implementations
                 this,
                 LoggerFactory.CreateLogger<HttpListenerHost>(),
                 ServerConfigurationManager,
-                _configuration,
+                startupConfig,
                 NetworkManager,
                 JsonSerializer,
                 XmlSerializer,

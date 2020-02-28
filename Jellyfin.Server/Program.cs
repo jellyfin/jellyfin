@@ -103,10 +103,10 @@ namespace Jellyfin.Server
 
             // Create an instance of the application configuration to use for application startup
             await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
-            IConfiguration appConfig = CreateAppConfiguration(appPaths);
+            IConfiguration startupConfig = CreateAppConfiguration(appPaths);
 
             // Initialize logging framework
-            InitializeLoggingFramework(appConfig, appPaths);
+            InitializeLoggingFramework(startupConfig, appPaths);
             _logger = _loggerFactory.CreateLogger("Main");
 
             // Log uncaught exceptions to the logging instead of std error
@@ -171,12 +171,11 @@ namespace Jellyfin.Server
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 GetImageEncoder(appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
-                appConfig);
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
             try
             {
                 ServiceCollection serviceCollection = new ServiceCollection();
-                await appHost.InitAsync(serviceCollection).ConfigureAwait(false);
+                await appHost.InitAsync(serviceCollection, startupConfig).ConfigureAwait(false);
 
                 var webHost = CreateWebHostBuilder(appHost, serviceCollection, appPaths).Build();
 
