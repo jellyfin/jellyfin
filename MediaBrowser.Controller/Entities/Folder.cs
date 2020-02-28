@@ -835,9 +835,9 @@ namespace MediaBrowser.Controller.Entities
 
         private IReadOnlyList<BaseItem> SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
         {
-            var ids = query.ItemIds.ToList();
-            var positions = new Dictionary<Guid, OneTimeQueue<int>>(ids.Count);
-            for (int i = 0; i < ids.Count; i++)
+            var ids = query.ItemIds;
+            var positions = new Dictionary<Guid, OneTimeQueue<int>>(ids.Length);
+            for (int i = 0; i < ids.Length; i++)
             {
                 if (positions.TryGetValue(ids[i], out var q))
                 {
