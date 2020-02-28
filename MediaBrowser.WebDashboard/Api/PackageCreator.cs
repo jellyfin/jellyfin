@@ -47,6 +47,7 @@ namespace MediaBrowser.WebDashboard.Api
             return string.Equals(Path.GetExtension(path), ".html", StringComparison.OrdinalIgnoreCase);
         }
 
+        // Modifies the HTML by adding common meta tags, css and js.
         public async Task<Stream> ModifyHtml(
             string path,
             Stream sourceStream,
