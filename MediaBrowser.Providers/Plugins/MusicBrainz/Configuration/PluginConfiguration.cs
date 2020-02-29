@@ -30,7 +30,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 
             set
             {
-                if (value < 2000u && _server == Plugin.Instance.DefaultServer)
+                if (value < Plugin.Instance.DefaultRateLimit && _server == Plugin.Instance.DefaultServer)
                 {
                     RateLimit = Plugin.Instance.DefaultRateLimit;
                 }

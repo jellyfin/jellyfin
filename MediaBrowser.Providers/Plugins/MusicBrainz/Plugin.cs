@@ -17,9 +17,9 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 
         public override string Description => "Get artist and album metadata from any MusicBrainz server.";
 
-        public string DefaultServer = "https://musicbrainz.org";
+        public const string DefaultServer = "https://musicbrainz.org";
 
-        public long DefaultRateLimit = 2000u;
+        public const long DefaultRateLimit = 2000u;
 
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
