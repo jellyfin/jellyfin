@@ -4,20 +4,20 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 {
     public class PluginConfiguration : BasePluginConfiguration
     {
-        private string server = Plugin.Instance.DefaultServer;
+        private string _server = Plugin.Instance.DefaultServer;
 
-        private long rateLimit = Plugin.Instance.DefaultRateLimit;
+        private long _rateLimit = Plugin.Instance.DefaultRateLimit;
 
         public string Server
         {
             get
             {
-                return server;
+                return _server;
             }
 
             set
             {
-                server = value.TrimEnd('/');
+                _server = value.TrimEnd('/');
             }
         }
 
@@ -25,12 +25,12 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
         {
             get
             {
-                return rateLimit;
+                return _rateLimit;
             }
 
             set
             {
-                if (value < 2000u && server == Plugin.Instance.DefaultServer)
+                if (value < 2000u && _server == Plugin.Instance.DefaultServer)
                 {
                     RateLimit = Plugin.Instance.DefaultRateLimit;
                 }
