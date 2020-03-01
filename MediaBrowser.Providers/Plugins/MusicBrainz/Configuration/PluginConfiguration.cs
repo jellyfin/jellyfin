@@ -4,9 +4,9 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 {
     public class PluginConfiguration : BasePluginConfiguration
     {
-        private string _server = Plugin.Instance.DefaultServer;
+        private string _server = Plugin.DefaultServer;
 
-        private long _rateLimit = Plugin.Instance.DefaultRateLimit;
+        private long _rateLimit = Plugin.DefaultRateLimit;
 
         public string Server
         {
@@ -30,9 +30,9 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 
             set
             {
-                if (value < Plugin.Instance.DefaultRateLimit && _server == Plugin.Instance.DefaultServer)
+                if (value < Plugin.DefaultRateLimit && _server == Plugin.DefaultServer)
                 {
-                    RateLimit = Plugin.Instance.DefaultRateLimit;
+                    RateLimit = Plugin.DefaultRateLimit;
                 }
             }
         }
