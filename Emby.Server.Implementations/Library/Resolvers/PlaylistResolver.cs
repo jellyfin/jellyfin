@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
+using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
@@ -30,19 +31,28 @@ namespace Emby.Server.Implementations.Library.Resolvers
             // Contains [playlist] in the path
             if (args.IsDirectory)
             {
-                var filename = Path.GetFileName(args.Path);
-
-                if (string.IsNullOrEmpty(filename))
-                {
-                    return null;
-                }
-
-                if (filename.IndexOf("[playlist]", StringComparison.OrdinalIgnoreCase) != -1)
+                // It's a boxset if the path is a directory with [playlist] in it's the name
+                // TODO: Should this use Path.GetDirectoryName() instead?
+                bool isBoxSet = Path.GetFileName(args.Path)
+                    ?.Contains("[playlist]", StringComparison.OrdinalIgnoreCase)
+                    ?? false;
+                if (isBoxSet)
                 {
                     return new Playlist
                     {
                         Path = args.Path,
                         Name = Path.GetFileName(args.Path).Replace("[playlist]", string.Empty, StringComparison.OrdinalIgnoreCase).Trim()
+                    };
+                }
+
+                // It's a directory-based playlist if the directory contains a playlist file
+                var filePaths = Directory.EnumerateFiles(args.Path);
+                if (filePaths.Any(f => f.EndsWith(PlaylistXmlSaver.DefaultPlaylistFilename, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return new Playlist
+                    {
+                        Path = args.Path,
+                        Name = Path.GetFileName(args.Path)
                     };
                 }
             }
