@@ -338,6 +338,7 @@ namespace MediaBrowser.Api.Playback
                        state.IsInputVideo &&
                        state.VideoType == VideoType.VideoFile &&
                        !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+                       string.Equals(GetVideoEncoder(state), "libx264", StringComparison.OrdinalIgnoreCase);
             }
             return false;
         }
