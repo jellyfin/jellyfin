@@ -11,8 +11,10 @@ namespace MediaBrowser.LocalMetadata.Savers
 {
     public class PlaylistXmlSaver : BaseXmlSaver
     {
+        /// <summary>
+        /// The default file name to use when creating a new playlist.
+        /// </summary>
         public const string DefaultPlaylistFilename = "playlist.xml";
-
 
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
