@@ -35,7 +35,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Users/Public", "GET", Summary = "Gets a list of publicly visible users for display on a login screen.")]
-    public class GetPublicUsers : IReturn<UserDto[]>
+    public class GetPublicUsers : IReturn<PublicUserDto[]>
     {
     }
 
@@ -266,22 +266,36 @@ namespace MediaBrowser.Api
             _authContext = authContext;
         }
 
+        /// <summary>
+        /// Gets the public available Users information
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns>System.Object.</returns>
         public object Get(GetPublicUsers request)
         {
-            // If the startup wizard hasn't been completed then just return all users
-            if (!ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
+            var users = _userManager
+                .Users
+                .Where(item => item.Policy.IsDisabled == false)
+                .Where(item => item.Policy.IsHidden == false);
+
+            var deviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
+
+            if (!string.IsNullOrWhiteSpace(deviceId))
             {
-                return Get(new GetUsers
-                {
-                    IsDisabled = false
-                });
+                users = users.Where(i => _deviceManager.CanAccessDevice(i, deviceId));
             }
 
-            return Get(new GetUsers
+            if (!_networkManager.IsInLocalNetwork(Request.RemoteIp))
             {
-                IsHidden = false,
-                IsDisabled = false
-            }, true, true);
+                users = users.Where(i => i.Policy.EnableRemoteAccess);
+            }
+
+            var result = users
+                .OrderBy(u => u.Name)
+                .Select(i => _userManager.GetPublicUserDto(i, Request.RemoteIp))
+                .ToArray();
+
+            return ToOptimizedResult(result);
         }
 
         /// <summary>
