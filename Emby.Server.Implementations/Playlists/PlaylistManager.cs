@@ -189,41 +189,45 @@ namespace Emby.Server.Implementations.Playlists
 
         private void AddToPlaylistInternal(string playlistId, IEnumerable<Guid> itemIds, User user, DtoOptions options)
         {
-            var playlist = _libraryManager.GetItemById(playlistId) as Playlist;
+            // Retrieve the existing playlist
+            var playlist = _libraryManager.GetItemById(playlistId) as Playlist
+                ?? throw new ArgumentException("No Playlist exists with Id " + playlistId);
 
-            if (playlist == null)
-            {
-                throw new ArgumentException("No Playlist exists with the supplied Id");
-            }
-
-            var list = new List<LinkedChild>();
-
+            // Retrieve all the items to be added to the playlist
             var items = GetPlaylistItems(itemIds, playlist.MediaType, user, options)
                 .Where(i => i.SupportsAddingToPlaylist)
                 .ToList();
 
-            foreach (var item in items)
+            // Remove duplicates from the new items to be added
+            var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
+            var uniqueItems = items
+                .Where(i => !existingIds.Contains(i.Id))
+                .GroupBy(i => i.Id)
+                .Select(group => group.First())
+                .ToList();
+
+            // Log duplicates that have been ignored, if any
+            if (uniqueItems.Count != items.Count)
             {
-                list.Add(LinkedChild.Create(item));
+                var numDuplicates = items.Count - uniqueItems.Count;
+                _logger.LogWarning("Ignored adding {DuplicateCount} duplicate items to playlist {PlaylistName}.", numDuplicates, playlist.Name);
             }
 
-            var newList = playlist.LinkedChildren.ToList();
-            newList.AddRange(list);
-            playlist.LinkedChildren = newList.ToArray();
-
+            // Update the playlist in the repository
+            var linkedItems = uniqueItems.Select(i => LinkedChild.Create(i));
+            playlist.LinkedChildren = playlist.LinkedChildren.Concat(linkedItems).ToArray();
             playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
+            // Update the playlist on disk
             if (playlist.IsFile)
             {
                 SavePlaylistFile(playlist);
             }
 
+            // Refresh playlist metadata
             _providerManager.QueueRefresh(
                 playlist.Id,
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    ForceSave = true
-                },
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true },
                 RefreshPriority.High);
         }
 
