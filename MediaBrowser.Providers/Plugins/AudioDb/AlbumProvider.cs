@@ -16,8 +16,9 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Music;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {

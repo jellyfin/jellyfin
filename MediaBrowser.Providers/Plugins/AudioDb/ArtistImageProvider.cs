@@ -10,7 +10,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbArtistImageProvider : IRemoteImageProvider, IHasOrder
     {
