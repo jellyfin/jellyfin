@@ -8,7 +8,6 @@ namespace Emby.Server.Implementations
         public static Dictionary<string, string> Configuration => new Dictionary<string, string>
         {
             { "HttpListenerHost:DefaultRedirectPath", "web/index.html" },
-            { "MusicBrainz:BaseUrl", "https://www.musicbrainz.org" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" }
         };

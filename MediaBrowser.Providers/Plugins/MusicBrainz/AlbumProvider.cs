@@ -15,7 +15,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using Microsoft.Extensions.Configuration;
+using MediaBrowser.Providers.Plugins.MusicBrainz;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.Music
         /// Be prudent, use a value slightly above the minimun required.
         /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
         /// </summary>
-        private const long MusicBrainzQueryIntervalMs = 1050u;
+        private readonly long _musicBrainzQueryIntervalMs;
 
         /// <summary>
         /// For each single MB lookup/search, this is the maximum number of
@@ -50,14 +50,14 @@ namespace MediaBrowser.Providers.Music
         public MusicBrainzAlbumProvider(
             IHttpClient httpClient,
             IApplicationHost appHost,
-            ILogger logger,
-            IConfiguration configuration)
+            ILogger logger)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _logger = logger;
 
-            _musicBrainzBaseUrl = configuration["MusicBrainz:BaseUrl"];
+            _musicBrainzBaseUrl = Plugin.Instance.Configuration.Server;
+            _musicBrainzQueryIntervalMs = Plugin.Instance.Configuration.RateLimit;
 
             // Use a stopwatch to ensure we don't exceed the MusicBrainz rate limit
             _stopWatchMusicBrainz.Start();
@@ -74,6 +74,12 @@ namespace MediaBrowser.Providers.Music
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(AlbumInfo searchInfo, CancellationToken cancellationToken)
         {
+            // TODO maybe remove when artist metadata can be disabled
+            if (!Plugin.Instance.Configuration.Enable)
+            {
+                return Enumerable.Empty<RemoteSearchResult>();
+            }
+
             var releaseId = searchInfo.GetReleaseId();
             var releaseGroupId = searchInfo.GetReleaseGroupId();
 
@@ -107,8 +113,8 @@ namespace MediaBrowser.Providers.Music
                     url = string.Format(
                         CultureInfo.InvariantCulture,
                         "/ws/2/release/?query=\"{0}\" AND artist:\"{1}\"",
-                       WebUtility.UrlEncode(queryName),
-                       WebUtility.UrlEncode(searchInfo.GetAlbumArtist()));
+                        WebUtility.UrlEncode(queryName),
+                        WebUtility.UrlEncode(searchInfo.GetAlbumArtist()));
                 }
             }
 
@@ -170,7 +176,6 @@ namespace MediaBrowser.Providers.Music
                         }
 
                         return result;
-
                     });
                 }
             }
@@ -186,6 +191,12 @@ namespace MediaBrowser.Providers.Music
             {
                 Item = new MusicAlbum()
             };
+
+            // TODO maybe remove when artist metadata can be disabled
+            if (!Plugin.Instance.Configuration.Enable)
+            {
+                return result;
+            }
 
             // If we have a release group Id but not a release Id...
             if (string.IsNullOrWhiteSpace(releaseId) && !string.IsNullOrWhiteSpace(releaseGroupId))
@@ -456,18 +467,6 @@ namespace MediaBrowser.Providers.Music
                                 }
                             case "artist-credit":
                                 {
-                                    // TODO
-
-                                    /*
-                                     * <artist-credit>
-<name-credit>
-<artist id="e225cda5-882d-4b80-b8a3-b36d7175b1ea">
-<name>SARCASTIC+ZOOKEEPER</name>
-<sort-name>SARCASTIC+ZOOKEEPER</sort-name>
-</artist>
-</name-credit>
-</artist-credit>
-                                     */
                                     using (var subReader = reader.ReadSubtree())
                                     {
                                         var artist = ParseArtistCredit(subReader);
@@ -764,10 +763,10 @@ namespace MediaBrowser.Providers.Music
             {
                 attempts++;
 
-                if (_stopWatchMusicBrainz.ElapsedMilliseconds < MusicBrainzQueryIntervalMs)
+                if (_stopWatchMusicBrainz.ElapsedMilliseconds < _musicBrainzQueryIntervalMs)
                 {
                     // MusicBrainz is extremely adamant about limiting to one request per second
-                    var delayMs = MusicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
+                    var delayMs = _musicBrainzQueryIntervalMs - _stopWatchMusicBrainz.ElapsedMilliseconds;
                     await Task.Delay((int)delayMs, cancellationToken).ConfigureAwait(false);
                 }
 
@@ -778,7 +777,7 @@ namespace MediaBrowser.Providers.Music
 
                 response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
 
-                // We retry a finite number of times, and only whilst MB is indcating 503 (throttling)
+                // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
             }
             while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
 

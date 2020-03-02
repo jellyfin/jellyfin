@@ -322,10 +322,10 @@ namespace MediaBrowser.Controller.Entities
                     ProviderManager.OnRefreshProgress(this, 5);
                 }
 
-                //build a dictionary of the current children we have now by Id so we can compare quickly and easily
+                // Build a dictionary of the current children we have now by Id so we can compare quickly and easily
                 var currentChildren = GetActualChildrenDictionary();
 
-                //create a list for our validated children
+                // Create a list for our validated children
                 var newItems = new List<BaseItem>();
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -391,7 +391,7 @@ namespace MediaBrowser.Controller.Entities
                 var folder = this;
                 innerProgress.RegisterAction(p =>
                 {
-                    double newPct = .80 * p + 10;
+                    double newPct = 0.80 * p + 10;
                     progress.Report(newPct);
                     ProviderManager.OnRefreshProgress(folder, newPct);
                 });
@@ -421,7 +421,7 @@ namespace MediaBrowser.Controller.Entities
                 var folder = this;
                 innerProgress.RegisterAction(p =>
                 {
-                    double newPct = .10 * p + 90;
+                    double newPct = 0.10 * p + 90;
                     progress.Report(newPct);
                     if (recursive)
                     {
