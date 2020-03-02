@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Sorting
 {
     public static class SortExtensions
     {
-        private static IComparer<string> _comparer = new AlphanumComparator();
+        private static readonly AlphanumComparator _comparer = new AlphanumComparator();
         public static IEnumerable<T> OrderByString<T>(this IEnumerable<T> list, Func<T, string> getName)
         {
             return list.OrderBy(getName, _comparer);
