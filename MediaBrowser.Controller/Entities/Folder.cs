@@ -807,7 +807,7 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        private IReadOnlyList<BaseItem> SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
+        private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
         {
             var ids = query.ItemIds;
             int size = items.Count;
@@ -825,10 +825,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var newItems = new BaseItem[size];
-            foreach(var item in items)
+            foreach (var item in items)
             {
                 newItems[positions[item.Id]] = item;
             }
+
             return newItems;
         }
 
@@ -842,6 +843,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     result.Items = SortItemsByRequest(query, result.Items);
                 }
+
                 return result;
             }
 
@@ -860,6 +862,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return SortItemsByRequest(query, result);
                 }
+
                 return result.ToArray();
             }
 
