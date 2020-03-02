@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>
+    public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>, IEquatable<BaseItem>
     {
         /// <summary>
         /// The supported image extensions
@@ -2918,5 +2918,22 @@ namespace MediaBrowser.Controller.Entities
         public static readonly IReadOnlyCollection<ExtraType> DisplayExtraTypes = new[] { Model.Entities.ExtraType.BehindTheScenes, Model.Entities.ExtraType.Clip, Model.Entities.ExtraType.DeletedScene, Model.Entities.ExtraType.Interview, Model.Entities.ExtraType.Sample, Model.Entities.ExtraType.Scene };
 
         public virtual bool SupportsExternalTransfer => false;
+
+        public override bool Equals(object obj)
+        {
+            Logger.LogInformation("Comparing me ({0}) to generic them ({1})", this, obj);
+            return this.Equals(obj as BaseItem);
+        }
+
+        public bool Equals(BaseItem item)
+        {
+            Logger.LogInformation("Comparing me ({0}) to specific them ({1})", this, item);
+            if (item == null)
+            {
+                return false;
+            }
+
+            return Id == item.Id;
+        }
     }
 }
