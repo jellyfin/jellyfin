@@ -825,8 +825,9 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var newItems = new BaseItem[size];
-            foreach (var item in items)
+            for (int i = 0; i < size; i++)
             {
+                var item = items[i];
                 newItems[positions[item.Id]] = item;
             }
 
