@@ -387,15 +387,12 @@ namespace MediaBrowser.Controller.Entities
 
             while (thisMarker < s1.Length)
             {
-                if (thisMarker >= s1.Length)
-                {
-                    break;
-                }
                 char thisCh = s1[thisMarker];
 
                 var thisChunk = new StringBuilder();
+                bool isNumeric = char.IsDigit(thisCh);
 
-                while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || SortHelper.InChunk(thisCh, thisChunk[0])))
+                while (thisMarker < s1.Length && char.IsDigit(thisCh) == isNumeric)
                 {
                     thisChunk.Append(thisCh);
                     thisMarker++;
@@ -406,7 +403,6 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                var isNumeric = thisChunk.Length > 0 && char.IsDigit(thisChunk[0]);
                 list.Add(new Tuple<StringBuilder, bool>(thisChunk, isNumeric));
             }
 

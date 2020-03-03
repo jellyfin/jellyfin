@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using MediaBrowser.Controller.Sorting;
 
-namespace Emby.Server.Implementations.Sorting
+namespace MediaBrowser.Controller.Sorting
 {
     public class AlphanumComparator : IComparer<string>
     {
@@ -31,8 +31,9 @@ namespace Emby.Server.Implementations.Sorting
 
                 var thisChunk = new StringBuilder();
                 var thatChunk = new StringBuilder();
+                bool thisNumeric = char.IsDigit(thisCh), thatNumeric = char.IsDigit(thatCh);
 
-                while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || SortHelper.InChunk(thisCh, thisChunk[0])))
+                while (thisMarker < s1.Length && char.IsDigit(thisCh) == thisNumeric)
                 {
                     thisChunk.Append(thisCh);
                     thisMarker++;
@@ -43,7 +44,7 @@ namespace Emby.Server.Implementations.Sorting
                     }
                 }
 
-                while ((thatMarker < s2.Length) && (thatChunk.Length == 0 || SortHelper.InChunk(thatCh, thatChunk[0])))
+                while (thatMarker < s2.Length && char.IsDigit(thatCh) == thatNumeric)
                 {
                     thatChunk.Append(thatCh);
                     thatMarker++;
@@ -54,38 +55,35 @@ namespace Emby.Server.Implementations.Sorting
                     }
                 }
 
-                int result = 0;
+
                 // If both chunks contain numeric characters, sort them numerically
-                if (char.IsDigit(thisChunk[0]) && char.IsDigit(thatChunk[0]))
+                if (thisNumeric && thatNumeric)
                 {
-                    if (!int.TryParse(thisChunk.ToString(), out thisNumericChunk))
-                    {
-                        return 0;
-                    }
-                    if (!int.TryParse(thatChunk.ToString(), out thatNumericChunk))
+                    if (!int.TryParse(thisChunk.ToString(), out thisNumericChunk)
+                        || !int.TryParse(thatChunk.ToString(), out thatNumericChunk))
                     {
                         return 0;
                     }
 
                     if (thisNumericChunk < thatNumericChunk)
                     {
-                        result = -1;
+                        return -1;
                     }
 
                     if (thisNumericChunk > thatNumericChunk)
                     {
-                        result = 1;
+                        return 1;
                     }
                 }
                 else
                 {
-                    result = thisChunk.ToString().CompareTo(thatChunk.ToString());
+                    int result = thisChunk.ToString().CompareTo(thatChunk.ToString());
+                    if (result != 0)
+                    {
+                        return result;
+                    }
                 }
 
-                if (result != 0)
-                {
-                    return result;
-                }
             }
 
             return 0;

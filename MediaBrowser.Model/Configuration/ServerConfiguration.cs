@@ -238,7 +238,7 @@ namespace MediaBrowser.Model.Configuration
             CodecsUsed = Array.Empty<string>();
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
-            EnableSimpleArtistDetection = true;
+            EnableSimpleArtistDetection = false;
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
