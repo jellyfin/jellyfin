@@ -35,7 +35,7 @@
  - [geilername](https://github.com/geilername)
  - [pR0Ps](https://github.com/pR0Ps)
  - [artiume](https://github.com/Artiume)
-
+ - [SegiH](https://github.com/SegiH)
 
 # Emby Contributors
 
