@@ -227,7 +227,10 @@ namespace Emby.Server.Implementations.Playlists
             // Refresh playlist metadata
             _providerManager.QueueRefresh(
                 playlist.Id,
-                new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true },
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    ForceSave = true
+                },
                 RefreshPriority.High);
         }
 
