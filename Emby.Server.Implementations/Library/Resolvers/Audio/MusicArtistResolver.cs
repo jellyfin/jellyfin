@@ -27,7 +27,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <param name="fileSystem">The file system.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="config">The configuration manager.</param>
-        public MusicArtistResolver(ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager, IServerConfigurationManager config)
+        public MusicArtistResolver(
+            ILogger<MusicArtistResolver> logger,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager,
+            IServerConfigurationManager config)
         {
             _logger = logger;
             _fileSystem = fileSystem;

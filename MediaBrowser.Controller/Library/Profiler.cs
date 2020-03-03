@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="logger">The logger.</param>
-        public Profiler(string name, ILogger logger)
+        public Profiler(string name, ILogger<Profiler> logger)
         {
             this._name = name;
 

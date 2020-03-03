@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Users
     {
         public UserMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<UserMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

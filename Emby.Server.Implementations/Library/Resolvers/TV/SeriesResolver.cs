@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SeriesResolver(IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
+        public SeriesResolver(IFileSystem fileSystem, ILogger<SeriesResolver> logger, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;
             _logger = logger;

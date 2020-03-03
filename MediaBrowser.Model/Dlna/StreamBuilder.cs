@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Dlna
             _logger = logger;
         }
 
-        public StreamBuilder(ILogger logger)
+        public StreamBuilder(ILogger<StreamBuilder> logger)
             : this(new FullTranscoderSupport(), logger)
         {
         }
