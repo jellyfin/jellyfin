@@ -48,6 +48,7 @@ RUN apt-get update \
  libomxil-bellagio-bin \
  libraspberrypi0 \
  vainfo \
+ libva2 \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
