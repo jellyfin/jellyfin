@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.Playlists
             // Retrieve all the items to be added to the playlist
             var items = GetPlaylistItems(itemIds, playlist.MediaType, user, options)
                 .Where(i => i.SupportsAddingToPlaylist)
-                .ToList();
+                .ToArray();
 
             // Remove duplicates from the new items to be added
             var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
@@ -204,18 +204,23 @@ namespace Emby.Server.Implementations.Playlists
                 .Where(i => !existingIds.Contains(i.Id))
                 .GroupBy(i => i.Id)
                 .Select(group => group.First())
-                .ToList();
+                .Select(i => LinkedChild.Create(i))
+                .ToArray();
 
             // Log duplicates that have been ignored, if any
-            if (uniqueItems.Count != items.Count)
+            int numDuplicates = items.Length - uniqueItems.Length;
+            if (numDuplicates > 0)
             {
-                var numDuplicates = items.Count - uniqueItems.Count;
                 _logger.LogWarning("Ignored adding {DuplicateCount} duplicate items to playlist {PlaylistName}.", numDuplicates, playlist.Name);
             }
 
+            // Create a new array with the updated playlist items
+            var newLinkedChildren = new LinkedChild[playlist.LinkedChildren.Length + uniqueItems.Length];
+            playlist.LinkedChildren.CopyTo(newLinkedChildren, 0);
+            uniqueItems.CopyTo(newLinkedChildren, playlist.LinkedChildren.Length);
+
             // Update the playlist in the repository
-            var linkedItems = uniqueItems.Select(i => LinkedChild.Create(i));
-            playlist.LinkedChildren = playlist.LinkedChildren.Concat(linkedItems).ToArray();
+            playlist.LinkedChildren = newLinkedChildren;
             playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
 
             // Update the playlist on disk
