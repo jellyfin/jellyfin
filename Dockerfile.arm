@@ -62,4 +62,4 @@ VOLUME /cache /config /media
 ENTRYPOINT ["./jellyfin/jellyfin", \
     "--datadir", "/config", \
     "--cachedir", "/cache", \
-    "--ffmpeg", "/usr/bin/ffmpeg"]
+    "--ffmpeg", "/usr/lib/jellyfin-ffmpeg"]
