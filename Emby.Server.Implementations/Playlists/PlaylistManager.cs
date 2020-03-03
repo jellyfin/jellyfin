@@ -214,6 +214,12 @@ namespace Emby.Server.Implementations.Playlists
                 _logger.LogWarning("Ignored adding {DuplicateCount} duplicate items to playlist {PlaylistName}.", numDuplicates, playlist.Name);
             }
 
+            // Do nothing else if there are no items to add to the playlist
+            if (uniqueItems.Length == 0)
+            {
+                return;
+            }
+
             // Create a new array with the updated playlist items
             var newLinkedChildren = new LinkedChild[playlist.LinkedChildren.Length + uniqueItems.Length];
             playlist.LinkedChildren.CopyTo(newLinkedChildren, 0);
