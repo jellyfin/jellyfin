@@ -26,6 +26,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
+using Serilog.Events;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -260,6 +261,7 @@ namespace Jellyfin.Server
                         }
                     }
                 })
+                .UseSerilog()
                 .UseContentRoot(appHost.ContentRoot)
                 .ConfigureServices(services =>
                 {
