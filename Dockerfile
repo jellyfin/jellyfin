@@ -21,6 +21,10 @@ RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --
 FROM jellyfin/ffmpeg:${FFMPEG_VERSION} as ffmpeg
 FROM debian:buster-slim
 
+ARG DEBIAN_FRONTEND="noninteractive"
+ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
+ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
+
 COPY --from=ffmpeg /opt/ffmpeg /opt/ffmpeg
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
