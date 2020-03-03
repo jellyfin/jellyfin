@@ -273,29 +273,31 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPublicUsers request)
         {
-            var users = _userManager
+            var result = _userManager
                 .Users
-                .Where(item => !item.Policy.IsDisabled)
-                .Where(item => !item.Policy.IsHidden);
+                .Where(item => !item.Policy.IsDisabled);
 
-            var deviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
-
-            if (!string.IsNullOrWhiteSpace(deviceId))
+            if (ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
-                users = users.Where(i => _deviceManager.CanAccessDevice(i, deviceId));
+                var deviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
+                result = result.Where(item => !item.Policy.IsHidden);
+
+                if (!string.IsNullOrWhiteSpace(deviceId))
+                {
+                    result = result.Where(i => _deviceManager.CanAccessDevice(i, deviceId));
+                }
+
+                if (!_networkManager.IsInLocalNetwork(Request.RemoteIp))
+                {
+                    result = result.Where(i => i.Policy.EnableRemoteAccess);
+                }
             }
 
-            if (!_networkManager.IsInLocalNetwork(Request.RemoteIp))
-            {
-                users = users.Where(i => i.Policy.EnableRemoteAccess);
-            }
-
-            var result = users
-                .OrderBy(u => u.Name)
-                .Select(i => _userManager.GetPublicUserDto(i, Request.RemoteIp))
-                .ToArray();
-
-            return ToOptimizedResult(result);
+            return ToOptimizedResult(result
+                    .OrderBy(u => u.Name)
+                    .Select(i => _userManager.GetPublicUserDto(i, Request.RemoteIp))
+                    .ToArray()
+                );
         }
 
         /// <summary>
