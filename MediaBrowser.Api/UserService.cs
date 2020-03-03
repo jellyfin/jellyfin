@@ -275,8 +275,8 @@ namespace MediaBrowser.Api
         {
             var users = _userManager
                 .Users
-                .Where(item => item.Policy.IsDisabled == false)
-                .Where(item => item.Policy.IsHidden == false);
+                .Where(item => !item.Policy.IsDisabled)
+                .Where(item => !item.Policy.IsHidden);
 
             var deviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
 
