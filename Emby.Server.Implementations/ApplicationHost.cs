@@ -118,8 +118,10 @@ namespace Emby.Server.Implementations
     /// </summary>
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
-        private SqliteUserRepository _userRepository;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger _logger;
 
+        private SqliteUserRepository _userRepository;
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
 
         /// <summary>
@@ -166,7 +168,6 @@ namespace Emby.Server.Implementations
         /// <inheritdoc />
         public bool IsShuttingDown { get; private set; }
 
-        private ILogger _logger;
         private IPlugin[] _plugins;
 
         /// <summary>
@@ -174,12 +175,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The plugins.</value>
         public IReadOnlyList<IPlugin> Plugins => _plugins;
-
-        /// <summary>
-        /// Gets or sets the logger factory.
-        /// </summary>
-        /// <value>The logger factory.</value>
-        public ILoggerFactory LoggerFactory { get; protected set; }
 
         /// <summary>
         /// Gets or sets the application paths.
@@ -365,6 +360,8 @@ namespace Emby.Server.Implementations
             INetworkManager networkManager,
             IConfiguration configuration)
         {
+            _loggerFactory = loggerFactory;
+            _logger = _loggerFactory.CreateLogger("App");
             _configuration = configuration;
 
             XmlSerializer = new MyXmlSerializer();
@@ -373,12 +370,9 @@ namespace Emby.Server.Implementations
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
 
             ApplicationPaths = applicationPaths;
-            LoggerFactory = loggerFactory;
             FileSystemManager = fileSystem;
 
-            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, XmlSerializer, FileSystemManager);
-
-            _logger = LoggerFactory.CreateLogger("App");
+            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, _loggerFactory, XmlSerializer, FileSystemManager);
 
             StartupOptions = options;
 
@@ -447,7 +441,7 @@ namespace Emby.Server.Implementations
             {
                 if (_deviceId == null)
                 {
-                    _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
+                    _deviceId = new DeviceId(ApplicationPaths, _loggerFactory);
                 }
 
                 return _deviceId.Value;
@@ -647,7 +641,7 @@ namespace Emby.Server.Implementations
             var response = context.Response;
             var localPath = context.Request.Path.ToString();
 
-            var req = new WebSocketSharpRequest(request, response, request.Path, _logger);
+            var req = new WebSocketSharpRequest(request, response, request.Path, _loggerFactory.CreateLogger<WebSocketSharpRequest>());
             await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
         }
 
@@ -675,7 +669,7 @@ namespace Emby.Server.Implementations
 
             HttpClient = new HttpClientManager.HttpClientManager(
                 ApplicationPaths,
-                LoggerFactory.CreateLogger<HttpClientManager.HttpClientManager>(),
+                _loggerFactory.CreateLogger<HttpClientManager.HttpClientManager>(),
                 FileSystemManager,
                 () => ApplicationUserAgent);
             serviceCollection.AddSingleton(HttpClient);
@@ -685,7 +679,7 @@ namespace Emby.Server.Implementations
             IsoManager = new IsoManager();
             serviceCollection.AddSingleton(IsoManager);
 
-            TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, LoggerFactory, FileSystemManager);
+            TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, _loggerFactory, FileSystemManager);
             serviceCollection.AddSingleton(TaskManager);
 
             serviceCollection.AddSingleton(XmlSerializer);
@@ -712,22 +706,22 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(ServerConfigurationManager);
 
-            LocalizationManager = new LocalizationManager(ServerConfigurationManager, JsonSerializer, LoggerFactory.CreateLogger<LocalizationManager>());
+            LocalizationManager = new LocalizationManager(ServerConfigurationManager, JsonSerializer, _loggerFactory.CreateLogger<LocalizationManager>());
             await LocalizationManager.LoadAll().ConfigureAwait(false);
             serviceCollection.AddSingleton<ILocalizationManager>(LocalizationManager);
 
             serviceCollection.AddSingleton<IBlurayExaminer>(new BdInfoExaminer(FileSystemManager));
 
-            UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, () => UserManager);
+            UserDataManager = new UserDataManager(_loggerFactory, ServerConfigurationManager, () => UserManager);
             serviceCollection.AddSingleton(UserDataManager);
 
             _displayPreferencesRepository = new SqliteDisplayPreferencesRepository(
-                LoggerFactory.CreateLogger<SqliteDisplayPreferencesRepository>(),
+                _loggerFactory.CreateLogger<SqliteDisplayPreferencesRepository>(),
                 ApplicationPaths,
                 FileSystemManager);
             serviceCollection.AddSingleton<IDisplayPreferencesRepository>(_displayPreferencesRepository);
 
-            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, LoggerFactory.CreateLogger<SqliteItemRepository>(), LocalizationManager);
+            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, _loggerFactory.CreateLogger<SqliteItemRepository>(), LocalizationManager);
             serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
 
             AuthenticationRepository = GetAuthenticationRepository();
@@ -736,7 +730,7 @@ namespace Emby.Server.Implementations
             _userRepository = GetUserRepository();
 
             UserManager = new UserManager(
-                LoggerFactory.CreateLogger<UserManager>(),
+                _loggerFactory.CreateLogger<UserManager>(),
                 _userRepository,
                 XmlSerializer,
                 NetworkManager,
@@ -750,7 +744,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(UserManager);
 
             MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
-                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
+                _loggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
                 ServerConfigurationManager,
                 FileSystemManager,
                 ProcessFactory,
@@ -760,23 +754,23 @@ namespace Emby.Server.Implementations
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
 
-            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager, MediaEncoder);
+            LibraryManager = new LibraryManager(this, _loggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager, MediaEncoder);
             serviceCollection.AddSingleton(LibraryManager);
 
             var musicManager = new MusicManager(LibraryManager);
             serviceCollection.AddSingleton<IMusicManager>(musicManager);
 
-            LibraryMonitor = new LibraryMonitor(LoggerFactory, LibraryManager, ServerConfigurationManager, FileSystemManager);
+            LibraryMonitor = new LibraryMonitor(_loggerFactory, LibraryManager, ServerConfigurationManager, FileSystemManager);
             serviceCollection.AddSingleton(LibraryMonitor);
 
-            serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(LoggerFactory, LibraryManager, UserManager));
+            serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(_loggerFactory, LibraryManager, UserManager));
 
             CertificateInfo = GetCertificateInfo(true);
             Certificate = GetCertificate(CertificateInfo);
 
             HttpServer = new HttpListenerHost(
                 this,
-                LoggerFactory.CreateLogger<HttpListenerHost>(),
+                _loggerFactory.CreateLogger<HttpListenerHost>(),
                 ServerConfigurationManager,
                 _configuration,
                 NetworkManager,
@@ -789,7 +783,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(HttpServer);
 
-            ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
+            ImageProcessor = new ImageProcessor(_loggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
             serviceCollection.AddSingleton(ImageProcessor);
 
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
@@ -798,23 +792,23 @@ namespace Emby.Server.Implementations
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager);
             serviceCollection.AddSingleton(DeviceManager);
 
-            MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
+            MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, _loggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
             serviceCollection.AddSingleton(MediaSourceManager);
 
-            SubtitleManager = new SubtitleManager(LoggerFactory, FileSystemManager, LibraryMonitor, MediaSourceManager, LocalizationManager);
+            SubtitleManager = new SubtitleManager(_loggerFactory, FileSystemManager, LibraryMonitor, MediaSourceManager, LocalizationManager);
             serviceCollection.AddSingleton(SubtitleManager);
 
-            ProviderManager = new ProviderManager(HttpClient, SubtitleManager, ServerConfigurationManager, LibraryMonitor, LoggerFactory, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
+            ProviderManager = new ProviderManager(HttpClient, SubtitleManager, ServerConfigurationManager, LibraryMonitor, _loggerFactory, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
             serviceCollection.AddSingleton(ProviderManager);
 
-            DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => LiveTvManager);
+            DtoService = new DtoService(_loggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => LiveTvManager);
             serviceCollection.AddSingleton(DtoService);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, _loggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
             SessionManager = new SessionManager(
-                LoggerFactory.CreateLogger<SessionManager>(),
+                _loggerFactory.CreateLogger<SessionManager>(),
                 UserDataManager,
                 LibraryManager,
                 UserManager,
@@ -828,47 +822,47 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(SessionManager);
 
             serviceCollection.AddSingleton<IDlnaManager>(
-                new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LoggerFactory, JsonSerializer, this));
+                new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, _loggerFactory, JsonSerializer, this));
 
-            CollectionManager = new CollectionManager(LibraryManager, ApplicationPaths, LocalizationManager, FileSystemManager, LibraryMonitor, LoggerFactory, ProviderManager);
+            CollectionManager = new CollectionManager(LibraryManager, ApplicationPaths, LocalizationManager, FileSystemManager, LibraryMonitor, _loggerFactory, ProviderManager);
             serviceCollection.AddSingleton(CollectionManager);
 
             serviceCollection.AddSingleton(typeof(IPlaylistManager), typeof(PlaylistManager));
 
-            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, LoggerFactory, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, FileSystemManager, () => ChannelManager);
+            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, _loggerFactory, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, FileSystemManager, () => ChannelManager);
             serviceCollection.AddSingleton(LiveTvManager);
 
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(UserViewManager);
 
             NotificationManager = new NotificationManager(
-                LoggerFactory.CreateLogger<NotificationManager>(),
+                _loggerFactory.CreateLogger<NotificationManager>(),
                 UserManager,
                 ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
-            ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
+            ChapterManager = new ChapterManager(LibraryManager, _loggerFactory, ServerConfigurationManager, ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
 
-            EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
+            EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, _loggerFactory, MediaEncoder, ChapterManager, LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
 
             var activityLogRepo = GetActivityLogRepository();
             serviceCollection.AddSingleton(activityLogRepo);
-            serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(LoggerFactory, activityLogRepo, UserManager));
+            serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(_loggerFactory, activityLogRepo, UserManager));
 
             var authContext = new AuthorizationContext(AuthenticationRepository, UserManager);
             serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
             serviceCollection.AddSingleton<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
 
-            AuthService = new AuthService(LoggerFactory.CreateLogger<AuthService>(), authContext, ServerConfigurationManager, SessionManager, NetworkManager);
+            AuthService = new AuthService(_loggerFactory.CreateLogger<AuthService>(), authContext, ServerConfigurationManager, SessionManager, NetworkManager);
             serviceCollection.AddSingleton(AuthService);
 
             SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(
                 LibraryManager,
-                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>(),
+                _loggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>(),
                 ApplicationPaths,
                 FileSystemManager,
                 MediaEncoder,
@@ -884,7 +878,7 @@ namespace Emby.Server.Implementations
 
             _displayPreferencesRepository.Initialize();
 
-            var userDataRepo = new SqliteUserDataRepository(LoggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
+            var userDataRepo = new SqliteUserDataRepository(_loggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
 
             SetStaticProperties();
 
@@ -956,7 +950,7 @@ namespace Emby.Server.Implementations
         private SqliteUserRepository GetUserRepository()
         {
             var repo = new SqliteUserRepository(
-                LoggerFactory.CreateLogger<SqliteUserRepository>(),
+                _loggerFactory.CreateLogger<SqliteUserRepository>(),
                 ApplicationPaths);
 
             repo.Initialize();
@@ -966,7 +960,7 @@ namespace Emby.Server.Implementations
 
         private IAuthenticationRepository GetAuthenticationRepository()
         {
-            var repo = new AuthenticationRepository(LoggerFactory, ServerConfigurationManager);
+            var repo = new AuthenticationRepository(_loggerFactory, ServerConfigurationManager);
 
             repo.Initialize();
 
@@ -975,7 +969,7 @@ namespace Emby.Server.Implementations
 
         private IActivityRepository GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager);
+            var repo = new ActivityRepository(_loggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager);
 
             repo.Initialize();
 
@@ -990,7 +984,7 @@ namespace Emby.Server.Implementations
             ItemRepository.ImageProcessor = ImageProcessor;
 
             // For now there's no real way to inject these properly
-            BaseItem.Logger = LoggerFactory.CreateLogger("BaseItem");
+            BaseItem.Logger = _loggerFactory.CreateLogger("BaseItem");
             BaseItem.ConfigurationManager = ServerConfigurationManager;
             BaseItem.LibraryManager = LibraryManager;
             BaseItem.ProviderManager = ProviderManager;
@@ -1200,7 +1194,7 @@ namespace Emby.Server.Implementations
             });
         }
 
-        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(_logger);
+        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(_loggerFactory.CreateLogger<WebSocketSharpListener>());
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {
