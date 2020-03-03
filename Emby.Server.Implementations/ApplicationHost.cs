@@ -166,12 +166,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc />
         public bool IsShuttingDown { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        protected ILogger Logger { get; set; }
-
+        private ILogger _logger;
         private IPlugin[] _plugins;
 
         /// <summary>
@@ -383,7 +378,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, XmlSerializer, FileSystemManager);
 
-            Logger = LoggerFactory.CreateLogger("App");
+            _logger = LoggerFactory.CreateLogger("App");
 
             StartupOptions = options;
 
@@ -490,12 +485,12 @@ namespace Emby.Server.Implementations
         {
             try
             {
-                Logger.LogDebug("Creating instance of {Type}", type);
+                _logger.LogDebug("Creating instance of {Type}", type);
                 return ActivatorUtilities.CreateInstance(ServiceProvider, type);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error creating {Type}", type);
+                _logger.LogError(ex, "Error creating {Type}", type);
                 return null;
             }
         }
@@ -546,7 +541,7 @@ namespace Emby.Server.Implementations
         /// <returns><see cref="Task" />.</returns>
         public async Task RunStartupTasksAsync()
         {
-            Logger.LogInformation("Running startup tasks");
+            _logger.LogInformation("Running startup tasks");
 
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
@@ -554,21 +549,21 @@ namespace Emby.Server.Implementations
 
             MediaEncoder.SetFFmpegPath();
 
-            Logger.LogInformation("ServerId: {0}", SystemId);
+            _logger.LogInformation("ServerId: {0}", SystemId);
 
             var entryPoints = GetExports<IServerEntryPoint>();
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             await Task.WhenAll(StartEntryPoints(entryPoints, true)).ConfigureAwait(false);
-            Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
+            _logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
-            Logger.LogInformation("Core startup complete");
+            _logger.LogInformation("Core startup complete");
             HttpServer.GlobalResponse = null;
 
             stopWatch.Restart();
             await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
-            Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
+            _logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
             stopWatch.Stop();
         }
 
@@ -581,7 +576,7 @@ namespace Emby.Server.Implementations
                     continue;
                 }
 
-                Logger.LogDebug("Starting entry point {Type}", entryPoint.GetType());
+                _logger.LogDebug("Starting entry point {Type}", entryPoint.GetType());
 
                 yield return entryPoint.RunAsync();
             }
@@ -615,7 +610,7 @@ namespace Emby.Server.Implementations
                             plugin.Version));
                 }
 
-                Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
+                _logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
             }
 
             DiscoverTypes();
@@ -652,7 +647,7 @@ namespace Emby.Server.Implementations
             var response = context.Response;
             var localPath = context.Request.Path.ToString();
 
-            var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
+            var req = new WebSocketSharpRequest(request, response, request.Path, _logger);
             await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
         }
 
@@ -673,7 +668,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(JsonSerializer);
 
             // TODO: Support for injecting ILogger should be deprecated in favour of ILogger<T> and this removed
-            serviceCollection.AddSingleton<ILogger>(Logger);
+            serviceCollection.AddSingleton<ILogger>(_logger);
 
             serviceCollection.AddSingleton(FileSystemManager);
             serviceCollection.AddSingleton<TvDbClientManager>();
@@ -941,7 +936,7 @@ namespace Emby.Server.Implementations
                 // localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
                 {
-                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", certificateLocation);
+                    _logger.LogError("No private key included in SSL cert {CertificateLocation}.", certificateLocation);
                     return null;
                 }
 
@@ -949,7 +944,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", certificateLocation);
+                _logger.LogError(ex, "Error loading cert from {CertificateLocation}", certificateLocation);
                 return null;
             }
         }
@@ -1128,7 +1123,7 @@ namespace Emby.Server.Implementations
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
+                        _logger.LogError(ex, "Error getting plugin Id from {PluginName}.", plugin.GetType().FullName);
                     }
                 }
 
@@ -1139,7 +1134,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
+                _logger.LogError(ex, "Error loading plugin {PluginName}", plugin.GetType().FullName);
                 return null;
             }
 
@@ -1151,7 +1146,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         protected void DiscoverTypes()
         {
-            Logger.LogInformation("Loading assemblies");
+            _logger.LogInformation("Loading assemblies");
 
             _allConcreteTypes = GetTypes(GetComposablePartAssemblies()).ToArray();
         }
@@ -1167,7 +1162,7 @@ namespace Emby.Server.Implementations
                 }
                 catch (TypeLoadException ex)
                 {
-                    Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
+                    _logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
                     continue;
                 }
 
@@ -1205,7 +1200,7 @@ namespace Emby.Server.Implementations
             });
         }
 
-        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(Logger);
+        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(_logger);
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {
@@ -1259,7 +1254,7 @@ namespace Emby.Server.Implementations
 
             if (requiresRestart)
             {
-                Logger.LogInformation("App needs to be restarted due to configuration change.");
+                _logger.LogInformation("App needs to be restarted due to configuration change.");
 
                 NotifyPendingRestart();
             }
@@ -1270,7 +1265,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void NotifyPendingRestart()
         {
-            Logger.LogInformation("App needs to be restarted.");
+            _logger.LogInformation("App needs to be restarted.");
 
             var changed = !HasPendingRestart;
 
@@ -1278,7 +1273,7 @@ namespace Emby.Server.Implementations
 
             if (changed)
             {
-                EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
+                EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, _logger);
             }
         }
 
@@ -1307,10 +1302,10 @@ namespace Emby.Server.Implementations
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error sending server restart notification");
+                    _logger.LogError(ex, "Error sending server restart notification");
                 }
 
-                Logger.LogInformation("Calling RestartInternal");
+                _logger.LogInformation("Calling RestartInternal");
 
                 RestartInternal();
             });
@@ -1335,11 +1330,11 @@ namespace Emby.Server.Implementations
                     }
                     catch (FileLoadException ex)
                     {
-                        Logger.LogError(ex, "Failed to load assembly {Path}", file);
+                        _logger.LogError(ex, "Failed to load assembly {Path}", file);
                         continue;
                     }
 
-                    Logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
+                    _logger.LogInformation("Loaded assembly {Assembly} from {Path}", plugAss.FullName, file);
                     yield return plugAss;
                 }
             }
@@ -1474,7 +1469,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error getting local Ip address information");
+                _logger.LogError(ex, "Error getting local Ip address information");
             }
 
             return null;
@@ -1637,19 +1632,19 @@ namespace Emby.Server.Implementations
                         var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 
                         _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
-                        Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
+                        _logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
                         return valid;
                     }
                 }
             }
             catch (OperationCanceledException)
             {
-                Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, "Cancelled");
+                _logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, "Cancelled");
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.LogDebug(ex, "Ping test result to {0}. Success: {1}", apiUrl, false);
+                _logger.LogDebug(ex, "Ping test result to {0}. Success: {1}", apiUrl, false);
 
                 _validAddressResults.AddOrUpdate(apiUrl, false, (k, v) => false);
                 return false;
@@ -1679,7 +1674,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error sending server shutdown notification");
+                _logger.LogError(ex, "Error sending server shutdown notification");
             }
 
             ShutdownInternal();
@@ -1741,7 +1736,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error launching url: {url}", url);
+                _logger.LogError(ex, "Error launching url: {url}", url);
                 throw;
             }
         }
@@ -1781,14 +1776,14 @@ namespace Emby.Server.Implementations
             {
                 var type = GetType();
 
-                Logger.LogInformation("Disposing {Type}", type.Name);
+                _logger.LogInformation("Disposing {Type}", type.Name);
 
                 var parts = _disposableParts.Distinct().Where(i => i.GetType() != type).ToList();
                 _disposableParts.Clear();
 
                 foreach (var part in parts)
                 {
-                    Logger.LogInformation("Disposing {Type}", part.GetType().Name);
+                    _logger.LogInformation("Disposing {Type}", part.GetType().Name);
 
                     try
                     {
@@ -1796,7 +1791,7 @@ namespace Emby.Server.Implementations
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error disposing {Type}", part.GetType().Name);
+                        _logger.LogError(ex, "Error disposing {Type}", part.GetType().Name);
                     }
                 }
 
