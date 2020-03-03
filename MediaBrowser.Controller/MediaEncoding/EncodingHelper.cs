@@ -2872,7 +2872,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     args += graphicalSubtitleParam;
 
-                    hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
+                    hasCopyTs = graphicalSubtitleParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
                 }
 
                 if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
