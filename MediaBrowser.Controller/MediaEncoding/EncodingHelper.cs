@@ -2859,26 +2859,35 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (!hasGraphicalSubs)
                 {
                     var outputSizeParam = GetOutputSizeParam(state, encodingOptions, videoCodec);
+
                     args += outputSizeParam;
+
                     hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
                 }
 
                 // This is for graphical subs
                 if (hasGraphicalSubs)
                 {
-                    args += GetGraphicalSubtitleParam(state, encodingOptions, videoCodec);
+                    var graphicalSubtitleParam = GetGraphicalSubtitleParam(state, encodingOptions, videoCodec);
+
+                    args += graphicalSubtitleParam;
+
+                    hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
                 }
 
-                if (!hasCopyTs)
+                if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
                 {
-                   args += " -copyts";
-                }
+                    if (!hasCopyTs)
+                    {
+                       args += " -copyts";
+                    }
 
-                args += " -avoid_negative_ts disabled";
+                    args += " -avoid_negative_ts disabled";
 
-                if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
-                {
-                    args += " -start_at_zero";
+                    if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
+                    {
+                        args += " -start_at_zero";
+                    }
                 }
 
                 var qualityParam = GetVideoQualityParam(state, videoCodec, encodingOptions, defaultPreset);
