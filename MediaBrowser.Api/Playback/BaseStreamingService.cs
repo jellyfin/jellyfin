@@ -332,13 +332,13 @@ namespace MediaBrowser.Api.Playback
             // enable throttling when NOT using hardware acceleration
             if (encodingOptions.HardwareAccelerationType == string.Empty)
             {
-            //    return state.InputProtocol == MediaProtocol.File &&
-            //           state.RunTimeTicks.HasValue &&
-            //           state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
-            //           state.IsInputVideo &&
-            //           state.VideoType == VideoType.VideoFile &&
-            //           !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
-            //   //        string.Equals(GetVideoEncoder(state), "libx264", StringComparison.OrdinalIgnoreCase);
+                return state.InputProtocol == MediaProtocol.File &&
+                       state.RunTimeTicks.HasValue &&
+                       state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
+                       state.IsInputVideo &&
+                       state.VideoType == VideoType.VideoFile &&
+                       !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+               //        string.Equals(GetVideoEncoder(state), "libx264", StringComparison.OrdinalIgnoreCase);
             }
             return false;
         }
