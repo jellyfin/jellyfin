@@ -2879,7 +2879,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (!hasCopyTs)
                     {
-                       args += " -copyts";
+                        args += " -copyts";
                     }
 
                     args += " -avoid_negative_ts disabled";
