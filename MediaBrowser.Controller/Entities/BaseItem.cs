@@ -2921,13 +2921,13 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool Equals(object obj)
         {
-            Logger.LogInformation("Comparing me ({0}) to generic them ({1})", this, obj);
+            Logger.LogDebug("Comparing me ({0}) to generic them ({1})", this, obj);
             return this.Equals(obj as BaseItem);
         }
 
         public bool Equals(BaseItem item)
         {
-            Logger.LogInformation("Comparing me ({0}) to specific them ({1})", this, item);
+            Logger.LogDebug("Comparing me ({0}) to specific them ({1})", this, item);
             if (item == null)
             {
                 return false;
