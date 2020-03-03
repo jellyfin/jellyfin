@@ -166,11 +166,6 @@ namespace Emby.Server.Implementations
         public bool IsShuttingDown { get; private set; }
 
         /// <summary>
-        /// Gets the logger factory.
-        /// </summary>
-        protected ILoggerFactory LoggerFactory { get; }
-
-        /// <summary>
         /// Gets the logger.
         /// </summary>
         protected ILogger Logger { get; }
@@ -182,6 +177,11 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The plugins.</value>
         public IReadOnlyList<IPlugin> Plugins => _plugins;
+
+        /// <summary>
+        /// Gets the logger factory.
+        /// </summary>
+        protected ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         /// Gets or sets the application paths.
@@ -378,8 +378,9 @@ namespace Emby.Server.Implementations
             LoggerFactory = loggerFactory;
             FileSystemManager = fileSystem;
 
-            Logger = LoggerFactory.CreateLogger("App");
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, XmlSerializer, FileSystemManager);
+
+            Logger = LoggerFactory.CreateLogger("App");
 
             StartupOptions = options;
 
