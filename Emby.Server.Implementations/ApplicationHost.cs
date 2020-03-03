@@ -673,7 +673,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(JsonSerializer);
 
             // TODO: Support for injecting ILogger should be deprecated in favour of ILogger<T> and this removed
-            serviceCollection.AddSingleton<ILogger>(_logger);
+            serviceCollection.AddSingleton<ILogger>(Logger);
 
             serviceCollection.AddSingleton(FileSystemManager);
             serviceCollection.AddSingleton<TvDbClientManager>();
