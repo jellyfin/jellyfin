@@ -271,7 +271,7 @@ namespace MediaBrowser.Model.Configuration
 
             SortReplaceCharacters = new[] { ".", "+", "%" };
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
-            SortRemoveWords = new[] { "the", "a", "an" };
+            SortRemoveWords = new[] { "the", "a", "an", "der", "die", "das"};
 
             BaseUrl = string.Empty;
             UICulture = "en-US";
