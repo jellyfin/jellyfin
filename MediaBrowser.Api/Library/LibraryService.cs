@@ -815,7 +815,7 @@ namespace MediaBrowser.Api.Library
             if (!string.IsNullOrWhiteSpace(filename))
             {
                 // Kestrel doesn't support non-ASCII characters in headers
-                if (Regex.IsMatch(filename, "[^[:ascii:]]"))
+                if (Regex.IsMatch(filename, @"[^\p{IsBasicLatin}]"))
                 {
                     // Manually encoding non-ASCII characters, following https://tools.ietf.org/html/rfc5987#section-3.2.2
                     headers[HeaderNames.ContentDisposition] = "attachment; filename*=UTF-8''" + WebUtility.UrlEncode(filename);
