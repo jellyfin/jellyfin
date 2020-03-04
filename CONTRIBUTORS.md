@@ -23,7 +23,6 @@
  - [dannymichel](https://github.com/dannymichel)
  - [DaveChild](https://github.com/DaveChild)
  - [dcrdev](https://github.com/dcrdev)
- - [dependabotbot](https://github.com/dependabotbot)
  - [dhartung](https://github.com/dhartung)
  - [dinki](https://github.com/dinki)
  - [dkanada](https://github.com/dkanada)
