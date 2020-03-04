@@ -27,7 +27,6 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
 FROM arm64v8/debian:buster-slim
 
-ARG DEBIAN_FRONTEND="noninteractive"
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 
