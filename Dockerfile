@@ -21,8 +21,11 @@ RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --
 FROM jellyfin/ffmpeg:${FFMPEG_VERSION} as ffmpeg
 FROM debian:buster-slim
 
+# https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"
+# http://stackoverflow.com/questions/48162574/ddg#49462622
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
+# https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 
 COPY --from=ffmpeg /opt/ffmpeg /opt/ffmpeg
