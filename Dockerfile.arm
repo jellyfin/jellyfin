@@ -28,7 +28,6 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 FROM multiarch/qemu-user-static:x86_64-arm as qemu
 FROM arm32v7/debian:buster-slim
 
-ARG DEBIAN_FRONTEND="noninteractive"
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 
@@ -50,6 +49,9 @@ RUN apt-get update \
  libraspberrypi0 \
  vainfo \
  libva2 \
+ && apt-get remove curl gnupg -y \
+ && apt-get clean autoclean -y \
+ && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
