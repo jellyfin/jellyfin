@@ -2935,5 +2935,10 @@ namespace MediaBrowser.Controller.Entities
 
             return Id == item.Id;
         }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
     }
 }
