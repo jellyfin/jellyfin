@@ -923,11 +923,6 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                 }
 
-                if (state.RunTimeTicks.HasValue && state.BaseRequest.CopyTimestamps)
-                {
-                    args += " -copyts -avoid_negative_ts disabled -start_at_zero";
-                }
-
                 //args += " -flags -global_header";
             }
             else
@@ -967,34 +962,17 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                var hasCopyTs = false;
-
                 // Add resolution params, if specified
                 if (!hasGraphicalSubs)
                 {
-                    var outputSizeParam = EncodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
-
-                    args += outputSizeParam;
-
-                    hasCopyTs = outputSizeParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
+                    args += EncodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
                 }
 
                 // This is for graphical subs
                 if (hasGraphicalSubs)
                 {
-                    var graphicalSubtitleParam = EncodingHelper.GetGraphicalSubtitleParam(state, encodingOptions, codec);
-
-                    args += graphicalSubtitleParam;
-
-                    hasCopyTs = graphicalSubtitleParam.IndexOf("copyts", StringComparison.OrdinalIgnoreCase) != -1;
+                    args += EncodingHelper.GetGraphicalSubtitleParam(state, encodingOptions, codec);
                 }
-
-                if (!hasCopyTs)
-                {
-                   args += " -copyts";
-                }
-
-                args += " -avoid_negative_ts disabled";
 
                 if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
                 {
@@ -1046,7 +1024,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             return string.Format(
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f hls -max_delay 5000000 -hls_time {6} -individual_header_trailer 0 -hls_segment_type {7} -start_number {8} -hls_segment_filename \"{9}\" -hls_playlist_type vod -hls_list_size 0 -y \"{10}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -f hls -max_delay 5000000 -hls_time {6} -individual_header_trailer 0 -hls_segment_type {7} -start_number {8} -hls_segment_filename \"{9}\" -hls_playlist_type vod -hls_list_size 0 -y \"{10}\"",
                 inputModifier,
                 EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
