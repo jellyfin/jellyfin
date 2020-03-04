@@ -3,12 +3,9 @@ ARG FFMPEG_VERSION=latest
 
 FROM node:alpine as web-builder
 ARG JELLYFIN_WEB_VERSION=master
-RUN apk add git \
- && git clone --single-branch --branch \
- master \
- # release-10.4.z \
- https://github.com/jellyfin/jellyfin-web.git \
- && cd jellyfin-web \
+RUN apk add curl git \	
+ && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
+ && cd jellyfin-web-* \
  && yarn install \
  && yarn build \
  && mv dist /dist
