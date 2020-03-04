@@ -39,6 +39,8 @@ RUN apt-get update && apt-get install --no-install-recommends --no-install-sugge
  libfreetype6 \
  libomxil-bellagio0 \
  libomxil-bellagio-bin \
+ && apt-get clean autoclean -y \
+ && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media
