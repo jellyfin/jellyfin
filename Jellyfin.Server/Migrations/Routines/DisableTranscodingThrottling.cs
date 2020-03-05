@@ -5,7 +5,7 @@ using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Migrations
+namespace Jellyfin.Server.Migrations.Routines
 {
     /// <summary>
     /// Updater that takes care of bringing configuration up to 10.5.0 standards.
