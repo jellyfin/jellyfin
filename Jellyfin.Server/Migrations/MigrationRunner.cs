@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using MediaBrowser.Common.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations
@@ -5,42 +8,56 @@ namespace Jellyfin.Server.Migrations
     /// <summary>
     /// The class that knows how migrate between different Jellyfin versions.
     /// </summary>
-    public static class MigrationRunner
+    public sealed class MigrationRunner
     {
-        private static readonly IUpdater[] _migrations =
+        /// <summary>
+        /// The list of known migrations, in order of applicability.
+        /// </summary>
+        internal static readonly IUpdater[] Migrations =
         {
-            new Pre_10_5()
+            new DisableTranscodingThrottling(),
+            new DisableZealousLogging()
         };
 
         /// <summary>
         /// Run all needed migrations.
         /// </summary>
         /// <param name="host">CoreAppHost that hosts current version.</param>
-        /// <param name="logger">AppHost logger.</param>
-        /// <returns>Whether anything was changed.</returns>
-        public static bool Run(CoreAppHost host, ILogger logger)
+        /// <param name="loggerFactory">Factory for making the logger.</param>
+        public static void Run(CoreAppHost host, ILoggerFactory loggerFactory)
         {
-            bool updated = false;
-            var version = host.ServerConfigurationManager.CommonConfiguration.PreviousVersion;
+            var logger = loggerFactory.CreateLogger<MigrationRunner>();
+            var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>("migrations");
+            var applied = migrationOptions.Applied.ToList();
 
-            for (var i = 0; i < _migrations.Length; i++)
+            for (var i = 0; i < Migrations.Length; i++)
             {
-                var updater = _migrations[i];
-                if (version.CompareTo(updater.Maximum) >= 0)
+                var updater = Migrations[i];
+                if (applied.Contains(updater.Name))
                 {
-                    logger.LogDebug("Skipping updater {0} as current version {1} >= its maximum applicable version {2}", updater, version, updater.Maximum);
+                    logger.LogDebug("Skipping migration {0} as it is already applied", updater.Name);
                     continue;
                 }
 
-                if (updater.Perform(host, logger, version))
+                try
                 {
-                    updated = true;
+                    updater.Perform(host, logger);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Cannot apply migration {0}", updater.Name);
+                    continue;
                 }
 
-                version = updater.Maximum;
+                applied.Add(updater.Name);
             }
 
-            return updated;
+            if (applied.Count > migrationOptions.Applied.Length)
+            {
+                logger.LogInformation("Some migrations were run, saving the state");
+                migrationOptions.Applied = applied.ToArray();
+                host.ServerConfigurationManager.SaveConfiguration("migrations", migrationOptions);
+            }
         }
     }
 }

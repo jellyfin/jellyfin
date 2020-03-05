@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations
@@ -8,13 +10,13 @@ namespace Jellyfin.Server.Migrations
     /// <summary>
     /// Updater that takes care of bringing configuration up to 10.5.0 standards.
     /// </summary>
-    internal class Pre_10_5 : IUpdater
+    internal class DisableTranscodingThrottling : IUpdater
     {
         /// <inheritdoc/>
-        public Version Maximum { get => Version.Parse("10.5.0"); }
+        public string Name => "DisableTranscodingThrottling";
 
         /// <inheritdoc/>
-        public bool Perform(CoreAppHost host, ILogger logger, Version from)
+        public void Perform(CoreAppHost host, ILogger logger)
         {
             // Set EnableThrottling to false as it wasn't used before, and in 10.5.0 it may introduce issues
             var encoding = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<EncodingOptions>("encoding");
@@ -24,10 +26,7 @@ namespace Jellyfin.Server.Migrations
                 encoding.EnableThrottling = false;
 
                 host.ServerConfigurationManager.SaveConfiguration("encoding", encoding);
-                return true;
             }
-
-            return false;
         }
     }
 }

@@ -38,6 +38,11 @@ namespace Jellyfin.Server
     /// </summary>
     public static class Program
     {
+        /// <summary>
+        /// The name of logging configuration file.
+        /// </summary>
+        public static readonly string LoggingConfigFile = "logging.json";
+
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static ILogger _logger = NullLogger.Instance;
@@ -182,7 +187,7 @@ namespace Jellyfin.Server
                 // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = host.Services;
                 appHost.FindParts();
-                appHost.TryMigrate();
+                Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
                 try
                 {
@@ -438,7 +443,7 @@ namespace Jellyfin.Server
         private static async Task<IConfiguration> CreateConfiguration(IApplicationPaths appPaths)
         {
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, "logging.json");
+            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, LoggingConfigFile);
 
             if (!File.Exists(configPath))
             {
@@ -460,7 +465,7 @@ namespace Jellyfin.Server
             return new ConfigurationBuilder()
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
                 .AddInMemoryCollection(ConfigurationOptions.Configuration)
-                .AddJsonFile("logging.json", false, true)
+                .AddJsonFile(LoggingConfigFile, false, true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .Build();
         }
