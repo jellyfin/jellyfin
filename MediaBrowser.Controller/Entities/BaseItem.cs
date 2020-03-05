@@ -2921,24 +2921,17 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool Equals(object obj)
         {
-            Logger.LogDebug("Comparing me ({0}) to generic them ({1})", this, obj);
-            return this.Equals(obj as BaseItem);
+            return obj is BaseItem baseItem && this.Equals(baseItem);
         }
 
         public bool Equals(BaseItem item)
         {
-            Logger.LogDebug("Comparing me ({0}) to specific them ({1})", this, item);
-            if (item == null)
-            {
-                return false;
-            }
-
-            return Id == item.Id;
+            return Object.Equals(Id, item?.Id);
         }
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return HashCode.Combine(Id);
         }
     }
 }
