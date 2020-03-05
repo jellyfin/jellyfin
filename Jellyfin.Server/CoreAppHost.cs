@@ -41,16 +41,6 @@ namespace Jellyfin.Server
                 networkManager,
                 configuration)
         {
-            var previousVersion = ConfigurationManager.CommonConfiguration.PreviousVersion;
-            if (ApplicationVersion.CompareTo(previousVersion) > 0)
-            {
-                Logger.LogWarning("Version check shows Jellyfin was updated: previous version={0}, current version={1}", previousVersion, ApplicationVersion);
-
-                // TODO: run update routines
-
-                ConfigurationManager.CommonConfiguration.PreviousVersion = ApplicationVersion;
-                ConfigurationManager.SaveConfiguration();
-            }
         }
 
         /// <inheritdoc />
@@ -67,5 +57,33 @@ namespace Jellyfin.Server
 
         /// <inheritdoc />
         protected override void ShutdownInternal() => Program.Shutdown();
+
+        /// <summary>
+        /// Runs the migration routines if necessary.
+        /// </summary>
+        public void TryMigrate()
+        {
+            var previousVersion = ConfigurationManager.CommonConfiguration.PreviousVersion;
+            switch (ApplicationVersion.CompareTo(previousVersion))
+            {
+                case 1:
+                    Logger.LogWarning("Version check shows Jellyfin was updated: previous version={0}, current version={1}", previousVersion, ApplicationVersion);
+
+                    Migrations.Run(this, Logger);
+
+                    ConfigurationManager.CommonConfiguration.PreviousVersion = ApplicationVersion;
+                    ConfigurationManager.SaveConfiguration();
+                    break;
+                case 0:
+                    // nothing to do, versions match
+                    break;
+                case -1:
+                    Logger.LogWarning("Version check shows Jellyfin was rolled back, use at your own risk: previous version={0}, current version={1}", previousVersion, ApplicationVersion);
+                    // no "rollback" routines for now
+                    ConfigurationManager.CommonConfiguration.PreviousVersion = ApplicationVersion;
+                    ConfigurationManager.SaveConfiguration();
+                    break;
+            }
+        }
     }
 }
