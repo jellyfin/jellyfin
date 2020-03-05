@@ -69,7 +69,7 @@ namespace Jellyfin.Server
                 case 1:
                     Logger.LogWarning("Version check shows Jellyfin was updated: previous version={0}, current version={1}", previousVersion, ApplicationVersion);
 
-                    Migrations.Run(this, Logger);
+                    Migrations.MigrationRunner.Run(this, Logger);
 
                     ConfigurationManager.CommonConfiguration.PreviousVersion = ApplicationVersion;
                     ConfigurationManager.SaveConfiguration();
