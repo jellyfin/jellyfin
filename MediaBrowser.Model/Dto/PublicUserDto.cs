@@ -31,6 +31,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets a value indicating whether this instance has configured password.
         /// </summary>
         /// <value><c>true</c> if this instance has configured password; otherwise, <c>false</c>.</value>
+        // FIXME this shouldn't be here, but it's necessary when changing password at the first login
         public bool HasConfiguredPassword { get; set; }
 
         /// <summary>
