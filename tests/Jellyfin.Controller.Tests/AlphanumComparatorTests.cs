@@ -10,6 +10,7 @@ namespace Jellyfin.Controller.Tests
     {
         private readonly Random _rng = new Random(42);
 
+        // InlineData is pre-sorted
         [Theory]
         [InlineData(null, "", "1", "9", "10", "a", "z")]
         [InlineData("50F", "100F", "SR9", "SR100")]
