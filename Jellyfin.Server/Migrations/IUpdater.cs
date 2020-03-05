@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Migrations
         public abstract string Name { get; }
 
         /// <summary>
-        /// Execute the migration from version "from".
+        /// Execute the migration routine.
         /// </summary>
         /// <param name="host">Host that hosts current version.</param>
         /// <param name="logger">Host logger.</param>
