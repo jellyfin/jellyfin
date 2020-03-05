@@ -182,6 +182,7 @@ namespace Jellyfin.Server
                 // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = host.Services;
                 appHost.FindParts();
+                appHost.TryMigrate();
 
                 try
                 {
