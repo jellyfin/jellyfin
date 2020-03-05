@@ -41,6 +41,16 @@ namespace Jellyfin.Server
                 networkManager,
                 configuration)
         {
+            var previousVersion = ConfigurationManager.CommonConfiguration.PreviousVersion;
+            if (ApplicationVersion.CompareTo(previousVersion) > 0)
+            {
+                Logger.LogWarning("Version check shows Jellyfin was updated: previous version={0}, current version={1}", previousVersion, ApplicationVersion);
+
+                // TODO: run update routines
+
+                ConfigurationManager.CommonConfiguration.PreviousVersion = ApplicationVersion;
+                ConfigurationManager.SaveConfiguration();
+            }
         }
 
         /// <inheritdoc />
