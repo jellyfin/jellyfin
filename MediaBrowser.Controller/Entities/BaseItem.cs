@@ -2919,19 +2919,16 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool SupportsExternalTransfer => false;
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             return obj is BaseItem baseItem && this.Equals(baseItem);
         }
 
-        public bool Equals(BaseItem item)
-        {
-            return Object.Equals(Id, item?.Id);
-        }
+        /// <inheritdoc />
+        public bool Equals(BaseItem item) => Object.Equals(Id, item?.Id);
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Id);
-        }
+        /// <inheritdoc />
+        public override int GetHashCode() => HashCode.Combine(Id);
     }
 }
