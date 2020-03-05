@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Migrations
         public static void Run(CoreAppHost host, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
-            var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>("migrations");
+            var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
             var applied = migrationOptions.Applied.ToList();
 
             for (var i = 0; i < Migrations.Length; i++)
@@ -56,7 +56,7 @@ namespace Jellyfin.Server.Migrations
             {
                 logger.LogInformation("Some migrations were run, saving the state");
                 migrationOptions.Applied = applied.ToArray();
-                host.ServerConfigurationManager.SaveConfiguration("migrations", migrationOptions);
+                host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
             }
         }
     }
