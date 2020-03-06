@@ -470,7 +470,8 @@ namespace Jellyfin.Server
             return new ConfigurationBuilder()
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
                 .AddInMemoryCollection(ConfigurationOptions.Configuration)
-                .AddJsonFile(LoggingConfigFileDefault, false, true)
+                .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
+                .AddJsonFile(LoggingConfigFileUser, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .Build();
         }
