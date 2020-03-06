@@ -28,6 +28,17 @@ namespace Jellyfin.Server.Migrations
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
             var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
+
+            if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
+            {
+                // If startup wizard is not finished, this is a fresh install.
+                // Don't run any migrations, just mark all of them as applied.
+                logger.LogInformation("Marking all known migrations as applied because this is fresh install");
+                migrationOptions.Applied = Migrations.Select(m => m.Name).ToArray();
+                host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
+                return;
+            }
+
             var applied = migrationOptions.Applied.ToList();
 
             for (var i = 0; i < Migrations.Length; i++)
@@ -35,20 +46,22 @@ namespace Jellyfin.Server.Migrations
                 var updater = Migrations[i];
                 if (applied.Contains(updater.Name))
                 {
-                    logger.LogDebug("Skipping migration {0} as it is already applied", updater.Name);
+                    logger.LogDebug("Skipping migration {Name} as it is already applied", updater.Name);
                     continue;
                 }
 
+                logger.LogInformation("Applying migration {Name}", updater.Name);
                 try
                 {
                     updater.Perform(host, logger);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Cannot apply migration {0}", updater.Name);
+                    logger.LogError(ex, "Cannot apply migration {Name}", updater.Name);
                     continue;
                 }
 
+                logger.LogInformation("Migration {Name} applied successfully", updater.Name);
                 applied.Add(updater.Name);
             }
 
