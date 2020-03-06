@@ -10,7 +10,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Updater that takes care of bringing configuration up to 10.5.0 standards.
     /// </summary>
-    internal class DisableTranscodingThrottling : IUpdater
+    internal class DisableTranscodingThrottling : IMigrationRoutine
     {
         /// <inheritdoc/>
         public string Name => "DisableTranscodingThrottling";

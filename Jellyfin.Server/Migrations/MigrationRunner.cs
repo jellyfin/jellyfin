@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Migrations
         /// <summary>
         /// The list of known migrations, in order of applicability.
         /// </summary>
-        internal static readonly IUpdater[] Migrations =
+        internal static readonly IMigrationRoutine[] Migrations =
         {
             new Routines.DisableTranscodingThrottling(),
             new Routines.CreateUserLoggingConfigFile()
@@ -43,26 +43,26 @@ namespace Jellyfin.Server.Migrations
 
             for (var i = 0; i < Migrations.Length; i++)
             {
-                var updater = Migrations[i];
-                if (applied.Contains(updater.Name))
+                var migrationRoutine = Migrations[i];
+                if (applied.Contains(migrationRoutine.Name))
                 {
-                    logger.LogDebug("Skipping migration {Name} as it is already applied", updater.Name);
+                    logger.LogDebug("Skipping migration {Name} as it is already applied", migrationRoutine.Name);
                     continue;
                 }
 
-                logger.LogInformation("Applying migration {Name}", updater.Name);
+                logger.LogInformation("Applying migration {Name}", migrationRoutine.Name);
                 try
                 {
-                    updater.Perform(host, logger);
+                    migrationRoutine.Perform(host, logger);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Cannot apply migration {Name}", updater.Name);
+                    logger.LogError(ex, "Cannot apply migration {Name}", migrationRoutine.Name);
                     continue;
                 }
 
-                logger.LogInformation("Migration {Name} applied successfully", updater.Name);
-                applied.Add(updater.Name);
+                logger.LogInformation("Migration {Name} applied successfully", migrationRoutine.Name);
+                applied.Add(migrationRoutine.Name);
             }
 
             if (applied.Count > migrationOptions.Applied.Length)

@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// If the deprecated logging.json file exists and has a custom config, it will be used as logging.user.json,
     /// otherwise a blank file will be created.
     /// </summary>
-    internal class CreateUserLoggingConfigFile : IUpdater
+    internal class CreateUserLoggingConfigFile : IMigrationRoutine
     {
         /// <summary>
         /// An empty logging JSON configuration, which will be used as the default contents for the user settings config file.
