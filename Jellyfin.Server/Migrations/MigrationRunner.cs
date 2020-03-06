@@ -15,8 +15,7 @@ namespace Jellyfin.Server.Migrations
         /// </summary>
         internal static readonly IUpdater[] Migrations =
         {
-            new Routines.DisableTranscodingThrottling(),
-            new Routines.DisableZealousLogging()
+            new Routines.DisableTranscodingThrottling()
         };
 
         /// <summary>
