@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Migrations
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
             var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
 
-            if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
+            if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Length == 0)
             {
                 // If startup wizard is not finished, this is a fresh install.
                 // Don't run any migrations, just mark all of them as applied.
