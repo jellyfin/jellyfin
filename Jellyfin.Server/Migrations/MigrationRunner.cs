@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations
 {
     /// <summary>
-    /// The class that knows how migrate between different Jellyfin versions.
+    /// The class that knows which migrations to apply and how to apply them.
     /// </summary>
     public sealed class MigrationRunner
     {
@@ -45,22 +45,22 @@ namespace Jellyfin.Server.Migrations
                 var updater = Migrations[i];
                 if (applied.Contains(updater.Name))
                 {
-                    logger.LogDebug("Skipping migration {Name} as it is already applied", updater.Name);
+                    logger.LogDebug("Skipping migration '{Name}' since it is already applied", updater.Name);
                     continue;
                 }
 
-                logger.LogInformation("Applying migration {Name}", updater.Name);
+                logger.LogInformation("Applying migration '{Name}'", updater.Name);
                 try
                 {
                     updater.Perform(host, logger);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Cannot apply migration {Name}", updater.Name);
+                    logger.LogError(ex, "Could not apply migration '{Name}'", updater.Name);
                     throw;
                 }
 
-                logger.LogInformation("Migration {Name} applied successfully", updater.Name);
+                logger.LogInformation("Migration '{Name}' applied successfully", updater.Name);
                 applied.Add(updater.Name);
             }
 

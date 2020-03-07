@@ -4,7 +4,7 @@ using MediaBrowser.Common.Configuration;
 namespace Jellyfin.Server.Migrations
 {
     /// <summary>
-    /// A factory that teachs Jellyfin how to find a peristent file which lists all applied migrations.
+    /// A factory that can find a persistent file of the migration configuration, which lists all applied migrations.
     /// </summary>
     public class MigrationsFactory : IConfigurationFactory
     {
