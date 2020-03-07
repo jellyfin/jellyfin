@@ -57,7 +57,7 @@ namespace Jellyfin.Server.Migrations
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Cannot apply migration {Name}", updater.Name);
-                    continue;
+                    throw;
                 }
 
                 logger.LogInformation("Migration {Name} applied successfully", updater.Name);
