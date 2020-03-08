@@ -59,16 +59,12 @@ namespace Jellyfin.Server.Migrations
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Could not apply migration {Name}", migrationRoutine.Name);
-                    continue;
+                    throw;
                 }
 
+                // Mark the migration as completed
                 logger.LogInformation("Migration {Name} applied successfully", migrationRoutine.Name);
                 applied.Add(migrationRoutine.Name);
-            }
-
-            if (applied.Count > migrationOptions.Applied.Length)
-            {
-                logger.LogInformation("Some migrations were run, saving the state");
                 migrationOptions.Applied = applied.ToArray();
                 host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
             }
