@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Migrations
 
 #pragma warning disable CA1819 // Properties should not return arrays
         /// <summary>
-        /// Gets or sets he list of applied migration routine names.
+        /// Gets or sets the list of applied migration routine names.
         /// </summary>
         public string[] Applied { get; set; }
 #pragma warning restore CA1819 // Properties should not return arrays

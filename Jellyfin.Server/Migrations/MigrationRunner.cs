@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Server.Migrations
 {
     /// <summary>
-    /// The class that knows how migrate between different Jellyfin versions.
+    /// The class that knows which migrations to apply and how to apply them.
     /// </summary>
     public sealed class MigrationRunner
     {
@@ -29,7 +29,7 @@ namespace Jellyfin.Server.Migrations
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
             var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
 
-            if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
+            if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Length == 0)
             {
                 // If startup wizard is not finished, this is a fresh install.
                 // Don't run any migrations, just mark all of them as applied.
@@ -51,13 +51,14 @@ namespace Jellyfin.Server.Migrations
                 }
 
                 logger.LogInformation("Applying migration {Name}", migrationRoutine.Name);
+
                 try
                 {
                     migrationRoutine.Perform(host, logger);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Cannot apply migration {Name}", migrationRoutine.Name);
+                    logger.LogError(ex, "Could not apply migration {Name}", migrationRoutine.Name);
                     continue;
                 }
 
