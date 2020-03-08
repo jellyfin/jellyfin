@@ -46,11 +46,11 @@ namespace Jellyfin.Server.Migrations
                 var migrationRoutine = Migrations[i];
                 if (applied.Contains(migrationRoutine.Name))
                 {
-                    logger.LogDebug("Skipping migration {Name} as it is already applied", migrationRoutine.Name);
+                    logger.LogDebug("Skipping migration '{Name}' since it is already applied", migrationRoutine.Name);
                     continue;
                 }
 
-                logger.LogInformation("Applying migration {Name}", migrationRoutine.Name);
+                logger.LogInformation("Applying migration '{Name}'", migrationRoutine.Name);
 
                 try
                 {
@@ -58,15 +58,16 @@ namespace Jellyfin.Server.Migrations
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Could not apply migration {Name}", migrationRoutine.Name);
+                    logger.LogError(ex, "Could not apply migration '{Name}'", migrationRoutine.Name);
                     throw;
                 }
 
                 // Mark the migration as completed
-                logger.LogInformation("Migration {Name} applied successfully", migrationRoutine.Name);
+                logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
                 applied.Add(migrationRoutine.Name);
                 migrationOptions.Applied = applied.ToArray();
                 host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
+                logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
             }
         }
     }
