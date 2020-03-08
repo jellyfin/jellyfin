@@ -15,8 +15,9 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Music;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
     {
@@ -54,6 +55,12 @@ namespace MediaBrowser.Providers.Music
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>();
+
+            // TODO maybe remove when artist metadata can be disabled
+            if (!Plugin.Instance.Configuration.Enable)
+            {
+                return result;
+            }
 
             var id = info.GetMusicBrainzArtistId();
 
