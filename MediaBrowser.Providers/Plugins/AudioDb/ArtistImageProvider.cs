@@ -143,6 +143,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         }
 
         /// <inheritdoc />
-        public bool Supports(BaseItem item) => item is MusicArtist;
+        public bool Supports(BaseItem item)
+            => Plugin.Instance.Configuration.Enable && item is MusicArtist;
     }
 }
