@@ -9,7 +9,12 @@ namespace Jellyfin.Server.Migrations
     internal interface IMigrationRoutine
     {
         /// <summary>
-        /// Gets the name of the migration, must be unique.
+        /// Gets the unique id for this migration. This should never be modified after the migration has been created.
+        /// </summary>
+        public Guid Id { get; }
+
+        /// <summary>
+        /// Gets the display name of the migration.
         /// </summary>
         public string Name { get; }
 

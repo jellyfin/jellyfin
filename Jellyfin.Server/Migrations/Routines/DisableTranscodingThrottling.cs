@@ -13,6 +13,9 @@ namespace Jellyfin.Server.Migrations.Routines
     internal class DisableTranscodingThrottling : IMigrationRoutine
     {
         /// <inheritdoc/>
+        public Guid Id => Guid.Parse("{4124C2CD-E939-4FFB-9BE9-9B311C413638}");
+
+        /// <inheritdoc/>
         public string Name => "DisableTranscodingThrottling";
 
         /// <inheritdoc/>
