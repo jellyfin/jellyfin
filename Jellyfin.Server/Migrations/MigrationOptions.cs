@@ -13,12 +13,12 @@ namespace Jellyfin.Server.Migrations
         /// </summary>
         public MigrationOptions()
         {
-            Applied = new List<Guid>();
+            Applied = new List<(Guid Id, string Name)>();
         }
 
         /// <summary>
         /// Gets the list of applied migration routine names.
         /// </summary>
-        public List<Guid> Applied { get; }
+        public List<(Guid Id, string Name)> Applied { get; }
     }
 }

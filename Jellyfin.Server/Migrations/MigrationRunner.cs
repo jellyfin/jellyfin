@@ -33,16 +33,18 @@ namespace Jellyfin.Server.Migrations
             {
                 // If startup wizard is not finished, this is a fresh install.
                 // Don't run any migrations, just mark all of them as applied.
-                logger.LogInformation("Marking all known migrations as applied because this is fresh install");
-                migrationOptions.Applied.AddRange(Migrations.Select(m => m.Id));
+                logger.LogInformation("Marking all known migrations as applied because this is a fresh install");
+                migrationOptions.Applied.AddRange(Migrations.Select(m => (m.Id, m.Name)));
                 host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
                 return;
             }
 
+            var appliedMigrationIds = migrationOptions.Applied.Select(m => m.Id).ToHashSet();
+
             for (var i = 0; i < Migrations.Length; i++)
             {
                 var migrationRoutine = Migrations[i];
-                if (migrationOptions.Applied.Contains(migrationRoutine.Id))
+                if (appliedMigrationIds.Contains(migrationRoutine.Id))
                 {
                     logger.LogDebug("Skipping migration '{Name}' since it is already applied", migrationRoutine.Name);
                     continue;
@@ -62,7 +64,7 @@ namespace Jellyfin.Server.Migrations
 
                 // Mark the migration as completed
                 logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
-                migrationOptions.Applied.Add(migrationRoutine.Id);
+                migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
                 host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
                 logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
             }
