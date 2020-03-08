@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Jellyfin.Server.Migrations
 {
     /// <summary>
@@ -10,14 +13,12 @@ namespace Jellyfin.Server.Migrations
         /// </summary>
         public MigrationOptions()
         {
-            Applied = System.Array.Empty<string>();
+            Applied = new List<(Guid Id, string Name)>();
         }
 
-#pragma warning disable CA1819 // Properties should not return arrays
         /// <summary>
-        /// Gets or sets the list of applied migration routine names.
+        /// Gets the list of applied migration routine names.
         /// </summary>
-        public string[] Applied { get; set; }
-#pragma warning restore CA1819 // Properties should not return arrays
+        public List<(Guid Id, string Name)> Applied { get; }
     }
 }

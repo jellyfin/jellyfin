@@ -39,9 +39,14 @@ namespace Jellyfin.Server
     public static class Program
     {
         /// <summary>
-        /// The name of logging configuration file.
+        /// The name of logging configuration file containing application defaults.
         /// </summary>
-        public static readonly string LoggingConfigFile = "logging.json";
+        public static readonly string LoggingConfigFileDefault = "logging.default.json";
+
+        /// <summary>
+        /// The name of the logging configuration file containing the system-specific override settings.
+        /// </summary>
+        public static readonly string LoggingConfigFileSystem = "logging.json";
 
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
@@ -443,7 +448,7 @@ namespace Jellyfin.Server
         private static async Task<IConfiguration> CreateConfiguration(IApplicationPaths appPaths)
         {
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, LoggingConfigFile);
+            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, LoggingConfigFileDefault);
 
             if (!File.Exists(configPath))
             {
@@ -465,7 +470,8 @@ namespace Jellyfin.Server
             return new ConfigurationBuilder()
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
                 .AddInMemoryCollection(ConfigurationOptions.Configuration)
-                .AddJsonFile(LoggingConfigFile, false, true)
+                .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
+                .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .Build();
         }
