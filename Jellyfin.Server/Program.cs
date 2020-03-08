@@ -44,9 +44,9 @@ namespace Jellyfin.Server
         public static readonly string LoggingConfigFileDefault = "logging.default.json";
 
         /// <summary>
-        /// The name of the logging configuration file containing user override settings.
+        /// The name of the logging configuration file containing the system-specific override settings.
         /// </summary>
-        public static readonly string LoggingConfigFileUser = "logging.user.json";
+        public static readonly string LoggingConfigFileSystem = "logging.json";
 
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
@@ -471,7 +471,7 @@ namespace Jellyfin.Server
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
                 .AddInMemoryCollection(ConfigurationOptions.Configuration)
                 .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
-                .AddJsonFile(LoggingConfigFileUser, optional: true, reloadOnChange: true)
+                .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_")
                 .Build();
         }

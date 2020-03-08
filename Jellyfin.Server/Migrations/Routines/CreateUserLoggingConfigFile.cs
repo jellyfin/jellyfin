@@ -16,11 +16,6 @@ namespace Jellyfin.Server.Migrations.Routines
     internal class CreateUserLoggingConfigFile : IMigrationRoutine
     {
         /// <summary>
-        /// An empty logging JSON configuration, which will be used as the default contents for the user settings config file.
-        /// </summary>
-        private const string EmptyLoggingConfig = @"{ ""Serilog"": { } }";
-
-        /// <summary>
         /// File history for logging.json as existed during this migration creation. The contents for each has been minified.
         /// </summary>
         private readonly List<string> _defaultConfigHistory = new List<string>
@@ -48,46 +43,28 @@ namespace Jellyfin.Server.Migrations.Routines
         public void Perform(CoreAppHost host, ILogger logger)
         {
             var logDirectory = host.Resolve<IApplicationPaths>().ConfigurationDirectoryPath;
-            var oldConfigPath = Path.Combine(logDirectory, "logging.json");
-            var userConfigPath = Path.Combine(logDirectory, Program.LoggingConfigFileUser);
+            var existingConfigPath = Path.Combine(logDirectory, "logging.json");
 
-            // Check if there are existing settings in the old "logging.json" file that should be migrated
-            bool shouldMigrateOldFile = ShouldKeepOldConfig(oldConfigPath);
-
-            // Create the user settings file "logging.user.json"
-            if (shouldMigrateOldFile)
+            // If the existing logging.json config file is unmodified, then 'reset' it by moving it to 'logging.old.json'
+            // NOTE: This config file has 'reloadOnChange: true', so this change will take effect immediately even though it has already been loaded
+            if (File.Exists(existingConfigPath) && ExistingConfigUnmodified(existingConfigPath))
             {
-                // Use the existing logging.json file
-                File.Copy(oldConfigPath, userConfigPath);
-            }
-            else
-            {
-                // Write an empty JSON file
-                File.WriteAllText(userConfigPath, EmptyLoggingConfig);
+                File.Move(existingConfigPath, Path.Combine(logDirectory, "logging.old.json"));
             }
         }
 
         /// <summary>
-        /// Check if the existing logging.json file should be migrated to logging.user.json.
+        /// Check if the existing logging.json file has not been modified by the user by comparing it to all the
+        /// versions in our git history. Until now, the file has never been migrated after first creation so users
+        /// could have any version from the git history.
         /// </summary>
-        private bool ShouldKeepOldConfig(string oldConfigPath)
+        /// <exception cref="IOException"><paramref name="oldConfigPath"/> does not exist or could not be read.</exception>
+        private bool ExistingConfigUnmodified(string oldConfigPath)
         {
-            // Cannot keep the old logging file if it doesn't exist
-            if (!File.Exists(oldConfigPath))
-            {
-                return false;
-            }
-
-            // Check if the existing logging.json file has been modified by the user by comparing it to all the
-            // versions in our git history. Until now, the file has never been migrated after first creation so users
-            // could have any version from the git history.
             var existingConfigJson = JToken.Parse(File.ReadAllText(oldConfigPath));
-            var existingConfigIsUnmodified = _defaultConfigHistory
+            return _defaultConfigHistory
                 .Select(historicalConfigText => JToken.Parse(historicalConfigText))
                 .Any(historicalConfigJson => JToken.DeepEquals(existingConfigJson, historicalConfigJson));
-
-            // The existing config file should be kept and used only if it has been modified by the user
-            return !existingConfigIsUnmodified;
         }
     }
 }
