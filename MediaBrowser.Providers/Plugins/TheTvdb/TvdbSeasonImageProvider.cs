@@ -14,19 +14,19 @@ using TvDbSharper;
 using TvDbSharper.Dto;
 using RatingType = MediaBrowser.Model.Dto.RatingType;
 
-namespace MediaBrowser.Providers.TV.TheTVDB
+namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
-        private readonly TvDbClientManager _tvDbClientManager;
+        private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger<TvdbSeasonImageProvider> logger, TvDbClientManager tvDbClientManager)
+        public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger<TvdbSeasonImageProvider> logger, TvdbClientManager tvdbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _tvDbClientManager = tvDbClientManager;
+            _tvdbClientManager = tvdbClientManager;
         }
 
         public string Name => ProviderName;
@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 };
                 try
                 {
-                    var imageResults = await _tvDbClientManager
+                    var imageResults = await _tvdbClientManager
                         .GetImagesAsync(tvdbId, imageQuery, language, cancellationToken).ConfigureAwait(false);
                     remoteImages.AddRange(GetImages(imageResults.Data, language));
                 }
@@ -89,7 +89,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private IEnumerable<RemoteImageInfo> GetImages(Image[] images, string preferredLanguage)
         {
             var list = new List<RemoteImageInfo>();
-            var languages = _tvDbClientManager.GetLanguagesAsync(CancellationToken.None).Result.Data;
+            var languages = _tvdbClientManager.GetLanguagesAsync(CancellationToken.None).Result.Data;
             foreach (Image image in images)
             {
                 var imageInfo = new RemoteImageInfo

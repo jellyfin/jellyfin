@@ -11,25 +11,24 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Providers.TV.TheTVDB;
 using Microsoft.Extensions.Logging;
 using TvDbSharper;
 
-namespace MediaBrowser.Providers.People
+namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public class TvdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly TvDbClientManager _tvDbClientManager;
+        private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClient httpClient, ILogger<TvdbPersonImageProvider> logger, TvDbClientManager tvDbClientManager)
+        public TvdbPersonImageProvider(ILibraryManager libraryManager, IHttpClient httpClient, ILogger<TvdbPersonImageProvider> logger, TvdbClientManager tvdbClientManager)
         {
             _libraryManager = libraryManager;
             _httpClient = httpClient;
             _logger = logger;
-            _tvDbClientManager = tvDbClientManager;
+            _tvdbClientManager = tvdbClientManager;
         }
 
         /// <inheritdoc />
@@ -78,7 +77,7 @@ namespace MediaBrowser.Providers.People
 
             try
             {
-                var actorsResult = await _tvDbClientManager
+                var actorsResult = await _tvdbClientManager
                     .GetActorsAsync(tvdbId, series.GetPreferredMetadataLanguage(), cancellationToken)
                     .ConfigureAwait(false);
                 var actor = actorsResult.Data.FirstOrDefault(a =>

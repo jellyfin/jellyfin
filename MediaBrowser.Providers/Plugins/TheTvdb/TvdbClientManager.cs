@@ -10,9 +10,9 @@ using Microsoft.Extensions.Caching.Memory;
 using TvDbSharper;
 using TvDbSharper.Dto;
 
-namespace MediaBrowser.Providers.TV.TheTVDB
+namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
-    public class TvDbClientManager
+    public class TvdbClientManager
     {
         private const string DefaultLanguage = "en";
 
@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly TvDbClient _tvDbClient;
         private DateTime _tokenCreatedAt;
 
-        public TvDbClientManager(IMemoryCache memoryCache)
+        public TvdbClientManager(IMemoryCache memoryCache)
         {
             _cache = memoryCache;
             _tvDbClient = new TvDbClient();
