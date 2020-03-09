@@ -86,5 +86,11 @@
     "CameraImageUploadedFrom": "Jauns kameras attēls ir ticis augšupielādēts no {0}",
     "Books": "Grāmatas",
     "Artists": "Izpildītāji",
-    "Albums": "Albumi"
+    "Albums": "Albumi",
+    "ProviderValue": "Provider: {0}",
+    "HeaderFavoriteSongs": "Dziesmu Favorīti",
+    "HeaderFavoriteShows": "Raidījumu Favorīti",
+    "HeaderFavoriteEpisodes": "Episožu Favorīti",
+    "HeaderFavoriteArtists": "Izpildītāju Favorīti",
+    "HeaderFavoriteAlbums": "Albumu Favorīti"
 }
