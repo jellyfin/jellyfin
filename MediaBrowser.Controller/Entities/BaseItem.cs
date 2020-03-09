@@ -2190,13 +2190,9 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Do whatever refreshing is necessary when the filesystem pertaining to this item has changed.
         /// </summary>
-        /// <returns>Task.</returns>
         public virtual void ChangedExternally()
         {
-            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(new DirectoryService(FileSystem))
-            {
-
-            }, RefreshPriority.High);
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions(new DirectoryService(FileSystem)), RefreshPriority.High);
         }
 
         /// <summary>
@@ -2227,7 +2223,6 @@ namespace MediaBrowser.Controller.Entities
                 existingImage.Width = image.Width;
                 existingImage.Height = image.Height;
             }
-
             else
             {
                 var current = ImageInfos;
@@ -2270,7 +2265,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="index">The index.</param>
-        /// <returns>Task.</returns>
         public void DeleteImage(ImageType type, int index)
         {
             var info = GetImageInfo(type, index);
@@ -2308,7 +2302,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Validates that images within the item are still on the file system
+        /// Validates that images within the item are still on the filesystem.
         /// </summary>
         public bool ValidateImages(IDirectoryService directoryService)
         {
@@ -2602,7 +2596,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// This is called before any metadata refresh and returns true if changes were made.
         /// </summary>
         public virtual bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {
@@ -2662,36 +2656,43 @@ namespace MediaBrowser.Controller.Entities
                     newOptions.ForceSave = true;
                     ownedItem.Genres = item.Genres;
                 }
+
                 if (!item.Studios.SequenceEqual(ownedItem.Studios, StringComparer.Ordinal))
                 {
                     newOptions.ForceSave = true;
                     ownedItem.Studios = item.Studios;
                 }
+
                 if (!item.ProductionLocations.SequenceEqual(ownedItem.ProductionLocations, StringComparer.Ordinal))
                 {
                     newOptions.ForceSave = true;
                     ownedItem.ProductionLocations = item.ProductionLocations;
                 }
+
                 if (item.CommunityRating != ownedItem.CommunityRating)
                 {
                     ownedItem.CommunityRating = item.CommunityRating;
                     newOptions.ForceSave = true;
                 }
+
                 if (item.CriticRating != ownedItem.CriticRating)
                 {
                     ownedItem.CriticRating = item.CriticRating;
                     newOptions.ForceSave = true;
                 }
+
                 if (!string.Equals(item.Overview, ownedItem.Overview, StringComparison.Ordinal))
                 {
                     ownedItem.Overview = item.Overview;
                     newOptions.ForceSave = true;
                 }
+
                 if (!string.Equals(item.OfficialRating, ownedItem.OfficialRating, StringComparison.Ordinal))
                 {
                     ownedItem.OfficialRating = item.OfficialRating;
                     newOptions.ForceSave = true;
                 }
+
                 if (!string.Equals(item.CustomRating, ownedItem.CustomRating, StringComparison.Ordinal))
                 {
                     ownedItem.CustomRating = item.CustomRating;
@@ -2900,11 +2901,17 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public virtual bool IsHD => Height >= 720;
+
         public bool IsShortcut { get; set; }
+
         public string ShortcutPath { get; set; }
+
         public int Width { get; set; }
+
         public int Height { get; set; }
+
         public Guid[] ExtraIds { get; set; }
+
         public virtual long GetRunTimeTicksForPlayState()
         {
             return RunTimeTicks ?? 0;

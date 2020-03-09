@@ -13,8 +13,10 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
+
         [JsonIgnore]
         public string SeriesName { get; set; }
+
         [JsonIgnore]
         public Guid SeriesId { get; set; }
 
@@ -22,10 +24,12 @@ namespace MediaBrowser.Controller.Entities
         {
             return SeriesName;
         }
+
         public string FindSeriesName()
         {
             return SeriesName;
         }
+
         public string FindSeriesPresentationUniqueKey()
         {
             return SeriesPresentationUniqueKey;
