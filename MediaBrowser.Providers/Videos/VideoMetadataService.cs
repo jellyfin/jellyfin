@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Videos
     {
         public VideoMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<VideoMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

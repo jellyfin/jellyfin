@@ -122,7 +122,7 @@ namespace MediaBrowser.WebDashboard.Api
             IResourceFileManager resourceFileManager,
             IServerConfigurationManager serverConfigurationManager,
             IFileSystem fileSystem,
-            ILogger logger,
+            ILogger<DashboardService> logger,
             IHttpResultFactory resultFactory)
         {
             _appHost = appHost;

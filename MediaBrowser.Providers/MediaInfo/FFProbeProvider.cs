@@ -121,7 +121,24 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         private SubtitleResolver _subtitleResolver;
-        public FFProbeProvider(ILogger logger, IMediaSourceManager mediaSourceManager, IChannelManager channelManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager, ILibraryManager libraryManager)
+
+        public FFProbeProvider(
+            ILogger<FFProbeProvider> logger,
+            IMediaSourceManager mediaSourceManager,
+            IChannelManager channelManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IItemRepository itemRepo,
+            IBlurayExaminer blurayExaminer,
+            ILocalizationManager localization,
+            IApplicationPaths appPaths,
+            IJsonSerializer json,
+            IEncodingManager encodingManager,
+            IFileSystem fileSystem,
+            IServerConfigurationManager config,
+            ISubtitleManager subtitleManager,
+            IChapterManager chapterManager,
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _isoManager = isoManager;

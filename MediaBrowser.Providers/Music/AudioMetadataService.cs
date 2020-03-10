@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Music
     {
         public AudioMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<AudioMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

@@ -23,7 +23,10 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteTranscodeFileTask" /> class.
         /// </summary>
-        public DeleteTranscodeFileTask(ILogger logger, IFileSystem fileSystem, IConfigurationManager configurationManager)
+        public DeleteTranscodeFileTask(
+            ILogger<DeleteTranscodeFileTask> logger,
+            IFileSystem fileSystem,
+            IConfigurationManager configurationManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
