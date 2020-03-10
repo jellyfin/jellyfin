@@ -73,7 +73,7 @@ Unicode True
 ; TODO: Replace with nice Jellyfin Icons
 !ifdef UXPATH
     !define MUI_ICON "${UXPATH}\branding\NSIS\modern-install.ico" ; Installer Icon
-    !define MUI_UNICON "${UXPATH}\branding\NSIS\modern-uninstall.ico" ; Uninstaller Icon
+    !define MUI_UNICON "${UXPATH}\branding\NSIS\modern-install.ico" ; Uninstaller Icon
 
     !define MUI_HEADERIMAGE
     !define MUI_HEADERIMAGE_BITMAP "${UXPATH}\branding\NSIS\installer-header.bmp"

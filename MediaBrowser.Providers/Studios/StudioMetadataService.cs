@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Studios
     {
         public StudioMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<StudioMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem, ILibraryManager libraryManager)
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)

@@ -38,6 +38,16 @@ namespace Jellyfin.Server
     /// </summary>
     public static class Program
     {
+        /// <summary>
+        /// The name of logging configuration file containing application defaults.
+        /// </summary>
+        public static readonly string LoggingConfigFileDefault = "logging.default.json";
+
+        /// <summary>
+        /// The name of the logging configuration file containing the system-specific override settings.
+        /// </summary>
+        public static readonly string LoggingConfigFileSystem = "logging.json";
+
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static ILogger _logger = NullLogger.Instance;
@@ -183,6 +193,7 @@ namespace Jellyfin.Server
                 // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
                 appHost.FindParts();
+                Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
                 try
                 {
@@ -443,7 +454,7 @@ namespace Jellyfin.Server
         private static async Task InitLoggingConfigFile(IApplicationPaths appPaths)
         {
             // Do nothing if the config file already exists
-            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, "logging.json");
+            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, LoggingConfigFileDefault);
             if (File.Exists(configPath))
             {
                 return;
@@ -452,14 +463,8 @@ namespace Jellyfin.Server
             // Get a stream of the resource contents
             // NOTE: The .csproj name is used instead of the assembly name in the resource path
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            await using Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath);
-
-            // Fail if the resource does not exist
-            if (resource == null)
-            {
-                throw new InvalidOperationException(
-                    string.Format(CultureInfo.InvariantCulture, "Invalid resource path: '{0}'", ResourcePath));
-            }
+            await using Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
+                ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file
             await using Stream dst = File.Open(configPath, FileMode.CreateNew);
@@ -478,7 +483,8 @@ namespace Jellyfin.Server
             return config
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
                 .AddInMemoryCollection(ConfigurationOptions.Configuration)
-                .AddJsonFile("logging.json", false, true)
+                .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
+                .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables("JELLYFIN_");
         }
 

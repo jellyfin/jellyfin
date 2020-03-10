@@ -61,7 +61,7 @@ namespace MediaBrowser.Api
         /// <param name="fileSystem">The file system.</param>
         /// <param name="mediaSourceManager">The media source manager.</param>
         public ApiEntryPoint(
-            ILogger logger,
+            ILogger<ApiEntryPoint> logger,
             ISessionManager sessionManager,
             IServerConfigurationManager config,
             IFileSystem fileSystem,

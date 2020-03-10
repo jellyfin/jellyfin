@@ -2,7 +2,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbAlbumExternalId : IExternalId
     {
@@ -16,8 +16,7 @@ namespace MediaBrowser.Providers.Music
         public string UrlFormatString => "https://www.theaudiodb.com/album/{0}";
 
         /// <inheritdoc />
-        public bool Supports(IHasProviderIds item)
-            => item is MusicAlbum;
+        public bool Supports(IHasProviderIds item) => item is MusicAlbum;
     }
 
     public class AudioDbOtherAlbumExternalId : IExternalId
@@ -62,7 +61,6 @@ namespace MediaBrowser.Providers.Music
         public string UrlFormatString => "https://www.theaudiodb.com/artist/{0}";
 
         /// <inheritdoc />
-        public bool Supports(IHasProviderIds item)
-            => item is Audio || item is MusicAlbum;
+        public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;
     }
 }

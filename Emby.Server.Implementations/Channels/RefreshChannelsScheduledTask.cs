@@ -20,7 +20,11 @@ namespace Emby.Server.Implementations.Channels
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
-        public RefreshChannelsScheduledTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
+        public RefreshChannelsScheduledTask(
+            IChannelManager channelManager,
+            IUserManager userManager,
+            ILogger<RefreshChannelsScheduledTask> logger,
+            ILibraryManager libraryManager)
         {
             _channelManager = channelManager;
             _userManager = userManager;

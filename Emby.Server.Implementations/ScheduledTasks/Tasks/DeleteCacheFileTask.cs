@@ -29,7 +29,10 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
-        public DeleteCacheFileTask(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        public DeleteCacheFileTask(
+            IApplicationPaths appPaths,
+            ILogger<DeleteCacheFileTask> logger,
+            IFileSystem fileSystem)
         {
             ApplicationPaths = appPaths;
             _logger = logger;
