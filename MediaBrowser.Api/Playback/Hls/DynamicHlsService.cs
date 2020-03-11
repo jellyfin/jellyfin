@@ -830,6 +830,32 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
+        /// <summary>
+        /// Appends a FRAME-RATE field containing the framerate of the output stream.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistFramerateField(StringBuilder builder, StreamState state)
+        {
+            double? framerate = null;
+            if (state.TargetFramerate.HasValue)
+            {
+                framerate = Math.Round(state.TargetFramerate.GetValueOrDefault(), 3);
+            }
+            else if (state.VideoStream.RealFrameRate.HasValue)
+            {
+                framerate = Math.Round(state.VideoStream.RealFrameRate.GetValueOrDefault(), 3);
+            }
+
+            if (framerate.HasValue)
+            {
+                builder.Append(",FRAME-RATE=\"")
+                    .Append(framerate.Value)
+                    .Append('"');
+            }
+        }
+
         private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string subtitleGroup)
         {
             builder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
@@ -844,6 +870,8 @@ namespace MediaBrowser.Api.Playback.Hls
             //}
 
             AppendPlaylistCodecsField(builder, state);
+
+            AppendPlaylistFramerateField(builder, state);
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
