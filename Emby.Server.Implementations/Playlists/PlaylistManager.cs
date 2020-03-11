@@ -202,8 +202,7 @@ namespace Emby.Server.Implementations.Playlists
             var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
             var uniqueItems = items
                 .Where(i => !existingIds.Contains(i.Id))
-                .GroupBy(i => i.Id)
-                .Select(group => group.First())
+                .Distinct()
                 .Select(i => LinkedChild.Create(i))
                 .ToList();
 
