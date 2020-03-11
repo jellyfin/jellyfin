@@ -15,7 +15,11 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
 
-        public ArtistNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        public ArtistNfoProvider(
+            IFileSystem fileSystem,
+            ILogger<ArtistNfoProvider> logger,
+            IConfigurationManager config,
+            IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;

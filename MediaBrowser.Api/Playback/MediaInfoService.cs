@@ -573,7 +573,8 @@ namespace MediaBrowser.Api.Playback
             {
                 attachment.DeliveryUrl = string.Format(
                     CultureInfo.InvariantCulture,
-                    "/Videos/{0}/{1}/Attachments/{2}",
+                    "{0}/Videos/{1}/{2}/Attachments/{3}",
+                    ServerConfigurationManager.Configuration.BaseUrl,
                     item.Id,
                     mediaSource.Id,
                     attachment.Index);

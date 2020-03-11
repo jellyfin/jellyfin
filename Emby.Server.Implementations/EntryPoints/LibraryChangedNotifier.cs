@@ -56,7 +56,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly IProviderManager _providerManager;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, IProviderManager providerManager)
+        public LibraryChangedNotifier(
+            ILibraryManager libraryManager,
+            ISessionManager sessionManager,
+            IUserManager userManager,
+            ILogger<LibraryChangedNotifier> logger,
+            IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;

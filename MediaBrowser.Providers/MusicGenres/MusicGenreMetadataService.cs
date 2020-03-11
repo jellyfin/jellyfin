@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.MusicGenres
     {
         public MusicGenreMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<MusicGenreMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

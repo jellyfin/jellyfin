@@ -27,6 +27,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
+using Serilog.Events;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -38,6 +39,16 @@ namespace Jellyfin.Server
     /// </summary>
     public static class Program
     {
+        /// <summary>
+        /// The name of logging configuration file containing application defaults.
+        /// </summary>
+        public static readonly string LoggingConfigFileDefault = "logging.default.json";
+
+        /// <summary>
+        /// The name of the logging configuration file containing the system-specific override settings.
+        /// </summary>
+        public static readonly string LoggingConfigFileSystem = "logging.json";
+
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
         private static ILogger _logger = NullLogger.Instance;
@@ -102,10 +113,12 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
-            IConfiguration appConfig = await CreateConfiguration(appPaths).ConfigureAwait(false);
+            // Create an instance of the application configuration to use for application startup
+            await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
+            IConfiguration startupConfig = CreateAppConfiguration(appPaths);
 
-            CreateLogger(appConfig, appPaths);
-
+            // Initialize logging framework
+            InitializeLoggingFramework(startupConfig, appPaths);
             _logger = _loggerFactory.CreateLogger("Main");
 
             // Log uncaught exceptions to the logging instead of std error
@@ -170,22 +183,22 @@ namespace Jellyfin.Server
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 GetImageEncoder(appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
-                appConfig);
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
             try
             {
                 ServiceCollection serviceCollection = new ServiceCollection();
-                await appHost.InitAsync(serviceCollection).ConfigureAwait(false);
+                await appHost.InitAsync(serviceCollection, startupConfig).ConfigureAwait(false);
 
-                var host = CreateWebHostBuilder(appHost, serviceCollection, appConfig).Build();
+                var webHost = CreateWebHostBuilder(appHost, serviceCollection, startupConfig, appPaths).Build();
 
                 // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
-                appHost.ServiceProvider = host.Services;
+                appHost.ServiceProvider = webHost.Services;
                 appHost.FindParts();
+                Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
                 try
                 {
-                    await host.StartAsync().ConfigureAwait(false);
+                    await webHost.StartAsync().ConfigureAwait(false);
                 }
                 catch
                 {
@@ -221,7 +234,11 @@ namespace Jellyfin.Server
             }
         }
 
-        private static IWebHostBuilder CreateWebHostBuilder(ApplicationHost appHost, IServiceCollection serviceCollection, IConfiguration appConfig)
+        private static IWebHostBuilder CreateWebHostBuilder(
+            ApplicationHost appHost,
+            IServiceCollection serviceCollection,
+            IConfiguration startupConfig,
+            IApplicationPaths appPaths)
         {
             var webhostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -261,6 +278,8 @@ namespace Jellyfin.Server
                         }
                     }
                 })
+                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(appPaths))
+                .UseSerilog()
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
@@ -268,7 +287,7 @@ namespace Jellyfin.Server
                 })
                 .UseStartup<Startup>();
 
-            if (!appConfig.IsNoWebContent())
+            if (!startupConfig.IsNoWebContent())
             {
                 // Fail startup if the web content does not exist
                 if (!Directory.Exists(appHost.ContentRoot) || !Directory.GetFiles(appHost.ContentRoot).Any())
@@ -448,28 +467,39 @@ namespace Jellyfin.Server
             return new ServerApplicationPaths(dataDir, logDir, configDir, cacheDir, webDir);
         }
 
-        private static async Task<IConfiguration> CreateConfiguration(IApplicationPaths appPaths)
+        /// <summary>
+        /// Initialize the logging configuration file using the bundled resource file as a default if it doesn't exist
+        /// already.
+        /// </summary>
+        private static async Task InitLoggingConfigFile(IApplicationPaths appPaths)
         {
-            const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, "logging.json");
-
-            if (!File.Exists(configPath))
+            // Do nothing if the config file already exists
+            string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, LoggingConfigFileDefault);
+            if (File.Exists(configPath))
             {
-                // For some reason the csproj name is used instead of the assembly name
-                await using Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath);
-                if (resource == null)
-                {
-                    throw new InvalidOperationException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Invalid resource path: '{0}'",
-                            ResourcePath));
-                }
-
-                await using Stream dst = File.Open(configPath, FileMode.CreateNew);
-                await resource.CopyToAsync(dst).ConfigureAwait(false);
+                return;
             }
 
+            // Get a stream of the resource contents
+            // NOTE: The .csproj name is used instead of the assembly name in the resource path
+            const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
+            await using Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
+                ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
+
+            // Copy the resource contents to the expected file path for the config file
+            await using Stream dst = File.Open(configPath, FileMode.CreateNew);
+            await resource.CopyToAsync(dst).ConfigureAwait(false);
+        }
+
+        private static IConfiguration CreateAppConfiguration(IApplicationPaths appPaths)
+        {
+            return new ConfigurationBuilder()
+                .ConfigureAppConfiguration(appPaths)
+                .Build();
+        }
+
+        private static IConfigurationBuilder ConfigureAppConfiguration(this IConfigurationBuilder config, IApplicationPaths appPaths)
+        {
             // Use the swagger API page as the default redirect path if not hosting the jellyfin-web content
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (string.IsNullOrEmpty(appPaths.WebPath))
@@ -477,15 +507,18 @@ namespace Jellyfin.Server
                 inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
             }
 
-            return new ConfigurationBuilder()
+            return config
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
                 .AddInMemoryCollection(inMemoryDefaultConfig)
-                .AddJsonFile("logging.json", false, true)
-                .AddEnvironmentVariables("JELLYFIN_")
-                .Build();
+                .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
+                .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables("JELLYFIN_");
         }
 
-        private static void CreateLogger(IConfiguration configuration, IApplicationPaths appPaths)
+        /// <summary>
+        /// Initialize Serilog using configuration and fall back to defaults on failure.
+        /// </summary>
+        private static void InitializeLoggingFramework(IConfiguration configuration, IApplicationPaths appPaths)
         {
             try
             {

@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>
+    public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>, IEquatable<BaseItem>
     {
         /// <summary>
         /// The supported image extensions
@@ -387,15 +387,12 @@ namespace MediaBrowser.Controller.Entities
 
             while (thisMarker < s1.Length)
             {
-                if (thisMarker >= s1.Length)
-                {
-                    break;
-                }
                 char thisCh = s1[thisMarker];
 
                 var thisChunk = new StringBuilder();
+                bool isNumeric = char.IsDigit(thisCh);
 
-                while ((thisMarker < s1.Length) && (thisChunk.Length == 0 || SortHelper.InChunk(thisCh, thisChunk[0])))
+                while (thisMarker < s1.Length && char.IsDigit(thisCh) == isNumeric)
                 {
                     thisChunk.Append(thisCh);
                     thisMarker++;
@@ -406,7 +403,6 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                var isNumeric = thisChunk.Length > 0 && char.IsDigit(thisChunk[0]);
                 list.Add(new Tuple<StringBuilder, bool>(thisChunk, isNumeric));
             }
 
@@ -2918,5 +2914,17 @@ namespace MediaBrowser.Controller.Entities
         public static readonly IReadOnlyCollection<ExtraType> DisplayExtraTypes = new[] { Model.Entities.ExtraType.BehindTheScenes, Model.Entities.ExtraType.Clip, Model.Entities.ExtraType.DeletedScene, Model.Entities.ExtraType.Interview, Model.Entities.ExtraType.Sample, Model.Entities.ExtraType.Scene };
 
         public virtual bool SupportsExternalTransfer => false;
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            return obj is BaseItem baseItem && this.Equals(baseItem);
+        }
+
+        /// <inheritdoc />
+        public bool Equals(BaseItem item) => Object.Equals(Id, item?.Id);
+
+        /// <inheritdoc />
+        public override int GetHashCode() => HashCode.Combine(Id);
     }
 }

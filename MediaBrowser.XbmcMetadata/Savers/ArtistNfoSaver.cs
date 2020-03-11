@@ -14,7 +14,13 @@ namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class ArtistNfoSaver : BaseNfoSaver
     {
-        public ArtistNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        public ArtistNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger<ArtistNfoSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }

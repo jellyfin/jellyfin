@@ -19,7 +19,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
-            ILogger logger)
+            ILogger<SeasonNfoSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }

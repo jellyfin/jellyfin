@@ -11,6 +11,11 @@ namespace MediaBrowser.LocalMetadata.Savers
 {
     public class PlaylistXmlSaver : BaseXmlSaver
     {
+        /// <summary>
+        /// The default file name to use when creating a new playlist.
+        /// </summary>
+        public const string DefaultPlaylistFilename = "playlist.xml";
+
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
@@ -45,10 +50,10 @@ namespace MediaBrowser.LocalMetadata.Savers
                 return Path.ChangeExtension(itemPath, ".xml");
             }
 
-            return Path.Combine(path, "playlist.xml");
+            return Path.Combine(path, DefaultPlaylistFilename);
         }
 
-        public PlaylistXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        public PlaylistXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<PlaylistXmlSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }

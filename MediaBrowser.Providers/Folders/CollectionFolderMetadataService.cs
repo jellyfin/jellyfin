@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Folders
     {
         public CollectionFolderMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<CollectionFolderMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

@@ -17,7 +17,6 @@ namespace Emby.Server.Implementations
         {
             { NoWebContentKey, bool.FalseString },
             { HttpListenerHost.DefaultRedirectKey, "web/index.html" },
-            { MusicBrainzAlbumProvider.BaseUrlKey, "https://www.musicbrainz.org" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" }
         };
