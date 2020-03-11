@@ -31,7 +31,7 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>The parsed config value.</returns>
         /// <exception cref="FormatException">The config value is not a valid bool string. See <see cref="bool.Parse(string)"/>.</exception>
         public static bool IsNoWebContent(this IConfiguration configuration)
-            => configuration.ParseBoolean(NoWebContentKey);
+            => configuration.GetValue<bool>(NoWebContentKey);
 
         /// <summary>
         /// Retrieves the FFmpeg probe size from the <see cref="IConfiguration" />.
@@ -48,20 +48,5 @@ namespace MediaBrowser.Controller.Extensions
         /// <returns>The FFmpeg analyse duration option.</returns>
         public static string GetFFmpegAnalyzeDuration(this IConfiguration configuration)
             => configuration[FfmpegAnalyzeDurationKey];
-
-        /// <summary>
-        /// Convert the specified configuration string value its <see cref="bool"/> equivalent.
-        /// </summary>
-        /// <param name="configuration">The configuration to retrieve and parse the setting from.</param>
-        /// <param name="key">The key to use to retrieve the string value from the configuration.</param>
-        /// <returns>The parsed boolean value.</returns>
-        /// <exception cref="FormatException">The config value is not a valid bool string. See <see cref="bool.Parse(string)"/>.</exception>
-        public static bool ParseBoolean(this IConfiguration configuration, string key)
-        {
-            string configValue = configuration[key];
-            return bool.TryParse(configValue, out bool result) ?
-                result :
-                throw new FormatException($"Invalid value for configuration option '{key}' (expected a boolean): {configValue}");
-        }
     }
 }
