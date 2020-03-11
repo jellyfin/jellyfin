@@ -16,8 +16,9 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Providers.Music;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
@@ -54,6 +55,12 @@ namespace MediaBrowser.Providers.Music
         {
             var result = new MetadataResult<MusicAlbum>();
 
+            // TODO maybe remove when artist metadata can be disabled
+            if (!Plugin.Instance.Configuration.Enable)
+            {
+                return result;
+            }
+
             var id = info.GetReleaseGroupId();
 
             if (!string.IsNullOrWhiteSpace(id))
@@ -77,6 +84,11 @@ namespace MediaBrowser.Providers.Music
 
         private void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
         {
+            if (Plugin.Instance.Configuration.ReplaceAlbumName && !string.IsNullOrWhiteSpace(result.strAlbum))
+            {
+                item.Album = result.strAlbum;
+            }
+
             if (!string.IsNullOrWhiteSpace(result.strArtist))
             {
                 item.AlbumArtists = new string[] { result.strArtist };

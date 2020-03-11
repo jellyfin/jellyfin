@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Music
         public MusicBrainzAlbumProvider(
             IHttpClient httpClient,
             IApplicationHost appHost,
-            ILogger logger)
+            ILogger<MusicBrainzAlbumProvider> logger)
         {
             _httpClient = httpClient;
             _appHost = appHost;

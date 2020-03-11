@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         public XmlTvListingsProvider(
             IServerConfigurationManager config,
             IHttpClient httpClient,
-            ILogger logger,
+            ILogger<XmlTvListingsProvider> logger,
             IFileSystem fileSystem,
             IZipClient zipClient)
         {

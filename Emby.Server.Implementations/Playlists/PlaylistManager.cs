@@ -33,14 +33,14 @@ namespace Emby.Server.Implementations.Playlists
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
             ILibraryMonitor iLibraryMonitor,
-            ILoggerFactory loggerFactory,
+            ILogger<PlaylistManager> logger,
             IUserManager userManager,
             IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
-            _logger = loggerFactory.CreateLogger(nameof(PlaylistManager));
+            _logger = logger;
             _userManager = userManager;
             _providerManager = providerManager;
         }

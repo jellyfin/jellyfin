@@ -16,7 +16,7 @@ namespace MediaBrowser.LocalMetadata.Providers
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
 
-        public BoxSetXmlProvider(IFileSystem fileSystem, ILogger logger, IProviderManager providerManager)
+        public BoxSetXmlProvider(IFileSystem fileSystem, ILogger<BoxSetXmlProvider> logger, IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;

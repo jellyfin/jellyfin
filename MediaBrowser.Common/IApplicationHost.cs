@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Updates;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
@@ -121,11 +122,12 @@ namespace MediaBrowser.Common
         void RemovePlugin(IPlugin plugin);
 
         /// <summary>
-        /// Inits this instance.
+        /// Initializes this instance.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="startupConfig">The configuration to use for initialization.</param>
         /// <returns>A task.</returns>
-        Task InitAsync(IServiceCollection serviceCollection);
+        Task InitAsync(IServiceCollection serviceCollection, IConfiguration startupConfig);
 
         /// <summary>
         /// Creates the instance.
