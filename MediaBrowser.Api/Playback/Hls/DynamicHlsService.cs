@@ -722,6 +722,114 @@ namespace MediaBrowser.Api.Playback.Hls
             //return state.VideoRequest.VideoBitRate.HasValue;
         }
 
+        /// <summary>
+        /// Gets a formatted string of the output audio codec, for use in the CODECS field.
+        /// </summary>
+        /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
+        /// <seealso cref="GetPlaylistVideoCodecs(StreamState)"/>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>Formatted audio codec string.</returns>
+        private string GetPlaylistAudioCodecs(StreamState state)
+        {
+
+            if (string.Equals(state.ActualOutputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("aac").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetAACString(profile);
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetMP3String();
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetAC3String();
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetEAC3String();
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets a formatted string of the output video codec, for use in the CODECS field.
+        /// </summary>
+        /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
+        /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>Formatted video codec string.</returns>
+        private string GetPlaylistVideoCodecs(StreamState state)
+        {
+            int level = Convert.ToInt32(state.GetRequestedLevel(state.ActualOutputVideoCodec));
+
+            if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("h264").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetH264String(profile, level);
+            }
+            else if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("h265").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetH265String(profile, level);
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Appends a CODECS field containing formatted strings of
+        /// the active streams output video and audio codecs.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <seealso cref="GetPlaylistVideoCodecs(StreamState)"/>
+        /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistCodecsField(StringBuilder builder, StreamState state)
+        {
+            // Video
+            string videoCodecs = string.Empty;
+            if (!string.IsNullOrEmpty(state.ActualOutputVideoCodec))
+            {
+                videoCodecs = GetPlaylistVideoCodecs(state);
+            }
+
+            // Audio
+            string audioCodecs = string.Empty;
+            if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))
+            {
+                audioCodecs = GetPlaylistAudioCodecs(state);
+            }
+
+            if (!string.IsNullOrEmpty(videoCodecs) || !string.IsNullOrEmpty(audioCodecs))
+            {
+                builder.Append(",CODECS=\"");
+
+                if (!string.IsNullOrEmpty(videoCodecs) && !string.IsNullOrEmpty(audioCodecs))
+                {
+                    builder.Append(videoCodecs)
+                        .Append(',')
+                        .Append(audioCodecs);
+                }
+                else if (!string.IsNullOrEmpty(videoCodecs))
+                {
+                    builder.Append(videoCodecs);
+                }
+                else if (!string.IsNullOrEmpty(audioCodecs))
+                {
+                    builder.Append(audioCodecs);
+                }
+
+                builder.Append('"');
+            }
+        }
+
         private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string subtitleGroup)
         {
             builder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
@@ -734,6 +842,8 @@ namespace MediaBrowser.Api.Playback.Hls
             //{
             //    header += string.Format(",FRAME-RATE=\"{0}\"", state.TargetFramerate.Value.ToString(CultureInfo.InvariantCulture));
             //}
+
+            AppendPlaylistCodecsField(builder, state);
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
