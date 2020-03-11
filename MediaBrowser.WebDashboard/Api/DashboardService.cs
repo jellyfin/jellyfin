@@ -101,19 +101,10 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <value>The HTTP result factory.</value>
         private readonly IHttpResultFactory _resultFactory;
-
-        /// <summary>
-        /// The _app host.
-        /// </summary>
         private readonly IServerApplicationHost _appHost;
-
-        /// <summary>
-        /// The _server configuration manager.
-        /// </summary>
         private readonly IServerConfigurationManager _serverConfigurationManager;
-
         private readonly IFileSystem _fileSystem;
-        private IResourceFileManager _resourceFileManager;
+        private readonly IResourceFileManager _resourceFileManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
@@ -163,7 +154,7 @@ namespace MediaBrowser.WebDashboard.Api
             }
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetFavIcon request)
         {
             return Get(new GetDashboardResource
@@ -177,7 +168,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public Task<object> Get(GetDashboardConfigurationPage request)
         {
             IPlugin plugin = null;
@@ -300,7 +291,7 @@ namespace MediaBrowser.WebDashboard.Api
             return GetPluginPages(plugin).Select(i => new ConfigurationPageInfo(plugin, i.Item1));
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetRobotsTxt request)
         {
             return Get(new GetDashboardResource
