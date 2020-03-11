@@ -46,6 +46,7 @@ namespace MediaBrowser.Model.Users
         public bool EnableAudioPlaybackTranscoding { get; set; }
         public bool EnableVideoPlaybackTranscoding { get; set; }
         public bool EnablePlaybackRemuxing { get; set; }
+        public bool ForceRemoteSourceTranscoding { get; set; }
 
         public bool EnableContentDeletion { get; set; }
         public string[] EnableContentDeletionFromFolders { get; set; }
@@ -93,7 +94,7 @@ namespace MediaBrowser.Model.Users
             EnableAudioPlaybackTranscoding = true;
             EnableVideoPlaybackTranscoding = true;
             EnablePlaybackRemuxing = true;
-
+            ForceRemoteSourceTranscoding = false;
             EnableLiveTvManagement = true;
             EnableLiveTvAccess = true;
 

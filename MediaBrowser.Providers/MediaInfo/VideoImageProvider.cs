@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger logger, IFileSystem fileSystem)
+        public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger, IFileSystem fileSystem)
         {
             _mediaEncoder = mediaEncoder;
             _logger = logger;

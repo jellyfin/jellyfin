@@ -406,7 +406,10 @@ namespace Emby.Server.Implementations.Devices
         private readonly IServerConfigurationManager _config;
         private ILogger _logger;
 
-        public DeviceManagerEntryPoint(IDeviceManager deviceManager, IServerConfigurationManager config, ILogger logger)
+        public DeviceManagerEntryPoint(
+            IDeviceManager deviceManager,
+            IServerConfigurationManager config,
+            ILogger<DeviceManagerEntryPoint> logger)
         {
             _deviceManager = (DeviceManager)deviceManager;
             _config = config;

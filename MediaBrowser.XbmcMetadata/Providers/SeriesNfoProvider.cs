@@ -25,7 +25,11 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <param name="fileSystem">The file system.</param>
         /// <param name="config">the configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
-        public SeriesNfoProvider(ILogger<SeriesNfoProvider> logger, IFileSystem fileSystem, IConfigurationManager config, IProviderManager providerManager)
+        public SeriesNfoProvider(
+            ILogger<SeriesNfoProvider> logger,
+            IFileSystem fileSystem,
+            IConfigurationManager config,
+            IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;

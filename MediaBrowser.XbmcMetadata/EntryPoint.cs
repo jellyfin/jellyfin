@@ -23,7 +23,7 @@ namespace MediaBrowser.XbmcMetadata
 
         public EntryPoint(
             IUserDataManager userDataManager,
-            ILogger logger,
+            ILogger<EntryPoint> logger,
             IProviderManager providerManager,
             IConfigurationManager config)
         {

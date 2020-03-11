@@ -24,4 +24,14 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Plugins\AudioDb\Configuration\config.html" />
+    <EmbeddedResource Include="Plugins\AudioDb\Configuration\config.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Plugins\MusicBrainz\Configuration\config.html" />
+    <EmbeddedResource Include="Plugins\MusicBrainz\Configuration\config.html" />
+  </ItemGroup>
+
 </Project>

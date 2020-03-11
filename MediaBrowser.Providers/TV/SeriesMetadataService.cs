@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.TV
 
         public SeriesMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<SeriesMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,

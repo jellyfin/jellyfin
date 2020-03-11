@@ -26,7 +26,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <param name="config">the configuration manager.</param>
         /// <param name="providerManager">The provider manager.</param>
         public SeasonNfoProvider(
-            ILogger logger,
+            ILogger<SeasonNfoProvider> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,
             IProviderManager providerManager)

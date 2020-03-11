@@ -12,7 +12,10 @@ namespace Emby.Dlna.MediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;
 
-        public MediaReceiverRegistrar(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config)
+        public MediaReceiverRegistrar(
+            ILogger<MediaReceiverRegistrar> logger,
+            IHttpClient httpClient,
+            IServerConfigurationManager config)
             : base(logger, httpClient)
         {
             _config = config;

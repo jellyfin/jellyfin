@@ -29,7 +29,6 @@ using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
@@ -80,7 +79,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IServerApplicationHost appHost,
             IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
-            ILogger logger,
+            ILogger<EmbyTV> logger,
             IJsonSerializer jsonSerializer,
             IHttpClient httpClient,
             IServerConfigurationManager config,

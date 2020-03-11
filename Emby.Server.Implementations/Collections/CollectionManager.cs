@@ -347,7 +347,10 @@ namespace Emby.Server.Implementations.Collections
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
 
-        public CollectionManagerEntryPoint(ICollectionManager collectionManager, IServerConfigurationManager config, ILogger logger)
+        public CollectionManagerEntryPoint(
+            ICollectionManager collectionManager,
+            IServerConfigurationManager config,
+            ILogger<CollectionManagerEntryPoint> logger)
         {
             _collectionManager = (CollectionManager)collectionManager;
             _config = config;

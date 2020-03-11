@@ -37,7 +37,7 @@ namespace Emby.Dlna.ContentDirectory
             ILibraryManager libraryManager,
             IServerConfigurationManager config,
             IUserManager userManager,
-            ILogger logger,
+            ILogger<ContentDirectory> logger,
             IHttpClient httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,

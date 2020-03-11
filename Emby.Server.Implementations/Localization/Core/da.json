@@ -3,7 +3,7 @@
     "AppDeviceValues": "App: {0}, Enhed: {1}",
     "Application": "Applikation",
     "Artists": "Kunstnere",
-    "AuthenticationSucceededWithUserName": "{0} bekræftet med succes",
+    "AuthenticationSucceededWithUserName": "{0} succesfuldt autentificeret",
     "Books": "Bøger",
     "CameraImageUploadedFrom": "Et nyt kamerabillede er blevet uploadet fra {0}",
     "Channels": "Kanaler",

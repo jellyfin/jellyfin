@@ -25,7 +25,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="localization">The localization</param>
         /// <param name="logger">The logger</param>
-        public SeasonResolver(IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, ILogger logger)
+        public SeasonResolver(
+            IServerConfigurationManager config,
+            ILibraryManager libraryManager,
+            ILocalizationManager localization,
+            ILogger<SeasonResolver> logger)
         {
             _config = config;
             _libraryManager = libraryManager;

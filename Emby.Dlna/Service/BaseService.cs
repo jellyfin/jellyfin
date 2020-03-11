@@ -12,7 +12,7 @@ namespace Emby.Dlna.Service
         protected IHttpClient HttpClient;
         protected ILogger Logger;
 
-        protected BaseService(ILogger logger, IHttpClient httpClient)
+        protected BaseService(ILogger<BaseService> logger, IHttpClient httpClient)
         {
             Logger = logger;
             HttpClient = httpClient;
