@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
@@ -6,29 +8,6 @@ namespace MediaBrowser.WebDashboard.Api
 {
     public class ConfigurationPageInfo
     {
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name { get; set; }
-        public bool EnableInMainMenu { get; set; }
-        public string MenuSection { get; set; }
-        public string MenuIcon { get; set; }
-
-        public string DisplayName { get; set; }
-
-        /// <summary>
-        /// Gets the type of the configuration page.
-        /// </summary>
-        /// <value>The type of the configuration page.</value>
-        public ConfigurationPageType ConfigurationPageType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the plugin id.
-        /// </summary>
-        /// <value>The plugin id.</value>
-        public string PluginId { get; set; }
-
         public ConfigurationPageInfo(IPluginConfigurationPage page)
         {
             Name = page.Name;
@@ -54,5 +33,31 @@ namespace MediaBrowser.WebDashboard.Api
             // Don't use "N" because it needs to match Plugin.Id
             PluginId = plugin.Id.ToString();
         }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
+
+        public bool EnableInMainMenu { get; set; }
+
+        public string MenuSection { get; set; }
+
+        public string MenuIcon { get; set; }
+
+        public string DisplayName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the configuration page.
+        /// </summary>
+        /// <value>The type of the configuration page.</value>
+        public ConfigurationPageType ConfigurationPageType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the plugin id.
+        /// </summary>
+        /// <value>The plugin id.</value>
+        public string PluginId { get; set; }
     }
 }

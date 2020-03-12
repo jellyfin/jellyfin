@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +19,9 @@ namespace MediaBrowser.XbmcMetadata.Providers
         {
             _fileSystem = fileSystem;
         }
+
+        /// <inheritdoc />
+        public string Name => BaseNfoSaver.SaverName;
 
         /// <inheritdoc />
         public Task<MetadataResult<T>> GetMetadata(
@@ -55,12 +60,6 @@ namespace MediaBrowser.XbmcMetadata.Providers
         }
 
         /// <inheritdoc />
-        protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
-
-        /// <inheritdoc />
-        protected abstract FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService);
-
-        /// <inheritdoc />
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             var file = GetXmlFile(new ItemInfo(item), directoryService);
@@ -73,6 +72,8 @@ namespace MediaBrowser.XbmcMetadata.Providers
             return file.Exists && _fileSystem.GetLastWriteTimeUtc(file) > item.DateLastSaved;
         }
 
-        public string Name => BaseNfoSaver.SaverName;
+        protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
+
+        protected abstract FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService);
     }
 }
