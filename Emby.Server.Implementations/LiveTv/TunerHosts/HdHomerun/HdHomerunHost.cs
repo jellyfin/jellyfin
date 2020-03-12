@@ -2,12 +2,14 @@
 #pragma warning disable SA1600
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -699,34 +701,37 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
             using (var udpClient = _socketFactory.CreateUdpBroadcastSocket(0))
             {
-                // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken);
-                    var receiveBuffer = new byte[8192];
+                    await udpClient.SendToAsync(discBytes, SocketFlags.None, new IPEndPoint(IPAddress.Broadcast, 65001));
 
-                    while (!cancellationToken.IsCancellationRequested)
+                    var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
+                    try
                     {
-                        var response = await udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
-                        var deviceIp = response.RemoteEndPoint.Address.ToString();
-
-                        // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
-                        if (response.ReceivedBytes > 13 && response.Buffer[1] == 3)
+                        while (!cancellationToken.IsCancellationRequested)
                         {
-                            var deviceAddress = "http://" + deviceIp;
+                            var result = await udpClient.ReceiveFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Any, 0)).ConfigureAwait(false);
 
-                            var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
-
-                            if (info != null)
+                            // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
+                            if (result.ReceivedBytes > 13 && receiveBuffer[1] == 3)
                             {
-                                list.Add(info);
+                                var deviceAddress = "http://" + ((IPEndPoint)result.RemoteEndPoint).Address.ToString();;
+
+                                var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
+                                if (info != null)
+                                {
+                                    list.Add(info);
+                                }
                             }
                         }
                     }
-
-                }
-                catch (OperationCanceledException)
-                {
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(receiveBuffer);
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -114,14 +114,7 @@ namespace Rssdp.Infrastructure
             StartListeningForNotifications();
             RemoveExpiredDevicesFromCache();
 
-            try
-            {
-                await SearchAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-
-            }
+            await SearchAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

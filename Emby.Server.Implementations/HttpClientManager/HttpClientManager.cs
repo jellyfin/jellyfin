@@ -327,7 +327,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (options.LogErrorResponseBody)
             {
                 string msg = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                _logger.LogError("HTTP request failed with message: {Message}", msg);
+                _logger.LogError("HTTP request {Request} failed with code ({Code}), reason ({Reason}) message: {Message}", response.RequestMessage.RequestUri, (int)response.StatusCode, response.ReasonPhrase, msg);
             }
 
             throw new HttpException(response.ReasonPhrase)

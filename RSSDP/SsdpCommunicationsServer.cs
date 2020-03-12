@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -37,10 +38,10 @@ namespace Rssdp.Infrastructure
          */
 
         private object _BroadcastListenSocketSynchroniser = new object();
-        private ISocket _BroadcastListenSocket;
+        private Socket _BroadcastListenSocket;
 
         private object _SendSocketSynchroniser = new object();
-        private List<ISocket> _sendSockets;
+        private List<Socket> _sendSockets;
 
         private HttpRequestParser _RequestParser;
         private HttpResponseParser _ResponseParser;
@@ -187,53 +188,45 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private async Task SendFromSocket(ISocket socket, byte[] messageData, IPEndPoint destination, CancellationToken cancellationToken)
+        private async Task SendFromSocket(Socket socket, byte[] messageData, IPEndPoint destination, CancellationToken cancellationToken)
         {
             try
             {
-                await socket.SendToAsync(messageData, 0, messageData.Length, destination, cancellationToken).ConfigureAwait(false);
-            }
-            catch (ObjectDisposedException)
-            {
-
-            }
-            catch (OperationCanceledException)
-            {
-
+                await socket.SendToAsync(messageData, SocketFlags.None, destination).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending socket message from {0} to {1}", socket.LocalIPAddress.ToString(), destination.ToString());
+                _logger.LogError(ex, "Error sending socket message from {0} to {1}", socket.LocalEndPoint, destination);
             }
         }
 
-        private List<ISocket> GetSendSockets(IPAddress fromLocalIpAddress, IPEndPoint destination)
+        private List<Socket> GetSendSockets(IPAddress fromLocalIpAddress, IPEndPoint destination)
         {
             EnsureSendSocketCreated();
 
             lock (_SendSocketSynchroniser)
             {
-                var sockets = _sendSockets.Where(i => i.LocalIPAddress.AddressFamily == fromLocalIpAddress.AddressFamily);
+                var sockets = _sendSockets.Where(i => i.LocalEndPoint.AddressFamily == fromLocalIpAddress.AddressFamily);
 
                 // Send from the Any socket and the socket with the matching address
                 if (fromLocalIpAddress.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
+                    sockets = sockets.Where(i => i.LocalEndPoint.Equals(IPAddress.Any) || fromLocalIpAddress.Equals(i.LocalEndPoint));
 
                     // If sending to the loopback address, filter the socket list as well
                     if (destination.Address.Equals(IPAddress.Loopback))
                     {
-                        sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.Any) || i.LocalIPAddress.Equals(IPAddress.Loopback));
+                        sockets = sockets.Where(i => i.LocalEndPoint.Equals(IPAddress.Any) || i.LocalEndPoint.Equals(IPAddress.Loopback));
                     }
                 }
                 else if (fromLocalIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.IPv6Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
+                    sockets = sockets.Where(i => i.LocalEndPoint.Equals(IPAddress.IPv6Any) || fromLocalIpAddress.Equals(i.LocalEndPoint));
 
                     // If sending to the loopback address, filter the socket list as well
                     if (destination.Address.Equals(IPAddress.IPv6Loopback))
                     {
-                        sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.IPv6Any) || i.LocalIPAddress.Equals(IPAddress.IPv6Loopback));
+                        sockets = sockets.Where(i => i.LocalEndPoint.Equals(IPAddress.IPv6Any) || i.LocalEndPoint.Equals(IPAddress.IPv6Loopback));
                     }
                 }
 
@@ -293,7 +286,7 @@ namespace Rssdp.Infrastructure
 
                     foreach (var socket in sockets)
                     {
-                        _logger.LogInformation("{0} disposing sendSocket from {1}", GetType().Name, socket.LocalIPAddress);
+                        _logger.LogInformation("{0} disposing sendSocket from {1}", GetType().Name, socket.LocalEndPoint);
                         socket.Dispose();
                     }
                 }
@@ -345,7 +338,7 @@ namespace Rssdp.Infrastructure
             {
                 sockets = sockets.ToList();
 
-                var tasks = sockets.Where(s => (fromLocalIpAddress == null || fromLocalIpAddress.Equals(s.LocalIPAddress)))
+                var tasks = sockets.Where(s => (fromLocalIpAddress == null || fromLocalIpAddress.Equals(s.LocalEndPoint)))
                     .Select(s => SendFromSocket(s, messageData, destination, cancellationToken));
                 return Task.WhenAll(tasks);
             }
@@ -353,7 +346,7 @@ namespace Rssdp.Infrastructure
             return Task.CompletedTask;
         }
 
-        private ISocket ListenForBroadcastsAsync()
+        private Socket ListenForBroadcastsAsync()
         {
             var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
 
@@ -362,9 +355,9 @@ namespace Rssdp.Infrastructure
             return socket;
         }
 
-        private List<ISocket> CreateSocketAndListenForResponsesAsync()
+        private List<Socket> CreateSocketAndListenForResponsesAsync()
         {
-            var sockets = new List<ISocket>();
+            var sockets = new List<Socket>();
 
             sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IPAddress.Any, _LocalPort));
 
@@ -397,32 +390,30 @@ namespace Rssdp.Infrastructure
             return sockets;
         }
 
-        private async Task ListenToSocketInternal(ISocket socket)
+        private async Task ListenToSocketInternal(Socket socket)
         {
-            var cancelled = false;
             var receiveBuffer = new byte[8192];
-
-            while (!cancelled && !IsDisposed)
+            while (!IsDisposed)
             {
                 try
                 {
-                    var result = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, CancellationToken.None).ConfigureAwait(false);
+                    var result = await socket.ReceiveFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Any, 0)).ConfigureAwait(false);
 
                     if (result.ReceivedBytes > 0)
                     {
                         // Strange cannot convert compiler error here if I don't explicitly
                         // assign or cast to Action first. Assignment is easier to read,
                         // so went with that.
-                        ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
+                        ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes), (IPEndPoint)result.RemoteEndPoint, ((IPEndPoint)socket.LocalEndPoint).Address);
                     }
                 }
                 catch (ObjectDisposedException)
                 {
-                    cancelled = true;
+                    break;
                 }
                 catch (TaskCanceledException)
                 {
-                    cancelled = true;
+                    break;
                 }
             }
         }

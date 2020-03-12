@@ -324,19 +324,11 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage(header, values);
 
-            try
-            {
-                await _CommsServer.SendMessage(
-                        System.Text.Encoding.UTF8.GetBytes(message),
-                        endPoint,
-                        receivedOnlocalIpAddress,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-
-            }
+            await _CommsServer.SendMessage(
+                System.Text.Encoding.UTF8.GetBytes(message),
+                endPoint,
+                receivedOnlocalIpAddress,
+                cancellationToken).ConfigureAwait(false);
 
             //WriteTrace(String.Format("Sent search response to " + endPoint.ToString()), device);
         }
