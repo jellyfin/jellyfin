@@ -9,7 +9,8 @@ namespace Emby.Server.Implementations
         {
             { "HttpListenerHost:DefaultRedirectPath", "web/index.html" },
             { FfmpegProbeSizeKey, "1G" },
-            { FfmpegAnalyzeDurationKey, "200M" }
+            { FfmpegAnalyzeDurationKey, "200M" },
+            { PlaylistsAllowDuplicatesKey, bool.TrueString }
         };
     }
 }
