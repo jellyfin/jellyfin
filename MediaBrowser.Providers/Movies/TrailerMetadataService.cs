@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Movies
     {
         public TrailerMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<TrailerMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

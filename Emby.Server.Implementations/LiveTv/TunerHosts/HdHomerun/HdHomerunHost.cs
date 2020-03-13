@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public HdHomerunHost(
             IServerConfigurationManager config,
-            ILogger logger,
+            ILogger<HdHomerunHost> logger,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IHttpClient httpClient,

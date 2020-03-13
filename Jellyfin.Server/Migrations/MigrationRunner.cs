@@ -13,9 +13,10 @@ namespace Jellyfin.Server.Migrations
         /// <summary>
         /// The list of known migrations, in order of applicability.
         /// </summary>
-        internal static readonly IUpdater[] Migrations =
+        internal static readonly IMigrationRoutine[] Migrations =
         {
-            new Routines.DisableTranscodingThrottling()
+            new Routines.DisableTranscodingThrottling(),
+            new Routines.CreateUserLoggingConfigFile()
         };
 
         /// <summary>
@@ -28,47 +29,44 @@ namespace Jellyfin.Server.Migrations
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
             var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
 
-            if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Length == 0)
+            if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Count == 0)
             {
                 // If startup wizard is not finished, this is a fresh install.
                 // Don't run any migrations, just mark all of them as applied.
-                logger.LogInformation("Marking all known migrations as applied because this is fresh install");
-                migrationOptions.Applied = Migrations.Select(m => m.Name).ToArray();
+                logger.LogInformation("Marking all known migrations as applied because this is a fresh install");
+                migrationOptions.Applied.AddRange(Migrations.Select(m => (m.Id, m.Name)));
                 host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
                 return;
             }
 
-            var applied = migrationOptions.Applied.ToList();
+            var appliedMigrationIds = migrationOptions.Applied.Select(m => m.Id).ToHashSet();
 
             for (var i = 0; i < Migrations.Length; i++)
             {
-                var updater = Migrations[i];
-                if (applied.Contains(updater.Name))
+                var migrationRoutine = Migrations[i];
+                if (appliedMigrationIds.Contains(migrationRoutine.Id))
                 {
-                    logger.LogDebug("Skipping migration '{Name}' since it is already applied", updater.Name);
+                    logger.LogDebug("Skipping migration '{Name}' since it is already applied", migrationRoutine.Name);
                     continue;
                 }
 
-                logger.LogInformation("Applying migration '{Name}'", updater.Name);
+                logger.LogInformation("Applying migration '{Name}'", migrationRoutine.Name);
+
                 try
                 {
-                    updater.Perform(host, logger);
+                    migrationRoutine.Perform(host, logger);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Could not apply migration '{Name}'", updater.Name);
+                    logger.LogError(ex, "Could not apply migration '{Name}'", migrationRoutine.Name);
                     throw;
                 }
 
-                logger.LogInformation("Migration '{Name}' applied successfully", updater.Name);
-                applied.Add(updater.Name);
-            }
-
-            if (applied.Count > migrationOptions.Applied.Length)
-            {
-                logger.LogInformation("Some migrations were run, saving the state");
-                migrationOptions.Applied = applied.ToArray();
+                // Mark the migration as completed
+                logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
+                migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
                 host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
+                logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
             }
         }
     }

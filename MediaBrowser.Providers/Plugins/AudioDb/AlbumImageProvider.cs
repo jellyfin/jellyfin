@@ -10,7 +10,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Providers.Music
+namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbAlbumImageProvider : IRemoteImageProvider, IHasOrder
     {
@@ -102,6 +102,7 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <inheritdoc />
-        public bool Supports(BaseItem item) => item is MusicAlbum;
+        public bool Supports(BaseItem item)
+            => Plugin.Instance.Configuration.Enable && item is MusicAlbum;
     }
 }

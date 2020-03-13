@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,7 @@ namespace MediaBrowser.Model.Dlna
             _logger = logger;
         }
 
-        public StreamBuilder(ILogger logger)
+        public StreamBuilder(ILogger<StreamBuilder> logger)
             : this(new FullTranscoderSupport(), logger)
         {
         }

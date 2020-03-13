@@ -1,10 +1,12 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.XbmcMetadata.Configuration
 {
-    public class ConfigurationFactory : IConfigurationFactory
+    public class NfoConfigurationFactory : IConfigurationFactory
     {
         /// <inheritdoc />
         public IEnumerable<ConfigurationStore> GetConfigurations()
@@ -17,14 +19,6 @@ namespace MediaBrowser.XbmcMetadata.Configuration
                      Key = "xbmcmetadata"
                 }
             };
-        }
-    }
-
-    public static class ConfigurationExtension
-    {
-        public static XbmcMetadataOptions GetNfoConfiguration(this IConfigurationManager manager)
-        {
-            return manager.GetConfiguration<XbmcMetadataOptions>("xbmcmetadata");
         }
     }
 }

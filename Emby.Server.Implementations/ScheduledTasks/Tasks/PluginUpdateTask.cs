@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private readonly IInstallationManager _installationManager;
 
-        public PluginUpdateTask(ILogger logger, IInstallationManager installationManager)
+        public PluginUpdateTask(ILogger<PluginUpdateTask> logger, IInstallationManager installationManager)
         {
             _logger = logger;
             _installationManager = installationManager;

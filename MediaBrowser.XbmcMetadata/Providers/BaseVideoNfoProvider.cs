@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
@@ -10,14 +12,18 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
-    public class BaseVideoNfoProvider<T> : BaseNfoProvider<T>
+    public abstract class BaseVideoNfoProvider<T> : BaseNfoProvider<T>
         where T : Video, new()
     {
         private readonly ILogger _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
 
-        public BaseVideoNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        public BaseVideoNfoProvider(
+            ILogger logger,
+            IFileSystem fileSystem,
+            IConfigurationManager config,
+            IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;

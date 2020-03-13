@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Folders
     {
         public UserViewMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<UserViewMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Threading;
@@ -15,7 +14,7 @@ namespace Emby.Server.Implementations.Data
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger logger)
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger<CleanDatabaseScheduledTask> logger)
         {
             _libraryManager = libraryManager;
             _logger = logger;

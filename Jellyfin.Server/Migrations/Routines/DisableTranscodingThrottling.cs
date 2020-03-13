@@ -10,8 +10,11 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Disable transcode throttling for all installations since it is currently broken for certain video formats.
     /// </summary>
-    internal class DisableTranscodingThrottling : IUpdater
+    internal class DisableTranscodingThrottling : IMigrationRoutine
     {
+        /// <inheritdoc/>
+        public Guid Id => Guid.Parse("{4124C2CD-E939-4FFB-9BE9-9B311C413638}");
+
         /// <inheritdoc/>
         public string Name => "DisableTranscodingThrottling";
 

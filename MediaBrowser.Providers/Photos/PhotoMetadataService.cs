@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Photos
     {
         public PhotoMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<PhotoMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

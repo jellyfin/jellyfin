@@ -33,7 +33,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
 
-        public SchedulesDirect(ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IApplicationHost appHost)
+        public SchedulesDirect(
+            ILogger<SchedulesDirect> logger,
+            IJsonSerializer jsonSerializer,
+            IHttpClient httpClient,
+            IApplicationHost appHost)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;

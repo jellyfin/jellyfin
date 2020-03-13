@@ -39,7 +39,14 @@ namespace MediaBrowser.Providers.Tmdb.TV
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
 
-        public TmdbSeriesProvider(IJsonSerializer jsonSerializer, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, IHttpClient httpClient, ILibraryManager libraryManager)
+        public TmdbSeriesProvider(
+            IJsonSerializer jsonSerializer,
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILogger<TmdbSeriesProvider> logger,
+            ILocalizationManager localization,
+            IHttpClient httpClient,
+            ILibraryManager libraryManager)
         {
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;

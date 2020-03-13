@@ -53,7 +53,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             return Path.Combine(path, DefaultPlaylistFilename);
         }
 
-        public PlaylistXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        public PlaylistXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<PlaylistXmlSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
