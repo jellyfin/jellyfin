@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Playlists;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 using PlaylistsNET.Models;
@@ -28,6 +30,7 @@ namespace Emby.Server.Implementations.Playlists
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
+        private readonly IConfiguration _appConfig;
 
         public PlaylistManager(
             ILibraryManager libraryManager,
@@ -35,7 +38,8 @@ namespace Emby.Server.Implementations.Playlists
             ILibraryMonitor iLibraryMonitor,
             ILogger<PlaylistManager> logger,
             IUserManager userManager,
-            IProviderManager providerManager)
+            IProviderManager providerManager,
+            IConfiguration appConfig)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
@@ -43,6 +47,7 @@ namespace Emby.Server.Implementations.Playlists
             _logger = logger;
             _userManager = userManager;
             _providerManager = providerManager;
+            _appConfig = appConfig;
         }
 
         public IEnumerable<Playlist> GetPlaylists(Guid userId)
@@ -177,7 +182,7 @@ namespace Emby.Server.Implementations.Playlists
             return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
 
-        public void AddToPlaylist(string playlistId, IEnumerable<Guid> itemIds, Guid userId)
+        public void AddToPlaylist(string playlistId, ICollection<Guid> itemIds, Guid userId)
         {
             var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
 
@@ -187,42 +192,47 @@ namespace Emby.Server.Implementations.Playlists
             });
         }
 
-        private void AddToPlaylistInternal(string playlistId, IEnumerable<Guid> itemIds, User user, DtoOptions options)
+        private void AddToPlaylistInternal(string playlistId, ICollection<Guid> newItemIds, User user, DtoOptions options)
         {
             // Retrieve the existing playlist
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist
                 ?? throw new ArgumentException("No Playlist exists with Id " + playlistId);
 
             // Retrieve all the items to be added to the playlist
-            var items = GetPlaylistItems(itemIds, playlist.MediaType, user, options)
-                .Where(i => i.SupportsAddingToPlaylist)
-                .ToList();
+            var newItems = GetPlaylistItems(newItemIds, playlist.MediaType, user, options)
+                .Where(i => i.SupportsAddingToPlaylist);
 
-            // Remove duplicates from the new items to be added
-            var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
-            var uniqueItems = items
-                .Where(i => !existingIds.Contains(i.Id))
-                .Distinct()
+            // Filter out duplicate items, if necessary
+            if (!_appConfig.DoPlaylistsAllowDuplicates())
+            {
+                var existingIds = playlist.LinkedChildren.Select(c => c.ItemId).ToHashSet();
+                newItems = newItems
+                    .Where(i => !existingIds.Contains(i.Id))
+                    .Distinct();
+            }
+
+            // Create a list of the new linked children to add to the playlist
+            var childrenToAdd = newItems
                 .Select(i => LinkedChild.Create(i))
                 .ToList();
 
             // Log duplicates that have been ignored, if any
-            int numDuplicates = items.Count - uniqueItems.Count;
+            int numDuplicates = newItemIds.Count - childrenToAdd.Count;
             if (numDuplicates > 0)
             {
                 _logger.LogWarning("Ignored adding {DuplicateCount} duplicate items to playlist {PlaylistName}.", numDuplicates, playlist.Name);
             }
 
             // Do nothing else if there are no items to add to the playlist
-            if (uniqueItems.Count == 0)
+            if (childrenToAdd.Count == 0)
             {
                 return;
             }
 
             // Create a new array with the updated playlist items
-            var newLinkedChildren = new LinkedChild[playlist.LinkedChildren.Length + uniqueItems.Count];
+            var newLinkedChildren = new LinkedChild[playlist.LinkedChildren.Length + childrenToAdd.Count];
             playlist.LinkedChildren.CopyTo(newLinkedChildren, 0);
-            uniqueItems.CopyTo(newLinkedChildren, playlist.LinkedChildren.Length);
+            childrenToAdd.CopyTo(newLinkedChildren, playlist.LinkedChildren.Length);
 
             // Update the playlist in the repository
             playlist.LinkedChildren = newLinkedChildren;
