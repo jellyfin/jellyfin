@@ -136,6 +136,17 @@ namespace MediaBrowser.WebDashboard.Api
             _resultFactory = resultFactory;
             _resourceFileManager = resourceFileManager;
             _appConfig = appConfig;
+
+            // Validate web content path
+            string webContentPath = DashboardUIPath;
+            bool webContentPathValid = appConfig.NoWebContent() || (Directory.Exists(webContentPath) && Directory.GetFiles(webContentPath).Any());
+            if (!webContentPathValid)
+            {
+                throw new InvalidOperationException(
+                    "The server is expected to host web content, but the provided content directory is either " +
+                    $"invalid or empty: {webContentPath}. If you do not want to host web content with the server, " +
+                    $"you may set the '{Controller.Extensions.ConfigurationExtensions.NoWebContentKey}' flag.");
+            }
         }
 
         /// <summary>

@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Extensions;
-using Microsoft.Extensions.Configuration;
 
 namespace Emby.Server.Implementations.AppBase
 {
@@ -39,13 +37,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <value>The program data path.</value>
         public string ProgramDataPath { get; }
 
-        /// <summary>
-        /// Gets the path to the web UI resources folder.
-        /// </summary>
-        /// <value>The web UI resources path.</value>
-        /// <remarks>
-        /// This value is not relevant if <see cref="ConfigurationExtensions.IsNoWebContent(IConfiguration)"/> is true.
-        /// </remarks>
+        /// <inheritdoc/>
         public string WebPath { get; }
 
         /// <summary>

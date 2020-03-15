@@ -237,11 +237,6 @@ namespace Emby.Server.Implementations
         public int HttpsPort { get; private set; }
 
         /// <summary>
-        /// Gets the content root for the webhost.
-        /// </summary>
-        public string ContentRoot { get; private set; }
-
-        /// <summary>
         /// Gets the server configuration manager.
         /// </summary>
         /// <value>The server configuration manager.</value>
@@ -614,12 +609,6 @@ namespace Emby.Server.Implementations
             DiscoverTypes();
 
             await RegisterServices(serviceCollection, startupConfig).ConfigureAwait(false);
-
-            ContentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
-            if (string.IsNullOrEmpty(ContentRoot))
-            {
-                ContentRoot = ServerConfigurationManager.ApplicationPaths.WebPath;
-            }
         }
 
         public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)

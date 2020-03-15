@@ -243,7 +243,7 @@ namespace Jellyfin.Server
             IConfiguration startupConfig,
             IApplicationPaths appPaths)
         {
-            var webhostBuilder = new WebHostBuilder()
+            return new WebHostBuilder()
                 .UseKestrel(options =>
                 {
                     var addresses = appHost.ServerConfigurationManager
@@ -289,24 +289,6 @@ namespace Jellyfin.Server
                     services.TryAdd(serviceCollection);
                 })
                 .UseStartup<Startup>();
-
-            // Set up static content hosting unless it has been disabled via config
-            if (!startupConfig.NoWebContent())
-            {
-                // Fail startup if the web content does not exist
-                if (!Directory.Exists(appHost.ContentRoot) || !Directory.GetFiles(appHost.ContentRoot).Any())
-                {
-                    throw new InvalidOperationException(
-                        "The server is expected to host web content, but the provided content directory is either " +
-                        $"invalid or empty: {appHost.ContentRoot}. If you do not want to host web content with the " +
-                        $"server, you may set the '{MediaBrowser.Controller.Extensions.ConfigurationExtensions.NoWebContentKey}' flag.");
-                }
-
-                // Configure the web host to host the static web content
-                webhostBuilder.UseContentRoot(appHost.ContentRoot);
-            }
-
-            return webhostBuilder;
         }
 
         /// <summary>
