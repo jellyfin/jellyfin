@@ -287,7 +287,8 @@ namespace Jellyfin.Server
                 })
                 .UseStartup<Startup>();
 
-            if (!startupConfig.IsNoWebContent())
+            // Set up static content hosting unless it has been disabled via config
+            if (!startupConfig.NoWebContent())
             {
                 // Fail startup if the web content does not exist
                 if (!Directory.Exists(appHost.ContentRoot) || !Directory.GetFiles(appHost.ContentRoot).Any())

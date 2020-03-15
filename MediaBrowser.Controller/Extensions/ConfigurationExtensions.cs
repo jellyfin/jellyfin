@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Extensions
         /// <param name="configuration">The configuration to retrieve the value from.</param>
         /// <returns>The parsed config value.</returns>
         /// <exception cref="FormatException">The config value is not a valid bool string. See <see cref="bool.Parse(string)"/>.</exception>
-        public static bool IsNoWebContent(this IConfiguration configuration)
+        public static bool NoWebContent(this IConfiguration configuration)
             => configuration.GetValue<bool>(NoWebContentKey);
 
         /// <summary>
