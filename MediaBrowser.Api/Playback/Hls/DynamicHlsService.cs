@@ -856,6 +856,24 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
+        /// <summary>
+        /// Appends a RESOLUTION field containing the resolution of the output stream.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistResolutionField(StringBuilder builder, StreamState state)
+        {
+            if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
+            {
+                builder.Append(",RESOLUTION=\"")
+                    .Append(state.OutputWidth.GetValueOrDefault())
+                    .Append('x')
+                    .Append(state.OutputHeight.GetValueOrDefault())
+                    .Append('"');
+            }
+        }
+
         private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string subtitleGroup)
         {
             builder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
@@ -863,13 +881,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 .Append(",AVERAGE-BANDWIDTH=")
                 .Append(bitrate.ToString(CultureInfo.InvariantCulture));
 
-            // tvos wants resolution, codecs, framerate
-            //if (state.TargetFramerate.HasValue)
-            //{
-            //    header += string.Format(",FRAME-RATE=\"{0}\"", state.TargetFramerate.Value.ToString(CultureInfo.InvariantCulture));
-            //}
-
             AppendPlaylistCodecsField(builder, state);
+
+            AppendPlaylistResolutionField(builder, state);
 
             AppendPlaylistFramerateField(builder, state);
 
