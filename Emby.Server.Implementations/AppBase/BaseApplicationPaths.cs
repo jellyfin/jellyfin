@@ -1,11 +1,13 @@
 using System;
 using System.IO;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Extensions;
+using Microsoft.Extensions.Configuration;
 
 namespace Emby.Server.Implementations.AppBase
 {
     /// <summary>
-    /// Provides a base class to hold common application paths used by both the Ui and Server.
+    /// Provides a base class to hold common application paths used by both the UI and Server.
     /// This can be subclassed to add application-specific paths.
     /// </summary>
     public abstract class BaseApplicationPaths : IApplicationPaths
@@ -40,7 +42,10 @@ namespace Emby.Server.Implementations.AppBase
         /// <summary>
         /// Gets the path to the web UI resources folder.
         /// </summary>
-        /// <value>The web UI resources path, or null if the server is not hosting any web content.</value>
+        /// <value>The web UI resources path.</value>
+        /// <remarks>
+        /// This value is not relevant if <see cref="ConfigurationExtensions.IsNoWebContent(IConfiguration)"/> is true.
+        /// </remarks>
         public string WebPath { get; }
 
         /// <summary>
