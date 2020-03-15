@@ -11,7 +11,6 @@ namespace MediaBrowser.Common.Net
     public class HttpResponseInfo : IDisposable
     {
 #pragma warning disable CS1591
-#pragma warning disable SA1600
         public HttpResponseInfo()
         {
         }

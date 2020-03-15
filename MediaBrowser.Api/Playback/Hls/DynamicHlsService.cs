@@ -1007,6 +1007,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 Logger.LogInformation("Current HLS implementation doesn't support non-keyframe breaks but one is requested, ignoring that request");
                 state.BaseRequest.BreakOnNonKeyFrames = false;
             }
+
             var inputModifier = EncodingHelper.GetInputModifier(state, encodingOptions);
 
             // If isEncoding is true we're actually starting ffmpeg

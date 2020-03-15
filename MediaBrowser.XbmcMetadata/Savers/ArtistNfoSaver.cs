@@ -12,8 +12,20 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
+    /// <summary>
+    /// Nfo saver for artsist.
+    /// </summary>
     public class ArtistNfoSaver : BaseNfoSaver
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArtistNfoSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="logger">The logger.</param>
         public ArtistNfoSaver(
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
@@ -46,7 +58,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var formatString = ConfigurationManager.GetNfoConfiguration().ReleaseDateFormat;
 
-                writer.WriteElementString("disbanded", artist.EndDate.Value.ToLocalTime().ToString(formatString));
+                writer.WriteElementString("disbanded", artist.EndDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
             }
 
             var albums = artist

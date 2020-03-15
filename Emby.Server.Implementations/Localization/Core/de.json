@@ -1,7 +1,7 @@
 {
     "Albums": "Alben",
     "AppDeviceValues": "Anw: {0}, Gerät: {1}",
-    "Application": "Programm",
+    "Application": "Anwendung",
     "Artists": "Interpreten",
     "AuthenticationSucceededWithUserName": "{0} hat sich erfolgreich angemeldet",
     "Books": "Bücher",
@@ -50,7 +50,7 @@
     "NotificationOptionAudioPlayback": "Audiowiedergabe gestartet",
     "NotificationOptionAudioPlaybackStopped": "Audiowiedergabe gestoppt",
     "NotificationOptionCameraImageUploaded": "Foto hochgeladen",
-    "NotificationOptionInstallationFailed": "Installationsfehler",
+    "NotificationOptionInstallationFailed": "Fehler bei der Installation",
     "NotificationOptionNewLibraryContent": "Neuer Inhalt hinzugefügt",
     "NotificationOptionPluginError": "Plugin-Fehler",
     "NotificationOptionPluginInstalled": "Plugin installiert",

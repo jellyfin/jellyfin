@@ -1,6 +1,5 @@
 #pragma warning disable CS1591
 #pragma warning disable SA1402
-#pragma warning disable SA1600
 #pragma warning disable SA1649
 
 using System;
