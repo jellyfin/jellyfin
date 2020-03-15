@@ -113,9 +113,10 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
-            // Create an instance of the application configuration to use for application startup
             await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
-            IConfiguration startupConfig = CreateAppConfiguration(appPaths);
+
+            // Create an instance of the application configuration to use for application startup
+            IConfiguration startupConfig = CreateAppConfiguration(options, appPaths);
 
             // Initialize logging framework
             InitializeLoggingFramework(startupConfig, appPaths);
@@ -189,7 +190,7 @@ namespace Jellyfin.Server
                 ServiceCollection serviceCollection = new ServiceCollection();
                 await appHost.InitAsync(serviceCollection, startupConfig).ConfigureAwait(false);
 
-                var webHost = CreateWebHostBuilder(appHost, serviceCollection, startupConfig, appPaths).Build();
+                var webHost = CreateWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
                 // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
@@ -238,6 +239,7 @@ namespace Jellyfin.Server
         private static IWebHostBuilder CreateWebHostBuilder(
             ApplicationHost appHost,
             IServiceCollection serviceCollection,
+            StartupOptions commandLineOpts,
             IConfiguration startupConfig,
             IApplicationPaths appPaths)
         {
@@ -279,7 +281,7 @@ namespace Jellyfin.Server
                         }
                     }
                 })
-                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(appPaths, startupConfig))
+                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
                 .UseSerilog()
                 .ConfigureServices(services =>
                 {
@@ -493,14 +495,18 @@ namespace Jellyfin.Server
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 
-        private static IConfiguration CreateAppConfiguration(IApplicationPaths appPaths)
+        private static IConfiguration CreateAppConfiguration(StartupOptions commandLineOpts, IApplicationPaths appPaths)
         {
             return new ConfigurationBuilder()
-                .ConfigureAppConfiguration(appPaths)
+                .ConfigureAppConfiguration(commandLineOpts, appPaths)
                 .Build();
         }
 
-        private static IConfigurationBuilder ConfigureAppConfiguration(this IConfigurationBuilder config, IApplicationPaths appPaths, IConfiguration? startupConfig = null)
+        private static IConfigurationBuilder ConfigureAppConfiguration(
+            this IConfigurationBuilder config,
+            StartupOptions commandLineOpts,
+            IApplicationPaths appPaths,
+            IConfiguration? startupConfig = null)
         {
             // Use the swagger API page as the default redirect path if not hosting the jellyfin-web content
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
@@ -514,7 +520,8 @@ namespace Jellyfin.Server
                 .AddInMemoryCollection(inMemoryDefaultConfig)
                 .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables("JELLYFIN_");
+                .AddEnvironmentVariables("JELLYFIN_")
+                .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
         }
 
         /// <summary>

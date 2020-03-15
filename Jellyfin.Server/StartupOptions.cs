@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.Globalization;
 using CommandLine;
 using Emby.Server.Implementations;
+using MediaBrowser.Controller.Extensions;
 
 namespace Jellyfin.Server
 {
@@ -72,5 +75,15 @@ namespace Jellyfin.Server
         /// <inheritdoc />
         [Option("restartargs", Required = false, HelpText = "Arguments for restart script.")]
         public string? RestartArgs { get; set; }
+
+        /// <summary>
+        /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
+        /// </summary>
+        /// <returns>The configuration dictionary.</returns>
+        public Dictionary<string, string> ConvertToConfig()
+            => new Dictionary<string, string>
+            {
+                { ConfigurationExtensions.NoWebContentKey, NoWebContent.ToString(CultureInfo.InvariantCulture) }
+            };
     }
 }
