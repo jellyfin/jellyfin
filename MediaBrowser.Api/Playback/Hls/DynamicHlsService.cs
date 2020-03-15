@@ -724,7 +724,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string subtitleGroup)
         {
-            var header = "#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.ToString(CultureInfo.InvariantCulture) + ",AVERAGE-BANDWIDTH=" + bitrate.ToString(CultureInfo.InvariantCulture);
+            builder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
+                .Append(bitrate.ToString(CultureInfo.InvariantCulture))
+                .Append(",AVERAGE-BANDWIDTH=")
+                .Append(bitrate.ToString(CultureInfo.InvariantCulture));
 
             // tvos wants resolution, codecs, framerate
             //if (state.TargetFramerate.HasValue)
@@ -734,10 +737,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
-                header += string.Format(",SUBTITLES=\"{0}\"", subtitleGroup);
+                builder.Append(",SUBTITLES=\"")
+                    .Append(subtitleGroup)
+                    .Append('"');
             }
 
-            builder.AppendLine(header);
+            builder.Append(Environment.NewLine);
             builder.AppendLine(url);
         }
 
