@@ -191,8 +191,9 @@ namespace Jellyfin.Server
 
                 var webHost = CreateWebHostBuilder(appHost, serviceCollection, startupConfig, appPaths).Build();
 
-                // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
+                // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
+                appHost.InitializeServices();
                 appHost.FindParts();
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 

@@ -613,7 +613,7 @@ namespace Emby.Server.Implementations
 
             DiscoverTypes();
 
-            await RegisterResources(serviceCollection, startupConfig).ConfigureAwait(false);
+            await RegisterServices(serviceCollection, startupConfig).ConfigureAwait(false);
 
             ContentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
             if (string.IsNullOrEmpty(ContentRoot))
@@ -650,9 +650,9 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Registers resources that classes will depend on
+        /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
-        protected async Task RegisterResources(IServiceCollection serviceCollection, IConfiguration startupConfig)
+        protected async Task RegisterServices(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
             serviceCollection.AddMemoryCache();
 
@@ -770,20 +770,8 @@ namespace Emby.Server.Implementations
             CertificateInfo = GetCertificateInfo(true);
             Certificate = GetCertificate(CertificateInfo);
 
-            HttpServer = new HttpListenerHost(
-                this,
-                LoggerFactory.CreateLogger<HttpListenerHost>(),
-                ServerConfigurationManager,
-                startupConfig,
-                NetworkManager,
-                JsonSerializer,
-                XmlSerializer,
-                CreateHttpListener())
-            {
-                GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading")
-            };
-
-            serviceCollection.AddSingleton(HttpServer);
+            serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
+            serviceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
             ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
             serviceCollection.AddSingleton(ImageProcessor);
@@ -889,6 +877,14 @@ namespace Emby.Server.Implementations
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             ItemRepository.Initialize(userDataRepo, UserManager);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
+        }
+
+        /// <summary>
+        /// Create services registered with the service container that need to be initialized at application startup.
+        /// </summary>
+        public void InitializeServices()
+        {
+            HttpServer = Resolve<IHttpServer>();
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
@@ -1195,8 +1191,6 @@ namespace Emby.Server.Implementations
                 return prefixes;
             });
         }
-
-        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(LoggerFactory.CreateLogger<WebSocketSharpListener>());
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {

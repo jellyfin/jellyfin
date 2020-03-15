@@ -18,6 +18,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
@@ -59,7 +60,8 @@ namespace Emby.Server.Implementations.HttpServer
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
-            IHttpListener socketListener)
+            IHttpListener socketListener,
+            ILocalizationManager localizationManager)
         {
             _appHost = applicationHost;
             _logger = logger;
@@ -76,6 +78,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             Instance = this;
             ResponseFilters = Array.Empty<Action<IRequest, HttpResponse, object>>();
+            GlobalResponse = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         }
 
         public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
