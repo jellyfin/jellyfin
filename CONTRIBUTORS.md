@@ -91,6 +91,7 @@
  - [samuel9554](https://github.com/samuel9554)
  - [scheidleon](https://github.com/scheidleon)
  - [sebPomme](https://github.com/sebPomme)
+ - [SegiH](https://github.com/SegiH)
  - [SenorSmartyPants](https://github.com/SenorSmartyPants)
  - [shemanaev](https://github.com/shemanaev)
  - [skaro13](https://github.com/skaro13)
