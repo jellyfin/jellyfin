@@ -7,12 +7,14 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.WebDashboard.Api
@@ -113,6 +115,7 @@ namespace MediaBrowser.WebDashboard.Api
 
         private readonly IFileSystem _fileSystem;
         private IResourceFileManager _resourceFileManager;
+        private readonly IConfiguration _appConfig;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
@@ -123,7 +126,8 @@ namespace MediaBrowser.WebDashboard.Api
             IServerConfigurationManager serverConfigurationManager,
             IFileSystem fileSystem,
             ILogger<DashboardService> logger,
-            IHttpResultFactory resultFactory)
+            IHttpResultFactory resultFactory,
+            IConfiguration appConfig)
         {
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
@@ -131,16 +135,22 @@ namespace MediaBrowser.WebDashboard.Api
             _logger = logger;
             _resultFactory = resultFactory;
             _resourceFileManager = resourceFileManager;
+            _appConfig = appConfig;
         }
 
         /// <summary>
-        /// Gets the path for the web interface.
+        /// Gets the path of the directory containing the static web interface content, or null if the server is not
+        /// hosting the static web content.
         /// </summary>
-        /// <value>The path for the web interface.</value>
         public string DashboardUIPath
         {
             get
             {
+                if (_appConfig.NoWebContent())
+                {
+                    return null;
+                }
+
                 if (!string.IsNullOrEmpty(_serverConfigurationManager.Configuration.DashboardSourcePath))
                 {
                     return _serverConfigurationManager.Configuration.DashboardSourcePath;
@@ -301,6 +311,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetDashboardResource request)
         {
+            if (_appConfig.NoWebContent() || DashboardUIPath == null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
             var path = request.ResourceName;
 
             var contentType = MimeTypes.GetMimeType(path);
@@ -372,6 +387,11 @@ namespace MediaBrowser.WebDashboard.Api
 
         public async Task<object> Get(GetDashboardPackage request)
         {
+            if (_appConfig.NoWebContent() || DashboardUIPath == null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
             var mode = request.Mode;
 
             var inputPath = string.IsNullOrWhiteSpace(mode) ?
