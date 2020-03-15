@@ -9,24 +9,13 @@ namespace Emby.Server.Implementations.Browser
     public static class BrowserLauncher
     {
         /// <summary>
-        /// Opens the dashboard page.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="appHost">The app host.</param>
-        private static void OpenDashboardPage(string page, IServerApplicationHost appHost)
-        {
-            var url = appHost.GetLocalApiUrl("localhost") + "/web/" + page;
-
-            OpenUrl(appHost, url);
-        }
-
-        /// <summary>
         /// Opens the web client.
         /// </summary>
         /// <param name="appHost">The app host.</param>
         public static void OpenWebApp(IServerApplicationHost appHost)
         {
-            OpenDashboardPage("index.html", appHost);
+            var url = appHost.GetLocalApiUrl("localhost") + "/web/index.html";
+            OpenUrl(appHost, url);
         }
 
         /// <summary>
