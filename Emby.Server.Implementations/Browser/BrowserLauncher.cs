@@ -1,21 +1,21 @@
 using System;
 using MediaBrowser.Controller;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Browser
 {
     /// <summary>
-    /// Class BrowserLauncher.
+    /// Assists in opening application URLs in an external browser.
     /// </summary>
     public static class BrowserLauncher
     {
         /// <summary>
-        /// Opens the web client.
+        /// Opens the home page of the web client.
         /// </summary>
         /// <param name="appHost">The app host.</param>
         public static void OpenWebApp(IServerApplicationHost appHost)
         {
-            var url = appHost.GetLocalApiUrl("localhost") + "/web/index.html";
-            OpenUrl(appHost, url);
+            TryOpenUrl(appHost, "/web/index.html");
         }
 
         /// <summary>
@@ -24,27 +24,25 @@ namespace Emby.Server.Implementations.Browser
         /// <param name="appHost">The app host.</param>
         public static void OpenSwaggerPage(IServerApplicationHost appHost)
         {
-            var url = appHost.GetLocalApiUrl("localhost") + "/swagger/index.html";
-            OpenUrl(appHost, url);
+            TryOpenUrl(appHost, "/swagger/index.html");
         }
 
         /// <summary>
-        /// Opens the URL.
+        /// Opens the specified URL in an external browser window. Any exceptions will be logged, but ignored.
         /// </summary>
-        /// <param name="appHost">The application host instance.</param>
+        /// <param name="appHost">The application host.</param>
         /// <param name="url">The URL.</param>
-        private static void OpenUrl(IServerApplicationHost appHost, string url)
+        private static void TryOpenUrl(IServerApplicationHost appHost, string url)
         {
             try
             {
-                appHost.LaunchUrl(url);
+                string baseUrl = appHost.GetLocalApiUrl("localhost");
+                appHost.LaunchUrl(baseUrl + url);
             }
-            catch (NotSupportedException)
+            catch (Exception ex)
             {
-
-            }
-            catch (Exception)
-            {
+                var logger = appHost.Resolve<ILogger>();
+                logger?.LogError(ex, "Failed to open browser window with URL {URL}", url);
             }
         }
     }
