@@ -16,6 +16,12 @@ namespace Jellyfin.Server
         public string? DataDir { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the server should not host static web content.
+        /// </summary>
+        [Option("nowebcontent", Required = false, HelpText = "Indicates that the web server should not host any static web content.")]
+        public bool NoWebContent { get; set; }
+
+        /// <summary>
         /// Gets or sets the path to the web directory.
         /// </summary>
         /// <value>The path to the web directory.</value>
