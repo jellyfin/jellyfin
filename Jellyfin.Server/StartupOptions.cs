@@ -21,7 +21,7 @@ namespace Jellyfin.Server
         /// <summary>
         /// Gets or sets a value indicating whether the server should not host static web content.
         /// </summary>
-        [Option("nowebcontent", Required = false, HelpText = "Indicates that the web server should not host any static web content.")]
+        [Option(ConfigurationExtensions.NoWebContentKey, Required = false, HelpText = "Indicates that the web server should not host any static web content.")]
         public bool NoWebContent { get; set; }
 
         /// <summary>
