@@ -28,7 +28,8 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (resourceStream != null && IsCoreHtml(virtualPath))
             {
-                resourceStream = await ModifyHtml(virtualPath, resourceStream, mode, appVersion, localizationCulture).ConfigureAwait(false);
+                bool isMainIndexPage = string.Equals(virtualPath, "index.html", StringComparison.OrdinalIgnoreCase);
+                resourceStream = await ModifyHtml(isMainIndexPage, resourceStream, mode, appVersion, localizationCulture).ConfigureAwait(false);
             }
 
             return resourceStream;
@@ -45,18 +46,19 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
-        /// Modifies the HTML by adding common meta tags, css and js.
+        /// Modifies the source HTML stream by adding common meta tags, css and js.
         /// </summary>
-        /// <returns>Task{Stream}.</returns>
-        public async Task<Stream> ModifyHtml(
-            string path,
+        /// <returns>
+        /// A task that represents the async operation to read and modify the input stream.
+        /// The task result contains a stream containing the modified HTML content.
+        /// </returns>
+        public static async Task<Stream> ModifyHtml(
+            bool isMainIndexPage,
             Stream sourceStream,
             string mode,
             string appVersion,
             string localizationCulture)
         {
-            var isMainIndexPage = string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase);
-
             string html;
             using (var reader = new StreamReader(sourceStream, Encoding.UTF8))
             {
