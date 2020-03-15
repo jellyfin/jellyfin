@@ -278,7 +278,7 @@ namespace Jellyfin.Server
                         }
                     }
                 })
-                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(appPaths))
+                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(appPaths, startupConfig))
                 .UseSerilog()
                 .ConfigureServices(services =>
                 {
@@ -499,11 +499,11 @@ namespace Jellyfin.Server
                 .Build();
         }
 
-        private static IConfigurationBuilder ConfigureAppConfiguration(this IConfigurationBuilder config, IApplicationPaths appPaths)
+        private static IConfigurationBuilder ConfigureAppConfiguration(this IConfigurationBuilder config, IApplicationPaths appPaths, IConfiguration startupConfig = null)
         {
             // Use the swagger API page as the default redirect path if not hosting the jellyfin-web content
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
-            if (string.IsNullOrEmpty(appPaths.WebPath))
+            if (startupConfig != null && startupConfig.NoWebContent())
             {
                 inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
             }
