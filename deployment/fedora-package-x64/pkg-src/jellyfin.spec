@@ -159,6 +159,8 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Sun Mar 15 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.5.1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.5.1
 * Fri Oct 11 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
 - New upstream version 10.5.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.5.0
 * Sat Aug 31 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
