@@ -63,3 +63,92 @@ Most of the translations can be found in the web client but we have several othe
 <a href="https://translate.jellyfin.org/engage/jellyfin/?utm_source=widget">
 <img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
 </a>
+
+## Development
+
+These instructions will help you get set up with a local development environment in order to contribute to this repository. Before you start, please be sure to completely read our [guidelines on development contributions](https://jellyfin.org/docs/general/contributing/development.html). Note that this project is supported on all major operating systems (Windows, Mac and Linux).
+
+### Prerequisites
+
+The following software prerequisites are required to be installed locally before the project can be built and executed.
+
+* [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download)
+* [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least version 2017) or [Visual Studio Code](https://code.visualstudio.com/Download)
+
+### Cloning the Repository
+
+After dependencies are installed you will need to clone a local copy of this repository. If you just want to run the server from source you can clone this repository directly, but if you are intending to contribute code changes to the project, you should [set up your own fork](https://jellyfin.org/docs/general/contributing/development.html#set-up-your-copy-of-the-repo) of the repository. The following example shows how you can clone the repository directly over HTTPS.
+
+```bash
+git clone https://github.com/jellyfin/jellyfin.git
+```
+
+### Installing the Web Client
+
+By default, the server is configured to host the static files required for the [web client](https://github.com/jellyfin/jellyfin-web) in addition to serving the backend API. before you can run the server, you will need to get a copy of the web client files since they are not included in this repository directly.
+
+Note that it is also possible to [host the web client separately](#hosting-the-web-client-separately) from the web server with some additional configuration, in which case you can skip this step.
+
+There are two options to get the files for the web client:
+
+1. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
+2. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located here: `C:\Program Files\Jellyfin\Server\jellyfin-web`
+
+Once you have a copy of the built web client files, you need to copy them into the build output directory of the web server project. For example: `<repository root>\Jellyfin.Server\bin\Debug\netcoreapp3.1\jellyfin-web`
+
+### Running The Server
+
+The following instructions will help you get the project up and running via the command line, or your preferred IDE.
+
+#### Running With Visual Studio
+
+To run the project with Visual Studio you can open the Solution (`.sln`) file and then press `F5` to run the server.
+
+#### Running With Visual Studio Code
+
+To run the project with Visual Studio Code you will first need to open the repository directory with Visual Studio Code using the `Open Folder...` option.
+
+Second, you need to [install the recommended extensions for the workspace](https://code.visualstudio.com/docs/editor/extension-gallery#_recommended-extensions). Note that extension recommendations are classified as either "Workspace Recommendations" or "Other Recommendations", but only the "Workspace Recommendations" are required.
+
+After the required extensions are installed, you can can run the server by pressing `F5`.
+
+#### Running From The Command Line
+
+To run the server from the command line you can use the `dotnet run` command. The example below shows how to do this if you have cloned the repository into a directory named `jellyfin` (the default directory name) and should work on all operating systems.
+
+```bash
+cd jellyfin         # Move into the repository directory
+cd Jellyfin.Server  # Move into the server startup project directory
+dotnet run          # Run the server startup project
+```
+
+A second option is to build the project and then run the resulting executable file directly. When running the executable directly you can easily add command line options. Add the `--help` flag to list details on all the supported command line options.
+
+1. Build the project
+
+    ```bash
+    dotnet build                # Build the project
+    cd bin/Debug/netcoreapp3.1  # Change into the build output directory
+    ```
+
+2. Execute the build output. On Linux, Mac, etc. use `./jellyfin` and on Windows use `jellyfin.exe`.
+
+### Running The Tests
+
+This repository also includes several unit test projects that are used to validate functionality as part of a CI process. These are several ways to run these tests:
+
+1. Run tests from the command line using `dotnet test`
+2. Run tests in Visual Studio using the [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer)
+3. Run individual tests in Visual Studio Code using the associated [CodeLens annotation](https://github.com/OmniSharp/omnisharp-vscode/wiki/How-to-run-and-debug-unit-tests)
+
+### Advanced Configuration
+
+The following sections describe some more advanced scenarios for running the server from source that build upon the standard instructions above.
+
+#### Hosting The Web Client Separately
+
+It is not necessary to host the frontend web client as part of the backend server. Hosting these two components separately may be useful for front-end developers who would prefer to host the client in a separate webpack development server for a tighter development loop (see the [jellyfin-web](https://github.com/jellyfin/jellyfin-web#getting-started) repo for instructions on how to do this).
+
+To instruct the server not to host the web content, there is a `nowebcontent` configuration flag that must be set. This can specified using the command line switch `--nowebcontent` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
+
+Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
