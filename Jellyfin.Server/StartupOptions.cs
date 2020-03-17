@@ -81,9 +81,15 @@ namespace Jellyfin.Server
         /// </summary>
         /// <returns>The configuration dictionary.</returns>
         public Dictionary<string, string> ConvertToConfig()
-            => new Dictionary<string, string>
+        {
+            var config = new Dictionary<string, string>();
+
+            if (NoWebContent)
             {
-                { ConfigurationExtensions.NoWebContentKey, NoWebContent.ToString(CultureInfo.InvariantCulture) }
-            };
+                config.Add(ConfigurationExtensions.NoWebContentKey, bool.TrueString);
+            }
+
+            return config;
+        }
     }
 }
