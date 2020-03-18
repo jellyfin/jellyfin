@@ -897,6 +897,18 @@ namespace Emby.Server.Implementations
                 .GetCommandLineArgs()
                 .Distinct();
 
+            // Get all 'JELLYFIN_' prefixed environment variables
+            var allEnvVars = Environment.GetEnvironmentVariables();
+            var jellyfinEnvVars = new Dictionary<object, object>();
+            foreach (var key in allEnvVars.Keys)
+            {
+                if (key.ToString().StartsWith("JELLYFIN_", StringComparison.OrdinalIgnoreCase))
+                {
+                    jellyfinEnvVars.Add(key, allEnvVars[key]);
+                }
+            }
+
+            logger.LogInformation("Environment Variables: {EnvVars}", jellyfinEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
             logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
