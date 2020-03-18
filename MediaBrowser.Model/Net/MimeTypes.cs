@@ -65,6 +65,7 @@ namespace MediaBrowser.Model.Net
             { ".m3u8", "application/x-mpegURL" },
             { ".mobi", "application/x-mobipocket-ebook" },
             { ".xml", "application/xml" },
+            { ".wasm", "application/wasm" },
 
             // Type image
             { ".jpg", "image/jpeg" },
