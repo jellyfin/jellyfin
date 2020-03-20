@@ -70,10 +70,9 @@ These instructions will help you get set up with a local development environment
 
 ### Prerequisites
 
-The following software prerequisites are required to be installed locally before the project can be built and executed.
+Before the the project can be built, you must first install the [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download) on your system.
 
-* [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download)
-* [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least version 2017) or [Visual Studio Code](https://code.visualstudio.com/Download)
+Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET Core development will work, but explicit instructions for [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2017) and [Visual Studio Code](https://code.visualstudio.com/Download) are included here.
 
 ### Cloning the Repository
 
