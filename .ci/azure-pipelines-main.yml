@@ -43,7 +43,7 @@ jobs:
         displayName: "Build Web Client"
         condition: and(succeeded(), or(contains(variables['System.PullRequest.TargetBranch'], 'release'), contains(variables['System.PullRequest.TargetBranch'], 'master'), contains(variables['Build.SourceBranch'], 'release'), contains(variables['Build.SourceBranch'], 'master')), eq(variables['BuildConfiguration'], 'Release'), in(variables['Build.Reason'], 'PullRequest', 'IndividualCI', 'BatchedCI', 'BuildCompletion'))
         inputs:
-          script: yarn install && yarn build
+          script: yarn install && yarn build:production
           workingDirectory: $(Agent.TempDirectory)/jellyfin-web
 
       - task: CopyFiles@2
