@@ -13,10 +13,8 @@ namespace Emby.Server.Implementations.EntryPoints
     /// </summary>
     public sealed class StartupWizard : IServerEntryPoint
     {
-        /// <summary>
-        /// The app host.
-        /// </summary>
         private readonly IServerApplicationHost _appHost;
+        private readonly IConfiguration _appConfig;
         private readonly IServerConfigurationManager _config;
 
         /// <summary>
@@ -24,9 +22,10 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="appHost">The application host.</param>
         /// <param name="config">The configuration manager.</param>
-        public StartupWizard(IServerApplicationHost appHost, IServerConfigurationManager config)
+        public StartupWizard(IServerApplicationHost appHost, IConfiguration appConfig, IServerConfigurationManager config)
         {
             _appHost = appHost;
+            _appConfig = appConfig;
             _config = config;
         }
 
@@ -38,7 +37,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return Task.CompletedTask;
             }
 
-            if (_appHost.Resolve<IConfiguration>().NoWebContent())
+            if (_appConfig.NoWebContent())
             {
                 BrowserLauncher.OpenSwaggerPage(_appHost);
             }
