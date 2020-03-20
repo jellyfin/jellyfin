@@ -13,7 +13,7 @@ namespace MediaBrowser.Controller.Providers
         where TItemType : BaseItem
     {
         /// <summary>
-        /// Fetches the asynchronous.
+        /// Fetches the metadata asynchronously.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>

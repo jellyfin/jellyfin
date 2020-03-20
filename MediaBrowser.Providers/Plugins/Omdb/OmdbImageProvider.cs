@@ -13,7 +13,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Providers.Omdb
+namespace MediaBrowser.Providers.Plugins.Omdb
 {
     public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
     {
