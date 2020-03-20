@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding
@@ -84,6 +83,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                     (i + 1 < parts.Length))
                 {
                     var rate = parts[i + 1];
+
+                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
+                    {
+                        framerate = val;
+                    }
+                }
+                else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var rate = part.Split(new[] { '=' }, 2)[^1];
 
                     if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
                     {

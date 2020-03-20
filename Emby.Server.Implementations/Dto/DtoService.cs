@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -1362,56 +1361,33 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
-            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToArray();
-
             ImageDimensions size;
 
             var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
 
             if (defaultAspectRatio > 0)
             {
-                if (supportedEnhancers.Length == 0)
-                {
-                    return defaultAspectRatio;
-                }
-
-                int dummyWidth = 200;
-                int dummyHeight = Convert.ToInt32(dummyWidth / defaultAspectRatio);
-                size = new ImageDimensions(dummyWidth, dummyHeight);
+                return defaultAspectRatio;
             }
-            else
+
+            if (!imageInfo.IsLocalFile)
             {
-                if (!imageInfo.IsLocalFile)
+                return null;
+            }
+
+            try
+            {
+                size = _imageProcessor.GetImageDimensions(item, imageInfo);
+
+                if (size.Width <= 0 || size.Height <= 0)
                 {
                     return null;
                 }
-
-                try
-                {
-                    size = _imageProcessor.GetImageDimensions(item, imageInfo);
-
-                    if (size.Width <= 0 || size.Height <= 0)
-                    {
-                        return null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to determine primary image aspect ratio for {0}", imageInfo.Path);
-                    return null;
-                }
             }
-
-            foreach (var enhancer in supportedEnhancers)
+            catch (Exception ex)
             {
-                try
-                {
-                    size = enhancer.GetEnhancedImageSize(item, ImageType.Primary, 0, size);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in image enhancer: {0}", enhancer.GetType().Name);
-                }
+                _logger.LogError(ex, "Failed to determine primary image aspect ratio for {0}", imageInfo.Path);
+                return null;
             }
 
             var width = size.Width;

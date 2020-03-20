@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.IO;
 using Microsoft.AspNetCore.Http;
 

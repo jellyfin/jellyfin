@@ -26,7 +26,13 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
 
-        public SubtitleScheduledTask(ILibraryManager libraryManager, IJsonSerializer json, IServerConfigurationManager config, ISubtitleManager subtitleManager, ILogger logger, IMediaSourceManager mediaSourceManager)
+        public SubtitleScheduledTask(
+            ILibraryManager libraryManager,
+            IJsonSerializer json,
+            IServerConfigurationManager config,
+            ISubtitleManager subtitleManager,
+            ILogger<SubtitleScheduledTask> logger,
+            IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _config = config;

@@ -1,8 +1,9 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Net
 {
@@ -63,6 +64,7 @@ namespace MediaBrowser.Model.Net
             { ".m3u8", "application/x-mpegURL" },
             { ".mobi", "application/x-mobipocket-ebook" },
             { ".xml", "application/xml" },
+            { ".wasm", "application/wasm" },
 
             // Type image
             { ".jpg", "image/jpeg" },

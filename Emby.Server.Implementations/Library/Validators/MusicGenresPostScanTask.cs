@@ -25,7 +25,10 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="itemRepo">The item repository.</param>
-        public MusicGenresPostScanTask(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
+        public MusicGenresPostScanTask(
+            ILibraryManager libraryManager,
+            ILogger<MusicGenresPostScanTask> logger,
+            IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;

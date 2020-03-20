@@ -1,11 +1,12 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
-    /// Interface IFileSystem
+    /// Interface IFileSystem.
     /// </summary>
     public interface IFileSystem
     {

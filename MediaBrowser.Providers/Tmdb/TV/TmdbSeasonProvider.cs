@@ -14,7 +14,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Movies;
 using MediaBrowser.Providers.Tmdb.Models.TV;
 using MediaBrowser.Providers.Tmdb.Movies;
 using Microsoft.Extensions.Logging;

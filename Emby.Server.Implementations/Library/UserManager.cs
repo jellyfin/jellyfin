@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -291,10 +290,11 @@ namespace Emby.Server.Implementations.Library
                     && authenticationProvider != null
                     && !(authenticationProvider is DefaultAuthenticationProvider))
                 {
-                    // We should trust the user that the authprovider says, not what was typed
+                    // Trust the username returned by the authentication provider
                     username = updatedUsername;
 
-                    // Search the database for the user again; the authprovider might have created it
+                    // Search the database for the user again
+                    // the authentication provider might have created it
                     user = Users
                         .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -667,7 +667,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Invalid username", nameof(newName));
             }
 
-            if (user.Name.Equals(newName, StringComparison.OrdinalIgnoreCase))
+            if (user.Name.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }

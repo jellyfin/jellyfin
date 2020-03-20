@@ -6,7 +6,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Globalization;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using static Jellyfin.Drawing.Skia.SkiaHelper;
@@ -18,27 +17,23 @@ namespace Jellyfin.Drawing.Skia
     /// </summary>
     public class SkiaEncoder : IImageEncoder
     {
-        private readonly ILogger _logger;
-        private readonly IApplicationPaths _appPaths;
-        private readonly ILocalizationManager _localizationManager;
-
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
+
+        private readonly ILogger _logger;
+        private readonly IApplicationPaths _appPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SkiaEncoder"/> class.
         /// </summary>
         /// <param name="logger">The application logger.</param>
         /// <param name="appPaths">The application paths.</param>
-        /// <param name="localizationManager">The application localization manager.</param>
         public SkiaEncoder(
             ILogger<SkiaEncoder> logger,
-            IApplicationPaths appPaths,
-            ILocalizationManager localizationManager)
+            IApplicationPaths appPaths)
         {
             _logger = logger;
             _appPaths = appPaths;
-            _localizationManager = localizationManager;
         }
 
         /// <inheritdoc/>
@@ -235,9 +230,12 @@ namespace Jellyfin.Drawing.Skia
 
         private bool RequiresSpecialCharacterHack(string path)
         {
-            if (_localizationManager.HasUnicodeCategory(path, UnicodeCategory.OtherLetter))
+            for (int i = 0; i < path.Length; i++)
             {
-                return true;
+                if (char.GetUnicodeCategory(path[i]) == UnicodeCategory.OtherLetter)
+                {
+                    return true;
+                }
             }
 
             if (HasDiacritics(path))

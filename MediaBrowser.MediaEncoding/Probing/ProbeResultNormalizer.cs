@@ -112,6 +112,9 @@ namespace MediaBrowser.MediaEncoding.Probing
                 info.Name = title;
             }
 
+            info.IndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_sort");
+            info.ParentIndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "season_number");
+            info.ShowName = FFProbeHelpers.GetDictionaryValue(tags, "show_name");
             info.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
 
             // Several different forms of retaildate

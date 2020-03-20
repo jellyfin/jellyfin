@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
@@ -13,7 +15,11 @@ namespace Emby.Dlna.ConnectionManager
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
-        public ConnectionManager(IDlnaManager dlna, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient)
+        public ConnectionManager(
+            IDlnaManager dlna,
+            IServerConfigurationManager config,
+            ILogger<ConnectionManager> logger,
+            IHttpClient httpClient)
             : base(logger, httpClient)
         {
             _dlna = dlna;

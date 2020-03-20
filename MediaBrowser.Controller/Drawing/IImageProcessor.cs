@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 
@@ -21,18 +20,10 @@ namespace MediaBrowser.Controller.Drawing
         IReadOnlyCollection<string> SupportedInputFormats { get; }
 
         /// <summary>
-        /// Gets the image enhancers.
-        /// </summary>
-        /// <value>The image enhancers.</value>
-        IReadOnlyCollection<IImageEnhancer> ImageEnhancers { get; set; }
-
-        /// <summary>
         /// Gets a value indicating whether [supports image collage creation].
         /// </summary>
         /// <value><c>true</c> if [supports image collage creation]; otherwise, <c>false</c>.</value>
         bool SupportsImageCollageCreation { get; }
-
-        IImageEncoder ImageEncoder { get; set; }
 
         /// <summary>
         /// Gets the dimensions of the image.
@@ -59,14 +50,6 @@ namespace MediaBrowser.Controller.Drawing
         ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem);
 
         /// <summary>
-        /// Gets the supported enhancers.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <returns>IEnumerable{IImageEnhancer}.</returns>
-        IEnumerable<IImageEnhancer> GetSupportedEnhancers(BaseItem item, ImageType imageType);
-
-        /// <summary>
         /// Gets the image cache tag.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -74,15 +57,6 @@ namespace MediaBrowser.Controller.Drawing
         /// <returns>Guid.</returns>
         string GetImageCacheTag(BaseItem item, ItemImageInfo image);
         string GetImageCacheTag(BaseItem item, ChapterInfo info);
-
-        /// <summary>
-        /// Gets the image cache tag.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="image">The image.</param>
-        /// <param name="imageEnhancers">The image enhancers.</param>
-        /// <returns>Guid.</returns>
-        string GetImageCacheTag(BaseItem item, ItemImageInfo image, IReadOnlyCollection<IImageEnhancer> imageEnhancers);
 
         /// <summary>
         /// Processes the image.
@@ -98,15 +72,6 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="options">The options.</param>
         /// <returns>Task.</returns>
         Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options);
-
-        /// <summary>
-        /// Gets the enhanced image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="imageType">Type of the image.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <returns>Task{System.String}.</returns>
-        Task<string> GetEnhancedImage(BaseItem item, ImageType imageType, int imageIndex);
 
         /// <summary>
         /// Gets the supported image output formats.

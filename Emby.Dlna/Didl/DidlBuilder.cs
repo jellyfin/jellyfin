@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -18,7 +20,6 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
@@ -632,7 +633,7 @@ namespace Emby.Dlna.Didl
             {
                 if (item.PremiereDate.HasValue)
                 {
-                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
+                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o", CultureInfo.InvariantCulture), NS_DC);
                 }
             }
 

@@ -1,7 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -66,8 +67,6 @@ namespace Emby.Dlna.Service
 
             Logger.LogDebug("Received control request {0}", requestInfo.LocalName);
 
-            var result = GetResult(requestInfo.LocalName, requestInfo.Headers);
-
             var settings = new XmlWriterSettings
             {
                 Encoding = Encoding.UTF8,
@@ -85,12 +84,9 @@ namespace Emby.Dlna.Service
 
                 writer.WriteStartElement("SOAP-ENV", "Body", NS_SOAPENV);
                 writer.WriteStartElement("u", requestInfo.LocalName + "Response", requestInfo.NamespaceURI);
-                foreach (var i in result)
-                {
-                    writer.WriteStartElement(i.Key);
-                    writer.WriteString(i.Value);
-                    writer.WriteFullEndElement();
-                }
+
+                WriteResult(requestInfo.LocalName, requestInfo.Headers, writer);
+
                 writer.WriteFullEndElement();
                 writer.WriteFullEndElement();
 
@@ -98,7 +94,7 @@ namespace Emby.Dlna.Service
                 writer.WriteEndDocument();
             }
 
-            var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=");
+            var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=", StringComparison.Ordinal);
 
             var controlResponse = new ControlResponse
             {
@@ -219,7 +215,7 @@ namespace Emby.Dlna.Service
             public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        protected abstract IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams);
+        protected abstract void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter);
 
         private void LogRequest(ControlRequest request)
         {

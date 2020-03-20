@@ -322,10 +322,10 @@ namespace MediaBrowser.Controller.Entities
                     ProviderManager.OnRefreshProgress(this, 5);
                 }
 
-                //build a dictionary of the current children we have now by Id so we can compare quickly and easily
+                // Build a dictionary of the current children we have now by Id so we can compare quickly and easily
                 var currentChildren = GetActualChildrenDictionary();
 
-                //create a list for our validated children
+                // Create a list for our validated children
                 var newItems = new List<BaseItem>();
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -391,7 +391,7 @@ namespace MediaBrowser.Controller.Entities
                 var folder = this;
                 innerProgress.RegisterAction(p =>
                 {
-                    double newPct = .80 * p + 10;
+                    double newPct = 0.80 * p + 10;
                     progress.Report(newPct);
                     ProviderManager.OnRefreshProgress(folder, newPct);
                 });
@@ -421,7 +421,7 @@ namespace MediaBrowser.Controller.Entities
                 var folder = this;
                 innerProgress.RegisterAction(p =>
                 {
-                    double newPct = .10 * p + 90;
+                    double newPct = 0.10 * p + 90;
                     progress.Report(newPct);
                     if (recursive)
                     {
@@ -807,11 +807,45 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
+        private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
+        {
+            var ids = query.ItemIds;
+            int size = items.Count;
+
+            // ids can potentially contain non-unique guids, but query result cannot,
+            // so we include only first occurrence of each guid
+            var positions = new Dictionary<Guid, int>(size);
+            int index = 0;
+            for (int i = 0; i < ids.Length; i++)
+            {
+                if (positions.TryAdd(ids[i], index))
+                {
+                    index++;
+                }
+            }
+
+            var newItems = new BaseItem[size];
+            for (int i = 0; i < size; i++)
+            {
+                var item = items[i];
+                newItems[positions[item.Id]] = item;
+            }
+
+            return newItems;
+        }
+
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
             if (query.ItemIds.Length > 0)
             {
-                return LibraryManager.GetItemsResult(query);
+                var result = LibraryManager.GetItemsResult(query);
+
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
+                {
+                    result.Items = SortItemsByRequest(query, result.Items);
+                }
+
+                return result;
             }
 
             return GetItemsInternal(query);
@@ -823,7 +857,14 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.ItemIds.Length > 0)
             {
-                return LibraryManager.GetItemList(query);
+                var result = LibraryManager.GetItemList(query);
+
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
+                {
+                    return SortItemsByRequest(query, result);
+                }
+
+                return result.ToArray();
             }
 
             return GetItemsInternal(query).Items;

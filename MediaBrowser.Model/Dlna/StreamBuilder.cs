@@ -1,10 +1,11 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,7 @@ namespace MediaBrowser.Model.Dlna
             _logger = logger;
         }
 
-        public StreamBuilder(ILogger logger)
+        public StreamBuilder(ILogger<StreamBuilder> logger)
             : this(new FullTranscoderSupport(), logger)
         {
         }

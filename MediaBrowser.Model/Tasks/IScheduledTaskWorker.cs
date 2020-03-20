@@ -4,7 +4,7 @@ using MediaBrowser.Model.Events;
 namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
-    /// Interface IScheduledTaskWorker
+    /// Interface IScheduledTaskWorker.
     /// </summary>
     public interface IScheduledTaskWorker : IDisposable
     {

@@ -3,7 +3,7 @@ using System;
 namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
-    /// Class TaskExecutionInfo
+    /// Class TaskExecutionInfo.
     /// </summary>
     public class TaskResult
     {

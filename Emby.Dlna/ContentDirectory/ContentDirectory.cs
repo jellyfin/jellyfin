@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
@@ -35,7 +37,7 @@ namespace Emby.Dlna.ContentDirectory
             ILibraryManager libraryManager,
             IServerConfigurationManager config,
             IUserManager userManager,
-            ILogger logger,
+            ILogger<ContentDirectory> logger,
             IHttpClient httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,

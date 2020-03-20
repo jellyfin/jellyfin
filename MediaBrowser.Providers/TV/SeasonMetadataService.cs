@@ -17,7 +17,7 @@ namespace MediaBrowser.Providers.TV
     {
         public SeasonMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<SeasonMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)
