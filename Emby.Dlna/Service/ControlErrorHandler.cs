@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Text;
@@ -6,11 +8,11 @@ using Emby.Dlna.Didl;
 
 namespace Emby.Dlna.Service
 {
-    public class ControlErrorHandler
+    public static class ControlErrorHandler
     {
         private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
 
-        public ControlResponse GetResponse(Exception ex)
+        public static ControlResponse GetResponse(Exception ex)
         {
             var settings = new XmlWriterSettings
             {

@@ -1,9 +1,9 @@
-; Shows a lot of debug information while compiling
-; This can be removed once stable.
-!verbose 4
-SetCompressor lzma
+!verbose 3
+SetCompressor /SOLID bzip2
 ShowInstDetails show
 ShowUninstDetails show
+Unicode True
+
 ;--------------------------------
 !define SF_USELECTED  0 ; used to check selected options status, rest are inherited from Sections.nsh
 
@@ -73,7 +73,7 @@ ShowUninstDetails show
 ; TODO: Replace with nice Jellyfin Icons
 !ifdef UXPATH
     !define MUI_ICON "${UXPATH}\branding\NSIS\modern-install.ico" ; Installer Icon
-    !define MUI_UNICON "${UXPATH}\branding\NSIS\modern-uninstall.ico" ; Uninstaller Icon
+    !define MUI_UNICON "${UXPATH}\branding\NSIS\modern-install.ico" ; Uninstaller Icon
 
     !define MUI_HEADERIMAGE
     !define MUI_HEADERIMAGE_BITMAP "${UXPATH}\branding\NSIS\installer-header.bmp"

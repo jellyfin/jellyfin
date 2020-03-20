@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (!string.IsNullOrWhiteSpace(userInfo))
             {
                 _logger.LogWarning("Found userInfo in url: {0} ... url: {1}", userInfo, url);
-                url = url.Replace(userInfo + '@', string.Empty);
+                url = url.Replace(userInfo + '@', string.Empty, StringComparison.Ordinal);
             }
 
             var request = new HttpRequestMessage(method, url);
@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (File.Exists(responseCachePath)
                 && _fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
             {
-                var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true);
+                var stream = new FileStream(responseCachePath, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
                 return new HttpResponseInfo
                 {
@@ -220,7 +220,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
-                StreamDefaults.DefaultFileStreamBufferSize,
+                IODefaults.FileStreamBufferSize,
                 true))
             {
                 await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);

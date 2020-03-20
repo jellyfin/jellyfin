@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <TargetFramework>netcoreapp3.1</TargetFramework>
+      <IsPackable>false</IsPackable>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+      <Nullable>enable</Nullable>
+      <RootNamespace>Jellyfin.Server.Implementations.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoFixture" Version="4.11.0" />
+      <PackageReference Include="AutoFixture.AutoMoq" Version="4.11.0" />
+      <PackageReference Include="Moq" Version="4.13.1" />
+      <PackageReference Include="xunit" Version="2.4.1" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+      <PackageReference Include="coverlet.collector" Version="1.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
+    </ItemGroup>
+
+</Project>

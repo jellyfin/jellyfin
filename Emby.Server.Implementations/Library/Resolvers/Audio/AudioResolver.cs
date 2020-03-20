@@ -72,7 +72,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         {
             // Return audio if the path is a file and has a matching extension
 
-            var libraryOptions = args.GetLibraryOptions();
             var collectionType = args.GetCollectionType();
 
             var isBooksCollectionType = string.Equals(collectionType, CollectionType.Books, StringComparison.OrdinalIgnoreCase);
@@ -91,7 +90,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 return FindAudio<AudioBook>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
             }
 
-            if (LibraryManager.IsAudioFile(args.Path, libraryOptions))
+            if (LibraryManager.IsAudioFile(args.Path))
             {
                 var extension = Path.GetExtension(args.Path);
 
@@ -104,7 +103,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 var isMixedCollectionType = string.IsNullOrEmpty(collectionType);
 
                 // For conflicting extensions, give priority to videos
-                if (isMixedCollectionType && LibraryManager.IsVideoFile(args.Path, libraryOptions))
+                if (isMixedCollectionType && LibraryManager.IsVideoFile(args.Path))
                 {
                     return null;
                 }
@@ -120,7 +119,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 {
                     item = new MediaBrowser.Controller.Entities.Audio.Audio();
                 }
-
                 else if (isBooksCollectionType)
                 {
                     item = new AudioBook();

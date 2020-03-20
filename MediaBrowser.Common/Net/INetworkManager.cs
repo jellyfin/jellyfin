@@ -11,20 +11,20 @@ namespace MediaBrowser.Common.Net
     {
         event EventHandler NetworkChanged;
 
+        Func<string[]> LocalSubnetsFn { get; set; }
+
         /// <summary>
-        /// Gets a random port number that is currently available
+        /// Gets a random port number that is currently available.
         /// </summary>
         /// <returns>System.Int32.</returns>
         int GetRandomUnusedTcpPort();
 
         int GetRandomUnusedUdpPort();
 
-        Func<string[]> LocalSubnetsFn { get; set; }
-
         /// <summary>
-        /// Returns MAC Address from first Network Card in Computer
+        /// Returns the MAC Address from first Network Card in Computer.
         /// </summary>
-        /// <returns>[string] MAC Address</returns>
+        /// <returns>The MAC Address.</returns>
         List<PhysicalAddress> GetMacAddresses();
 
         /// <summary>

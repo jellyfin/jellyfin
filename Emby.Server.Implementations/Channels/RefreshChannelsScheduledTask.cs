@@ -19,7 +19,11 @@ namespace Emby.Server.Implementations.Channels
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
-        public RefreshChannelsScheduledTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
+        public RefreshChannelsScheduledTask(
+            IChannelManager channelManager,
+            IUserManager userManager,
+            ILogger<RefreshChannelsScheduledTask> logger,
+            ILibraryManager libraryManager)
         {
             _channelManager = channelManager;
             _userManager = userManager;
@@ -27,18 +31,28 @@ namespace Emby.Server.Implementations.Channels
             _libraryManager = libraryManager;
         }
 
+        /// <inheritdoc />
         public string Name => "Refresh Channels";
 
+        /// <inheritdoc />
         public string Description => "Refreshes internet channel information.";
 
+        /// <inheritdoc />
         public string Category => "Internet Channels";
 
+        /// <inheritdoc />
         public bool IsHidden => ((ChannelManager)_channelManager).Channels.Length == 0;
 
+        /// <inheritdoc />
         public bool IsEnabled => true;
 
+        /// <inheritdoc />
         public bool IsLogged => true;
 
+        /// <inheritdoc />
+        public string Key => "RefreshInternetChannels";
+
+        /// <inheritdoc />
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var manager = (ChannelManager)_channelManager;
@@ -49,18 +63,18 @@ namespace Emby.Server.Implementations.Channels
                     .ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Creates the triggers that define when the task will run
-        /// </summary>
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] {
+            return new[]
+            {
 
                 // Every so often
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
+                new TaskTriggerInfo
+                {
+                    Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks
+                }
             };
         }
-
-        public string Key => "RefreshInternetChannels";
     }
 }

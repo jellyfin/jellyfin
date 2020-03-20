@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Years
     {
         public YearMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<YearMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

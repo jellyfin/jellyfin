@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
-    /// Class ScheduledTaskHelpers
+    /// Class ScheduledTaskHelpers.
     /// </summary>
     public static class ScheduledTaskHelpers
     {

@@ -123,7 +123,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException(nameof(mediaSourceId));
             }
 
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, null, true, false, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = mediaSources
                 .First(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
@@ -183,11 +183,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private async Task<Stream> GetSubtitleStream(string path, MediaProtocol protocol, bool requiresCharset, CancellationToken cancellationToken)
         {
-            if (requiresCharset)
+            using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
             {
-                using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
+                if (requiresCharset)
                 {
                     var result = CharsetDetector.DetectFromStream(stream).Detected;
+                    stream.Position = 0;
 
                     if (result != null)
                     {
@@ -199,9 +200,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         return new MemoryStream(Encoding.UTF8.GetBytes(text));
                     }
                 }
-            }
 
-            return File.OpenRead(path);
+                return stream;
+            }
         }
 
         private async Task<SubtitleInfo> GetReadableFile(
@@ -691,7 +692,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (!string.Equals(text, newText))
             {
-                using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
                 using (var writer = new StreamWriter(fileStream, encoding))
                 {
                     writer.Write(newText);
@@ -745,6 +746,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         Url = path,
                         CancellationToken = cancellationToken,
+
+                        // Needed for seeking
                         BufferContent = true
                     };
 

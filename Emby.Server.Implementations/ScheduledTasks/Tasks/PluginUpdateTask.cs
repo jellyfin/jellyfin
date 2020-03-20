@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private readonly IInstallationManager _installationManager;
 
-        public PluginUpdateTask(ILogger logger, IInstallationManager installationManager)
+        public PluginUpdateTask(ILogger<PluginUpdateTask> logger, IInstallationManager installationManager)
         {
             _logger = logger;
             _installationManager = installationManager;
@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <inheritdoc />
-        public string Name => "Check for plugin updates";
+        public string Name => "Update Plugins";
 
         /// <inheritdoc />
         public string Description => "Downloads and installs updates for plugins that are configured to update automatically.";

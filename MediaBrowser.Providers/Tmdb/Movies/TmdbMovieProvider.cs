@@ -19,7 +19,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Movies;
 using MediaBrowser.Providers.Tmdb.Models.Movies;
 using Microsoft.Extensions.Logging;
 
@@ -43,7 +42,15 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public TmdbMovieProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILogger logger, ILocalizationManager localization, ILibraryManager libraryManager, IApplicationHost appHost)
+        public TmdbMovieProvider(
+            IJsonSerializer jsonSerializer,
+            IHttpClient httpClient,
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILogger<TmdbMovieProvider> logger,
+            ILocalizationManager localization,
+            ILibraryManager libraryManager,
+            IApplicationHost appHost)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;

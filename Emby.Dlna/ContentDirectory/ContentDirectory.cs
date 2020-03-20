@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System;
+using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -34,7 +37,7 @@ namespace Emby.Dlna.ContentDirectory
             ILibraryManager libraryManager,
             IServerConfigurationManager config,
             IUserManager userManager,
-            ILogger logger,
+            ILogger<ContentDirectory> logger,
             IHttpClient httpClient,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
@@ -66,12 +69,14 @@ namespace Emby.Dlna.ContentDirectory
             }
         }
 
+        /// <inheritdoc />
         public string GetServiceXml()
         {
             return new ContentDirectoryXmlBuilder().GetXml();
         }
 
-        public ControlResponse ProcessControlRequest(ControlRequest request)
+        /// <inheritdoc />
+        public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
             var profile = _dlna.GetProfile(request.Headers) ??
                           _dlna.GetDefaultProfile();
@@ -96,7 +101,7 @@ namespace Emby.Dlna.ContentDirectory
                 _userViewManager,
                 _mediaEncoder,
                 _tvSeriesManager)
-                .ProcessControlRequest(request);
+                .ProcessControlRequestAsync(request);
         }
 
         private User GetUser(DeviceProfile profile)

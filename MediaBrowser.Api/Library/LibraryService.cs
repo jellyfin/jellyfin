@@ -16,17 +16,13 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
@@ -819,7 +815,7 @@ namespace MediaBrowser.Api.Library
             if (!string.IsNullOrWhiteSpace(filename))
             {
                 // Kestrel doesn't support non-ASCII characters in headers
-                if (Regex.IsMatch(filename, "[^[:ascii:]]"))
+                if (Regex.IsMatch(filename, @"[^\p{IsBasicLatin}]"))
                 {
                     // Manually encoding non-ASCII characters, following https://tools.ietf.org/html/rfc5987#section-3.2.2
                     headers[HeaderNames.ContentDisposition] = "attachment; filename*=UTF-8''" + WebUtility.UrlEncode(filename);

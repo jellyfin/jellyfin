@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Sync
 {
     public class SyncTarget
@@ -7,6 +9,7 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the identifier.
         /// </summary>

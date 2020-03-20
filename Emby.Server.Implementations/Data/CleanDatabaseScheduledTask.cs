@@ -14,7 +14,7 @@ namespace Emby.Server.Implementations.Data
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger logger)
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger<CleanDatabaseScheduledTask> logger)
         {
             _libraryManager = libraryManager;
             _logger = logger;

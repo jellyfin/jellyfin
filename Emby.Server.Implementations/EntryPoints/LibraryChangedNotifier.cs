@@ -15,7 +15,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -56,7 +55,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly IProviderManager _providerManager;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, IProviderManager providerManager)
+        public LibraryChangedNotifier(
+            ILibraryManager libraryManager,
+            ISessionManager sessionManager,
+            IUserManager userManager,
+            ILogger<LibraryChangedNotifier> logger,
+            IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;

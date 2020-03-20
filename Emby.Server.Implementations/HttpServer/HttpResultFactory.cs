@@ -439,7 +439,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Task<object> GetStaticFileResult(IRequest requestContext,
             string path,
-            FileShareMode fileShare = FileShareMode.Read)
+            FileShare fileShare = FileShare.Read)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -463,7 +463,7 @@ namespace Emby.Server.Implementations.HttpServer
                 throw new ArgumentException("Path can't be empty.", nameof(options));
             }
 
-            if (fileShare != FileShareMode.Read && fileShare != FileShareMode.ReadWrite)
+            if (fileShare != FileShare.Read && fileShare != FileShare.ReadWrite)
             {
                 throw new ArgumentException("FileShare must be either Read or ReadWrite");
             }
@@ -491,9 +491,9 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="path">The path.</param>
         /// <param name="fileShare">The file share.</param>
         /// <returns>Stream.</returns>
-        private Stream GetFileStream(string path, FileShareMode fileShare)
+        private Stream GetFileStream(string path, FileShare fileShare)
         {
-            return _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShare);
+            return new FileStream(path, FileMode.Open, FileAccess.Read, fileShare);
         }
 
         public Task<object> GetStaticResult(IRequest requestContext,

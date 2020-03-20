@@ -1,10 +1,11 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,7 @@ namespace MediaBrowser.Model.Dlna
             _logger = logger;
         }
 
-        public StreamBuilder(ILogger logger)
+        public StreamBuilder(ILogger<StreamBuilder> logger)
             : this(new FullTranscoderSupport(), logger)
         {
         }
@@ -35,7 +36,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (MediaSourceInfo i in options.MediaSources)
             {
                 if (string.IsNullOrEmpty(options.MediaSourceId) ||
-                    StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
+                    string.Equals(i.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase))
                 {
                     mediaSources.Add(i);
                 }
@@ -68,7 +69,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (MediaSourceInfo i in options.MediaSources)
             {
                 if (string.IsNullOrEmpty(options.MediaSourceId) ||
-                    StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
+                    string.Equals(i.Id, options.MediaSourceId, StringComparison.OrdinalIgnoreCase))
                 {
                     mediaSources.Add(i);
                 }
@@ -582,7 +583,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     foreach (var profile in subtitleProfiles)
                     {
-                        if (profile.Method == SubtitleDeliveryMethod.External && StringHelper.EqualsIgnoreCase(profile.Format, stream.Codec))
+                        if (profile.Method == SubtitleDeliveryMethod.External && string.Equals(profile.Format, stream.Codec, StringComparison.OrdinalIgnoreCase))
                         {
                             return stream.Index;
                         }
@@ -1198,7 +1199,7 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format) && StringHelper.EqualsIgnoreCase(profile.Format, subtitleStream.Codec))
+                    if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format) && string.Equals(profile.Format, subtitleStream.Codec, StringComparison.OrdinalIgnoreCase))
                     {
                         return profile;
                     }
@@ -1292,7 +1293,7 @@ namespace MediaBrowser.Model.Dlna
                 if ((profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format)) ||
                     (profile.Method == SubtitleDeliveryMethod.Hls && subtitleStream.IsTextSubtitleStream))
                 {
-                    bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
+                    bool requiresConversion = !string.Equals(subtitleStream.Codec, profile.Format, StringComparison.OrdinalIgnoreCase);
 
                     if (!requiresConversion)
                     {

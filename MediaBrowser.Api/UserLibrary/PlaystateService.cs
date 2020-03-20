@@ -103,10 +103,6 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "MediaSourceId", Description = "The id of the MediaSource", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string MediaSourceId { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="UpdateUserItemRating" /> is likes.
-        /// </summary>
-        /// <value><c>true</c> if likes; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "CanSeek", Description = "Indicates if the client can seek", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "POST")]
         public bool CanSeek { get; set; }
 

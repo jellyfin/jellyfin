@@ -130,7 +130,22 @@ namespace Emby.Server.Implementations.Library
             return streams;
         }
 
-        public async Task<List<MediaSourceInfo>> GetPlayackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
+        {
+            return _itemRepo.GetMediaAttachments(query);
+        }
+
+        /// <inheritdoc />
+        public List<MediaAttachment> GetMediaAttachments(Guid itemId)
+        {
+            return GetMediaAttachments(new MediaAttachmentQuery
+            {
+                ItemId = itemId
+            });
+        }
+
+        public async Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
 
@@ -292,7 +307,7 @@ namespace Emby.Server.Implementations.Library
                 return await GetLiveStream(liveStreamId, cancellationToken).ConfigureAwait(false);
             }
 
-            var sources = await GetPlayackMediaSources(item, null, false, enablePathSubstitution, cancellationToken).ConfigureAwait(false);
+            var sources = await GetPlaybackMediaSources(item, null, false, enablePathSubstitution, cancellationToken).ConfigureAwait(false);
 
             return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }

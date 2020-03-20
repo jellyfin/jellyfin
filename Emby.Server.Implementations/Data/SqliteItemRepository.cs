@@ -49,6 +49,21 @@ namespace Emby.Server.Implementations.Data
         private readonly TypeMapper _typeMapper;
         private readonly JsonSerializerOptions _jsonOptions;
 
+        static SqliteItemRepository()
+        {
+            var queryPrefixText = new StringBuilder();
+            queryPrefixText.Append("insert into mediaattachments (");
+            foreach (var column in _mediaAttachmentSaveColumns)
+            {
+                queryPrefixText.Append(column)
+                    .Append(',');
+            }
+
+            queryPrefixText.Length -= 1;
+            queryPrefixText.Append(") values ");
+            _mediaAttachmentInsertPrefix = queryPrefixText.ToString();
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
@@ -92,6 +107,8 @@ namespace Emby.Server.Implementations.Data
         {
             const string CreateMediaStreamsTableCommand
                     = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+            const string CreateMediaAttachmentsTableCommand
+                    = "create table if not exists mediaattachments (ItemId GUID, AttachmentIndex INT, Codec TEXT, CodecTag TEXT NULL, Comment TEXT NULL, Filename TEXT NULL, MIMEType TEXT NULL, PRIMARY KEY (ItemId, AttachmentIndex))";
 
             string[] queries =
             {
@@ -114,6 +131,7 @@ namespace Emby.Server.Implementations.Data
                 "create table if not exists " + ChaptersTableName + " (ItemId GUID, ChapterIndex INT NOT NULL, StartPositionTicks BIGINT NOT NULL, Name TEXT, ImagePath TEXT, PRIMARY KEY (ItemId, ChapterIndex))",
 
                 CreateMediaStreamsTableCommand,
+                CreateMediaAttachmentsTableCommand,
 
                 "pragma shrink_memory"
             };
@@ -420,6 +438,19 @@ namespace Emby.Server.Implementations.Data
             "ColorSpace",
             "ColorTransfer"
         };
+
+        private static readonly string[] _mediaAttachmentSaveColumns =
+        {
+            "ItemId",
+            "AttachmentIndex",
+            "Codec",
+            "CodecTag",
+            "Comment",
+            "Filename",
+            "MIMEType"
+        };
+
+        private static readonly string _mediaAttachmentInsertPrefix;
 
         private static string GetSaveItemCommandText()
         {
@@ -3490,20 +3521,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
-            if (includeTypes.Length == 1)
-            {
-                whereClauses.Add("type=@type");
-                if (statement != null)
-                {
-                    statement.TryBind("@type", includeTypes[0]);
-                }
-            }
-            else if (includeTypes.Length > 1)
-            {
-                var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'"));
-                whereClauses.Add($"type in ({inClause})");
-            }
-
             // Only specify excluded types if no included types are specified
             if (includeTypes.Length == 0)
             {
@@ -3521,6 +3538,19 @@ namespace Emby.Server.Implementations.Data
                     var inClause = string.Join(",", excludeTypes.Select(i => "'" + i + "'"));
                     whereClauses.Add($"type not in ({inClause})");
                 }
+            }
+            else if (includeTypes.Length == 1)
+            {
+                whereClauses.Add("type=@type");
+                if (statement != null)
+                {
+                    statement.TryBind("@type", includeTypes[0]);
+                }
+            }
+            else if (includeTypes.Length > 1)
+            {
+                var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'"));
+                whereClauses.Add($"type in ({inClause})");
             }
 
             if (query.ChannelIds.Length == 1)
@@ -4896,7 +4926,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         // Not crazy about having this all the way down here, but at least it's in one place
         readonly Dictionary<string, string[]> _types = GetTypeMapDictionary();
 
-        private IEnumerable<string> MapIncludeItemTypes(string value)
+        private string[] MapIncludeItemTypes(string value)
         {
             if (_types.TryGetValue(value, out string[] result))
             {
@@ -5580,32 +5610,32 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             return counts;
         }
 
-        private List<Tuple<int, string>> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
+        private List<(int, string)> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
         {
-            var list = new List<Tuple<int, string>>();
+            var list = new List<(int, string)>();
 
             if (item is IHasArtist hasArtist)
             {
-                list.AddRange(hasArtist.Artists.Select(i => new Tuple<int, string>(0, i)));
+                list.AddRange(hasArtist.Artists.Select(i => (0, i)));
             }
 
             if (item is IHasAlbumArtist hasAlbumArtist)
             {
-                list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => new Tuple<int, string>(1, i)));
+                list.AddRange(hasAlbumArtist.AlbumArtists.Select(i => (1, i)));
             }
 
-            list.AddRange(item.Genres.Select(i => new Tuple<int, string>(2, i)));
-            list.AddRange(item.Studios.Select(i => new Tuple<int, string>(3, i)));
-            list.AddRange(item.Tags.Select(i => new Tuple<int, string>(4, i)));
+            list.AddRange(item.Genres.Select(i => (2, i)));
+            list.AddRange(item.Studios.Select(i => (3, i)));
+            list.AddRange(item.Tags.Select(i => (4, i)));
 
             // keywords was 5
 
-            list.AddRange(inheritedTags.Select(i => new Tuple<int, string>(6, i)));
+            list.AddRange(inheritedTags.Select(i => (6, i)));
 
             return list;
         }
 
-        private void UpdateItemValues(Guid itemId, List<Tuple<int, string>> values, IDatabaseConnection db)
+        private void UpdateItemValues(Guid itemId, List<(int, string)> values, IDatabaseConnection db)
         {
             if (itemId.Equals(Guid.Empty))
             {
@@ -5627,7 +5657,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             InsertItemValues(guidBlob, values, db);
         }
 
-        private void InsertItemValues(byte[] idBlob, List<Tuple<int, string>> values, IDatabaseConnection db)
+        private void InsertItemValues(byte[] idBlob, List<(int, string)> values, IDatabaseConnection db)
         {
             var startIndex = 0;
             var limit = 100;
@@ -6132,6 +6162,176 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 item.localizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.localizedDefault = _localization.GetLocalizedString("Default");
                 item.localizedForced = _localization.GetLocalizedString("Forced");
+            }
+
+            return item;
+        }
+
+        public List<MediaAttachment> GetMediaAttachments(MediaAttachmentQuery query)
+        {
+            CheckDisposed();
+
+            if (query == null)
+            {
+                throw new ArgumentNullException(nameof(query));
+            }
+
+            var cmdText = "select "
+                        + string.Join(",", _mediaAttachmentSaveColumns)
+                        + " from mediaattachments where"
+                        + " ItemId=@ItemId";
+
+            if (query.Index.HasValue)
+            {
+                cmdText += " AND AttachmentIndex=@AttachmentIndex";
+            }
+
+            cmdText += " order by AttachmentIndex ASC";
+
+            var list = new List<MediaAttachment>();
+            using (var connection = GetConnection(true))
+            using (var statement = PrepareStatement(connection, cmdText))
+            {
+                statement.TryBind("@ItemId", query.ItemId.ToByteArray());
+
+                if (query.Index.HasValue)
+                {
+                    statement.TryBind("@AttachmentIndex", query.Index.Value);
+                }
+
+                foreach (var row in statement.ExecuteQuery())
+                {
+                    list.Add(GetMediaAttachment(row));
+                }
+            }
+
+            return list;
+        }
+
+        public void SaveMediaAttachments(
+            Guid id,
+            IReadOnlyList<MediaAttachment> attachments,
+            CancellationToken cancellationToken)
+        {
+            CheckDisposed();
+            if (id == Guid.Empty)
+            {
+                throw new ArgumentException(nameof(id));
+            }
+
+            if (attachments == null)
+            {
+                throw new ArgumentNullException(nameof(attachments));
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using (var connection = GetConnection())
+            {
+                connection.RunInTransaction(db =>
+                {
+                    var itemIdBlob = id.ToByteArray();
+
+                    db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
+
+                    InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
+
+                }, TransactionMode);
+            }
+        }
+
+        private void InsertMediaAttachments(
+            byte[] idBlob,
+            IReadOnlyList<MediaAttachment> attachments,
+            IDatabaseConnection db,
+            CancellationToken cancellationToken)
+        {
+            const int InsertAtOnce = 10;
+
+            for (var startIndex = 0; startIndex < attachments.Count; startIndex += InsertAtOnce)
+            {
+                var insertText = new StringBuilder(_mediaAttachmentInsertPrefix);
+
+                var endIndex = Math.Min(attachments.Count, startIndex + InsertAtOnce);
+
+                for (var i = startIndex; i < endIndex; i++)
+                {
+                    var index = i.ToString(CultureInfo.InvariantCulture);
+                    insertText.Append("(@ItemId, ");
+
+                    foreach (var column in _mediaAttachmentSaveColumns.Skip(1))
+                    {
+                        insertText.Append("@" + column + index + ",");
+                    }
+
+                    insertText.Length -= 1;
+
+                    insertText.Append("),");
+                }
+
+                insertText.Length--;
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                using (var statement = PrepareStatement(db, insertText.ToString()))
+                {
+                    statement.TryBind("@ItemId", idBlob);
+
+                    for (var i = startIndex; i < endIndex; i++)
+                    {
+                        var index = i.ToString(CultureInfo.InvariantCulture);
+
+                        var attachment = attachments[i];
+
+                        statement.TryBind("@AttachmentIndex" + index, attachment.Index);
+                        statement.TryBind("@Codec" + index, attachment.Codec);
+                        statement.TryBind("@CodecTag" + index, attachment.CodecTag);
+                        statement.TryBind("@Comment" + index, attachment.Comment);
+                        statement.TryBind("@FileName" + index, attachment.FileName);
+                        statement.TryBind("@MimeType" + index, attachment.MimeType);
+                    }
+
+                    statement.Reset();
+                    statement.MoveNext();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the attachment.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <returns>MediaAttachment</returns>
+        private MediaAttachment GetMediaAttachment(IReadOnlyList<IResultSetValue> reader)
+        {
+            var item = new MediaAttachment
+            {
+                Index = reader[1].ToInt()
+            };
+
+            if (reader[2].SQLiteType != SQLiteType.Null)
+            {
+                item.Codec = reader[2].ToString();
+            }
+
+            if (reader[2].SQLiteType != SQLiteType.Null)
+            {
+                item.CodecTag = reader[3].ToString();
+            }
+
+            if (reader[4].SQLiteType != SQLiteType.Null)
+            {
+                item.Comment = reader[4].ToString();
+            }
+
+            if (reader[6].SQLiteType != SQLiteType.Null)
+            {
+                item.FileName = reader[5].ToString();
+            }
+
+            if (reader[6].SQLiteType != SQLiteType.Null)
+            {
+                item.MimeType = reader[6].ToString();
             }
 
             return item;

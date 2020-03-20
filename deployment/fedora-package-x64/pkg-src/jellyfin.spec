@@ -26,13 +26,13 @@ Source16:       jellyfin-firewalld.xml
 %{?systemd_requires}
 BuildRequires:  systemd
 Requires(pre):  shadow-utils
-BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel
+BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel, git
 %if 0%{?fedora}
-BuildRequires:  nodejs-yarn
+BuildRequires:  nodejs-yarn, git
 %else
 # Requirements not packaged in main repos
-# From https://rpm.nodesource.com/pub_8.x/el/7/x86_64/
-BuildRequires:  nodejs >= 8 yarn
+# From https://rpm.nodesource.com/pub_10.x/el/7/x86_64/
+BuildRequires:  nodejs >= 10 yarn
 %endif
 Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
 # Requirements not packaged in main repos

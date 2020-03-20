@@ -316,11 +316,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
-                    var size = new ImageDimensions
-                    {
-                        Width = VideoStream.Width.Value,
-                        Height = VideoStream.Height.Value
-                    };
+                    var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
                     var newSize = DrawingUtils.Resize(size,
                         BaseRequest.Width ?? 0,
@@ -346,11 +342,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
                 {
-                    var size = new ImageDimensions
-                    {
-                        Width = VideoStream.Width.Value,
-                        Height = VideoStream.Height.Value
-                    };
+                    var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
 
                     var newSize = DrawingUtils.Resize(size,
                         BaseRequest.Width ?? 0,
@@ -665,7 +657,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public IProgress<double> Progress { get; set; }
-        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float framerate, double? percentComplete, long bytesTranscoded, int? bitRate)
+        public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             Progress.Report(percentComplete.Value);
         }

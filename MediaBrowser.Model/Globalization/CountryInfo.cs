@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Globalization
 {
     /// <summary>
-    /// Class CountryInfo
+    /// Class CountryInfo.
     /// </summary>
     public class CountryInfo
     {

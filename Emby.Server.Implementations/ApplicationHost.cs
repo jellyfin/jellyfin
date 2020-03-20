@@ -99,18 +99,15 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
+using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations
@@ -121,7 +118,6 @@ namespace Emby.Server.Implementations
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
         private SqliteUserRepository _userRepository;
-
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
 
         /// <summary>
@@ -169,10 +165,9 @@ namespace Emby.Server.Implementations
         public bool IsShuttingDown { get; private set; }
 
         /// <summary>
-        /// Gets or sets the logger.
+        /// Gets the logger.
         /// </summary>
-        /// <value>The logger.</value>
-        protected ILogger Logger { get; set; }
+        protected ILogger Logger { get; }
 
         private IPlugin[] _plugins;
 
@@ -180,17 +175,12 @@ namespace Emby.Server.Implementations
         /// Gets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
-        public IPlugin[] Plugins
-        {
-            get => _plugins;
-            protected set => _plugins = value;
-        }
+        public IReadOnlyList<IPlugin> Plugins => _plugins;
 
         /// <summary>
-        /// Gets or sets the logger factory.
+        /// Gets the logger factory.
         /// </summary>
-        /// <value>The logger factory.</value>
-        public ILoggerFactory LoggerFactory { get; protected set; }
+        protected ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         /// Gets or sets the application paths.
@@ -334,8 +324,6 @@ namespace Emby.Server.Implementations
 
         private IMediaSourceManager MediaSourceManager { get; set; }
 
-        private readonly IConfiguration _configuration;
-
         /// <summary>
         /// Gets the installation manager.
         /// </summary>
@@ -373,11 +361,8 @@ namespace Emby.Server.Implementations
             IStartupOptions options,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
-            INetworkManager networkManager,
-            IConfiguration configuration)
+            INetworkManager networkManager)
         {
-            _configuration = configuration;
-
             XmlSerializer = new MyXmlSerializer();
 
             NetworkManager = networkManager;
@@ -593,7 +578,8 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public async Task InitAsync(IServiceCollection serviceCollection)
+        /// <inheritdoc/>
+        public async Task InitAsync(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
@@ -605,7 +591,7 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            JsonSerializer = new JsonSerializer(FileSystemManager);
+            JsonSerializer = new JsonSerializer();
 
             if (Plugins != null)
             {
@@ -626,7 +612,7 @@ namespace Emby.Server.Implementations
 
             DiscoverTypes();
 
-            await RegisterResources(serviceCollection).ConfigureAwait(false);
+            await RegisterResources(serviceCollection, startupConfig).ConfigureAwait(false);
 
             ContentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
             if (string.IsNullOrEmpty(ContentRoot))
@@ -658,14 +644,14 @@ namespace Emby.Server.Implementations
             var response = context.Response;
             var localPath = context.Request.Path.ToString();
 
-            var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
+            var req = new WebSocketSharpRequest(request, response, request.Path, LoggerFactory.CreateLogger<WebSocketSharpRequest>());
             await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Registers resources that classes will depend on
         /// </summary>
-        protected async Task RegisterResources(IServiceCollection serviceCollection)
+        protected async Task RegisterResources(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
             serviceCollection.AddMemoryCache();
 
@@ -674,16 +660,13 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            serviceCollection.AddSingleton<IConfiguration>(_configuration);
-
             serviceCollection.AddSingleton(JsonSerializer);
 
-            serviceCollection.AddSingleton(LoggerFactory);
-            serviceCollection.AddLogging();
-            serviceCollection.AddSingleton(Logger);
+            // TODO: Support for injecting ILogger should be deprecated in favour of ILogger<T> and this removed
+            serviceCollection.AddSingleton<ILogger>(Logger);
 
             serviceCollection.AddSingleton(FileSystemManager);
-            serviceCollection.AddSingleton<TvDbClientManager>();
+            serviceCollection.AddSingleton<TvdbClientManager>();
 
             HttpClient = new HttpClientManager.HttpClientManager(
                 ApplicationPaths,
@@ -761,7 +744,18 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(UserManager);
 
-            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
+            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
+                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
+                ServerConfigurationManager,
+                FileSystemManager,
+                ProcessFactory,
+                LocalizationManager,
+                () => SubtitleEncoder,
+                startupConfig,
+                StartupOptions.FFmpegPath);
+            serviceCollection.AddSingleton(MediaEncoder);
+
+            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager, MediaEncoder);
             serviceCollection.AddSingleton(LibraryManager);
 
             var musicManager = new MusicManager(LibraryManager);
@@ -779,7 +773,7 @@ namespace Emby.Server.Implementations
                 this,
                 LoggerFactory.CreateLogger<HttpListenerHost>(),
                 ServerConfigurationManager,
-                _configuration,
+                startupConfig,
                 NetworkManager,
                 JsonSerializer,
                 XmlSerializer,
@@ -814,7 +808,18 @@ namespace Emby.Server.Implementations
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
-            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, this, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            SessionManager = new SessionManager(
+                LoggerFactory.CreateLogger<SessionManager>(),
+                UserDataManager,
+                LibraryManager,
+                UserManager,
+                musicManager,
+                DtoService,
+                ImageProcessor,
+                this,
+                AuthenticationRepository,
+                DeviceManager,
+                MediaSourceManager);
             serviceCollection.AddSingleton(SessionManager);
 
             serviceCollection.AddSingleton<IDlnaManager>(
@@ -831,24 +836,16 @@ namespace Emby.Server.Implementations
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(UserViewManager);
 
-            NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
+            NotificationManager = new NotificationManager(
+                LoggerFactory.CreateLogger<NotificationManager>(),
+                UserManager,
+                ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
             ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
-
-            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
-                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
-                ServerConfigurationManager,
-                FileSystemManager,
-                ProcessFactory,
-                LocalizationManager,
-                () => SubtitleEncoder,
-                _configuration,
-                StartupOptions.FFmpegPath);
-            serviceCollection.AddSingleton(MediaEncoder);
 
             EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
@@ -878,6 +875,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
             serviceCollection.AddSingleton<EncodingHelper>();
 
+            serviceCollection.AddSingleton(typeof(IAttachmentExtractor), typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
+
             _displayPreferencesRepository.Initialize();
 
             var userDataRepo = new SqliteUserDataRepository(LoggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
@@ -898,6 +897,18 @@ namespace Emby.Server.Implementations
                 .GetCommandLineArgs()
                 .Distinct();
 
+            // Get all 'JELLYFIN_' prefixed environment variables
+            var allEnvVars = Environment.GetEnvironmentVariables();
+            var jellyfinEnvVars = new Dictionary<object, object>();
+            foreach (var key in allEnvVars.Keys)
+            {
+                if (key.ToString().StartsWith("JELLYFIN_", StringComparison.OrdinalIgnoreCase))
+                {
+                    jellyfinEnvVars.Add(key, allEnvVars[key]);
+                }
+            }
+
+            logger.LogInformation("Environment Variables: {EnvVars}", jellyfinEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
             logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
@@ -1011,7 +1022,7 @@ namespace Emby.Server.Implementations
         {
             string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
             var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
-                        .Select(x => Assembly.LoadFrom(x))
+                        .Select(Assembly.LoadFrom)
                         .SelectMany(x => x.ExportedTypes)
                         .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
                         .ToArray();
@@ -1057,7 +1068,7 @@ namespace Emby.Server.Implementations
             }
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
-            Plugins = GetExports<IPlugin>()
+            _plugins = GetExports<IPlugin>()
                         .Select(LoadPlugin)
                         .Where(i => i != null)
                         .ToArray();
@@ -1077,8 +1088,6 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataProvider>(),
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>());
-
-            ImageProcessor.ImageEnhancers = GetExports<IImageEnhancer>();
 
             LiveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
@@ -1198,7 +1207,7 @@ namespace Emby.Server.Implementations
             });
         }
 
-        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(Logger);
+        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(LoggerFactory.CreateLogger<WebSocketSharpListener>());
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {
@@ -1478,7 +1487,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="address">The IPv6 address.</param>
         /// <returns>The IPv6 address without the scope id.</returns>
-        private string RemoveScopeId(string address)
+        private ReadOnlySpan<char> RemoveScopeId(ReadOnlySpan<char> address)
         {
             var index = address.IndexOf('%');
             if (index == -1)
@@ -1486,33 +1495,50 @@ namespace Emby.Server.Implementations
                 return address;
             }
 
-            return address.Substring(0, index);
+            return address.Slice(0, index);
         }
 
+        /// <inheritdoc />
         public string GetLocalApiUrl(IPAddress ipAddress)
         {
             if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 var str = RemoveScopeId(ipAddress.ToString());
+                Span<char> span = new char[str.Length + 2];
+                span[0] = '[';
+                str.CopyTo(span.Slice(1));
+                span[^1] = ']';
 
-                return GetLocalApiUrl("[" + str + "]");
+                return GetLocalApiUrl(span);
             }
 
             return GetLocalApiUrl(ipAddress.ToString());
         }
 
-        public string GetLocalApiUrl(string host)
+        /// <inheritdoc />
+        public string GetLocalApiUrl(ReadOnlySpan<char> host)
         {
+            var url = new StringBuilder(64);
             if (EnableHttps)
             {
-                return string.Format("https://{0}:{1}",
-                    host,
-                    HttpsPort.ToString(CultureInfo.InvariantCulture));
+                url.Append("https://");
+            }
+            else
+            {
+                url.Append("http://");
             }
 
-            return string.Format("http://{0}:{1}",
-                    host,
-                    HttpPort.ToString(CultureInfo.InvariantCulture));
+            url.Append(host)
+                .Append(':')
+                .Append(HttpPort);
+
+            string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
+            if (baseUrl.Length != 0)
+            {
+                url.Append(baseUrl);
+            }
+
+            return url.ToString();
         }
 
         public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
@@ -1689,32 +1715,9 @@ namespace Emby.Server.Implementations
         /// <param name="plugin">The plugin.</param>
         public void RemovePlugin(IPlugin plugin)
         {
-            var list = Plugins.ToList();
+            var list = _plugins.ToList();
             list.Remove(plugin);
-            Plugins = list.ToArray();
-        }
-
-        /// <summary>
-        /// This returns localhost in the case of no external dns, and the hostname if the
-        /// dns is prefixed with a valid Uri prefix.
-        /// </summary>
-        /// <param name="externalDns">The external dns prefix to get the hostname of.</param>
-        /// <returns>The hostname in <paramref name="externalDns"/>.</returns>
-        private static string GetHostnameFromExternalDns(string externalDns)
-        {
-            if (string.IsNullOrEmpty(externalDns))
-            {
-                return "localhost";
-            }
-
-            try
-            {
-                return new Uri(externalDns).Host;
-            }
-            catch
-            {
-                return externalDns;
-            }
+            _plugins = list.ToArray();
         }
 
         public virtual void LaunchUrl(string url)

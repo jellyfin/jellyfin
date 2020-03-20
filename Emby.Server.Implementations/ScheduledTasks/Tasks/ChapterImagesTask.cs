@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -89,7 +89,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 SourceTypes = new SourceType[] { SourceType.Library },
                 HasChapterImages = false,
                 IsVirtualItem = false
-
             })
                 .OfType<Video>()
                 .ToList();
@@ -160,7 +159,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
-        public string Name => "Chapter image extraction";
+        public string Name => "Extract Chapter Images";
 
         public string Description => "Creates thumbnails for videos that have chapters.";
 

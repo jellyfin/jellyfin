@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -385,7 +387,7 @@ namespace Emby.Dlna
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 
-                        using (var fileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                         {
                             await stream.CopyToAsync(fileStream);
                         }

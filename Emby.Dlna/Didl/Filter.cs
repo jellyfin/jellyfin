@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Model.Extensions;
 
@@ -16,7 +18,7 @@ namespace Emby.Dlna.Didl
 
         public Filter(string filter)
         {
-            _all = StringHelper.EqualsIgnoreCase(filter, "*");
+            _all = string.Equals(filter, "*", StringComparison.OrdinalIgnoreCase);
 
             _fields = (filter ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }

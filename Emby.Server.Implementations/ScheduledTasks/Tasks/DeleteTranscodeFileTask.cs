@@ -23,7 +23,10 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteTranscodeFileTask" /> class.
         /// </summary>
-        public DeleteTranscodeFileTask(ILogger logger, IFileSystem fileSystem, IConfigurationManager configurationManager)
+        public DeleteTranscodeFileTask(
+            ILogger<DeleteTranscodeFileTask> logger,
+            IFileSystem fileSystem,
+            IConfigurationManager configurationManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -125,9 +128,9 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
-        public string Name => "Transcode file cleanup";
+        public string Name => "Clean Transcode Directory";
 
-        public string Description => "Deletes transcode files more than 24 hours old.";
+        public string Description => "Deletes transcode files more than one day old.";
 
         public string Category => "Maintenance";
 
