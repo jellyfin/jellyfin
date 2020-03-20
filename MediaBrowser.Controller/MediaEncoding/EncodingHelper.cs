@@ -471,20 +471,23 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions);
                 var outputVideoCodec = GetVideoEncoder(state, encodingOptions);
+				
+                var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                if (encodingOptions.EnableHardwareEncoding && outputVideoCodec.Contains("qsv", StringComparison.OrdinalIgnoreCase))
+                if (!hasTextSubs)
                 {
-                    if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
+                    if (encodingOptions.EnableHardwareEncoding && outputVideoCodec.Contains("qsv", StringComparison.OrdinalIgnoreCase))
                     {
-                        arg.Append("-hwaccel qsv ");
-                    }
-                    else
-                    {
-                        arg.Append("-init_hw_device qsv=hw -filter_hw_device hw ");
+                        if (!string.IsNullOrEmpty(videoDecoder) && videoDecoder.Contains("qsv", StringComparison.OrdinalIgnoreCase))
+                        {
+                            arg.Append("-hwaccel qsv ");
+                        }
+                        else
+                        {
+                            arg.Append("-init_hw_device qsv=hw -filter_hw_device hw ");
+                        }
                     }
                 }
-
-                arg.Append(videoDecoder + " ");
             }
 
             arg.Append("-i ")
@@ -1749,7 +1752,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             return (Convert.ToInt32(outputWidth), Convert.ToInt32(outputHeight));
         }
 
-        public List<string> GetScalingFilters(int? videoWidth,
+        public List<string> GetScalingFilters(EncodingJobInfo state,
+            int? videoWidth,
             int? videoHeight,
             Video3DFormat? threedFormat,
             string videoDecoder,
@@ -1768,7 +1772,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 requestedMaxWidth,
                 requestedMaxHeight);
 
-            if ((string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) || string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
+
+			if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) || ((string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) && !hasTextSubs))
                 && width.HasValue
                 && height.HasValue)
             {
@@ -2017,6 +2023,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var inputHeight = videoStream?.Height;
             var threeDFormat = state.MediaSource.Video3DFormat;
 
+            var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
+
             // When the input may or may not be hardware VAAPI decodable
             if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase) && options.EnableHardwareEncoding)
             {
@@ -2027,8 +2035,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             // When the input may or may not be hardware QSV decodable            
             else if (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && options.EnableHardwareEncoding)
             {
-                filters.Add("format=nv12|qsv");
-                filters.Add("hwupload=extra_hw_frames=64");
+                if (!hasTextSubs)
+                {
+                    filters.Add("format=nv12|qsv");
+                    filters.Add("hwupload=extra_hw_frames=64");
+                }
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
@@ -2088,7 +2099,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Add scaling filter: scale_*=format=nv12 or scale_*=w=*:h=*:format=nv12 or scale=expr
-            filters.AddRange(GetScalingFilters(inputWidth, inputHeight, threeDFormat, videoDecoder, outputVideoCodec, request.Width, request.Height, request.MaxWidth, request.MaxHeight));
+            filters.AddRange(GetScalingFilters(state, inputWidth, inputHeight, threeDFormat, videoDecoder, outputVideoCodec, request.Width, request.Height, request.MaxWidth, request.MaxHeight));
 
             // Add parameters to use VAAPI with burn-in text subttiles (GH issue #642)
             if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase) && options.EnableHardwareEncoding)
@@ -2607,6 +2618,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                         case "h264":
                             if (_mediaEncoder.SupportsDecoder("h264_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
                             {
+                                // cuvid decoder does not support 10-bit input
+                                if ((videoStream.BitDepth ?? 8) > 8)
+                                {
+                                    encodingOptions.HardwareDecodingCodecs = Array.Empty<string>();
+                                    return null;
+                                }
                                 return "-c:v h264_cuvid ";
                             }
                             break;
