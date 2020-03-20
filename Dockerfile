@@ -6,8 +6,7 @@ ARG JELLYFIN_WEB_VERSION=master
 RUN apk add curl git \
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
- && yarn install \
- && yarn build:production \
+ && yarn install
  && mv dist /dist
 
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster as builder
