@@ -136,15 +136,18 @@ namespace MediaBrowser.WebDashboard.Api
             _fileSystem = fileSystem;
             _resultFactory = resultFactory;
 
-            // Validate web content path
-            string webContentPath = DashboardUIPath;
-            bool webContentPathValid = appConfig.NoWebContent() || (Directory.Exists(webContentPath) && Directory.GetFiles(webContentPath).Any());
-            if (!webContentPathValid)
+            // If hosting the web client, validate the client content path
+            if (appConfig.HostWebClient())
             {
-                throw new InvalidOperationException(
-                    "The server is expected to host web content, but the provided content directory is either " +
-                    $"invalid or empty: {webContentPath}. If you do not want to host web content with the server, " +
-                    $"you may set the '{Controller.Extensions.ConfigurationExtensions.NoWebContentKey}' flag.");
+                string webContentPath = DashboardUIPath;
+                if (!Directory.Exists(webContentPath) || !Directory.GetFiles(webContentPath).Any())
+                {
+                    throw new InvalidOperationException(
+                        "The server is expected to host the web client, but the provided content directory is either " +
+                        $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
+                        "server, you may set the '--nowebclient' command line flag, or set" +
+                        $"'{Controller.Extensions.ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
+                }
             }
         }
 
@@ -156,13 +159,13 @@ namespace MediaBrowser.WebDashboard.Api
 
         /// <summary>
         /// Gets the path of the directory containing the static web interface content, or null if the server is not
-        /// hosting the static web content.
+        /// hosting the web client.
         /// </summary>
         public string DashboardUIPath
         {
             get
             {
-                if (_appConfig.NoWebContent())
+                if (!_appConfig.HostWebClient())
                 {
                     return null;
                 }
@@ -329,7 +332,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetDashboardResource request)
         {
-            if (_appConfig.NoWebContent() || DashboardUIPath == null)
+            if (!_appConfig.HostWebClient() || DashboardUIPath == null)
             {
                 throw new ResourceNotFoundException();
             }
@@ -405,7 +408,7 @@ namespace MediaBrowser.WebDashboard.Api
 
         public async Task<object> Get(GetDashboardPackage request)
         {
-            if (_appConfig.NoWebContent() || DashboardUIPath == null)
+            if (!_appConfig.HostWebClient() || DashboardUIPath == null)
             {
                 throw new ResourceNotFoundException();
             }

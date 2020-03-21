@@ -9,9 +9,9 @@ namespace MediaBrowser.Controller.Extensions
     public static class ConfigurationExtensions
     {
         /// <summary>
-        /// The key for a setting that indicates whether the application should host static web content.
+        /// The key for a setting that indicates whether the application should host web client content.
         /// </summary>
-        public const string NoWebContentKey = "nowebcontent";
+        public const string HostWebClientKey = "hostwebclient";
 
         /// <summary>
         /// The key for the FFmpeg probe size option.
@@ -34,8 +34,8 @@ namespace MediaBrowser.Controller.Extensions
         /// <param name="configuration">The configuration to retrieve the value from.</param>
         /// <returns>The parsed config value.</returns>
         /// <exception cref="FormatException">The config value is not a valid bool string. See <see cref="bool.Parse(string)"/>.</exception>
-        public static bool NoWebContent(this IConfiguration configuration)
-            => configuration.GetValue<bool>(NoWebContentKey);
+        public static bool HostWebClient(this IConfiguration configuration)
+            => configuration.GetValue<bool>(HostWebClientKey);
 
         /// <summary>
         /// Gets the FFmpeg probe size from the <see cref="IConfiguration" />.

@@ -19,10 +19,10 @@ namespace Jellyfin.Server
         public string? DataDir { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the server should not host static web content.
+        /// Gets or sets a value indicating whether the server should not host the web client.
         /// </summary>
-        [Option(ConfigurationExtensions.NoWebContentKey, Required = false, HelpText = "Indicates that the web server should not host any static web content.")]
-        public bool NoWebContent { get; set; }
+        [Option("nowebclient", Required = false, HelpText = "Indicates that the web server should not host the web client.")]
+        public bool NoWebClient { get; set; }
 
         /// <summary>
         /// Gets or sets the path to the web directory.
@@ -84,9 +84,9 @@ namespace Jellyfin.Server
         {
             var config = new Dictionary<string, string>();
 
-            if (NoWebContent)
+            if (NoWebClient)
             {
-                config.Add(ConfigurationExtensions.NoWebContentKey, bool.TrueString);
+                config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
             }
 
             return config;

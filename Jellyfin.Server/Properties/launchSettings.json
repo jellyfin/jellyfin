@@ -3,9 +3,9 @@
     "Jellyfin.Server": {
       "commandName": "Project"
     },
-    "Jellyfin.Server (nowebcontent)": {
+    "Jellyfin.Server (nowebclient)": {
       "commandName": "Project",
-      "commandLineArgs": "--nowebcontent"
+      "commandLineArgs": "--nowebclient"
     }
   }
 }

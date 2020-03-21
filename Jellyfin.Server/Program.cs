@@ -490,9 +490,9 @@ namespace Jellyfin.Server
             IApplicationPaths appPaths,
             IConfiguration? startupConfig = null)
         {
-            // Use the swagger API page as the default redirect path if not hosting the jellyfin-web content
+            // Use the swagger API page as the default redirect path if not hosting the web client
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
-            if (startupConfig != null && startupConfig.NoWebContent())
+            if (startupConfig != null && !startupConfig.HostWebClient())
             {
                 inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
             }

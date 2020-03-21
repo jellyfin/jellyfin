@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return Task.CompletedTask;
             }
 
-            if (_appConfig.NoWebContent())
+            if (!_appConfig.HostWebClient())
             {
                 BrowserLauncher.OpenSwaggerPage(_appHost);
             }
