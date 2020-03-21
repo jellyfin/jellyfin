@@ -60,7 +60,8 @@ namespace Emby.Server.Implementations.HttpServer
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
             IHttpListener socketListener,
-            ILocalizationManager localizationManager)
+            ILocalizationManager localizationManager,
+            ServiceController serviceController)
         {
             _appHost = applicationHost;
             _logger = logger;
@@ -71,6 +72,8 @@ namespace Emby.Server.Implementations.HttpServer
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
             _socketListener = socketListener;
+            ServiceController = serviceController;
+
             _socketListener.WebSocketConnected = OnWebSocketConnected;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
@@ -90,7 +93,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        public ServiceController ServiceController { get; private set; }
+        public ServiceController ServiceController { get; }
 
         public object CreateInstance(Type type)
         {
@@ -601,7 +604,6 @@ namespace Emby.Server.Implementations.HttpServer
         {
             _webSocketListeners = listeners.ToArray();
             UrlPrefixes = urlPrefixes.ToArray();
-            ServiceController = new ServiceController();
 
             ServiceController.Init(this, serviceTypes);
 
