@@ -594,17 +594,16 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the rest handlers.
         /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="listeners"></param>
-        /// <param name="urlPrefixes"></param>
-        public void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
+        /// <param name="serviceTypes">The service types to register with the <see cref="ServiceController"/>.</param>
+        /// <param name="listeners">The web socket listeners.</param>
+        /// <param name="urlPrefixes">The URL prefixes. See <see cref="UrlPrefixes"/>.</param>
+        public void Init(IEnumerable<Type> serviceTypes, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
         {
             _webSocketListeners = listeners.ToArray();
             UrlPrefixes = urlPrefixes.ToArray();
             ServiceController = new ServiceController();
 
-            var types = services.Select(r => r.GetType());
-            ServiceController.Init(this, types);
+            ServiceController.Init(this, serviceTypes);
 
             ResponseFilters = new Action<IRequest, HttpResponse, object>[]
             {
