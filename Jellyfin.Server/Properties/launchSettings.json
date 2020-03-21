@@ -1,10 +1,16 @@
 {
   "profiles": {
     "Jellyfin.Server": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     },
     "Jellyfin.Server (nowebclient)": {
       "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
       "commandLineArgs": "--nowebclient"
     }
   }
