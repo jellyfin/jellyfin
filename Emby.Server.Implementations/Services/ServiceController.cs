@@ -8,12 +8,17 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Services
 {
     public delegate object ActionInvokerFn(object intance, object request);
+
     public delegate void VoidActionInvokerFn(object intance, object request);
 
     public class ServiceController
     {
         private readonly ILogger _log;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceController"/> class.
+        /// </summary>
+        /// <param name="log">The <see cref="ServiceController"/> logger.</param>
         public ServiceController(ILogger<ServiceController> log)
         {
             _log = log;
@@ -30,7 +35,7 @@ namespace Emby.Server.Implementations.Services
         public void RegisterService(HttpListenerHost appHost, Type serviceType)
         {
             // Make sure the provided type implements IService
-            if (!serviceType.IsAssignableFrom(typeof(IService)))
+            if (!typeof(IService).IsAssignableFrom(serviceType))
             {
                 _log.LogWarning("Tried to register a service that does not implement IService: {ServiceType}", serviceType);
                 return;
