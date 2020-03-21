@@ -902,7 +902,8 @@ namespace Emby.Server.Implementations
             var jellyfinEnvVars = new Dictionary<object, object>();
             foreach (var key in allEnvVars.Keys)
             {
-                if (key.ToString().StartsWith("JELLYFIN_", StringComparison.OrdinalIgnoreCase))
+                string keyName = key.ToString();
+                if (keyName == "ASPNETCORE_ENVIRONMENT" || keyName.StartsWith("JELLYFIN_", StringComparison.OrdinalIgnoreCase))
                 {
                     jellyfinEnvVars.Add(key, allEnvVars[key]);
                 }
