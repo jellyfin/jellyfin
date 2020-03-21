@@ -20,6 +20,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Globalization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -253,10 +254,11 @@ namespace Jellyfin.Server
 
                             if (appHost.EnableHttps && appHost.Certificate != null)
                             {
-                                options.Listen(
-                                    address,
-                                    appHost.HttpsPort,
-                                    listenOptions => listenOptions.UseHttps(appHost.Certificate));
+                                options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                {
+                                    listenOptions.UseHttps(appHost.Certificate);
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                });
                             }
                         }
                     }
@@ -267,9 +269,11 @@ namespace Jellyfin.Server
 
                         if (appHost.EnableHttps && appHost.Certificate != null)
                         {
-                            options.ListenAnyIP(
-                                appHost.HttpsPort,
-                                listenOptions => listenOptions.UseHttps(appHost.Certificate));
+                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                            {
+                                listenOptions.UseHttps(appHost.Certificate);
+                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                            });
                         }
                     }
                 })
