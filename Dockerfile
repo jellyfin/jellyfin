@@ -7,7 +7,6 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
  && yarn install \
- && yarn build \
  && mv dist /dist
 
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster as builder

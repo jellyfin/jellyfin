@@ -11,7 +11,6 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
  && yarn install \
- && yarn build \
  && mv dist /dist
 
 
@@ -35,7 +34,7 @@ ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 
 COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
-RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y \ 
+RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y \
  ffmpeg \
  libssl-dev \
  ca-certificates \
