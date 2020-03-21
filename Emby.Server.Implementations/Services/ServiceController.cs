@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -11,6 +12,13 @@ namespace Emby.Server.Implementations.Services
 
     public class ServiceController
     {
+        private readonly ILogger _log;
+
+        public ServiceController(ILogger<ServiceController> log)
+        {
+            _log = log;
+        }
+
         public void Init(HttpListenerHost appHost, IEnumerable<Type> serviceTypes)
         {
             foreach (var serviceType in serviceTypes)
@@ -21,6 +29,13 @@ namespace Emby.Server.Implementations.Services
 
         public void RegisterService(HttpListenerHost appHost, Type serviceType)
         {
+            // Make sure the provided type implements IService
+            if (!serviceType.IsAssignableFrom(typeof(IService)))
+            {
+                _log.LogWarning("Tried to register a service that does not implement IService: {ServiceType}", serviceType);
+                return;
+            }
+
             var processedReqs = new HashSet<Type>();
 
             var actions = ServiceExecGeneral.Reset(serviceType);
