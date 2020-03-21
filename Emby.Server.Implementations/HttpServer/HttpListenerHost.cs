@@ -23,6 +23,7 @@ using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text.Jsv;
 
@@ -48,6 +49,8 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly string _baseUrlPrefix;
         private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
+        private readonly IHostEnvironment _hostEnvironment;
+
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private bool _disposed = false;
 
@@ -60,7 +63,8 @@ namespace Emby.Server.Implementations.HttpServer
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
             IHttpListener socketListener,
-            ILocalizationManager localizationManager)
+            ILocalizationManager localizationManager,
+            IHostEnvironment hostEnvironment)
         {
             _appHost = applicationHost;
             _logger = logger;
@@ -72,6 +76,7 @@ namespace Emby.Server.Implementations.HttpServer
             _xmlSerializer = xmlSerializer;
             _socketListener = socketListener;
             _socketListener.WebSocketConnected = OnWebSocketConnected;
+            _hostEnvironment = hostEnvironment;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
@@ -532,6 +537,13 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception ex)
             {
+                // Do not handle exceptions manually when in development mode
+                // The framework-defined development exception page will be returned instead
+                if (_hostEnvironment.IsDevelopment())
+                {
+                    throw;
+                }
+
                 bool ignoreStackTrace =
                     ex is SocketException ||
                     ex is IOException ||
