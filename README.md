@@ -38,6 +38,12 @@
 <a href="https://www.reddit.com/r/jellyfin">
 <img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"/>
 </a>
+<a href="https://github.com/jellyfin/jellyfin/releases.atom">
+<img alt="Release RSS Feed"" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" />
+</a>
+<a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
+<img alt="Master Commits RSS Feed"" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
+</a>
 </p>
 
 ---
