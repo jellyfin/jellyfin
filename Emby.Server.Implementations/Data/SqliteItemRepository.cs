@@ -2925,6 +2925,7 @@ namespace Emby.Server.Implementations.Data
                     prepend.Add(("SearchScore", SortOrder.Descending));
                     prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
                 }
+                
                 if (hasSimilar)
                 {
                     prepend.Add(("SimilarityScore", SortOrder.Descending));
