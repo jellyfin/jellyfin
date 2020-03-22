@@ -2914,29 +2914,30 @@ namespace Emby.Server.Implementations.Data
         private string GetOrderByText(InternalItemsQuery query)
         {
             var orderBy = query.OrderBy;
-            if (string.IsNullOrEmpty(query.SearchTerm))
+            bool hasSimilar = query.SimilarTo != null;
+            bool hasSearch = !string.IsNullOrEmpty(query.SearchTerm);
+
+            if (hasSimilar || hasSearch)
             {
-                int oldLen = orderBy.Count;
-                if (oldLen == 0 && query.SimilarTo != null)
+                List<(string, SortOrder)> prepend = new List<(string, SortOrder)>(4);
+                if (hasSearch)
                 {
-                    var arr = new (string, SortOrder)[oldLen + 2];
-                    orderBy.CopyTo(arr, 0);
-                    arr[oldLen] = ("SimilarityScore", SortOrder.Descending);
-                    arr[oldLen + 1] = (ItemSortBy.Random, SortOrder.Ascending);
-                    query.OrderBy = arr;
+                    prepend.Add(("SearchScore", SortOrder.Descending));
+                    prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
                 }
-            }
-            else
-            {
-                query.OrderBy = new[]
+                
+                if (hasSimilar)
                 {
-                    ("SearchScore", SortOrder.Descending),
-                    (ItemSortBy.SortName, SortOrder.Ascending)
-                };
+                    prepend.Add(("SimilarityScore", SortOrder.Descending));
+                    prepend.Add((ItemSortBy.Random, SortOrder.Ascending));
+                }
+
+                var arr = new (string, SortOrder)[prepend.Count + orderBy.Count];
+                prepend.CopyTo(arr, 0);
+                orderBy.CopyTo(arr, prepend.Count);
+                orderBy = query.OrderBy = arr;
             }
-
-
-            if (orderBy.Count == 0)
+            else if (orderBy.Count == 0)
             {
                 return string.Empty;
             }
