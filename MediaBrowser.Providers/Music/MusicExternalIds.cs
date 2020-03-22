@@ -13,6 +13,9 @@ namespace MediaBrowser.Providers.Music
         public string Key => "IMVDb";
 
         /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.None;
+
+        /// <inheritdoc />
         public string UrlFormatString => null;
 
         /// <inheritdoc />

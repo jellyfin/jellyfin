@@ -16,6 +16,9 @@ namespace MediaBrowser.Providers.Movies
         public string Key => MetadataProviders.Imdb.ToString();
 
         /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.None;
+
+        /// <inheritdoc />
         public string UrlFormatString => "https://www.imdb.com/title/{0}";
 
         /// <inheritdoc />
@@ -38,6 +41,9 @@ namespace MediaBrowser.Providers.Movies
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Imdb.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.Person;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.imdb.com/name/{0}";

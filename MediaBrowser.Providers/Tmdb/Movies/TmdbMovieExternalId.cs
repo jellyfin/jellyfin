@@ -15,6 +15,9 @@ namespace MediaBrowser.Providers.Tmdb.Movies
         public string Key => MetadataProviders.Tmdb.ToString();
 
         /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.Movie;
+
+        /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "movie/{0}";
 
         /// <inheritdoc />

@@ -8,10 +8,13 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzReleaseGroupExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz Release Group";
+        public string Name => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzReleaseGroup.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.ReleaseGroup;
 
         /// <inheritdoc />
         public string UrlFormatString => Plugin.Instance.Configuration.Server + "/release-group/{0}";
@@ -23,10 +26,13 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzAlbumArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz Album Artist";
+        public string Name => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzAlbumArtist.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.AlbumArtist;
 
         /// <inheritdoc />
         public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
@@ -38,10 +44,13 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzAlbumExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz Album";
+        public string Name => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzAlbum.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.Album;
 
         /// <inheritdoc />
         public string UrlFormatString => Plugin.Instance.Configuration.Server + "/release/{0}";
@@ -59,6 +68,9 @@ namespace MediaBrowser.Providers.Music
         public string Key => MetadataProviders.MusicBrainzArtist.ToString();
 
         /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.Artist;
+
+        /// <inheritdoc />
         public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
 
         /// <inheritdoc />
@@ -68,11 +80,14 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzOtherArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz Artist";
+        public string Name => "MusicBrainz";
 
         /// <inheritdoc />
 
         public string Key => MetadataProviders.MusicBrainzArtist.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.OtherArtist;
 
         /// <inheritdoc />
         public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
@@ -84,10 +99,13 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzTrackId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz Track";
+        public string Name => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzTrack.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdType Type => ExternalIdType.Track;
 
         /// <inheritdoc />
         public string UrlFormatString => Plugin.Instance.Configuration.Server + "/track/{0}";

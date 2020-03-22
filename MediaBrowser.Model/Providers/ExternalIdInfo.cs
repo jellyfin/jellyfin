@@ -17,6 +17,12 @@ namespace MediaBrowser.Model.Providers
         public string Key { get; set; }
 
         /// <summary>
+        /// Gets or sets the type.
+        /// </summary>
+        /// <value>The type.</value>
+        public string Type { get; set; }
+
+        /// <summary>
         /// Gets or sets the URL format string.
         /// </summary>
         /// <value>The URL format string.</value>
