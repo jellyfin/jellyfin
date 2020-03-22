@@ -271,3 +271,8 @@ dist
 
 # BenchmarkDotNet artifacts
 BenchmarkDotNet.Artifacts
+
+# Ignore web artifacts from native builds
+web/
+web-src.*
+MediaBrowser.WebDashboard/jellyfin-web/
