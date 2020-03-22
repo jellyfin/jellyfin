@@ -14,7 +14,7 @@
 <img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin.svg"/>
 </a>
 <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget">
-<img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg" alt="Translation Status"/>
+<img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/>
 </a>
 <a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=1">
 <img alt="Azure Builds" src="https://dev.azure.com/jellyfin-project/jellyfin/_apis/build/status/Jellyfin%20CI"/>
