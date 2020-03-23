@@ -21,6 +21,8 @@
     <PackageReference Include="SkiaSharp" Version="1.68.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="1.68.1" />
     <PackageReference Include="Jellyfin.SkiaSharp.NativeAssets.LinuxArm" Version="1.68.1" />
+
+    <PackageReference Include="Blurhash.Core" Version="*" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1144,10 +1144,16 @@ namespace Emby.Server.Implementations.Data
             var delimeter = "*";
 
             var path = image.Path;
+            var hash = image.Hash;
 
             if (path == null)
             {
                 path = string.Empty;
+            }
+
+            if (hash == null)
+            {
+                hash = string.Empty;
             }
 
             return GetPathToSave(path) +
@@ -1158,7 +1164,11 @@ namespace Emby.Server.Implementations.Data
                    delimeter +
                    image.Width.ToString(CultureInfo.InvariantCulture) +
                    delimeter +
-                   image.Height.ToString(CultureInfo.InvariantCulture);
+                   image.Height.ToString(CultureInfo.InvariantCulture) +
+                   delimeter +
+                   // Replace delimiters with other characters.
+                   // This can be removed when we migrate to a proper DB.
+                   hash.Replace('*', '/').Replace('|', '\\');
         }
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
@@ -1191,6 +1201,11 @@ namespace Emby.Server.Implementations.Data
                 {
                     image.Width = width;
                     image.Height = height;
+                }
+
+                if (parts.Length >= 6)
+                {
+                    image.Hash = parts[5].Replace('/', '*').Replace('\\', '|');
                 }
             }
 

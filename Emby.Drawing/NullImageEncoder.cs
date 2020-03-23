@@ -42,5 +42,11 @@ namespace Emby.Drawing
         {
             throw new NotImplementedException();
         }
+
+        /// <inheritdoc />
+        public string GetImageHash(string inputPath)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

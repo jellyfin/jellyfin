@@ -44,6 +44,13 @@ namespace MediaBrowser.Controller.Drawing
         ImageDimensions GetImageSize(string path);
 
         /// <summary>
+        /// Get the blurhash of an image.
+        /// </summary>
+        /// <param name="path">The filepath of the image.</param>
+        /// <returns>The blurhash.</returns>
+        string GetImageHash(string path);
+
+        /// <summary>
         /// Encode an image.
         /// </summary>
         string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat);

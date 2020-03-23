@@ -314,6 +314,10 @@ namespace Emby.Drawing
             => _imageEncoder.GetImageSize(path);
 
         /// <inheritdoc />
+        public string GetImageHash(string path)
+            => _imageEncoder.GetImageHash(path);
+
+        /// <inheritdoc />
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
             => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
 

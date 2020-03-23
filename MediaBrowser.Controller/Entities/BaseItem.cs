@@ -2222,6 +2222,7 @@ namespace MediaBrowser.Controller.Entities
                 existingImage.DateModified = image.DateModified;
                 existingImage.Width = image.Width;
                 existingImage.Height = image.Height;
+                existingImage.Hash = image.Hash;
             }
             else
             {

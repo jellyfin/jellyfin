@@ -323,6 +323,7 @@ namespace MediaBrowser.Api.Images
         {
             int? width = null;
             int? height = null;
+            string? blurhash = null;
             long length = 0;
 
             try
@@ -332,7 +333,10 @@ namespace MediaBrowser.Api.Images
                     var fileInfo = _fileSystem.GetFileInfo(info.Path);
                     length = fileInfo.Length;
 
-                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info);
+                    blurhash = _imageProcessor.GetImageHash(info.Path);
+                    info.Hash = blurhash; // TODO: this doesn't seem like the right thing to do
+
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info, true);
                     _libraryManager.UpdateImages(item);
                     width = size.Width;
                     height = size.Height;
@@ -358,6 +362,7 @@ namespace MediaBrowser.Api.Images
                     ImageType = info.Type,
                     ImageTag = _imageProcessor.GetImageCacheTag(item, info),
                     Size = length,
+                    Hash = blurhash,
                     Width = width,
                     Height = height
                 };

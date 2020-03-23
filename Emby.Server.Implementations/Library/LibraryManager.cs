@@ -21,6 +21,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -35,6 +36,7 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -108,6 +110,18 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <value>The comparers.</value>
         private IBaseItemComparer[] Comparers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the active item repository
+        /// </summary>
+        /// <value>The item repository.</value>
+        public IItemRepository ItemRepository { get; set; }
+
+        /// <summary>
+        /// Gets or sets the active image processor
+        /// </summary>
+        /// <value>The image processor.</value>
+        public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// Occurs when [item added].
@@ -1817,7 +1831,19 @@ namespace Emby.Server.Implementations.Library
 
         public void UpdateImages(BaseItem item)
         {
-            _itemRepository.SaveImages(item);
+            item.ImageInfos
+                .Where(i => (i.Width == 0 || i.Height == 0))
+                .ToList()
+                .ForEach(x =>
+                {
+                    string blurhash = ImageProcessor.GetImageHash(x.Path);
+                    ImageDimensions size = ImageProcessor.GetImageDimensions(item, x, true);
+                    x.Width = size.Width;
+                    x.Height = size.Height;
+                    x.Hash = blurhash;
+                });
+
+            ItemRepository.SaveImages(item);
 
             RegisterItem(item);
         }
@@ -1839,7 +1865,7 @@ namespace Emby.Server.Implementations.Library
 
                 item.DateLastSaved = DateTime.UtcNow;
 
-                RegisterItem(item);
+                UpdateImages(item);
             }
 
             _itemRepository.SaveItems(itemsList, cancellationToken);
