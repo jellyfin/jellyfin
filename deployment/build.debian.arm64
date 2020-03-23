@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#= Debian 9+ arm64 .deb
+
+set -o errexit
+set -o xtrace
+
+# Move to source directory
+pushd ${SOURCE_DIR}
+
+if [[ ${IS_DOCKER} == YES ]]; then
+    # Remove build-dep for dotnet-sdk-3.1, since it's installed manually
+    sed -i '/dotnet-sdk-3.1,/d' debian/control
+fi
+
+# Build DEB
+export CONFIG_SITE=/etc/dpkg-cross/cross-config.${ARCH}
+dpkg-buildpackage -us -uc -a arm64 --pre-clean --post-clean
+
+mkdir -p ${ARTIFACT_DIR}/
+mv ../jellyfin[-_]* ${ARTIFACT_DIR}/
+
+if [[ ${IS_DOCKER} == YES ]]; then
+    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+fi
+
+popd
