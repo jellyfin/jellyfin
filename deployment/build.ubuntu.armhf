@@ -22,7 +22,7 @@ mkdir -p ${ARTIFACT_DIR}/
 mv ../jellyfin[-_]* ${ARTIFACT_DIR}/
 
 if [[ ${IS_DOCKER} == YES ]]; then
-    mv debian/control.orig debian/control
+    git checkout debian/control
     chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
 fi
 
