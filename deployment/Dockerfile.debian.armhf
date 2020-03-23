@@ -32,11 +32,8 @@ RUN dpkg --add-architecture armhf \
 # Link to build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.debian.armhf /build.sh
 
-# Create the source dir
-RUN mkdir -p ${SOURCE_DIR}
+VOLUME ${SOURCE_DIR}/
 
 VOLUME ${ARTIFACT_DIR}/
-
-COPY . ${SOURCE_DIR}/
 
 ENTRYPOINT ["/build.sh"]

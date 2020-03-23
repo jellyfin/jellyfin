@@ -24,11 +24,8 @@ RUN wget https://download.visualstudio.microsoft.com/download/pr/d731f991-8e68-4
 # Link to build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.debian.amd64 /build.sh
 
-# Create the source dir
-RUN mkdir -p ${SOURCE_DIR}
+VOLUME ${SOURCE_DIR}/
 
 VOLUME ${ARTIFACT_DIR}/
-
-COPY . ${SOURCE_DIR}/
 
 ENTRYPOINT ["/build.sh"]

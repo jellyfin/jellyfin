@@ -16,7 +16,7 @@ usage() {
     echo -e "    * docker: Build using the build script in a standardized Docker container"
     echo -e "  * PLATFORM can be any platform shown by -l/--list-platforms and must be specified"
     echo -e "  * If -k/--keep-artifacts is specified, transient artifacts (e.g. Docker containers) will be"
-    echo -e "    retained after the build is finished"
+    echo -e "    retained after the build is finished; the source directory will still be cleaned"
     echo -e "  * If -l/--list-platforms is specified, all other arguments are ignored; the script will print"
     echo -e "    the list of supported platforms and exit"
 }
@@ -59,7 +59,7 @@ do_build_docker() {
 
     docker build . -t "jellyfin-builder.${PLATFORM}" -f deployment/Dockerfile.${PLATFORM}
     mkdir -p ${ARTIFACT_DIR}
-    docker run $docker_args -v "${ARTIFACT_DIR}:/dist" "jellyfin-builder.${PLATFORM}"
+    docker run $docker_args -v "${SOURCE_DIR}:/jellyfin" -v "${ARTIFACT_DIR}:/dist" "jellyfin-builder.${PLATFORM}"
 }
 
 while [[ $# -gt 0 ]]; do
