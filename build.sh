@@ -39,6 +39,10 @@ do_build_native() {
 }
 
 do_build_docker() {
+    if ! dpkg --print-architecture | grep -q 'amd64'; then
+        echo "Docker-based builds only support amd64-based cross-building; use a native build instead"
+        exit 1
+    fi
     if [[ ! -f deployment/Dockerfile.${PLATFORM} ]]; then
         echo "Missing Dockerfile for platform ${PLATFORM}"
         exit 1
