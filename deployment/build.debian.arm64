@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#= Debian 9+ arm64 .deb
+#= Debian 10+ arm64 .deb
 
 set -o errexit
 set -o xtrace
