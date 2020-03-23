@@ -12,6 +12,6 @@ packages:
   - fedora.amd64
   - centos.amd64
   - linux.amd64
-  - macos.amd64
   - windows.amd64
+  - macos
   - portable

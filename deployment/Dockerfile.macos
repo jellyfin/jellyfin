@@ -22,7 +22,7 @@ RUN wget https://download.visualstudio.microsoft.com/download/pr/d731f991-8e68-4
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
 
 # Link to docker-build script
-RUN ln -sf ${SOURCE_DIR}/deployment/build.macos.amd64 /build.sh
+RUN ln -sf ${SOURCE_DIR}/deployment/build.macos /build.sh
 
 VOLUME ${SOURCE_DIR}/
 

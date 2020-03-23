@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#= MacOS 10.13+ amd64 .tar.gz
+#= MacOS 10.13+ .tar.gz
 
 set -o errexit
 set -o xtrace
