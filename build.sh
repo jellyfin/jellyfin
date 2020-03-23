@@ -24,7 +24,7 @@ usage() {
 list_platforms() {
     declare -a platforms
     platforms=(
-        $( find deployment -maxdepth 1 -mindepth 1 -name "build.*" | awk -F'.' '{ $1=""; printf $2; if ($3 != ""){ printf "." $3; } print ""; }' | sort )
+        $( find deployment -maxdepth 1 -mindepth 1 -name "build.*" | awk -F'.' '{ $1=""; printf $2; if ($3 != ""){ printf "." $3; }; if ($4 != ""){ printf "." $4; };  print ""; }' | sort )
     )
     echo -e "Valid platforms:"
     echo
