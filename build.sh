@@ -34,13 +34,17 @@ list_platforms() {
 }
 
 do_build_native() {
+    if [[ $( dpkg --print-architecture | head -1 ) != "${PLATFORM##*.}" ]]; then
+        echo "Cross-building is not supported for native builds, use 'docker' builds on amd64 for cross-building."
+        exit 1
+    fi
     export IS_DOCKER=NO
     deployment/build.${PLATFORM}
 }
 
 do_build_docker() {
     if ! dpkg --print-architecture | grep -q 'amd64'; then
-        echo "Docker-based builds only support amd64-based cross-building; use a native build instead"
+        echo "Docker-based builds only support amd64-based cross-building; use a 'native' build instead."
         exit 1
     fi
     if [[ ! -f deployment/Dockerfile.${PLATFORM} ]]; then
