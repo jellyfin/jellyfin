@@ -9,8 +9,8 @@
 Name:           jellyfin-server
 Version:        10.6.0
 Release:        1%{?dist}
-Summary:        The Free Software Media Browser
-License:        GPLv2
+Summary:        The Free Software Media System Server backend and API
+License:        GPLv3
 URL:            https://jellyfin.media
 # Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%{version}.tar.gz`
 Source0:        jellyfin-server-%{version}.tar.gz
