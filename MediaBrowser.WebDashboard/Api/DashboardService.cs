@@ -140,7 +140,7 @@ namespace MediaBrowser.WebDashboard.Api
             if (appConfig.HostWebClient())
             {
                 string webContentPath = DashboardUIPath;
-                if (!Directory.Exists(webContentPath) || !Directory.GetFiles(webContentPath).Any())
+                if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                 {
                     throw new InvalidOperationException(
                         "The server is expected to host the web client, but the provided content directory is either " +
