@@ -262,8 +262,8 @@ namespace Emby.Dlna.Main
             {
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                   // Not support IPv6 right now
-                   continue;
+                    // Not support IPv6 right now
+                    continue;
                 }
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";

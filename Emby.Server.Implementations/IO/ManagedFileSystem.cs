@@ -587,11 +587,11 @@ namespace Emby.Server.Implementations.IO
             // some drives on linux have no actual size or are used for other purposes
             return DriveInfo.GetDrives().Where(d => d.IsReady && d.TotalSize != 0 && d.DriveType != DriveType.Ram)
                 .Select(d => new FileSystemMetadata
-            {
-                Name = d.Name,
-                FullName = d.RootDirectory.FullName,
-                IsDirectory = true
-            }).ToList();
+                {
+                    Name = d.Name,
+                    FullName = d.RootDirectory.FullName,
+                    IsDirectory = true
+                }).ToList();
         }
 
         public virtual IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false)

@@ -1588,7 +1588,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // Add parameters to use VAAPI with burn-in subttiles (GH issue #642)
                 if (state.SubtitleStream != null
                     && state.SubtitleStream.IsTextSubtitleStream
-                    && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode) {
+                    && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)
+                {
                     outputSizeParam += ",hwmap=mode=read+write+direct";
                 }
             }
@@ -1953,7 +1954,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
             var hwType = options.HardwareAccelerationType ?? string.Empty;
-            if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !options.EnableHardwareEncoding )
+            if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !options.EnableHardwareEncoding)
             {
                 filters.Add("hwdownload");
 
@@ -2637,7 +2638,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                     {
-                        if(Environment.OSVersion.Version.Major > 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor > 1))
+                        if (Environment.OSVersion.Version.Major > 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor > 1))
                             return "-hwaccel d3d11va";
                         else
                             return "-hwaccel dxva2";

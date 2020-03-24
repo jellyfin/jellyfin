@@ -753,10 +753,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     return _httpClient.Get(opts);
 
-            case MediaProtocol.File:
-                return Task.FromResult<Stream>(File.OpenRead(path));
-            default:
-                throw new ArgumentOutOfRangeException(nameof(protocol));
+                case MediaProtocol.File:
+                    return Task.FromResult<Stream>(File.OpenRead(path));
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(protocol));
             }
         }
     }

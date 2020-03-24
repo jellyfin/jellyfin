@@ -12,8 +12,8 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api

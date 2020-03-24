@@ -132,7 +132,7 @@ namespace Emby.Server.Implementations.Configuration
             var newPath = newConfig.MetadataPath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(Configuration.MetadataPath, newPath,  StringComparison.Ordinal))
+                && !string.Equals(Configuration.MetadataPath, newPath, StringComparison.Ordinal))
             {
                 // Validate
                 if (!Directory.Exists(newPath))

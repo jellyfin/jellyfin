@@ -69,9 +69,9 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
-        public string localizedUndefined  { get; set; }
-        public string localizedDefault  { get; set; }
-        public string localizedForced  { get; set; }
+        public string localizedUndefined { get; set; }
+        public string localizedDefault { get; set; }
+        public string localizedForced { get; set; }
 
         public string DisplayTitle
         {

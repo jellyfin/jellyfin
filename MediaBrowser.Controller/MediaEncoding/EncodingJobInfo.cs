@@ -9,8 +9,8 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
