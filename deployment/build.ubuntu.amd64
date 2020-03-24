@@ -18,7 +18,7 @@ fi
 dpkg-buildpackage -us -uc --pre-clean --post-clean
 
 mkdir -p ${ARTIFACT_DIR}/
-mv ../jellyfin[-_]* ${ARTIFACT_DIR}/
+mv ../jellyfin*.{deb,dsc,tar.gz,buildinfo,changes} ${ARTIFACT_DIR}/
 
 if [[ ${IS_DOCKER} == YES ]]; then
     cp -a /tmp/control.orig debian/control
