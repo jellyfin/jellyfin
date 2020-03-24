@@ -344,7 +344,11 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                 series.ProductionYear = date.Year;
             }
 
-            series.RunTimeTicks = TimeSpan.FromMinutes(Convert.ToDouble(tvdbSeries.Runtime)).Ticks;
+            if (!string.IsNullOrEmpty(tvdbSeries.Runtime) && double.TryParse(tvdbSeries.Runtime, out double runtime))
+            {
+                series.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
+            }
+
             foreach (var genre in tvdbSeries.Genre)
             {
                 series.AddGenre(genre);
