@@ -4,9 +4,6 @@ srpm:
 	cd fedora/;                                                                   \
 	SOURCE_DIR=..                                                                 \
 	WORKDIR="$${PWD}";                                                            \
-	package_temporary_dir="$${WORKDIR}/pkg-dist-tmp";                             \
-	pkg_src_dir="$${WORKDIR}";                                                    \
-	GNU_TAR=1;                                                                    \
 	tar                                                                           \
 	--transform "s,^\.,jellyfin-server-$(VERSION),"                               \
 	--exclude='.git*'                                                             \
