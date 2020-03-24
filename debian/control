@@ -26,5 +26,5 @@ Depends: at,
          libfreetype6,
          libssl1.1
 Recommends: jellyfin-web
-Description: Jellyfin is a home media server.
- It is built on top of other popular open source technologies such as Service Stack, jQuery, jQuery mobile, and Mono. It features a REST-based api with built-in documentation to facilitate client development. We also have client libraries for our api to enable rapid development.
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
