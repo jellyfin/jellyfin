@@ -528,7 +528,7 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Skia not available. Will fallback to NullImageEncoder.");
+                _logger.LogWarning(ex, $"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
             }
 
             return new NullImageEncoder();
