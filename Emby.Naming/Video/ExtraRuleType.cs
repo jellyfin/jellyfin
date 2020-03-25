@@ -5,17 +5,17 @@ namespace Emby.Naming.Video
     public enum ExtraRuleType
     {
         /// <summary>
-        /// The suffix
+        ///     The suffix
         /// </summary>
         Suffix = 0,
 
         /// <summary>
-        /// The filename
+        ///     The filename
         /// </summary>
         Filename = 1,
 
         /// <summary>
-        /// The regex
+        ///     The regex
         /// </summary>
         Regex = 2
     }

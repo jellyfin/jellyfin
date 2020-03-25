@@ -18,13 +18,13 @@ namespace Emby.Naming.Video
         }
 
         /// <summary>
-        /// Gets the name.
+        ///     Gets the name.
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; }
 
         /// <summary>
-        /// Gets the year.
+        ///     Gets the year.
         /// </summary>
         /// <value>The year.</value>
         public int? Year { get; }

@@ -9,7 +9,7 @@ namespace Emby.Naming.TV
     public static class SeasonPathParser
     {
         /// <summary>
-        /// A season folder must contain one of these somewhere in the name.
+        ///     A season folder must contain one of these somewhere in the name.
         /// </summary>
         private static readonly string[] _seasonFolderNames =
         {
@@ -41,7 +41,7 @@ namespace Emby.Naming.TV
         }
 
         /// <summary>
-        /// Gets the season number from path.
+        ///     Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="supportSpecialAliases">if set to <c>true</c> [support special aliases].</param>
