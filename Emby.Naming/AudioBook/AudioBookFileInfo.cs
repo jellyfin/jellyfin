@@ -3,36 +3,36 @@ using System;
 namespace Emby.Naming.AudioBook
 {
     /// <summary>
-    ///     Represents a single video file.
+    /// Represents a single video file.
     /// </summary>
     public class AudioBookFileInfo : IComparable<AudioBookFileInfo>
     {
         /// <summary>
-        ///     Gets or sets the path.
+        /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
 
         /// <summary>
-        ///     Gets or sets the container.
+        /// Gets or sets the container.
         /// </summary>
         /// <value>The container.</value>
         public string Container { get; set; }
 
         /// <summary>
-        ///     Gets or sets the part number.
+        /// Gets or sets the part number.
         /// </summary>
         /// <value>The part number.</value>
         public int? PartNumber { get; set; }
 
         /// <summary>
-        ///     Gets or sets the chapter number.
+        /// Gets or sets the chapter number.
         /// </summary>
         /// <value>The chapter number.</value>
         public int? ChapterNumber { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether this instance is a directory.
+        /// Gets or sets a value indicating whether this instance is a directory.
         /// </summary>
         /// <value>The type.</value>
         public bool IsDirectory { get; set; }

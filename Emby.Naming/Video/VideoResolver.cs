@@ -18,7 +18,7 @@ namespace Emby.Naming.Video
         }
 
         /// <summary>
-        ///     Resolves the directory.
+        /// Resolves the directory.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoFileInfo.</returns>
@@ -28,7 +28,7 @@ namespace Emby.Naming.Video
         }
 
         /// <summary>
-        ///     Resolves the file.
+        /// Resolves the file.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoFileInfo.</returns>
@@ -38,7 +38,7 @@ namespace Emby.Naming.Video
         }
 
         /// <summary>
-        ///     Resolves the specified path.
+        /// Resolves the specified path.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="isDirectory">if set to <c>true</c> [is folder].</param>
