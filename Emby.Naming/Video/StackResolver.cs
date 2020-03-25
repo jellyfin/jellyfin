@@ -31,8 +31,12 @@ namespace Emby.Naming.Video
 
         public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<FileSystemMetadata> files)
         {
-            foreach (var directory in files.GroupBy(file =>
-                file.IsDirectory ? file.FullName : Path.GetDirectoryName(file.FullName)))
+            var groupedDirectoryFiles = files.GroupBy(file =>
+                file.IsDirectory
+                    ? file.FullName
+                    : Path.GetDirectoryName(file.FullName));
+
+            foreach (var directory in groupedDirectoryFiles)
             {
                 var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
                 foreach (var file in directory)

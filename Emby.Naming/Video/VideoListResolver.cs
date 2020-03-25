@@ -151,7 +151,8 @@ namespace Emby.Naming.Video
             // Whatever files are left, just add them
             list.AddRange(remainingFiles.Select(i => new VideoInfo(i.Name)
             {
-                Files = new List<VideoFileInfo> { i }, Year = i.Year
+                Files = new List<VideoFileInfo> { i },
+                Year = i.Year
             }));
 
             return list;
