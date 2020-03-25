@@ -161,22 +161,27 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets the path of the directory containing the static web interface content, or null if the server is not
         /// hosting the web client.
         /// </summary>
-        public string DashboardUIPath
+        public string DashboardUIPath => GetDashboardUIPath(_appConfig, _serverConfigurationManager);
+
+        /// <summary>
+        /// Gets the path of the directory containing the static web interface content.
+        /// </summary>
+        /// <param name="appConfig">The app configuration.</param>
+        /// <param name="serverConfigManager">The server configuration manager.</param>
+        /// <returns>The directory path, or null if the server is not hosting the web client.</returns>
+        public static string GetDashboardUIPath(IConfiguration appConfig, IServerConfigurationManager serverConfigManager)
         {
-            get
+            if (!appConfig.HostWebClient())
             {
-                if (!_appConfig.HostWebClient())
-                {
-                    return null;
-                }
-
-                if (!string.IsNullOrEmpty(_serverConfigurationManager.Configuration.DashboardSourcePath))
-                {
-                    return _serverConfigurationManager.Configuration.DashboardSourcePath;
-                }
-
-                return _serverConfigurationManager.ApplicationPaths.WebPath;
+                return null;
             }
+
+            if (!string.IsNullOrEmpty(serverConfigManager.Configuration.DashboardSourcePath))
+            {
+                return serverConfigManager.Configuration.DashboardSourcePath;
+            }
+
+            return serverConfigManager.ApplicationPaths.WebPath;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
