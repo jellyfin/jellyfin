@@ -198,6 +198,12 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateItem request)
         {
+            if (request.ItemId == "*")
+            {
+                // Special case: Refresh everything in database. Probably not a great idea to run often.
+                _libraryManager.UpdateAll();
+                return;
+            }
             var item = _libraryManager.GetItemById(request.ItemId);
 
             var newLockData = request.LockData ?? false;

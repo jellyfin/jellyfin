@@ -1912,6 +1912,34 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
+        /// Updates everything in the database.
+        /// </summary>
+        public void UpdateAll()
+        {
+            Task.Run(() =>
+            {
+                var items = ItemRepository.GetItemList(new InternalItemsQuery {
+                    Recursive = true
+                });
+                foreach (var item in items)
+                {
+                    _logger.LogDebug("Updating item {Name} ({ItemId})",
+                        item.Name,
+                        item.Id);
+                    try
+                    {
+                        item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Updating item {ItemId} failed", item.Id);
+                    }
+                }
+                _logger.LogDebug("All items have been updated");
+            });
+        }
+
+        /// <summary>
         /// Reports the item removed.
         /// </summary>
         /// <param name="item">The item.</param>
