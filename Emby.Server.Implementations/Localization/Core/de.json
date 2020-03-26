@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Jellyfin-Server startet, bitte versuche es gleich noch einmal.",
     "SubtitleDownloadFailureForItem": "Download der Untertitel fehlgeschlagen für {0}",
     "SubtitleDownloadFailureFromForItem": "Untertitel von {0} für {1} konnten nicht heruntergeladen werden",
-    "SubtitlesDownloadedForItem": "Untertitel heruntergeladen für {0}",
     "Sync": "Synchronisation",
     "System": "System",
     "TvShows": "TV-Sendungen",

@@ -17,7 +17,6 @@
     "TvShows": "Spectacole TV",
     "System": "Sistem",
     "Sync": "Sincronizare",
-    "SubtitlesDownloadedForItem": "Subtitrari descarcate pentru {0}",
     "SubtitleDownloadFailureFromForItem": "Subtitrările nu au putut fi descărcate de la {0} pentru {1}",
     "StartupEmbyServerIsLoading": "Se încarcă serverul Jellyfin. Încercați din nou în scurt timp.",
     "Songs": "Melodii",
