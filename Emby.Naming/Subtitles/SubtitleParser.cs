@@ -37,9 +37,8 @@ namespace Emby.Naming.Subtitles
                 IsForced = _options.SubtitleForcedFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase))
             };
 
-            var parts = flags.Where(i =>
-                    !_options.SubtitleDefaultFlags.Contains(i, StringComparer.OrdinalIgnoreCase) &&
-                    !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))
+            var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparer.OrdinalIgnoreCase)
+                && !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             // Should have a name, language and file extension
