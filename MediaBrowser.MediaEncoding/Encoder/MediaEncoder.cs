@@ -22,7 +22,6 @@ using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
-using MediaBrowser.Model.Diagnostics;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -39,7 +38,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
-        private readonly IProcessFactory _processFactory;
         private readonly ILocalizationManager _localization;
         private readonly Func<ISubtitleEncoder> _subtitleEncoder;
         private readonly IConfiguration _configuration;
@@ -59,7 +57,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ILogger<MediaEncoder> logger,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
-            IProcessFactory processFactory,
             ILocalizationManager localization,
             Func<ISubtitleEncoder> subtitleEncoder,
             IConfiguration configuration,
@@ -68,7 +65,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
-            _processFactory = processFactory;
             _localization = localization;
             _startupOptionFFmpegPath = startupOptionsFFmpegPath;
             _subtitleEncoder = subtitleEncoder;
@@ -363,7 +359,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
             args = string.Format(args, probeSizeArgument, inputPath).Trim();
 
-            var process = _processFactory.Create(new ProcessStartInfo
+            var processStartInfo = new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -377,8 +373,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false,
-            });
-            process.EnableRaisingEvents = true;
+            };
+            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
             if (forceEnableLogging)
             {
@@ -572,7 +568,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var process = _processFactory.Create(new ProcessStartInfo
+            var processStartInfo = new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -580,8 +576,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Arguments = args,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false,
-            });
-            process.EnableRaisingEvents = true;
+            };
+            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
             _logger.LogDebug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -701,7 +697,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var process = _processFactory.Create(new ProcessStartInfo
+            var processStartInfo = new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -709,8 +705,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Arguments = args,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
-            });
-            process.EnableRaisingEvents = true;
+            };
+            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
             _logger.LogInformation(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 

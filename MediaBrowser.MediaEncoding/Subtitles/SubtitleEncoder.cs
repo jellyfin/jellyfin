@@ -13,7 +13,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -32,7 +31,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IHttpClient _httpClient;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IProcessFactory _processFactory;
 
         public SubtitleEncoder(
             ILibraryManager libraryManager,
@@ -41,8 +39,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
             IHttpClient httpClient,
-            IMediaSourceManager mediaSourceManager,
-            IProcessFactory processFactory)
+            IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -51,7 +48,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _mediaEncoder = mediaEncoder;
             _httpClient = httpClient;
             _mediaSourceManager = mediaSourceManager;
-            _processFactory = processFactory;
         }
 
         private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
@@ -430,7 +426,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 encodingParam = " -sub_charenc " + encodingParam;
             }
 
-            var process = _processFactory.Create(new ProcessStartInfo
+            var processStartInfo = new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -438,7 +434,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
-            });
+            };
+            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
             _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -453,7 +450,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw;
             }
 
-            process.EnableRaisingEvents = true;
             var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
 
             if (!ranToCompletion)
@@ -579,7 +575,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 outputCodec,
                 outputPath);
 
-            var process = _processFactory.Create(new ProcessStartInfo
+            var processStartInfo = new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -587,7 +583,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 Arguments = processArgs,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
-            });
+            };
+            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
             _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -602,7 +599,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw;
             }
 
-            process.EnableRaisingEvents = true;
             var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
 
             if (!ranToCompletion)

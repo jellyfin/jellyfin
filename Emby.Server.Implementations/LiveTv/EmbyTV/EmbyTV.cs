@@ -26,7 +26,6 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -62,7 +61,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IProcessFactory _processFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
 
@@ -89,8 +87,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
-            IMediaEncoder mediaEncoder,
-            IProcessFactory processFactory)
+            IMediaEncoder mediaEncoder)
         {
             Current = this;
 
@@ -103,7 +100,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
-            _processFactory = processFactory;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
             _mediaSourceManager = mediaSourceManager;
@@ -1663,7 +1659,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _processFactory, _config);
+                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _config);
             }
 
             return new DirectRecorder(_logger, _httpClient, _streamHelper);
@@ -1684,7 +1680,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var process = _processFactory.Create(new ProcessStartInfo
+                var processStartInfo = new ProcessStartInfo
                 {
                     Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
                     CreateNoWindow = true,
@@ -1692,11 +1688,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     FileName = options.RecordingPostProcessor,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     UseShellExecute = false
-                });
+                };
+                var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
                 _logger.LogInformation("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-                process.EnableRaisingEvents = true;
                 process.Exited += Process_Exited;
                 process.Start();
             }

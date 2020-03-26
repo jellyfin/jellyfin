@@ -15,7 +15,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -32,7 +31,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private Stream _logFileStream;
         private string _targetPath;
         private Process _process;
-        private readonly IProcessFactory _processFactory;
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly IServerConfigurationManager _config;
@@ -42,14 +40,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IMediaEncoder mediaEncoder,
             IServerApplicationPaths appPaths,
             IJsonSerializer json,
-            IProcessFactory processFactory,
             IServerConfigurationManager config)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
             _json = json;
-            _processFactory = processFactory;
             _config = config;
         }
 
@@ -81,7 +77,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-            _process = _processFactory.Create(new ProcessStartInfo
+            var processStartInfo = new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -94,7 +90,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
-            });
+            };
+            _process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
             var commandLineLogMessage = _process.StartInfo.FileName + " " + _process.StartInfo.Arguments;
             _logger.LogInformation(commandLineLogMessage);
@@ -108,7 +105,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
-            _process.EnableRaisingEvents = true;
             _process.Exited += (sender, args) => OnFfMpegProcessExited(_process, inputFile);
 
             _process.Start();
@@ -297,24 +293,24 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _hasExited = true;
 
             _logFileStream?.Dispose();
-            _logFileStream = null;
+                _logFileStream = null;
 
-            var exitCode = process.ExitCode;
+                var exitCode = process.ExitCode;
 
-            _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {Path}", exitCode, _targetPath);
+                _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {Path}", exitCode, _targetPath);
 
-            if (exitCode == 0)
-            {
-                _taskCompletionSource.TrySetResult(true);
-            }
-            else
-            {
-                _taskCompletionSource.TrySetException(
-                    new Exception(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Recording for {0} failed. Exit code {1}",
-                            _targetPath,
+                if (exitCode == 0)
+                {
+                    _taskCompletionSource.TrySetResult(true);
+                }
+                else
+                {
+                    _taskCompletionSource.TrySetException(
+                        new Exception(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "Recording for {0} failed. Exit code {1}",
+                                _targetPath,
                             exitCode)));
             }
         }
