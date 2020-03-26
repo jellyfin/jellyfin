@@ -536,12 +536,10 @@ namespace MediaBrowser.Api.Images
 
             if (item == null)
             {
-                item = _libraryManager.GetItemById(itemId) ??
-                       throw new ResourceNotFoundException(string.Format("Item {0} not found.", itemId.ToString("N", CultureInfo.InvariantCulture)));
+                item = _libraryManager.GetItemById(itemId) ?? throw new ResourceNotFoundException(string.Format("Item {0} not found.", itemId.ToString("N", CultureInfo.InvariantCulture)));
             }
 
-            var imageInfo = GetImageInfo(request, item) ??
-                            throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
+            var imageInfo = GetImageInfo(request, item) ?? throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
 
             var cropWhiteSpace = request.CropWhitespace ?? request.Type == ImageType.Logo || request.Type == ImageType.Art;
 
