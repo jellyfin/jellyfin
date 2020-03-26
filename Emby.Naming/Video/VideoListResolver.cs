@@ -172,7 +172,7 @@ namespace Emby.Naming.Video
             if (!string.IsNullOrEmpty(folderName)
                 && folderName.Length > 1
                 && videos.All(i => i.Files.Count == 1
-                                   && IsEligibleForMultiVersion(folderName, i.Files[0].Path))
+                && IsEligibleForMultiVersion(folderName, i.Files[0].Path))
                 && HaveSameYear(videos))
             {
                 var ordered = videos.OrderBy(i => i.Name).ToList();
@@ -211,8 +211,8 @@ namespace Emby.Naming.Video
             {
                 testFilename = testFilename.Substring(folderName.Length).Trim();
                 return string.IsNullOrEmpty(testFilename)
-                       || testFilename[0] == '-'
-                       || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
+                   || testFilename[0] == '-'
+                   || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 
             return false;
