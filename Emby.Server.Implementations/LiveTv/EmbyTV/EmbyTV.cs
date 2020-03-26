@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -1683,19 +1684,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var process = _processFactory.Create(new ProcessOptions
+                var process = _processFactory.Create(new ProcessStartInfo
                 {
                     Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
                     CreateNoWindow = true,
-                    EnableRaisingEvents = true,
                     ErrorDialog = false,
                     FileName = options.RecordingPostProcessor,
-                    IsHidden = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
                     UseShellExecute = false
                 });
 
                 _logger.LogInformation("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
+                process.EnableRaisingEvents = true;
                 process.Exited += Process_Exited;
                 process.Start();
             }
@@ -1712,11 +1713,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void Process_Exited(object sender, EventArgs e)
         {
-            using (var process = (IProcess)sender)
+            try
             {
-                _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", process.ExitCode);
-
-                process.Dispose();
+                var exitCode = ((Process)sender).ExitCode;
+                _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", exitCode);
+            }
+            finally
+            {
+                ((Process)sender).Dispose();
             }
         }
 

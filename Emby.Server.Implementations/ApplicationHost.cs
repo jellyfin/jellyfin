@@ -1727,15 +1727,15 @@ namespace Emby.Server.Implementations
                 throw new NotSupportedException();
             }
 
-            var process = ProcessFactory.Create(new ProcessOptions
+            var process = ProcessFactory.Create(new ProcessStartInfo
             {
                 FileName = url,
-                EnableRaisingEvents = true,
                 UseShellExecute = true,
                 ErrorDialog = false
             });
 
-            process.Exited += ProcessExited;
+            process.EnableRaisingEvents = true;
+            process.Exited += (sender, args) => ((Process)sender).Dispose(); ;
 
             try
             {
@@ -1746,11 +1746,6 @@ namespace Emby.Server.Implementations
                 Logger.LogError(ex, "Error launching url: {url}", url);
                 throw;
             }
-        }
-
-        private static void ProcessExited(object sender, EventArgs e)
-        {
-            ((IProcess)sender).Dispose();
         }
 
         public virtual void EnableLoopback(string appName)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -429,14 +430,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 encodingParam = " -sub_charenc " + encodingParam;
             }
 
-            var process = _processFactory.Create(new ProcessOptions
+            var process = _processFactory.Create(new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
-                EnableRaisingEvents = true,
-                IsHidden = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
             });
 
@@ -453,6 +453,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw;
             }
 
+            process.EnableRaisingEvents = true;
             var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
 
             if (!ranToCompletion)
@@ -578,14 +579,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 outputCodec,
                 outputPath);
 
-            var process = _processFactory.Create(new ProcessOptions
+            var process = _processFactory.Create(new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
-                EnableRaisingEvents = true,
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = processArgs,
-                IsHidden = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
             });
 
@@ -602,6 +602,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw;
             }
 
+            process.EnableRaisingEvents = true;
             var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
 
             if (!ranToCompletion)

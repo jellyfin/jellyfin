@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -30,7 +31,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
-        private IProcess _process;
+        private Process _process;
         private readonly IProcessFactory _processFactory;
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
@@ -80,7 +81,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-            var process = _processFactory.Create(new ProcessOptions
+            _process = _processFactory.Create(new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -91,14 +92,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile, duration),
 
-                IsHidden = true,
-                ErrorDialog = false,
-                EnableRaisingEvents = true
+                WindowStyle = ProcessWindowStyle.Hidden,
+                ErrorDialog = false
             });
 
-            _process = process;
-
-            var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
+            var commandLineLogMessage = _process.StartInfo.FileName + " " + _process.StartInfo.Arguments;
             _logger.LogInformation(commandLineLogMessage);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "record-transcode-" + Guid.NewGuid() + ".txt");
@@ -110,16 +108,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
-            process.Exited += (sender, args) => OnFfMpegProcessExited(process, inputFile);
+            _process.EnableRaisingEvents = true;
+            _process.Exited += (sender, args) => OnFfMpegProcessExited(_process, inputFile);
 
-            process.Start();
+            _process.Start();
 
             cancellationToken.Register(Stop);
 
             onStarted();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
+            StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
 
             _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
 
@@ -293,7 +292,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Processes the exited.
         /// </summary>
-        private void OnFfMpegProcessExited(IProcess process, string inputFile)
+        private void OnFfMpegProcessExited(Process process, string inputFile)
         {
             _hasExited = true;
 

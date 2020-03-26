@@ -1,14 +1,15 @@
 #pragma warning disable CS1591
 
+using System.Diagnostics;
 using MediaBrowser.Model.Diagnostics;
 
 namespace Emby.Server.Implementations.Diagnostics
 {
     public class ProcessFactory : IProcessFactory
     {
-        public IProcess Create(ProcessOptions options)
+        public Process Create(ProcessStartInfo startInfo)
         {
-            return new CommonProcess(options);
+            return new Process { StartInfo = startInfo };
         }
     }
 }

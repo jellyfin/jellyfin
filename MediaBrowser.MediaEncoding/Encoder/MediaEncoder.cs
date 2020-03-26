@@ -13,7 +13,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -22,6 +21,8 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using System.Diagnostics;
+using MediaBrowser.Model.Diagnostics;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -362,7 +363,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
             args = string.Format(args, probeSizeArgument, inputPath).Trim();
 
-            var process = _processFactory.Create(new ProcessOptions
+            var process = _processFactory.Create(new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -374,10 +375,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Arguments = args,
 
 
-                IsHidden = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false,
-                EnableRaisingEvents = true
             });
+            process.EnableRaisingEvents = true;
 
             if (forceEnableLogging)
             {
@@ -571,16 +572,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var process = _processFactory.Create(new ProcessOptions
+            var process = _processFactory.Create(new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 FileName = _ffmpegPath,
                 Arguments = args,
-                IsHidden = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false,
-                EnableRaisingEvents = true
             });
+            process.EnableRaisingEvents = true;
 
             _logger.LogDebug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -700,16 +701,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var process = _processFactory.Create(new ProcessOptions
+            var process = _processFactory.Create(new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 FileName = _ffmpegPath,
                 Arguments = args,
-                IsHidden = true,
-                ErrorDialog = false,
-                EnableRaisingEvents = true
+                WindowStyle = ProcessWindowStyle.Hidden,
+                ErrorDialog = false
             });
+            process.EnableRaisingEvents = true;
 
             _logger.LogInformation(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
 
@@ -949,14 +950,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             private bool _disposed = false;
 
-            public ProcessWrapper(IProcess process, MediaEncoder mediaEncoder)
+            public ProcessWrapper(Process process, MediaEncoder mediaEncoder)
             {
                 Process = process;
                 _mediaEncoder = mediaEncoder;
                 Process.Exited += OnProcessExited;
             }
 
-            public IProcess Process { get; }
+            public Process Process { get; }
 
             public bool HasExited { get; private set; }
 
@@ -964,7 +965,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             void OnProcessExited(object sender, EventArgs e)
             {
-                var process = (IProcess)sender;
+                var process = (Process)sender;
 
                 HasExited = true;
 
@@ -979,7 +980,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 DisposeProcess(process);
             }
 
-            private void DisposeProcess(IProcess process)
+            private void DisposeProcess(Process process)
             {
                 lock (_mediaEncoder._runningProcessesLock)
                 {
