@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using Emby.Dlna.Eventing;
 using MediaBrowser.Common.Net;
@@ -13,7 +12,7 @@ namespace Emby.Dlna.Service
         protected IHttpClient HttpClient;
         protected ILogger Logger;
 
-        protected BaseService(ILogger logger, IHttpClient httpClient)
+        protected BaseService(ILogger<BaseService> logger, IHttpClient httpClient)
         {
             Logger = logger;
             HttpClient = httpClient;

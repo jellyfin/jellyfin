@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Channels
     {
         public ChannelMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<ChannelMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

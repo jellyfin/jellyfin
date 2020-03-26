@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Books
     {
         public BookMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<BookMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

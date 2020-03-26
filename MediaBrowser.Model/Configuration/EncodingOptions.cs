@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -34,7 +33,7 @@ namespace MediaBrowser.Model.Configuration
         public EncodingOptions()
         {
             DownMixAudioBoost = 2;
-            EnableThrottling = true;
+            EnableThrottling = false;
             ThrottleDelaySeconds = 180;
             EncodingThreadCount = -1;
             // This is a DRM device that is almost guaranteed to be there on every intel platform, plus it's the default one in ffmpeg if you don't specify anything

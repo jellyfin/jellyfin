@@ -1,4 +1,4 @@
-FROM fedora:29
+FROM fedora:31
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG PLATFORM_DIR=/jellyfin/deployment/fedora-package-x64

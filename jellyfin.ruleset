@@ -28,6 +28,8 @@
     <Rule Id="SA1512" Action="None" />
     <!-- disable warning SA1515: Single-line comment should be preceded by blank line -->
     <Rule Id="SA1515" Action="None" />
+    <!-- disable warning SA1600: Elements should be documented -->
+    <Rule Id="SA1600" Action="None" />
     <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
     <Rule Id="SA1633" Action="None" />
   </Rules>

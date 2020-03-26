@@ -1,4 +1,3 @@
-#pragma warning disable SA1600
 #pragma warning disable CS1591
 
 using System;
@@ -80,7 +79,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IServerApplicationHost appHost,
             IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
-            ILogger logger,
+            ILogger<EmbyTV> logger,
             IJsonSerializer jsonSerializer,
             IHttpClient httpClient,
             IServerConfigurationManager config,

@@ -26,7 +26,7 @@ namespace MediaBrowser.Api.Sessions
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionInfoWebSocketListener"/> class.
         /// </summary>
-        public SessionInfoWebSocketListener(ILogger logger, ISessionManager sessionManager)
+        public SessionInfoWebSocketListener(ILogger<SessionInfoWebSocketListener> logger, ISessionManager sessionManager)
             : base(logger)
         {
             _sessionManager = sessionManager;

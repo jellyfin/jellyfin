@@ -1,6 +1,5 @@
 #pragma warning disable CS1591
 #pragma warning disable SA1402
-#pragma warning disable SA1600
 #pragma warning disable SA1649
 
 using System;
@@ -575,7 +574,8 @@ namespace MediaBrowser.Api.Playback
             {
                 attachment.DeliveryUrl = string.Format(
                     CultureInfo.InvariantCulture,
-                    "/Videos/{0}/{1}/Attachments/{2}",
+                    "{0}/Videos/{1}/{2}/Attachments/{3}",
+                    ServerConfigurationManager.Configuration.BaseUrl,
                     item.Id,
                     mediaSource.Id,
                     attachment.Index);

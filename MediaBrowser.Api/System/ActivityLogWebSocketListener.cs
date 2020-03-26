@@ -23,7 +23,7 @@ namespace MediaBrowser.Api.System
         /// </summary>
         private readonly IActivityManager _activityManager;
 
-        public ActivityLogWebSocketListener(ILogger logger, IActivityManager activityManager) : base(logger)
+        public ActivityLogWebSocketListener(ILogger<ActivityLogWebSocketListener> logger, IActivityManager activityManager) : base(logger)
         {
             _activityManager = activityManager;
             _activityManager.EntryCreated += ActivityManagerEntryCreated;

@@ -188,6 +188,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
                 {
                     var result = CharsetDetector.DetectFromStream(stream).Detected;
+                    stream.Position = 0;
 
                     if (result != null)
                     {
@@ -745,6 +746,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         Url = path,
                         CancellationToken = cancellationToken,
+
+                        // Needed for seeking
                         BufferContent = true
                     };
 
