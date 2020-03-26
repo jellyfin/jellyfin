@@ -112,5 +112,7 @@
     "TaskCleanTranscode": "Limpiar las transcodificaciones",
     "TaskCleanTranscodeDescription": "Elimina los archivos temporales creados mientras se transcodificaba el contenido",
     "TaskRefreshChannels": "Actualizar canales",
-    "TaskRefreshChannelsDescription": "Actualiza la información de los canales de internet"
+    "TaskRefreshChannelsDescription": "Actualiza la información de los canales de internet",
+    "TaskDownloadMissingSubtitles": "Descargar los subtítulos que faltan",
+    "TaskDownloadMissingSubtitlesDescription": "Busca en internet los subtítulos que falten en el contenido de tus bibliotecas, basándose en la configuración de idioma"
 }

@@ -111,5 +111,7 @@
     "TaskCleanTranscode": "Clean Transcode Directory",
     "TaskCleanTranscodeDescription": "Deletes transcode files more than one day old.",
     "TaskRefreshChannels": "Refresh Channels",
-    "TaskRefreshChannelsDescription": "Refreshes internet channel information."
+    "TaskRefreshChannelsDescription": "Refreshes internet channel information.",
+    "TaskDownloadMissingSubtitles": "Download missing subtitles",
+    "TaskDownloadMissingSubtitlesDescription": "Searches the internet for missing subtitles based on metadata configuration."
 }
