@@ -15,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -39,6 +40,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
@@ -159,11 +161,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
-        public string Name => "Extract Chapter Images";
+        public string Name => _localization.GetLocalizedString("TaskRefreshChapterImages");
 
-        public string Description => "Creates thumbnails for videos that have chapters.";
+        public string Description => _localization.GetLocalizedString("TaskRefreshChapterImagesDescription");
 
-        public string Category => "Library";
+        public string Category => _localization.GetLocalizedString("TasksLibrary");
 
         public string Key => "RefreshChapterImages";
 

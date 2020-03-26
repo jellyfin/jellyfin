@@ -8,6 +8,7 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -22,6 +23,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly ILogger _logger;
 
         private readonly IInstallationManager _installationManager;
+        private readonly ILocalizationManager _localization;
 
         public PluginUpdateTask(ILogger<PluginUpdateTask> logger, IInstallationManager installationManager)
         {
@@ -96,13 +98,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <inheritdoc />
-        public string Name => "Update Plugins";
+        public string Name => _localization.GetLocalizedString("TaskUpdatePlugins");
 
         /// <inheritdoc />
-        public string Description => "Downloads and installs updates for plugins that are configured to update automatically.";
+        public string Description => _localization.GetLocalizedString("TaskUpdatePluginsDescription");
 
         /// <inheritdoc />
-        public string Category => "Application";
+        public string Category => _localization.GetLocalizedString("TasksApplication");
 
         /// <inheritdoc />
         public string Key => "PluginUpdates";

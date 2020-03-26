@@ -92,5 +92,22 @@
     "UserStoppedPlayingItemWithValues": "{0} has finished playing {1} on {2}",
     "ValueHasBeenAddedToLibrary": "{0} has been added to your media library",
     "ValueSpecialEpisodeName": "Special - {0}",
-    "VersionNumber": "Version {0}"
+    "VersionNumber": "Version {0}",
+    "TasksMaintenance": "Maintenance",
+    "TasksLibrary": "Library",
+    "TasksApplication": "Application",
+    "TaskCleanCache": "Clean Cache Directory",
+    "TaskCleanCacheDescription": "Deletes cache files no longer needed by the system.",
+    "TaskRefreshChapterImages": "Extract Chapter Images",
+    "TaskRefreshChapterImagesDescription": "Creates thumbnails for videos that have chapters.",
+    "TaskRefreshLibrary": "Scan Media Library",
+    "TaskRefreshLibraryDescription": "Scans your media library for new files and refreshes metadata.",
+    "TaskCleanLogs": "Clean Log Directory",
+    "TaskCleanLogsDescription": "Deletes log files that are more than {0} days old.",
+    "TaskRefreshPeople": "Refresh People",
+    "TaskRefreshPeopleDescription": "Updates metadata for actors and directors in your media library.",
+    "TaskUpdatePlugins": "Update Plugins",
+    "TaskUpdatePluginsDescription": "Downloads and installs updates for plugins that are configured to update automatically.",
+    "TaskCleanTranscode": "Clean Transcode Directory",
+    "TaskCleanTranscodeDescription": "Deletes transcode files more than one day old."
 }

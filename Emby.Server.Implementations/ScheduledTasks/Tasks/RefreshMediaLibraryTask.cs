@@ -6,6 +6,7 @@ using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -19,6 +20,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshMediaLibraryTask" /> class.
@@ -57,11 +59,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
             return ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
         }
 
-        public string Name => "Scan Media Library";
+        public string Name => _localization.GetLocalizedString("TaskRefreshLibrary");
 
-        public string Description => "Scans your media library for new files and refreshes metadata.";
+        public string Description => _localization.GetLocalizedString("TaskRefreshLibraryDescription");
 
-        public string Category => "Library";
+        public string Category => _localization.GetLocalizedString("TasksLibrary");
 
         public string Key => "RefreshLibrary";
 

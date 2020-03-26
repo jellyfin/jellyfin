@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -19,6 +20,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly ILibraryManager _libraryManager;
 
         private readonly IServerApplicationHost _appHost;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
@@ -57,11 +59,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
             return _libraryManager.ValidatePeople(cancellationToken, progress);
         }
 
-        public string Name => "Refresh People";
+        public string Name => _localization.GetLocalizedString("TaskRefreshPeople");
 
-        public string Description => "Updates metadata for actors and directors in your media library.";
+        public string Description => _localization.GetLocalizedString("TaskRefreshPeopleDescription");
 
-        public string Category => "Library";
+        public string Category => _localization.GetLocalizedString("TasksLibrary");
 
         public string Key => "RefreshPeople";
 
