@@ -97,25 +97,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
             progress.Report(100);
         }
 
-        /// <inheritdoc />
         public string Name => _localization.GetLocalizedString("TaskUpdatePlugins");
 
-        /// <inheritdoc />
         public string Description => _localization.GetLocalizedString("TaskUpdatePluginsDescription");
 
-        /// <inheritdoc />
         public string Category => _localization.GetLocalizedString("TasksApplication");
 
-        /// <inheritdoc />
         public string Key => "PluginUpdates";
 
-        /// <inheritdoc />
         public bool IsHidden => false;
 
-        /// <inheritdoc />
         public bool IsEnabled => true;
 
-        /// <inheritdoc />
         public bool IsLogged => true;
     }
 }
