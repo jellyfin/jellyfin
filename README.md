@@ -14,7 +14,7 @@
 <img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin.svg"/>
 </a>
 <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget">
-<img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg" alt="Translation Status"/>
+<img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/>
 </a>
 <a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=1">
 <img alt="Azure Builds" src="https://dev.azure.com/jellyfin-project/jellyfin/_apis/build/status/Jellyfin%20CI"/>
@@ -37,6 +37,12 @@
 </a>
 <a href="https://www.reddit.com/r/jellyfin">
 <img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"/>
+</a>
+<a href="https://github.com/jellyfin/jellyfin/releases.atom">
+<img alt="Release RSS Feed"" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" />
+</a>
+<a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
+<img alt="Master Commits RSS Feed"" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
 </a>
 </p>
 
