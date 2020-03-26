@@ -34,11 +34,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public DeleteCacheFileTask(
             IApplicationPaths appPaths,
             ILogger<DeleteCacheFileTask> logger,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            ILocalizationManager localization)
         {
             ApplicationPaths = appPaths;
             _logger = logger;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         /// <summary>

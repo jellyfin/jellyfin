@@ -28,11 +28,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public DeleteTranscodeFileTask(
             ILogger<DeleteTranscodeFileTask> logger,
             IFileSystem fileSystem,
-            IConfigurationManager configurationManager)
+            IConfigurationManager configurationManager,
+            ILocalizationManager localization)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
+            _localization = localization;
         }
 
         /// <summary>

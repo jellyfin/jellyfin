@@ -28,10 +28,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem)
+        public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization)
         {
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         /// <summary>

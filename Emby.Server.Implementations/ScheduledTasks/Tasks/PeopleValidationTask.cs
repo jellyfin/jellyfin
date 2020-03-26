@@ -27,10 +27,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="appHost">The server application host</param>
-        public PeopleValidationTask(ILibraryManager libraryManager, IServerApplicationHost appHost)
+        public PeopleValidationTask(ILibraryManager libraryManager, IServerApplicationHost appHost, ILocalizationManager localization)
         {
             _libraryManager = libraryManager;
             _appHost = appHost;
+            _localization = localization;
         }
 
         /// <summary>

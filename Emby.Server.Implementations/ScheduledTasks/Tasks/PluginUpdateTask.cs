@@ -25,10 +25,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly IInstallationManager _installationManager;
         private readonly ILocalizationManager _localization;
 
-        public PluginUpdateTask(ILogger<PluginUpdateTask> logger, IInstallationManager installationManager)
+        public PluginUpdateTask(ILogger<PluginUpdateTask> logger, IInstallationManager installationManager, ILocalizationManager localization)
         {
             _logger = logger;
             _installationManager = installationManager;
+            _localization = localization;
         }
 
         /// <summary>

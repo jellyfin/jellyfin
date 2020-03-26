@@ -45,7 +45,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
-        public ChapterImagesTask(ILoggerFactory loggerFactory, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager, IFileSystem fileSystem)
+        public ChapterImagesTask(
+            ILoggerFactory loggerFactory,
+            ILibraryManager libraryManager,
+            IItemRepository itemRepo,
+            IApplicationPaths appPaths,
+            IEncodingManager encodingManager,
+            IFileSystem fileSystem,
+            ILocalizationManager localization)
         {
             _logger = loggerFactory.CreateLogger(GetType().Name);
             _libraryManager = libraryManager;
@@ -53,6 +60,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _appPaths = appPaths;
             _encodingManager = encodingManager;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         /// <summary>
