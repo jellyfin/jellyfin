@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
         public string Key => MetadataProviders.TmdbCollection.ToString();
 
         /// <inheritdoc />
-        public ExternalIdType Type => ExternalIdType.BoxSet;
+        public ExternalIdMediaType Type => ExternalIdMediaType.BoxSet;
 
         /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "collection/{0}";
