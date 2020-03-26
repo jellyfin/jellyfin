@@ -1015,7 +1015,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var mapArgs = state.IsOutputVideo ? EncodingHelper.GetMapArgs(state) : string.Empty;
 
-            // TODO: Path.GetDirectoryName could return null
             var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request);
 
             var segmentFormat = GetSegmentFileExtension(state.Request).TrimStart('.');

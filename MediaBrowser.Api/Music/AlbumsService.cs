@@ -26,21 +26,9 @@ namespace MediaBrowser.Api.Music
     [Authenticated]
     public class AlbumsService : BaseApiService
     {
-        /// <summary>
-        /// The _user manager
-        /// </summary>
         private readonly IUserManager _userManager;
-
-        /// <summary>
-        /// The _user data repository
-        /// </summary>
         private readonly IUserDataManager _userDataRepository;
-
-        /// <summary>
-        /// The _library manager
-        /// </summary>
         private readonly ILibraryManager _libraryManager;
-
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
         private readonly IAuthorizationContext _authContext;

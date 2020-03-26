@@ -245,12 +245,7 @@ namespace MediaBrowser.Api
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = Guid.Parse(GetPathValue(1));
 
-            var plugin = _appHost.Plugins.FirstOrDefault(p => p.Id == id);
-
-            if (!(plugin is IHasPluginConfiguration pluginConfiguration))
-            {
-                throw new FileNotFoundException();
-            }
+            var pluginConfiguration = _appHost.Plugins.FirstOrDefault(p => p.Id == id) as IHasPluginConfiguration ?? throw new FileNotFoundException();
 
             var configuration = (await _jsonSerializer.DeserializeFromStreamAsync(request.RequestStream, pluginConfiguration.ConfigurationType).ConfigureAwait(false)) as BasePluginConfiguration;
 

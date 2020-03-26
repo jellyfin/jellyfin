@@ -109,11 +109,7 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class SearchService : BaseApiService
     {
-        /// <summary>
-        /// The _search engine
-        /// </summary>
         private readonly ISearchEngine _searchEngine;
-
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly IImageProcessor _imageProcessor;

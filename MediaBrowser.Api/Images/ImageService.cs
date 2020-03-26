@@ -293,9 +293,11 @@ namespace MediaBrowser.Api.Images
                 // Prevent implicitly captured closure
                 var currentImageType = imageType;
 
-                foreach (var info in itemImages
+                var imageInfos = itemImages
                     .Where(i => i.Type == currentImageType)
-                    .Select(image => GetImageInfo(item, image, index)))
+                    .Select(image => GetImageInfo(item, image, index));
+
+                foreach (var info in imageInfos)
                 {
                     if (info != null)
                     {
@@ -713,23 +715,24 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task.</returns>
         public async Task PostImage(BaseItem entity, Stream inputStream, ImageType imageType, string mimeType)
         {
-            using var reader = new StreamReader(inputStream);
-
-            var text = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-            var bytes = Convert.FromBase64String(text);
-
-            var memoryStream = new MemoryStream(bytes)
+            using (var reader = new StreamReader(inputStream))
             {
-                Position = 0
-            };
+                var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-            // Handle image/png; charset=utf-8
-            mimeType = mimeType.Split(';').FirstOrDefault();
+                var bytes = Convert.FromBase64String(text);
 
-            await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+                var memoryStream = new MemoryStream(bytes)
+                {
+                    Position = 0
+                };
 
-            entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+                // Handle image/png; charset=utf-8
+                mimeType = mimeType.Split(';').FirstOrDefault();
+
+                await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+
+                entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            }
         }
     }
 }

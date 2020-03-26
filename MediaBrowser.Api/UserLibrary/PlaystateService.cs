@@ -277,8 +277,11 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dto = UpdatePlayedStatus(user, request.Id, true, datePlayed);
 
-            foreach (var additionalUser in session.AdditionalUsers
-                .Select(additionalUserInfo => _userManager.GetUserById(additionalUserInfo.UserId)))
+            var additionalUsers = session
+                .AdditionalUsers
+                .Select(additionalUserInfo => _userManager.GetUserById(additionalUserInfo.UserId));
+
+            foreach (var additionalUser in additionalUsers)
             {
                 UpdatePlayedStatus(additionalUser, request.Id, true, datePlayed);
             }
@@ -421,8 +424,11 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dto = UpdatePlayedStatus(user, request.Id, false, null);
 
-            foreach (var additionalUser in session.AdditionalUsers
-                .Select(additionalUserInfo => _userManager.GetUserById(additionalUserInfo.UserId)))
+            var additionalUsers = session
+                .AdditionalUsers
+                .Select(additionalUserInfo => _userManager.GetUserById(additionalUserInfo.UserId));
+
+            foreach (var additionalUser in additionalUsers)
             {
                 UpdatePlayedStatus(additionalUser, request.Id, false, null);
             }

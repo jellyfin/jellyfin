@@ -225,7 +225,7 @@ namespace MediaBrowser.Api.Playback.Hls
                                 count++;
                                 if (count >= segmentCount)
                                 {
-                                    Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                    Logger.LogDebug($"Finished waiting for {segmentCount} segments in {playlist}");
                                     return;
                                 }
                             }
@@ -245,7 +245,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected Stream GetPlaylistFileStream(string path)
         {
-            // TODO: This should not be correct
+            // TODO: this is probably incorrect, investigate
             var tmpPath = path + ".tmp";
             tmpPath = path;
 

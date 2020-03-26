@@ -234,16 +234,9 @@ namespace MediaBrowser.Api
         public string Pin { get; set; }
     }
 
-    /// <summary>
-    /// Class UsersService
-    /// </summary>
     public class UserService : BaseApiService
     {
-        /// <summary>
-        /// The user manager.
-        /// </summary>
         private readonly IUserManager _userManager;
-
         private readonly ISessionManager _sessionManager;
         private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
