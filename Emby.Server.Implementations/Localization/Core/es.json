@@ -96,6 +96,7 @@
     "TasksCategoryMaintenance": "Mantenimiento",
     "TasksCategoryLibrary": "Librería",
     "TasksCategoryApplication": "Aplicación",
+    "TasksCategoryChannels": "Canales de internet",
     "TaskCleanCache": "Eliminar archivos temporales",
     "TaskCleanCacheDescription": "Elimina los archivos temporales que ya no son necesarios para el servidor",
     "TaskRefreshChapterImages": "Extraer imágenes de los capítulos",
@@ -109,5 +110,7 @@
     "TaskUpdatePlugins": "Actualizar extensiones",
     "TaskUpdatePluginsDescription": "Actualiza las extensiones que están configuradas para actualizarse automáticamente",
     "TaskCleanTranscode": "Limpiar las transcodificaciones",
-    "TaskCleanTranscodeDescription": "Elimina los archivos temporales creados mientras se transcodificaba el contenido"
+    "TaskCleanTranscodeDescription": "Elimina los archivos temporales creados mientras se transcodificaba el contenido",
+    "TaskRefreshChannels": "Actualizar canales",
+    "TaskRefreshChannelsDescription": "Actualiza la información de los canales de internet"
 }

@@ -95,6 +95,7 @@
     "TasksCategoryMaintenance": "Maintenance",
     "TasksCategoryLibrary": "Library",
     "TasksCategoryApplication": "Application",
+    "TasksCategoryChannels": "Canales de internet",
     "TaskCleanCache": "Clean Cache Directory",
     "TaskCleanCacheDescription": "Deletes cache files no longer needed by the system.",
     "TaskRefreshChapterImages": "Extract Chapter Images",
@@ -108,5 +109,7 @@
     "TaskUpdatePlugins": "Update Plugins",
     "TaskUpdatePluginsDescription": "Downloads and installs updates for plugins that are configured to update automatically.",
     "TaskCleanTranscode": "Clean Transcode Directory",
-    "TaskCleanTranscodeDescription": "Deletes transcode files more than one day old."
+    "TaskCleanTranscodeDescription": "Deletes transcode files more than one day old.",
+    "TaskRefreshChannels": "Refresh Channels",
+    "TaskRefreshChannelsDescription": "Refreshes internet channel information."
 }
