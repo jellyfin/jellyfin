@@ -436,6 +436,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 ErrorDialog = false
             };
             var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
+            process.Exited += (sender, args) => ((Process)sender).Dispose();
 
             _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -467,8 +468,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             var exitCode = ranToCompletion ? process.ExitCode : -1;
-
-            process.Dispose();
 
             var failed = false;
 
@@ -585,6 +584,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 ErrorDialog = false
             };
             var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
+            process.Exited += (sender, args) => ((Process)sender).Dispose();
 
             _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -616,8 +616,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             var exitCode = ranToCompletion ? process.ExitCode : -1;
-
-            process.Dispose();
 
             var failed = false;
 

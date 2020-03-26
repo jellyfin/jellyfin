@@ -290,9 +290,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// </summary>
         private void OnFfMpegProcessExited(Process process, string inputFile)
         {
-            _hasExited = true;
+            try
+            {
+                _hasExited = true;
 
-            _logFileStream?.Dispose();
+                _logFileStream?.Dispose();
                 _logFileStream = null;
 
                 var exitCode = process.ExitCode;
@@ -311,7 +313,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                                 CultureInfo.InvariantCulture,
                                 "Recording for {0} failed. Exit code {1}",
                                 _targetPath,
-                            exitCode)));
+                                exitCode)));
+                }
+            }
+            finally
+            {
+                process.Dispose();
             }
         }
 
