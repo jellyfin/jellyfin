@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
         public string Description => string.Format(_localization.GetLocalizedString("TaskCleanLogsDescription"), ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
 
-        public string Category => _localization.GetLocalizedString("TasksMaintenance");
+        public string Category => _localization.GetLocalizedString("TasksCategoryMaintenance");
 
         public string Key => "CleanLogFiles";
 

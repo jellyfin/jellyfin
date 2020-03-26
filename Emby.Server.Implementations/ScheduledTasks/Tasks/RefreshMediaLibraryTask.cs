@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         public string Description => _localization.GetLocalizedString("TaskRefreshLibraryDescription");
 
-        public string Category => _localization.GetLocalizedString("TasksLibrary");
+        public string Category => _localization.GetLocalizedString("TasksCategoryLibrary");
 
         public string Key => "RefreshLibrary";
 
