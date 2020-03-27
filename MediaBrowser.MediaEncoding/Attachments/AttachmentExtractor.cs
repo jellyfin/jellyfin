@@ -166,19 +166,15 @@ namespace MediaBrowser.MediaEncoding.Attachments
             };
             var process = new Process
             {
-                StartInfo = startInfo
+                StartInfo = startInfo,
+                EnableRaisingEvents = true
             };
 
             _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             process.Start();
 
-            var processTcs = new TaskCompletionSource<bool>();
-            process.EnableRaisingEvents = true;
-            process.Exited += (sender, args) => processTcs.TrySetResult(true);
-            var unregister = cancellationToken.Register(() => processTcs.TrySetResult(process.HasExited));
-            var ranToCompletion = await processTcs.Task.ConfigureAwait(false);
-            unregister.Dispose();
+            var ranToCompletion = await process.WaitForExitAsync(cancellationToken);
 
             if (!ranToCompletion)
             {
