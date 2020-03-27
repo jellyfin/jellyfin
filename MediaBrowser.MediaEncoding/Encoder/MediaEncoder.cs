@@ -577,10 +577,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false,
             };
+
+            _logger.LogDebug("{0} {1}", processStartInfo.FileName, processStartInfo.Arguments);
+
             var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
-
-            _logger.LogDebug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
-
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 bool ranToCompletion;
@@ -706,14 +706,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
             };
-            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
-            _logger.LogInformation(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+            _logger.LogInformation(processStartInfo.FileName + " " + processStartInfo.Arguments);
 
             await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             bool ranToCompletion = false;
 
+            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 try
