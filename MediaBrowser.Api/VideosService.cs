@@ -138,28 +138,14 @@ namespace MediaBrowser.Api
             var videosWithVersions = items.Where(i => i.MediaSourceCount > 1)
                 .ToList();
 
-            var primaryVersion = videosWithVersions.FirstOrDefault()
-                                 ?? items.OrderBy(
-                                         i =>
-                                         {
-                                             if (i.Video3DFormat.HasValue)
-                                             {
-                                                 return 1;
-                                             }
-                                             else
-                                             {
-                                                 if (i.VideoType != Model.Entities.VideoType.VideoFile)
-                                                 {
-                                                     return 1;
-                                                 }
-                                                 else
-                                                 {
-                                                     return 0;
-                                                 }
-                                             }
-                                         })
-                                     .ThenByDescending(i => i.GetDefaultVideoStream()?.Width ?? 0)
-                                     .First();
+            var primaryVersion = videosWithVersions.FirstOrDefault() ?? items
+                .OrderBy(i =>
+                {
+                    bool sortFirst = i.Video3DFormat.HasValue || i.VideoType != Model.Entities.VideoType.VideoFile;
+                    return sortFirst ? 1 : 0;
+                })
+                .ThenByDescending(i => i.GetDefaultVideoStream()?.Width ?? 0)
+                .First();
 
             var list = primaryVersion.LinkedAlternateVersions.ToList();
 

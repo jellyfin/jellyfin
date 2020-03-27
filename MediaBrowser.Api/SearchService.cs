@@ -315,8 +315,7 @@ namespace MediaBrowser.Api
 
         private void SetBackdropImageInfo(SearchHint hint, BaseItem item)
         {
-            var itemWithImage = (item.HasImage(ImageType.Backdrop) ? item : null)
-                                ?? GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
+            var itemWithImage = (item.HasImage(ImageType.Backdrop) ? item : null) ?? GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
 
             if (itemWithImage == null)
             {

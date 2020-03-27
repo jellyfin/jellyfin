@@ -324,8 +324,7 @@ namespace MediaBrowser.Api.Movies
                     DtoOptions = dtoOptions,
                 };
 
-                var items = _libraryManager.GetItemList(
-                        itemsQuery)
+                var items = _libraryManager.GetItemList(itemsQuery)
                     .GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                     .Select(x => x.First())
                     .Take(itemLimit)
