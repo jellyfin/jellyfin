@@ -11,28 +11,6 @@ namespace MediaBrowser.Common.Extensions
     public static class ProcessExtensions
     {
         /// <summary>
-        /// Gets a value indicating whether the associated process has been terminated using
-        /// <see cref="Process.HasExited"/>. This is safe to call even if there is no operating system process
-        /// associated with the <see cref="Process"/>.
-        /// </summary>
-        /// <param name="process">The process to check the exit status for.</param>
-        /// <returns>
-        /// True if the operating system process referenced by the <see cref="Process"/> component has
-        /// terminated, or if there is no associated operating system process; otherwise, false.
-        /// </returns>
-        public static bool HasExitedSafe(this Process process)
-        {
-            try
-            {
-                return process.HasExited;
-            }
-            catch (InvalidOperationException)
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
         /// Asynchronously wait for the process to exit.
         /// </summary>
         /// <param name="process">The process to wait for.</param>
@@ -73,6 +51,28 @@ namespace MediaBrowser.Common.Extensions
             using (var cancelRegistration = cancelToken.Register(() => tcs.TrySetResult(process.HasExitedSafe())))
             {
                 return await tcs.Task.ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the associated process has been terminated using
+        /// <see cref="Process.HasExited"/>. This is safe to call even if there is no operating system process
+        /// associated with the <see cref="Process"/>.
+        /// </summary>
+        /// <param name="process">The process to check the exit status for.</param>
+        /// <returns>
+        /// True if the operating system process referenced by the <see cref="Process"/> component has
+        /// terminated, or if there is no associated operating system process; otherwise, false.
+        /// </returns>
+        private static bool HasExitedSafe(this Process process)
+        {
+            try
+            {
+                return process.HasExited;
+            }
+            catch (InvalidOperationException)
+            {
+                return true;
             }
         }
     }
