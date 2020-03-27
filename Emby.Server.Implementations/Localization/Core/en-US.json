@@ -95,7 +95,7 @@
     "TasksCategoryMaintenance": "Maintenance",
     "TasksCategoryLibrary": "Library",
     "TasksCategoryApplication": "Application",
-    "TasksCategoryChannels": "Canales de internet",
+    "TasksCategoryChannels": "Internet Channels",
     "TaskCleanCache": "Clean Cache Directory",
     "TaskCleanCacheDescription": "Deletes cache files no longer needed by the system.",
     "TaskRefreshChapterImages": "Extract Chapter Images",
