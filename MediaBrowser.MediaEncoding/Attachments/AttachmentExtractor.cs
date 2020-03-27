@@ -164,34 +164,32 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
             };
-            var process = new Process
+
+            int exitCode;
+
+            using (var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true })
             {
-                StartInfo = startInfo,
-                EnableRaisingEvents = true
-            };
+                _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+                process.Start();
 
-            process.Start();
+                var ranToCompletion = await process.WaitForExitAsync(cancellationToken);
 
-            var ranToCompletion = await process.WaitForExitAsync(cancellationToken);
-
-            if (!ranToCompletion)
-            {
-                try
+                if (!ranToCompletion)
                 {
-                    _logger.LogWarning("Killing ffmpeg attachment extraction process");
-                    process.Kill();
+                    try
+                    {
+                        _logger.LogWarning("Killing ffmpeg attachment extraction process");
+                        process.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error killing attachment extraction process");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error killing attachment extraction process");
-                }
+
+                exitCode = ranToCompletion ? process.ExitCode : -1;
             }
-
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
-
-            process.Dispose();
 
             var failed = false;
 
