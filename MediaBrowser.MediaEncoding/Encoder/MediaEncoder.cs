@@ -596,7 +596,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         timeoutMs = DefaultImageExtractionTimeout;
                     }
 
-                    ranToCompletion = await process.WaitForExitAsync(timeoutMs).ConfigureAwait(false);
+                    ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMilliseconds(timeoutMs)).ConfigureAwait(false);
 
                     if (!ranToCompletion)
                     {
@@ -729,7 +729,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     while (isResponsive)
                     {
-                        if (await process.WaitForExitAsync(30000).ConfigureAwait(false))
+                        if (await process.WaitForExitAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false))
                         {
                             ranToCompletion = true;
                             break;

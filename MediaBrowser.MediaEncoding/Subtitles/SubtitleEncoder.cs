@@ -451,7 +451,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw;
             }
 
-            var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
+            var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
 
             if (!ranToCompletion)
             {
@@ -599,7 +599,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw;
             }
 
-            var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
+            var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
 
             if (!ranToCompletion)
             {
