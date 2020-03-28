@@ -1327,8 +1327,9 @@ namespace MediaBrowser.Controller.Entities
                         }
 
                         // Use some hackery to get the extra type based on foldername
-                        Enum.TryParse(extraFolderName.Replace(" ", ""), true, out ExtraType extraType);
-                        item.ExtraType = extraType;
+                        item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", ""), true, out ExtraType extraType)
+                            ? extraType
+                            : (ExtraType?)null;
 
                         return item;
 
