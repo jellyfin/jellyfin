@@ -1056,30 +1056,19 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.SpecialFeatureCount))
             {
-                if (allExtras == null)
-                {
-                    allExtras = item.GetExtras().ToArray();
-                }
-
-                dto.SpecialFeatureCount = allExtras.Count(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value));
+                allExtras = item.GetExtras().ToArray();
+                dto.SpecialFeatureCount = allExtras.Count(i => i.HasExtraType(BaseItem.DisplayExtraTypes, true));
             }
 
             if (options.ContainsField(ItemFields.LocalTrailerCount))
             {
-                int trailerCount = 0;
-                if (allExtras == null)
-                {
-                    allExtras = item.GetExtras().ToArray();
-                }
-
-                trailerCount += allExtras.Count(i => i.ExtraType.HasValue && i.ExtraType.Value == ExtraType.Trailer);
+                allExtras = allExtras ?? item.GetExtras().ToArray();
+                dto.LocalTrailerCount = allExtras.Count(i => i.HasExtraType(new[] { ExtraType.Trailer }, false));
 
                 if (item is IHasTrailers hasTrailers)
                 {
-                    trailerCount += hasTrailers.GetTrailerCount();
+                    dto.LocalTrailerCount += hasTrailers.GetTrailerCount();
                 }
-
-                dto.LocalTrailerCount = trailerCount;
             }
 
             // Add EpisodeInfo
