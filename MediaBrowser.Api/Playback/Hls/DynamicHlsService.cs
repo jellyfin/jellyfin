@@ -927,35 +927,41 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
+                var gopArg = string.Empty;
                 var keyFrameArg = string.Format(
                     CultureInfo.InvariantCulture,
                     " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
                     GetStartNumber(state) * state.SegmentLength,
                     state.SegmentLength);
-                if (state.TargetFramerate.HasValue)
+
+                var framerate = state.VideoStream?.RealFrameRate;
+
+                if (framerate != null && framerate.HasValue)
                 {
                     // This is to make sure keyframe interval is limited to our segment,
                     // as forcing keyframes is not enough.
                     // Example: we encoded half of desired length, then codec detected
                     // scene cut and inserted a keyframe; next forced keyframe would
                     // be created outside of segment, which breaks seeking.
-                    keyFrameArg += string.Format(
+                    gopArg = string.Format(
                         CultureInfo.InvariantCulture,
-                        " -g {0} -keyint_min {0}",
-                        (int)(state.SegmentLength * state.TargetFramerate)
+                        " -g {0} -keyint_min {0} -sc_threshold 0",
+                        state.SegmentLength * Math.Ceiling(Convert.ToDecimal(framerate))
                     );
                 }
 
                 args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset());
 
-                // Unable to force key frames to h264_qsv transcode
-                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                // Unable to force key frames using these hw encoders, set key frames by GOP
+                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv");
+                    args += " " + gopArg;
                 }
                 else
                 {
-                    args += " " + keyFrameArg;
+                    args += " " + keyFrameArg + gopArg;
                 }
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
