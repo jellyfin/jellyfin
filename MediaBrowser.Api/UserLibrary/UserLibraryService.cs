@@ -361,7 +361,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtos = item.GetDisplayExtras()
+            var dtos = item
+                .GetExtras(BaseItem.DisplayExtraTypes)
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
             return dtos.ToArray();
@@ -380,7 +381,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtosExtras = item.GetExtras(new[] { ExtraType.Trailer }, false)
+            var dtosExtras = item.GetExtras(new ExtraType?[] { ExtraType.Trailer })
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
                 .ToArray();
 

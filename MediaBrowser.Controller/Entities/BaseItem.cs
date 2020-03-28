@@ -2895,14 +2895,13 @@ namespace MediaBrowser.Controller.Entities
         /// Get all extras with specific types that are associated with this item.
         /// </summary>
         /// <param name="extraTypes">The types of extras to retrieve.</param>
-        /// <param name="includeUnknownTypes">If true, include extras whose type could not be determined.</param>
         /// <returns>An enumerable containing the extras.</returns>
-        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes, bool includeUnknownTypes)
+        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType?> extraTypes)
         {
             return ExtraIds
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i != null)
-                .Where(i => i.HasExtraType(extraTypes, includeUnknownTypes));
+                .Where(i => extraTypes.Contains(i.ExtraType));
         }
 
         public IEnumerable<BaseItem> GetTrailers()
@@ -2911,29 +2910,6 @@ namespace MediaBrowser.Controller.Entities
                 return ((IHasTrailers)this).LocalTrailerIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
             else
                 return Array.Empty<BaseItem>();
-        }
-
-        /// <summary>
-        /// Get all extras associated with this item that should be displayed as "Special Features" in the UI. This is
-        /// all extras with either an unknown type, or a type contained in <see cref="DisplayExtraTypes"/>.
-        /// </summary>
-        /// <returns>An IEnumerable containing the extra items.</returns>
-        public IEnumerable<BaseItem> GetDisplayExtras()
-        {
-            return GetExtras(DisplayExtraTypes, true);
-        }
-
-        /// <summary>
-        /// Check if this item is an extra with a type that matches a given set.
-        /// </summary>
-        /// <param name="extraTypes">The types of extras to match with.</param>
-        /// <param name="includeUnknownTypes">If true, include extras whose type could not be determined.</param>
-        /// <returns>True if this item matches, otherwise false.</returns>
-        public bool HasExtraType(IReadOnlyCollection<ExtraType> extraTypes, bool includeUnknownTypes)
-        {
-            return
-                (includeUnknownTypes && (ExtraType == null || ExtraType == 0))
-                || (ExtraType.HasValue && extraTypes.Contains(ExtraType.Value));
         }
 
         public virtual bool IsHD => Height >= 720;
@@ -2956,8 +2932,10 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Extra types that should be counted and displayed as "Special Features" in the UI.
         /// </summary>
-        public static readonly IReadOnlyCollection<ExtraType> DisplayExtraTypes = new HashSet<ExtraType>
+        public static readonly IReadOnlyCollection<ExtraType?> DisplayExtraTypes = new HashSet<ExtraType?>
         {
+            null,
+            0,
             Model.Entities.ExtraType.BehindTheScenes,
             Model.Entities.ExtraType.Clip,
             Model.Entities.ExtraType.DeletedScene,
