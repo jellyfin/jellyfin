@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
     "MessageServerConfigurationUpdated": "Tenar konfigurasjonen har blitt oppdatert",
     "MessageNamedServerConfigurationUpdatedWithValue": "Tenar konfigurasjon seksjon {0} har blitt oppdatert",
@@ -58,3 +59,6 @@
     "Movies": "Filmar",
     "MixedContent": "Blanda innhald"
 }
+=======
+{}
+>>>>>>> master
