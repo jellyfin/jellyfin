@@ -31,7 +31,6 @@
     "User": "Utilizador",
     "TvShows": "Séries",
     "System": "Sistema",
-    "SubtitlesDownloadedForItem": "Legendas transferidas para {0}",
     "SubtitleDownloadFailureFromForItem": "Falha na transferência de legendas de {0} para {1}",
     "StartupEmbyServerIsLoading": "O servidor Jellyfin está a iniciar. Tente novamente dentro de momentos.",
     "ServerNameNeedsToBeRestarted": "{0} necessita ser reiniciado",

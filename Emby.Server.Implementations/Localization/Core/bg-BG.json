@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Сървърът зарежда. Моля, опитайте отново след малко.",
     "SubtitleDownloadFailureForItem": "Неуспешно изтегляне на субтитри за {0}",
     "SubtitleDownloadFailureFromForItem": "Поднадписите за {1} от {0} не можаха да се изтеглят",
-    "SubtitlesDownloadedForItem": "Изтеглени са субтитри за {0}",
     "Sync": "Синхронизиране",
     "System": "Система",
     "TvShows": "Телевизионни сериали",

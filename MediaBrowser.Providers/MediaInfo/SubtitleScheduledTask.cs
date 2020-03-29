@@ -14,6 +14,7 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -25,6 +26,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
+        private readonly ILocalizationManager _localization;
 
         public SubtitleScheduledTask(
             ILibraryManager libraryManager,
@@ -32,7 +34,8 @@ namespace MediaBrowser.Providers.MediaInfo
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             ILogger<SubtitleScheduledTask> logger,
-            IMediaSourceManager mediaSourceManager)
+            IMediaSourceManager mediaSourceManager,
+            ILocalizationManager localization)
         {
             _libraryManager = libraryManager;
             _config = config;
@@ -40,6 +43,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
             _json = json;
+            _localization = localization;
         }
 
         private SubtitleOptions GetOptions()
@@ -204,11 +208,11 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
-        public string Name => "Download missing subtitles";
+        public string Name => _localization.GetLocalizedString("TaskDownloadMissingSubtitles");
 
-        public string Description => "Searches the internet for missing subtitles based on metadata configuration.";
+        public string Description => _localization.GetLocalizedString("TaskDownloadMissingSubtitlesDescription");
 
-        public string Category => "Library";
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
 
         public string Key => "DownloadSubtitles";
 
