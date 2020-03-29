@@ -169,7 +169,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
         public string Description => _localization.GetLocalizedString("TaskCleanCacheDescription");
 
-        public string Category => _localization.GetLocalizedString("TasksCategoryMaintenance");
+        public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
         public string Key => "DeleteCacheFiles";
 

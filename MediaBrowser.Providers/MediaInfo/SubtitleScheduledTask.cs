@@ -212,7 +212,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public string Description => _localization.GetLocalizedString("TaskDownloadMissingSubtitlesDescription");
 
-        public string Category => _localization.GetLocalizedString("TasksCategoryLibrary");
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
 
         public string Key => "DownloadSubtitles";
 

@@ -105,7 +105,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public string Description => _localization.GetLocalizedString("TaskUpdatePluginsDescription");
 
         /// <inheritdoc />
-        public string Category => _localization.GetLocalizedString("TasksCategoryApplication");
+        public string Category => _localization.GetLocalizedString("TasksApplicationCategory");
 
         /// <inheritdoc />
         public string Key => "PluginUpdates";

@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Channels
         public string Description => _localization.GetLocalizedString("TasksRefreshChannelsDescription");
 
         /// <inheritdoc />
-        public string Category => _localization.GetLocalizedString("TasksCategoryChannels");
+        public string Category => _localization.GetLocalizedString("TasksChannelsCategory");
 
         /// <inheritdoc />
         public bool IsHidden => ((ChannelManager)_channelManager).Channels.Length == 0;
