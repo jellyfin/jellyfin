@@ -946,7 +946,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     gopArg = string.Format(
                         CultureInfo.InvariantCulture,
                         " -g {0} -keyint_min {0} -sc_threshold 0",
-                        state.SegmentLength * Math.Ceiling(Convert.ToDecimal(framerate))
+                        Math.Ceiling(state.SegmentLength * framerate.Value)
                     );
                 }
 
@@ -980,6 +980,8 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += EncodingHelper.GetGraphicalSubtitleParam(state, encodingOptions, codec);
                 }
 
+                // -start_at_zero is necessary to use with -ss when seeking,
+                // otherwise the target position cannot be determined.
                 if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
                 {
                     args += " -start_at_zero";
