@@ -1588,9 +1588,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Setup subtitle scaling
             if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
             {
+                // force_original_aspect_ratio=decrease
+                // Enable decreasing output video width or height if necessary to keep the original aspect ratio
                 videoSizeParam = string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale={0}:{1}",
+                    "scale={0}:{1}:force_original_aspect_ratio=decrease",
                     state.VideoStream.Width.Value,
                     state.VideoStream.Height.Value);
 
@@ -1601,6 +1603,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // For VAAPI and CUVID decoder
+                // these encoders cannot automatically adjust the size of graphical subtitles to fit the output video,
+                // thus needs to be manually adjusted.
                 if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
                     || (videoDecoder ?? string.Empty).IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1)
                 {
@@ -1613,7 +1617,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         videoSizeParam = string.Format(
                         CultureInfo.InvariantCulture,
-                        "scale={0}:{1}",
+                        "scale={0}:{1}:force_original_aspect_ratio=decrease",
                         width.Value,
                         height.Value);
                     }
@@ -1741,7 +1745,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-			if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) || (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) && !hasTextSubs)
+            if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) || (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) && !hasTextSubs)
                 && width.HasValue
                 && height.HasValue)
             {
@@ -2043,7 +2047,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     if (!hasTextSubs)
-					{
+                    {
                         filters.Add(string.Format(CultureInfo.InvariantCulture, "deinterlace_qsv"));
                     }
                 }
@@ -2051,9 +2055,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Add software deinterlace filter before scaling filter
             if (((state.DeInterlace("h264", true) || state.DeInterlace("h265", true) || state.DeInterlace("hevc", true))
-                    && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
-                        || (hasTextSubs && state.DeInterlace("h264", true) && string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)))
+                && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                    || (hasTextSubs && state.DeInterlace("h264", true) && string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase)))
             {
                 var inputFramerate = videoStream?.RealFrameRate;
 

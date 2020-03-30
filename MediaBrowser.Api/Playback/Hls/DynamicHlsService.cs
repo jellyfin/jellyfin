@@ -942,7 +942,8 @@ namespace MediaBrowser.Api.Playback.Hls
                     // as forcing keyframes is not enough.
                     // Example: we encoded half of desired length, then codec detected
                     // scene cut and inserted a keyframe; next forced keyframe would
-                    // be created outside of segment, which breaks seeking.
+                    // be created outside of segment, which breaks seeking
+                    // -sc_threshold 0 is used to prevent the hardware encoder from post processing to break the set keyframe
                     gopArg = string.Format(
                         CultureInfo.InvariantCulture,
                         " -g {0} -keyint_min {0} -sc_threshold 0",
@@ -968,16 +969,15 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                // Add resolution params, if specified
-                if (!hasGraphicalSubs)
-                {
-                    args += EncodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
-                }
-
                 // This is for graphical subs
                 if (hasGraphicalSubs)
                 {
                     args += EncodingHelper.GetGraphicalSubtitleParam(state, encodingOptions, codec);
+                }
+                // Add resolution params, if specified
+                else
+                {
+                    args += EncodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
                 }
 
                 // -start_at_zero is necessary to use with -ss when seeking,
