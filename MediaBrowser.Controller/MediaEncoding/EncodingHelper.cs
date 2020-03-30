@@ -424,6 +424,11 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
             {
+                // Prefer to use libfdk_aac for better audio quality while using the custom build FFmpeg
+                if (_mediaEncoder.SupportsEncoder("libfdk_aac"))
+                {
+                    return "libfdk_aac";
+                }
                 return "aac -strict experimental";
             }
 
