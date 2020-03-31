@@ -927,59 +927,67 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
+                var gopArg = string.Empty;
                 var keyFrameArg = string.Format(
                     CultureInfo.InvariantCulture,
                     " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
                     GetStartNumber(state) * state.SegmentLength,
                     state.SegmentLength);
-                if (state.TargetFramerate.HasValue)
+
+                var framerate = state.VideoStream?.RealFrameRate;
+
+                if (framerate != null && framerate.HasValue)
                 {
                     // This is to make sure keyframe interval is limited to our segment,
                     // as forcing keyframes is not enough.
                     // Example: we encoded half of desired length, then codec detected
                     // scene cut and inserted a keyframe; next forced keyframe would
-                    // be created outside of segment, which breaks seeking.
-                    keyFrameArg += string.Format(
+                    // be created outside of segment, which breaks seeking
+                    // -sc_threshold 0 is used to prevent the hardware encoder from post processing to break the set keyframe
+                    gopArg = string.Format(
                         CultureInfo.InvariantCulture,
-                        " -g {0} -keyint_min {0}",
-                        (int)(state.SegmentLength * state.TargetFramerate)
+                        " -g {0} -keyint_min {0} -sc_threshold 0",
+                        Math.Ceiling(state.SegmentLength * framerate.Value)
                     );
                 }
 
-                var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
-
                 args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset());
 
-                // Unable to force key frames to h264_qsv transcode
-                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                // Unable to force key frames using these hw encoders, set key frames by GOP
+                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv");
+                    args += " " + gopArg;
                 }
                 else
                 {
-                    args += " " + keyFrameArg;
+                    args += " " + keyFrameArg + gopArg;
                 }
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
-                // Add resolution params, if specified
-                if (!hasGraphicalSubs)
-                {
-                    args += EncodingHelper.GetOutputSizeParam(state, encodingOptions, codec, true);
-                }
+                var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                // This is for internal graphical subs
+                // This is for graphical subs
                 if (hasGraphicalSubs)
                 {
                     args += EncodingHelper.GetGraphicalSubtitleParam(state, encodingOptions, codec);
                 }
+                // Add resolution params, if specified
+                else
+                {
+                    args += EncodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
+                }
+
+                // -start_at_zero is necessary to use with -ss when seeking,
+                // otherwise the target position cannot be determined.
+                if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
+                {
+                    args += " -start_at_zero";
+                }
 
                 //args += " -flags -global_header";
-            }
-
-            if (args.IndexOf("-copyts", StringComparison.OrdinalIgnoreCase) == -1)
-            {
-                args += " -copyts";
             }
 
             if (!string.IsNullOrEmpty(state.OutputVideoSync))
@@ -1024,7 +1032,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             return string.Format(
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f hls -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -hls_time {6} -individual_header_trailer 0 -hls_segment_type {7} -start_number {8} -hls_segment_filename \"{9}\" -hls_playlist_type vod -hls_list_size 0 -y \"{10}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -f hls -max_delay 5000000 -hls_time {6} -individual_header_trailer 0 -hls_segment_type {7} -start_number {8} -hls_segment_filename \"{9}\" -hls_playlist_type vod -hls_list_size 0 -y \"{10}\"",
                 inputModifier,
                 EncodingHelper.GetInputArgument(state, encodingOptions),
                 threads,
