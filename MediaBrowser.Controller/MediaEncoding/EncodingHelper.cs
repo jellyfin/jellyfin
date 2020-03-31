@@ -429,7 +429,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return "libfdk_aac";
                 }
-                return "aac -strict experimental";
+                return "aac";
             }
 
             if (string.Equals(codec, "mp3", StringComparison.OrdinalIgnoreCase))
