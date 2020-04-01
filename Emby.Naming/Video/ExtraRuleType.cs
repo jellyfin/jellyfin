@@ -20,7 +20,7 @@ namespace Emby.Naming.Video
         Regex = 2,
 
         /// <summary>
-        /// Match <see cref="ExtraRule.Token"/> against the directory name of the file.
+        /// Match <see cref="ExtraRule.Token"/> against the name of the directory containing the file.
         /// </summary>
         DirectoryName = 3,
     }
