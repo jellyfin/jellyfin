@@ -1062,7 +1062,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.LocalTrailerCount))
             {
-                allExtras = allExtras ?? item.GetExtras().ToArray();
+                allExtras ??= item.GetExtras().ToArray();
                 dto.LocalTrailerCount = allExtras.Count(i => i.ExtraType == ExtraType.Trailer);
 
                 if (item is IHasTrailers hasTrailers)
