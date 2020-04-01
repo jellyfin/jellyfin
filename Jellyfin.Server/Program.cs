@@ -12,11 +12,14 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Drawing;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
 using Jellyfin.Drawing.Skia;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Extensions;
+using MediaBrowser.WebDashboard.Api;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -109,9 +112,10 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
-            // Create an instance of the application configuration to use for application startup
             await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
-            IConfiguration startupConfig = CreateAppConfiguration(appPaths);
+
+            // Create an instance of the application configuration to use for application startup
+            IConfiguration startupConfig = CreateAppConfiguration(options, appPaths);
 
             // Initialize logging framework
             InitializeLoggingFramework(startupConfig, appPaths);
@@ -180,15 +184,31 @@ namespace Jellyfin.Server
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 GetImageEncoder(appPaths),
                 new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
+
             try
             {
+                // If hosting the web client, validate the client content path
+                if (startupConfig.HostWebClient())
+                {
+                    string webContentPath = DashboardService.GetDashboardUIPath(startupConfig, appHost.ServerConfigurationManager);
+                    if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
+                    {
+                        throw new InvalidOperationException(
+                            "The server is expected to host the web client, but the provided content directory is either " +
+                            $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
+                            "server, you may set the '--nowebclient' command line flag, or set" +
+                            $"'{MediaBrowser.Controller.Extensions.ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
+                    }
+                }
+
                 ServiceCollection serviceCollection = new ServiceCollection();
                 await appHost.InitAsync(serviceCollection, startupConfig).ConfigureAwait(false);
 
-                var webHost = CreateWebHostBuilder(appHost, serviceCollection, appPaths).Build();
+                var webHost = CreateWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
-                // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
+                // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
+                appHost.InitializeServices();
                 appHost.FindParts();
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
@@ -230,7 +250,12 @@ namespace Jellyfin.Server
             }
         }
 
-        private static IWebHostBuilder CreateWebHostBuilder(ApplicationHost appHost, IServiceCollection serviceCollection, IApplicationPaths appPaths)
+        private static IWebHostBuilder CreateWebHostBuilder(
+            ApplicationHost appHost,
+            IServiceCollection serviceCollection,
+            StartupOptions commandLineOpts,
+            IConfiguration startupConfig,
+            IApplicationPaths appPaths)
         {
             return new WebHostBuilder()
                 .UseKestrel(options =>
@@ -270,9 +295,8 @@ namespace Jellyfin.Server
                         }
                     }
                 })
-                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(appPaths))
+                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
                 .UseSerilog()
-                .UseContentRoot(appHost.ContentRoot)
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
@@ -395,9 +419,8 @@ namespace Jellyfin.Server
             // webDir
             // IF      --webdir
             // ELSE IF $JELLYFIN_WEB_DIR
-            // ELSE    use <bindir>/jellyfin-web
+            // ELSE    <bindir>/jellyfin-web
             var webDir = options.WebDir;
-
             if (string.IsNullOrEmpty(webDir))
             {
                 webDir = Environment.GetEnvironmentVariable("JELLYFIN_WEB_DIR");
@@ -468,21 +491,33 @@ namespace Jellyfin.Server
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 
-        private static IConfiguration CreateAppConfiguration(IApplicationPaths appPaths)
+        private static IConfiguration CreateAppConfiguration(StartupOptions commandLineOpts, IApplicationPaths appPaths)
         {
             return new ConfigurationBuilder()
-                .ConfigureAppConfiguration(appPaths)
+                .ConfigureAppConfiguration(commandLineOpts, appPaths)
                 .Build();
         }
 
-        private static IConfigurationBuilder ConfigureAppConfiguration(this IConfigurationBuilder config, IApplicationPaths appPaths)
+        private static IConfigurationBuilder ConfigureAppConfiguration(
+            this IConfigurationBuilder config,
+            StartupOptions commandLineOpts,
+            IApplicationPaths appPaths,
+            IConfiguration? startupConfig = null)
         {
+            // Use the swagger API page as the default redirect path if not hosting the web client
+            var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
+            if (startupConfig != null && !startupConfig.HostWebClient())
+            {
+                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
+            }
+
             return config
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
-                .AddInMemoryCollection(ConfigurationOptions.Configuration)
+                .AddInMemoryCollection(inMemoryDefaultConfig)
                 .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables("JELLYFIN_");
+                .AddEnvironmentVariables("JELLYFIN_")
+                .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
         }
 
         /// <summary>

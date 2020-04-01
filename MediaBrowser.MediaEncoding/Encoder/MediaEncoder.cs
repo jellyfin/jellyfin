@@ -429,7 +429,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                 }
 
-                return new ProbeResultNormalizer(_logger, _fileSystem, _localization).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                return new ProbeResultNormalizer(_logger, _localization).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
             }
         }
 
