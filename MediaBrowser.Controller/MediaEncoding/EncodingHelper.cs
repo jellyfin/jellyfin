@@ -429,6 +429,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     return "libfdk_aac";
                 }
+
                 return "aac";
             }
 
