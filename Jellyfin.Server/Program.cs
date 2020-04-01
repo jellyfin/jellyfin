@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,7 +27,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
-using Serilog.Events;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -565,7 +563,7 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Skia not available. Will fallback to NullIMageEncoder.");
+                _logger.LogWarning(ex, $"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
             }
 
             return new NullImageEncoder();

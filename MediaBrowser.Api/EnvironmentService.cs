@@ -177,7 +177,7 @@ namespace MediaBrowser.Api
         }
 
         public object Get(GetDefaultDirectoryBrowser request) =>
-            ToOptimizedResult(new DefaultDirectoryBrowserInfo {Path = null});
+            ToOptimizedResult(new DefaultDirectoryBrowserInfo { Path = null });
 
         /// <summary>
         /// Gets the specified request.

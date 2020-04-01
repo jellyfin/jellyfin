@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {

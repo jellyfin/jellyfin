@@ -536,7 +536,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString))
             {
-               attachment.CodecTag = streamInfo.CodecTagString;
+                attachment.CodecTag = streamInfo.CodecTagString;
             }
 
             if (streamInfo.Tags != null)

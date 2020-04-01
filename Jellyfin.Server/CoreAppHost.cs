@@ -4,7 +4,6 @@ using Emby.Server.Implementations;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server

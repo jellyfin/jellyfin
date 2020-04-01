@@ -454,7 +454,7 @@ namespace Emby.Server.Implementations.Data
 
         private static string GetSaveItemCommandText()
         {
-            var saveColumns = new []
+            var saveColumns = new[]
             {
                 "guid",
                 "type",
@@ -560,7 +560,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(item));
             }
 
-            SaveItems(new [] { item }, cancellationToken);
+            SaveItems(new[] { item }, cancellationToken);
         }
 
         public void SaveImages(BaseItem item)
@@ -1622,7 +1622,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     IEnumerable<MetadataFields> GetLockedFields(string s)
                     {
-                        foreach (var i in s.Split(new [] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
                         {
                             if (Enum.TryParse(i, true, out MetadataFields parsedValue))
                             {
@@ -1818,7 +1818,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.ProductionLocations = reader.GetString(index).Split(new [] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    item.ProductionLocations = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
                 }
                 index++;
             }
@@ -2900,8 +2900,8 @@ namespace Emby.Server.Implementations.Data
                             BindSimilarParams(query, statement);
                             BindSearchParams(query, statement);
 
-                                // Running this again will bind the params
-                                GetWhereClauses(query, statement);
+                            // Running this again will bind the params
+                            GetWhereClauses(query, statement);
 
                             result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
@@ -2928,7 +2928,7 @@ namespace Emby.Server.Implementations.Data
                     prepend.Add(("SearchScore", SortOrder.Descending));
                     prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
                 }
-                
+
                 if (hasSimilar)
                 {
                     prepend.Add(("SimilarityScore", SortOrder.Descending));
@@ -3269,8 +3269,8 @@ namespace Emby.Server.Implementations.Data
                             BindSimilarParams(query, statement);
                             BindSearchParams(query, statement);
 
-                                // Running this again will bind the params
-                                GetWhereClauses(query, statement);
+                            // Running this again will bind the params
+                            GetWhereClauses(query, statement);
 
                             foreach (var row in statement.ExecuteQuery())
                             {
@@ -3291,8 +3291,8 @@ namespace Emby.Server.Implementations.Data
                             BindSimilarParams(query, statement);
                             BindSearchParams(query, statement);
 
-                                // Running this again will bind the params
-                                GetWhereClauses(query, statement);
+                            // Running this again will bind the params
+                            GetWhereClauses(query, statement);
 
                             result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
@@ -6162,7 +6162,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 item.ColorTransfer = reader[34].ToString();
             }
 
-            if (item.Type == MediaStreamType.Subtitle){
+            if (item.Type == MediaStreamType.Subtitle)
+            {
                 item.localizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.localizedDefault = _localization.GetLocalizedString("Default");
                 item.localizedForced = _localization.GetLocalizedString("Forced");

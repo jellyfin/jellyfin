@@ -2013,6 +2013,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
+
             else if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase) && !options.EnableHardwareEncoding)
             {
                 var codec = videoStream.Codec.ToLowerInvariant();
@@ -2705,7 +2706,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                     {
-                        if(Environment.OSVersion.Version.Major > 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor > 1))
+                        if (Environment.OSVersion.Version.Major > 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor > 1))
                             return "-hwaccel d3d11va";
                         else
                             return "-hwaccel dxva2";

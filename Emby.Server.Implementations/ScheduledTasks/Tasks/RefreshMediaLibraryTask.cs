@@ -41,7 +41,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             yield return new TaskTriggerInfo
             {
-                Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(12).Ticks
+                Type = TaskTriggerInfo.TriggerInterval,
+                IntervalTicks = TimeSpan.FromHours(12).Ticks
             };
         }
 

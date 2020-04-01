@@ -23,7 +23,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupOrElevatedPolicy
         {
             var fixture = new Fixture().Customize(new AutoMoqCustomization());
             _configurationManagerMock = fixture.Freeze<Mock<IConfigurationManager>>();
-            _requirements = new List<IAuthorizationRequirement> {new FirstTimeSetupOrElevatedRequirement()};
+            _requirements = new List<IAuthorizationRequirement> { new FirstTimeSetupOrElevatedRequirement() };
 
             _sut = fixture.Create<FirstTimeSetupOrElevatedHandler>();
         }
@@ -58,7 +58,7 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupOrElevatedPolicy
 
         private static ClaimsPrincipal SetupUser(string role)
         {
-            var claims = new[] {new Claim(ClaimTypes.Role, role)};
+            var claims = new[] { new Claim(ClaimTypes.Role, role) };
             var identity = new ClaimsIdentity(claims);
             return new ClaimsPrincipal(identity);
         }

@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Entities
         /// The ascending.
         /// </summary>
         Ascending,
-        
+
         /// <summary>
         /// The descending.
         /// </summary>

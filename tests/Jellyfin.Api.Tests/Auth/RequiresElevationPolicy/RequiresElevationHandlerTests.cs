@@ -23,9 +23,9 @@ namespace Jellyfin.Api.Tests.Auth.RequiresElevationPolicy
         [InlineData(UserRoles.Guest, false)]
         public async Task ShouldHandleRolesCorrectly(string role, bool shouldSucceed)
         {
-            var requirements = new List<IAuthorizationRequirement> {new RequiresElevationRequirement()};
+            var requirements = new List<IAuthorizationRequirement> { new RequiresElevationRequirement() };
 
-            var claims = new[] {new Claim(ClaimTypes.Role, role)};
+            var claims = new[] { new Claim(ClaimTypes.Role, role) };
             var identity = new ClaimsIdentity(claims);
             var user = new ClaimsPrincipal(identity);
 
