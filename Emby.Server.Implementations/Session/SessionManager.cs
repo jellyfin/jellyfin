@@ -25,6 +25,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.Syncplay;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
@@ -1152,6 +1153,22 @@ namespace Emby.Server.Implementations.Session
             }
 
             await SendMessageToSession(session, "Play", command, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task SendSyncplayCommand(string sessionId, SyncplayCommand command, CancellationToken cancellationToken)
+        {
+            CheckDisposed();
+            var session = GetSessionToRemoteControl(sessionId);
+            await SendMessageToSession(session, "SyncplayCommand", command, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task SendSyncplayGroupUpdate<T>(string sessionId, SyncplayGroupUpdate<T> command, CancellationToken cancellationToken)
+        {
+            CheckDisposed();
+            var session = GetSessionToRemoteControl(sessionId);
+            await SendMessageToSession(session, "SyncplayGroupUpdate", command, cancellationToken).ConfigureAwait(false);
         }
 
         private IEnumerable<BaseItem> TranslateItemForPlayback(Guid id, User user)
