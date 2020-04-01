@@ -2,7 +2,9 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Browser;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Plugins;
+using Microsoft.Extensions.Configuration;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -11,10 +13,8 @@ namespace Emby.Server.Implementations.EntryPoints
     /// </summary>
     public sealed class StartupWizard : IServerEntryPoint
     {
-        /// <summary>
-        /// The app host.
-        /// </summary>
         private readonly IServerApplicationHost _appHost;
+        private readonly IConfiguration _appConfig;
         private readonly IServerConfigurationManager _config;
 
         /// <summary>
@@ -22,9 +22,10 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="appHost">The application host.</param>
         /// <param name="config">The configuration manager.</param>
-        public StartupWizard(IServerApplicationHost appHost, IServerConfigurationManager config)
+        public StartupWizard(IServerApplicationHost appHost, IConfiguration appConfig, IServerConfigurationManager config)
         {
             _appHost = appHost;
+            _appConfig = appConfig;
             _config = config;
         }
 
@@ -36,7 +37,11 @@ namespace Emby.Server.Implementations.EntryPoints
                 return Task.CompletedTask;
             }
 
-            if (!_config.Configuration.IsStartupWizardCompleted)
+            if (!_appConfig.HostWebClient())
+            {
+                BrowserLauncher.OpenSwaggerPage(_appHost);
+            }
+            else if (!_config.Configuration.IsStartupWizardCompleted)
             {
                 BrowserLauncher.OpenWebApp(_appHost);
             }

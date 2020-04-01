@@ -82,6 +82,11 @@ namespace MediaBrowser.Controller
         /// <returns>The local API URL.</returns>
         string GetLocalApiUrl(IPAddress address);
 
+        /// <summary>
+        /// Open a URL in an external browser window.
+        /// </summary>
+        /// <param name="url">The URL to open.</param>
+        /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
         void LaunchUrl(string url);
 
         void EnableLoopback(string appName);
