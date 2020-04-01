@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                             }
                             catch (IOException ex)
                             {
-                                _logger.LogError(ex, "Error deleting {Path}", tempFile);
+                                _logger.LogError(ex, "Error deleting temporary chapter image encoding file {Path}", tempFile);
                             }
 
                             chapter.ImagePath = path;

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -976,10 +975,10 @@ namespace MediaBrowser.Providers.Manager
                 (_) => throw new Exception(
                     string.Format(
                         CultureInfo.InvariantCulture,
-                        "Refresh for item {0} {1} is not in progress",
+                        "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
                         item.GetType().Name,
                         item.Id.ToString("N", CultureInfo.InvariantCulture))),
-                (_, _) => progress);
+                (_, __) => progress);
 
             RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
         }

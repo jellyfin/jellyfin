@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -47,9 +46,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        /// <summary>
-        /// The dummy chapter duration.
-        /// </summary>
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
 
         public FFProbeVideoInfo(
@@ -190,6 +186,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.RunTimeTicks = mediaInfo.RunTimeTicks;
                 }
+
                 video.Size = mediaInfo.Size;
 
                 if (video.VideoType == VideoType.VideoFile)
@@ -202,6 +199,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     video.Container = null;
                 }
+
                 video.Container = mediaInfo.Container;
 
                 chapters = mediaInfo.Chapters == null ? Array.Empty<ChapterInfo>() : mediaInfo.Chapters;
@@ -246,7 +244,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 if (chapters.Length == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
                 {
-                    CreateDummyChapters(video, ref chapters);
+                    chapters = CreateDummyChapters(video);
                 }
 
                 NormalizeChapterNames(chapters);
@@ -563,11 +561,11 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Adds the dummy chapters.
+        /// Creates dummy chapters.
         /// </summary>
         /// <param name="video">The video.</param>
-        /// <param name="chapters">The chapters.</param>
-        private void CreateDummyChapters(Video video, ref ChapterInfo[] chapters)
+        /// <return>An array of dummy chapters.</returns>
+        private ChapterInfo[] CreateDummyChapters(Video video)
         {
             var runtime = video.RunTimeTicks ?? 0;
 
@@ -583,12 +581,12 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (runtime < _dummyChapterDuration)
             {
-                return;
+                return Array.Empty<ChapterInfo>();
             }
 
             // Limit to 100 chapters just in case there's some incorrect metadata here
             int chapterCount = (int)Math.Min(runtime / _dummyChapterDuration, 100);
-            chapters = new ChapterInfo[chapterCount];
+            var chapters = new ChapterInfo[chapterCount];
 
             long currentChapterTicks = 0;
             for (int i = 0; i < chapterCount; i++)
@@ -600,6 +598,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 currentChapterTicks += _dummyChapterDuration;
             }
+
+            return chapters;
         }
 
         private string[] FetchFromDvdLib(Video item)
