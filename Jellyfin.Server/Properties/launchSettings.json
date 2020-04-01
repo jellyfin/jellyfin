@@ -5,6 +5,13 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "Jellyfin.Server (nowebclient)": {
+      "commandName": "Project",
+      "commandLineArgs": "--nowebclient",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
   }
 }

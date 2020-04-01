@@ -11,8 +11,8 @@ namespace MediaBrowser.Controller.Providers
 
         FileSystemMetadata GetFile(string path);
 
-        List<string> GetFilePaths(string path);
+        IReadOnlyList<string> GetFilePaths(string path);
 
-        List<string> GetFilePaths(string path, bool clearCache);
+        IReadOnlyList<string> GetFilePaths(string path, bool clearCache);
     }
 }

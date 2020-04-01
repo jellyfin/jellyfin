@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.Channels
 {
@@ -18,27 +19,30 @@ namespace Emby.Server.Implementations.Channels
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly ILocalizationManager _localization;
 
         public RefreshChannelsScheduledTask(
             IChannelManager channelManager,
             IUserManager userManager,
             ILogger<RefreshChannelsScheduledTask> logger,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            ILocalizationManager localization)
         {
             _channelManager = channelManager;
             _userManager = userManager;
             _logger = logger;
             _libraryManager = libraryManager;
+            _localization = localization;
         }
 
         /// <inheritdoc />
-        public string Name => "Refresh Channels";
+        public string Name => _localization.GetLocalizedString("TasksRefreshChannels");
 
         /// <inheritdoc />
-        public string Description => "Refreshes internet channel information.";
+        public string Description => _localization.GetLocalizedString("TasksRefreshChannelsDescription");
 
         /// <inheritdoc />
-        public string Category => "Internet Channels";
+        public string Category => _localization.GetLocalizedString("TasksChannelsCategory");
 
         /// <inheritdoc />
         public bool IsHidden => ((ChannelManager)_channelManager).Channels.Length == 0;

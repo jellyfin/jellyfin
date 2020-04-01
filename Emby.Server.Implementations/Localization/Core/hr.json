@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Jellyfin Server se učitava. Pokušajte ponovo kasnije.",
     "SubtitleDownloadFailureForItem": "Titlovi prijevoda nisu preuzeti za {0}",
     "SubtitleDownloadFailureFromForItem": "Subtitles failed to download from {0} for {1}",
-    "SubtitlesDownloadedForItem": "Titlovi prijevoda preuzeti za {0}",
     "Sync": "Sink.",
     "System": "Sistem",
     "TvShows": "TV Shows",

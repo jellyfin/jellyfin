@@ -17,6 +17,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,12 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : IHttpServer, IDisposable
     {
+        /// <summary>
+        /// The key for a setting that specifies the default redirect path
+        /// to use for requests where the URL base prefix is invalid or missing.
+        /// </summary>
+        public const string DefaultRedirectKey = "HttpListenerHost:DefaultRedirectPath";
+
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
@@ -52,12 +59,13 @@ namespace Emby.Server.Implementations.HttpServer
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
-            IHttpListener socketListener)
+            IHttpListener socketListener,
+            ILocalizationManager localizationManager)
         {
             _appHost = applicationHost;
             _logger = logger;
             _config = config;
-            _defaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
+            _defaultRedirectPath = configuration[DefaultRedirectKey];
             _baseUrlPrefix = _config.Configuration.BaseUrl;
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
@@ -69,6 +77,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             Instance = this;
             ResponseFilters = Array.Empty<Action<IRequest, HttpResponse, object>>();
+            GlobalResponse = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         }
 
         public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;

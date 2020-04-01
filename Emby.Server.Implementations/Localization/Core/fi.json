@@ -69,7 +69,6 @@
     "UserCreatedWithName": "Luotiin käyttäjä {0}",
     "TvShows": "TV-Ohjelmat",
     "Sync": "Synkronoi",
-    "SubtitlesDownloadedForItem": "Tekstitys ladattu {0}",
     "SubtitleDownloadFailureFromForItem": "Tekstityksen lataaminen epäonnistui {0} - {1}",
     "StartupEmbyServerIsLoading": "Jellyfin palvelin latautuu. Kokeile hetken kuluttua uudelleen.",
     "Songs": "Kappaleet",

@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Ο Jellyfin Server φορτώνει. Παρακαλώ δοκιμάστε σε λίγο.",
     "SubtitleDownloadFailureForItem": "Οι υπότιτλοι απέτυχαν να κατέβουν για {0}",
     "SubtitleDownloadFailureFromForItem": "Αποτυχίες μεταφόρτωσης υποτίτλων από {0} για {1}",
-    "SubtitlesDownloadedForItem": "Οι υπότιτλοι κατέβηκαν για {0}",
     "Sync": "Συγχρονισμός",
     "System": "Σύστημα",
     "TvShows": "Τηλεοπτικές Σειρές",

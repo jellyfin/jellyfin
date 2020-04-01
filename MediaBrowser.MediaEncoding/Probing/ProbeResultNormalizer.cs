@@ -9,7 +9,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
@@ -19,13 +18,11 @@ namespace MediaBrowser.MediaEncoding.Probing
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
 
-        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem, ILocalizationManager localization)
+        public ProbeResultNormalizer(ILogger logger, ILocalizationManager localization)
         {
             _logger = logger;
-            _fileSystem = fileSystem;
             _localization = localization;
         }
 
@@ -40,7 +37,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             FFProbeHelpers.NormalizeFFProbeResult(data);
             SetSize(data, info);
 
-            var internalStreams = data.Streams ?? new MediaStreamInfo[] { };
+            var internalStreams = data.Streams ?? Array.Empty<MediaStreamInfo>();
 
             info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.Format))
                 .Where(i => i != null)
@@ -539,7 +536,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString))
             {
-               attachment.CodecTag = streamInfo.CodecTagString;
+                attachment.CodecTag = streamInfo.CodecTagString;
             }
 
             if (streamInfo.Tags != null)

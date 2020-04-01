@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;

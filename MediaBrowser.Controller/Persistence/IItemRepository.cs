@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        void SaveChapters(Guid id, List<ChapterInfo> chapters);
+        void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters);
 
         /// <summary>
         /// Gets the media streams.
