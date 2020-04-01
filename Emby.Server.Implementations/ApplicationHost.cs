@@ -844,10 +844,15 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
-            ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
+            ChapterManager = new ChapterManager(ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
 
-            EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
+            EncodingManager = new MediaEncoder.EncodingManager(
+                LoggerFactory.CreateLogger<MediaEncoder.EncodingManager>(),
+                FileSystemManager,
+                MediaEncoder,
+                ChapterManager,
+                LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
 
             var activityLogRepo = GetActivityLogRepository();

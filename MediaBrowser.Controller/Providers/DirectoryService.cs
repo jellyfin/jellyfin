@@ -66,12 +66,10 @@ namespace MediaBrowser.Controller.Providers
             return file;
         }
 
-        public List<string> GetFilePaths(string path)
-        {
-            return GetFilePaths(path, false);
-        }
+        public IReadOnlyList<string> GetFilePaths(string path)
+            => GetFilePaths(path, false);
 
-        public List<string> GetFilePaths(string path, bool clearCache)
+        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache)
         {
             if (clearCache || !_filePathCache.TryGetValue(path, out List<string> result))
             {
