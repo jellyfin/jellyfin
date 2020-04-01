@@ -15,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -39,11 +40,19 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
-        public ChapterImagesTask(ILoggerFactory loggerFactory, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager, IFileSystem fileSystem)
+        public ChapterImagesTask(
+            ILoggerFactory loggerFactory,
+            ILibraryManager libraryManager,
+            IItemRepository itemRepo,
+            IApplicationPaths appPaths,
+            IEncodingManager encodingManager,
+            IFileSystem fileSystem,
+            ILocalizationManager localization)
         {
             _logger = loggerFactory.CreateLogger(GetType().Name);
             _libraryManager = libraryManager;
@@ -51,6 +60,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _appPaths = appPaths;
             _encodingManager = encodingManager;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         /// <summary>
@@ -159,11 +169,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
-        public string Name => "Extract Chapter Images";
+        public string Name => _localization.GetLocalizedString("TaskRefreshChapterImages");
 
-        public string Description => "Creates thumbnails for videos that have chapters.";
+        public string Description => _localization.GetLocalizedString("TaskRefreshChapterImagesDescription");
 
-        public string Category => "Library";
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
 
         public string Key => "RefreshChapterImages";
 

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using MediaBrowser.Model.Entities;
 
@@ -12,7 +11,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The type.</value>
         public ImageType Type { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the limit.
         /// </summary>

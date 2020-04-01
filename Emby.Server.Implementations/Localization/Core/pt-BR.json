@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "O Servidor Jellyfin está carregando. Por favor, tente novamente mais tarde.",
     "SubtitleDownloadFailureForItem": "Download de legendas falhou para {0}",
     "SubtitleDownloadFailureFromForItem": "Houve um problema ao baixar as legendas de {0} para {1}",
-    "SubtitlesDownloadedForItem": "Legendas baixadas para {0}",
     "Sync": "Sincronizar",
     "System": "Sistema",
     "TvShows": "Séries",

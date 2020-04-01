@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using MediaBrowser.Model.Dto;
@@ -238,7 +237,7 @@ namespace MediaBrowser.Model.Configuration
             CodecsUsed = Array.Empty<string>();
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
-            EnableSimpleArtistDetection = true;
+            EnableSimpleArtistDetection = false;
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
@@ -248,7 +247,7 @@ namespace MediaBrowser.Model.Configuration
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;
             HttpsPortNumber = DefaultHttpsPort;
-            EnableHttps = true;
+            EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
 

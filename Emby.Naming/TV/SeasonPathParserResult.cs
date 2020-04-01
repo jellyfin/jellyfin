@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 namespace Emby.Naming.TV
 {
@@ -12,7 +11,7 @@ namespace Emby.Naming.TV
         public int? SeasonNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="SeasonPathParserResult"/> is success.
+        /// Gets or sets a value indicating whether this <see cref="SeasonPathParserResult" /> is success.
         /// </summary>
         /// <value><c>true</c> if success; otherwise, <c>false</c>.</value>
         public bool Success { get; set; }

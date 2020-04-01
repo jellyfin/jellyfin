@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -944,7 +943,6 @@ namespace Emby.Server.Implementations.Library
                     IncludeItemTypes = new[] { typeof(T).Name },
                     Name = name,
                     DtoOptions = options
-
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
                 .Cast<T>()
@@ -1080,7 +1078,7 @@ namespace Emby.Server.Implementations.Library
 
             var innerProgress = new ActionableProgress<double>();
 
-            innerProgress.RegisterAction(pct => progress.Report(pct * pct * 0.96));
+            innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true).ConfigureAwait(false);

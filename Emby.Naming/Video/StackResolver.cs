@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -22,31 +21,24 @@ namespace Emby.Naming.Video
 
         public IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata
-            {
-                FullName = i,
-                IsDirectory = true
-            }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }));
         }
 
         public IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata
-            {
-                FullName = i,
-                IsDirectory = false
-            }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }));
         }
 
         public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<FileSystemMetadata> files)
         {
-            foreach (var directory in files.GroupBy(file => file.IsDirectory ? file.FullName : Path.GetDirectoryName(file.FullName)))
+            var groupedDirectoryFiles = files.GroupBy(file =>
+                file.IsDirectory
+                    ? file.FullName
+                    : Path.GetDirectoryName(file.FullName));
+
+            foreach (var directory in groupedDirectoryFiles)
             {
-                var stack = new FileStack()
-                {
-                    Name = Path.GetFileName(directory.Key),
-                    IsDirectoryStack = false
-                };
+                var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
                 foreach (var file in directory)
                 {
                     if (file.IsDirectory)

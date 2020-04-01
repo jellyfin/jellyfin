@@ -7,11 +7,10 @@ ARG DOTNET_VERSION=3.1
 
 FROM node:alpine as web-builder
 ARG JELLYFIN_WEB_VERSION=master
-RUN apk add curl git \
+RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-sdk automake libtool make gcc musl-dev nasm python \
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
  && yarn install \
- && yarn build \
  && mv dist /dist
 
 
@@ -26,10 +25,25 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 
 FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
 FROM arm64v8/debian:buster-slim
+
+# https://askubuntu.com/questions/972516/debian-frontend-environment-variable
+ARG DEBIAN_FRONTEND="noninteractive"
+# http://stackoverflow.com/questions/48162574/ddg#49462622
+ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
+# https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)
+ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
+
 COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
-RUN apt-get update \
- && apt-get install --no-install-recommends --no-install-suggests -y ffmpeg \
- libssl-dev ca-certificates \
+RUN apt-get update && apt-get install --no-install-recommends --no-install-suggests -y \
+ ffmpeg \
+ libssl-dev \
+ ca-certificates \
+ libfontconfig1 \
+ libfreetype6 \
+ libomxil-bellagio0 \
+ libomxil-bellagio-bin \
+ && apt-get clean autoclean -y \
+ && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media

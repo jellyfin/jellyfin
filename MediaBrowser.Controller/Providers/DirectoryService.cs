@@ -26,7 +26,6 @@ namespace MediaBrowser.Controller.Providers
             {
                 entries = _fileSystem.GetFileSystemEntries(path).ToArray();
 
-                //_cache.TryAdd(path, entries);
                 _cache[path] = entries;
             }
 
@@ -56,7 +55,6 @@ namespace MediaBrowser.Controller.Providers
 
                 if (file != null && file.Exists)
                 {
-                    //_fileCache.TryAdd(path, file);
                     _fileCache[path] = file;
                 }
                 else
@@ -66,7 +64,6 @@ namespace MediaBrowser.Controller.Providers
             }
 
             return file;
-            //return _fileSystem.GetFileInfo(path);
         }
 
         public IReadOnlyList<string> GetFilePaths(string path)

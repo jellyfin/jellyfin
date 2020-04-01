@@ -17,7 +17,7 @@ RUN yum install -y @buildsys-build rpmdevtools yum-plugins-core libcurl-devel fo
 
 # Install recent NodeJS and Yarn
 RUN curl -fSsLo /etc/yum.repos.d/yarn.repo https://dl.yarnpkg.com/rpm/yarn.repo \
- && rpm -i https://rpm.nodesource.com/pub_8.x/el/7/x86_64/nodesource-release-el7-1.noarch.rpm \
+ && rpm -i https://rpm.nodesource.com/pub_10.x/el/7/x86_64/nodesource-release-el7-1.noarch.rpm \
  && yum install -y yarn
 
 # Install DotNET SDK

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 #nullable enable
 
 namespace Emby.Naming.Video
