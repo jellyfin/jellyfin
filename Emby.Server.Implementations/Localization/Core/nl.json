@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Jellyfin Server is aan het laden, probeer het later opnieuw.",
     "SubtitleDownloadFailureForItem": "Downloaden van ondertiteling voor {0} is mislukt",
     "SubtitleDownloadFailureFromForItem": "Ondertitels konden niet gedownload worden van {0} voor {1}",
-    "SubtitlesDownloadedForItem": "Ondertiteling voor {0} is gedownload",
     "Sync": "Synchronisatie",
     "System": "Systeem",
     "TvShows": "TV-series",

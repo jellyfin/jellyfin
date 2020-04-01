@@ -20,8 +20,8 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -429,7 +429,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                 }
 
-                return new ProbeResultNormalizer(_logger, _fileSystem, _localization).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                return new ProbeResultNormalizer(_logger, _localization).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
             }
         }
 

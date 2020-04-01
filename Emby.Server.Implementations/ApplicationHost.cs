@@ -100,8 +100,8 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
+using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
@@ -656,7 +656,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILogger>(Logger);
 
             serviceCollection.AddSingleton(FileSystemManager);
-            serviceCollection.AddSingleton<TvDbClientManager>();
+            serviceCollection.AddSingleton<TvdbClientManager>();
 
             HttpClient = new HttpClientManager.HttpClientManager(
                 ApplicationPaths,
@@ -823,10 +823,15 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
-            ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
+            ChapterManager = new ChapterManager(ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
 
-            EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
+            EncodingManager = new MediaEncoder.EncodingManager(
+                LoggerFactory.CreateLogger<MediaEncoder.EncodingManager>(),
+                FileSystemManager,
+                MediaEncoder,
+                ChapterManager,
+                LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
 
             var activityLogRepo = GetActivityLogRepository();
@@ -884,6 +889,18 @@ namespace Emby.Server.Implementations
                 .GetCommandLineArgs()
                 .Distinct();
 
+            // Get all 'JELLYFIN_' prefixed environment variables
+            var allEnvVars = Environment.GetEnvironmentVariables();
+            var jellyfinEnvVars = new Dictionary<object, object>();
+            foreach (var key in allEnvVars.Keys)
+            {
+                if (key.ToString().StartsWith("JELLYFIN_", StringComparison.OrdinalIgnoreCase))
+                {
+                    jellyfinEnvVars.Add(key, allEnvVars[key]);
+                }
+            }
+
+            logger.LogInformation("Environment Variables: {EnvVars}", jellyfinEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
             logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
@@ -1142,7 +1159,7 @@ namespace Emby.Server.Implementations
                 {
                     exportedTypes = ass.GetExportedTypes();
                 }
-                catch (TypeLoadException ex)
+                catch (FileNotFoundException ex)
                 {
                     Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
                     continue;
@@ -1776,7 +1793,7 @@ namespace Emby.Server.Implementations
                 }
 
                 _userRepository?.Dispose();
-                _displayPreferencesRepository.Dispose();
+                _displayPreferencesRepository?.Dispose();
             }
 
             _userRepository = null;

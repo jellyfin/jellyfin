@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Trwa wczytywanie serwera Jellyfin. Spróbuj ponownie za chwilę.",
     "SubtitleDownloadFailureForItem": "Pobieranie napisów dla {0} zakończone niepowodzeniem",
     "SubtitleDownloadFailureFromForItem": "Nieudane pobieranie napisów z {0} dla {1}",
-    "SubtitlesDownloadedForItem": "Pobrano napisy dla {0}",
     "Sync": "Synchronizacja",
     "System": "System",
     "TvShows": "Seriale",

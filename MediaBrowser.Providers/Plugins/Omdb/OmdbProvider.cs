@@ -16,7 +16,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Providers.Omdb
+namespace MediaBrowser.Providers.Plugins.Omdb
 {
     public class OmdbProvider
     {

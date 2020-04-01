@@ -75,7 +75,6 @@
     "Songs": "曲",
     "StartupEmbyServerIsLoading": "Jellyfin Server は現在読み込み中です。しばらくしてからもう一度お試しください。",
     "SubtitleDownloadFailureFromForItem": "{0} から {1}の字幕のダウンロードに失敗しました",
-    "SubtitlesDownloadedForItem": "{0} の字幕がダウンロードされました",
     "Sync": "同期",
     "System": "システム",
     "TvShows": "テレビ番組",

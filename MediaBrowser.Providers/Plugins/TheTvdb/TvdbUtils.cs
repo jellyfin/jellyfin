@@ -1,6 +1,7 @@
 using System;
 using MediaBrowser.Model.Entities;
-namespace MediaBrowser.Providers.TV.TheTVDB
+
+namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
     public static class TvdbUtils
     {

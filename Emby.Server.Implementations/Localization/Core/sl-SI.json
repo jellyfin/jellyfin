@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Jellyfin Server se nalaga. Poskusi ponovno kasneje.",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Neuspešen prenos podnapisov iz {0} za {1}",
-    "SubtitlesDownloadedForItem": "Podnapisi preneseni za {0}",
     "Sync": "Sinhroniziraj",
     "System": "System",
     "TvShows": "TV serije",

@@ -5,7 +5,7 @@ using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
-    public class CollectionFolderLocalImageProvider : ILocalImageFileProvider, IHasOrder
+    public class CollectionFolderLocalImageProvider : ILocalImageProvider, IHasOrder
     {
         private readonly IFileSystem _fileSystem;
 

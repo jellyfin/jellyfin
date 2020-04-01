@@ -86,7 +86,6 @@
     "UserOfflineFromDevice": "{0} hefur aftengst frá {1}",
     "UserLockedOutWithName": "Notanda {0} hefur verið hindraður aðgangur",
     "UserDownloadingItemWithValues": "{0} Hleður niður {1}",
-    "SubtitlesDownloadedForItem": "Skjátextum halað niður fyrir {0}",
     "SubtitleDownloadFailureFromForItem": "Tókst ekki að hala niður skjátextum frá {0} til {1}",
     "ProviderValue": "Veitandi: {0}",
     "MessageNamedServerConfigurationUpdatedWithValue": "Stilling {0} hefur verið uppfærð á netþjón",

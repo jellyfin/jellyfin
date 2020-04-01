@@ -13,11 +13,13 @@ namespace MediaBrowser.Controller.Providers
         public bool ReplaceAllMetadata { get; set; }
 
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
+
         public RemoteSearchResult SearchResult { get; set; }
 
         public string[] RefreshPaths { get; set; }
 
         public bool ForceSave { get; set; }
+
         public bool EnableRemoteContentProbe { get; set; }
 
         public MetadataRefreshOptions(IDirectoryService directoryService)
