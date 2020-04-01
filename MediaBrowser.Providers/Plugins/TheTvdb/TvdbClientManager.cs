@@ -10,9 +10,9 @@ using Microsoft.Extensions.Caching.Memory;
 using TvDbSharper;
 using TvDbSharper.Dto;
 
-namespace MediaBrowser.Providers.TV.TheTVDB
+namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
-    public class TvDbClientManager
+    public class TvdbClientManager
     {
         private const string DefaultLanguage = "en";
 
@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
         private readonly TvDbClient _tvDbClient;
         private DateTime _tokenCreatedAt;
 
-        public TvDbClientManager(IMemoryCache memoryCache)
+        public TvdbClientManager(IMemoryCache memoryCache)
         {
             _cache = memoryCache;
             _tvDbClient = new TvDbClient();
@@ -60,21 +60,21 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             CancellationToken cancellationToken)
         {
             var cacheKey = GenerateKey("series", name, language);
-            return TryGetValue(cacheKey, language,() => TvDbClient.Search.SearchSeriesByNameAsync(name, cancellationToken));
+            return TryGetValue(cacheKey, language, () => TvDbClient.Search.SearchSeriesByNameAsync(name, cancellationToken));
         }
 
         public Task<TvDbResponse<Series>> GetSeriesByIdAsync(int tvdbId, string language,
             CancellationToken cancellationToken)
         {
             var cacheKey = GenerateKey("series", tvdbId, language);
-            return TryGetValue(cacheKey, language,() => TvDbClient.Series.GetAsync(tvdbId, cancellationToken));
+            return TryGetValue(cacheKey, language, () => TvDbClient.Series.GetAsync(tvdbId, cancellationToken));
         }
 
         public Task<TvDbResponse<EpisodeRecord>> GetEpisodesAsync(int episodeTvdbId, string language,
             CancellationToken cancellationToken)
         {
             var cacheKey = GenerateKey("episode", episodeTvdbId, language);
-            return TryGetValue(cacheKey, language,() => TvDbClient.Episodes.GetAsync(episodeTvdbId, cancellationToken));
+            return TryGetValue(cacheKey, language, () => TvDbClient.Episodes.GetAsync(episodeTvdbId, cancellationToken));
         }
 
         public async Task<List<EpisodeRecord>> GetAllEpisodesAsync(int tvdbId, string language,
@@ -109,7 +109,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             CancellationToken cancellationToken)
         {
             var cacheKey = GenerateKey("series", imdbId, language);
-            return TryGetValue(cacheKey, language,() => TvDbClient.Search.SearchSeriesByImdbIdAsync(imdbId, cancellationToken));
+            return TryGetValue(cacheKey, language, () => TvDbClient.Search.SearchSeriesByImdbIdAsync(imdbId, cancellationToken));
         }
 
         public Task<TvDbResponse<SeriesSearchResult[]>> GetSeriesByZap2ItIdAsync(

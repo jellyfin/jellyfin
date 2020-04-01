@@ -1,8 +1,6 @@
 using System;
-using System.IO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines

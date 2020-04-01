@@ -392,24 +392,24 @@ namespace Emby.Dlna.Didl
             {
                 switch (itemStubType.Value)
                 {
-                    case StubType.Latest:           return _localization.GetLocalizedString("Latest");
-                    case StubType.Playlists:        return _localization.GetLocalizedString("Playlists");
-                    case StubType.AlbumArtists:     return _localization.GetLocalizedString("HeaderAlbumArtists");
-                    case StubType.Albums:           return _localization.GetLocalizedString("Albums");
-                    case StubType.Artists:          return _localization.GetLocalizedString("Artists");
-                    case StubType.Songs:            return _localization.GetLocalizedString("Songs");
-                    case StubType.Genres:           return _localization.GetLocalizedString("Genres");
-                    case StubType.FavoriteAlbums:   return _localization.GetLocalizedString("HeaderFavoriteAlbums");
-                    case StubType.FavoriteArtists:  return _localization.GetLocalizedString("HeaderFavoriteArtists");
-                    case StubType.FavoriteSongs:    return _localization.GetLocalizedString("HeaderFavoriteSongs");
+                    case StubType.Latest: return _localization.GetLocalizedString("Latest");
+                    case StubType.Playlists: return _localization.GetLocalizedString("Playlists");
+                    case StubType.AlbumArtists: return _localization.GetLocalizedString("HeaderAlbumArtists");
+                    case StubType.Albums: return _localization.GetLocalizedString("Albums");
+                    case StubType.Artists: return _localization.GetLocalizedString("Artists");
+                    case StubType.Songs: return _localization.GetLocalizedString("Songs");
+                    case StubType.Genres: return _localization.GetLocalizedString("Genres");
+                    case StubType.FavoriteAlbums: return _localization.GetLocalizedString("HeaderFavoriteAlbums");
+                    case StubType.FavoriteArtists: return _localization.GetLocalizedString("HeaderFavoriteArtists");
+                    case StubType.FavoriteSongs: return _localization.GetLocalizedString("HeaderFavoriteSongs");
                     case StubType.ContinueWatching: return _localization.GetLocalizedString("HeaderContinueWatching");
-                    case StubType.Movies:           return _localization.GetLocalizedString("Movies");
-                    case StubType.Collections:      return _localization.GetLocalizedString("Collections");
-                    case StubType.Favorites:        return _localization.GetLocalizedString("Favorites");
-                    case StubType.NextUp:           return _localization.GetLocalizedString("HeaderNextUp");
-                    case StubType.FavoriteSeries:   return _localization.GetLocalizedString("HeaderFavoriteShows");
+                    case StubType.Movies: return _localization.GetLocalizedString("Movies");
+                    case StubType.Collections: return _localization.GetLocalizedString("Collections");
+                    case StubType.Favorites: return _localization.GetLocalizedString("Favorites");
+                    case StubType.NextUp: return _localization.GetLocalizedString("HeaderNextUp");
+                    case StubType.FavoriteSeries: return _localization.GetLocalizedString("HeaderFavoriteShows");
                     case StubType.FavoriteEpisodes: return _localization.GetLocalizedString("HeaderFavoriteEpisodes");
-                    case StubType.Series:           return _localization.GetLocalizedString("Shows");
+                    case StubType.Series: return _localization.GetLocalizedString("Shows");
                     default: break;
                 }
             }

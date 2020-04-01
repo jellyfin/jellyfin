@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using TvDbSharper;
 using TvDbSharper.Dto;
 
-namespace MediaBrowser.Providers.TV.TheTVDB
+namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
 
     /// <summary>
@@ -22,13 +22,13 @@ namespace MediaBrowser.Providers.TV.TheTVDB
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
-        private readonly TvDbClientManager _tvDbClientManager;
+        private readonly TvdbClientManager _tvdbClientManager;
 
-        public TvdbEpisodeProvider(IHttpClient httpClient, ILogger<TvdbEpisodeProvider> logger, TvDbClientManager tvDbClientManager)
+        public TvdbEpisodeProvider(IHttpClient httpClient, ILogger<TvdbEpisodeProvider> logger, TvdbClientManager tvdbClientManager)
         {
             _httpClient = httpClient;
             _logger = logger;
-            _tvDbClientManager = tvDbClientManager;
+            _tvdbClientManager = tvdbClientManager;
         }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
@@ -99,7 +99,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
             string episodeTvdbId = null;
             try
             {
-                episodeTvdbId = await _tvDbClientManager
+                episodeTvdbId = await _tvdbClientManager
                     .GetEpisodeTvdbId(searchInfo, searchInfo.MetadataLanguage, cancellationToken)
                     .ConfigureAwait(false);
                 if (string.IsNullOrEmpty(episodeTvdbId))
@@ -109,7 +109,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     return result;
                 }
 
-                var episodeResult = await _tvDbClientManager.GetEpisodesAsync(
+                var episodeResult = await _tvdbClientManager.GetEpisodesAsync(
                     Convert.ToInt32(episodeTvdbId), searchInfo.MetadataLanguage,
                     cancellationToken).ConfigureAwait(false);
 
@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.TV.TheTVDB
                     continue;
                 }
 
-                var roles = new List<string> {currentActor.Substring(roleStartIndex + 1)};
+                var roles = new List<string> { currentActor.Substring(roleStartIndex + 1) };
 
                 // Fetch all roles
                 for (var j = i + 1; j < episode.GuestStars.Length; ++j)

@@ -37,7 +37,7 @@ namespace Emby.Naming.AudioBook
         /// <value>The type.</value>
         public bool IsDirectory { get; set; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public int CompareTo(AudioBookFileInfo other)
         {
             if (ReferenceEquals(this, other))

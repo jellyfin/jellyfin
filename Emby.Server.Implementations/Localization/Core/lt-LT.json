@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Jellyfin Server kraunasi. Netrukus pabandykite dar kartą.",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "{1} subtitrai buvo nesėkmingai parsiųsti iš {0}",
-    "SubtitlesDownloadedForItem": "{0} subtitrai parsiųsti",
     "Sync": "Sinchronizuoti",
     "System": "System",
     "TvShows": "TV Serialai",

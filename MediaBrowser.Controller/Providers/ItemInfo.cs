@@ -23,10 +23,15 @@ namespace MediaBrowser.Controller.Providers
         }
 
         public Type ItemType { get; set; }
+
         public string Path { get; set; }
+
         public string ContainingFolderPath { get; set; }
+
         public VideoType VideoType { get; set; }
+
         public bool IsInMixedFolder { get; set; }
+
         public bool IsPlaceHolder { get; set; }
     }
 }

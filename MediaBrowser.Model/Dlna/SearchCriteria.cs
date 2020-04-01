@@ -2,7 +2,6 @@
 
 using System;
 using System.Text.RegularExpressions;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {

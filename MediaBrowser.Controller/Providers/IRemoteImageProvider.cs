@@ -9,7 +9,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Controller.Providers
 {
     /// <summary>
-    /// Interface IImageProvider
+    /// Interface IImageProvider.
     /// </summary>
     public interface IRemoteImageProvider : IImageProvider
     {
