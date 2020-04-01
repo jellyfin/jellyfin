@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Extensions
         public const string PlaylistsAllowDuplicatesKey = "playlists:allowDuplicates";
 
         /// <summary>
-        /// Gets a value indicating whether the application should not host static web content from the <see cref="IConfiguration"/>.
+        /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>
         /// <returns>The parsed config value.</returns>

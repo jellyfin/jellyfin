@@ -135,20 +135,6 @@ namespace MediaBrowser.WebDashboard.Api
             _serverConfigurationManager = serverConfigurationManager;
             _fileSystem = fileSystem;
             _resultFactory = resultFactory;
-
-            // If hosting the web client, validate the client content path
-            if (appConfig.HostWebClient())
-            {
-                string webContentPath = DashboardUIPath;
-                if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
-                {
-                    throw new InvalidOperationException(
-                        "The server is expected to host the web client, but the provided content directory is either " +
-                        $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
-                        "server, you may set the '--nowebclient' command line flag, or set" +
-                        $"'{Controller.Extensions.ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
-                }
-            }
         }
 
         /// <summary>
