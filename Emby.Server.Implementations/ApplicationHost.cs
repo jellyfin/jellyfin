@@ -1803,7 +1803,7 @@ namespace Emby.Server.Implementations
                 }
 
                 _userRepository?.Dispose();
-                _displayPreferencesRepository.Dispose();
+                _displayPreferencesRepository?.Dispose();
             }
 
             _userRepository = null;

@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "שרת Jellyfin בהליכי טעינה. אנא נסה שנית בעוד זמן קצר.",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Subtitles failed to download from {0} for {1}",
-    "SubtitlesDownloadedForItem": "Subtitles downloaded for {0}",
     "Sync": "סנכרן",
     "System": "System",
     "TvShows": "סדרות טלוויזיה",

@@ -16,7 +16,6 @@
     "TvShows": "Pelikula",
     "System": "Sistema",
     "Sync": "Pag-sync",
-    "SubtitlesDownloadedForItem": "Naidownload na ang subtitles {0}",
     "SubtitleDownloadFailureFromForItem": "Hindi naidownload ang subtitles {0} para sa {1}",
     "StartupEmbyServerIsLoading": "Nagloload ang Jellyfin Server. Sandaling maghintay.",
     "Songs": "Kanta",

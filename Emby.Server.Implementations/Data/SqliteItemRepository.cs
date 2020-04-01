@@ -6289,8 +6289,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                         statement.TryBind("@Codec" + index, attachment.Codec);
                         statement.TryBind("@CodecTag" + index, attachment.CodecTag);
                         statement.TryBind("@Comment" + index, attachment.Comment);
-                        statement.TryBind("@FileName" + index, attachment.FileName);
-                        statement.TryBind("@MimeType" + index, attachment.MimeType);
+                        statement.TryBind("@Filename" + index, attachment.FileName);
+                        statement.TryBind("@MIMEType" + index, attachment.MimeType);
                     }
 
                     statement.Reset();

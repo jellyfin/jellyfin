@@ -183,9 +183,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         private async Task<Stream> GetSubtitleStream(string path, MediaProtocol protocol, bool requiresCharset, CancellationToken cancellationToken)
         {
-            using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
+            if (requiresCharset)
             {
-                if (requiresCharset)
+                using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
                 {
                     var result = CharsetDetector.DetectFromStream(stream).Detected;
                     stream.Position = 0;
@@ -200,9 +200,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         return new MemoryStream(Encoding.UTF8.GetBytes(text));
                     }
                 }
-
-                return stream;
             }
+
+            return File.OpenRead(path);
         }
 
         private async Task<SubtitleInfo> GetReadableFile(
@@ -730,6 +730,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
             {
                 var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName;
+
+                // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
+                if ((path.EndsWith(".ass") || path.EndsWith(".ssa"))
+                    && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
+                {
+                    charset = "";
+                }
 
                 _logger.LogDebug("charset {0} detected for {Path}", charset ?? "null", path);
 
