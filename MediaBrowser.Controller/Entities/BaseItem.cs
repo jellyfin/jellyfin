@@ -1329,7 +1329,7 @@ namespace MediaBrowser.Controller.Entities
                         // Use some hackery to get the extra type based on foldername
                         item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", ""), true, out ExtraType extraType)
                             ? extraType
-                            : (ExtraType?)null;
+                            : Model.Entities.ExtraType.Unknown;
 
                         return item;
 
@@ -2896,12 +2896,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="extraTypes">The types of extras to retrieve.</param>
         /// <returns>An enumerable containing the extras.</returns>
-        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType?> extraTypes)
+        public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
         {
             return ExtraIds
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i != null)
-                .Where(i => extraTypes.Contains(i.ExtraType));
+                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value));
         }
 
         public IEnumerable<BaseItem> GetTrailers()
@@ -2932,10 +2932,9 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Extra types that should be counted and displayed as "Special Features" in the UI.
         /// </summary>
-        public static readonly IReadOnlyCollection<ExtraType?> DisplayExtraTypes = new HashSet<ExtraType?>
+        public static readonly IReadOnlyCollection<ExtraType> DisplayExtraTypes = new HashSet<ExtraType>
         {
-            null,
-            0,
+            Model.Entities.ExtraType.Unknown,
             Model.Entities.ExtraType.BehindTheScenes,
             Model.Entities.ExtraType.Clip,
             Model.Entities.ExtraType.DeletedScene,

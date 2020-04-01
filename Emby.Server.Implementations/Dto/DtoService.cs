@@ -1057,7 +1057,7 @@ namespace Emby.Server.Implementations.Dto
             if (options.ContainsField(ItemFields.SpecialFeatureCount))
             {
                 allExtras = item.GetExtras().ToArray();
-                dto.SpecialFeatureCount = allExtras.Count(i => BaseItem.DisplayExtraTypes.Contains(i.ExtraType));
+                dto.SpecialFeatureCount = allExtras.Count(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value));
             }
 
             if (options.ContainsField(ItemFields.LocalTrailerCount))
