@@ -505,7 +505,15 @@ namespace Emby.Naming.Common
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-short",
                     MediaType = MediaType.Video
-                }
+                },
+                new ExtraRule { RuleType = ExtraRuleType.DirectoryName, MediaType = MediaType.Video, ExtraType = ExtraType.BehindTheScenes, Token = "behind the scenes" },
+                new ExtraRule { RuleType = ExtraRuleType.DirectoryName, MediaType = MediaType.Video, ExtraType = ExtraType.DeletedScene, Token = "deleted scenes" },
+                new ExtraRule { RuleType = ExtraRuleType.DirectoryName, MediaType = MediaType.Video, ExtraType = ExtraType.Interview, Token = "interviews" },
+                new ExtraRule { RuleType = ExtraRuleType.DirectoryName, MediaType = MediaType.Video, ExtraType = ExtraType.Scene, Token = "scenes" },
+                new ExtraRule { RuleType = ExtraRuleType.DirectoryName, MediaType = MediaType.Video, ExtraType = ExtraType.Sample, Token = "samples" },
+                new ExtraRule { RuleType = ExtraRuleType.DirectoryName, MediaType = MediaType.Video, ExtraType = ExtraType.Clip, Token = "shorts" },
+                new ExtraRule { RuleType = ExtraRuleType.DirectoryName, MediaType = MediaType.Video, ExtraType = ExtraType.Clip, Token = "featurettes" },
+                new ExtraRule { RuleType = ExtraRuleType.DirectoryName, MediaType = MediaType.Video, ExtraType = ExtraType.Unknown, Token = "extras" },
             };
 
             Format3DRules = new[]

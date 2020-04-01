@@ -5,18 +5,23 @@ namespace Emby.Naming.Video
     public enum ExtraRuleType
     {
         /// <summary>
-        /// The suffix
+        /// Match <see cref="ExtraRule.Token"/> against a suffix in the file name.
         /// </summary>
         Suffix = 0,
 
         /// <summary>
-        /// The filename
+        /// Match <see cref="ExtraRule.Token"/> against the file name.
         /// </summary>
         Filename = 1,
 
         /// <summary>
-        /// The regex
+        /// Match <see cref="ExtraRule.Token"/> against the a regex.
         /// </summary>
-        Regex = 2
+        Regex = 2,
+
+        /// <summary>
+        /// Match <see cref="ExtraRule.Token"/> against the directory name of the file.
+        /// </summary>
+        DirectoryName = 3,
     }
 }
