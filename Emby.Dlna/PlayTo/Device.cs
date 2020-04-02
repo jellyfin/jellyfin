@@ -520,8 +520,11 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, rendererCommands.BuildPost(command, service.ServiceType), true)
-                .ConfigureAwait(false);
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(
+                Properties.BaseUrl,
+                service,
+                command.Name,
+                rendererCommands.BuildPost(command, service.ServiceType)).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
             {
@@ -566,8 +569,11 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, rendererCommands.BuildPost(command, service.ServiceType), true)
-                .ConfigureAwait(false);
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(
+                Properties.BaseUrl,
+                service,
+                command.Name,
+                rendererCommands.BuildPost(command, service.ServiceType)).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
                 return;
@@ -599,7 +605,6 @@ namespace Emby.Dlna.PlayTo
                 command.Name,
                 avCommands.BuildPost(command,
                 service.ServiceType),
-                false,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
@@ -637,8 +642,11 @@ namespace Emby.Dlna.PlayTo
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, rendererCommands.BuildPost(command, service.ServiceType), false)
-                .ConfigureAwait(false);
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(
+                Properties.BaseUrl,
+                service,
+                command.Name,
+                rendererCommands.BuildPost(command, service.ServiceType)).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
             {
@@ -700,8 +708,11 @@ namespace Emby.Dlna.PlayTo
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(Properties.BaseUrl, service, command.Name, rendererCommands.BuildPost(command, service.ServiceType), false)
-                .ConfigureAwait(false);
+            var result = await new SsdpHttpClient(_httpClient).SendCommandAsync(
+                Properties.BaseUrl,
+                service,
+                command.Name,
+                rendererCommands.BuildPost(command, service.ServiceType)).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
             {
