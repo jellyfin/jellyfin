@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.Net
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             CacheMode = CacheMode.None;
-            DecompressionMethod = CompressionMethod.Deflate;
+            DecompressionMethod = CompressionMethods.Deflate;
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace MediaBrowser.Common.Net
         /// <value>The URL.</value>
         public string Url { get; set; }
 
-        public CompressionMethod DecompressionMethod { get; set; }
+        public CompressionMethods DecompressionMethod { get; set; }
 
         /// <summary>
         /// Gets or sets the accept header.
@@ -83,8 +83,6 @@ namespace MediaBrowser.Common.Net
 
         public string RequestContent { get; set; }
 
-        public byte[] RequestContentBytes { get; set; }
-
         public bool BufferContent { get; set; }
 
         public bool LogErrorResponseBody { get; set; }
@@ -112,7 +110,7 @@ namespace MediaBrowser.Common.Net
     }
 
     [Flags]
-    public enum CompressionMethod
+    public enum CompressionMethods
     {
         None = 0b00000001,
         Deflate = 0b00000010,
