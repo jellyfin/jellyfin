@@ -548,11 +548,11 @@ namespace Emby.Server.Implementations.HttpServer
                 }
 
                 bool ignoreStackTrace =
-                    ex is SocketException ||
-                    ex is IOException ||
-                    ex is OperationCanceledException ||
-                    ex is SecurityException ||
-                    ex is FileNotFoundException;
+                    ex is SocketException
+                    || ex is IOException
+                    || ex is OperationCanceledException
+                    || ex is SecurityException
+                    || ex is FileNotFoundException;
                 await ErrorHandler(ex, httpReq, ignoreStackTrace).ConfigureAwait(false);
             }
             finally
