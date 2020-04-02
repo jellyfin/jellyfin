@@ -39,10 +39,9 @@ namespace MediaBrowser.Controller
         int HttpsPort { get; }
 
         /// <summary>
-        /// Gets a value indicating whether [supports HTTPS].
+        /// Gets a value indicating whether the server should listen on an HTTPS port.
         /// </summary>
-        /// <value><c>true</c> if [supports HTTPS]; otherwise, <c>false</c>.</value>
-        bool EnableHttps { get; }
+        bool ListenWithHttps { get; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has update available.

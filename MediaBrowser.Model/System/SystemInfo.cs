@@ -124,9 +124,9 @@ namespace MediaBrowser.Model.System
         public int HttpServerPortNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTPS].
+        /// Gets or sets a value indicating whether a client can connect to the server over HTTPS, either directly or
+        /// via a reverse proxy.
         /// </summary>
-        /// <value><c>true</c> if [enable HTTPS]; otherwise, <c>false</c>.</value>
         public bool SupportsHttps { get; set; }
 
         /// <summary>

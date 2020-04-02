@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 .Append(config.PublicPort).Append(Separator)
                 .Append(_appHost.HttpPort).Append(Separator)
                 .Append(_appHost.HttpsPort).Append(Separator)
-                .Append(_appHost.EnableHttps).Append(Separator)
+                .Append(_appHost.ListenWithHttps).Append(Separator)
                 .Append(config.EnableRemoteAccess).Append(Separator)
                 .ToString();
         }

@@ -1408,7 +1408,7 @@ namespace Emby.Server.Implementations
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
                 HttpServerPortNumber = HttpPort,
-                SupportsHttps = SupportsHttps,
+                SupportsHttps = CanConnectWithHttps,
                 HttpsPortNumber = HttpsPort,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 OperatingSystemDisplayName = OperatingSystem.Name,
@@ -1446,9 +1446,14 @@ namespace Emby.Server.Implementations
             };
         }
 
-        public bool EnableHttps => SupportsHttps && ServerConfigurationManager.Configuration.EnableHttps;
+        /// <inheritdoc/>
+        public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
 
-        public bool SupportsHttps => Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy;
+        /// <summary>
+        /// Gets a value indicating whether a client can connect to the server over HTTPS, either directly or via a
+        /// reverse proxy.
+        /// </summary>
+        public bool CanConnectWithHttps => ListenWithHttps || ServerConfigurationManager.Configuration.IsBehindProxy;
 
         public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
         {
@@ -1509,10 +1514,10 @@ namespace Emby.Server.Implementations
         public string GetLocalApiUrl(ReadOnlySpan<char> host)
         {
             var url = new StringBuilder(64);
-            url.Append(EnableHttps ? "https://" : "http://")
+            url.Append(ListenWithHttps ? "https://" : "http://")
                 .Append(host)
                 .Append(':')
-                .Append(EnableHttps ? HttpsPort : HttpPort);
+                .Append(ListenWithHttps ? HttpsPort : HttpPort);
 
             string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
             if (baseUrl.Length != 0)
