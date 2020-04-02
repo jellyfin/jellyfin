@@ -1517,18 +1517,10 @@ namespace Emby.Server.Implementations
         public string GetLocalApiUrl(ReadOnlySpan<char> host)
         {
             var url = new StringBuilder(64);
-            if (EnableHttps)
-            {
-                url.Append("https://");
-            }
-            else
-            {
-                url.Append("http://");
-            }
-
-            url.Append(host)
+            url.Append(EnableHttps ? "https://" : "http://")
+                .Append(host)
                 .Append(':')
-                .Append(HttpPort);
+                .Append(EnableHttps ? HttpsPort : HttpPort);
 
             string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
             if (baseUrl.Length != 0)
