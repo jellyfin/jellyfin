@@ -357,7 +357,7 @@ namespace Emby.Server.Implementations.Library
                 IncrementInvalidLoginAttemptCount(user);
             }
 
-            _logger.LogInformation("Authentication request for {0} {1}.", user.Name, success ? "has succeeded" : "has been denied");
+            _logger.LogInformation("Authentication request for {0} {1} (IP: {2}).", user.Name, success ? "has succeeded" : "has been denied", remoteEndPoint);
 
             return success ? user : null;
         }
