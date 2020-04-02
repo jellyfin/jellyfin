@@ -43,6 +43,7 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
+using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
@@ -758,6 +759,7 @@ namespace Emby.Server.Implementations
             CertificateInfo = GetCertificateInfo(true);
             Certificate = GetCertificate(CertificateInfo);
 
+            serviceCollection.AddSingleton<ServiceController>();
             serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
             serviceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
@@ -1063,7 +1065,7 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>(), GetUrlPrefixes());
+            HttpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
 
             LibraryManager.AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -1507,18 +1509,10 @@ namespace Emby.Server.Implementations
         public string GetLocalApiUrl(ReadOnlySpan<char> host)
         {
             var url = new StringBuilder(64);
-            if (EnableHttps)
-            {
-                url.Append("https://");
-            }
-            else
-            {
-                url.Append("http://");
-            }
-
-            url.Append(host)
+            url.Append(EnableHttps ? "https://" : "http://")
+                .Append(host)
                 .Append(':')
-                .Append(HttpPort);
+                .Append(EnableHttps ? HttpsPort : HttpPort);
 
             string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
             if (baseUrl.Length != 0)
