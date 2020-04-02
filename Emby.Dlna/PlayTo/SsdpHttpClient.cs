@@ -32,18 +32,15 @@ namespace Emby.Dlna.PlayTo
             DeviceService service,
             string command,
             string postData,
-            bool logRequest = true,
-            string header = null)
+            string header = null,
+            CancellationToken cancellationToken = default)
         {
-            var cancellationToken = CancellationToken.None;
-
             var url = NormalizeServiceUrl(baseUrl, service.ControlUrl);
             using (var response = await PostSoapDataAsync(
                 url,
                 $"\"{service.ServiceType}#{command}\"",
                 postData,
                 header,
-                logRequest,
                 cancellationToken)
                 .ConfigureAwait(false))
             using (var stream = response.Content)
@@ -63,7 +60,7 @@ namespace Emby.Dlna.PlayTo
                 return serviceUrl;
             }
 
-            if (!serviceUrl.StartsWith("/"))
+            if (!serviceUrl.StartsWith("/", StringComparison.Ordinal))
             {
                 serviceUrl = "/" + serviceUrl;
             }
@@ -127,7 +124,6 @@ namespace Emby.Dlna.PlayTo
             string soapAction,
             string postData,
             string header,
-            bool logRequest,
             CancellationToken cancellationToken)
         {
             if (soapAction[0] != '\"')

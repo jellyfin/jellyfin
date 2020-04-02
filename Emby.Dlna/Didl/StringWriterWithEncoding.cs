@@ -53,6 +53,6 @@ namespace Emby.Dlna.Didl
             _encoding = encoding;
         }
 
-        public override Encoding Encoding => (null == _encoding) ? base.Encoding : _encoding;
+        public override Encoding Encoding => _encoding ?? base.Encoding;
     }
 }
