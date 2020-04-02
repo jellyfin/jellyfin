@@ -13,15 +13,15 @@ namespace Emby.Server.Implementations.Services
 
     public class ServiceController
     {
-        private readonly ILogger _log;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceController"/> class.
         /// </summary>
-        /// <param name="log">The <see cref="ServiceController"/> logger.</param>
-        public ServiceController(ILogger<ServiceController> log)
+        /// <param name="logger">The <see cref="ServiceController"/> logger.</param>
+        public ServiceController(ILogger<ServiceController> logger)
         {
-            _log = log;
+            _logger = logger;
         }
 
         public void Init(HttpListenerHost appHost, IEnumerable<Type> serviceTypes)
@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.Services
             // Make sure the provided type implements IService
             if (!typeof(IService).IsAssignableFrom(serviceType))
             {
-                _log.LogWarning("Tried to register a service that does not implement IService: {ServiceType}", serviceType);
+                _logger.LogWarning("Tried to register a service that does not implement IService: {ServiceType}", serviceType);
                 return;
             }
 
