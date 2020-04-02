@@ -22,7 +22,6 @@ namespace MediaBrowser.Common.Net
         }
 
 #pragma warning restore CS1591
-#pragma warning restore SA1600
 
         /// <summary>
         /// Gets or sets the type of the content.
