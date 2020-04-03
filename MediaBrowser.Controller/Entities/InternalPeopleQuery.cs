@@ -5,7 +5,7 @@ namespace MediaBrowser.Controller.Entities
     public class InternalPeopleQuery
     {
         /// <summary>
-        /// Gets or sets the maximum of items the query should return.
+        /// Gets or sets the maximum number of items the query should return.
         /// <summary>
         public int Limit { get; set; }
 
