@@ -604,8 +604,7 @@ namespace Emby.Dlna.PlayTo
                 Properties.BaseUrl,
                 service,
                 command.Name,
-                avCommands.BuildPost(command,
-                service.ServiceType),
+                avCommands.BuildPost(command, service.ServiceType),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
@@ -647,7 +646,8 @@ namespace Emby.Dlna.PlayTo
                 Properties.BaseUrl,
                 service,
                 command.Name,
-                rendererCommands.BuildPost(command, service.ServiceType)).ConfigureAwait(false);
+                rendererCommands.BuildPost(command, service.ServiceType),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
             {

@@ -782,22 +782,26 @@ namespace Emby.Dlna.Didl
 
         private void AddPeople(BaseItem item, XmlWriter writer)
         {
+            if (!item.SupportsPeople)
+            {
+                return;
+            }
+
             var types = new[]
             {
                 PersonType.Director,
                 PersonType.Writer,
                 PersonType.Producer,
                 PersonType.Composer,
-                "Creator"
+                "creator"
             };
 
-            var people = _libraryManager.GetPeople(item);
-
-            var index = 0;
-
-            // Seeing some LG models locking up due content with large lists of people
-            // The actual issue might just be due to processing a more metadata than it can handle
-            var limit = 6;
+            var people = _libraryManager.GetPeople(
+                new InternalPeopleQuery
+                {
+                    ItemId = item.Id,
+                    Limit = 6
+                });
 
             foreach (var actor in people)
             {
@@ -805,13 +809,6 @@ namespace Emby.Dlna.Didl
                     ?? PersonType.Actor;
 
                 AddValue(writer, "upnp", type.ToLowerInvariant(), actor.Name, NS_UPNP);
-
-                index++;
-
-                if (index >= limit)
-                {
-                    break;
-                }
             }
         }
 

@@ -96,7 +96,7 @@ namespace Emby.Dlna.PlayTo
             _device.OnDeviceUnavailable = OnDeviceUnavailable;
             _device.PlaybackStart += OnDevicePlaybackStart;
             _device.PlaybackProgress += OnDevicePlaybackProgress;
-            _device.PlaybackStopped += DevicePlaybackStopped;
+            _device.PlaybackStopped += OnDevicePlaybackStopped;
             _device.MediaChanged += OnDeviceMediaChanged;
 
             _device.Start();
@@ -162,7 +162,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void DevicePlaybackStopped(object sender, PlaybackStoppedEventArgs e)
+        private async void OnDevicePlaybackStopped(object sender, PlaybackStoppedEventArgs e)
         {
             if (_disposed)
             {
@@ -633,7 +633,7 @@ namespace Emby.Dlna.PlayTo
 
             _device.PlaybackStart -= OnDevicePlaybackStart;
             _device.PlaybackProgress -= OnDevicePlaybackProgress;
-            _device.PlaybackStopped -= DevicePlaybackStopped;
+            _device.PlaybackStopped -= OnDevicePlaybackStopped;
             _device.MediaChanged -= OnDeviceMediaChanged;
             _deviceDiscovery.DeviceLeft -= OnDeviceDiscoveryDeviceLeft;
             _device.OnDeviceUnavailable = null;
