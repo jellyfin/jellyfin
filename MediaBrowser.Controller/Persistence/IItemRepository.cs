@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void DeleteItem(Guid id, CancellationToken cancellationToken);
+        void DeleteItem(Guid id);
 
         /// <summary>
         /// Saves the items.

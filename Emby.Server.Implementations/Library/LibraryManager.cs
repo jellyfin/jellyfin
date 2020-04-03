@@ -437,10 +437,10 @@ namespace Emby.Server.Implementations.Library
 
             item.SetParent(null);
 
-            ItemRepository.DeleteItem(item.Id, CancellationToken.None);
+            ItemRepository.DeleteItem(item.Id);
             foreach (var child in children)
             {
-                ItemRepository.DeleteItem(child.Id, CancellationToken.None);
+                ItemRepository.DeleteItem(child.Id);
             }
 
             _libraryItemsCache.TryRemove(item.Id, out BaseItem removed);
