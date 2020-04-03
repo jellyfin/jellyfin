@@ -5056,7 +5056,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             if (query.Limit > 0)
             {
-                commandText += "LIMIT " + query.Limit;
+                commandText += " LIMIT " + query.Limit;
             }
 
             using (var connection = GetConnection(true))
