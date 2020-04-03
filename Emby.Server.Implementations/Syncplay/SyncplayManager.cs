@@ -91,12 +91,16 @@ namespace Emby.Server.Implementations.Syncplay
 
         void _sessionManager_SessionEnded(object sender, SessionEventArgs e)
         {
-            LeaveGroup(e.SessionInfo);
+            var user = e.SessionInfo;
+            if (!IsUserInGroup(user)) return;
+            LeaveGroup(user);
         }
 
         void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
-            LeaveGroup(e.Session);
+            var user = e.Session;
+            if (!IsUserInGroup(user)) return;
+            LeaveGroup(user);
         }
 
         private bool IsUserInGroup(SessionInfo user)
