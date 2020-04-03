@@ -714,7 +714,7 @@ namespace Emby.Dlna.PlayTo
                 Properties.BaseUrl,
                 service,
                 command.Name,
-                rendererCommands.BuildPost(command, service.ServiceType)
+                rendererCommands.BuildPost(command, service.ServiceType),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
