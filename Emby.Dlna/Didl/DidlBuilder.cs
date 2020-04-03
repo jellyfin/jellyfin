@@ -796,6 +796,8 @@ namespace Emby.Dlna.Didl
                 "creator"
             };
 
+            // Seeing some LG models locking up due content with large lists of people
+            // The actual issue might just be due to processing a more metadata than it can handle
             var people = _libraryManager.GetPeople(
                 new InternalPeopleQuery
                 {
