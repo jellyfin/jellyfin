@@ -265,12 +265,6 @@ namespace Emby.Server.Implementations
         /// <value>The directory watchers.</value>
         private ILibraryMonitor LibraryMonitor { get; set; }
 
-        /// <summary>
-        /// Gets or sets the provider manager.
-        /// </summary>
-        /// <value>The provider manager.</value>
-        private IProviderManager ProviderManager { get; set; }
-
         public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
@@ -726,7 +720,7 @@ namespace Emby.Server.Implementations
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
 
-            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, Resolve<IUserViewManager>, MediaEncoder);
+            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, Resolve<IProviderManager>, Resolve<IUserViewManager>, MediaEncoder);
             serviceCollection.AddSingleton(LibraryManager);
 
             var musicManager = new MusicManager(LibraryManager);
@@ -759,8 +753,7 @@ namespace Emby.Server.Implementations
             SubtitleManager = new SubtitleManager(LoggerFactory, FileSystemManager, LibraryMonitor, MediaSourceManager, LocalizationManager);
             serviceCollection.AddSingleton(SubtitleManager);
 
-            ProviderManager = new ProviderManager(HttpClient, SubtitleManager, ServerConfigurationManager, LibraryMonitor, LoggerFactory, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
-            serviceCollection.AddSingleton(ProviderManager);
+            serviceCollection.AddSingleton<IProviderManager, ProviderManager>();
 
             // TODO: Refactor to eliminate circular dependency here so Lazy<> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
@@ -931,7 +924,7 @@ namespace Emby.Server.Implementations
             BaseItem.Logger = LoggerFactory.CreateLogger("BaseItem");
             BaseItem.ConfigurationManager = ServerConfigurationManager;
             BaseItem.LibraryManager = LibraryManager;
-            BaseItem.ProviderManager = ProviderManager;
+            BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = LocalizationManager;
             BaseItem.ItemRepository = ItemRepository;
             User.UserManager = UserManager;
@@ -1013,7 +1006,7 @@ namespace Emby.Server.Implementations
                 GetExports<IBaseItemComparer>(),
                 GetExports<ILibraryPostScanTask>());
 
-            ProviderManager.AddParts(
+            Resolve<IProviderManager>().AddParts(
                 GetExports<IImageProvider>(),
                 GetExports<IMetadataService>(),
                 GetExports<IMetadataProvider>(),

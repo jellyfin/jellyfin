@@ -39,9 +39,9 @@ namespace Emby.Server.Implementations.Dto
 
         private readonly IApplicationHost _appHost;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly Lazy<ILiveTvManager> _livetvManagerLazy;
+        private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
-        private ILiveTvManager LivetvManager => _livetvManagerLazy.Value;
+        private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
 
         public DtoService(
             ILogger<DtoService> logger,
@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Dto
             IProviderManager providerManager,
             IApplicationHost appHost,
             IMediaSourceManager mediaSourceManager,
-            Lazy<ILiveTvManager> livetvManager)
+            Lazy<ILiveTvManager> livetvManagerFactory)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Dto
             _providerManager = providerManager;
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
-            _livetvManagerLazy = livetvManager;
+            _livetvManagerFactory = livetvManagerFactory;
         }
 
         /// <summary>
