@@ -20,8 +20,8 @@ namespace Emby.Server.Implementations.Activity
         private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
         private readonly IFileSystem _fileSystem;
 
-        public ActivityRepository(ILoggerFactory loggerFactory, IServerApplicationPaths appPaths, IFileSystem fileSystem)
-            : base(loggerFactory.CreateLogger(nameof(ActivityRepository)))
+        public ActivityRepository(ILogger<ActivityRepository> logger, IServerApplicationPaths appPaths, IFileSystem fileSystem)
+            : base(logger)
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "activitylog.db");
             _fileSystem = fileSystem;

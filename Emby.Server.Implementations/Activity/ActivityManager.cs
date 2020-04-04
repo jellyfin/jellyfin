@@ -18,11 +18,11 @@ namespace Emby.Server.Implementations.Activity
         private readonly IUserManager _userManager;
 
         public ActivityManager(
-            ILoggerFactory loggerFactory,
+            ILogger<ActivityManager> logger,
             IActivityRepository repo,
             IUserManager userManager)
         {
-            _logger = loggerFactory.CreateLogger(nameof(ActivityManager));
+            _logger = logger;
             _repo = repo;
             _userManager = userManager;
         }
