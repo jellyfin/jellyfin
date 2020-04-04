@@ -840,7 +840,7 @@ namespace Emby.Server.Implementations
 
             var authContext = new AuthorizationContext(AuthenticationRepository, UserManager);
             serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
-            serviceCollection.AddSingleton<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
+            serviceCollection.AddSingleton<ISessionContext, SessionContext>();
 
             serviceCollection.AddSingleton<IAuthService, AuthService>();
 
