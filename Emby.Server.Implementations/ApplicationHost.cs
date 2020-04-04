@@ -304,8 +304,6 @@ namespace Emby.Server.Implementations
 
         private IDeviceManager DeviceManager { get; set; }
 
-        internal IUserViewManager UserViewManager { get; set; }
-
         private IAuthenticationRepository AuthenticationRepository { get; set; }
 
         private ITVSeriesManager TVSeriesManager { get; set; }
@@ -737,7 +735,7 @@ namespace Emby.Server.Implementations
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
 
-            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager, MediaEncoder);
+            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, Resolve<IUserViewManager>, MediaEncoder);
             serviceCollection.AddSingleton(LibraryManager);
 
             var musicManager = new MusicManager(LibraryManager);
@@ -804,8 +802,7 @@ namespace Emby.Server.Implementations
             LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, LoggerFactory, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, FileSystemManager, () => ChannelManager);
             serviceCollection.AddSingleton(LiveTvManager);
 
-            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
-            serviceCollection.AddSingleton(UserViewManager);
+            serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
             serviceCollection.AddSingleton<INotificationManager, NotificationManager>();
 
@@ -962,7 +959,7 @@ namespace Emby.Server.Implementations
             BaseItem.UserDataManager = UserDataManager;
             BaseItem.ChannelManager = ChannelManager;
             Video.LiveTvManager = LiveTvManager;
-            Folder.UserViewManager = UserViewManager;
+            Folder.UserViewManager = Resolve<IUserViewManager>();
             UserView.TVSeriesManager = TVSeriesManager;
             UserView.CollectionManager = CollectionManager;
             BaseItem.MediaSourceManager = MediaSourceManager;
