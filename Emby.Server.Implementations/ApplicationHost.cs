@@ -258,12 +258,6 @@ namespace Emby.Server.Implementations
         internal ILibraryManager LibraryManager { get; set; }
 
         /// <summary>
-        /// Gets or sets the directory watchers.
-        /// </summary>
-        /// <value>The directory watchers.</value>
-        private ILibraryMonitor LibraryMonitor { get; set; }
-
-        /// <summary>
         /// Gets or sets the media encoder.
         /// </summary>
         /// <value>The media encoder.</value>
@@ -708,14 +702,13 @@ namespace Emby.Server.Implementations
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
 
-            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, Resolve<IProviderManager>, Resolve<IUserViewManager>, MediaEncoder);
+            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, Resolve<ILibraryMonitor>, FileSystemManager, Resolve<IProviderManager>, Resolve<IUserViewManager>, MediaEncoder);
             serviceCollection.AddSingleton(LibraryManager);
 
             var musicManager = new MusicManager(LibraryManager);
             serviceCollection.AddSingleton<IMusicManager>(musicManager);
 
-            LibraryMonitor = new LibraryMonitor(LoggerFactory, LibraryManager, ServerConfigurationManager, FileSystemManager);
-            serviceCollection.AddSingleton(LibraryMonitor);
+            serviceCollection.AddSingleton<ILibraryMonitor, LibraryMonitor>();
 
             serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(LoggerFactory, LibraryManager, UserManager));
 
