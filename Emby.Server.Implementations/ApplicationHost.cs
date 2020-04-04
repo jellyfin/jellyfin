@@ -288,8 +288,6 @@ namespace Emby.Server.Implementations
 
         private ITVSeriesManager TVSeriesManager { get; set; }
 
-        private IMediaSourceManager MediaSourceManager { get; set; }
-
         /// <summary>
         /// Gets the installation manager.
         /// </summary>
@@ -740,14 +738,13 @@ namespace Emby.Server.Implementations
             DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager);
             serviceCollection.AddSingleton(DeviceManager);
 
-            MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
-            serviceCollection.AddSingleton(MediaSourceManager);
+            serviceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
 
             serviceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();
 
             serviceCollection.AddSingleton<IProviderManager, ProviderManager>();
 
-            // TODO: Refactor to eliminate circular dependency here so Lazy<> isn't required
+            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
             serviceCollection.AddSingleton<IDtoService, DtoService>();
 
@@ -926,7 +923,7 @@ namespace Emby.Server.Implementations
             Folder.UserViewManager = Resolve<IUserViewManager>();
             UserView.TVSeriesManager = TVSeriesManager;
             UserView.CollectionManager = Resolve<ICollectionManager>();
-            BaseItem.MediaSourceManager = MediaSourceManager;
+            BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
             CollectionFolder.XmlSerializer = XmlSerializer;
             CollectionFolder.JsonSerializer = JsonSerializer;
             CollectionFolder.ApplicationHost = this;
@@ -1010,7 +1007,7 @@ namespace Emby.Server.Implementations
 
             Resolve<IChannelManager>().AddParts(GetExports<IChannel>());
 
-            MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
+            Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
             UserManager.AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
