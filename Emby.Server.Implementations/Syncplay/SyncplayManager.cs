@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Syncplay;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Syncplay;
 
 namespace Emby.Server.Implementations.Syncplay
@@ -20,6 +21,11 @@ namespace Emby.Server.Implementations.Syncplay
         /// The logger.
         /// </summary>
         private readonly ILogger _logger;
+
+        /// <summary>
+        /// The user manager.
+        /// </summary>
+        private readonly IUserManager _userManager;
 
         /// <summary>
         /// The session manager.
@@ -42,9 +48,11 @@ namespace Emby.Server.Implementations.Syncplay
 
         public SyncplayManager(
             ILogger<SyncplayManager> logger,
+            IUserManager userManager,
             ISessionManager sessionManager)
         {
             _logger = logger;
+            _userManager = userManager;
             _sessionManager = sessionManager;
 
             _sessionManager.SessionEnded += _sessionManager_SessionEnded;
@@ -125,8 +133,16 @@ namespace Emby.Server.Implementations.Syncplay
         /// <inheritdoc />
         public void NewGroup(SessionInfo session)
         {
+            var user = _userManager.GetUserById(session.UserId);
+
+            if (user.Policy.SyncplayAccess != SyncplayAccess.CreateAndJoinGroups)
             {
+                // TODO: shall an error message be sent back to the client?
+                return;
+            }
+
             if (IsSessionInGroup(session))
+            {
                 LeaveGroup(session);
             }
 
@@ -139,6 +155,14 @@ namespace Emby.Server.Implementations.Syncplay
         /// <inheritdoc />
         public void JoinGroup(SessionInfo session, string groupId)
         {
+            var user = _userManager.GetUserById(session.UserId);
+
+            if (user.Policy.SyncplayAccess == SyncplayAccess.None)
+            {
+                // TODO: shall an error message be sent back to the client?
+                return;
+            }
+
             if (IsSessionInGroup(session))
             {
                 if (GetSessionGroup(session).Equals(groupId)) return;
@@ -163,6 +187,8 @@ namespace Emby.Server.Implementations.Syncplay
         /// <inheritdoc />
         public void LeaveGroup(SessionInfo session)
         {
+            // TODO: what happens to users that are in a group and get their permissions revoked?
+
             ISyncplayController group;
             _sessionToGroupMap.TryGetValue(session.Id, out group);
 
@@ -186,6 +212,13 @@ namespace Emby.Server.Implementations.Syncplay
         /// <inheritdoc />
         public List<GroupInfoView> ListGroups(SessionInfo session)
         {
+            var user = _userManager.GetUserById(session.UserId);
+
+            if (user.Policy.SyncplayAccess == SyncplayAccess.None)
+            {
+                return new List<GroupInfoView>();
+            }
+
             // Filter by playing item if the user is viewing something already
             if (session.NowPlayingItem != null)
             {
@@ -207,6 +240,14 @@ namespace Emby.Server.Implementations.Syncplay
         /// <inheritdoc />
         public void HandleRequest(SessionInfo session, SyncplayRequestInfo request)
         {
+            var user = _userManager.GetUserById(session.UserId);
+
+            if (user.Policy.SyncplayAccess == SyncplayAccess.None)
+            {
+                // TODO: same as LeaveGroup
+                return;
+            }
+
             ISyncplayController group;
             _sessionToGroupMap.TryGetValue(session.Id, out group);
 
