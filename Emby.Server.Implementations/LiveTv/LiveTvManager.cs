@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly Func<IChannelManager> _channelManager;
+        private readonly IChannelManager _channelManager;
 
         private readonly IDtoService _dtoService;
         private readonly ILocalizationManager _localization;
@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.LiveTv
             ILocalizationManager localization,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
-            Func<IChannelManager> channelManager)
+            IChannelManager channelManager)
         {
             _config = config;
             _logger = loggerFactory.CreateLogger(nameof(LiveTvManager));
@@ -2482,7 +2482,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .OrderBy(i => i.SortName)
                 .ToList();
 
-            folders.AddRange(_channelManager().GetChannelsInternal(new MediaBrowser.Model.Channels.ChannelQuery
+            folders.AddRange(_channelManager.GetChannelsInternal(new MediaBrowser.Model.Channels.ChannelQuery
             {
                 UserId = user.Id,
                 IsRecordingsFolder = true,

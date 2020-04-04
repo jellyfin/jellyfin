@@ -797,10 +797,9 @@ namespace Emby.Server.Implementations
             CollectionManager = new CollectionManager(LibraryManager, ApplicationPaths, LocalizationManager, FileSystemManager, LibraryMonitor, LoggerFactory, ProviderManager);
             serviceCollection.AddSingleton(CollectionManager);
 
-            serviceCollection.AddSingleton(typeof(IPlaylistManager), typeof(PlaylistManager));
+            serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
 
-            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, LoggerFactory, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, FileSystemManager, () => ChannelManager);
-            serviceCollection.AddSingleton(LiveTvManager);
+            serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
 
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
@@ -833,6 +832,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void InitializeServices()
         {
+            LiveTvManager = Resolve<ILiveTvManager>();
             NotificationManager = Resolve<INotificationManager>();
             HttpServer = Resolve<IHttpServer>();
 
