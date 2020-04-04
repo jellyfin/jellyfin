@@ -121,7 +121,6 @@ namespace Emby.Server.Implementations
         private SqliteUserRepository _userRepository;
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
         private ISessionManager _sessionManager;
-        private INotificationManager _notificationManager;
         private IHttpServer _httpServer;
 
         /// <summary>
@@ -282,10 +281,6 @@ namespace Emby.Server.Implementations
         private IUserDataManager UserDataManager { get; set; }
 
         internal SqliteItemRepository ItemRepository { get; set; }
-
-        
-
-        private ISubtitleManager SubtitleManager { get; set; }
 
         private IDeviceManager DeviceManager { get; set; }
 
@@ -748,8 +743,7 @@ namespace Emby.Server.Implementations
             MediaSourceManager = new MediaSourceManager(ItemRepository, ApplicationPaths, LocalizationManager, UserManager, LibraryManager, LoggerFactory, JsonSerializer, FileSystemManager, UserDataManager, () => MediaEncoder);
             serviceCollection.AddSingleton(MediaSourceManager);
 
-            SubtitleManager = new SubtitleManager(LoggerFactory, FileSystemManager, LibraryMonitor, MediaSourceManager, LocalizationManager);
-            serviceCollection.AddSingleton(SubtitleManager);
+            serviceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();
 
             serviceCollection.AddSingleton<IProviderManager, ProviderManager>();
 
@@ -1012,7 +1006,7 @@ namespace Emby.Server.Implementations
 
             Resolve<ILiveTvManager>().AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
-            SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
+            Resolve<ISubtitleManager>().AddParts(GetExports<ISubtitleProvider>());
 
             Resolve<IChannelManager>().AddParts(GetExports<IChannel>());
 
