@@ -64,7 +64,11 @@ Most of the translations can be found in the web client but we have several othe
 <img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
 </a>
 
-## Development
+## Jellyfin Server
+
+This repository contains the code for Jellyfin's back-end server. Note that this is only one of many projects/repositories under the Jellyfin GitHub [organization](https://github.com/jellyfin/). If you want to contribute, can start by checking out our [documentation](https://jellyfin.org/docs/general/contributing/index.html) to see what to work on.
+
+## Server Development
 
 These instructions will help you get set up with a local development environment in order to contribute to this repository. Before you start, please be sure to completely read our [guidelines on development contributions](https://jellyfin.org/docs/general/contributing/development.html). Note that this project is supported on all major operating systems (Windows, Mac and Linux).
 
