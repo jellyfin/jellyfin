@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Syncplay;
@@ -33,6 +35,11 @@ namespace Emby.Server.Implementations.Syncplay
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
+        /// The library manager.
+        /// </summary>
+        private readonly ILibraryManager _libraryManager;
+
+        /// <summary>
         /// The map between sessions and groups.
         /// </summary>
         private readonly ConcurrentDictionary<string, ISyncplayController> _sessionToGroupMap =
@@ -49,11 +56,13 @@ namespace Emby.Server.Implementations.Syncplay
         public SyncplayManager(
             ILogger<SyncplayManager> logger,
             IUserManager userManager,
-            ISessionManager sessionManager)
+            ISessionManager sessionManager,
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _userManager = userManager;
             _sessionManager = sessionManager;
+            _libraryManager = libraryManager;
 
             _sessionManager.SessionEnded += _sessionManager_SessionEnded;
             _sessionManager.PlaybackStopped += _sessionManager_PlaybackStopped;
@@ -114,6 +123,23 @@ namespace Emby.Server.Implementations.Syncplay
         private bool IsSessionInGroup(SessionInfo session)
         {
             return _sessionToGroupMap.ContainsKey(session.Id);
+        }
+
+        private bool HasAccessToItem(User user, Guid itemId)
+        {
+            if (!user.Policy.EnableAllFolders)
+            {
+                var item = _libraryManager.GetItemById(itemId);
+                var collections = _libraryManager.GetCollectionFolders(item).Select(
+                    folder => folder.Id.ToString("N", CultureInfo.InvariantCulture)
+                );
+                var intersect = collections.Intersect(user.Policy.EnabledFolders);
+                return intersect.Count() > 0;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         private Guid? GetSessionGroup(SessionInfo session)
@@ -181,6 +207,12 @@ namespace Emby.Server.Implementations.Syncplay
                 _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), update, CancellationToken.None);
                 return;
             }
+
+            if (!HasAccessToItem(user, group.GetPlayingItemId()))
+            {
+                return;
+            }
+
             group.SessionJoin(session);
         }
 
@@ -223,6 +255,8 @@ namespace Emby.Server.Implementations.Syncplay
             if (session.NowPlayingItem != null)
             {
                 return _groups.Values.Where(
+                    group => HasAccessToItem(user, group.GetPlayingItemId())
+                ).Where(
                     group => group.GetPlayingItemId().Equals(session.FullNowPlayingItem.Id)
                 ).Select(
                     group => group.GetInfo()
@@ -231,7 +265,9 @@ namespace Emby.Server.Implementations.Syncplay
             // Otherwise show all available groups
             else
             {
-                return _groups.Values.Select(
+                return _groups.Values.Where(
+                    group => HasAccessToItem(user, group.GetPlayingItemId())
+                ).Select(
                     group => group.GetInfo()
                 ).ToList();
             }
