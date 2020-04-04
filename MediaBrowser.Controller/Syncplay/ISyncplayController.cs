@@ -28,29 +28,29 @@ namespace MediaBrowser.Controller.Syncplay
         bool IsGroupEmpty();
 
         /// <summary>
-        /// Initializes the group with the user's info.
+        /// Initializes the group with the session's info.
         /// </summary>
-        /// <param name="user">The session.</param>
-        void InitGroup(SessionInfo user);
+        /// <param name="session">The session.</param>
+        void InitGroup(SessionInfo session);
 
         /// <summary>
-        /// Adds the user to the group.
+        /// Adds the session to the group.
         /// </summary>
-        /// <param name="user">The session.</param>
-        void UserJoin(SessionInfo user);
+        /// <param name="session">The session.</param>
+        void SessionJoin(SessionInfo session);
 
         /// <summary>
-        /// Removes the user from the group.
+        /// Removes the session from the group.
         /// </summary>
-        /// <param name="user">The session.</param>
-        void UserLeave(SessionInfo user);
+        /// <param name="session">The session.</param>
+        void SessionLeave(SessionInfo session);
 
         /// <summary>
-        /// Handles the requested action by the user.
+        /// Handles the requested action by the session.
         /// </summary>
-        /// <param name="user">The session.</param>
+        /// <param name="session">The session.</param>
         /// <param name="request">The requested action.</param>
-        void HandleRequest(SessionInfo user, SyncplayRequestInfo request);
+        void HandleRequest(SessionInfo session, SyncplayRequestInfo request);
 
         /// <summary>
         /// Gets the info about the group for the clients.

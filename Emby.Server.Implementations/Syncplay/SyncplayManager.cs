@@ -27,9 +27,9 @@ namespace Emby.Server.Implementations.Syncplay
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
-        /// The map between users and groups.
+        /// The map between sessions and groups.
         /// </summary>
-        private readonly ConcurrentDictionary<string, ISyncplayController> _userToGroupMap =
+        private readonly ConcurrentDictionary<string, ISyncplayController> _sessionToGroupMap =
             new ConcurrentDictionary<string, ISyncplayController>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
@@ -91,27 +91,27 @@ namespace Emby.Server.Implementations.Syncplay
 
         void _sessionManager_SessionEnded(object sender, SessionEventArgs e)
         {
-            var user = e.SessionInfo;
-            if (!IsUserInGroup(user)) return;
-            LeaveGroup(user);
+            var session = e.SessionInfo;
+            if (!IsSessionInGroup(session)) return;
+            LeaveGroup(session);
         }
 
         void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
-            var user = e.Session;
-            if (!IsUserInGroup(user)) return;
-            LeaveGroup(user);
+            var session = e.Session;
+            if (!IsSessionInGroup(session)) return;
+            LeaveGroup(session);
         }
 
-        private bool IsUserInGroup(SessionInfo user)
+        private bool IsSessionInGroup(SessionInfo session)
         {
-            return _userToGroupMap.ContainsKey(user.Id);
+            return _sessionToGroupMap.ContainsKey(session.Id);
         }
 
-        private Guid? GetUserGroup(SessionInfo user)
+        private Guid? GetSessionGroup(SessionInfo session)
         {
             ISyncplayController group;
-            _userToGroupMap.TryGetValue(user.Id, out group);
+            _sessionToGroupMap.TryGetValue(session.Id, out group);
             if (group != null)
             {
                 return group.GetGroupId();
@@ -123,26 +123,26 @@ namespace Emby.Server.Implementations.Syncplay
         }
 
         /// <inheritdoc />
-        public void NewGroup(SessionInfo user)
+        public void NewGroup(SessionInfo session)
         {
-            if (IsUserInGroup(user))
             {
-                LeaveGroup(user);
+            if (IsSessionInGroup(session))
+                LeaveGroup(session);
             }
 
             var group = new SyncplayController(_logger, _sessionManager, this);
             _groups[group.GetGroupId().ToString()] = group;
 
-            group.InitGroup(user);
+            group.InitGroup(session);
         }
 
         /// <inheritdoc />
-        public void JoinGroup(SessionInfo user, string groupId)
+        public void JoinGroup(SessionInfo session, string groupId)
         {
-            if (IsUserInGroup(user))
+            if (IsSessionInGroup(session))
             {
-                if (GetUserGroup(user).Equals(groupId)) return;
-                LeaveGroup(user);
+                if (GetSessionGroup(session).Equals(groupId)) return;
+                LeaveGroup(session);
             }
 
             ISyncplayController group;
@@ -154,28 +154,28 @@ namespace Emby.Server.Implementations.Syncplay
 
                 var update = new SyncplayGroupUpdate<string>();
                 update.Type = SyncplayGroupUpdateType.NotInGroup;
-                _sessionManager.SendSyncplayGroupUpdate(user.Id.ToString(), update, CancellationToken.None);
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), update, CancellationToken.None);
                 return;
             }
-            group.UserJoin(user);
+            group.SessionJoin(session);
         }
 
         /// <inheritdoc />
-        public void LeaveGroup(SessionInfo user)
+        public void LeaveGroup(SessionInfo session)
         {
             ISyncplayController group;
-            _userToGroupMap.TryGetValue(user.Id, out group);
+            _sessionToGroupMap.TryGetValue(session.Id, out group);
 
             if (group == null)
             {
-                _logger.LogWarning("Syncplaymanager HandleRequest: " + user.Id + " not in group.");
+                _logger.LogWarning("Syncplaymanager HandleRequest: " + session.Id + " not in group.");
 
                 var update = new SyncplayGroupUpdate<string>();
                 update.Type = SyncplayGroupUpdateType.NotInGroup;
-                _sessionManager.SendSyncplayGroupUpdate(user.Id.ToString(), update, CancellationToken.None);
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), update, CancellationToken.None);
                 return;
             }
-            group.UserLeave(user);
+            group.SessionLeave(session);
 
             if (group.IsGroupEmpty())
             {
@@ -184,13 +184,13 @@ namespace Emby.Server.Implementations.Syncplay
         }
 
         /// <inheritdoc />
-        public List<GroupInfoView> ListGroups(SessionInfo user)
+        public List<GroupInfoView> ListGroups(SessionInfo session)
         {
             // Filter by playing item if the user is viewing something already
-            if (user.NowPlayingItem != null)
+            if (session.NowPlayingItem != null)
             {
                 return _groups.Values.Where(
-                    group => group.GetPlayingItemId().Equals(user.FullNowPlayingItem.Id)
+                    group => group.GetPlayingItemId().Equals(session.FullNowPlayingItem.Id)
                 ).Select(
                     group => group.GetInfo()
                 ).ToList();
@@ -205,47 +205,47 @@ namespace Emby.Server.Implementations.Syncplay
         }
 
         /// <inheritdoc />
-        public void HandleRequest(SessionInfo user, SyncplayRequestInfo request)
+        public void HandleRequest(SessionInfo session, SyncplayRequestInfo request)
         {
             ISyncplayController group;
-            _userToGroupMap.TryGetValue(user.Id, out group);
+            _sessionToGroupMap.TryGetValue(session.Id, out group);
 
             if (group == null)
             {
-                _logger.LogWarning("Syncplaymanager HandleRequest: " + user.Id + " not in group.");
+                _logger.LogWarning("Syncplaymanager HandleRequest: " + session.Id + " not in group.");
 
                 var update = new SyncplayGroupUpdate<string>();
                 update.Type = SyncplayGroupUpdateType.NotInGroup;
-                _sessionManager.SendSyncplayGroupUpdate(user.Id.ToString(), update, CancellationToken.None);
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), update, CancellationToken.None);
                 return;
             }
-            group.HandleRequest(user, request);
+            group.HandleRequest(session, request);
         }
         
         /// <inheritdoc />
-        public void MapUserToGroup(SessionInfo user, ISyncplayController group)
+        public void MapSessionToGroup(SessionInfo session, ISyncplayController group)
         {
-            if (IsUserInGroup(user))
+            if (IsSessionInGroup(session))
             {
-                throw new InvalidOperationException("User in other group already!");
+                throw new InvalidOperationException("Session in other group already!");
             }
-            _userToGroupMap[user.Id] = group;
+            _sessionToGroupMap[session.Id] = group;
         }
 
         /// <inheritdoc />
-        public void UnmapUserFromGroup(SessionInfo user, ISyncplayController group)
+        public void UnmapSessionFromGroup(SessionInfo session, ISyncplayController group)
         {
-            if (!IsUserInGroup(user))
+            if (!IsSessionInGroup(session))
             {
-                throw new InvalidOperationException("User not in any group!");
+                throw new InvalidOperationException("Session not in any group!");
             }
 
             ISyncplayController tempGroup;
-            _userToGroupMap.Remove(user.Id, out tempGroup);
+            _sessionToGroupMap.Remove(session.Id, out tempGroup);
 
             if (!tempGroup.GetGroupId().Equals(group.GetGroupId()))
             {
-                throw new InvalidOperationException("User was in wrong group!");
+                throw new InvalidOperationException("Session was in wrong group!");
             }
         }
     }

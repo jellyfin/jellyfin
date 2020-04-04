@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Syncplay
     public class GroupInfo
     {
         /// <summary>
-        /// Default ping value used for users.
+        /// Default ping value used for sessions.
         /// </summary>
         public readonly long DefaulPing = 500;
         /// <summary>
@@ -53,85 +53,85 @@ namespace MediaBrowser.Controller.Syncplay
         new ConcurrentDictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Checks if a user is in this group.
+        /// Checks if a session is in this group.
         /// </summary>
-        /// <value><c>true</c> if the user is in this group; <c>false</c> otherwise.</value>
-        public bool ContainsUser(string sessionId)
+        /// <value><c>true</c> if the session is in this group; <c>false</c> otherwise.</value>
+        public bool ContainsSession(string sessionId)
         {
             return Partecipants.ContainsKey(sessionId);
         }
 
         /// <summary>
-        /// Adds the user to the group.
+        /// Adds the session to the group.
         /// </summary>
-        /// <param name="user">The session.</param>
-        public void AddUser(SessionInfo user)
+        /// <param name="session">The session.</param>
+        public void AddSession(SessionInfo session)
         {
-            if (ContainsUser(user.Id.ToString())) return;
+            if (ContainsSession(session.Id.ToString())) return;
             var member = new GroupMember();
-            member.Session = user;
+            member.Session = session;
             member.Ping = DefaulPing;
             member.IsBuffering = false;
-            Partecipants[user.Id.ToString()] = member;
+            Partecipants[session.Id.ToString()] = member;
         }
 
         /// <summary>
-        /// Removes the user from the group.
+        /// Removes the session from the group.
         /// </summary>
-        /// <param name="user">The session.</param>
+        /// <param name="session">The session.</param>
 
-        public void RemoveUser(SessionInfo user)
+        public void RemoveSession(SessionInfo session)
         {
-            if (!ContainsUser(user.Id.ToString())) return;
+            if (!ContainsSession(session.Id.ToString())) return;
             GroupMember member;
-            Partecipants.Remove(user.Id.ToString(), out member);
+            Partecipants.Remove(session.Id.ToString(), out member);
         }
 
         /// <summary>
-        /// Updates the ping of a user.
+        /// Updates the ping of a session.
         /// </summary>
-        /// <param name="user">The session.</param>
+        /// <param name="session">The session.</param>
         /// <param name="ping">The ping.</param>
-        public void UpdatePing(SessionInfo user, long ping)
+        public void UpdatePing(SessionInfo session, long ping)
         {
-            if (!ContainsUser(user.Id.ToString())) return;
-            Partecipants[user.Id.ToString()].Ping = ping;
+            if (!ContainsSession(session.Id.ToString())) return;
+            Partecipants[session.Id.ToString()].Ping = ping;
         }
 
         /// <summary>
         /// Gets the highest ping in the group.
         /// </summary>
-        /// <value name="user">The highest ping in the group.</value>
+        /// <value name="session">The highest ping in the group.</value>
         public long GetHighestPing()
         {
             long max = Int64.MinValue;
-            foreach (var user in Partecipants.Values)
+            foreach (var session in Partecipants.Values)
             {
-                max = Math.Max(max, user.Ping);
+                max = Math.Max(max, session.Ping);
             }
             return max;
         }
 
         /// <summary>
-        /// Sets the user's buffering state.
+        /// Sets the session's buffering state.
         /// </summary>
-        /// <param name="user">The session.</param>
+        /// <param name="session">The session.</param>
         /// <param name="isBuffering">The state.</param>
-        public void SetBuffering(SessionInfo user, bool isBuffering)
+        public void SetBuffering(SessionInfo session, bool isBuffering)
         {
-            if (!ContainsUser(user.Id.ToString())) return;
-            Partecipants[user.Id.ToString()].IsBuffering = isBuffering;
+            if (!ContainsSession(session.Id.ToString())) return;
+            Partecipants[session.Id.ToString()].IsBuffering = isBuffering;
         }
 
         /// <summary>
         /// Gets the group buffering state.
         /// </summary>
-        /// <value><c>true</c> if there is a user buffering in the group; <c>false</c> otherwise.</value>
+        /// <value><c>true</c> if there is a session buffering in the group; <c>false</c> otherwise.</value>
         public bool IsBuffering()
         {
-            foreach (var user in Partecipants.Values)
+            foreach (var session in Partecipants.Values)
             {
-                if (user.IsBuffering) return true;
+                if (session.IsBuffering) return true;
             }
             return false;
         }

@@ -13,50 +13,50 @@ namespace MediaBrowser.Controller.Syncplay
         /// <summary>
         /// Creates a new group.
         /// </summary>
-        /// <param name="user">The user that's creating the group.</param>
-        void NewGroup(SessionInfo user);
+        /// <param name="session">The session that's creating the group.</param>
+        void NewGroup(SessionInfo session);
 
         /// <summary>
-        /// Adds the user to a group.
+        /// Adds the session to a group.
         /// </summary>
-        /// <param name="user">The session.</param>
+        /// <param name="session">The session.</param>
         /// <param name="groupId">The group id.</param>
-        void JoinGroup(SessionInfo user, string groupId);
+        void JoinGroup(SessionInfo session, string groupId);
 
         /// <summary>
-        /// Removes the user from a group.
+        /// Removes the session from a group.
         /// </summary>
-        /// <param name="user">The session.</param>
-        void LeaveGroup(SessionInfo user);
+        /// <param name="session">The session.</param>
+        void LeaveGroup(SessionInfo session);
 
         /// <summary>
-        /// Gets list of available groups for a user.
+        /// Gets list of available groups for a session.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="session">The session.</param>
         /// <value>The list of available groups.</value>
-        List<GroupInfoView> ListGroups(SessionInfo user);
+        List<GroupInfoView> ListGroups(SessionInfo session);
 
         /// <summary>
-        /// Handle a request by a user in a group.
+        /// Handle a request by a session in a group.
         /// </summary>
-        /// <param name="user">The session.</param>
+        /// <param name="session">The session.</param>
         /// <param name="request">The request.</param>
-        void HandleRequest(SessionInfo user, SyncplayRequestInfo request);
+        void HandleRequest(SessionInfo session, SyncplayRequestInfo request);
 
         /// <summary>
-        /// Maps a user to a group.
+        /// Maps a session to a group.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void MapUserToGroup(SessionInfo user, ISyncplayController group);
+        void MapSessionToGroup(SessionInfo session, ISyncplayController group);
 
         /// <summary>
-        /// Unmaps a user from a group.
+        /// Unmaps a session from a group.
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void UnmapUserFromGroup(SessionInfo user, ISyncplayController group);
+        void UnmapSessionFromGroup(SessionInfo session, ISyncplayController group);
     }
 }
