@@ -851,6 +851,16 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<EncodingHelper>();
 
             serviceCollection.AddSingleton(typeof(IAttachmentExtractor), typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
+        }
+
+        /// <summary>
+        /// Create services registered with the service container that need to be initialized at application startup.
+        /// </summary>
+        public void InitializeServices()
+        {
+            HttpServer = Resolve<IHttpServer>();
+            AuthService = Resolve<IAuthService>();
+            SubtitleEncoder = Resolve<ISubtitleEncoder>();
 
             _displayPreferencesRepository.Initialize();
 
@@ -863,15 +873,6 @@ namespace Emby.Server.Implementations
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             ItemRepository.Initialize(userDataRepo, UserManager);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
-        }
-
-        /// <summary>
-        /// Create services registered with the service container that need to be initialized at application startup.
-        /// </summary>
-        public void InitializeServices()
-        {
-            HttpServer = Resolve<IHttpServer>();
-            SubtitleEncoder = Resolve<ISubtitleEncoder>();
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
