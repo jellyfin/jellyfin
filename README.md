@@ -155,9 +155,3 @@ It is not necessary to host the frontend web client as part of the backend serve
 To instruct the server not to host the web content, there is a `nowebcontent` configuration flag that must be set. This can specified using the command line switch `--nowebcontent` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
-
-#### Serving Over HTTPS
-
-The .NET Core SDK includes a certificate that can be used to serve content over HTTPS while developing. When running from Visual Studio, VS Code, or using `dotnet run`, this behavior is automatically enabled by setting the environment variable `ASPNETCORE_ENVIRONMENT=Development` and you can access the HTTPS version of the site at https://localhost:8920.
-
-By default, the development certificate is not trusted so you will see a security warning when you browse to the site over HTTPS. On most browsers you can easily bypass this warning and continue to the site. However, if you want to get rid of the warning, you can configure your machine to trust the development certificate by following the instructions in the [ASP.NET Core documentation](https://docs.microsoft.com/en-us/aspnet/core/security/enforcing-ssl#trust-the-aspnet-core-https-development-certificate-on-windows-and-macos).
