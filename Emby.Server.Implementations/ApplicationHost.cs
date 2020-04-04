@@ -732,7 +732,7 @@ namespace Emby.Server.Implementations
                 FileSystemManager,
                 ProcessFactory,
                 LocalizationManager,
-                ServiceProvider.GetRequiredService<ISubtitleEncoder>,
+                Resolve<ISubtitleEncoder>,
                 startupConfig,
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
@@ -807,11 +807,7 @@ namespace Emby.Server.Implementations
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(UserViewManager);
 
-            NotificationManager = new NotificationManager(
-                LoggerFactory.CreateLogger<NotificationManager>(),
-                UserManager,
-                ServerConfigurationManager);
-            serviceCollection.AddSingleton(NotificationManager);
+            serviceCollection.AddSingleton<INotificationManager, NotificationManager>();
 
             serviceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
@@ -840,6 +836,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void InitializeServices()
         {
+            NotificationManager = Resolve<INotificationManager>();
             HttpServer = Resolve<IHttpServer>();
 
             ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
@@ -972,7 +969,7 @@ namespace Emby.Server.Implementations
             CollectionFolder.XmlSerializer = XmlSerializer;
             CollectionFolder.JsonSerializer = JsonSerializer;
             CollectionFolder.ApplicationHost = this;
-            AuthenticatedAttribute.AuthService = ServiceProvider.GetRequiredService<IAuthService>();
+            AuthenticatedAttribute.AuthService = Resolve<IAuthService>();
         }
 
         private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
