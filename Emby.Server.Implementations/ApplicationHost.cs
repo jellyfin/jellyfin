@@ -246,12 +246,6 @@ namespace Emby.Server.Implementations
         /// <value>The server configuration manager.</value>
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
-        /// <summary>
-        /// Gets or sets the user manager.
-        /// </summary>
-        /// <value>The user manager.</value>
-        public IUserManager UserManager { get; set; }
-
         public LocalizationManager LocalizationManager { get; set; }
 
         /// <summary>
@@ -650,7 +644,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IBlurayExaminer>(new BdInfoExaminer(FileSystemManager));
 
-            UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, () => UserManager);
+            UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, Resolve<IUserManager>);
             serviceCollection.AddSingleton(UserDataManager);
 
             _displayPreferencesRepository = new SqliteDisplayPreferencesRepository(
@@ -664,21 +658,11 @@ namespace Emby.Server.Implementations
             AuthenticationRepository = GetAuthenticationRepository();
             serviceCollection.AddSingleton(AuthenticationRepository);
 
-            _userRepository = GetUserRepository();
+            serviceCollection.AddSingleton<IUserRepository, SqliteUserRepository>();
 
-            UserManager = new UserManager(
-                LoggerFactory.CreateLogger<UserManager>(),
-                _userRepository,
-                XmlSerializer,
-                NetworkManager,
-                Resolve<IImageProcessor>,
-                Resolve<IDtoService>,
-                this,
-                JsonSerializer,
-                FileSystemManager,
-                cryptoProvider);
-
-            serviceCollection.AddSingleton(UserManager);
+            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
+            serviceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
+            serviceCollection.AddSingleton<IUserManager, UserManager>();
 
             // TODO: Add StartupOptions.FFmpegPath to IConfiguration so this doesn't need to be constructed manually
             serviceCollection.AddSingleton<IMediaEncoder>(new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
@@ -771,6 +755,7 @@ namespace Emby.Server.Implementations
             _sessionManager = Resolve<ISessionManager>();
             _httpServer = Resolve<IHttpServer>();
 
+            ((SqliteUserRepository)Resolve<IUserRepository>()).Initialize();
             ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
             _displayPreferencesRepository.Initialize();
 
@@ -778,11 +763,12 @@ namespace Emby.Server.Implementations
 
             SetStaticProperties();
 
-            ((UserManager)UserManager).Initialize();
+            var userManager = (UserManager)Resolve<IUserManager>();
+            userManager.Initialize();
 
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
 
-            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, UserManager);
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, userManager);
 
             FindParts();
         }
@@ -853,21 +839,6 @@ namespace Emby.Server.Implementations
             }
         }
 
-        /// <summary>
-        /// Gets the user repository.
-        /// </summary>
-        /// <returns><see cref="Task{SqliteUserRepository}" />.</returns>
-        private SqliteUserRepository GetUserRepository()
-        {
-            var repo = new SqliteUserRepository(
-                LoggerFactory.CreateLogger<SqliteUserRepository>(),
-                ApplicationPaths);
-
-            repo.Initialize();
-
-            return repo;
-        }
-
         private IAuthenticationRepository GetAuthenticationRepository()
         {
             var repo = new AuthenticationRepository(LoggerFactory, ServerConfigurationManager);
@@ -889,7 +860,7 @@ namespace Emby.Server.Implementations
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = LocalizationManager;
             BaseItem.ItemRepository = Resolve<IItemRepository>();
-            User.UserManager = UserManager;
+            User.UserManager = Resolve<IUserManager>();
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
             BaseItem.ChannelManager = Resolve<IChannelManager>();
@@ -984,7 +955,7 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-            UserManager.AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
+            Resolve<IUserManager>().AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             IsoManager.AddParts(GetExports<IIsoMounter>());
         }
