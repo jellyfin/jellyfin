@@ -271,10 +271,6 @@ namespace Emby.Server.Implementations
         /// <value>The provider manager.</value>
         private IProviderManager ProviderManager { get; set; }
 
-        
-
-        private IDtoService DtoService { get; set; }
-
         public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
@@ -711,7 +707,7 @@ namespace Emby.Server.Implementations
                 XmlSerializer,
                 NetworkManager,
                 () => ImageProcessor,
-                () => DtoService,
+                Resolve<IDtoService>,
                 this,
                 JsonSerializer,
                 FileSystemManager,
@@ -766,8 +762,9 @@ namespace Emby.Server.Implementations
             ProviderManager = new ProviderManager(HttpClient, SubtitleManager, ServerConfigurationManager, LibraryMonitor, LoggerFactory, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
             serviceCollection.AddSingleton(ProviderManager);
 
-            DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => _liveTvManager);
-            serviceCollection.AddSingleton(DtoService);
+            // TODO: Refactor to eliminate circular dependency here so Lazy<> isn't required
+            serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
+            serviceCollection.AddSingleton<IDtoService, DtoService>();
 
             serviceCollection.AddSingleton<IChannelManager, ChannelManager>();
 
