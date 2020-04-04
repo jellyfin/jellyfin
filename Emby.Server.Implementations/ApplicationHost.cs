@@ -120,9 +120,7 @@ namespace Emby.Server.Implementations
     {
         private SqliteUserRepository _userRepository;
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
-        private IChannelManager _channelManager;
         private ISessionManager _sessionManager;
-        private ILiveTvManager _liveTvManager;
         private INotificationManager _notificationManager;
         private IHttpServer _httpServer;
 
@@ -803,10 +801,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void InitializeServices()
         {
-            _channelManager = Resolve<IChannelManager>();
             _sessionManager = Resolve<ISessionManager>();
-            _liveTvManager = Resolve<ILiveTvManager>();
-            _notificationManager = Resolve<INotificationManager>();
             _httpServer = Resolve<IHttpServer>();
 
             ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
@@ -821,6 +816,8 @@ namespace Emby.Server.Implementations
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             ItemRepository.Initialize(userDataRepo, UserManager);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
+
+            FindParts();
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
@@ -930,8 +927,8 @@ namespace Emby.Server.Implementations
             User.UserManager = UserManager;
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
-            BaseItem.ChannelManager = _channelManager;
-            Video.LiveTvManager = _liveTvManager;
+            BaseItem.ChannelManager = Resolve<IChannelManager>();
+            Video.LiveTvManager = Resolve<ILiveTvManager>();
             Folder.UserViewManager = Resolve<IUserViewManager>();
             UserView.TVSeriesManager = TVSeriesManager;
             UserView.CollectionManager = Resolve<ICollectionManager>();
@@ -978,9 +975,9 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Finds the parts.
+        /// Finds plugin components and register them with the appropriate services.
         /// </summary>
-        public void FindParts()
+        private void FindParts()
         {
             InstallationManager = ServiceProvider.GetService<IInstallationManager>();
             InstallationManager.PluginInstalled += PluginInstalled;
@@ -1013,15 +1010,15 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>());
 
-            _liveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
+            Resolve<ILiveTvManager>().AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
             SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
 
-            _channelManager.AddParts(GetExports<IChannel>());
+            Resolve<IChannelManager>().AddParts(GetExports<IChannel>());
 
             MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
 
-            _notificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
+            Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
             UserManager.AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             IsoManager.AddParts(GetExports<IIsoMounter>());
