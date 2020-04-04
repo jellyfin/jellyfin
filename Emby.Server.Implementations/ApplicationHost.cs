@@ -120,6 +120,7 @@ namespace Emby.Server.Implementations
     {
         private SqliteUserRepository _userRepository;
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
+        private IChannelManager _channelManager;
         private ISessionManager _sessionManager;
         private ILiveTvManager _liveTvManager;
         private INotificationManager _notificationManager;
@@ -284,7 +285,7 @@ namespace Emby.Server.Implementations
 
         public LocalizationManager LocalizationManager { get; set; }
 
-        private IChannelManager ChannelManager { get; set; }
+        
 
         /// <summary>
         /// Gets or sets the user data repository.
@@ -768,8 +769,7 @@ namespace Emby.Server.Implementations
             DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => _liveTvManager);
             serviceCollection.AddSingleton(DtoService);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
-            serviceCollection.AddSingleton(ChannelManager);
+            serviceCollection.AddSingleton<IChannelManager, ChannelManager>();
 
             serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
@@ -812,6 +812,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void InitializeServices()
         {
+            _channelManager = Resolve<IChannelManager>();
             _sessionManager = Resolve<ISessionManager>();
             _liveTvManager = Resolve<ILiveTvManager>();
             _notificationManager = Resolve<INotificationManager>();
@@ -938,7 +939,7 @@ namespace Emby.Server.Implementations
             User.UserManager = UserManager;
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
-            BaseItem.ChannelManager = ChannelManager;
+            BaseItem.ChannelManager = _channelManager;
             Video.LiveTvManager = _liveTvManager;
             Folder.UserViewManager = Resolve<IUserViewManager>();
             UserView.TVSeriesManager = TVSeriesManager;
@@ -1025,7 +1026,7 @@ namespace Emby.Server.Implementations
 
             SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
 
-            ChannelManager.AddParts(GetExports<IChannel>());
+            _channelManager.AddParts(GetExports<IChannel>());
 
             MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
 
