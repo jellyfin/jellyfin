@@ -805,17 +805,17 @@ namespace Emby.Server.Implementations.Library
 
             // Delete user config dir
             lock (_configSyncLock)
-            lock (_policySyncLock)
-            {
-                try
+                lock (_policySyncLock)
                 {
-                    Directory.Delete(user.ConfigurationDirectoryPath, true);
+                    try
+                    {
+                        Directory.Delete(user.ConfigurationDirectoryPath, true);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogError(ex, "Error deleting user config dir: {Path}", user.ConfigurationDirectoryPath);
+                    }
                 }
-                catch (IOException ex)
-                {
-                    _logger.LogError(ex, "Error deleting user config dir: {Path}", user.ConfigurationDirectoryPath);
-                }
-            }
 
             _users.TryRemove(user.Id, out _);
 

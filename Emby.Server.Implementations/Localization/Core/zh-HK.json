@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Jellyfin 伺服器載入中，請稍後再試。",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "無法從 {0} 下載 {1} 的字幕",
-    "SubtitlesDownloadedForItem": "已為 {0} 下載了字幕",
     "Sync": "同步",
     "System": "System",
     "TvShows": "電視節目",

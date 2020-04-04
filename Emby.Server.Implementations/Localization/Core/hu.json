@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "A Jellyfin Szerver betöltődik. Kérlek, próbáld újra hamarosan.",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Nem sikerült a felirat letöltése innen:  {0} ehhez: {1}",
-    "SubtitlesDownloadedForItem": "Letöltött feliratok a következőhöz: {0}",
     "Sync": "Szinkronizál",
     "System": "Rendszer",
     "TvShows": "TV műsorok",

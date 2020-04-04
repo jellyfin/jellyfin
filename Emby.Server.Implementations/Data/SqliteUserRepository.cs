@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Data
             IServerApplicationPaths appPaths)
             : base(logger)
         {
-            _jsonOptions = JsonDefaults.GetOptions();;
+            _jsonOptions = JsonDefaults.GetOptions();
 
             DbFilePath = Path.Combine(appPaths.DataPath, "users.db");
         }

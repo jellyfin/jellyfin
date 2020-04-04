@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Jellyfin Sunucusu yükleniyor. Lütfen kısa süre sonra tekrar deneyin.",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "{1} için alt yazılar {0} 'dan indirilemedi",
-    "SubtitlesDownloadedForItem": "{0} için altyazılar indirildi",
     "Sync": "Eşitle",
     "System": "Sistem",
     "TvShows": "Diziler",

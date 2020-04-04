@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
@@ -21,15 +22,17 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         private IConfigurationManager ConfigurationManager { get; set; }
 
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem)
+        public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization)
         {
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         /// <summary>
@@ -79,11 +82,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             return Task.CompletedTask;
         }
 
-        public string Name => "Clean Log Directory";
+        public string Name => _localization.GetLocalizedString("TaskCleanLogs");
 
-        public string Description => string.Format("Deletes log files that are more than {0} days old.", ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
+        public string Description => string.Format(_localization.GetLocalizedString("TaskCleanLogsDescription"), ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
 
-        public string Category => "Maintenance";
+        public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
         public string Key => "CleanLogFiles";
 

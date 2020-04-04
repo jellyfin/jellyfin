@@ -5,8 +5,8 @@
 using System;
 using System.Buffers;
 using System.Globalization;
-using System.Text.Json;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -470,7 +470,7 @@ namespace MediaBrowser.Api.Playback
                 else
                 {
                     options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
-                    
+
                     if (item is Audio)
                     {
                         if (!user.Policy.EnableAudioPlaybackTranscoding)
@@ -486,10 +486,10 @@ namespace MediaBrowser.Api.Playback
                         }
                     }
 
-                // The MediaSource supports direct stream, now test to see if the client supports it
-                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                    ? streamBuilder.BuildAudioItem(options)
-                    : streamBuilder.BuildVideoItem(options);
+                    // The MediaSource supports direct stream, now test to see if the client supports it
+                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                        ? streamBuilder.BuildAudioItem(options)
+                        : streamBuilder.BuildVideoItem(options);
 
                     if (streamInfo == null || !streamInfo.IsDirectStream)
                     {
@@ -516,7 +516,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (streamInfo != null)
                     {
-                        streamInfo.PlaySessionId = playSessionId;    
+                        streamInfo.PlaySessionId = playSessionId;
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
                         mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
@@ -526,10 +526,10 @@ namespace MediaBrowser.Api.Playback
                         }
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-                        
+
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                    }				
+                    }
                 }
                 else
                 {

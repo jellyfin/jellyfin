@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Jellyfin.Server": {
+      "commandName": "Project"
+    },
+    "Jellyfin.Server (nowebclient)": {
+      "commandName": "Project",
+      "commandLineArgs": "--nowebclient"
+    }
+  }
+}

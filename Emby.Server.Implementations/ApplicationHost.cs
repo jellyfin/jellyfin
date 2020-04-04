@@ -42,6 +42,7 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
+using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
@@ -232,11 +233,6 @@ namespace Emby.Server.Implementations
         /// Gets the https port for the webhost.
         /// </summary>
         public int HttpsPort { get; private set; }
-
-        /// <summary>
-        /// Gets the content root for the webhost.
-        /// </summary>
-        public string ContentRoot { get; private set; }
 
         /// <summary>
         /// Gets the server configuration manager.
@@ -608,13 +604,7 @@ namespace Emby.Server.Implementations
 
             DiscoverTypes();
 
-            await RegisterResources(serviceCollection, startupConfig).ConfigureAwait(false);
-
-            ContentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
-            if (string.IsNullOrEmpty(ContentRoot))
-            {
-                ContentRoot = ServerConfigurationManager.ApplicationPaths.WebPath;
-            }
+            await RegisterServices(serviceCollection, startupConfig).ConfigureAwait(false);
         }
 
         public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
@@ -645,9 +635,9 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Registers resources that classes will depend on
+        /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
-        protected async Task RegisterResources(IServiceCollection serviceCollection, IConfiguration startupConfig)
+        protected async Task RegisterServices(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
             serviceCollection.AddMemoryCache();
 
@@ -761,20 +751,9 @@ namespace Emby.Server.Implementations
             CertificateInfo = GetCertificateInfo(true);
             Certificate = GetCertificate(CertificateInfo);
 
-            HttpServer = new HttpListenerHost(
-                this,
-                LoggerFactory.CreateLogger<HttpListenerHost>(),
-                ServerConfigurationManager,
-                startupConfig,
-                NetworkManager,
-                JsonSerializer,
-                XmlSerializer,
-                CreateHttpListener())
-            {
-                GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading")
-            };
-
-            serviceCollection.AddSingleton(HttpServer);
+            serviceCollection.AddSingleton<ServiceController>();
+            serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
+            serviceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
             ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
             serviceCollection.AddSingleton(ImageProcessor);
@@ -836,10 +815,15 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
-            ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
+            ChapterManager = new ChapterManager(ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
 
-            EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
+            EncodingManager = new MediaEncoder.EncodingManager(
+                LoggerFactory.CreateLogger<MediaEncoder.EncodingManager>(),
+                FileSystemManager,
+                MediaEncoder,
+                ChapterManager,
+                LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
 
             var activityLogRepo = GetActivityLogRepository();
@@ -879,6 +863,14 @@ namespace Emby.Server.Implementations
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             ItemRepository.Initialize(userDataRepo, UserManager);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
+        }
+
+        /// <summary>
+        /// Create services registered with the service container that need to be initialized at application startup.
+        /// </summary>
+        public void InitializeServices()
+        {
+            HttpServer = Resolve<IHttpServer>();
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
@@ -1064,7 +1056,7 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>(), GetUrlPrefixes());
+            HttpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
 
             LibraryManager.AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -1158,7 +1150,7 @@ namespace Emby.Server.Implementations
                 {
                     exportedTypes = ass.GetExportedTypes();
                 }
-                catch (TypeLoadException ex)
+                catch (FileNotFoundException ex)
                 {
                     Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
                     continue;
@@ -1197,8 +1189,6 @@ namespace Emby.Server.Implementations
                 return prefixes;
             });
         }
-
-        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(LoggerFactory.CreateLogger<WebSocketSharpListener>());
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {
@@ -1510,18 +1500,10 @@ namespace Emby.Server.Implementations
         public string GetLocalApiUrl(ReadOnlySpan<char> host)
         {
             var url = new StringBuilder(64);
-            if (EnableHttps)
-            {
-                url.Append("https://");
-            }
-            else
-            {
-                url.Append("http://");
-            }
-
-            url.Append(host)
+            url.Append(EnableHttps ? "https://" : "http://")
+                .Append(host)
                 .Append(':')
-                .Append(HttpPort);
+                .Append(EnableHttps ? HttpsPort : HttpPort);
 
             string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
             if (baseUrl.Length != 0)

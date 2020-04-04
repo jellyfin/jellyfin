@@ -17,6 +17,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,12 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : IHttpServer, IDisposable
     {
+        /// <summary>
+        /// The key for a setting that specifies the default redirect path
+        /// to use for requests where the URL base prefix is invalid or missing.
+        /// </summary>
+        public const string DefaultRedirectKey = "HttpListenerHost:DefaultRedirectPath";
+
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
@@ -52,23 +59,28 @@ namespace Emby.Server.Implementations.HttpServer
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
-            IHttpListener socketListener)
+            IHttpListener socketListener,
+            ILocalizationManager localizationManager,
+            ServiceController serviceController)
         {
             _appHost = applicationHost;
             _logger = logger;
             _config = config;
-            _defaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
+            _defaultRedirectPath = configuration[DefaultRedirectKey];
             _baseUrlPrefix = _config.Configuration.BaseUrl;
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
             _socketListener = socketListener;
+            ServiceController = serviceController;
+
             _socketListener.WebSocketConnected = OnWebSocketConnected;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
             Instance = this;
             ResponseFilters = Array.Empty<Action<IRequest, HttpResponse, object>>();
+            GlobalResponse = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         }
 
         public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
@@ -81,7 +93,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        public ServiceController ServiceController { get; private set; }
+        public ServiceController ServiceController { get; }
 
         public object CreateInstance(Type type)
         {
@@ -585,17 +597,15 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the rest handlers.
         /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="listeners"></param>
-        /// <param name="urlPrefixes"></param>
-        public void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
+        /// <param name="serviceTypes">The service types to register with the <see cref="ServiceController"/>.</param>
+        /// <param name="listeners">The web socket listeners.</param>
+        /// <param name="urlPrefixes">The URL prefixes. See <see cref="UrlPrefixes"/>.</param>
+        public void Init(IEnumerable<Type> serviceTypes, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
         {
             _webSocketListeners = listeners.ToArray();
             UrlPrefixes = urlPrefixes.ToArray();
-            ServiceController = new ServiceController();
 
-            var types = services.Select(r => r.GetType());
-            ServiceController.Init(this, types);
+            ServiceController.Init(this, serviceTypes);
 
             ResponseFilters = new Action<IRequest, HttpResponse, object>[]
             {

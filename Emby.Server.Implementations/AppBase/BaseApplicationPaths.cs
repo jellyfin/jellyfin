@@ -5,7 +5,7 @@ using MediaBrowser.Common.Configuration;
 namespace Emby.Server.Implementations.AppBase
 {
     /// <summary>
-    /// Provides a base class to hold common application paths used by both the Ui and Server.
+    /// Provides a base class to hold common application paths used by both the UI and Server.
     /// This can be subclassed to add application-specific paths.
     /// </summary>
     public abstract class BaseApplicationPaths : IApplicationPaths
@@ -37,10 +37,7 @@ namespace Emby.Server.Implementations.AppBase
         /// <value>The program data path.</value>
         public string ProgramDataPath { get; }
 
-        /// <summary>
-        /// Gets the path to the web UI resources folder.
-        /// </summary>
-        /// <value>The web UI resources path.</value>
+        /// <inheritdoc/>
         public string WebPath { get; }
 
         /// <summary>

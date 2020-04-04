@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
@@ -36,7 +37,6 @@ namespace MediaBrowser.Providers.Tmdb.Movies
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILogger _logger;
-        private readonly ILocalizationManager _localization;
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationHost _appHost;
 
@@ -48,7 +48,6 @@ namespace MediaBrowser.Providers.Tmdb.Movies
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
             ILogger<TmdbMovieProvider> logger,
-            ILocalizationManager localization,
             ILibraryManager libraryManager,
             IApplicationHost appHost)
         {
@@ -57,7 +56,6 @@ namespace MediaBrowser.Providers.Tmdb.Movies
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _logger = logger;
-            _localization = localization;
             _libraryManager = libraryManager;
             _appHost = appHost;
             Current = this;
@@ -409,15 +407,15 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
         private static long _lastRequestTicks;
         // The limit is 40 requests per 10 seconds
-        private static int requestIntervalMs = 300;
+        private const int RequestIntervalMs = 300;
 
         /// <summary>
         /// Gets the movie db response.
         /// </summary>
         internal async Task<HttpResponseInfo> GetMovieDbResponse(HttpRequestOptions options)
         {
-            var delayTicks = (requestIntervalMs * 10000) - (DateTime.UtcNow.Ticks - _lastRequestTicks);
-            var delayMs = Math.Min(delayTicks / 10000, requestIntervalMs);
+            var delayTicks = (RequestIntervalMs * 10000) - (DateTime.UtcNow.Ticks - _lastRequestTicks);
+            var delayMs = Math.Min(delayTicks / 10000, RequestIntervalMs);
 
             if (delayMs > 0)
             {
@@ -430,11 +428,13 @@ namespace MediaBrowser.Providers.Tmdb.Movies
             options.BufferContent = true;
             options.UserAgent = _appHost.ApplicationUserAgent;
 
-            return await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+            return await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
         }
 
+        /// <inheritdoc />
         public int Order => 1;
 
+        /// <inheritdoc />
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClient.GetResponse(new HttpRequestOptions
