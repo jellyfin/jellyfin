@@ -282,15 +282,11 @@ namespace Emby.Server.Implementations
         /// <value>The media encoder.</value>
         private IMediaEncoder MediaEncoder { get; set; }
 
-        private ISubtitleEncoder SubtitleEncoder { get; set; }
-
         private ISessionManager SessionManager { get; set; }
 
         private ILiveTvManager LiveTvManager { get; set; }
 
         public LocalizationManager LocalizationManager { get; set; }
-
-        private IEncodingManager EncodingManager { get; set; }
 
         private IChannelManager ChannelManager { get; set; }
 
@@ -325,8 +321,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The installation manager.</value>
         protected IInstallationManager InstallationManager { get; private set; }
-
-        protected IAuthService AuthService { get; private set; }
 
         public IStartupOptions StartupOptions { get; }
 
@@ -740,7 +734,7 @@ namespace Emby.Server.Implementations
                 FileSystemManager,
                 ProcessFactory,
                 LocalizationManager,
-                () => SubtitleEncoder,
+                ServiceProvider.GetRequiredService<ISubtitleEncoder>,
                 startupConfig,
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
@@ -826,13 +820,7 @@ namespace Emby.Server.Implementations
             ChapterManager = new ChapterManager(ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
 
-            EncodingManager = new MediaEncoder.EncodingManager(
-                LoggerFactory.CreateLogger<MediaEncoder.EncodingManager>(),
-                FileSystemManager,
-                MediaEncoder,
-                ChapterManager,
-                LibraryManager);
-            serviceCollection.AddSingleton(EncodingManager);
+            serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
             serviceCollection.AddSingleton<IActivityRepository, ActivityRepository>();
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
@@ -856,8 +844,6 @@ namespace Emby.Server.Implementations
         public void InitializeServices()
         {
             HttpServer = Resolve<IHttpServer>();
-            AuthService = Resolve<IAuthService>();
-            SubtitleEncoder = Resolve<ISubtitleEncoder>();
 
             ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
             _displayPreferencesRepository.Initialize();
@@ -989,7 +975,7 @@ namespace Emby.Server.Implementations
             CollectionFolder.XmlSerializer = XmlSerializer;
             CollectionFolder.JsonSerializer = JsonSerializer;
             CollectionFolder.ApplicationHost = this;
-            AuthenticatedAttribute.AuthService = AuthService;
+            AuthenticatedAttribute.AuthService = ServiceProvider.GetRequiredService<IAuthService>();
         }
 
         private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
