@@ -24,7 +24,6 @@ namespace Emby.Server.Implementations.LiveTv
     {
         private readonly ILogger _logger;
         private readonly IImageProcessor _imageProcessor;
-
         private readonly IDtoService _dtoService;
         private readonly IApplicationHost _appHost;
         private readonly ILibraryManager _libraryManager;
@@ -32,13 +31,13 @@ namespace Emby.Server.Implementations.LiveTv
         public LiveTvDtoService(
             IDtoService dtoService,
             IImageProcessor imageProcessor,
-            ILoggerFactory loggerFactory,
+            ILogger<LiveTvDtoService> logger,
             IApplicationHost appHost,
             ILibraryManager libraryManager)
         {
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
-            _logger = loggerFactory.CreateLogger(nameof(LiveTvDtoService));
+            _logger = logger;
             _appHost = appHost;
             _libraryManager = libraryManager;
         }

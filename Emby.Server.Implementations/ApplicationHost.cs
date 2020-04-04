@@ -779,6 +779,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
 
+            serviceCollection.AddSingleton<LiveTvDtoService>();
             serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
 
             serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
