@@ -121,6 +121,7 @@ namespace Emby.Server.Implementations
     {
         private SqliteUserRepository _userRepository;
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
+        private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
 
@@ -250,12 +251,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The user manager.</value>
         public IUserManager UserManager { get; set; }
-
-        /// <summary>
-        /// Gets or sets the media encoder.
-        /// </summary>
-        /// <value>The media encoder.</value>
-        private IMediaEncoder MediaEncoder { get; set; }
 
         public LocalizationManager LocalizationManager { get; set; }
 
@@ -486,7 +481,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
 
-            MediaEncoder.SetFFmpegPath();
+            _mediaEncoder.SetFFmpegPath();
 
             Logger.LogInformation("ServerId: {0}", SystemId);
 
@@ -685,7 +680,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(UserManager);
 
-            MediaEncoder = new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
+            // TODO: Add StartupOptions.FFmpegPath to IConfiguration so this doesn't need to be constructed manually
+            serviceCollection.AddSingleton<IMediaEncoder>(new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
                 LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
                 ServerConfigurationManager,
                 FileSystemManager,
@@ -693,8 +689,7 @@ namespace Emby.Server.Implementations
                 LocalizationManager,
                 Resolve<ISubtitleEncoder>,
                 startupConfig,
-                StartupOptions.FFmpegPath);
-            serviceCollection.AddSingleton(MediaEncoder);
+                StartupOptions.FFmpegPath));
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -772,6 +767,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void InitializeServices()
         {
+            _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
             _httpServer = Resolve<IHttpServer>();
 
@@ -1306,7 +1302,7 @@ namespace Emby.Server.Implementations
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = true,
-                EncoderLocation = MediaEncoder.EncoderLocation,
+                EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
                 SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = StartupOptions.PackageName
