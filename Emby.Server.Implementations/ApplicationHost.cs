@@ -834,9 +834,8 @@ namespace Emby.Server.Implementations
                 LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
 
-            var activityLogRepo = GetActivityLogRepository();
-            serviceCollection.AddSingleton(activityLogRepo);
-            serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(LoggerFactory, activityLogRepo, UserManager));
+            serviceCollection.AddSingleton<IActivityRepository, ActivityRepository>();
+            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
 
             serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
             serviceCollection.AddSingleton<ISessionContext, SessionContext>();
@@ -860,6 +859,7 @@ namespace Emby.Server.Implementations
             AuthService = Resolve<IAuthService>();
             SubtitleEncoder = Resolve<ISubtitleEncoder>();
 
+            ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
             _displayPreferencesRepository.Initialize();
 
             var userDataRepo = new SqliteUserDataRepository(LoggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
@@ -957,15 +957,6 @@ namespace Emby.Server.Implementations
         private IAuthenticationRepository GetAuthenticationRepository()
         {
             var repo = new AuthenticationRepository(LoggerFactory, ServerConfigurationManager);
-
-            repo.Initialize();
-
-            return repo;
-        }
-
-        private IActivityRepository GetActivityLogRepository()
-        {
-            var repo = new ActivityRepository(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager);
 
             repo.Initialize();
 
