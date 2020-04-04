@@ -254,8 +254,6 @@ namespace Emby.Server.Implementations
         /// <value>The user data repository.</value>
         private IUserDataManager UserDataManager { get; set; }
 
-        private IAuthenticationRepository AuthenticationRepository { get; set; }
-
         /// <summary>
         /// Gets the installation manager.
         /// </summary>
@@ -655,8 +653,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
-            AuthenticationRepository = GetAuthenticationRepository();
-            serviceCollection.AddSingleton(AuthenticationRepository);
+            serviceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
 
             serviceCollection.AddSingleton<IUserRepository, SqliteUserRepository>();
 
@@ -755,6 +752,7 @@ namespace Emby.Server.Implementations
             _sessionManager = Resolve<ISessionManager>();
             _httpServer = Resolve<IHttpServer>();
 
+            ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
             ((SqliteUserRepository)Resolve<IUserRepository>()).Initialize();
             ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
             _displayPreferencesRepository.Initialize();
@@ -837,15 +835,6 @@ namespace Emby.Server.Implementations
                 Logger.LogError(ex, "Error loading cert from {CertificateLocation}", certificateLocation);
                 return null;
             }
-        }
-
-        private IAuthenticationRepository GetAuthenticationRepository()
-        {
-            var repo = new AuthenticationRepository(LoggerFactory, ServerConfigurationManager);
-
-            repo.Initialize();
-
-            return repo;
         }
 
         /// <summary>
