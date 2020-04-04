@@ -302,8 +302,6 @@ namespace Emby.Server.Implementations
 
         private ISubtitleManager SubtitleManager { get; set; }
 
-        private IChapterManager ChapterManager { get; set; }
-
         private IDeviceManager DeviceManager { get; set; }
 
         internal IUserViewManager UserViewManager { get; set; }
@@ -815,10 +813,9 @@ namespace Emby.Server.Implementations
                 ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
-            serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
+            serviceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
-            ChapterManager = new ChapterManager(ItemRepository);
-            serviceCollection.AddSingleton(ChapterManager);
+            serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
@@ -835,7 +832,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IResourceFileManager, ResourceFileManager>();
             serviceCollection.AddSingleton<EncodingHelper>();
 
-            serviceCollection.AddSingleton(typeof(IAttachmentExtractor), typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
+            serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
         }
 
         /// <summary>
