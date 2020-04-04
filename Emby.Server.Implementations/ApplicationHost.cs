@@ -120,7 +120,6 @@ namespace Emby.Server.Implementations
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
         private SqliteUserRepository _userRepository;
-        private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
@@ -645,11 +644,7 @@ namespace Emby.Server.Implementations
             UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, Resolve<IUserManager>);
             serviceCollection.AddSingleton(UserDataManager);
 
-            _displayPreferencesRepository = new SqliteDisplayPreferencesRepository(
-                LoggerFactory.CreateLogger<SqliteDisplayPreferencesRepository>(),
-                ApplicationPaths,
-                FileSystemManager);
-            serviceCollection.AddSingleton<IDisplayPreferencesRepository>(_displayPreferencesRepository);
+            serviceCollection.AddSingleton<IDisplayPreferencesRepository, SqliteDisplayPreferencesRepository>();
 
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
@@ -752,10 +747,10 @@ namespace Emby.Server.Implementations
             _sessionManager = Resolve<ISessionManager>();
             _httpServer = Resolve<IHttpServer>();
 
+            ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
             ((SqliteUserRepository)Resolve<IUserRepository>()).Initialize();
             ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
-            _displayPreferencesRepository.Initialize();
 
             var userDataRepo = new SqliteUserDataRepository(LoggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
 
@@ -1628,11 +1623,9 @@ namespace Emby.Server.Implementations
                 }
 
                 _userRepository?.Dispose();
-                _displayPreferencesRepository?.Dispose();
             }
 
             _userRepository = null;
-            _displayPreferencesRepository = null;
 
             _disposed = true;
         }
