@@ -272,8 +272,6 @@ namespace Emby.Server.Implementations
 
         public LocalizationManager LocalizationManager { get; set; }
 
-        
-
         /// <summary>
         /// Gets or sets the user data repository.
         /// </summary>
@@ -283,8 +281,6 @@ namespace Emby.Server.Implementations
         internal SqliteItemRepository ItemRepository { get; set; }
 
         private IAuthenticationRepository AuthenticationRepository { get; set; }
-
-        private ITVSeriesManager TVSeriesManager { get; set; }
 
         /// <summary>
         /// Gets the installation manager.
@@ -730,8 +726,7 @@ namespace Emby.Server.Implementations
             ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
             serviceCollection.AddSingleton(ImageProcessor);
 
-            TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
-            serviceCollection.AddSingleton(TVSeriesManager);
+            serviceCollection.AddSingleton<ITVSeriesManager, TVSeriesManager>();
 
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
 
@@ -918,7 +913,7 @@ namespace Emby.Server.Implementations
             BaseItem.ChannelManager = Resolve<IChannelManager>();
             Video.LiveTvManager = Resolve<ILiveTvManager>();
             Folder.UserViewManager = Resolve<IUserViewManager>();
-            UserView.TVSeriesManager = TVSeriesManager;
+            UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
             UserView.CollectionManager = Resolve<ICollectionManager>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
             CollectionFolder.XmlSerializer = XmlSerializer;
