@@ -38,10 +38,11 @@ namespace Emby.Server.Implementations.Devices
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
-
         private readonly IAuthenticationRepository _authRepo;
+        private readonly Dictionary<string, ClientCapabilities> _capabilitiesCache;
 
         public event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
+
         public event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
 
         private readonly object _cameraUploadSyncLock = new object();
@@ -65,10 +66,9 @@ namespace Emby.Server.Implementations.Devices
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
             _authRepo = authRepo;
+            _capabilitiesCache = new Dictionary<string, ClientCapabilities>(StringComparer.OrdinalIgnoreCase);
         }
 
-
-        private Dictionary<string, ClientCapabilities> _capabilitiesCache = new Dictionary<string, ClientCapabilities>(StringComparer.OrdinalIgnoreCase);
         public void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "capabilities.json");

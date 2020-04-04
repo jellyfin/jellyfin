@@ -282,8 +282,6 @@ namespace Emby.Server.Implementations
 
         internal SqliteItemRepository ItemRepository { get; set; }
 
-        private IDeviceManager DeviceManager { get; set; }
-
         private IAuthenticationRepository AuthenticationRepository { get; set; }
 
         private ITVSeriesManager TVSeriesManager { get; set; }
@@ -735,8 +733,7 @@ namespace Emby.Server.Implementations
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(TVSeriesManager);
 
-            DeviceManager = new DeviceManager(AuthenticationRepository, JsonSerializer, LibraryManager, LocalizationManager, UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager);
-            serviceCollection.AddSingleton(DeviceManager);
+            serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
 
             serviceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
 
