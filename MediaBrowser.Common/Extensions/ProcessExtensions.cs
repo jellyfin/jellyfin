@@ -20,7 +20,7 @@ namespace MediaBrowser.Common.Extensions
         {
             using (var cancelTokenSource = new CancellationTokenSource(timeout))
             {
-                return await WaitForExitAsync(process, cancelTokenSource.Token);
+                return await WaitForExitAsync(process, cancelTokenSource.Token).ConfigureAwait(false);
             }
         }
 
