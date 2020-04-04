@@ -958,7 +958,7 @@ namespace MediaBrowser.Providers.Manager
         public void OnRefreshProgress(BaseItem item, double progress)
         {
             var id = item.Id;
-            _logger.LogInformation("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
+            _logger.LogDebug("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
 
             // TODO: Need to hunt down the conditions for this happening
             _activeRefreshes.AddOrUpdate(
