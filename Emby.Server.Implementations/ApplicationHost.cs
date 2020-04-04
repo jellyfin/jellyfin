@@ -845,16 +845,7 @@ namespace Emby.Server.Implementations
             AuthService = new AuthService(LoggerFactory.CreateLogger<AuthService>(), authContext, ServerConfigurationManager, SessionManager, NetworkManager);
             serviceCollection.AddSingleton(AuthService);
 
-            SubtitleEncoder = new MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder(
-                LibraryManager,
-                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>(),
-                ApplicationPaths,
-                FileSystemManager,
-                MediaEncoder,
-                HttpClient,
-                MediaSourceManager,
-                ProcessFactory);
-            serviceCollection.AddSingleton(SubtitleEncoder);
+            serviceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
 
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
             serviceCollection.AddSingleton<EncodingHelper>();
@@ -880,6 +871,7 @@ namespace Emby.Server.Implementations
         public void InitializeServices()
         {
             HttpServer = Resolve<IHttpServer>();
+            SubtitleEncoder = Resolve<ISubtitleEncoder>();
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
