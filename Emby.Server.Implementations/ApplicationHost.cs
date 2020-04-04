@@ -248,12 +248,6 @@ namespace Emby.Server.Implementations
         public LocalizationManager LocalizationManager { get; set; }
 
         /// <summary>
-        /// Gets or sets the user data repository.
-        /// </summary>
-        /// <value>The user data repository.</value>
-        private IUserDataManager UserDataManager { get; set; }
-
-        /// <summary>
         /// Gets the installation manager.
         /// </summary>
         /// <value>The installation manager.</value>
@@ -641,8 +635,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IBlurayExaminer>(new BdInfoExaminer(FileSystemManager));
 
-            UserDataManager = new UserDataManager(LoggerFactory, ServerConfigurationManager, Resolve<IUserManager>);
-            serviceCollection.AddSingleton(UserDataManager);
+            serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
+            serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 
             serviceCollection.AddSingleton<IDisplayPreferencesRepository, SqliteDisplayPreferencesRepository>();
 
@@ -752,15 +746,12 @@ namespace Emby.Server.Implementations
             ((SqliteUserRepository)Resolve<IUserRepository>()).Initialize();
             ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
 
-            var userDataRepo = new SqliteUserDataRepository(LoggerFactory.CreateLogger<SqliteUserDataRepository>(), ApplicationPaths);
-
             SetStaticProperties();
 
             var userManager = (UserManager)Resolve<IUserManager>();
             userManager.Initialize();
 
-            ((UserDataManager)UserDataManager).Repository = userDataRepo;
-
+            var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, userManager);
 
             FindParts();
@@ -846,7 +837,7 @@ namespace Emby.Server.Implementations
             BaseItem.ItemRepository = Resolve<IItemRepository>();
             User.UserManager = Resolve<IUserManager>();
             BaseItem.FileSystem = FileSystemManager;
-            BaseItem.UserDataManager = UserDataManager;
+            BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
             Video.LiveTvManager = Resolve<ILiveTvManager>();
             Folder.UserViewManager = Resolve<IUserViewManager>();
