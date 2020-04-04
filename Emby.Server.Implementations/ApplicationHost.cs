@@ -705,12 +705,11 @@ namespace Emby.Server.Implementations
             LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, Resolve<ILibraryMonitor>, FileSystemManager, Resolve<IProviderManager>, Resolve<IUserViewManager>, MediaEncoder);
             serviceCollection.AddSingleton(LibraryManager);
 
-            var musicManager = new MusicManager(LibraryManager);
-            serviceCollection.AddSingleton<IMusicManager>(musicManager);
+            serviceCollection.AddSingleton<IMusicManager, MusicManager>();
 
             serviceCollection.AddSingleton<ILibraryMonitor, LibraryMonitor>();
 
-            serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(LoggerFactory, LibraryManager, UserManager));
+            serviceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
             serviceCollection.AddSingleton<ServiceController>();
             serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
