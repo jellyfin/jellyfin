@@ -120,6 +120,10 @@ namespace Emby.Server.Implementations
     {
         private SqliteUserRepository _userRepository;
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
+        private ISessionManager _sessionManager;
+        private ILiveTvManager _liveTvManager;
+        private INotificationManager _notificationManager;
+        private IHttpServer _httpServer;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -266,11 +270,7 @@ namespace Emby.Server.Implementations
         /// <value>The provider manager.</value>
         private IProviderManager ProviderManager { get; set; }
 
-        /// <summary>
-        /// Gets or sets the HTTP server.
-        /// </summary>
-        /// <value>The HTTP server.</value>
-        private IHttpServer HttpServer { get; set; }
+        
 
         private IDtoService DtoService { get; set; }
 
@@ -281,10 +281,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <value>The media encoder.</value>
         private IMediaEncoder MediaEncoder { get; set; }
-
-        private ISessionManager SessionManager { get; set; }
-
-        private ILiveTvManager LiveTvManager { get; set; }
 
         public LocalizationManager LocalizationManager { get; set; }
 
@@ -298,7 +294,7 @@ namespace Emby.Server.Implementations
 
         internal SqliteItemRepository ItemRepository { get; set; }
 
-        private INotificationManager NotificationManager { get; set; }
+        
 
         private ISubtitleManager SubtitleManager { get; set; }
 
@@ -307,8 +303,6 @@ namespace Emby.Server.Implementations
         private IAuthenticationRepository AuthenticationRepository { get; set; }
 
         private ITVSeriesManager TVSeriesManager { get; set; }
-
-        private ICollectionManager CollectionManager { get; set; }
 
         private IMediaSourceManager MediaSourceManager { get; set; }
 
@@ -541,7 +535,7 @@ namespace Emby.Server.Implementations
             Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
-            HttpServer.GlobalResponse = null;
+            _httpServer.GlobalResponse = null;
 
             stopWatch.Restart();
             await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
@@ -609,7 +603,7 @@ namespace Emby.Server.Implementations
                 return;
             }
 
-            await HttpServer.ProcessWebSocketRequest(context).ConfigureAwait(false);
+            await _httpServer.ProcessWebSocketRequest(context).ConfigureAwait(false);
         }
 
         public async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
@@ -625,7 +619,7 @@ namespace Emby.Server.Implementations
             var localPath = context.Request.Path.ToString();
 
             var req = new WebSocketSharpRequest(request, response, request.Path, LoggerFactory.CreateLogger<WebSocketSharpRequest>());
-            await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
+            await _httpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -771,31 +765,17 @@ namespace Emby.Server.Implementations
             ProviderManager = new ProviderManager(HttpClient, SubtitleManager, ServerConfigurationManager, LibraryMonitor, LoggerFactory, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
             serviceCollection.AddSingleton(ProviderManager);
 
-            DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => LiveTvManager);
+            DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => _liveTvManager);
             serviceCollection.AddSingleton(DtoService);
 
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
-            SessionManager = new SessionManager(
-                LoggerFactory.CreateLogger<SessionManager>(),
-                UserDataManager,
-                LibraryManager,
-                UserManager,
-                musicManager,
-                DtoService,
-                ImageProcessor,
-                this,
-                AuthenticationRepository,
-                DeviceManager,
-                MediaSourceManager);
-            serviceCollection.AddSingleton(SessionManager);
+            serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
-            serviceCollection.AddSingleton<IDlnaManager>(
-                new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LoggerFactory, JsonSerializer, this));
+            serviceCollection.AddSingleton<IDlnaManager, DlnaManager>();
 
-            CollectionManager = new CollectionManager(LibraryManager, ApplicationPaths, LocalizationManager, FileSystemManager, LibraryMonitor, LoggerFactory, ProviderManager);
-            serviceCollection.AddSingleton(CollectionManager);
+            serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
 
@@ -832,9 +812,10 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void InitializeServices()
         {
-            LiveTvManager = Resolve<ILiveTvManager>();
-            NotificationManager = Resolve<INotificationManager>();
-            HttpServer = Resolve<IHttpServer>();
+            _sessionManager = Resolve<ISessionManager>();
+            _liveTvManager = Resolve<ILiveTvManager>();
+            _notificationManager = Resolve<INotificationManager>();
+            _httpServer = Resolve<IHttpServer>();
 
             ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
             _displayPreferencesRepository.Initialize();
@@ -958,10 +939,10 @@ namespace Emby.Server.Implementations
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;
             BaseItem.ChannelManager = ChannelManager;
-            Video.LiveTvManager = LiveTvManager;
+            Video.LiveTvManager = _liveTvManager;
             Folder.UserViewManager = Resolve<IUserViewManager>();
             UserView.TVSeriesManager = TVSeriesManager;
-            UserView.CollectionManager = CollectionManager;
+            UserView.CollectionManager = Resolve<ICollectionManager>();
             BaseItem.MediaSourceManager = MediaSourceManager;
             CollectionFolder.XmlSerializer = XmlSerializer;
             CollectionFolder.JsonSerializer = JsonSerializer;
@@ -1024,7 +1005,7 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            HttpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
+            _httpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
 
             LibraryManager.AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -1040,7 +1021,7 @@ namespace Emby.Server.Implementations
                 GetExports<IMetadataSaver>(),
                 GetExports<IExternalId>());
 
-            LiveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
+            _liveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
             SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
 
@@ -1048,7 +1029,7 @@ namespace Emby.Server.Implementations
 
             MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
 
-            NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
+            _notificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
             UserManager.AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             IsoManager.AddParts(GetExports<IIsoMounter>());
@@ -1194,7 +1175,7 @@ namespace Emby.Server.Implementations
                 }
             }
 
-            if (!HttpServer.UrlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
+            if (!_httpServer.UrlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
             {
                 requiresRestart = true;
             }
@@ -1254,7 +1235,7 @@ namespace Emby.Server.Implementations
             {
                 try
                 {
-                    await SessionManager.SendServerRestartNotification(CancellationToken.None).ConfigureAwait(false);
+                    await _sessionManager.SendServerRestartNotification(CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1618,7 +1599,7 @@ namespace Emby.Server.Implementations
 
             try
             {
-                await SessionManager.SendServerShutdownNotification(CancellationToken.None).ConfigureAwait(false);
+                await _sessionManager.SendServerShutdownNotification(CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
