@@ -838,8 +838,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(activityLogRepo);
             serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(LoggerFactory, activityLogRepo, UserManager));
 
-            var authContext = new AuthorizationContext(AuthenticationRepository, UserManager);
-            serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
+            serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
             serviceCollection.AddSingleton<ISessionContext, SessionContext>();
 
             serviceCollection.AddSingleton<IAuthService, AuthService>();
