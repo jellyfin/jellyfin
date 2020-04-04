@@ -41,15 +41,6 @@ namespace MediaBrowser.Controller.Drawing
         ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info);
 
         /// <summary>
-        /// Gets the dimensions of the image.
-        /// </summary>
-        /// <param name="item">The base item.</param>
-        /// <param name="info">The information.</param>
-        /// <param name="updateItem">Whether or not the item info should be updated.</param>
-        /// <returns>ImageDimensions</returns>
-        ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem);
-
-        /// <summary>
         /// Gets the image cache tag.
         /// </summary>
         /// <param name="item">The item.</param>

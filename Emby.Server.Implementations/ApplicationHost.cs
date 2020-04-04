@@ -723,7 +723,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
             serviceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
-            ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
+            ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => MediaEncoder);
             serviceCollection.AddSingleton(ImageProcessor);
 
             serviceCollection.AddSingleton<ITVSeriesManager, TVSeriesManager>();
