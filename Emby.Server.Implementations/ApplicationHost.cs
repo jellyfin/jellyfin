@@ -331,6 +331,13 @@ namespace Emby.Server.Implementations
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             NetworkManager.NetworkChanged += OnNetworkChanged;
+
+            CertificateInfo = new CertificateInfo
+            {
+                Path = ServerConfigurationManager.Configuration.CertificatePath,
+                Password = ServerConfigurationManager.Configuration.CertificatePassword
+            };
+            Certificate = GetCertificate(CertificateInfo);
         }
 
         public string ExpandVirtualPath(string path)
@@ -711,9 +718,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(LibraryMonitor);
 
             serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(LoggerFactory, LibraryManager, UserManager));
-
-            CertificateInfo = GetCertificateInfo(true);
-            Certificate = GetCertificate(CertificateInfo);
 
             serviceCollection.AddSingleton<ServiceController>();
             serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
@@ -1106,16 +1110,6 @@ namespace Emby.Server.Implementations
             });
         }
 
-        private CertificateInfo GetCertificateInfo(bool generateCertificate)
-        {
-            // Custom cert
-            return new CertificateInfo
-            {
-                Path = ServerConfigurationManager.Configuration.CertificatePath,
-                Password = ServerConfigurationManager.Configuration.CertificatePassword
-            };
-        }
-
         /// <summary>
         /// Called when [configuration updated].
         /// </summary>
@@ -1148,8 +1142,7 @@ namespace Emby.Server.Implementations
             }
 
             var currentCertPath = CertificateInfo?.Path;
-            var newCertInfo = GetCertificateInfo(false);
-            var newCertPath = newCertInfo?.Path;
+            var newCertPath = ServerConfigurationManager.Configuration.CertificatePath;
 
             if (!string.Equals(currentCertPath, newCertPath, StringComparison.OrdinalIgnoreCase))
             {
