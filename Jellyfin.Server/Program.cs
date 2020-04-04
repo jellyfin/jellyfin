@@ -183,7 +183,6 @@ namespace Jellyfin.Server
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                GetImageEncoder(appPaths),
                 new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
 
             try
@@ -551,25 +550,6 @@ namespace Jellyfin.Server
 
                 Serilog.Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
-        }
-
-        private static IImageEncoder GetImageEncoder(IApplicationPaths appPaths)
-        {
-            try
-            {
-                // Test if the native lib is available
-                SkiaEncoder.TestSkia();
-
-                return new SkiaEncoder(
-                    _loggerFactory.CreateLogger<SkiaEncoder>(),
-                    appPaths);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, $"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
-            }
-
-            return new NullImageEncoder();
         }
 
         private static void StartNewInstance(StartupOptions options)

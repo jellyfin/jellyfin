@@ -48,6 +48,7 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
+using Jellyfin.Drawing.Skia;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -262,8 +263,6 @@ namespace Emby.Server.Implementations
         /// <value>The directory watchers.</value>
         private ILibraryMonitor LibraryMonitor { get; set; }
 
-        public IImageProcessor ImageProcessor { get; set; }
-
         /// <summary>
         /// Gets or sets the media encoder.
         /// </summary>
@@ -278,8 +277,6 @@ namespace Emby.Server.Implementations
         /// <value>The user data repository.</value>
         private IUserDataManager UserDataManager { get; set; }
 
-        internal SqliteItemRepository ItemRepository { get; set; }
-
         private IAuthenticationRepository AuthenticationRepository { get; set; }
 
         /// <summary>
@@ -289,8 +286,6 @@ namespace Emby.Server.Implementations
         protected IInstallationManager InstallationManager { get; private set; }
 
         public IStartupOptions StartupOptions { get; }
-
-        internal IImageEncoder ImageEncoder { get; private set; }
 
         protected IProcessFactory ProcessFactory { get; private set; }
 
@@ -316,7 +311,6 @@ namespace Emby.Server.Implementations
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
-            IImageEncoder imageEncoder,
             INetworkManager networkManager)
         {
             XmlSerializer = new MyXmlSerializer();
@@ -333,8 +327,6 @@ namespace Emby.Server.Implementations
             Logger = LoggerFactory.CreateLogger("App");
 
             StartupOptions = options;
-
-            ImageEncoder = imageEncoder;
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
@@ -603,6 +595,11 @@ namespace Emby.Server.Implementations
         /// </summary>
         protected async Task RegisterServices(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
+            var imageEncoderType = SkiaEncoder.IsNativeLibAvailable()
+                ? typeof(SkiaEncoder)
+                : typeof(NullImageEncoder);
+            serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
+
             serviceCollection.AddMemoryCache();
 
             serviceCollection.AddSingleton(ConfigurationManager);
@@ -672,8 +669,7 @@ namespace Emby.Server.Implementations
                 FileSystemManager);
             serviceCollection.AddSingleton<IDisplayPreferencesRepository>(_displayPreferencesRepository);
 
-            ItemRepository = new SqliteItemRepository(ServerConfigurationManager, this, LoggerFactory.CreateLogger<SqliteItemRepository>(), LocalizationManager);
-            serviceCollection.AddSingleton<IItemRepository>(ItemRepository);
+            serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
             AuthenticationRepository = GetAuthenticationRepository();
             serviceCollection.AddSingleton(AuthenticationRepository);
@@ -685,7 +681,7 @@ namespace Emby.Server.Implementations
                 _userRepository,
                 XmlSerializer,
                 NetworkManager,
-                () => ImageProcessor,
+                Resolve<IImageProcessor>,
                 Resolve<IDtoService>,
                 this,
                 JsonSerializer,
@@ -723,8 +719,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
             serviceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
-            ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => MediaEncoder);
-            serviceCollection.AddSingleton(ImageProcessor);
+            serviceCollection.AddSingleton<IImageProcessor, ImageProcessor>();
 
             serviceCollection.AddSingleton<ITVSeriesManager, TVSeriesManager>();
 
@@ -797,8 +792,10 @@ namespace Emby.Server.Implementations
             ((UserManager)UserManager).Initialize();
 
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
-            ItemRepository.Initialize(userDataRepo, UserManager);
-            ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
+
+            var itemRepo = (SqliteItemRepository)Resolve<IItemRepository>();
+            itemRepo.Initialize(userDataRepo, UserManager);
+            ((LibraryManager)LibraryManager).ItemRepository = itemRepo;
 
             FindParts();
         }
@@ -898,15 +895,13 @@ namespace Emby.Server.Implementations
         /// </summary>
         private void SetStaticProperties()
         {
-            ItemRepository.ImageProcessor = ImageProcessor;
-
             // For now there's no real way to inject these properly
             BaseItem.Logger = LoggerFactory.CreateLogger("BaseItem");
             BaseItem.ConfigurationManager = ServerConfigurationManager;
             BaseItem.LibraryManager = LibraryManager;
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = LocalizationManager;
-            BaseItem.ItemRepository = ItemRepository;
+            BaseItem.ItemRepository = Resolve<IItemRepository>();
             User.UserManager = UserManager;
             BaseItem.FileSystem = FileSystemManager;
             BaseItem.UserDataManager = UserDataManager;

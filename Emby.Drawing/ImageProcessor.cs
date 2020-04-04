@@ -33,7 +33,7 @@ namespace Emby.Drawing
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IImageEncoder _imageEncoder;
-        private readonly Func<IMediaEncoder> _mediaEncoder;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private bool _disposed = false;
 
@@ -50,7 +50,7 @@ namespace Emby.Drawing
             IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
-            Func<IMediaEncoder> mediaEncoder)
+            IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -359,13 +359,13 @@ namespace Emby.Drawing
                 {
                     string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
-                    string cacheExtension = _mediaEncoder().SupportsEncoder("libwebp") ? ".webp" : ".png";
+                    string cacheExtension = _mediaEncoder.SupportsEncoder("libwebp") ? ".webp" : ".png";
                     var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
 
                     var file = _fileSystem.GetFileInfo(outputPath);
                     if (!file.Exists)
                     {
-                        await _mediaEncoder().ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
+                        await _mediaEncoder.ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
                         dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
                     }
                     else
