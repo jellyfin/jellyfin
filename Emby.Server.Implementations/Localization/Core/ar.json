@@ -92,5 +92,10 @@
     "UserStoppedPlayingItemWithValues": "قام {0} بإيقاف تشغيل {1} على {2}",
     "ValueHasBeenAddedToLibrary": "{0} تم اضافتها الى مكتبة الوسائط",
     "ValueSpecialEpisodeName": "مميز - {0}",
-    "VersionNumber": "الإصدار رقم {0}"
+    "VersionNumber": "الإصدار رقم {0}",
+    "TaskCleanCacheDescription": "يقوم بحذف ملفات الذاكرة المؤقتة التي لم يعد النظام بحاجة إليها.",
+    "TaskCleanCache": "احذف دليل الذاكرة المؤقت",
+    "TasksChannelsCategory": "قنوات الإنترنت",
+    "TasksLibraryCategory": "مكتبة",
+    "TasksMaintenanceCategory": "صيانة"
 }
