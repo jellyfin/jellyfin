@@ -252,12 +252,6 @@ namespace Emby.Server.Implementations
         public IUserManager UserManager { get; set; }
 
         /// <summary>
-        /// Gets or sets the library manager.
-        /// </summary>
-        /// <value>The library manager.</value>
-        internal ILibraryManager LibraryManager { get; set; }
-
-        /// <summary>
         /// Gets or sets the media encoder.
         /// </summary>
         /// <value>The media encoder.</value>
@@ -702,8 +696,11 @@ namespace Emby.Server.Implementations
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
 
-            LibraryManager = new LibraryManager(this, LoggerFactory, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, Resolve<ILibraryMonitor>, FileSystemManager, Resolve<IProviderManager>, Resolve<IUserViewManager>, MediaEncoder);
-            serviceCollection.AddSingleton(LibraryManager);
+            // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
+            serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
+            serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
+            serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
+            serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
 
             serviceCollection.AddSingleton<IMusicManager, MusicManager>();
 
@@ -789,9 +786,7 @@ namespace Emby.Server.Implementations
 
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
 
-            var itemRepo = (SqliteItemRepository)Resolve<IItemRepository>();
-            itemRepo.Initialize(userDataRepo, UserManager);
-            ((LibraryManager)LibraryManager).ItemRepository = itemRepo;
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, UserManager);
 
             FindParts();
         }
@@ -894,7 +889,7 @@ namespace Emby.Server.Implementations
             // For now there's no real way to inject these properly
             BaseItem.Logger = LoggerFactory.CreateLogger("BaseItem");
             BaseItem.ConfigurationManager = ServerConfigurationManager;
-            BaseItem.LibraryManager = LibraryManager;
+            BaseItem.LibraryManager = Resolve<ILibraryManager>();
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = LocalizationManager;
             BaseItem.ItemRepository = Resolve<IItemRepository>();
@@ -970,7 +965,7 @@ namespace Emby.Server.Implementations
 
             _httpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
 
-            LibraryManager.AddParts(
+            Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),
                 GetExports<IIntroProvider>(),
