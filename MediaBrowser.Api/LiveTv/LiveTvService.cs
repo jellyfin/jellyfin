@@ -885,11 +885,10 @@ namespace MediaBrowser.Api.LiveTv
         {
             // SchedulesDirect requires a SHA1 hash of the user's password
             // https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#obtain-a-token
-            using (SHA1 sha = SHA1.Create())
-            {
-                return Hex.Encode(
-                    sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
-            }
+            using SHA1 sha = SHA1.Create();
+
+            return Hex.Encode(
+                sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
         }
 
         public void Delete(DeleteListingProvider request)
