@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using System.Reflection;
+using Emby.Drawing;
 using Emby.Server.Implementations;
+using Jellyfin.Drawing.Skia;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server
@@ -34,6 +37,17 @@ namespace Jellyfin.Server
                 fileSystem,
                 networkManager)
         {
+        }
+
+        /// <inheritdoc/>
+        protected override void RegisterServices(IServiceCollection serviceCollection)
+        {
+            var imageEncoderType = SkiaEncoder.IsNativeLibAvailable()
+                ? typeof(SkiaEncoder)
+                : typeof(NullImageEncoder);
+            serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
+
+            base.RegisterServices(serviceCollection);
         }
 
         /// <inheritdoc />

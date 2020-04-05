@@ -48,7 +48,6 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
-using Jellyfin.Drawing.Skia;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -540,13 +539,8 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
-        protected void RegisterServices(IServiceCollection serviceCollection)
+        protected virtual void RegisterServices(IServiceCollection serviceCollection)
         {
-            var imageEncoderType = SkiaEncoder.IsNativeLibAvailable()
-                ? typeof(SkiaEncoder)
-                : typeof(NullImageEncoder);
-            serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
-
             serviceCollection.AddSingleton(_startupOptions);
 
             serviceCollection.AddMemoryCache();
