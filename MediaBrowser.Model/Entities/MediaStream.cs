@@ -107,7 +107,8 @@ namespace MediaBrowser.Model.Entities
                         attributes.Add("Default");
                     }
 
-                    if (!string.IsNullOrEmpty(Title)) {
+                    if (!string.IsNullOrEmpty(Title))
+                    {
                         return attributes
                             // keep Tags that are not already in Title
                             .Where(tag => Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
