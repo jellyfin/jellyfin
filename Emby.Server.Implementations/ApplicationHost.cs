@@ -610,7 +610,7 @@ namespace Emby.Server.Implementations
             ProcessFactory = new ProcessFactory();
             serviceCollection.AddSingleton(ProcessFactory);
 
-            serviceCollection.AddSingleton(typeof(IStreamHelper), typeof(StreamHelper));
+            serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
             var cryptoProvider = new CryptographyProvider();
             serviceCollection.AddSingleton<ICryptoProvider>(cryptoProvider);
@@ -618,11 +618,11 @@ namespace Emby.Server.Implementations
             SocketFactory = new SocketFactory();
             serviceCollection.AddSingleton(SocketFactory);
 
-            serviceCollection.AddSingleton(typeof(IInstallationManager), typeof(InstallationManager));
+            serviceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
-            serviceCollection.AddSingleton(typeof(IZipClient), typeof(ZipClient));
+            serviceCollection.AddSingleton<IZipClient, ZipClient>();
 
-            serviceCollection.AddSingleton(typeof(IHttpResultFactory), typeof(HttpResultFactory));
+            serviceCollection.AddSingleton<IHttpResultFactory, HttpResultFactory>();
 
             serviceCollection.AddSingleton<IServerApplicationHost>(this);
             serviceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
@@ -633,7 +633,7 @@ namespace Emby.Server.Implementations
             await LocalizationManager.LoadAll().ConfigureAwait(false);
             serviceCollection.AddSingleton<ILocalizationManager>(LocalizationManager);
 
-            serviceCollection.AddSingleton<IBlurayExaminer>(new BdInfoExaminer(FileSystemManager));
+            serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
             serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
