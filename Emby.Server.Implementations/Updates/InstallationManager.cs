@@ -18,6 +18,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Updates
@@ -27,6 +28,11 @@ namespace Emby.Server.Implementations.Updates
     /// </summary>
     public class InstallationManager : IInstallationManager
     {
+        /// <summary>
+        /// The key for a setting that specifies a URL for the plugin repository JSON manifest.
+        /// </summary>
+        public const string PluginManifestUrlKey = "InstallationManager:PluginManifestUrl";
+
         /// <summary>
         /// The _logger.
         /// </summary>
@@ -44,6 +50,7 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationHost _applicationHost;
 
         private readonly IZipClient _zipClient;
+        private readonly IConfiguration _appConfig;
 
         private readonly object _currentInstallationsLock = new object();
 
@@ -65,7 +72,8 @@ namespace Emby.Server.Implementations.Updates
             IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
-            IZipClient zipClient)
+            IZipClient zipClient,
+            IConfiguration appConfig)
         {
             if (logger == null)
             {
@@ -83,6 +91,7 @@ namespace Emby.Server.Implementations.Updates
             _config = config;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
+            _appConfig = appConfig;
         }
 
         /// <inheritdoc />
@@ -115,7 +124,7 @@ namespace Emby.Server.Implementations.Updates
             using (var response = await _httpClient.SendAsync(
                 new HttpRequestOptions
                 {
-                    Url = "https://repo.jellyfin.org/releases/plugin/manifest.json",
+                    Url = _appConfig.GetValue<string>(PluginManifestUrlKey),
                     CancellationToken = cancellationToken,
                     CacheMode = CacheMode.Unconditional,
                     CacheLength = TimeSpan.FromMinutes(3)
