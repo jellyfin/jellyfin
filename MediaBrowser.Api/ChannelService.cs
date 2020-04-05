@@ -116,12 +116,9 @@ namespace MediaBrowser.Api
         {
             var val = Filters;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+            return string.IsNullOrEmpty(val)
+                ? new ItemFilter[] { }
+                : val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
         }
 
         /// <summary>
@@ -175,12 +172,9 @@ namespace MediaBrowser.Api
         {
             var val = Filters;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+            return string.IsNullOrEmpty(val)
+                ? new ItemFilter[] { }
+                : val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
         }
     }
 

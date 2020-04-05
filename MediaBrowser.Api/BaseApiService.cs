@@ -58,12 +58,9 @@ namespace MediaBrowser.Api
 
         public static string[] SplitValue(string value, char delim)
         {
-            if (value == null)
-            {
-                return Array.Empty<string>();
-            }
-
-            return value.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);
+            return value == null
+                ? Array.Empty<string>()
+                : value.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public static Guid[] GetGuids(string value)
@@ -97,19 +94,10 @@ namespace MediaBrowser.Api
             var authenticatedUser = auth.User;
 
             // If they're going to update the record of another user, they must be an administrator
-            if (!userId.Equals(auth.UserId))
+            if ((!userId.Equals(auth.UserId) && !authenticatedUser.Policy.IsAdministrator)
+                || (restrictUserPreferences && !authenticatedUser.Policy.EnableUserPreferenceAccess))
             {
-                if (!authenticatedUser.Policy.IsAdministrator)
-                {
-                    throw new SecurityException("Unauthorized access.");
-                }
-            }
-            else if (restrictUserPreferences)
-            {
-                if (!authenticatedUser.Policy.EnableUserPreferenceAccess)
-                {
-                    throw new SecurityException("Unauthorized access.");
-                }
+                throw new SecurityException("Unauthorized access.");
             }
         }
 

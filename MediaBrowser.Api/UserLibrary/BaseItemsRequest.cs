@@ -396,12 +396,10 @@ namespace MediaBrowser.Api.UserLibrary
 
         public VideoType[] GetVideoTypes()
         {
-            if (string.IsNullOrEmpty(VideoTypes))
-            {
-                return Array.Empty<VideoType>();
-            }
-
-            return VideoTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
+            return string.IsNullOrEmpty(VideoTypes)
+                ? Array.Empty<VideoType>()
+                : VideoTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
         }
 
         /// <summary>
@@ -412,12 +410,10 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var val = Filters;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true)).ToArray();
+            return string.IsNullOrEmpty(val)
+                ? new ItemFilter[] { }
+                : val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
+                    Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true)).ToArray();
         }
 
         /// <summary>
@@ -428,12 +424,9 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var val = ImageTypes;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ImageType[] { };
-            }
-
-            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
+            return string.IsNullOrEmpty(val)
+                ? new ImageType[] { }
+                : val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
         }
 
         /// <summary>

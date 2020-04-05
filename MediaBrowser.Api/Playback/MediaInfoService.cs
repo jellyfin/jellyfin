@@ -662,17 +662,9 @@ namespace MediaBrowser.Api.Playback
                 };
             }).ThenBy(i =>
             {
-                if (maxBitrate.HasValue)
+                if (maxBitrate.HasValue && i.Bitrate.HasValue)
                 {
-                    if (i.Bitrate.HasValue)
-                    {
-                        if (i.Bitrate.Value <= maxBitrate.Value)
-                        {
-                            return 0;
-                        }
-
-                        return 2;
-                    }
+                    return i.Bitrate.Value <= maxBitrate.Value ? 0 : 2;
                 }
 
                 return 1;

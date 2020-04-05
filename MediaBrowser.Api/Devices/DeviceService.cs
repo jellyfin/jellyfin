@@ -155,16 +155,14 @@ namespace MediaBrowser.Api.Devices
                     Id = id
                 });
             }
-            else
+
+            return _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
             {
-                return _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
-                {
-                    MimeType = Request.ContentType,
-                    Album = album,
-                    Name = name,
-                    Id = id
-                });
-            }
+                MimeType = Request.ContentType,
+                Album = album,
+                Name = name,
+                Id = id
+            });
         }
     }
 }

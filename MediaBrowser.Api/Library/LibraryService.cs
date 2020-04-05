@@ -348,28 +348,19 @@ namespace MediaBrowser.Api.Library
 
         private string[] GetRepresentativeItemTypes(string contentType)
         {
-            switch (contentType)
+            return contentType switch
             {
-                case CollectionType.BoxSets:
-                    return new[] { "BoxSet" };
-                case CollectionType.Playlists:
-                    return new[] { "Playlist" };
-                case CollectionType.Movies:
-                    return new[] { "Movie" };
-                case CollectionType.TvShows:
-                    return new[] { "Series", "Season", "Episode" };
-                case CollectionType.Books:
-                    return new[] { "Book" };
-                case CollectionType.Music:
-                    return new[] { "MusicAlbum", "MusicArtist", "Audio", "MusicVideo" };
-                case CollectionType.HomeVideos:
-                case CollectionType.Photos:
-                    return new[] { "Video", "Photo" };
-                case CollectionType.MusicVideos:
-                    return new[] { "MusicVideo" };
-                default:
-                    return new[] { "Series", "Season", "Episode", "Movie" };
-            }
+                CollectionType.BoxSets => new[] {"BoxSet"},
+                CollectionType.Playlists => new[] {"Playlist"},
+                CollectionType.Movies => new[] {"Movie"},
+                CollectionType.TvShows => new[] {"Series", "Season", "Episode"},
+                CollectionType.Books => new[] {"Book"},
+                CollectionType.Music => new[] {"MusicAlbum", "MusicArtist", "Audio", "MusicVideo"},
+                CollectionType.HomeVideos => new[] {"Video", "Photo"},
+                CollectionType.Photos => new[] {"Video", "Photo"},
+                CollectionType.MusicVideos => new[] {"MusicVideo"},
+                _ => new[] {"Series", "Season", "Episode", "Movie"}
+            };
         }
 
         private bool IsSaverEnabledByDefault(string name, string[] itemTypes, bool isNewLibrary)
@@ -397,22 +388,18 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
                 {
+
                     if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
-                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
-                    if (string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
+
                     return true;
                 }
                 else if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase))
@@ -439,12 +426,8 @@ namespace MediaBrowser.Api.Library
                 .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
-            if (metadataOptions.Length == 0)
-            {
-                return true;
-            }
-
-            return metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
+            return metadataOptions.Length == 0
+                   || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
         }
 
         private bool IsImageFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -919,12 +902,10 @@ namespace MediaBrowser.Api.Library
 
         private BaseItem TranslateParentItem(BaseItem item, User user)
         {
-            if (item.GetParent() is AggregateFolder)
-            {
-                return _libraryManager.GetUserRootFolder().GetChildren(user, true).FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path));
-            }
-
-            return item;
+            return item.GetParent() is AggregateFolder
+                ? _libraryManager.GetUserRootFolder().GetChildren(user, true)
+                    .FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path))
+                : item;
         }
 
         /// <summary>

@@ -234,46 +234,44 @@ namespace MediaBrowser.Api
             SetThumbImageInfo(result, item);
             SetBackdropImageInfo(result, item);
 
-            if (item is LiveTvProgram program)
+            switch (item)
             {
-                result.StartDate = program.StartDate;
-            }
-
-            if (item is IHasSeries hasSeries)
-            {
-                result.Series = hasSeries.SeriesName;
-            }
-
-            if (item is Series series)
-            {
-                if (series.Status.HasValue)
+                case IHasSeries hasSeries:
+                    result.Series = hasSeries.SeriesName;
+                    break;
+                case LiveTvProgram program:
+                    result.StartDate = program.StartDate;
+                    break;
+                case Series series:
                 {
-                    result.Status = series.Status.Value.ToString();
+                    if (series.Status.HasValue)
+                    {
+                        result.Status = series.Status.Value.ToString();
+                    }
+
+                    break;
                 }
-            }
+                case MusicAlbum album:
+                    result.Artists = album.Artists;
+                    result.AlbumArtist = album.AlbumArtist;
+                    break;
+                case Audio song:
+                    result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
+                    result.Artists = song.Artists;
 
-            if (item is MusicAlbum album)
-            {
-                result.Artists = album.Artists;
-                result.AlbumArtist = album.AlbumArtist;
-            }
+                    MusicAlbum musicAlbum = song.AlbumEntity;
 
-            if (item is Audio song)
-            {
-                result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
-                result.Artists = song.Artists;
+                    if (musicAlbum != null)
+                    {
+                        result.Album = musicAlbum.Name;
+                        result.AlbumId = musicAlbum.Id;
+                    }
+                    else
+                    {
+                        result.Album = song.Album;
+                    }
 
-                album = song.AlbumEntity;
-
-                if (album != null)
-                {
-                    result.Album = album.Name;
-                    result.AlbumId = album.Id;
-                }
-                else
-                {
-                    result.Album = song.Album;
-                }
+                    break;
             }
 
             if (!item.ChannelId.Equals(Guid.Empty))
@@ -289,12 +287,9 @@ namespace MediaBrowser.Api
         {
             var itemWithImage = item.HasImage(ImageType.Thumb) ? item : null;
 
-            if (itemWithImage == null)
+            if (itemWithImage == null && item is Episode)
             {
-                if (item is Episode)
-                {
-                    itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
-                }
+                itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
             }
 
             if (itemWithImage == null)
