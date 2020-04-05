@@ -7,7 +7,7 @@
     "Books": "Könyvek",
     "CameraImageUploadedFrom": "Új kamerakép került feltöltésre innen: {0}",
     "Channels": "Csatornák",
-    "ChapterNameValue": "Jelenet {0}",
+    "ChapterNameValue": "{0}. jelenet",
     "Collections": "Gyűjtemények",
     "DeviceOfflineWithName": "{0} kijelentkezett",
     "DeviceOnlineWithName": "{0} belépett",
@@ -109,5 +109,10 @@
     "TasksChannelsCategory": "Internetes csatornák",
     "TasksApplicationCategory": "Alkalmazás",
     "TasksLibraryCategory": "Könyvtár",
-    "TasksMaintenanceCategory": "Karbantartás"
+    "TasksMaintenanceCategory": "Karbantartás",
+    "TaskDownloadMissingSubtitlesDescription": "A metaadat konfiguráció alapján ellenőrzi és letölti a hiányzó feliratokat az internetről.",
+    "TaskDownloadMissingSubtitles": "Hiányzó feliratok letöltése",
+    "TaskRefreshChannelsDescription": "Frissíti az internetes csatornák adatait.",
+    "TaskRefreshChannels": "Csatornák frissítése",
+    "TaskCleanTranscodeDescription": "Törli az egy napnál régebbi átkódolási fájlokat."
 }
