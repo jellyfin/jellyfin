@@ -241,7 +241,7 @@ namespace MediaBrowser.Api
             {
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
-                ChannelIds = new Guid[] { new Guid(request.Id) },
+                ChannelIds = new[] { new Guid(request.Id) },
                 ParentId = string.IsNullOrWhiteSpace(request.FolderId) ? Guid.Empty : new Guid(request.FolderId),
                 OrderBy = request.GetOrderBy(),
                 DtoOptions = new Controller.Dto.DtoOptions

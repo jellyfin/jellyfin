@@ -234,7 +234,7 @@ namespace MediaBrowser.Api.Playback
                         OpenToken = mediaSource.OpenToken
                     }).ConfigureAwait(false);
 
-                    info.MediaSources = new MediaSourceInfo[] { openStreamResult.MediaSource };
+                    info.MediaSources = new[] { openStreamResult.MediaSource };
                 }
             }
 
@@ -289,7 +289,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-                mediaSources = new MediaSourceInfo[] { mediaSource };
+                mediaSources = new[] { mediaSource };
             }
 
             if (mediaSources.Length == 0)
@@ -366,7 +366,7 @@ namespace MediaBrowser.Api.Playback
 
             var options = new VideoOptions
             {
-                MediaSources = new MediaSourceInfo[] { mediaSource },
+                MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
                 DeviceId = auth.DeviceId,
                 ItemId = item.Id,

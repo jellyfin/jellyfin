@@ -133,7 +133,7 @@ namespace MediaBrowser.Api
             // Non recursive not yet supported for library folders
             if ((request.Recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
             {
-                genreQuery.AncestorIds = parentItem == null ? Array.Empty<Guid>() : new Guid[] { parentItem.Id };
+                genreQuery.AncestorIds = parentItem == null ? Array.Empty<Guid>() : new[] { parentItem.Id };
             }
             else
             {
@@ -231,7 +231,7 @@ namespace MediaBrowser.Api
                 EnableTotalRecordCount = false,
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { ItemFields.Genres, ItemFields.Tags },
+                    Fields = new[] { ItemFields.Genres, ItemFields.Tags },
                     EnableImages = false,
                     EnableUserData = false
                 }

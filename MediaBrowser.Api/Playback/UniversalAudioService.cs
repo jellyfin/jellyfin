@@ -300,7 +300,7 @@ namespace MediaBrowser.Api.Playback
 
                 // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
                 // TODO: remove this when we switch back to the segment muxer
-                var supportedHLSContainers = new string[] { "mpegts", "fmp4" };
+                var supportedHLSContainers = new[] { "mpegts", "fmp4" };
 
                 var newRequest = new GetMasterHlsAudioPlaylist
                 {

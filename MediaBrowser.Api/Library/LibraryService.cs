@@ -351,24 +351,24 @@ namespace MediaBrowser.Api.Library
             switch (contentType)
             {
                 case CollectionType.BoxSets:
-                    return new string[] { "BoxSet" };
+                    return new[] { "BoxSet" };
                 case CollectionType.Playlists:
-                    return new string[] { "Playlist" };
+                    return new[] { "Playlist" };
                 case CollectionType.Movies:
-                    return new string[] { "Movie" };
+                    return new[] { "Movie" };
                 case CollectionType.TvShows:
-                    return new string[] { "Series", "Season", "Episode" };
+                    return new[] { "Series", "Season", "Episode" };
                 case CollectionType.Books:
-                    return new string[] { "Book" };
+                    return new[] { "Book" };
                 case CollectionType.Music:
-                    return new string[] { "MusicAlbum", "MusicArtist", "Audio", "MusicVideo" };
+                    return new[] { "MusicAlbum", "MusicArtist", "Audio", "MusicVideo" };
                 case CollectionType.HomeVideos:
                 case CollectionType.Photos:
-                    return new string[] { "Video", "Photo" };
+                    return new[] { "Video", "Photo" };
                 case CollectionType.MusicVideos:
-                    return new string[] { "MusicVideo" };
+                    return new[] { "MusicVideo" };
                 default:
-                    return new string[] { "Series", "Season", "Episode", "Movie" };
+                    return new[] { "Series", "Season", "Episode", "Movie" };
             }
         }
 
@@ -1086,7 +1086,7 @@ namespace MediaBrowser.Api.Library
             var item = string.IsNullOrEmpty(request.Id)
                            ? (!request.UserId.Equals(Guid.Empty)
                                   ? _libraryManager.GetUserRootFolder()
-                                  : (Folder)_libraryManager.RootFolder)
+                                  : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
             if (item == null)
@@ -1152,7 +1152,7 @@ namespace MediaBrowser.Api.Library
             var item = string.IsNullOrEmpty(request.Id)
                            ? (!request.UserId.Equals(Guid.Empty)
                                   ? _libraryManager.GetUserRootFolder()
-                                  : (Folder)_libraryManager.RootFolder)
+                                  : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
             if (item == null)
