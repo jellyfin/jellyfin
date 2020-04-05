@@ -119,17 +119,21 @@ namespace Emby.Server.Implementations
     /// </summary>
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
-        private SqliteUserRepository _userRepository;
+        private readonly IFileSystem _fileSystemManager;
+        private readonly INetworkManager _networkManager;
+        private readonly IXmlSerializer _xmlSerializer;
+        private readonly IStartupOptions _startupOptions;
+
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
         private IHttpClient _httpClient;
+        private IInstallationManager _installationManager;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
-        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
-        public abstract bool CanSelfRestart { get; }
+        public bool CanSelfRestart => _startupOptions.RestartPath != null;
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -140,7 +144,7 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                if (StartupOptions.IsService)
+                if (_startupOptions.IsService)
                 {
                     return false;
                 }
@@ -210,8 +214,6 @@ namespace Emby.Server.Implementations
         /// <value>The configuration manager.</value>
         protected IConfigurationManager ConfigurationManager { get; set; }
 
-        public IFileSystem FileSystemManager { get; set; }
-
         /// <inheritdoc />
         public PackageVersionClass SystemUpdateLevel
         {
@@ -247,18 +249,6 @@ namespace Emby.Server.Implementations
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
         /// <summary>
-        /// Gets the installation manager.
-        /// </summary>
-        /// <value>The installation manager.</value>
-        protected IInstallationManager InstallationManager { get; private set; }
-
-        public IStartupOptions StartupOptions { get; }
-
-        protected readonly IXmlSerializer XmlSerializer;
-
-        protected INetworkManager NetworkManager { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         public ApplicationHost(
@@ -268,24 +258,24 @@ namespace Emby.Server.Implementations
             IFileSystem fileSystem,
             INetworkManager networkManager)
         {
-            XmlSerializer = new MyXmlSerializer();
+            _xmlSerializer = new MyXmlSerializer();
 
-            NetworkManager = networkManager;
+            _networkManager = networkManager;
             networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
 
             ApplicationPaths = applicationPaths;
             LoggerFactory = loggerFactory;
-            FileSystemManager = fileSystem;
+            _fileSystemManager = fileSystem;
 
-            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, XmlSerializer, FileSystemManager);
+            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
             Logger = LoggerFactory.CreateLogger("App");
 
-            StartupOptions = options;
+            _startupOptions = options;
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            NetworkManager.NetworkChanged += OnNetworkChanged;
+            _networkManager.NetworkChanged += OnNetworkChanged;
 
             CertificateInfo = new CertificateInfo
             {
@@ -575,18 +565,18 @@ namespace Emby.Server.Implementations
                 return Logger;
             });
 
-            serviceCollection.AddSingleton(FileSystemManager);
+            serviceCollection.AddSingleton(_fileSystemManager);
             serviceCollection.AddSingleton<TvdbClientManager>();
 
             serviceCollection.AddSingleton<IHttpClient, HttpClientManager.HttpClientManager>();
 
-            serviceCollection.AddSingleton(NetworkManager);
+            serviceCollection.AddSingleton(_networkManager);
 
             serviceCollection.AddSingleton<IIsoManager, IsoManager>();
 
             serviceCollection.AddSingleton<ITaskManager, TaskManager>();
 
-            serviceCollection.AddSingleton(XmlSerializer);
+            serviceCollection.AddSingleton(_xmlSerializer);
 
             serviceCollection.AddSingleton<IProcessFactory, ProcessFactory>();
 
@@ -636,7 +626,7 @@ namespace Emby.Server.Implementations
                     provider.GetRequiredService<ILocalizationManager>(),
                     provider.GetRequiredService<ISubtitleEncoder>,
                     provider.GetRequiredService<IConfiguration>(),
-                    StartupOptions.FFmpegPath));
+                    _startupOptions.FFmpegPath));
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -736,6 +726,8 @@ namespace Emby.Server.Implementations
             var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, userManager);
 
+            Resolve<IInstallationManager>().PluginInstalled += PluginInstalled;
+
             FindParts();
         }
 
@@ -818,7 +810,7 @@ namespace Emby.Server.Implementations
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
             User.UserManager = Resolve<IUserManager>();
-            BaseItem.FileSystem = FileSystemManager;
+            BaseItem.FileSystem = _fileSystemManager;
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
             Video.LiveTvManager = Resolve<ILiveTvManager>();
@@ -826,7 +818,7 @@ namespace Emby.Server.Implementations
             UserView.TVSeriesManager = Resolve<ITVSeriesManager>();
             UserView.CollectionManager = Resolve<ICollectionManager>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
-            CollectionFolder.XmlSerializer = XmlSerializer;
+            CollectionFolder.XmlSerializer = _xmlSerializer;
             CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
             AuthenticatedAttribute.AuthService = Resolve<IAuthService>();
@@ -872,9 +864,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         private void FindParts()
         {
-            InstallationManager = ServiceProvider.GetService<IInstallationManager>();
-            InstallationManager.PluginInstalled += PluginInstalled;
-
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;
@@ -1210,7 +1199,7 @@ namespace Emby.Server.Implementations
                 IsShuttingDown = IsShuttingDown,
                 Version = ApplicationVersionString,
                 WebSocketPortNumber = HttpPort,
-                CompletedInstallations = InstallationManager.CompletedInstallations.ToArray(),
+                CompletedInstallations = _installationManager.CompletedInstallations.ToArray(),
                 Id = SystemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 WebPath = ApplicationPaths.WebPath,
@@ -1233,12 +1222,12 @@ namespace Emby.Server.Implementations
                 EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
                 SystemUpdateLevel = SystemUpdateLevel,
-                PackageName = StartupOptions.PackageName
+                PackageName = _startupOptions.PackageName
             };
         }
 
         public IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo()
-            => NetworkManager.GetMacAddresses()
+            => _networkManager.GetMacAddresses()
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
@@ -1350,7 +1339,7 @@ namespace Emby.Server.Implementations
 
             if (addresses.Count == 0)
             {
-                addresses.AddRange(NetworkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
+                addresses.AddRange(_networkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
             }
 
             var resultList = new List<IPAddress>();
@@ -1594,11 +1583,7 @@ namespace Emby.Server.Implementations
                         Logger.LogError(ex, "Error disposing {Type}", part.GetType().Name);
                     }
                 }
-
-                _userRepository?.Dispose();
             }
-
-            _userRepository = null;
 
             _disposed = true;
         }

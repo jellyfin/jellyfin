@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Data
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
         private readonly ILocalizationManager _localization;
-        // TODO: Remove this dependency
+        // TODO: Remove this dependency. GetImageCacheTag() is the only method used and it can be converted to a static helper method
         private readonly IImageProcessor _imageProcessor;
 
         private readonly TypeMapper _typeMapper;

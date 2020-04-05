@@ -37,9 +37,6 @@ namespace Jellyfin.Server
         }
 
         /// <inheritdoc />
-        public override bool CanSelfRestart => StartupOptions.RestartPath != null;
-
-        /// <inheritdoc />
         protected override void RestartInternal() => Program.Restart();
 
         /// <inheritdoc />
