@@ -258,7 +258,7 @@ namespace MediaBrowser.Api
 
         public void ReportTranscodingProgress(TranscodingJob job, StreamState state, TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
-            var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : (long?)null;
+            var ticks = transcodingPosition?.Ticks;
 
             if (job != null)
             {
@@ -561,10 +561,7 @@ namespace MediaBrowser.Api
 
             lock (job.ProcessLock)
             {
-                if (job.TranscodingThrottler != null)
-                {
-                    job.TranscodingThrottler.Stop().GetAwaiter().GetResult();
-                }
+                job.TranscodingThrottler?.Stop().GetAwaiter().GetResult();
 
                 var process = job.Process;
 

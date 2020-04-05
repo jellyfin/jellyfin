@@ -274,35 +274,25 @@ namespace MediaBrowser.Api
         private T GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions)
             where T : BaseItem, new()
         {
-            var result = libraryManager.GetItemList(new InternalItemsQuery
+            var result = (libraryManager.GetItemList(new InternalItemsQuery
             {
                 Name = name.Replace(BaseItem.SlugChar, '&'),
                 IncludeItemTypes = new[] { typeof(T).Name },
                 DtoOptions = dtoOptions
 
+            }).OfType<T>().FirstOrDefault() ?? libraryManager.GetItemList(new InternalItemsQuery
+            {
+                Name = name.Replace(BaseItem.SlugChar, '/'),
+                IncludeItemTypes = new[] { typeof(T).Name },
+                DtoOptions = dtoOptions
+
+            }).OfType<T>().FirstOrDefault()) ?? libraryManager.GetItemList(new InternalItemsQuery
+            {
+                Name = name.Replace(BaseItem.SlugChar, '?'),
+                IncludeItemTypes = new[] { typeof(T).Name },
+                DtoOptions = dtoOptions
+
             }).OfType<T>().FirstOrDefault();
-
-            if (result == null)
-            {
-                result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    Name = name.Replace(BaseItem.SlugChar, '/'),
-                    IncludeItemTypes = new[] { typeof(T).Name },
-                    DtoOptions = dtoOptions
-
-                }).OfType<T>().FirstOrDefault();
-            }
-
-            if (result == null)
-            {
-                result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    Name = name.Replace(BaseItem.SlugChar, '?'),
-                    IncludeItemTypes = new[] { typeof(T).Name },
-                    DtoOptions = dtoOptions
-
-                }).OfType<T>().FirstOrDefault();
-            }
 
             return result;
         }

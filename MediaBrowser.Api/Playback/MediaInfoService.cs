@@ -583,7 +583,7 @@ namespace MediaBrowser.Api.Playback
         private long? GetMaxBitrate(long? clientMaxBitrate, User user)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = user == null ? 0 : user.Policy.RemoteClientBitrateLimit;
+            var remoteClientMaxBitrate = user?.Policy.RemoteClientBitrateLimit ?? 0;
 
             if (remoteClientMaxBitrate <= 0)
             {

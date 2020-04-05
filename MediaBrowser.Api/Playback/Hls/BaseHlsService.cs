@@ -140,7 +140,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (isLive)
             {
-                job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
+                job ??= ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
 
                 if (job != null)
                 {
@@ -156,7 +156,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, baselineStreamBitrate);
 
-            job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
+            job ??= ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
 
             if (job != null)
             {

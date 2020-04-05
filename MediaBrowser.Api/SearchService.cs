@@ -279,7 +279,7 @@ namespace MediaBrowser.Api
             if (!item.ChannelId.Equals(Guid.Empty))
             {
                 var channel = _libraryManager.GetItemById(item.ChannelId);
-                result.ChannelName = channel == null ? null : channel.Name;
+                result.ChannelName = channel?.Name;
             }
 
             return result;
@@ -316,12 +316,8 @@ namespace MediaBrowser.Api
 
         private void SetBackdropImageInfo(SearchHint hint, BaseItem item)
         {
-            var itemWithImage = item.HasImage(ImageType.Backdrop) ? item : null;
-
-            if (itemWithImage == null)
-            {
-                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
-            }
+            var itemWithImage = (item.HasImage(ImageType.Backdrop) ? item : null)
+                                ?? GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
 
             if (itemWithImage != null)
             {

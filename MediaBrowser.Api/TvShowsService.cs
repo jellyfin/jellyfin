@@ -442,14 +442,7 @@ namespace MediaBrowser.Api
 
                 var season = series.GetSeasons(user, dtoOptions).FirstOrDefault(i => i.IndexNumber == request.Season.Value);
 
-                if (season == null)
-                {
-                    episodes = new List<BaseItem>();
-                }
-                else
-                {
-                    episodes = ((Season)season).GetEpisodes(user, dtoOptions);
-                }
+                episodes = season == null ? new List<BaseItem>() : ((Season)season).GetEpisodes(user, dtoOptions);
             }
             else
             {

@@ -248,14 +248,8 @@ namespace MediaBrowser.Api.Playback
             if (state.VideoRequest != null
                 && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
-                {
-                    logFilePrefix = "ffmpeg-remux";
-                }
-                else
-                {
-                    logFilePrefix = "ffmpeg-directstream";
-                }
+                logFilePrefix = string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase)
+                    ? "ffmpeg-remux" : "ffmpeg-directstream";
             }
 
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, logFilePrefix + "-" + Guid.NewGuid() + ".txt");
@@ -862,14 +856,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     var caps = DeviceManager.GetCapabilities(state.Request.DeviceId);
 
-                    if (caps != null)
-                    {
-                        state.DeviceProfile = caps.DeviceProfile;
-                    }
-                    else
-                    {
-                        state.DeviceProfile = DlnaManager.GetProfile(headers);
-                    }
+                    state.DeviceProfile = caps != null ? caps.DeviceProfile : DlnaManager.GetProfile(headers);
                 }
             }
 

@@ -391,7 +391,6 @@ namespace MediaBrowser.Api
             }
 
             return (SeriesStatus)Enum.Parse(typeof(SeriesStatus), item.Status, true);
-
         }
     }
 }

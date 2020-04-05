@@ -167,7 +167,7 @@ namespace MediaBrowser.Api.Playback
                     AudioCodec = request.AudioCodec,
                     Protocol = request.TranscodingProtocol,
                     BreakOnNonKeyFrames = request.BreakOnNonKeyFrames,
-                    MaxAudioChannels = request.TranscodingAudioChannels.HasValue ? request.TranscodingAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : null
+                    MaxAudioChannels = request.TranscodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
                 }
             };
 

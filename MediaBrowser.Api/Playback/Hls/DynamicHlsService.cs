@@ -284,7 +284,7 @@ namespace MediaBrowser.Api.Playback.Hls
             //}
 
             Logger.LogDebug("returning {0} [general case]", segmentPath);
-            job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+            job ??= ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
         }
 
@@ -934,7 +934,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 var framerate = state.VideoStream?.RealFrameRate;
 
-                if (framerate != null && framerate.HasValue)
+                if (framerate.HasValue)
                 {
                     // This is to make sure keyframe interval is limited to our segment,
                     // as forcing keyframes is not enough.
