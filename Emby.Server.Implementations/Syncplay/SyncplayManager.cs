@@ -127,18 +127,20 @@ namespace Emby.Server.Implementations.Syncplay
 
         private bool HasAccessToItem(User user, Guid itemId)
         {
+            var item = _libraryManager.GetItemById(itemId);
+            var hasParentalRatingAccess = user.Policy.MaxParentalRating.HasValue ? item.InheritedParentalRatingValue <= user.Policy.MaxParentalRating : true;
+
             if (!user.Policy.EnableAllFolders)
             {
-                var item = _libraryManager.GetItemById(itemId);
                 var collections = _libraryManager.GetCollectionFolders(item).Select(
                     folder => folder.Id.ToString("N", CultureInfo.InvariantCulture)
                 );
                 var intersect = collections.Intersect(user.Policy.EnabledFolders);
-                return intersect.Count() > 0;
+                return intersect.Count() > 0 && hasParentalRatingAccess;
             }
             else
             {
-                return true;
+                return hasParentalRatingAccess;
             }
         }
 
