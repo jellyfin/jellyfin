@@ -2,10 +2,11 @@ ARG DOTNET_VERSION=3.1
 ARG FFMPEG_VERSION=latest
 
 FROM node:alpine as web-builder
-ARG JELLYFIN_WEB_VERSION=10.5.2
+ARG JELLYFIN_WEB_VERSION=10.5.3
 RUN apk add curl git \
  && git clone --branch release-10.5.z --single-branch https://github.com/jellyfin/jellyfin-web.git \
  && cd jellyfin-web \
+ && git checkout tags/v${JELLYFIN_WEB_VERSION} \
  && yarn install \
  && yarn build \
  && mv dist /dist
