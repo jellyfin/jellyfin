@@ -253,11 +253,7 @@ namespace Emby.Server.Implementations
 
         public IStartupOptions StartupOptions { get; }
 
-        protected IProcessFactory ProcessFactory { get; private set; }
-
         protected readonly IXmlSerializer XmlSerializer;
-
-        protected ISocketFactory SocketFactory { get; private set; }
 
         protected ITaskManager TaskManager { get; private set; }
 
@@ -605,16 +601,13 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(XmlSerializer);
 
-            ProcessFactory = new ProcessFactory();
-            serviceCollection.AddSingleton(ProcessFactory);
+            serviceCollection.AddSingleton<IProcessFactory, ProcessFactory>();
 
             serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
-            var cryptoProvider = new CryptographyProvider();
-            serviceCollection.AddSingleton<ICryptoProvider>(cryptoProvider);
+            serviceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
 
-            SocketFactory = new SocketFactory();
-            serviceCollection.AddSingleton(SocketFactory);
+            serviceCollection.AddSingleton<ISocketFactory, SocketFactory>();
 
             serviceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
@@ -1539,7 +1532,7 @@ namespace Emby.Server.Implementations
                 throw new NotSupportedException();
             }
 
-            var process = ProcessFactory.Create(new ProcessOptions
+            var process = Resolve<IProcessFactory>().Create(new ProcessOptions
             {
                 FileName = url,
                 EnableRaisingEvents = true,
