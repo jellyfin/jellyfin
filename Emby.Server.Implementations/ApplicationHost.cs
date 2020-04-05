@@ -258,8 +258,6 @@ namespace Emby.Server.Implementations
 
         protected INetworkManager NetworkManager { get; set; }
 
-        public IJsonSerializer JsonSerializer { get; private set; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
@@ -500,8 +498,6 @@ namespace Emby.Server.Implementations
                 HttpsPort = ServerConfiguration.DefaultHttpsPort;
             }
 
-            JsonSerializer = new JsonSerializer();
-
             if (Plugins != null)
             {
                 var pluginBuilder = new StringBuilder();
@@ -568,7 +564,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            serviceCollection.AddSingleton(JsonSerializer);
+            serviceCollection.AddSingleton<IJsonSerializer, JsonSerializer>();
 
             // TODO: Remove support for injecting ILogger completely
             serviceCollection.AddSingleton((provider) =>
@@ -813,7 +809,7 @@ namespace Emby.Server.Implementations
         private void SetStaticProperties()
         {
             // For now there's no real way to inject these properly
-            BaseItem.Logger = LoggerFactory.CreateLogger("BaseItem");
+            BaseItem.Logger = Resolve<ILogger<BaseItem>>();
             BaseItem.ConfigurationManager = ServerConfigurationManager;
             BaseItem.LibraryManager = Resolve<ILibraryManager>();
             BaseItem.ProviderManager = Resolve<IProviderManager>();
@@ -829,7 +825,7 @@ namespace Emby.Server.Implementations
             UserView.CollectionManager = Resolve<ICollectionManager>();
             BaseItem.MediaSourceManager = Resolve<IMediaSourceManager>();
             CollectionFolder.XmlSerializer = XmlSerializer;
-            CollectionFolder.JsonSerializer = JsonSerializer;
+            CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
             AuthenticatedAttribute.AuthService = Resolve<IAuthService>();
         }
