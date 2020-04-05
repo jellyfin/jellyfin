@@ -120,7 +120,7 @@ namespace MediaBrowser.Model.Entities
                         .ToString();
                     }
 
-                    return string.Join(" ", attributes);
+                    return string.Join(" - ", attributes);
                 }
 
                 if (Type == MediaStreamType.Video)
