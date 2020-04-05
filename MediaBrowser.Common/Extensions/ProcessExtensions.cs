@@ -16,6 +16,7 @@ namespace MediaBrowser.Common.Extensions
         /// <param name="process">The process to wait for.</param>
         /// <param name="timeout">The duration to wait before cancelling waiting for the task.</param>
         /// <returns>True if the task exited normally, false if the timeout elapsed before the process exited.</returns>
+        /// <exception cref="InvalidOperationException">If <see cref="Process.EnableRaisingEvents"/> is not set to true for the process.</exception>
         public static async Task<bool> WaitForExitAsync(this Process process, TimeSpan timeout)
         {
             using (var cancelTokenSource = new CancellationTokenSource(timeout))
