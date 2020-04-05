@@ -125,9 +125,7 @@ namespace MediaBrowser.Common
         /// Initializes this instance.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
-        /// <param name="startupConfig">The configuration to use for initialization.</param>
-        /// <returns>A task.</returns>
-        Task InitAsync(IServiceCollection serviceCollection, IConfiguration startupConfig);
+        void Init(IServiceCollection serviceCollection);
 
         /// <summary>
         /// Creates the instance.

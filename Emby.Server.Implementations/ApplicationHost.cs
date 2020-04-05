@@ -500,7 +500,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public async Task InitAsync(IServiceCollection serviceCollection, IConfiguration startupConfig)
+        public void Init(IServiceCollection serviceCollection)
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
@@ -533,7 +533,7 @@ namespace Emby.Server.Implementations
 
             DiscoverTypes();
 
-            await RegisterServices(serviceCollection, startupConfig).ConfigureAwait(false);
+            RegisterServices(serviceCollection);
         }
 
         public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
@@ -566,7 +566,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
-        protected async Task RegisterServices(IServiceCollection serviceCollection, IConfiguration startupConfig)
+        protected void RegisterServices(IServiceCollection serviceCollection)
         {
             var imageEncoderType = SkiaEncoder.IsNativeLibAvailable()
                 ? typeof(SkiaEncoder)

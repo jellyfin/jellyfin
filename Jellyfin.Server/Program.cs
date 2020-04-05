@@ -202,7 +202,7 @@ namespace Jellyfin.Server
                 }
 
                 ServiceCollection serviceCollection = new ServiceCollection();
-                await appHost.InitAsync(serviceCollection, startupConfig).ConfigureAwait(false);
+                appHost.Init(serviceCollection);
 
                 var webHost = CreateWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
