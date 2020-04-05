@@ -255,15 +255,11 @@ namespace Emby.Server.Implementations
 
         protected readonly IXmlSerializer XmlSerializer;
 
-        protected ITaskManager TaskManager { get; private set; }
-
         public IHttpClient HttpClient { get; private set; }
 
         protected INetworkManager NetworkManager { get; set; }
 
         public IJsonSerializer JsonSerializer { get; private set; }
-
-        protected IIsoManager IsoManager { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -593,11 +589,9 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(NetworkManager);
 
-            IsoManager = new IsoManager();
-            serviceCollection.AddSingleton(IsoManager);
+            serviceCollection.AddSingleton<IIsoManager, IsoManager>();
 
-            TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, LoggerFactory, FileSystemManager);
-            serviceCollection.AddSingleton(TaskManager);
+            serviceCollection.AddSingleton<ITaskManager, TaskManager>();
 
             serviceCollection.AddSingleton(XmlSerializer);
 
@@ -926,7 +920,7 @@ namespace Emby.Server.Implementations
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
             Resolve<IUserManager>().AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
-            IsoManager.AddParts(GetExports<IIsoMounter>());
+            Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
 
         private IPlugin LoadPlugin(IPlugin plugin)
