@@ -427,7 +427,7 @@ namespace Emby.Server.Implementations.Updates
                 _config.SaveConfiguration();
             }
 
-            PluginUninstalled?.Invoke(this, new GenericEventArgs<IPlugin> { Argument = plugin });
+            PluginUninstalled?.Invoke(this, new GenericEventArgs<IPlugin>(plugin));
 
             _applicationHost.NotifyPendingRestart();
         }

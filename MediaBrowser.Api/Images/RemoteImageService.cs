@@ -147,9 +147,8 @@ namespace MediaBrowser.Api.Images
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
+            var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery(request.ProviderName)
             {
-                ProviderName = request.ProviderName,
                 IncludeAllLanguages = request.IncludeAllLanguages,
                 IncludeDisabledProviders = true,
                 ImageType = request.Type

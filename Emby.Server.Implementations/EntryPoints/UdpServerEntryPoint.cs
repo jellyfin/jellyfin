@@ -44,10 +44,11 @@ namespace Emby.Server.Implementations.EntryPoints
         }
 
         /// <inheritdoc />
-        public async Task RunAsync()
+        public Task RunAsync()
         {
             _udpServer = new UdpServer(_logger, _appHost);
             _udpServer.Start(PortNumber, _cancellationTokenSource.Token);
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />

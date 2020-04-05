@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -14,7 +15,7 @@ namespace MediaBrowser.Model.LiveTv
         public SeriesTimerInfoDto()
         {
             ImageTags = new Dictionary<ImageType, string>();
-            Days = new DayOfWeek[] { };
+            Days = Array.Empty<DayOfWeek>();
             Type = "SeriesTimer";
         }
 

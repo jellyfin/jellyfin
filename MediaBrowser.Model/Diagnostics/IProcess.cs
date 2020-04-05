@@ -11,13 +11,21 @@ namespace MediaBrowser.Model.Diagnostics
         event EventHandler Exited;
 
         void Kill();
+
         bool WaitForExit(int timeMs);
+
         Task<bool> WaitForExitAsync(int timeMs);
+
         int ExitCode { get; }
+
         void Start();
+
         StreamWriter StandardInput { get; }
+
         StreamReader StandardError { get; }
+
         StreamReader StandardOutput { get; }
+
         ProcessOptions StartInfo { get; }
     }
 }

@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -33,7 +34,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The display name of the operating system.</value>
         public string OperatingSystemDisplayName { get; set; }
-
 
         /// <summary>
         /// Get or sets the package name.

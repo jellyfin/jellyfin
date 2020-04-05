@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserUpdated(User user)
         {
-            UserUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
+            UserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserDeleted(User user)
         {
-            UserDeleted?.Invoke(this, new GenericEventArgs<User> { Argument = user });
+            UserDeleted?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         public NameIdPair[] GetAuthenticationProviders()
@@ -755,7 +755,7 @@ namespace Emby.Server.Implementations.Library
 
             _userRepository.CreateUser(user);
 
-            EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User>(user), _logger);
 
             return user;
         }
@@ -980,7 +980,7 @@ namespace Emby.Server.Implementations.Library
 
             if (fireEvent)
             {
-                UserPolicyUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
+                UserPolicyUpdated?.Invoke(this, new GenericEventArgs<User>(user));
             }
         }
 
@@ -1050,7 +1050,7 @@ namespace Emby.Server.Implementations.Library
 
             if (fireEvent)
             {
-                UserConfigurationUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
+                UserConfigurationUpdated?.Invoke(this, new GenericEventArgs<User>(user));
             }
         }
     }

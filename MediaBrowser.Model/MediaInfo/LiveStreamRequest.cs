@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -7,6 +8,13 @@ namespace MediaBrowser.Model.MediaInfo
 {
     public class LiveStreamRequest
     {
+        public LiveStreamRequest()
+        {
+            EnableDirectPlay = true;
+            EnableDirectStream = true;
+            DirectPlayProtocols = new MediaProtocol[] { MediaProtocol.Http };
+        }
+
         public string OpenToken { get; set; }
         public Guid UserId { get; set; }
         public string PlaySessionId { get; set; }
@@ -22,12 +30,7 @@ namespace MediaBrowser.Model.MediaInfo
         public bool EnableDirectStream { get; set; }
         public MediaProtocol[] DirectPlayProtocols { get; set; }
 
-        public LiveStreamRequest()
-        {
-            EnableDirectPlay = true;
-            EnableDirectStream = true;
-            DirectPlayProtocols = new MediaProtocol[] { MediaProtocol.Http };
-        }
+
 
         public LiveStreamRequest(AudioOptions options)
         {
@@ -38,8 +41,7 @@ namespace MediaBrowser.Model.MediaInfo
 
             DirectPlayProtocols = new MediaProtocol[] { MediaProtocol.Http };
 
-            var videoOptions = options as VideoOptions;
-            if (videoOptions != null)
+            if (options is VideoOptions videoOptions)
             {
                 AudioStreamIndex = videoOptions.AudioStreamIndex;
                 SubtitleStreamIndex = videoOptions.SubtitleStreamIndex;

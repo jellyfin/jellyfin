@@ -153,10 +153,7 @@ namespace Emby.Server.Implementations.Playlists
                     });
                 }
 
-                return new PlaylistCreationResult
-                {
-                    Id = playlist.Id.ToString("N", CultureInfo.InvariantCulture)
-                };
+                return new PlaylistCreationResult(playlist.Id.ToString("N", CultureInfo.InvariantCulture));
             }
             finally
             {

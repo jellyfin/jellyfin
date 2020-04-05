@@ -10,6 +10,12 @@ namespace MediaBrowser.Model.Providers
     /// </summary>
     public class ImageProviderInfo
     {
+        public ImageProviderInfo(string name, ImageType[] supportedImages)
+        {
+            Name = name;
+            SupportedImages = supportedImages;
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -17,10 +23,5 @@ namespace MediaBrowser.Model.Providers
         public string Name { get; set; }
 
         public ImageType[] SupportedImages { get; set; }
-
-        public ImageProviderInfo()
-        {
-            SupportedImages = Array.Empty<ImageType>();
-        }
     }
 }

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -133,8 +135,6 @@ namespace Emby.Server.Implementations.Cryptography
             {
                 _randomNumberGenerator.Dispose();
             }
-
-            _randomNumberGenerator = null;
 
             _disposed = true;
         }

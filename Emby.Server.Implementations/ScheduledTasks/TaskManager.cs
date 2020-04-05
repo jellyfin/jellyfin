@@ -254,10 +254,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="task">The task.</param>
         internal void OnTaskExecuting(IScheduledTaskWorker task)
         {
-            TaskExecuting?.Invoke(this, new GenericEventArgs<IScheduledTaskWorker>
-            {
-                Argument = task
-            });
+            TaskExecuting?.Invoke(this, new GenericEventArgs<IScheduledTaskWorker>(task));
         }
 
         /// <summary>
@@ -267,11 +264,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="result">The result.</param>
         internal void OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs
-            {
-                Result = result,
-                Task = task
-            });
+            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs(task, result));
 
             ExecuteQueuedTasks();
         }
