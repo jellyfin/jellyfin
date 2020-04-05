@@ -45,15 +45,20 @@ RUN apt-get update \
    ca-certificates \
    vainfo \
    i965-va-driver \
+   locales \
  && apt-get clean autoclean -y\
  && apt-get autoremove -y\
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media \
  && ln -s /opt/ffmpeg/bin/ffmpeg /usr/local/bin \
- && ln -s /opt/ffmpeg/bin/ffprobe /usr/local/bin
+ && ln -s /opt/ffmpeg/bin/ffprobe /usr/local/bin \
+ && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
 
 EXPOSE 8096
 VOLUME /cache /config /media

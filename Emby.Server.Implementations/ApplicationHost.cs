@@ -118,6 +118,11 @@ namespace Emby.Server.Implementations
     /// </summary>
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
+        /// <summary>
+        /// The environment variable prefixes to log at server startup.
+        /// </summary>
+        private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
+
         private readonly IFileSystem _fileSystemManager;
         private readonly INetworkManager _networkManager;
         private readonly IXmlSerializer _xmlSerializer;
@@ -732,18 +737,18 @@ namespace Emby.Server.Implementations
                 .GetCommandLineArgs()
                 .Distinct();
 
-            // Get all 'JELLYFIN_' prefixed environment variables
+            // Get all relevant environment variables
             var allEnvVars = Environment.GetEnvironmentVariables();
-            var jellyfinEnvVars = new Dictionary<object, object>();
+            var relevantEnvVars = new Dictionary<object, object>();
             foreach (var key in allEnvVars.Keys)
             {
-                if (key.ToString().StartsWith("JELLYFIN_", StringComparison.OrdinalIgnoreCase))
+                if (_relevantEnvVarPrefixes.Any(prefix => key.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                 {
-                    jellyfinEnvVars.Add(key, allEnvVars[key]);
+                    relevantEnvVars.Add(key, allEnvVars[key]);
                 }
             }
 
-            logger.LogInformation("Environment Variables: {EnvVars}", jellyfinEnvVars);
+            logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
             logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);

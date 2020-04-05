@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
@@ -257,7 +258,7 @@ namespace Jellyfin.Server
             IApplicationPaths appPaths)
         {
             return new WebHostBuilder()
-                .UseKestrel(options =>
+                .UseKestrel((builderContext, options) =>
                 {
                     var addresses = appHost.ServerConfigurationManager
                         .Configuration
@@ -280,6 +281,14 @@ namespace Jellyfin.Server
                                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                                 });
                             }
+                            else if (builderContext.HostingEnvironment.IsDevelopment())
+                            {
+                                options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                {
+                                    listenOptions.UseHttps();
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                });
+                            }
                         }
                     }
                     else
@@ -292,6 +301,14 @@ namespace Jellyfin.Server
                             options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
                             {
                                 listenOptions.UseHttps(appHost.Certificate);
+                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                            });
+                        }
+                        else if (builderContext.HostingEnvironment.IsDevelopment())
+                        {
+                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                            {
+                                listenOptions.UseHttps();
                                 listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                             });
                         }

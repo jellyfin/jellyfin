@@ -5010,6 +5010,11 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             commandText += " order by ListOrder";
 
+            if (query.Limit > 0)
+            {
+                commandText += " LIMIT " + query.Limit;
+            }
+
             using (var connection = GetConnection(true))
             {
                 var list = new List<string>();
@@ -5047,6 +5052,11 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
 
             commandText += " order by ListOrder";
+
+            if (query.Limit > 0)
+            {
+                commandText += " LIMIT " + query.Limit;
+            }
 
             using (var connection = GetConnection(true))
             {
