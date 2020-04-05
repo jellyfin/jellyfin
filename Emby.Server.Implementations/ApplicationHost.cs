@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// The environment variable prefixes to log at server startup.
         /// </summary>
-        private static readonly string[] RelevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
+        private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
         private SqliteUserRepository _userRepository;
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
@@ -897,7 +897,7 @@ namespace Emby.Server.Implementations
             var relevantEnvVars = new Dictionary<object, object>();
             foreach (var key in allEnvVars.Keys)
             {
-                if (RelevantEnvVarPrefixes.Any(prefix => key.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                if (_relevantEnvVarPrefixes.Any(prefix => key.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                 {
                     relevantEnvVars.Add(key, allEnvVars[key]);
                 }
