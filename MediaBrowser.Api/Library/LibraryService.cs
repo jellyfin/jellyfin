@@ -388,12 +388,6 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
                 {
-
-                    if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-
                     if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
@@ -403,19 +397,10 @@ namespace MediaBrowser.Api.Library
 
                     return true;
                 }
-                else if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "The Open Movie Database", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -437,45 +422,22 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
-                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
+
                     return true;
                 }
-                else if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "The Open Movie Database", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
