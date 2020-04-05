@@ -213,9 +213,9 @@ namespace MediaBrowser.Api.UserLibrary
                 request.IncludeItemTypes = "Playlist";
             }
 
-            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id) ||
+            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id)
                     // Assume all folders inside an EnabledChannel are enabled
-                    user.Policy.EnabledChannels.Any(i => new Guid(i) == item.Id);
+                    || user.Policy.EnabledChannels.Any(i => new Guid(i) == item.Id);
 
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
