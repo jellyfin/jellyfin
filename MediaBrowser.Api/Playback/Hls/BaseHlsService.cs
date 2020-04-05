@@ -240,7 +240,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected Stream GetPlaylistFileStream(string path)
         {
-            return new FileStream(path,
+            return new FileStream(
+                path,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite,

@@ -137,7 +137,9 @@ namespace MediaBrowser.Api.Playback
             var ext = outputFileExtension.ToLowerInvariant();
             var folder = ServerConfigurationManager.GetTranscodePath();
 
-            return EnableOutputInSubFolder ? Path.Combine(folder, filename, filename + ext) : Path.Combine(folder, filename + ext);
+            return EnableOutputInSubFolder
+                ? Path.Combine(folder, filename, filename + ext)
+                : Path.Combine(folder, filename + ext);
         }
 
         protected virtual string GetDefaultEncoderPreset()
@@ -393,44 +395,36 @@ namespace MediaBrowser.Api.Playback
                         request.Static = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         break;
                     case 4:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.VideoCodec = val;
                         }
 
                         break;
-                    }
                     case 5:
                         request.AudioCodec = val;
                         break;
                     case 6:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.AudioStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
-                    }
                     case 7:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.SubtitleStreamIndex = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
-                    }
                     case 8:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.VideoBitRate = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
-                    }
                     case 9:
                         request.AudioBitRate = int.Parse(val, CultureInfo.InvariantCulture);
                         break;
@@ -438,71 +432,57 @@ namespace MediaBrowser.Api.Playback
                         request.MaxAudioChannels = int.Parse(val, CultureInfo.InvariantCulture);
                         break;
                     case 11:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.MaxFramerate = float.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
-                    }
                     case 12:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.MaxWidth = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
-                    }
                     case 13:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.MaxHeight = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
-                    }
                     case 14:
                         request.StartTimeTicks = long.Parse(val, CultureInfo.InvariantCulture);
                         break;
                     case 15:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.Level = val;
                         }
 
                         break;
-                    }
                     case 16:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.MaxRefFrames = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
-                    }
                     case 17:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.MaxVideoBitDepth = int.Parse(val, CultureInfo.InvariantCulture);
                         }
 
                         break;
-                    }
                     case 18:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.Profile = val;
                         }
 
                         break;
-                    }
                     case 19:
                         // cabac no longer used
                         break;
@@ -519,16 +499,13 @@ namespace MediaBrowser.Api.Playback
                         // Duplicating ItemId because of MediaMonkey
                         break;
                     case 24:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.CopyTimestamps = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
 
                         break;
-                    }
                     case 25:
-                    {
                         if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
                         {
                             if (Enum.TryParse(val, out SubtitleDeliveryMethod method))
@@ -538,52 +515,43 @@ namespace MediaBrowser.Api.Playback
                         }
 
                         break;
-                    }
                     case 26:
                         request.TranscodingMaxAudioChannels = int.Parse(val, CultureInfo.InvariantCulture);
                         break;
                     case 27:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.EnableSubtitlesInManifest = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
 
                         break;
-                    }
                     case 28:
                         request.Tag = val;
                         break;
                     case 29:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.RequireAvc = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
 
                         break;
-                    }
                     case 30:
                         request.SubtitleCodec = val;
                         break;
                     case 31:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.RequireNonAnamorphic = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
 
                         break;
-                    }
                     case 32:
-                    {
                         if (videoRequest != null)
                         {
                             videoRequest.DeInterlace = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
 
                         break;
-                    }
                     case 33:
                         request.TranscodeReasons = val;
                         break;
@@ -860,14 +828,11 @@ namespace MediaBrowser.Api.Playback
             {
                 state.DeviceProfile = DlnaManager.GetProfile(state.Request.DeviceProfileId);
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
             {
-                if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
-                {
-                    var caps = DeviceManager.GetCapabilities(state.Request.DeviceId);
+                var caps = DeviceManager.GetCapabilities(state.Request.DeviceId);
 
-                    state.DeviceProfile = caps != null ? caps.DeviceProfile : DlnaManager.GetProfile(headers);
-                }
+                state.DeviceProfile = caps == null ? DlnaManager.GetProfile(headers) : caps.DeviceProfile;
             }
 
             var profile = state.DeviceProfile;

@@ -393,6 +393,7 @@ namespace MediaBrowser.Api.Library
                     {
                         return true;
                     }
+
                     if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))

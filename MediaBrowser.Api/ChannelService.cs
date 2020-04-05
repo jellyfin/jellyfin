@@ -117,8 +117,8 @@ namespace MediaBrowser.Api
             var val = Filters;
 
             return string.IsNullOrEmpty(val)
-                ? new ItemFilter[] { }
-                : val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+                ? Array.Empty<ItemFilter>()
+                : val.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
         }
 
         /// <summary>
@@ -170,11 +170,9 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{ItemFilter}.</returns>
         public IEnumerable<ItemFilter> GetFilters()
         {
-            var val = Filters;
-
-            return string.IsNullOrEmpty(val)
-                ? new ItemFilter[] { }
-                : val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+            return string.IsNullOrEmpty(Filters)
+                ? Array.Empty<ItemFilter>()
+                : Filters.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
         }
     }
 

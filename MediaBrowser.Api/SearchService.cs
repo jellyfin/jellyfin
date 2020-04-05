@@ -243,14 +243,12 @@ namespace MediaBrowser.Api
                     result.StartDate = program.StartDate;
                     break;
                 case Series series:
-                {
                     if (series.Status.HasValue)
                     {
                         result.Status = series.Status.Value.ToString();
                     }
 
                     break;
-                }
                 case MusicAlbum album:
                     result.Artists = album.Artists;
                     result.AlbumArtist = album.AlbumArtist;

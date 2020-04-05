@@ -484,9 +484,9 @@ namespace MediaBrowser.Api
         /// <returns>Task.</returns>
         internal Task KillTranscodingJobs(string deviceId, string playSessionId, Func<string, bool> deleteFiles)
         {
-            return KillTranscodingJobs(j => !string.IsNullOrWhiteSpace(playSessionId)
-                ? string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase)
-                : string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase), deleteFiles);
+            return KillTranscodingJobs(j => string.IsNullOrWhiteSpace(playSessionId)
+                ? string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase)
+                : string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase), deleteFiles);
         }
 
         /// <summary>
