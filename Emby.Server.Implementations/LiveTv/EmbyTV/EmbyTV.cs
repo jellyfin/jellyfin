@@ -1709,14 +1709,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void Process_Exited(object sender, EventArgs e)
         {
-            try
+            using (var process = (Process)sender)
             {
-                var exitCode = ((Process)sender).ExitCode;
-                _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", exitCode);
-            }
-            finally
-            {
-                ((Process)sender).Dispose();
+                _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", process.ExitCode);
             }
         }
 

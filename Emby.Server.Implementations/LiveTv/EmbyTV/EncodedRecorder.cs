@@ -289,8 +289,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// </summary>
         private void OnFfMpegProcessExited(Process process, string inputFile)
         {
-            try
-            {
+            using (process) {
                 _hasExited = true;
 
                 _logFileStream?.Dispose();
@@ -314,10 +313,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                                 _targetPath,
                                 exitCode)));
                 }
-            }
-            finally
-            {
-                process.Dispose();
             }
         }
 
