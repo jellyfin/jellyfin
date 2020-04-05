@@ -138,8 +138,8 @@ namespace MediaBrowser.Api
                 options.Fields = hasFields.GetItemFields();
             }
 
-            if (!options.ContainsField(Model.Querying.ItemFields.RecursiveItemCount)
-                || !options.ContainsField(Model.Querying.ItemFields.ChildCount))
+            if (!options.ContainsField(ItemFields.RecursiveItemCount)
+                || !options.ContainsField(ItemFields.ChildCount))
             {
                 var client = authContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
                 if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -150,7 +150,7 @@ namespace MediaBrowser.Api
                     int oldLen = options.Fields.Length;
                     var arr = new ItemFields[oldLen + 1];
                     options.Fields.CopyTo(arr, 0);
-                    arr[oldLen] = Model.Querying.ItemFields.RecursiveItemCount;
+                    arr[oldLen] = ItemFields.RecursiveItemCount;
                     options.Fields = arr;
                 }
 
@@ -166,7 +166,7 @@ namespace MediaBrowser.Api
                     int oldLen = options.Fields.Length;
                     var arr = new ItemFields[oldLen + 1];
                     options.Fields.CopyTo(arr, 0);
-                    arr[oldLen] = Model.Querying.ItemFields.ChildCount;
+                    arr[oldLen] = ItemFields.ChildCount;
                     options.Fields = arr;
                 }
             }
