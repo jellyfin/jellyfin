@@ -123,6 +123,7 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
+        private IHttpClient _httpClient;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -255,8 +256,6 @@ namespace Emby.Server.Implementations
 
         protected readonly IXmlSerializer XmlSerializer;
 
-        public IHttpClient HttpClient { get; private set; }
-
         protected INetworkManager NetworkManager { get; set; }
 
         public IJsonSerializer JsonSerializer { get; private set; }
@@ -363,10 +362,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
+        /// <inheritdoc/>
         public string Name => ApplicationProductName;
 
         /// <summary>
@@ -580,12 +576,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(FileSystemManager);
             serviceCollection.AddSingleton<TvdbClientManager>();
 
-            HttpClient = new HttpClientManager.HttpClientManager(
-                ApplicationPaths,
-                LoggerFactory.CreateLogger<HttpClientManager.HttpClientManager>(),
-                FileSystemManager,
-                () => ApplicationUserAgent);
-            serviceCollection.AddSingleton(HttpClient);
+            serviceCollection.AddSingleton<IHttpClient, HttpClientManager.HttpClientManager>();
 
             serviceCollection.AddSingleton(NetworkManager);
 
@@ -728,6 +719,7 @@ namespace Emby.Server.Implementations
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
             _httpServer = Resolve<IHttpServer>();
+            _httpClient = Resolve<IHttpClient>();
 
             ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
@@ -1423,7 +1415,7 @@ namespace Emby.Server.Implementations
 
             try
             {
-                using (var response = await HttpClient.SendAsync(
+                using (var response = await _httpClient.SendAsync(
                     new HttpRequestOptions
                     {
                         Url = apiUrl,
