@@ -234,20 +234,17 @@ namespace MediaBrowser.Api
             SetThumbImageInfo(result, item);
             SetBackdropImageInfo(result, item);
 
-            var program = item as LiveTvProgram;
-            if (program != null)
+            if (item is LiveTvProgram program)
             {
                 result.StartDate = program.StartDate;
             }
 
-            var hasSeries = item as IHasSeries;
-            if (hasSeries != null)
+            if (item is IHasSeries hasSeries)
             {
                 result.Series = hasSeries.SeriesName;
             }
 
-            var series = item as Series;
-            if (series != null)
+            if (item is Series series)
             {
                 if (series.Status.HasValue)
                 {
@@ -255,17 +252,13 @@ namespace MediaBrowser.Api
                 }
             }
 
-            var album = item as MusicAlbum;
-
-            if (album != null)
+            if (item is MusicAlbum album)
             {
                 result.Artists = album.Artists;
                 result.AlbumArtist = album.AlbumArtist;
             }
 
-            var song = item as Audio;
-
-            if (song != null)
+            if (item is Audio song)
             {
                 result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
                 result.Artists = song.Artists;

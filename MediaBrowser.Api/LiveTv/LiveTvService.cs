@@ -1050,8 +1050,7 @@ namespace MediaBrowser.Api.LiveTv
             {
                 query.IsSeries = true;
 
-                var series = _libraryManager.GetItemById(request.LibrarySeriesId) as Series;
-                if (series != null)
+                if (_libraryManager.GetItemById(request.LibrarySeriesId) is Series series)
                 {
                     query.Name = series.Name;
                 }

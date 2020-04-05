@@ -424,9 +424,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrWhiteSpace(request.SeasonId))
             {
-                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
-
-                if (season == null)
+                if (!(_libraryManager.GetItemById(new Guid(request.SeasonId)) is Season season))
                 {
                     throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
                 }

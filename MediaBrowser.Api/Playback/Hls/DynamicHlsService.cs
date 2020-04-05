@@ -438,8 +438,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var segmentId = "0";
 
-            var segmentRequest = request as GetHlsVideoSegment;
-            if (segmentRequest != null)
+            if (request is GetHlsVideoSegment segmentRequest)
             {
                 segmentId = segmentRequest.SegmentId;
             }
@@ -690,8 +689,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
-            var request = state.Request as IMasterHlsRequest;
-            if (request != null && !request.EnableAdaptiveBitrateStreaming)
+            if (state.Request is IMasterHlsRequest request && !request.EnableAdaptiveBitrateStreaming)
             {
                 return false;
             }
