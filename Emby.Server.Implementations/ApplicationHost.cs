@@ -245,8 +245,6 @@ namespace Emby.Server.Implementations
         /// <value>The server configuration manager.</value>
         public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
-        public LocalizationManager LocalizationManager { get; set; }
-
         /// <summary>
         /// Gets the installation manager.
         /// </summary>
@@ -629,9 +627,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(ServerConfigurationManager);
 
-            LocalizationManager = new LocalizationManager(ServerConfigurationManager, JsonSerializer, LoggerFactory.CreateLogger<LocalizationManager>());
-            await LocalizationManager.LoadAll().ConfigureAwait(false);
-            serviceCollection.AddSingleton<ILocalizationManager>(LocalizationManager);
+            serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
@@ -651,15 +647,16 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IUserManager, UserManager>();
 
             // TODO: Add StartupOptions.FFmpegPath to IConfiguration so this doesn't need to be constructed manually
-            serviceCollection.AddSingleton<IMediaEncoder>(new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
-                LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
-                ServerConfigurationManager,
-                FileSystemManager,
-                ProcessFactory,
-                LocalizationManager,
-                Resolve<ISubtitleEncoder>,
-                startupConfig,
-                StartupOptions.FFmpegPath));
+            serviceCollection.AddSingleton<IMediaEncoder>(provider =>
+                new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
+                    provider.GetRequiredService<ILogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>>(),
+                    provider.GetRequiredService<IServerConfigurationManager>(),
+                    provider.GetRequiredService<IFileSystem>(),
+                    provider.GetRequiredService<IProcessFactory>(),
+                    provider.GetRequiredService<ILocalizationManager>(),
+                    provider.GetRequiredService<ISubtitleEncoder>,
+                    provider.GetRequiredService<IConfiguration>(),
+                    StartupOptions.FFmpegPath));
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -735,8 +732,12 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Create services registered with the service container that need to be initialized at application startup.
         /// </summary>
-        public void InitializeServices()
+        /// <returns>A task representing the service initialization operation.</returns>
+        public async Task InitializeServices()
         {
+            var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
+            await localizationManager.LoadAll().ConfigureAwait(false);
+
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
             _httpServer = Resolve<IHttpServer>();
@@ -833,7 +834,7 @@ namespace Emby.Server.Implementations
             BaseItem.ConfigurationManager = ServerConfigurationManager;
             BaseItem.LibraryManager = Resolve<ILibraryManager>();
             BaseItem.ProviderManager = Resolve<IProviderManager>();
-            BaseItem.LocalizationManager = LocalizationManager;
+            BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
             User.UserManager = Resolve<IUserManager>();
             BaseItem.FileSystem = FileSystemManager;

@@ -208,7 +208,7 @@ namespace Jellyfin.Server
 
                 // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
-                appHost.InitializeServices();
+                await appHost.InitializeServices().ConfigureAwait(false);
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
                 try
