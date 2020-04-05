@@ -92,5 +92,22 @@
     "UserStoppedPlayingItemWithValues": "{0} befejezte {1} lejátászását itt: {2}",
     "ValueHasBeenAddedToLibrary": "{0} hozzáadva a médiatárhoz",
     "ValueSpecialEpisodeName": "Special - {0}",
-    "VersionNumber": "Verzió: {0}"
+    "VersionNumber": "Verzió: {0}",
+    "TaskCleanTranscode": "Átkódolási könyvtár ürítése",
+    "TaskUpdatePluginsDescription": "Letölti és telepíti a frissítéseket azokhoz a bővítményekhez, amelyeknél az automatikus frissítés engedélyezve van.",
+    "TaskUpdatePlugins": "Bővítmények frissítése",
+    "TaskRefreshPeopleDescription": "Frissíti a szereplők és a stábok metaadatait a könyvtáradban.",
+    "TaskRefreshPeople": "Személyek frissítése",
+    "TaskCleanLogsDescription": "Törli azokat a naplófájlokat, amelyek {0} napnál régebbiek.",
+    "TaskCleanLogs": "Naplózási könyvtár ürítése",
+    "TaskRefreshLibraryDescription": "Átvizsgálja a könyvtáraidat új fájlokért és frissíti a metaadatokat.",
+    "TaskRefreshLibrary": "Média könyvtár beolvasása",
+    "TaskRefreshChapterImagesDescription": "Miniatűröket generál olyan videókhoz, amely tartalmaz fejezeteket.",
+    "TaskRefreshChapterImages": "Fejezetek képeinek generálása",
+    "TaskCleanCacheDescription": "Törli azokat a gyorsítótárazott fájlokat, amikre a rendszernek már nincs szüksége.",
+    "TaskCleanCache": "Gyorsítótár könyvtárának ürítése",
+    "TasksChannelsCategory": "Internetes csatornák",
+    "TasksApplicationCategory": "Alkalmazás",
+    "TasksLibraryCategory": "Könyvtár",
+    "TasksMaintenanceCategory": "Karbantartás"
 }
