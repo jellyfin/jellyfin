@@ -10,12 +10,12 @@ namespace Emby.Naming.Video
         Suffix = 0,
 
         /// <summary>
-        /// Match <see cref="ExtraRule.Token"/> against the file name.
+        /// Match <see cref="ExtraRule.Token"/> against the file name, excluding the file extension.
         /// </summary>
         Filename = 1,
 
         /// <summary>
-        /// Match <see cref="ExtraRule.Token"/> against the a regex.
+        /// Match <see cref="ExtraRule.Token"/> against the file name, including the file extension.
         /// </summary>
         Regex = 2,
 
