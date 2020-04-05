@@ -240,17 +240,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected Stream GetPlaylistFileStream(string path)
         {
-            var tmpPath = path + ".tmp";
-            tmpPath = path;
-
-            try
-            {
-                return new FileStream(tmpPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, FileOptions.SequentialScan);
-            }
-            catch (IOException)
-            {
-                return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, FileOptions.SequentialScan);
-            }
+            return new FileStream(path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite,
+                IODefaults.FileStreamBufferSize,
+                FileOptions.SequentialScan);
         }
 
         protected override string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding)

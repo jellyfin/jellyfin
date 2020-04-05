@@ -544,8 +544,7 @@ namespace MediaBrowser.Api.Library
 
             foreach (var type in types)
             {
-                ImageOption[] defaultImageOptions = null;
-                TypeOptions.DefaultImageOptions.TryGetValue(type, out defaultImageOptions);
+                TypeOptions.DefaultImageOptions.TryGetValue(type, out var defaultImageOptions);
 
                 typeOptions.Add(new LibraryTypeOptions
                 {
@@ -592,8 +591,6 @@ namespace MediaBrowser.Api.Library
 
         public object Get(GetSimilarItems request)
         {
-            var user = !request.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(request.UserId) : null;
-
             var item = string.IsNullOrEmpty(request.Id) ?
                 (!request.UserId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
@@ -651,7 +648,7 @@ namespace MediaBrowser.Api.Library
             // ExcludeArtistIds
             if (!string.IsNullOrEmpty(request.ExcludeArtistIds))
             {
-                query.ExcludeArtistIds = BaseApiService.GetGuids(request.ExcludeArtistIds);
+                query.ExcludeArtistIds = GetGuids(request.ExcludeArtistIds);
             }
 
             List<BaseItem> itemsResult;
@@ -672,7 +669,6 @@ namespace MediaBrowser.Api.Library
             var result = new QueryResult<BaseItemDto>
             {
                 Items = returnList,
-
                 TotalRecordCount = itemsResult.Count
             };
 
@@ -1075,36 +1071,18 @@ namespace MediaBrowser.Api.Library
                 throw new ResourceNotFoundException("Item not found.");
             }
 
-            BaseItem[] themeItems = Array.Empty<BaseItem>();
+            IEnumerable<BaseItem> themeItems = item.GetThemeSongs();
 
-            while (true)
+            while (!themeItems.Any() && request.InheritFromParent && item.GetParent() != null)
             {
-                themeItems = item.GetThemeSongs().ToArray();
-
-                if (themeItems.Length > 0)
-                {
-                    break;
-                }
-
-                if (!request.InheritFromParent)
-                {
-                    break;
-                }
-
-                var parent = item.GetParent();
-                if (parent == null)
-                {
-                    break;
-                }
-                item = parent;
+                item = item.GetParent();
+                themeItems = item.GetThemeSongs();
             }
 
             var dtoOptions = GetDtoOptions(_authContext, request);
-
-            var dtos = themeItems
-                            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
-
-            var items = dtos.ToArray();
+            var items = themeItems
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
+                .ToArray();
 
             return new ThemeMediaResult
             {
@@ -1121,9 +1099,7 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetThemeVideos request)
         {
-            var result = GetThemeVideos(request);
-
-            return ToOptimizedResult(result);
+            return ToOptimizedResult(GetThemeVideos(request));
         }
 
         public ThemeMediaResult GetThemeVideos(GetThemeVideos request)
@@ -1141,36 +1117,19 @@ namespace MediaBrowser.Api.Library
                 throw new ResourceNotFoundException("Item not found.");
             }
 
-            BaseItem[] themeItems = Array.Empty<BaseItem>();
+            IEnumerable<BaseItem> themeItems = item.GetThemeVideos();
 
-            while (true)
+            while (!themeItems.Any() && request.InheritFromParent && item.GetParent() != null)
             {
-                themeItems = item.GetThemeVideos().ToArray();
-
-                if (themeItems.Length > 0)
-                {
-                    break;
-                }
-
-                if (!request.InheritFromParent)
-                {
-                    break;
-                }
-
-                var parent = item.GetParent();
-                if (parent == null)
-                {
-                    break;
-                }
-                item = parent;
+                item = item.GetParent();
+                themeItems = item.GetThemeVideos();
             }
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtos = themeItems
-                            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
-
-            var items = dtos.ToArray();
+            var items = themeItems
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
+                .ToArray();
 
             return new ThemeMediaResult
             {
