@@ -557,6 +557,8 @@ namespace Emby.Server.Implementations
                 : typeof(NullImageEncoder);
             serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
 
+            serviceCollection.AddSingleton(_startupOptions);
+
             serviceCollection.AddMemoryCache();
 
             serviceCollection.AddSingleton(ConfigurationManager);
