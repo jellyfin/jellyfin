@@ -9,7 +9,7 @@ namespace MediaBrowser.Common.Cryptography
     /// <summary>
     /// Class containing extension methods for working with Jellyfin cryptography objects.
     /// </summary>
-    public static class Extensions
+    public static class CryptoExtensions
     {
         /// <summary>
         /// Creates a new <see cref="PasswordHash" /> instance.

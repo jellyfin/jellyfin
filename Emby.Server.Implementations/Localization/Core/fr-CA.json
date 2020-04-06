@@ -92,5 +92,7 @@
     "UserStoppedPlayingItemWithValues": "{0} vient d'arrêter la lecture de {1} sur {2}",
     "ValueHasBeenAddedToLibrary": "{0} a été ajouté à votre médiathèque",
     "ValueSpecialEpisodeName": "Spécial - {0}",
-    "VersionNumber": "Version {0}"
+    "VersionNumber": "Version {0}",
+    "TasksLibraryCategory": "Bibliothèque",
+    "TasksMaintenanceCategory": "Entretien"
 }
