@@ -254,7 +254,7 @@ namespace MediaBrowser.Model.Configuration
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 
-            EnableUPnP = true;
+            EnableUPnP = false;
             MinResumePct = 5;
             MaxResumePct = 90;
 
