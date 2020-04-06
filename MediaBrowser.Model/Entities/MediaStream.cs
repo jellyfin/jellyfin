@@ -83,7 +83,12 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Language))
                     {
-                        attributes.Add(StringHelper.FirstToUpper(Language));
+                        // Get full language string i.e. eng -> English
+                        String fullLanguage = CultureInfo
+                            .GetCultures(CultureTypes.AllCultures)
+                            .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
+                            .DisplayName;
+                        attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                     }
                     if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))
                     {
@@ -109,10 +114,9 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Title))
                     {
-                        Console.WriteLine(Language);
                         return attributes
                             // keep Tags that are not the same as the Title
-                            .Where(tag => !Title.Equals(tag))
+                            .Where(tag => Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
                             // attributes concatenation, starting with Title
                             .Aggregate(new StringBuilder(Title), (builder, attr) => builder.Append(" - ").Append(attr))
                             .ToString();
@@ -147,7 +151,12 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Language))
                     {
-                        attributes.Add(StringHelper.FirstToUpper(Language));
+                        // Get full language string i.e. eng -> English
+                        String fullLanguage = CultureInfo
+                            .GetCultures(CultureTypes.AllCultures)
+                            .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
+                            .DisplayName;
+                        attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                     }
                     else
                     {
