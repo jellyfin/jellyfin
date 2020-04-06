@@ -264,6 +264,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(username))
             {
+                _logger.LogInformation("Authentication request without username has been denied (IP: {IP}).", remoteEndPoint);
                 throw new ArgumentNullException(nameof(username));
             }
 
@@ -319,6 +320,7 @@ namespace Emby.Server.Implementations.Library
 
             if (user == null)
             {
+                _logger.LogInformation("Authentication request for {UserName} has been denied (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
@@ -351,13 +353,13 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 ResetInvalidLoginAttemptCount(user);
+                _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Name);
             }
             else
             {
                 IncrementInvalidLoginAttemptCount(user);
+                _logger.LogInformation("Authentication request for {UserName} has been denied (IP: {IP}).", user.Name, remoteEndPoint);
             }
-
-            _logger.LogInformation("Authentication request for {0} {1} (IP: {2}).", user.Name, success ? "has succeeded" : "has been denied", remoteEndPoint);
 
             return success ? user : null;
         }
