@@ -92,5 +92,9 @@
     "UserStoppedPlayingItemWithValues": "{0} har stoppet avspilling  {1}",
     "ValueHasBeenAddedToLibrary": "{0} har blitt lagt til i mediebiblioteket ditt",
     "ValueSpecialEpisodeName": "Spesialepisode - {0}",
-    "VersionNumber": "Versjon {0}"
+    "VersionNumber": "Versjon {0}",
+    "TasksChannelsCategory": "Internett kanaler",
+    "TasksApplicationCategory": "Applikasjon",
+    "TasksLibraryCategory": "Bibliotek",
+    "TasksMaintenanceCategory": "Vedlikehold"
 }

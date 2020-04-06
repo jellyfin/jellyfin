@@ -90,7 +90,17 @@
     "UserPolicyUpdatedWithName": "تم تحديث سياسة المستخدم {0}",
     "UserStartedPlayingItemWithValues": "قام {0} ببدء تشغيل {1} على {2}",
     "UserStoppedPlayingItemWithValues": "قام {0} بإيقاف تشغيل {1} على {2}",
-    "ValueHasBeenAddedToLibrary": "{0} تم اضافتها الى مكتبة الوسائط",
-    "ValueSpecialEpisodeName": "مميز - {0}",
-    "VersionNumber": "الإصدار رقم {0}"
+    "ValueHasBeenAddedToLibrary": "تمت اضافت {0} إلى مكتبة الوسائط",
+    "ValueSpecialEpisodeName": "خاص - {0}",
+    "VersionNumber": "النسخة {0}",
+    "TaskCleanCacheDescription": "يحذف ملفات ذاكرة التخزين المؤقت التي لم يعد النظام بحاجة إليها.",
+    "TaskCleanCache": "احذف مجلد ذاكرة التخزين المؤقت",
+    "TasksChannelsCategory": "قنوات الإنترنت",
+    "TasksLibraryCategory": "مكتبة",
+    "TasksMaintenanceCategory": "صيانة",
+    "TaskRefreshLibraryDescription": "يقوم بفصح مكتبة الوسائط الخاصة بك بحثًا عن ملفات جديدة وتحديث البيانات الوصفية.",
+    "TaskRefreshLibrary": "افحص مكتبة الوسائط",
+    "TaskRefreshChapterImagesDescription": "إنشاء صور مصغرة لمقاطع الفيديو ذات فصول.",
+    "TaskRefreshChapterImages": "استخراج صور الفصل",
+    "TasksApplicationCategory": "تطبيق"
 }
