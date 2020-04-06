@@ -1605,7 +1605,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // For VAAPI and CUVID decoder
                 // these encoders cannot automatically adjust the size of graphical subtitles to fit the output video,
                 // thus needs to be manually adjusted.
-                if (IsVaapiSupported(state) && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
+                if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
                     || (videoDecoder ?? string.Empty).IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     var videoStream = state.VideoStream;
@@ -2020,19 +2020,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var codec = videoStream.Codec.ToLowerInvariant();
                 var pixelFormat = videoStream.PixelFormat.ToLowerInvariant();
 
-                // Assert 10-bit hardware VAAPI decodable
-                if ((pixelFormat ?? string.Empty).IndexOf("p10", StringComparison.OrdinalIgnoreCase) != -1
-                    && (string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase)))
-                {
-                    filters.Add("hwdownload");
-                    filters.Add("format=p010le");
-                    filters.Add("format=nv12");
-                }
-
-                // Assert 8-bit hardware VAAPI decodable
-                else if ((pixelFormat ?? string.Empty).IndexOf("p10", StringComparison.OrdinalIgnoreCase) == -1)
+                // Assert hardware VAAPI decodable (Except h264 10-bit and higher color depth)
+				// TODO: a propery way to detect hardware capabilities and falling back when transcoding is failed
+                if ((pixelFormat ?? string.Empty).IndexOf("p10", StringComparison.OrdinalIgnoreCase) == -1
+                    || ((pixelFormat ?? string.Empty).IndexOf("p10", StringComparison.OrdinalIgnoreCase) != -1
+                        && (string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))))
                 {
                     filters.Add("hwdownload");
                     filters.Add("format=nv12");
