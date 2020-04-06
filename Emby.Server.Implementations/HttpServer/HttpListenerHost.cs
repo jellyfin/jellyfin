@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -239,19 +240,22 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
         {
+            string urlSuffix = string.IsNullOrWhiteSpace(urlToLog)
+                ? string.Format(CultureInfo.InvariantCulture, "; URL being processed: {0}", urlToLog)
+                : "";
             try
             {
                 ex = GetActualException(ex);
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError(ex, "Error processing request");
+                    _logger.LogError(ex, "Error processing request{Suffix}", urlSuffix);
                 }
                 else
                 {
-                    _logger.LogError("Error processing request: {Message}", ex.Message);
+                    _logger.LogError("Error processing request: {Message}{Suffix}", ex.Message, urlSuffix);
                 }
 
                 var httpRes = httpReq.Response;
@@ -271,7 +275,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response){Suffix}", urlSuffix);
             }
         }
 
@@ -553,7 +557,7 @@ namespace Emby.Server.Implementations.HttpServer
                     || ex is OperationCanceledException
                     || ex is SecurityException
                     || ex is FileNotFoundException;
-                await ErrorHandler(ex, httpReq, ignoreStackTrace).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, ignoreStackTrace, urlToLog).ConfigureAwait(false);
             }
             finally
             {
