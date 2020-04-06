@@ -388,24 +388,14 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-
-                    return true;
+                    return !(string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase));
                 }
 
-                if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                return false;
+                return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase);
             }
 
             var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
@@ -422,27 +412,17 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-
-                    return true;
+                    return !string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase);
                 }
 
-                if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase)
-                         || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                return false;
+                return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase);
             }
 
             var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
@@ -1034,12 +1014,23 @@ namespace MediaBrowser.Api.Library
                 throw new ResourceNotFoundException("Item not found.");
             }
 
-            IEnumerable<BaseItem> themeItems = item.GetThemeSongs();
+            IEnumerable<BaseItem> themeItems;
 
-            while (!themeItems.Any() && request.InheritFromParent && item.GetParent() != null)
+            while (true)
             {
-                item = item.GetParent();
                 themeItems = item.GetThemeSongs();
+
+                if (themeItems.Any() || !request.InheritFromParent)
+                {
+                    break;
+                }
+
+                var parent = item.GetParent();
+                if (parent == null)
+                {
+                    break;
+                }
+                item = parent;
             }
 
             var dtoOptions = GetDtoOptions(_authContext, request);
@@ -1080,12 +1071,23 @@ namespace MediaBrowser.Api.Library
                 throw new ResourceNotFoundException("Item not found.");
             }
 
-            IEnumerable<BaseItem> themeItems = item.GetThemeVideos();
+            IEnumerable<BaseItem> themeItems;
 
-            while (!themeItems.Any() && request.InheritFromParent && item.GetParent() != null)
+            while (true)
             {
-                item = item.GetParent();
                 themeItems = item.GetThemeVideos();
+
+                if (themeItems.Any() || !request.InheritFromParent)
+                {
+                    break;
+                }
+
+                var parent = item.GetParent();
+                if (parent == null)
+                {
+                    break;
+                }
+                item = parent;
             }
 
             var dtoOptions = GetDtoOptions(_authContext, request);

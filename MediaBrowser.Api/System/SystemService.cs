@@ -168,8 +168,9 @@ namespace MediaBrowser.Api.System
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
             // For older files, assume fully static
-            return ResultFactory.GetStaticFileResult(Request, file.FullName,
-                file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite);
+            var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
+
+            return ResultFactory.GetStaticFileResult(Request, file.FullName, fileShare);
         }
 
         /// <summary>

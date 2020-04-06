@@ -425,7 +425,7 @@ namespace MediaBrowser.Api.UserLibrary
             var val = ImageTypes;
 
             return string.IsNullOrEmpty(val)
-                ? new ImageType[] { }
+                ? Array.Empty<ImageType>()
                 : val.Split(',').Select(v => Enum.Parse<ImageType>(v, true)).ToArray();
         }
 
