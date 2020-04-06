@@ -109,9 +109,10 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Title))
                     {
+                        Console.WriteLine(Language);
                         return attributes
-                            // keep Tags that are not already in Title
-                            .Where(tag => Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                            // keep Tags that are not the same as the Title
+                            .Where(tag => !Title.Equals(tag))
                             // attributes concatenation, starting with Title
                             .Aggregate(new StringBuilder(Title), (builder, attr) => builder.Append(" - ").Append(attr))
                             .ToString();
