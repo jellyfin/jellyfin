@@ -1449,10 +1449,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
 
-        /// <summary>
-        /// Gets a value indicating whether a client can connect to the server over HTTPS, either directly or via a
-        /// reverse proxy.
-        /// </summary>
+        /// <inheritdoc/>
         public bool CanConnectWithHttps => ListenWithHttps || ServerConfigurationManager.Configuration.IsBehindProxy;
 
         public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
