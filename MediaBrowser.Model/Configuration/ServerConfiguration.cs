@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using MediaBrowser.Model.Dto;
@@ -149,9 +148,9 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDashboardResponseCaching { get; set; }
 
         /// <summary>
-        /// Allows the dashboard to be served from a custom path.
+        /// Gets or sets a custom path to serve the dashboard from.
         /// </summary>
-        /// <value>The dashboard source path.</value>
+        /// <value>The dashboard source path, or null if the default path should be used.</value>
         public string DashboardSourcePath { get; set; }
 
         /// <summary>
@@ -248,7 +247,7 @@ namespace MediaBrowser.Model.Configuration
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;
             HttpsPortNumber = DefaultHttpsPort;
-            EnableHttps = true;
+            EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
 

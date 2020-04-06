@@ -9,13 +9,27 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
+    /// <summary>
+    /// Nfo provider for series.
+    /// </summary>
     public class SeriesNfoProvider : BaseNfoProvider<Series>
     {
         private readonly ILogger _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
 
-        public SeriesNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeriesNfoProvider"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="config">the configuration manager.</param>
+        /// <param name="providerManager">The provider manager.</param>
+        public SeriesNfoProvider(
+            ILogger<SeriesNfoProvider> logger,
+            IFileSystem fileSystem,
+            IConfigurationManager config,
+            IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;

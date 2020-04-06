@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +31,8 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (resourceStream != null && IsCoreHtml(virtualPath))
             {
-                resourceStream = await ModifyHtml(virtualPath, resourceStream, mode, appVersion, localizationCulture).ConfigureAwait(false);
+                bool isMainIndexPage = string.Equals(virtualPath, "index.html", StringComparison.OrdinalIgnoreCase);
+                resourceStream = await ModifyHtml(isMainIndexPage, resourceStream, mode, appVersion, localizationCulture).ConfigureAwait(false);
             }
 
             return resourceStream;
@@ -45,18 +49,24 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         /// <summary>
-        /// Modifies the HTML by adding common meta tags, css and js.
+        /// Modifies the source HTML stream by adding common meta tags, css and js.
         /// </summary>
-        /// <returns>Task{Stream}.</returns>
-        public async Task<Stream> ModifyHtml(
-            string path,
+        /// <param name="isMainIndexPage">True if the stream contains content for the main index page.</param>
+        /// <param name="sourceStream">The stream whose content should be modified.</param>
+        /// <param name="mode">The client mode ('cordova', 'android', etc).</param>
+        /// <param name="appVersion">The application version.</param>
+        /// <param name="localizationCulture">The localization culture.</param>
+        /// <returns>
+        /// A task that represents the async operation to read and modify the input stream.
+        /// The task result contains a stream containing the modified HTML content.
+        /// </returns>
+        public static async Task<Stream> ModifyHtml(
+            bool isMainIndexPage,
             Stream sourceStream,
             string mode,
             string appVersion,
             string localizationCulture)
         {
-            var isMainIndexPage = string.Equals(path, "index.html", StringComparison.OrdinalIgnoreCase);
-
             string html;
             using (var reader = new StreamReader(sourceStream, Encoding.UTF8))
             {
@@ -67,30 +77,29 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 var lang = localizationCulture.Split('-')[0];
 
-                html = html.Replace("<html", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\"");
+                html = html.Replace("<html", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\"", StringComparison.Ordinal);
             }
 
             if (isMainIndexPage)
             {
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode));
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode), StringComparison.Ordinal);
             }
 
             // Disable embedded scripts from plugins. We'll run them later once resources have loaded
             if (html.IndexOf("<script", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                html = html.Replace("<script", "<!--<script");
-                html = html.Replace("</script>", "</script>-->");
+                html = html.Replace("<script", "<!--<script", StringComparison.Ordinal);
+                html = html.Replace("</script>", "</script>-->", StringComparison.Ordinal);
             }
 
             if (isMainIndexPage)
             {
-                html = html.Replace("</body>", GetCommonJavascript(mode, appVersion) + "</body>");
+                html = html.Replace("</body>", GetCommonJavascript(mode, appVersion) + "</body>", StringComparison.Ordinal);
             }
 
             var bytes = Encoding.UTF8.GetBytes(html);
 
             return new MemoryStream(bytes);
-
         }
 
         /// <summary>
@@ -123,11 +132,11 @@ namespace MediaBrowser.WebDashboard.Api
             builder.Append("<script>");
             if (!string.IsNullOrWhiteSpace(mode))
             {
-                builder.AppendFormat("window.appMode='{0}';", mode);
+                builder.AppendFormat(CultureInfo.InvariantCulture, "window.appMode='{0}';", mode);
             }
             else
             {
-                builder.AppendFormat("window.dashboardVersion='{0}';", version);
+                builder.AppendFormat(CultureInfo.InvariantCulture, "window.dashboardVersion='{0}';", version);
             }
 
             builder.Append("</script>");

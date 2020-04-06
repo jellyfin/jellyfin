@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 #nullable enable
 
 using System;
@@ -19,7 +18,13 @@ namespace Emby.Naming.TV
             _options = options;
         }
 
-        public EpisodePathParserResult Parse(string path, bool isDirectory, bool? isNamed = null, bool? isOptimistic = null, bool? supportsAbsoluteNumbers = null, bool fillExtendedInfo = true)
+        public EpisodePathParserResult Parse(
+            string path,
+            bool isDirectory,
+            bool? isNamed = null,
+            bool? isOptimistic = null,
+            bool? supportsAbsoluteNumbers = null,
+            bool fillExtendedInfo = true)
         {
             // Added to be able to use regex patterns which require a file extension.
             // There were no failed tests without this block, but to be safe, we can keep it until
@@ -65,7 +70,7 @@ namespace Emby.Naming.TV
                 {
                     result.SeriesName = result.SeriesName
                         .Trim()
-                        .Trim(new[] { '_', '.', '-' })
+                        .Trim('_', '.', '-')
                         .Trim();
                 }
             }

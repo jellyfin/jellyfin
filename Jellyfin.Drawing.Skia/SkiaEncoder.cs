@@ -308,8 +308,7 @@ namespace Jellyfin.Drawing.Skia
 
             if (requiresTransparencyHack || forceCleanBitmap)
             {
-                using (var stream = new SKFileStream(NormalizePath(path)))
-                using (var codec = SKCodec.Create(stream))
+                using (var codec = SKCodec.Create(NormalizePath(path)))
                 {
                     if (codec == null)
                     {

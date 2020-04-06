@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,6 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -31,7 +29,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SeriesResolver(IFileSystem fileSystem, ILogger logger, ILibraryManager libraryManager)
+        public SeriesResolver(IFileSystem fileSystem, ILogger<SeriesResolver> logger, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;
             _logger = logger;

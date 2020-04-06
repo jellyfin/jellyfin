@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "El Servidor d'Jellyfin est&agrave; carregant. Si et plau, prova de nou en breus.",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Els subtítols no s'han pogut baixar de {0} per {1}",
-    "SubtitlesDownloadedForItem": "Subtítols descarregats per a {0}",
     "Sync": "Sincronitzar",
     "System": "System",
     "TvShows": "Espectacles de TV",

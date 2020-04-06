@@ -454,7 +454,7 @@ namespace Emby.Server.Implementations.Data
 
         private static string GetSaveItemCommandText()
         {
-            var saveColumns = new []
+            var saveColumns = new[]
             {
                 "guid",
                 "type",
@@ -560,7 +560,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(item));
             }
 
-            SaveItems(new [] { item }, cancellationToken);
+            SaveItems(new[] { item }, cancellationToken);
         }
 
         public void SaveImages(BaseItem item)
@@ -1622,7 +1622,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     IEnumerable<MetadataFields> GetLockedFields(string s)
                     {
-                        foreach (var i in s.Split(new [] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
                         {
                             if (Enum.TryParse(i, true, out MetadataFields parsedValue))
                             {
@@ -1818,7 +1818,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    item.ProductionLocations = reader.GetString(index).Split(new [] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    item.ProductionLocations = reader.GetString(index).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
                 }
                 index++;
             }
@@ -2006,7 +2006,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        public void SaveChapters(Guid id, List<ChapterInfo> chapters)
+        public void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters)
         {
             CheckDisposed();
 
@@ -2035,22 +2035,24 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void InsertChapters(byte[] idBlob, List<ChapterInfo> chapters, IDatabaseConnection db)
+        private void InsertChapters(byte[] idBlob, IReadOnlyList<ChapterInfo> chapters, IDatabaseConnection db)
         {
             var startIndex = 0;
             var limit = 100;
             var chapterIndex = 0;
 
+            const string StartInsertText = "insert into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath, ImageDateModified) values ";
+            var insertText = new StringBuilder(StartInsertText, 256);
+
             while (startIndex < chapters.Count)
             {
-                var insertText = new StringBuilder("insert into " + ChaptersTableName + " (ItemId, ChapterIndex, StartPositionTicks, Name, ImagePath, ImageDateModified) values ");
-
                 var endIndex = Math.Min(chapters.Count, startIndex + limit);
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
                     insertText.AppendFormat("(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
                 }
+
                 insertText.Length -= 1; // Remove last ,
 
                 using (var statement = PrepareStatement(db, insertText.ToString()))
@@ -2077,6 +2079,7 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 startIndex += limit;
+                insertText.Length = StartInsertText.Length;
             }
         }
 
@@ -2897,8 +2900,8 @@ namespace Emby.Server.Implementations.Data
                             BindSimilarParams(query, statement);
                             BindSearchParams(query, statement);
 
-                                // Running this again will bind the params
-                                GetWhereClauses(query, statement);
+                            // Running this again will bind the params
+                            GetWhereClauses(query, statement);
 
                             result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
@@ -2914,29 +2917,30 @@ namespace Emby.Server.Implementations.Data
         private string GetOrderByText(InternalItemsQuery query)
         {
             var orderBy = query.OrderBy;
-            if (string.IsNullOrEmpty(query.SearchTerm))
+            bool hasSimilar = query.SimilarTo != null;
+            bool hasSearch = !string.IsNullOrEmpty(query.SearchTerm);
+
+            if (hasSimilar || hasSearch)
             {
-                int oldLen = orderBy.Count;
-                if (oldLen == 0 && query.SimilarTo != null)
+                List<(string, SortOrder)> prepend = new List<(string, SortOrder)>(4);
+                if (hasSearch)
                 {
-                    var arr = new (string, SortOrder)[oldLen + 2];
-                    orderBy.CopyTo(arr, 0);
-                    arr[oldLen] = ("SimilarityScore", SortOrder.Descending);
-                    arr[oldLen + 1] = (ItemSortBy.Random, SortOrder.Ascending);
-                    query.OrderBy = arr;
+                    prepend.Add(("SearchScore", SortOrder.Descending));
+                    prepend.Add((ItemSortBy.SortName, SortOrder.Ascending));
                 }
-            }
-            else
-            {
-                query.OrderBy = new[]
+
+                if (hasSimilar)
                 {
-                    ("SearchScore", SortOrder.Descending),
-                    (ItemSortBy.SortName, SortOrder.Ascending)
-                };
+                    prepend.Add(("SimilarityScore", SortOrder.Descending));
+                    prepend.Add((ItemSortBy.Random, SortOrder.Ascending));
+                }
+
+                var arr = new (string, SortOrder)[prepend.Count + orderBy.Count];
+                prepend.CopyTo(arr, 0);
+                orderBy.CopyTo(arr, prepend.Count);
+                orderBy = query.OrderBy = arr;
             }
-
-
-            if (orderBy.Count == 0)
+            else if (orderBy.Count == 0)
             {
                 return string.Empty;
             }
@@ -3265,8 +3269,8 @@ namespace Emby.Server.Implementations.Data
                             BindSimilarParams(query, statement);
                             BindSearchParams(query, statement);
 
-                                // Running this again will bind the params
-                                GetWhereClauses(query, statement);
+                            // Running this again will bind the params
+                            GetWhereClauses(query, statement);
 
                             foreach (var row in statement.ExecuteQuery())
                             {
@@ -3287,8 +3291,8 @@ namespace Emby.Server.Implementations.Data
                             BindSimilarParams(query, statement);
                             BindSearchParams(query, statement);
 
-                                // Running this again will bind the params
-                                GetWhereClauses(query, statement);
+                            // Running this again will bind the params
+                            GetWhereClauses(query, statement);
 
                             result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
@@ -5007,6 +5011,11 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             commandText += " order by ListOrder";
 
+            if (query.Limit > 0)
+            {
+                commandText += " LIMIT " + query.Limit;
+            }
+
             using (var connection = GetConnection(true))
             {
                 var list = new List<string>();
@@ -5044,6 +5053,11 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
 
             commandText += " order by ListOrder";
+
+            if (query.Limit > 0)
+            {
+                commandText += " LIMIT " + query.Limit;
+            }
 
             using (var connection = GetConnection(true))
             {
@@ -6158,7 +6172,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 item.ColorTransfer = reader[34].ToString();
             }
 
-            if (item.Type == MediaStreamType.Subtitle){
+            if (item.Type == MediaStreamType.Subtitle)
+            {
                 item.localizedUndefined = _localization.GetLocalizedString("Undefined");
                 item.localizedDefault = _localization.GetLocalizedString("Default");
                 item.localizedForced = _localization.GetLocalizedString("Forced");
@@ -6287,8 +6302,8 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                         statement.TryBind("@Codec" + index, attachment.Codec);
                         statement.TryBind("@CodecTag" + index, attachment.CodecTag);
                         statement.TryBind("@Comment" + index, attachment.Comment);
-                        statement.TryBind("@FileName" + index, attachment.FileName);
-                        statement.TryBind("@MimeType" + index, attachment.MimeType);
+                        statement.TryBind("@Filename" + index, attachment.FileName);
+                        statement.TryBind("@MIMEType" + index, attachment.MimeType);
                     }
 
                     statement.Reset();

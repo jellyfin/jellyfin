@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
@@ -13,7 +12,10 @@ namespace Emby.Dlna.MediaReceiverRegistrar
     {
         private readonly IServerConfigurationManager _config;
 
-        public MediaReceiverRegistrar(ILogger logger, IHttpClient httpClient, IServerConfigurationManager config)
+        public MediaReceiverRegistrar(
+            ILogger<MediaReceiverRegistrar> logger,
+            IHttpClient httpClient,
+            IServerConfigurationManager config)
             : base(logger, httpClient)
         {
             _config = config;

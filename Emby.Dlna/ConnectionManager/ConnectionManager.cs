@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
@@ -16,7 +15,11 @@ namespace Emby.Dlna.ConnectionManager
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
 
-        public ConnectionManager(IDlnaManager dlna, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient)
+        public ConnectionManager(
+            IDlnaManager dlna,
+            IServerConfigurationManager config,
+            ILogger<ConnectionManager> logger,
+            IHttpClient httpClient)
             : base(logger, httpClient)
         {
             _dlna = dlna;

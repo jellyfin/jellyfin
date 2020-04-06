@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -33,7 +32,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
 
-        public SchedulesDirect(ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IApplicationHost appHost)
+        public SchedulesDirect(
+            ILogger<SchedulesDirect> logger,
+            IJsonSerializer jsonSerializer,
+            IHttpClient httpClient,
+            IApplicationHost appHost)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -632,7 +635,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             ListingsProviderInfo providerInfo)
         {
             // Schedules direct requires that the client support compression and will return a 400 response without it
-            options.DecompressionMethod = CompressionMethod.Deflate;
+            options.DecompressionMethod = CompressionMethods.Deflate;
 
             try
             {
@@ -662,7 +665,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             ListingsProviderInfo providerInfo)
         {
             // Schedules direct requires that the client support compression and will return a 400 response without it
-            options.DecompressionMethod = CompressionMethod.Deflate;
+            options.DecompressionMethod = CompressionMethods.Deflate;
 
             try
             {

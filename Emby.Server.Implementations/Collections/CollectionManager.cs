@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -348,7 +347,10 @@ namespace Emby.Server.Implementations.Collections
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
 
-        public CollectionManagerEntryPoint(ICollectionManager collectionManager, IServerConfigurationManager config, ILogger logger)
+        public CollectionManagerEntryPoint(
+            ICollectionManager collectionManager,
+            IServerConfigurationManager config,
+            ILogger<CollectionManagerEntryPoint> logger)
         {
             _collectionManager = (CollectionManager)collectionManager;
             _config = config;

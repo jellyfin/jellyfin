@@ -32,7 +32,11 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             {
                 if (value < Plugin.DefaultRateLimit && _server == Plugin.DefaultServer)
                 {
-                    RateLimit = Plugin.DefaultRateLimit;
+                    _rateLimit = Plugin.DefaultRateLimit;
+                }
+                else
+                {
+                    _rateLimit = value;
                 }
             }
         }

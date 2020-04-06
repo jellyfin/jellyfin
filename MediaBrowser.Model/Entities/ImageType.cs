@@ -44,6 +44,7 @@ namespace MediaBrowser.Model.Entities
         /// The box.
         /// </summary>
         Box = 7,
+
         /// <summary>
         /// The screenshot.
         /// </summary>

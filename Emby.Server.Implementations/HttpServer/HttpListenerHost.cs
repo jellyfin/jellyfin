@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -18,11 +17,13 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text.Jsv;
 
@@ -30,6 +31,12 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : IHttpServer, IDisposable
     {
+        /// <summary>
+        /// The key for a setting that specifies the default redirect path
+        /// to use for requests where the URL base prefix is invalid or missing.
+        /// </summary>
+        public const string DefaultRedirectKey = "HttpListenerHost:DefaultRedirectPath";
+
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
@@ -42,6 +49,8 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly string _baseUrlPrefix;
         private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
+        private readonly IHostEnvironment _hostEnvironment;
+
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private bool _disposed = false;
 
@@ -53,23 +62,30 @@ namespace Emby.Server.Implementations.HttpServer
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
-            IHttpListener socketListener)
+            IHttpListener socketListener,
+            ILocalizationManager localizationManager,
+            ServiceController serviceController,
+            IHostEnvironment hostEnvironment)
         {
             _appHost = applicationHost;
             _logger = logger;
             _config = config;
-            _defaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
+            _defaultRedirectPath = configuration[DefaultRedirectKey];
             _baseUrlPrefix = _config.Configuration.BaseUrl;
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
             _socketListener = socketListener;
+            ServiceController = serviceController;
+
             _socketListener.WebSocketConnected = OnWebSocketConnected;
+            _hostEnvironment = hostEnvironment;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
             Instance = this;
             ResponseFilters = Array.Empty<Action<IRequest, HttpResponse, object>>();
+            GlobalResponse = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         }
 
         public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
@@ -82,7 +98,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        public ServiceController ServiceController { get; private set; }
+        public ServiceController ServiceController { get; }
 
         public object CreateInstance(Type type)
         {
@@ -519,22 +535,25 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    await ErrorHandler(new FileNotFoundException(), httpReq, false).ConfigureAwait(false);
+                    throw new FileNotFoundException();
                 }
-            }
-            catch (Exception ex) when (ex is SocketException || ex is IOException || ex is OperationCanceledException)
-            {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
-            }
-            catch (SecurityException ex)
-            {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
+                // Do not handle exceptions manually when in development mode
+                // The framework-defined development exception page will be returned instead
+                if (_hostEnvironment.IsDevelopment())
+                {
+                    throw;
+                }
 
-                await ErrorHandler(ex, httpReq, logException).ConfigureAwait(false);
+                bool ignoreStackTrace =
+                    ex is SocketException
+                    || ex is IOException
+                    || ex is OperationCanceledException
+                    || ex is SecurityException
+                    || ex is FileNotFoundException;
+                await ErrorHandler(ex, httpReq, ignoreStackTrace).ConfigureAwait(false);
             }
             finally
             {
@@ -586,17 +605,15 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the rest handlers.
         /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="listeners"></param>
-        /// <param name="urlPrefixes"></param>
-        public void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
+        /// <param name="serviceTypes">The service types to register with the <see cref="ServiceController"/>.</param>
+        /// <param name="listeners">The web socket listeners.</param>
+        /// <param name="urlPrefixes">The URL prefixes. See <see cref="UrlPrefixes"/>.</param>
+        public void Init(IEnumerable<Type> serviceTypes, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
         {
             _webSocketListeners = listeners.ToArray();
             UrlPrefixes = urlPrefixes.ToArray();
-            ServiceController = new ServiceController();
 
-            var types = services.Select(r => r.GetType());
-            ServiceController.Init(this, types);
+            ServiceController.Init(this, serviceTypes);
 
             ResponseFilters = new Action<IRequest, HttpResponse, object>[]
             {

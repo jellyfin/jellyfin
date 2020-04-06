@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -65,6 +64,7 @@ namespace MediaBrowser.Model.Net
             { ".m3u8", "application/x-mpegURL" },
             { ".mobi", "application/x-mobipocket-ebook" },
             { ".xml", "application/xml" },
+            { ".wasm", "application/wasm" },
 
             // Type image
             { ".jpg", "image/jpeg" },

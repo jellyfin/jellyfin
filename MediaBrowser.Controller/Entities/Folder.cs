@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,7 +30,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
-        public static IUserManager UserManager { get; set; }
         public static IUserViewManager UserViewManager { get; set; }
 
         /// <summary>
@@ -620,7 +621,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     EnableImages = false
                 }
-
             }).TotalRecordCount;
         }
 
@@ -807,11 +807,45 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
+        private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
+        {
+            var ids = query.ItemIds;
+            int size = items.Count;
+
+            // ids can potentially contain non-unique guids, but query result cannot,
+            // so we include only first occurrence of each guid
+            var positions = new Dictionary<Guid, int>(size);
+            int index = 0;
+            for (int i = 0; i < ids.Length; i++)
+            {
+                if (positions.TryAdd(ids[i], index))
+                {
+                    index++;
+                }
+            }
+
+            var newItems = new BaseItem[size];
+            for (int i = 0; i < size; i++)
+            {
+                var item = items[i];
+                newItems[positions[item.Id]] = item;
+            }
+
+            return newItems;
+        }
+
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
             if (query.ItemIds.Length > 0)
             {
-                return LibraryManager.GetItemsResult(query);
+                var result = LibraryManager.GetItemsResult(query);
+
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
+                {
+                    result.Items = SortItemsByRequest(query, result.Items);
+                }
+
+                return result;
             }
 
             return GetItemsInternal(query);
@@ -823,7 +857,14 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.ItemIds.Length > 0)
             {
-                return LibraryManager.GetItemList(query);
+                var result = LibraryManager.GetItemList(query);
+
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
+                {
+                    return SortItemsByRequest(query, result);
+                }
+
+                return result.ToArray();
             }
 
             return GetItemsInternal(query).Items;
@@ -1672,7 +1713,6 @@ namespace MediaBrowser.Controller.Entities
                     {
                         EnableImages = false
                     }
-
                 });
 
                 double unplayedCount = unplayedQueryResult.TotalRecordCount;

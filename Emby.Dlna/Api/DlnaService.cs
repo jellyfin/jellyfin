@@ -1,6 +1,6 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Net;
@@ -53,6 +53,7 @@ namespace Emby.Dlna.Api
             _dlnaManager = dlnaManager;
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetProfileInfos request)
         {
             return _dlnaManager.GetProfileInfos().ToArray();
@@ -63,6 +64,7 @@ namespace Emby.Dlna.Api
             return _dlnaManager.GetProfile(request.Id);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetDefaultProfile request)
         {
             return _dlnaManager.GetDefaultProfile();

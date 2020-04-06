@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -12,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata
 {
-    public class EntryPoint : IServerEntryPoint
+    public sealed class EntryPoint : IServerEntryPoint
     {
         private readonly IUserDataManager _userDataManager;
         private readonly ILogger _logger;
@@ -21,7 +23,7 @@ namespace MediaBrowser.XbmcMetadata
 
         public EntryPoint(
             IUserDataManager userDataManager,
-            ILogger logger,
+            ILogger<EntryPoint> logger,
             IProviderManager providerManager,
             IConfigurationManager config)
         {

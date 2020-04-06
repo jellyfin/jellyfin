@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.IO;
@@ -54,6 +53,6 @@ namespace Emby.Dlna.Didl
             _encoding = encoding;
         }
 
-        public override Encoding Encoding => (null == _encoding) ? base.Encoding : _encoding;
+        public override Encoding Encoding => _encoding ?? base.Encoding;
     }
 }

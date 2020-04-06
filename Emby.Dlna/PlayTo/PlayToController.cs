@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -28,6 +27,8 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlayToController : ISessionController, IDisposable
     {
+        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
+
         private Device _device;
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
@@ -46,9 +47,10 @@ namespace Emby.Dlna.PlayTo
         private readonly string _serverAddress;
         private readonly string _accessToken;
 
-        public bool IsSessionActive => !_disposed && _device != null;
+        private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
+        private int _currentPlaylistIndex;
 
-        public bool SupportsMediaControl => IsSessionActive;
+        private bool _disposed;
 
         public PlayToController(
             SessionInfo session,
@@ -84,18 +86,22 @@ namespace Emby.Dlna.PlayTo
             _mediaEncoder = mediaEncoder;
         }
 
+        public bool IsSessionActive => !_disposed && _device != null;
+
+        public bool SupportsMediaControl => IsSessionActive;
+
         public void Init(Device device)
         {
             _device = device;
             _device.OnDeviceUnavailable = OnDeviceUnavailable;
-            _device.PlaybackStart += _device_PlaybackStart;
-            _device.PlaybackProgress += _device_PlaybackProgress;
-            _device.PlaybackStopped += _device_PlaybackStopped;
-            _device.MediaChanged += _device_MediaChanged;
+            _device.PlaybackStart += OnDevicePlaybackStart;
+            _device.PlaybackProgress += OnDevicePlaybackProgress;
+            _device.PlaybackStopped += OnDevicePlaybackStopped;
+            _device.MediaChanged += OnDeviceMediaChanged;
 
             _device.Start();
 
-            _deviceDiscovery.DeviceLeft += _deviceDiscovery_DeviceLeft;
+            _deviceDiscovery.DeviceLeft += OnDeviceDiscoveryDeviceLeft;
         }
 
         private void OnDeviceUnavailable()
@@ -111,7 +117,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        void _deviceDiscovery_DeviceLeft(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        private void OnDeviceDiscoveryDeviceLeft(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             var info = e.Argument;
 
@@ -126,7 +132,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        async void _device_MediaChanged(object sender, MediaChangedEventArgs e)
+        private async void OnDeviceMediaChanged(object sender, MediaChangedEventArgs e)
         {
             if (_disposed)
             {
@@ -138,15 +144,15 @@ namespace Emby.Dlna.PlayTo
                 var streamInfo = StreamParams.ParseFromUrl(e.OldMediaInfo.Url, _libraryManager, _mediaSourceManager);
                 if (streamInfo.Item != null)
                 {
-                    var positionTicks = GetProgressPositionTicks(e.OldMediaInfo, streamInfo);
+                    var positionTicks = GetProgressPositionTicks(streamInfo);
 
-                    ReportPlaybackStopped(e.OldMediaInfo, streamInfo, positionTicks);
+                    ReportPlaybackStopped(streamInfo, positionTicks);
                 }
 
                 streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager, _mediaSourceManager);
                 if (streamInfo.Item == null) return;
 
-                var newItemProgress = GetProgressInfo(e.NewMediaInfo, streamInfo);
+                var newItemProgress = GetProgressInfo(streamInfo);
 
                 await _sessionManager.OnPlaybackStart(newItemProgress).ConfigureAwait(false);
             }
@@ -156,7 +162,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        async void _device_PlaybackStopped(object sender, PlaybackStoppedEventArgs e)
+        private async void OnDevicePlaybackStopped(object sender, PlaybackStoppedEventArgs e)
         {
             if (_disposed)
             {
@@ -169,9 +175,9 @@ namespace Emby.Dlna.PlayTo
 
                 if (streamInfo.Item == null) return;
 
-                var positionTicks = GetProgressPositionTicks(e.MediaInfo, streamInfo);
+                var positionTicks = GetProgressPositionTicks(streamInfo);
 
-                ReportPlaybackStopped(e.MediaInfo, streamInfo, positionTicks);
+                ReportPlaybackStopped(streamInfo, positionTicks);
 
                 var mediaSource = await streamInfo.GetMediaSource(CancellationToken.None).ConfigureAwait(false);
 
@@ -195,7 +201,7 @@ namespace Emby.Dlna.PlayTo
                 }
                 else
                 {
-                    Playlist.Clear();
+                    _playlist.Clear();
                 }
             }
             catch (Exception ex)
@@ -204,7 +210,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void ReportPlaybackStopped(uBaseObject mediaInfo, StreamParams streamInfo, long? positionTicks)
+        private async void ReportPlaybackStopped(StreamParams streamInfo, long? positionTicks)
         {
             try
             {
@@ -223,7 +229,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        async void _device_PlaybackStart(object sender, PlaybackStartEventArgs e)
+        private async void OnDevicePlaybackStart(object sender, PlaybackStartEventArgs e)
         {
             if (_disposed)
             {
@@ -236,7 +242,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (info.Item != null)
                 {
-                    var progress = GetProgressInfo(e.MediaInfo, info);
+                    var progress = GetProgressInfo(info);
 
                     await _sessionManager.OnPlaybackStart(progress).ConfigureAwait(false);
                 }
@@ -247,7 +253,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        async void _device_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private async void OnDevicePlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
             if (_disposed)
             {
@@ -267,7 +273,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (info.Item != null)
                 {
-                    var progress = GetProgressInfo(e.MediaInfo, info);
+                    var progress = GetProgressInfo(info);
 
                     await _sessionManager.OnPlaybackProgress(progress).ConfigureAwait(false);
                 }
@@ -278,7 +284,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private long? GetProgressPositionTicks(uBaseObject mediaInfo, StreamParams info)
+        private long? GetProgressPositionTicks(StreamParams info)
         {
             var ticks = _device.Position.Ticks;
 
@@ -290,13 +296,13 @@ namespace Emby.Dlna.PlayTo
             return ticks;
         }
 
-        private PlaybackStartInfo GetProgressInfo(uBaseObject mediaInfo, StreamParams info)
+        private PlaybackStartInfo GetProgressInfo(StreamParams info)
         {
             return new PlaybackStartInfo
             {
                 ItemId = info.ItemId,
                 SessionId = _session.Id,
-                PositionTicks = GetProgressPositionTicks(mediaInfo, info),
+                PositionTicks = GetProgressPositionTicks(info),
                 IsMuted = _device.IsMuted,
                 IsPaused = _device.IsPaused,
                 MediaSourceId = info.MediaSourceId,
@@ -311,9 +317,7 @@ namespace Emby.Dlna.PlayTo
             };
         }
 
-        #region SendCommands
-
-        public async Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
+        public Task SendPlayCommand(PlayRequest command, CancellationToken cancellationToken)
         {
             _logger.LogDebug("{0} - Received PlayRequest: {1}", this._session.DeviceName, command.PlayCommand);
 
@@ -351,11 +355,12 @@ namespace Emby.Dlna.PlayTo
 
             if (command.PlayCommand == PlayCommand.PlayLast)
             {
-                Playlist.AddRange(playlist);
+                _playlist.AddRange(playlist);
             }
+
             if (command.PlayCommand == PlayCommand.PlayNext)
             {
-                Playlist.AddRange(playlist);
+                _playlist.AddRange(playlist);
             }
 
             if (!command.ControllingUserId.Equals(Guid.Empty))
@@ -364,7 +369,7 @@ namespace Emby.Dlna.PlayTo
                        _session.DeviceName, _session.RemoteEndPoint, user);
             }
 
-            await PlayItems(playlist).ConfigureAwait(false);
+            return PlayItems(playlist, cancellationToken);
         }
 
         private Task SendPlaystateCommand(PlaystateRequest command, CancellationToken cancellationToken)
@@ -372,7 +377,7 @@ namespace Emby.Dlna.PlayTo
             switch (command.Command)
             {
                 case PlaystateCommand.Stop:
-                    Playlist.Clear();
+                    _playlist.Clear();
                     return _device.SetStop(CancellationToken.None);
 
                 case PlaystateCommand.Pause:
@@ -388,10 +393,10 @@ namespace Emby.Dlna.PlayTo
                     return Seek(command.SeekPositionTicks ?? 0);
 
                 case PlaystateCommand.NextTrack:
-                    return SetPlaylistIndex(_currentPlaylistIndex + 1);
+                    return SetPlaylistIndex(_currentPlaylistIndex + 1, cancellationToken);
 
                 case PlaystateCommand.PreviousTrack:
-                    return SetPlaylistIndex(_currentPlaylistIndex - 1);
+                    return SetPlaylistIndex(_currentPlaylistIndex - 1, cancellationToken);
             }
 
             return Task.CompletedTask;
@@ -427,14 +432,6 @@ namespace Emby.Dlna.PlayTo
             return info.IsDirectStream;
         }
 
-        #endregion
-
-        #region Playlist
-
-        private int _currentPlaylistIndex;
-        private readonly List<PlaylistItem> _playlist = new List<PlaylistItem>();
-        private List<PlaylistItem> Playlist => _playlist;
-
         private void AddItemFromId(Guid id, List<BaseItem> list)
         {
             var item = _libraryManager.GetItemById(id);
@@ -452,7 +449,7 @@ namespace Emby.Dlna.PlayTo
                 _dlnaManager.GetDefaultProfile();
 
             var mediaSources = item is IHasMediaSources
-                ? (_mediaSourceManager.GetStaticMediaSources(item, true, user))
+                ? _mediaSourceManager.GetStaticMediaSources(item, true, user)
                 : new List<MediaSourceInfo>();
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
@@ -460,8 +457,19 @@ namespace Emby.Dlna.PlayTo
 
             playlistItem.StreamUrl = DidlBuilder.NormalizeDlnaMediaUrl(playlistItem.StreamInfo.ToUrl(_serverAddress, _accessToken));
 
-            var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager, _logger, _mediaEncoder)
-                .GetItemDidl(_config.GetDlnaConfiguration(), item, user, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
+            var itemXml = new DidlBuilder(
+                profile,
+                user,
+                _imageProcessor,
+                _serverAddress,
+                _accessToken,
+                _userDataManager,
+                _localization,
+                _mediaSourceManager,
+                _logger,
+                _mediaEncoder,
+                _libraryManager)
+                .GetItemDidl(item, user, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
 
@@ -571,30 +579,31 @@ namespace Emby.Dlna.PlayTo
         /// Plays the items.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <returns></returns>
-        private async Task<bool> PlayItems(IEnumerable<PlaylistItem> items)
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> on success.</returns>
+        private async Task<bool> PlayItems(IEnumerable<PlaylistItem> items, CancellationToken cancellationToken = default)
         {
-            Playlist.Clear();
-            Playlist.AddRange(items);
-            _logger.LogDebug("{0} - Playing {1} items", _session.DeviceName, Playlist.Count);
+            _playlist.Clear();
+            _playlist.AddRange(items);
+            _logger.LogDebug("{0} - Playing {1} items", _session.DeviceName, _playlist.Count);
 
-            await SetPlaylistIndex(0).ConfigureAwait(false);
+            await SetPlaylistIndex(0, cancellationToken).ConfigureAwait(false);
             return true;
         }
 
-        private async Task SetPlaylistIndex(int index)
+        private async Task SetPlaylistIndex(int index, CancellationToken cancellationToken = default)
         {
-            if (index < 0 || index >= Playlist.Count)
+            if (index < 0 || index >= _playlist.Count)
             {
-                Playlist.Clear();
-                await _device.SetStop(CancellationToken.None);
+                _playlist.Clear();
+                await _device.SetStop(cancellationToken).ConfigureAwait(false);
                 return;
             }
 
             _currentPlaylistIndex = index;
-            var currentitem = Playlist[index];
+            var currentitem = _playlist[index];
 
-            await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl, CancellationToken.None);
+            await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl, cancellationToken).ConfigureAwait(false);
 
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && EnableClientSideSeek(streamInfo))
@@ -603,10 +612,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        #endregion
-
-        private bool _disposed;
-
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
@@ -625,18 +631,16 @@ namespace Emby.Dlna.PlayTo
                 _device.Dispose();
             }
 
-            _device.PlaybackStart -= _device_PlaybackStart;
-            _device.PlaybackProgress -= _device_PlaybackProgress;
-            _device.PlaybackStopped -= _device_PlaybackStopped;
-            _device.MediaChanged -= _device_MediaChanged;
-            _deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
+            _device.PlaybackStart -= OnDevicePlaybackStart;
+            _device.PlaybackProgress -= OnDevicePlaybackProgress;
+            _device.PlaybackStopped -= OnDevicePlaybackStopped;
+            _device.MediaChanged -= OnDeviceMediaChanged;
+            _deviceDiscovery.DeviceLeft -= OnDeviceDiscoveryDeviceLeft;
             _device.OnDeviceUnavailable = null;
             _device = null;
 
             _disposed = true;
         }
-
-        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
 
         private Task SendGeneralCommand(GeneralCommand command, CancellationToken cancellationToken)
         {
@@ -714,7 +718,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (info.Item != null)
                 {
-                    var newPosition = GetProgressPositionTicks(media, info) ?? 0;
+                    var newPosition = GetProgressPositionTicks(info) ?? 0;
 
                     var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
@@ -739,7 +743,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (info.Item != null)
                 {
-                    var newPosition = GetProgressPositionTicks(media, info) ?? 0;
+                    var newPosition = GetProgressPositionTicks(info) ?? 0;
 
                     var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, newIndex);
@@ -853,8 +857,11 @@ namespace Emby.Dlna.PlayTo
                     return request;
                 }
 
-                var index = url.IndexOf('?');
-                if (index == -1) return request;
+                var index = url.IndexOf('?', StringComparison.Ordinal);
+                if (index == -1)
+                {
+                    return request;
+                }
 
                 var query = url.Substring(index + 1);
                 Dictionary<string, string> values = QueryHelpers.ParseQuery(query).ToDictionary(kv => kv.Key, kv => kv.Value.ToString());

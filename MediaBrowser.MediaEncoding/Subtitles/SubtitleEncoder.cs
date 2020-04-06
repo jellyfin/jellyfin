@@ -188,6 +188,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
                 {
                     var result = CharsetDetector.DetectFromStream(stream).Detected;
+                    stream.Position = 0;
 
                     if (result != null)
                     {
@@ -730,6 +731,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName;
 
+                // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
+                if ((path.EndsWith(".ass") || path.EndsWith(".ssa"))
+                    && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
+                {
+                    charset = "";
+                }
+
                 _logger.LogDebug("charset {0} detected for {Path}", charset ?? "null", path);
 
                 return charset;
@@ -745,15 +754,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         Url = path,
                         CancellationToken = cancellationToken,
+
+                        // Needed for seeking
                         BufferContent = true
                     };
 
                     return _httpClient.Get(opts);
 
-            case MediaProtocol.File:
-                return Task.FromResult<Stream>(File.OpenRead(path));
-            default:
-                throw new ArgumentOutOfRangeException(nameof(protocol));
+                case MediaProtocol.File:
+                    return Task.FromResult<Stream>(File.OpenRead(path));
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(protocol));
             }
         }
     }

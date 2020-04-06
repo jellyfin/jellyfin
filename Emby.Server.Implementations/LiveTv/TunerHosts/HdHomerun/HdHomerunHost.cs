@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -39,7 +38,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public HdHomerunHost(
             IServerConfigurationManager config,
-            ILogger logger,
+            ILogger<HdHomerunHost> logger,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IHttpClient httpClient,
