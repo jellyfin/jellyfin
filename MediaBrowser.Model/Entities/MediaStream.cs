@@ -176,11 +176,11 @@ namespace MediaBrowser.Model.Entities
                     if (!string.IsNullOrEmpty(Title))
                     {
                         return attributes.AsEnumerable()
-                        // keep Tags that are not already in Title
-                        .Where(tag => Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
-                        // attributes concatenation, starting with Title
-                        .Aggregate(new StringBuilder(Title), (builder, attr) => builder.Append(" - ").Append(attr))
-                        .ToString();
+                            // keep Tags that are not already in Title
+                            .Where(tag => Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                            // attributes concatenation, starting with Title
+                            .Aggregate(new StringBuilder(Title), (builder, attr) => builder.Append(" - ").Append(attr))
+                            .ToString();
                     }
 
                     return string.Join(" - ", attributes.ToArray());
