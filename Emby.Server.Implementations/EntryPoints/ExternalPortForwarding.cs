@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
 
         private Timer _timer;
-        private string _lastConfigIdentifier;
+        private string _configIdentifier;
 
         private bool _disposed = false;
 
@@ -70,7 +70,10 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private void OnConfigurationUpdated(object sender, EventArgs e)
         {
-            if (!string.Equals(_lastConfigIdentifier, GetConfigIdentifier(), StringComparison.OrdinalIgnoreCase))
+            var oldConfigIdentifier = _configIdentifier;
+            _configIdentifier = GetConfigIdentifier();
+
+            if (!string.Equals(_configIdentifier, oldConfigIdentifier, StringComparison.OrdinalIgnoreCase))
             {
                 Stop();
                 Start();
@@ -94,7 +97,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return;
             }
 
-            _logger.LogDebug("Starting NAT discovery");
+            _logger.LogInformation("Starting NAT discovery");
 
             NatUtility.DeviceFound += OnNatUtilityDeviceFound;
             NatUtility.StartDiscovery();
@@ -102,13 +105,11 @@ namespace Emby.Server.Implementations.EntryPoints
             _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
 
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
-
-            _lastConfigIdentifier = GetConfigIdentifier();
         }
 
         private void Stop()
         {
-            _logger.LogDebug("Stopping NAT discovery");
+            _logger.LogInformation("Stopping NAT discovery");
 
             NatUtility.StopDiscovery();
             NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
