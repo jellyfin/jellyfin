@@ -412,8 +412,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             return string.IsNullOrEmpty(val)
                 ? Array.Empty<ItemFilter>()
-                : val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
-                    Select(v => Enum.Parse<ItemFilter>(v, true)).ToArray();
+                : val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(v => Enum.Parse<ItemFilter>(v, true)).ToArray();
         }
 
         /// <summary>

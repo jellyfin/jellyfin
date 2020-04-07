@@ -389,13 +389,13 @@ namespace MediaBrowser.Api.Library
                 if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
                 {
                     return !(string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
-                             || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
-                             || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase));
+                         || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase));
                 }
 
                 return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase);
+                   || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase);
             }
 
             var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
@@ -403,7 +403,7 @@ namespace MediaBrowser.Api.Library
                 .ToArray();
 
             return metadataOptions.Length == 0
-                   || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
+               || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
         }
 
         private bool IsImageFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
