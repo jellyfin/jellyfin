@@ -83,11 +83,11 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Language))
                     {
-                        // Get full language string i.e. eng -> English
+                        // Get full language string i.e. eng -> English. Will not work for some languages which use ISO 639-2/B instead of /T codes.
                         String fullLanguage = CultureInfo
-                            .GetCultures(CultureTypes.AllCultures)
+                            .GetCultures(CultureTypes.NeutralCultures)
                             .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
-                            .DisplayName;
+                            ?.DisplayName;
                         attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                     }
                     if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))
@@ -151,11 +151,11 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(Language))
                     {
-                        // Get full language string i.e. eng -> English
+                        // Get full language string i.e. eng -> English. Will not work for some languages which use ISO 639-2/B instead of /T codes.
                         String fullLanguage = CultureInfo
-                            .GetCultures(CultureTypes.AllCultures)
+                            .GetCultures(CultureTypes.NeutralCultures)
                             .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
-                            .DisplayName;
+                            ?.DisplayName;
                         attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                     }
                     else
