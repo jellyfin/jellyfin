@@ -98,10 +98,11 @@ There are three options to get the files for the web client.
 2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
 
-Once you have a copy of the built web client files, you need to copy them into the build output directory of the web server project.
+Once you have a copy of the built web client files, you need to copy them into a specific directory.
 
-* `<repository root>/jellyfin-web`
-* `<repository root>/Jellyfin.Server/bin/Debug/netcoreapp3.1/jellyfin-web`
+> `<repository root>/Mediabrowser.WebDashboard/jellyfin-web`
+
+As part of the build process, this folder will be copied to the build output directory, where it can be accessed by the server.
 
 ### Running The Server
 
