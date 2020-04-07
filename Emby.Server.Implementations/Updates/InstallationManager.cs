@@ -189,16 +189,17 @@ namespace Emby.Server.Implementations.Updates
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<PackageVersionInfo> GetAvailablePluginUpdates([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default)
         {
             var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
+            return GetAvailablePluginUpdates(catalog);
+        }
 
-            var systemUpdateLevel = _applicationHost.SystemUpdateLevel;
-
-            // Figure out what needs to be installed
+        private IEnumerable<PackageVersionInfo> GetAvailablePluginUpdates(IReadOnlyList<PackageInfo> pluginCatalog)
+        {
             foreach (var plugin in _applicationHost.Plugins)
             {
-                var compatibleversions = GetCompatibleVersions(catalog, plugin.Name, plugin.Id, plugin.Version, systemUpdateLevel);
+                var compatibleversions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, plugin.Version, _applicationHost.SystemUpdateLevel);
                 var version = compatibleversions.FirstOrDefault(y => y.Version > plugin.Version);
                 if (version != null
                     && !CompletedInstallations.Any(x => string.Equals(x.AssemblyGuid, version.guid, StringComparison.OrdinalIgnoreCase)))
