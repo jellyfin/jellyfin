@@ -101,7 +101,7 @@ namespace MediaBrowser.Model.Entities
 
                     if (!string.IsNullOrEmpty(ChannelLayout))
                     {
-                        attributes.Add(ChannelLayout);
+                        attributes.Add(StringHelper.FirstToUpper(ChannelLayout));
                     }
                     else if (Channels.HasValue)
                     {
