@@ -37,7 +37,6 @@
     <PackageReference Include="ServiceStack.Text.Core" Version="5.8.0" />
     <PackageReference Include="sharpcompress" Version="0.24.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="2.1.0" />
-    <PackageReference Include="System.Interactive.Async" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
