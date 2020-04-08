@@ -27,11 +27,25 @@ namespace MediaBrowser.Controller.MediaEncoding
         string EncoderPath { get; }
 
         /// <summary>
+        /// Supportses the encoder.
+        /// </summary>
+        /// <param name="encoder">The encoder.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool SupportsEncoder(string encoder);
+
+        /// <summary>
         /// Supportses the decoder.
         /// </summary>
         /// <param name="decoder">The decoder.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool SupportsDecoder(string decoder);
+
+        /// <summary>
+        /// Supportses the hwaccel.
+        /// </summary>
+        /// <param name="hwaccel">The hwaccel.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool SupportsHwaccel(string hwaccel);
 
         /// <summary>
         /// Extracts the audio image.
@@ -98,7 +112,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         void SetFFmpegPath();
 
         void UpdateEncoderPath(string path, string pathType);
-        bool SupportsEncoder(string encoder);
 
         IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, IIsoMount isoMount, uint? titleNumber);
     }

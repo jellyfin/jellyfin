@@ -25,6 +25,7 @@ namespace MediaBrowser.Model.Configuration
         public int H265Crf { get; set; }
         public string EncoderPreset { get; set; }
         public string DeinterlaceMethod { get; set; }
+        public bool EnableDecodingColorDepth10 { get; set; }
         public bool EnableHardwareEncoding { get; set; }
         public bool EnableSubtitleExtraction { get; set; }
 
@@ -41,6 +42,7 @@ namespace MediaBrowser.Model.Configuration
             H264Crf = 23;
             H265Crf = 28;
             DeinterlaceMethod = "yadif";
+            EnableDecodingColorDepth10 = true;
             EnableHardwareEncoding = true;
             EnableSubtitleExtraction = true;
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };

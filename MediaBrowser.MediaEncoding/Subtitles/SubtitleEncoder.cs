@@ -737,7 +737,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName;
 
                 // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
-                if ((path.EndsWith(".ass") || path.EndsWith(".ssa"))
+                if ((path.EndsWith(".ass") || path.EndsWith(".ssa") || path.EndsWith(".srt"))
                     && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
                 {
