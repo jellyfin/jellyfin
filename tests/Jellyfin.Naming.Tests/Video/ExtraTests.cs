@@ -45,6 +45,46 @@ namespace Jellyfin.Naming.Tests.Video
             Test("300-behindthescenes.mp4", ExtraType.BehindTheScenes, videoOptions);
         }
 
+	[Fact]
+        public void TestDirectories()
+        {
+            var videoOptions = new NamingOptions();
+
+            (ExtraType Type, string dirName)[] extraDirectoryNameTests =
+            {
+                (ExtraType.BehindTheScenes, "behind the scenes" ),
+                (ExtraType.DeletedScene, "deleted scenes" ),
+                (ExtraType.Interview, "interviews" ),
+                (ExtraType.Scene, "scenes" ),
+                (ExtraType.Sample, "samples" ),
+                (ExtraType.Clip, "shorts" ),
+                (ExtraType.Clip, "featurettes" ),
+                (ExtraType.Unknown, "extras" ),
+            };
+
+            foreach ((ExtraType type, string dirName) in extraDirectoryNameTests)
+            {
+                Test(dirName + "/300.mp4", type, videoOptions);
+                Test("300/" + dirName + "/something.mkv", type, videoOptions);
+                Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", type, videoOptions);
+            }
+
+            //Test the null condition
+            string[] nonExtraDirectoryNames = 
+            {
+               "gibberish",
+               "not a scene",
+            };
+            foreach (string dirName in nonExtraDirectoryNames)
+            {
+                Test(dirName + "/300.mp4", null, videoOptions);
+                Test("300/" + dirName + "/something.mkv", null, videoOptions);
+                Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", null, videoOptions);
+            }
+            Test("/data/something/Movies/not a scene/not a scene.mp4", null, videoOptions);
+            Test("/data/something/Movies/The Big Short/The Big Short.mp4", null, videoOptions);
+        }
+
         [Fact]
         public void TestSample()
         {
