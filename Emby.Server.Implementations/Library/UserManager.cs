@@ -326,6 +326,7 @@ namespace Emby.Server.Implementations.Library
 
             if (user.Policy.IsDisabled)
             {
+                _logger.LogInformation("Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException(
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -335,11 +336,13 @@ namespace Emby.Server.Implementations.Library
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
+                _logger.LogInformation("Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException("Forbidden.");
             }
 
             if (!user.IsParentalScheduleAllowed())
             {
+                _logger.LogInformation("Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException("User is not allowed access at this time.");
             }
 
