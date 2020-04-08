@@ -164,7 +164,12 @@ namespace MediaBrowser.Model.Entities
 
                         if (!string.IsNullOrEmpty(Language))
                         {
-                            attributes.Add(StringHelper.FirstToUpper(Language));
+                            // Get full language string i.e. eng -> English. Will not work for some languages which use ISO 639-2/B instead of /T codes.
+                            string fullLanguage = CultureInfo
+                                .GetCultures(CultureTypes.NeutralCultures)
+                                .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
+                                ?.DisplayName;
+                            attributes.Add(StringHelper.FirstToUpper(fullLanguage ?? Language));
                         }
                         else
                         {
