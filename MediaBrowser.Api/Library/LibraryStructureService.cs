@@ -281,24 +281,14 @@ namespace MediaBrowser.Api.Library
             }
             finally
             {
-                CollectionFolder.OnCollectionFolderChange();
-
                 Task.Run(() =>
                 {
-                    // No need to start if scanning the library because it will handle it
-                    if (request.RefreshLibrary)
-                    {
-                        _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
-                    }
-                    else
-                    {
                         // Need to add a delay here or directory watchers may still pick up the changes
                         var task = Task.Delay(1000);
                         // Have to block here to allow exceptions to bubble
                         Task.WaitAll(task);
 
                         _libraryMonitor.Start();
-                    }
                 });
             }
         }
