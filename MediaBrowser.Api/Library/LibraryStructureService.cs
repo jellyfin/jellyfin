@@ -283,12 +283,12 @@ namespace MediaBrowser.Api.Library
             {
                 Task.Run(() =>
                 {
-                        // Need to add a delay here or directory watchers may still pick up the changes
-                        var task = Task.Delay(1000);
-                        // Have to block here to allow exceptions to bubble
-                        Task.WaitAll(task);
+                    // Need to add a delay here or directory watchers may still pick up the changes
+                    var task = Task.Delay(1000);
+                    // Have to block here to allow exceptions to bubble
+                    Task.WaitAll(task);
 
-                        _libraryMonitor.Start();
+                    _libraryMonitor.Start();
                 });
             }
         }
