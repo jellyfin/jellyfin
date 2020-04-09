@@ -67,8 +67,6 @@ echo -e "jellyfin (${new_version_deb}) unstable; urgency=medium
 cat ${debian_changelog_file} >> ${debian_changelog_temp}
 # Move into place
 mv ${debian_changelog_temp} ${debian_changelog_file}
-# Clean up
-rm -f ${debian_changelog_temp}
 
 # Write out a temporary Yum changelog with our new stuff prepended and some templated formatting
 fedora_spec_file="fedora/jellyfin.spec"
@@ -95,7 +93,7 @@ popd
 # Move into place
 mv ${fedora_spec_temp} ${fedora_spec_file}
 # Clean up
-rm -rf ${fedora_changelog_temp} ${fedora_spec_temp_dir}
+rm -rf ${fedora_spec_temp_dir}
 
 # Stage the changed files for commit
 git add ${shared_version_file} ${build_file} ${debian_equivs_file} ${debian_changelog_file} ${fedora_spec_file}
