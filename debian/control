@@ -10,7 +10,7 @@ Build-Depends:  debhelper (>= 9),
                 libfreetype6-dev,
                 libssl-dev
 Standards-Version: 3.9.4
-Homepage: https://jellyfin.media/
+Homepage: https://jellyfin.org/
 Vcs-Git: https://github.org/jellyfin/jellyfin.git
 Vcs-Browser: https://github.org/jellyfin/jellyfin
 
