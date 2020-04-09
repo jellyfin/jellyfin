@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Containers>
+  <TemplateURL>https://raw.githubusercontent.com/jellyfin/jellyfin/deployment/unraid/docker-templates/jellyfin.xml</TemplateURL>
+  <Beta>False</Beta>
+  <Category>MediaApp:Video MediaApp:Music MediaApp:Photos MediaServer:Video MediaServer:Music MediaServer:Photos</Category>
+  <Name>Jellyfin</Name>
+  <Description>
+	Jellyfin is The Free Software Media Browser	Converted By Community Applications	Always verify this template (and values) against the dockerhub support page for the container!![br][br]
+  You can add as many mount points as needed for recordings, movies ,etc. [br][br]
+  [b][span style='color: #E80000;']Directions:[/span][/b][br]
+  [b]/config[/b] : This is where Jellyfin will store it's databases and configuration.[br][br]
+  [b]Port[/b] : This is the default port for Jellyfin. (Will add ssl port later)[br][br]
+  [b]Media[/b] : This is the mounting point of your media. When you access it in Jellyfin it will be /media or whatever you chose for a mount point[br][br]
+  [b]Cache[/b] : This is where Jellyfin will store and manage cached files like images to serve to clients. This is not where all images are stored.[br][br]
+  [b]Tip:[/b] You can add more volume mappings if you wish Jellyfin has access to it.
+  </Description>
+  <Overview>
+    Jellyfin Server is a home media server built on top of other popular open source technologies such as Service Stack, jQuery, jQuery mobile, and Mono and will remain completely free!
+  </Overview>
+  <Support>https://www.reddit.com/r/jellyfin/</Support>
+  <Registry>https://hub.docker.com/r/jellyfin/jellyfin/</Registry>
+  <GitHub>https://github.com/jellyfin/jellyfin/></GitHub>
+  <Repository>jellyfin/jellyfin</Repository>
+  <Project>https://jellyfin.media/</Project>
+  <BindTime>true</BindTime>
+  <Privileged>false</Privileged>
+  <Networking>
+    <Mode>host</Mode>
+    <Publish>
+      <Port>
+        <HostPort>8096</HostPort>
+        <ContainerPort>8096</ContainerPort>
+        <Protocol>tcp</Protocol>
+      </Port>
+    </Publish>
+  </Networking>
+  <Data>
+    <Volume>
+      <HostDir>/mnt/user/appdata/Jellyfin</HostDir>
+      <ContainerDir>/config</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user</HostDir>
+      <ContainerDir>/media</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/Jellyfin/cache/</HostDir>
+      <ContainerDir>/cache</ContainerDir>
+      <Mode>rw</Mode>
+    </Volume>
+  </Data>
+  <WebUI>http://[IP]:[PORT:8096]/</WebUI>
+  <Icon>https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/jellyfin-icon.png</Icon>
+  <ExtraParams></ExtraParams>
+</Containers>
