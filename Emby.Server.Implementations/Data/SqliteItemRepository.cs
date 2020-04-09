@@ -3315,7 +3315,7 @@ namespace Emby.Server.Implementations.Data
 
             for (int i = 0; i < str.Length; i++)
             {
-                if (!char.IsLetter(str[i]) && (!char.IsNumber(str[i])))
+                if (!char.IsLetter(str[i]) && !char.IsNumber(str[i]))
                 {
                     return false;
                 }
@@ -3646,18 +3646,19 @@ namespace Emby.Server.Implementations.Data
             int trailerTypesLen = trailerTypes.Length;
             if (trailerTypesLen > 0)
             {
+                const string Or = " OR ";
                 StringBuilder clause = new StringBuilder("(", trailerTypesLen * 32);
                 for (int i = 0; i < trailerTypesLen; i++)
                 {
                     var paramName = "@TrailerTypes" + i;
                     clause.Append("TrailerTypes like ")
                         .Append(paramName)
-                        .Append(" OR ");
+                        .Append(Or);
                     statement?.TryBind(paramName, "%" + trailerTypes[i] + "%");
                 }
 
                 // Remove last " OR "
-                clause.Length -= 4;
+                clause.Length -= Or.Length;
                 clause.Append(')');
 
                 whereClauses.Add(clause.ToString());

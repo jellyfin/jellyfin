@@ -24,7 +24,6 @@ namespace MediaBrowser.Controller.Persistence
         /// Deletes the item.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         void DeleteItem(Guid id);
 
         /// <summary>
@@ -169,4 +168,3 @@ namespace MediaBrowser.Controller.Persistence
         List<string> GetAllArtistNames();
     }
 }
-
