@@ -6,10 +6,10 @@
 %global         dotnet_runtime  centos-x64
 %endif
 
-Name:           jellyfin-server
+Name:           jellyfin
 Version:        10.6.0
 Release:        1%{?dist}
-Summary:        The Free Software Media System Server backend and API
+Summary:        The Free Software Media System
 License:        GPLv3
 URL:            https://jellyfin.media
 # Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%{version}.tar.gz`
@@ -23,22 +23,27 @@ Source16:       jellyfin-firewalld.xml
 
 %{?systemd_requires}
 BuildRequires:  systemd
-Requires(pre):  shadow-utils
 BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, glibc-devel, libicu-devel
-Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
 # Requirements not packaged in main repos
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
 BuildRequires:  dotnet-runtime-3.1, dotnet-sdk-3.1
-# RPMfusion free
-Requires:       ffmpeg
-
+Requires: %{name}-server = %{version}-%{release}, %{name}-web >= 1, %{name}-web < 2
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
 
 %description
 Jellyfin is a free software media system that puts you in control of managing and streaming your media.
 
+%package server
+# RPMfusion free
+Summary:        The Free Software Media System Server backend
+Requires(pre):  shadow-utils
+Requires:       ffmpeg
+Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
+
+%description server
+The Jellyfin media server backend.
 
 %prep
 %autosetup -n jellyfin-server-%{version} -b 0
@@ -69,7 +74,7 @@ EOF
 %{__install} -D -m 0755 %{SOURCE14} %{buildroot}%{_libexecdir}/jellyfin/restart.sh
 %{__install} -D -m 0644 %{SOURCE16} %{buildroot}%{_prefix}/lib/firewalld/services/jellyfin.xml
 
-%files
+%files server
 %attr(755,root,root) %{_bindir}/jellyfin
 %{_libdir}/jellyfin/*.json
 %{_libdir}/jellyfin/*.dll
@@ -92,14 +97,14 @@ EOF
 %attr(750,jellyfin,jellyfin) %dir %{_var}/cache/jellyfin
 %{_datadir}/licenses/jellyfin/LICENSE
 
-%pre
+%pre server
 getent group jellyfin >/dev/null || groupadd -r jellyfin
 getent passwd jellyfin >/dev/null || \
     useradd -r -g jellyfin -d %{_sharedstatedir}/jellyfin -s /sbin/nologin \
     -c "Jellyfin default user" jellyfin
 exit 0
 
-%post
+%post server
 # Move existing configuration cache and logs to their new locations and symlink them.
 if [ $1 -gt 1 ] ; then
     service_state=$(systemctl is-active jellyfin.service)
@@ -127,10 +132,10 @@ if [ $1 -gt 1 ] ; then
 fi
 %systemd_post jellyfin.service
 
-%preun
+%preun server
 %systemd_preun jellyfin.service
 
-%postun
+%postun server
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
