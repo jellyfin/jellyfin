@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-
-using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Providers
@@ -17,11 +14,14 @@ namespace MediaBrowser.Model.Providers
         }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public ImageType[] SupportedImages { get; set; }
+        /// <summary>
+        /// Gets the supported image types.
+        /// </summary>
+        public ImageType[] SupportedImages { get; }
     }
 }
