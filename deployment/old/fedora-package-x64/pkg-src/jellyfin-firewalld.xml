@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<service>
-  <short>Jellyfin</short>
-  <description>The Free Software Media System.</description>
-  <port protocol="tcp" port="8096"/>
-  <port protocol="tcp" port="8920"/>
-  <port protocol="udp" port="1900"/>
-  <port protocol="udp" port="7359"/>
-</service>
