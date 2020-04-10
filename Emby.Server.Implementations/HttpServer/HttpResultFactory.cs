@@ -291,8 +291,6 @@ namespace Emby.Server.Implementations.HttpServer
                 case "application/json":
                 case "text/json":
                     return GetHttpResult(request, _jsonSerializer.SerializeToString(dto), contentType, false, responseHeaders);
-                default:
-                    break;
             }
 
             var isHeadRequest = string.Equals(request.Verb, "head", StringComparison.OrdinalIgnoreCase);

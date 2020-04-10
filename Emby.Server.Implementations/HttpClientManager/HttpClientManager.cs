@@ -105,8 +105,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                 case CompressionMethods.Gzip:
                     request.Headers.Add(HeaderNames.AcceptEncoding, "gzip");
                     break;
-                default:
-                    break;
             }
 
             if (options.EnableKeepAlive)
