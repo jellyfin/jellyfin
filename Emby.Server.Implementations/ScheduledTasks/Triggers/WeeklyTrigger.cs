@@ -3,7 +3,7 @@ using System.Threading;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks.Triggers
 {
     /// <summary>
     /// Represents a task trigger that fires on a weekly basis

@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Tasks;
 
-namespace Emby.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
     /// Class RefreshMediaLibraryTask.
