@@ -3,8 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +20,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Updates
@@ -27,6 +30,11 @@ namespace Emby.Server.Implementations.Updates
     /// </summary>
     public class InstallationManager : IInstallationManager
     {
+        /// <summary>
+        /// The key for a setting that specifies a URL for the plugin repository JSON manifest.
+        /// </summary>
+        public const string PluginManifestUrlKey = "InstallationManager:PluginManifestUrl";
+
         /// <summary>
         /// The _logger.
         /// </summary>
@@ -44,6 +52,7 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationHost _applicationHost;
 
         private readonly IZipClient _zipClient;
+        private readonly IConfiguration _appConfig;
 
         private readonly object _currentInstallationsLock = new object();
 
@@ -65,7 +74,8 @@ namespace Emby.Server.Implementations.Updates
             IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
-            IZipClient zipClient)
+            IZipClient zipClient,
+            IConfiguration appConfig)
         {
             if (logger == null)
             {
@@ -83,6 +93,7 @@ namespace Emby.Server.Implementations.Updates
             _config = config;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
+            _appConfig = appConfig;
         }
 
         /// <inheritdoc />
@@ -112,19 +123,43 @@ namespace Emby.Server.Implementations.Updates
         /// <inheritdoc />
         public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
         {
-            using (var response = await _httpClient.SendAsync(
-                new HttpRequestOptions
-                {
-                    Url = "https://repo.jellyfin.org/releases/plugin/manifest.json",
-                    CancellationToken = cancellationToken,
-                    CacheMode = CacheMode.Unconditional,
-                    CacheLength = TimeSpan.FromMinutes(3)
-                },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (Stream stream = response.Content)
+            var manifestUrl = _appConfig.GetValue<string>(PluginManifestUrlKey);
+
+            try
             {
-                return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(
-                    stream).ConfigureAwait(false);
+                using (var response = await _httpClient.SendAsync(
+                    new HttpRequestOptions
+                    {
+                        Url = manifestUrl,
+                        CancellationToken = cancellationToken,
+                        CacheMode = CacheMode.Unconditional,
+                        CacheLength = TimeSpan.FromMinutes(3)
+                    },
+                    HttpMethod.Get).ConfigureAwait(false))
+                using (Stream stream = response.Content)
+                {
+                    try
+                    {
+                        return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(stream).ConfigureAwait(false);
+                    }
+                    catch (SerializationException ex)
+                    {
+                        const string LogTemplate =
+                            "Failed to deserialize the plugin manifest retrieved from {PluginManifestUrl}. If you " +
+                            "have specified a custom plugin repository manifest URL with --plugin-manifest-url or " +
+                            PluginManifestUrlKey + ", please ensure that it is correct.";
+                        _logger.LogError(ex, LogTemplate, manifestUrl);
+                        throw;
+                    }
+                }
+            }
+            catch (UriFormatException ex)
+            {
+                const string LogTemplate =
+                    "The URL configured for the plugin repository manifest URL is not valid: {PluginManifestUrl}. " +
+                    "Please check the URL configured by --plugin-manifest-url or " + PluginManifestUrlKey;
+                _logger.LogError(ex, LogTemplate, manifestUrl);
+                throw;
             }
         }
 
