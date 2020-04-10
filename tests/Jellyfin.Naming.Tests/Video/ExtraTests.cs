@@ -7,6 +7,8 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public class ExtraTests : BaseVideoTest
     {
+        private readonly NamingOptions _videoOptions = new NamingOptions();
+
         // Requirements
         // movie-deleted = ExtraType deletedscene
 
@@ -15,34 +17,32 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestKodiExtras()
         {
-            var videoOptions = new NamingOptions();
 
-            Test("trailer.mp4", ExtraType.Trailer, videoOptions);
-            Test("300-trailer.mp4", ExtraType.Trailer, videoOptions);
+            Test("trailer.mp4", ExtraType.Trailer, _videoOptions);
+            Test("300-trailer.mp4", ExtraType.Trailer, _videoOptions);
 
-            Test("theme.mp3", ExtraType.ThemeSong, videoOptions);
+            Test("theme.mp3", ExtraType.ThemeSong, _videoOptions);
         }
 
         [Fact]
         public void TestExpandedExtras()
         {
-            var videoOptions = new NamingOptions();
 
-            Test("trailer.mp4", ExtraType.Trailer, videoOptions);
-            Test("trailer.mp3", null, videoOptions);
-            Test("300-trailer.mp4", ExtraType.Trailer, videoOptions);
+            Test("trailer.mp4", ExtraType.Trailer, _videoOptions);
+            Test("trailer.mp3", null, _videoOptions);
+            Test("300-trailer.mp4", ExtraType.Trailer, _videoOptions);
 
-            Test("theme.mp3", ExtraType.ThemeSong, videoOptions);
-            Test("theme.mkv", null, videoOptions);
+            Test("theme.mp3", ExtraType.ThemeSong, _videoOptions);
+            Test("theme.mkv", null, _videoOptions);
 
-            Test("300-scene.mp4", ExtraType.Scene, videoOptions);
-            Test("300-scene2.mp4", ExtraType.Scene, videoOptions);
-            Test("300-clip.mp4", ExtraType.Clip, videoOptions);
+            Test("300-scene.mp4", ExtraType.Scene, _videoOptions);
+            Test("300-scene2.mp4", ExtraType.Scene, _videoOptions);
+            Test("300-clip.mp4", ExtraType.Clip, _videoOptions);
 
-            Test("300-deleted.mp4", ExtraType.DeletedScene, videoOptions);
-            Test("300-deletedscene.mp4", ExtraType.DeletedScene, videoOptions);
-            Test("300-interview.mp4", ExtraType.Interview, videoOptions);
-            Test("300-behindthescenes.mp4", ExtraType.BehindTheScenes, videoOptions);
+            Test("300-deleted.mp4", ExtraType.DeletedScene, _videoOptions);
+            Test("300-deletedscene.mp4", ExtraType.DeletedScene, _videoOptions);
+            Test("300-interview.mp4", ExtraType.Interview, _videoOptions);
+            Test("300-behindthescenes.mp4", ExtraType.BehindTheScenes, _videoOptions);
         }
 
         [Theory]
@@ -56,11 +56,9 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData(ExtraType.Unknown, "extras" )]
         public void TestDirectories(ExtraType type, string dirName)
         {
-            var videoOptions = new NamingOptions();
-
-            Test(dirName + "/300.mp4", type, videoOptions);
-            Test("300/" + dirName + "/something.mkv", type, videoOptions);
-            Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", type, videoOptions);
+            Test(dirName + "/300.mp4", type, _videoOptions);
+            Test("300/" + dirName + "/something.mkv", type, _videoOptions);
+            Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", type, _videoOptions);
         }
 
         [Theory]
@@ -69,19 +67,16 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData("The Big Short")]
         public void TestNonExtraDirectories(string dirName)
         {
-            var videoOptions = new NamingOptions();
-            Test(dirName + "/300.mp4", null, videoOptions);
-            Test("300/" + dirName + "/something.mkv", null, videoOptions);
-            Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", null, videoOptions);
-            Test("/data/something/Movies/" + dirName + "/" + dirName + ".mp4", null, videoOptions);
+            Test(dirName + "/300.mp4", null, _videoOptions);
+            Test("300/" + dirName + "/something.mkv", null, _videoOptions);
+            Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", null, _videoOptions);
+            Test("/data/something/Movies/" + dirName + "/" + dirName + ".mp4", null, _videoOptions);
         }
 
         [Fact]
         public void TestSample()
         {
-            var videoOptions = new NamingOptions();
-
-            Test("300-sample.mp4", ExtraType.Sample, videoOptions);
+            Test("300-sample.mp4", ExtraType.Sample, _videoOptions);
         }
 
         private void Test(string input, ExtraType? expectedType, NamingOptions videoOptions)
