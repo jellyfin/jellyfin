@@ -45,7 +45,7 @@ namespace Jellyfin.Naming.Tests.Video
             Test("300-behindthescenes.mp4", ExtraType.BehindTheScenes, videoOptions);
         }
 
-	[Theory]
+        [Theory]
         [InlineData(ExtraType.BehindTheScenes, "behind the scenes" )]
         [InlineData(ExtraType.DeletedScene, "deleted scenes" )]
         [InlineData(ExtraType.Interview, "interviews" )]
