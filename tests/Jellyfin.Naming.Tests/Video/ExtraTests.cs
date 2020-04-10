@@ -45,44 +45,35 @@ namespace Jellyfin.Naming.Tests.Video
             Test("300-behindthescenes.mp4", ExtraType.BehindTheScenes, videoOptions);
         }
 
-	[Fact]
-        public void TestDirectories()
+	[Theory]
+        [InlineData(ExtraType.BehindTheScenes, "behind the scenes" )]
+        [InlineData(ExtraType.DeletedScene, "deleted scenes" )]
+        [InlineData(ExtraType.Interview, "interviews" )]
+        [InlineData(ExtraType.Scene, "scenes" )]
+        [InlineData(ExtraType.Sample, "samples" )]
+        [InlineData(ExtraType.Clip, "shorts" )]
+        [InlineData(ExtraType.Clip, "featurettes" )]
+        [InlineData(ExtraType.Unknown, "extras" )]
+        public void TestDirectories(ExtraType type, string dirName)
         {
             var videoOptions = new NamingOptions();
 
-            (ExtraType Type, string dirName)[] extraDirectoryNameTests =
-            {
-                (ExtraType.BehindTheScenes, "behind the scenes" ),
-                (ExtraType.DeletedScene, "deleted scenes" ),
-                (ExtraType.Interview, "interviews" ),
-                (ExtraType.Scene, "scenes" ),
-                (ExtraType.Sample, "samples" ),
-                (ExtraType.Clip, "shorts" ),
-                (ExtraType.Clip, "featurettes" ),
-                (ExtraType.Unknown, "extras" ),
-            };
+            Test(dirName + "/300.mp4", type, videoOptions);
+            Test("300/" + dirName + "/something.mkv", type, videoOptions);
+            Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", type, videoOptions);
+        }
 
-            foreach ((ExtraType type, string dirName) in extraDirectoryNameTests)
-            {
-                Test(dirName + "/300.mp4", type, videoOptions);
-                Test("300/" + dirName + "/something.mkv", type, videoOptions);
-                Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", type, videoOptions);
-            }
-
-            //Test the null condition
-            string[] nonExtraDirectoryNames = 
-            {
-               "gibberish",
-               "not a scene",
-            };
-            foreach (string dirName in nonExtraDirectoryNames)
-            {
-                Test(dirName + "/300.mp4", null, videoOptions);
-                Test("300/" + dirName + "/something.mkv", null, videoOptions);
-                Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", null, videoOptions);
-            }
-            Test("/data/something/Movies/not a scene/not a scene.mp4", null, videoOptions);
-            Test("/data/something/Movies/The Big Short/The Big Short.mp4", null, videoOptions);
+        [Theory]
+        [InlineData("gibberish")]
+        [InlineData("not a scene")]
+        [InlineData("The Big Short")]
+        public void TestNonExtraDirectories(string dirName)
+        {
+            var videoOptions = new NamingOptions();
+            Test(dirName + "/300.mp4", null, videoOptions);
+            Test("300/" + dirName + "/something.mkv", null, videoOptions);
+            Test("/data/something/Movies/300/" + dirName + "/whoknows.mp4", null, videoOptions);
+            Test("/data/something/Movies/" + dirName + "/" + dirName + ".mp4", null, videoOptions);
         }
 
         [Fact]
