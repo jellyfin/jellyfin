@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Entities
     {
         /// <summary>
         /// Gets or sets the maximum number of items the query should return.
-        /// <summary>
+        /// </summary>
         public int Limit { get; set; }
 
         public Guid ItemId { get; set; }
