@@ -80,6 +80,15 @@ namespace Emby.Naming.Video
                     result.Rule = rule;
                 }
             }
+            else if (rule.RuleType == ExtraRuleType.DirectoryName)
+            {
+                var directoryName = Path.GetFileName(Path.GetDirectoryName(path));
+                if (string.Equals(directoryName, rule.Token, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.ExtraType = rule.ExtraType;
+                    result.Rule = rule;
+                }
+            }
 
             return result;
         }

@@ -287,7 +287,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public static void TryBind(this IStatement statement, string name, byte[] value)
+        public static void TryBind(this IStatement statement, string name, ReadOnlySpan<byte> value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
