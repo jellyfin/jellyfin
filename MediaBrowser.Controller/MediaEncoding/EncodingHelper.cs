@@ -1587,7 +1587,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // For VAAPI and CUVID decoder
                 // these encoders cannot automatically adjust the size of graphical subtitles to fit the output video,
                 // thus needs to be manually adjusted.
-                if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
+                if ((IsVaapiSupported(state) && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
                     || (videoDecoder ?? string.Empty).IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     var videoStream = state.VideoStream;
@@ -1996,7 +1996,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
-            else if (IsVaapiSupported(state) && (videoDecoder ?? string.Empty).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
+            else if (IsVaapiSupported(state) && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 var codec = videoStream.Codec.ToLowerInvariant();
