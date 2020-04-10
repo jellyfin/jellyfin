@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
                     e.Provider,
-                    Emby.Notifications.NotificationEntryPoint.GetItemName(e.Item)),
+                    Notifications.NotificationEntryPoint.GetItemName(e.Item)),
                 Type = "SubtitleDownloadFailure",
                 ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message

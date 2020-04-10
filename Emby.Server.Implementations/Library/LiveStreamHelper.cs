@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.RunTimeTicks = null;
             }
 
-            var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio);
+            var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
             if (audioStream == null || audioStream.Index == -1)
             {
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.DefaultAudioStreamIndex = audioStream.Index;
             }
 
-            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
+            var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
             if (videoStream != null)
             {
                 if (!videoStream.BitRate.HasValue)

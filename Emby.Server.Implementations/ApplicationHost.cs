@@ -658,7 +658,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton(JsonSerializer);
 
             // TODO: Support for injecting ILogger should be deprecated in favour of ILogger<T> and this removed
-            serviceCollection.AddSingleton<ILogger>(Logger);
+            serviceCollection.AddSingleton(Logger);
 
             serviceCollection.AddSingleton(FileSystemManager);
             serviceCollection.AddSingleton<TvdbClientManager>();
@@ -1744,7 +1744,7 @@ namespace Emby.Server.Implementations
         {
         }
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.

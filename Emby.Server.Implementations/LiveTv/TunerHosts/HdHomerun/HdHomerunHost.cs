@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             catch (HttpException ex)
             {
-                if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                if (!throwAllExceptions && ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
                     var defaultValue = "HDHR";
                     var response = new DiscoverResponse
@@ -646,7 +646,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             catch (HttpException ex)
             {
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
                     // HDHR4 doesn't have this api
                     return;

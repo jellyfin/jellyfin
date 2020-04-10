@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Emby.Server.Implementations.HttpServer;
-using MediaBrowser.Providers.Music;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Emby.Server.Implementations
