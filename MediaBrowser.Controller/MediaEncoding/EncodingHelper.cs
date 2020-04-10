@@ -2532,7 +2532,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             var videoType = state.MediaSource.VideoType ?? VideoType.VideoFile;
             var videoStream = state.VideoStream;
-            var IsColorDepth10 = (videoStream.Profile ?? string.Empty).IndexOf("10", StringComparison.OrdinalIgnoreCase) != -1;
+            var IsColorDepth10 = (videoStream.Profile ?? string.Empty).IndexOf("Main 10", StringComparison.OrdinalIgnoreCase) != -1
+                || (videoStream.Profile ?? string.Empty).IndexOf("High 10", StringComparison.OrdinalIgnoreCase) != -1;
 
             if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
