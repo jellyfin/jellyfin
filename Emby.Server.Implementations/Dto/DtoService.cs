@@ -833,7 +833,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (!string.IsNullOrEmpty(item.Tagline))
                 {
-                    dto.Taglines = new string[] { item.Tagline };
+                    dto.Taglines = new[] { item.Tagline };
                 }
 
                 if (dto.Taglines == null)

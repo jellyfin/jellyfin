@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.IO
             "TempSBE"
         };
 
-        private static readonly string[] _alwaysIgnoreSubstrings = new string[]
+        private static readonly string[] _alwaysIgnoreSubstrings = new[]
         {
             // Synology
             "eaDir",

@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// An array of ISO-8601 DateTime formats that we support parsing.
         /// </summary>
-        private static readonly string[] _datetimeFormats = new string[]
+        private static readonly string[] _datetimeFormats = new[]
         {
             "THHmmssK",
             "THHmmK",

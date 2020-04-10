@@ -479,7 +479,7 @@ namespace Emby.Server.Implementations.Devices
     {
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
-            return new ConfigurationStore[]
+            return new[]
             {
                 new ConfigurationStore
                 {

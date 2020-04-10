@@ -643,7 +643,7 @@ namespace Emby.Server.Implementations.Channels
             var query = new InternalItemsQuery();
             query.Parent = internalChannel;
             query.EnableTotalRecordCount = false;
-            query.ChannelIds = new Guid[] { internalChannel.Id };
+            query.ChannelIds = new[] { internalChannel.Id };
 
             var result = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 
@@ -655,7 +655,7 @@ namespace Emby.Server.Implementations.Channels
                     {
                         Parent = folder,
                         EnableTotalRecordCount = false,
-                        ChannelIds = new Guid[] { internalChannel.Id }
+                        ChannelIds = new[] { internalChannel.Id }
 
                     }, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
                 }

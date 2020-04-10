@@ -156,10 +156,10 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new[] { typeof(Series).Name },
                 Name = seriesName,
                 Limit = 1,
-                ImageTypes = new ImageType[] { ImageType.Thumb },
+                ImageTypes = new[] { ImageType.Thumb },
                 DtoOptions = new DtoOptions(false)
 
             }).FirstOrDefault();
@@ -184,7 +184,7 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     try
                     {
-                        dto.ParentBackdropImageTags = new string[]
+                        dto.ParentBackdropImageTags = new[]
                             {
                                 _imageProcessor.GetImageCacheTag(librarySeries, image)
                             };
@@ -199,10 +199,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             var program = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ExternalSeriesId = programSeriesId,
                 Limit = 1,
-                ImageTypes = new ImageType[] { ImageType.Primary },
+                ImageTypes = new[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false),
                 Name = string.IsNullOrEmpty(programSeriesId) ? seriesName : null
 
@@ -231,7 +231,7 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         try
                         {
-                            dto.ParentBackdropImageTags = new string[]
+                            dto.ParentBackdropImageTags = new[]
                         {
                                 _imageProcessor.GetImageCacheTag(program, image)
                         };
@@ -250,10 +250,10 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new[] { typeof(Series).Name },
                 Name = seriesName,
                 Limit = 1,
-                ImageTypes = new ImageType[] { ImageType.Thumb },
+                ImageTypes = new[] { ImageType.Thumb },
                 DtoOptions = new DtoOptions(false)
 
             }).FirstOrDefault();
@@ -278,7 +278,7 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     try
                     {
-                        dto.ParentBackdropImageTags = new string[]
+                        dto.ParentBackdropImageTags = new[]
                             {
                                 _imageProcessor.GetImageCacheTag(librarySeries, image)
                             };
@@ -293,10 +293,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             var program = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(Series).Name },
+                IncludeItemTypes = new[] { typeof(Series).Name },
                 Name = seriesName,
                 Limit = 1,
-                ImageTypes = new ImageType[] { ImageType.Primary },
+                ImageTypes = new[] { ImageType.Primary },
                 DtoOptions = new DtoOptions(false)
 
             }).FirstOrDefault();
@@ -305,10 +305,10 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 program = _libraryManager.GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                    IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                     ExternalSeriesId = programSeriesId,
                     Limit = 1,
-                    ImageTypes = new ImageType[] { ImageType.Primary },
+                    ImageTypes = new[] { ImageType.Primary },
                     DtoOptions = new DtoOptions(false),
                     Name = string.IsNullOrEmpty(programSeriesId) ? seriesName : null
 

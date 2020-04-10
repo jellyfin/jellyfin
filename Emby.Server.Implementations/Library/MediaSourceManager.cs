@@ -347,7 +347,7 @@ namespace Emby.Server.Implementations.Library
                 return culture.ThreeLetterISOLanguageNames;
             }
 
-            return new string[] { language };
+            return new[] { language };
         }
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
@@ -538,7 +538,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.RunTimeTicks = null;
             }
 
-            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio);
+            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
             if (audioStream == null || audioStream.Index == -1)
             {
@@ -549,7 +549,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.DefaultAudioStreamIndex = audioStream.Index;
             }
 
-            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
+            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
             if (videoStream != null)
             {
                 if (!videoStream.BitRate.HasValue)
@@ -560,17 +560,14 @@ namespace Emby.Server.Implementations.Library
                     {
                         videoStream.BitRate = 30000000;
                     }
-
                     else if (width >= 1900)
                     {
                         videoStream.BitRate = 20000000;
                     }
-
                     else if (width >= 1200)
                     {
                         videoStream.BitRate = 8000000;
                     }
-
                     else if (width >= 700)
                     {
                         videoStream.BitRate = 2000000;

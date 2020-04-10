@@ -547,7 +547,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
             catch
             {
-                return new TaskTriggerInfo[]
+                return new[]
                 {
                     new TaskTriggerInfo
                     {

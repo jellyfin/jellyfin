@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.Images
         protected IImageProcessor ImageProcessor { get; set; }
 
         protected virtual IReadOnlyCollection<ImageType> SupportedImages { get; }
-            = new ImageType[] { ImageType.Primary };
+            = new[] { ImageType.Primary };
 
         /// <inheritdoc />
         public string Name => "Dynamic Image Provider";

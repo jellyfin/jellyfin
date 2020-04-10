@@ -28,31 +28,31 @@ namespace Emby.Server.Implementations.UserViews
 
             if (string.Equals(viewType, CollectionType.Movies))
             {
-                includeItemTypes = new string[] { "Movie" };
+                includeItemTypes = new[] { "Movie" };
             }
             else if (string.Equals(viewType, CollectionType.TvShows))
             {
-                includeItemTypes = new string[] { "Series" };
+                includeItemTypes = new[] { "Series" };
             }
             else if (string.Equals(viewType, CollectionType.Music))
             {
-                includeItemTypes = new string[] { "MusicAlbum" };
+                includeItemTypes = new[] { "MusicAlbum" };
             }
             else if (string.Equals(viewType, CollectionType.Books))
             {
-                includeItemTypes = new string[] { "Book", "AudioBook" };
+                includeItemTypes = new[] { "Book", "AudioBook" };
             }
             else if (string.Equals(viewType, CollectionType.BoxSets))
             {
-                includeItemTypes = new string[] { "BoxSet" };
+                includeItemTypes = new[] { "BoxSet" };
             }
             else if (string.Equals(viewType, CollectionType.HomeVideos) || string.Equals(viewType, CollectionType.Photos))
             {
-                includeItemTypes = new string[] { "Video", "Photo" };
+                includeItemTypes = new[] { "Video", "Photo" };
             }
             else
             {
-                includeItemTypes = new string[] { "Video", "Audio", "Photo", "Movie", "Series" };
+                includeItemTypes = new[] { "Video", "Audio", "Photo", "Movie", "Series" };
             }
 
             var recursive = !string.Equals(CollectionType.Playlists, viewType, StringComparison.OrdinalIgnoreCase);
@@ -62,9 +62,9 @@ namespace Emby.Server.Implementations.UserViews
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 DtoOptions = new DtoOptions(false),
-                ImageTypes = new ImageType[] { ImageType.Primary },
+                ImageTypes = new[] { ImageType.Primary },
                 Limit = 8,
-                OrderBy = new ValueTuple<string, SortOrder>[]
+                OrderBy = new[]
                 {
                     new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending)
                 },

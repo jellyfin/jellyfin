@@ -1458,7 +1458,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     item.Id,
                     new MetadataRefreshOptions(new DirectoryService(_fileSystem))
                     {
-                        RefreshPaths = new string[]
+                        RefreshPaths = new[]
                         {
                             path,
                             Path.GetDirectoryName(path),
@@ -2177,7 +2177,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var query = new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 Limit = 1,
                 DtoOptions = new DtoOptions(true)
                 {
@@ -2396,7 +2396,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var query = new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 ExternalSeriesId = seriesTimer.SeriesId,
                 DtoOptions = new DtoOptions(true)
                 {
@@ -2431,7 +2431,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     channel = _libraryManager.GetItemList(
                         new InternalItemsQuery
                         {
-                            IncludeItemTypes = new string[] { typeof(LiveTvChannel).Name },
+                            IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
                             ItemIds = new[] { parent.ChannelId },
                             DtoOptions = new DtoOptions()
                         }).FirstOrDefault() as LiveTvChannel;
@@ -2490,7 +2490,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     channel = _libraryManager.GetItemList(
                         new InternalItemsQuery
                         {
-                            IncludeItemTypes = new string[] { typeof(LiveTvChannel).Name },
+                            IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
                             ItemIds = new[] { programInfo.ChannelId },
                             DtoOptions = new DtoOptions()
                         }).FirstOrDefault() as LiveTvChannel;
@@ -2622,7 +2622,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 yield return new VirtualFolderInfo
                 {
-                    Locations = new string[] { defaultFolder },
+                    Locations = new[] { defaultFolder },
                     Name = defaultName
                 };
             }
@@ -2632,7 +2632,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 yield return new VirtualFolderInfo
                 {
-                    Locations = new string[] { customPath },
+                    Locations = new[] { customPath },
                     Name = "Recorded Movies",
                     CollectionType = CollectionType.Movies
                 };
@@ -2643,7 +2643,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 yield return new VirtualFolderInfo
                 {
-                    Locations = new string[] { customPath },
+                    Locations = new[] { customPath },
                     Name = "Recorded Shows",
                     CollectionType = CollectionType.TvShows
                 };

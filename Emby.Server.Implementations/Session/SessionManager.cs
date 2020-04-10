@@ -1173,7 +1173,7 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new ItemFields[]
+                        Fields = new[]
                         {
                             ItemFields.SortName
                         }
@@ -1194,7 +1194,7 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new ItemFields[]
+                        Fields = new[]
                         {
                             ItemFields.SortName
                         }

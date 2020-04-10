@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Playlists
             }
 
             query.Recursive = true;
-            query.IncludeItemTypes = new string[] { "Playlist" };
+            query.IncludeItemTypes = new[] { "Playlist" };
             query.Parent = null;
             return LibraryManager.GetItemsResult(query);
         }

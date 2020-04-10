@@ -288,11 +288,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase)))
                     {
-                        includeItemTypes = new string[] { "Movie" };
+                        includeItemTypes = new[] { "Movie" };
                     }
                     else if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase)))
                     {
-                        includeItemTypes = new string[] { "Episode" };
+                        includeItemTypes = new[] { "Episode" };
                     }
                 }
             }

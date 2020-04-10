@@ -30,8 +30,8 @@ namespace Emby.Server.Implementations.UserViews
             {
                 Parent = item,
                 DtoOptions = new DtoOptions(true),
-                ImageTypes = new ImageType[] { ImageType.Primary },
-                OrderBy = new System.ValueTuple<string, SortOrder>[]
+                ImageTypes = new[] { ImageType.Primary },
+                OrderBy = new[]
                 {
                     new System.ValueTuple<string, SortOrder>(ItemSortBy.IsFolder, SortOrder.Ascending),
                     new System.ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending)

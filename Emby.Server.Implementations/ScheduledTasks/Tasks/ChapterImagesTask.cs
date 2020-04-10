@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                 {
                     EnableImages = false
                 },
-                SourceTypes = new SourceType[] { SourceType.Library },
+                SourceTypes = new[] { SourceType.Library },
                 HasChapterImages = false,
                 IsVirtualItem = false
             })

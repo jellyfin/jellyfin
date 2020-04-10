@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(list);
         }
 
-        private static readonly string[] _disallowedSharedStreamExtensions = new string[]
+        private static readonly string[] _disallowedSharedStreamExtensions = new[]
         {
             ".mkv",
             ".mp4",

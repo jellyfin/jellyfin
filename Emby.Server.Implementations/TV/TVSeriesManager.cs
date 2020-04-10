@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.TV
                 Limit = limit,
                 DtoOptions = new DtoOptions
                 {
-                    Fields = new ItemFields[]
+                    Fields = new[]
                     {
                         ItemFields.SeriesPresentationUniqueKey
                     },
@@ -199,7 +199,7 @@ namespace Emby.Server.Implementations.TV
                 ParentIndexNumberNotEquals = 0,
                 DtoOptions = new DtoOptions
                 {
-                    Fields = new ItemFields[]
+                    Fields = new[]
                     {
                         ItemFields.SortName
                     },
