@@ -429,18 +429,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             int exitCode;
 
             using (var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
                 {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    FileName = _mediaEncoder.EncoderPath,
-                    Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false
-                },
-                EnableRaisingEvents = true
-            })
+                    StartInfo = new ProcessStartInfo
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        FileName = _mediaEncoder.EncoderPath,
+                        Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        ErrorDialog = false
+                    },
+                    EnableRaisingEvents = true
+                })
             {
                 _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -582,18 +582,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             int exitCode;
 
             using (var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
                 {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    FileName = _mediaEncoder.EncoderPath,
-                    Arguments = processArgs,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false
-                },
-                EnableRaisingEvents = true
-            })
+                    StartInfo = new ProcessStartInfo
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        FileName = _mediaEncoder.EncoderPath,
+                        Arguments = processArgs,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        ErrorDialog = false
+                    },
+                    EnableRaisingEvents = true
+                })
             {
                 _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
