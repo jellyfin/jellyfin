@@ -158,10 +158,10 @@ namespace Emby.Server.Implementations.Updates
 
             if (minVersion != null)
             {
-                availableVersions = availableVersions.Where(x => x.versionCode >= minVersion);
+                availableVersions = availableVersions.Where(x => x.version >= minVersion);
             }
 
-            return availableVersions.OrderByDescending(x => x.versionCode);
+            return availableVersions.OrderByDescending(x => x.version);
         }
 
         /// <inheritdoc />
@@ -193,9 +193,9 @@ namespace Emby.Server.Implementations.Updates
             foreach (var plugin in _applicationHost.Plugins)
             {
                 var compatibleVersions = GetCompatibleVersions(catalog, plugin.Name, plugin.Id, plugin.Version);
-                var version = compatibleVersions.FirstOrDefault(y => y.versionCode > plugin.Version);
+                var version = compatibleVersions.FirstOrDefault(y => y.version > plugin.Version);
                 if (version != null
-                    && !CompletedInstallations.Any(x => string.Equals(x.AssemblyGuid, version.guid, StringComparison.OrdinalIgnoreCase)))
+                    && !CompletedInstallations.Any(x => string.Equals(x.Guid, version.guid, StringComparison.OrdinalIgnoreCase)))
                 {
                     yield return version;
                 }
@@ -212,10 +212,9 @@ namespace Emby.Server.Implementations.Updates
 
             var installationInfo = new InstallationInfo
             {
-                Id = Guid.NewGuid(),
+                Guid = package.guid,
                 Name = package.name,
-                AssemblyGuid = package.guid,
-                Version = package.versionString
+                Version = package.version.ToString()
             };
 
             var innerCancellationTokenSource = new CancellationTokenSource();
@@ -258,7 +257,7 @@ namespace Emby.Server.Implementations.Updates
                     _currentInstallations.Remove(tuple);
                 }
 
-                _logger.LogInformation("Package installation cancelled: {0} {1}", package.name, package.versionString);
+                _logger.LogInformation("Package installation cancelled: {0} {1}", package.name, package.version);
 
                 PackageInstallationCancelled?.Invoke(this, installationEventArgs);
 
@@ -306,13 +305,13 @@ namespace Emby.Server.Implementations.Updates
             // Do plugin-specific processing
             if (plugin == null)
             {
-                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.versionString ?? string.Empty);
+                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.version);
 
                 PluginInstalled?.Invoke(this, new GenericEventArgs<VersionInfo>(package));
             }
             else
             {
-                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.name, package.versionString ?? string.Empty);
+                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.name, package.version);
 
                 PluginUpdated?.Invoke(this, new GenericEventArgs<(IPlugin, VersionInfo)>((plugin, package)));
             }
@@ -430,7 +429,7 @@ namespace Emby.Server.Implementations.Updates
         {
             lock (_currentInstallationsLock)
             {
-                var install = _currentInstallations.Find(x => x.info.Id == id);
+                var install = _currentInstallations.Find(x => x.info.Guid == id.ToString());
                 if (install == default((InstallationInfo, CancellationTokenSource)))
                 {
                     return false;

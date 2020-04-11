@@ -27,18 +27,6 @@ namespace MediaBrowser.Model.Updates
         public string overview { get; set; }
 
         /// <summary>
-        /// Gets or sets the thumb image.
-        /// </summary>
-        /// <value>The thumb image.</value>
-        public string thumbImage { get; set; }
-
-        /// <summary>
-        /// Gets or sets the preview image.
-        /// </summary>
-        /// <value>The preview image.</value>
-        public string previewImage { get; set; }
-
-        /// <summary>
         /// Gets or sets the target filename for the downloaded binary.
         /// </summary>
         /// <value>The target filename.</value>

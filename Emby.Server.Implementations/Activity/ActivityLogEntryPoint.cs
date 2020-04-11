@@ -433,7 +433,7 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.Item2.versionString),
+                    e.Argument.Item2.version),
                 Overview = e.Argument.Item2.description
             });
         }
@@ -462,7 +462,7 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.versionString)
+                    e.Argument.version)
             });
         }
 
