@@ -104,10 +104,7 @@ namespace Emby.Server.Implementations.TV
                 return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
             }
 
-            if (limit.HasValue)
-            {
-                limit = limit.Value + 10;
-            }
+            limit += 10;
 
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {

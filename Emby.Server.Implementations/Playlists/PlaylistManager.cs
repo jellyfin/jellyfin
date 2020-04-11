@@ -542,8 +542,7 @@ namespace Emby.Server.Implementations.Playlists
 
         private static string Escape(string content)
         {
-            if (content == null) return null;
-            return content.Replace("&", "&amp;").Replace("'", "&apos;").Replace("\"", "&quot;").Replace(">", "&gt;").Replace("<", "&lt;");
+            return content?.Replace("&", "&amp;").Replace("'", "&apos;").Replace("\"", "&quot;").Replace(">", "&gt;").Replace("<", "&lt;");
         }
 
         public Folder GetPlaylistsFolder(Guid userId)

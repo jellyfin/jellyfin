@@ -86,13 +86,10 @@ namespace Emby.Server.Implementations.Devices
         {
             _authRepo.UpdateDeviceOptions(deviceId, options);
 
-            if (DeviceOptionsUpdated != null)
+            DeviceOptionsUpdated?.Invoke(this, new GenericEventArgs<Tuple<string, DeviceOptions>>()
             {
-                DeviceOptionsUpdated(this, new GenericEventArgs<Tuple<string, DeviceOptions>>()
-                {
-                    Argument = new Tuple<string, DeviceOptions>(deviceId, options)
-                });
-            }
+                Argument = new Tuple<string, DeviceOptions>(deviceId, options)
+            });
         }
 
         public DeviceOptions GetDeviceOptions(string deviceId)
@@ -244,17 +241,14 @@ namespace Emby.Server.Implementations.Devices
                 _libraryMonitor.ReportFileSystemChangeComplete(path, true);
             }
 
-            if (CameraImageUploaded != null)
+            CameraImageUploaded?.Invoke(this, new GenericEventArgs<CameraImageUploadInfo>
             {
-                CameraImageUploaded?.Invoke(this, new GenericEventArgs<CameraImageUploadInfo>
+                Argument = new CameraImageUploadInfo
                 {
-                    Argument = new CameraImageUploadInfo
-                    {
-                        Device = device,
-                        FileInfo = file
-                    }
-                });
-            }
+                    Device = device,
+                    FileInfo = file
+                }
+            });
         }
 
         private void AddCameraUpload(string deviceId, LocalFileInfo file)

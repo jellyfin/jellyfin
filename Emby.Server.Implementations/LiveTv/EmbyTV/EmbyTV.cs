@@ -592,9 +592,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     _timerProvider.AddOrUpdate(timer, false);
                 }
 
-                if (statusChanging && TimerCancelled != null)
+                if (statusChanging)
                 {
-                    TimerCancelled(this, new GenericEventArgs<string>(timerId));
+                    TimerCancelled?.Invoke(this, new GenericEventArgs<string>(timerId));
                 }
             }
 

@@ -175,10 +175,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             finally
             {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
+                OnComplete?.Invoke();
             }
         }
 

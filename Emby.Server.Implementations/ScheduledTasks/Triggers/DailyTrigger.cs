@@ -61,10 +61,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         /// </summary>
         private void DisposeTimer()
         {
-            if (Timer != null)
-            {
-                Timer.Dispose();
-            }
+            Timer?.Dispose();
         }
 
         /// <summary>
@@ -77,10 +74,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         /// </summary>
         private void OnTriggered()
         {
-            if (Triggered != null)
-            {
-                Triggered(this, EventArgs.Empty);
-            }
+            Triggered?.Invoke(this, EventArgs.Empty);
         }
     }
 }

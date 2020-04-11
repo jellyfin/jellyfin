@@ -68,18 +68,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                     var episodeInfo = resolver.Resolve(testPath, true);
 
-                    if (episodeInfo != null)
+                    if (episodeInfo?.EpisodeNumber != null && episodeInfo.SeasonNumber.HasValue)
                     {
-                        if (episodeInfo.EpisodeNumber.HasValue && episodeInfo.SeasonNumber.HasValue)
-                        {
-                            _logger.LogDebug(
-                                "Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
-                                path,
-                                episodeInfo.SeasonNumber.Value,
-                                episodeInfo.EpisodeNumber.Value);
+                        _logger.LogDebug(
+                            "Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
+                            path,
+                            episodeInfo.SeasonNumber.Value,
+                            episodeInfo.EpisodeNumber.Value);
 
-                            return null;
-                        }
+                        return null;
                     }
                 }
 

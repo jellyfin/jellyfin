@@ -80,10 +80,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         /// </summary>
         private void DisposeTimer()
         {
-            if (Timer != null)
-            {
-                Timer.Dispose();
-            }
+            Timer?.Dispose();
         }
 
         /// <summary>

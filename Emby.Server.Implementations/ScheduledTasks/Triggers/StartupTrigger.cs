@@ -54,10 +54,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Triggers
         /// </summary>
         private void OnTriggered()
         {
-            if (Triggered != null)
-            {
-                Triggered(this, EventArgs.Empty);
-            }
+            Triggered?.Invoke(this, EventArgs.Empty);
         }
     }
 }
