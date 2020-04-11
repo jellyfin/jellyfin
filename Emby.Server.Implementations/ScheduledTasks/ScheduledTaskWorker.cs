@@ -587,10 +587,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 EndTimeUtc = endTime,
                 Status = status,
                 Name = Name,
-                Id = Id
+                Id = Id,
+                Key = ScheduledTask.Key
             };
-
-            result.Key = ScheduledTask.Key;
 
             if (ex != null)
             {

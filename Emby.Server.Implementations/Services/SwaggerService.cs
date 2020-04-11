@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.Services
 
         public object Get(GetSwaggerSpec request)
         {
-            return _spec ?? (_spec = GetSpec());
+            return _spec ??= GetSpec();
         }
 
         private SwaggerSpec GetSpec()
@@ -133,13 +133,9 @@ namespace Emby.Server.Implementations.Services
                 host = uri.Host;
             }
 
-            var securitySchemes = new Dictionary<string, SwaggerSecurityScheme>();
-
-            securitySchemes["api_key"] = new SwaggerSecurityScheme
+            var securitySchemes = new Dictionary<string, SwaggerSecurityScheme>
             {
-                name = "api_key",
-                type = "apiKey",
-                @in = "query"
+                ["api_key"] = new SwaggerSecurityScheme { name = "api_key", type = "apiKey", @in = "query" }
             };
 
             var spec = new SwaggerSpec

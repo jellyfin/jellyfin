@@ -76,8 +76,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public object GetRedirectResult(string url)
         {
-            var responseHeaders = new Dictionary<string, string>();
-            responseHeaders[HeaderNames.Location] = url;
+            var responseHeaders = new Dictionary<string, string> { [HeaderNames.Location] = url };
 
             var result = new HttpResult(Array.Empty<byte>(), "text/plain", HttpStatusCode.Redirect);
 
@@ -389,9 +388,11 @@ namespace Emby.Server.Implementations.HttpServer
         private static string SerializeToXmlString(object from)
         {
             using var ms = new MemoryStream();
-            var xwSettings = new XmlWriterSettings();
-            xwSettings.Encoding = new UTF8Encoding(false);
-            xwSettings.OmitXmlDeclaration = false;
+            var xwSettings = new XmlWriterSettings
+            {
+                Encoding = new UTF8Encoding(false),
+                OmitXmlDeclaration = false
+            };
 
             using var xw = XmlWriter.Create(ms, xwSettings);
             var serializer = new DataContractSerializer(@from.GetType());

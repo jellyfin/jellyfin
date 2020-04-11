@@ -631,10 +631,12 @@ namespace Emby.Server.Implementations.Channels
         {
             var internalChannel = await GetChannel(channel, cancellationToken).ConfigureAwait(false);
 
-            var query = new InternalItemsQuery();
-            query.Parent = internalChannel;
-            query.EnableTotalRecordCount = false;
-            query.ChannelIds = new[] { internalChannel.Id };
+            var query = new InternalItemsQuery
+            {
+                Parent = internalChannel,
+                EnableTotalRecordCount = false,
+                ChannelIds = new[] { internalChannel.Id }
+            };
 
             var result = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 

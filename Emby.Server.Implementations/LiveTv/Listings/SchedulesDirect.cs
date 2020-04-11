@@ -102,30 +102,28 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var requestString = _jsonSerializer.SerializeToString(requestList);
             _logger.LogDebug("Request string for schedules is: {RequestString}", requestString);
 
-            var httpOptions = new HttpRequestOptions()
+            var httpOptions = new HttpRequestOptions
             {
                 Url = ApiUrl + "/schedules",
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
                 LogErrorResponseBody = true,
-                RequestContent = requestString
+                RequestContent = requestString,
+                RequestHeaders = { ["token"] = token }
             };
-
-            httpOptions.RequestHeaders["token"] = token;
 
             using var response = await Post(httpOptions, true, info).ConfigureAwait(false);
             var dailySchedules = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Day>>(response.Content).ConfigureAwait(false);
             _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
 
-            httpOptions = new HttpRequestOptions()
+            httpOptions = new HttpRequestOptions
             {
                 Url = ApiUrl + "/programs",
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                RequestHeaders = { ["token"] = token }
             };
-
-            httpOptions.RequestHeaders["token"] = token;
 
             var programsID = dailySchedules.SelectMany(d => d.programs.Select(s => s.programID)).Distinct();
             httpOptions.RequestContent = "[\"" + string.Join("\", \"", programsID) + "\"]";
@@ -510,15 +508,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return lineups;
             }
 
-            var options = new HttpRequestOptions()
+            var options = new HttpRequestOptions
             {
                 Url = ApiUrl + "/headends?country=" + country + "&postalcode=" + location,
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                RequestHeaders = { ["token"] = token }
             };
-
-            options.RequestHeaders["token"] = token;
 
             try
             {
@@ -723,16 +720,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             _logger.LogInformation("Adding new LineUp ");
 
-            var httpOptions = new HttpRequestOptions()
+            var httpOptions = new HttpRequestOptions
             {
                 Url = ApiUrl + "/lineups/" + info.ListingsId,
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
                 LogErrorResponseBody = true,
-                BufferContent = false
+                BufferContent = false,
+                RequestHeaders = {["token"] = token}
             };
-
-            httpOptions.RequestHeaders["token"] = token;
 
             using (await _httpClient.SendAsync(httpOptions, HttpMethod.Put).ConfigureAwait(false))
             {
@@ -755,15 +751,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             _logger.LogInformation("Headends on account ");
 
-            var options = new HttpRequestOptions()
+            var options = new HttpRequestOptions
             {
                 Url = ApiUrl + "/lineups",
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                RequestHeaders = { ["token"] = token }
             };
-
-            options.RequestHeaders["token"] = token;
 
             try
             {
@@ -834,15 +829,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 throw new Exception("token required");
             }
 
-            var httpOptions = new HttpRequestOptions()
+            var httpOptions = new HttpRequestOptions
             {
                 Url = ApiUrl + "/lineups/" + listingsId,
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
                 LogErrorResponseBody = true,
+                RequestHeaders = {["token"] = token},
             };
-
-            httpOptions.RequestHeaders["token"] = token;
 
             var list = new List<ChannelInfo>();
 

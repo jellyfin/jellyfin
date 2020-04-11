@@ -1010,11 +1010,10 @@ namespace Emby.Server.Implementations.Session
 
             var generalCommand = new GeneralCommand
             {
-                Name = GeneralCommandType.DisplayMessage.ToString()
+                Name = GeneralCommandType.DisplayMessage.ToString(),
+                Arguments = { ["Header"] = command.Header, ["Text"] = command.Text }
             };
 
-            generalCommand.Arguments["Header"] = command.Header;
-            generalCommand.Arguments["Text"] = command.Text;
 
             if (command.TimeoutMs.HasValue)
             {

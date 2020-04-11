@@ -51,8 +51,10 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="stream">The stream.</param>
         public void SerializeToStream(object obj, Stream stream)
         {
-            using var writer = new XmlTextWriter(stream, null);
-            writer.Formatting = Formatting.Indented;
+            using var writer = new XmlTextWriter(stream, null)
+            {
+                Formatting = Formatting.Indented
+            };
             SerializeToWriter(obj, writer);
         }
 

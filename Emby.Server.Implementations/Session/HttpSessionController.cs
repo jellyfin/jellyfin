@@ -60,9 +60,12 @@ namespace Emby.Server.Implementations.Session
 
         private Task SendPlayCommand(PlayRequest command, string messageId, CancellationToken cancellationToken)
         {
-            var dict = new Dictionary<string, string>();
+            var dict = new Dictionary<string, string>
+            {
+                ["ItemIds"] = string.Join(",",
+                    command.ItemIds.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray())
+            };
 
-            dict["ItemIds"] = string.Join(",", command.ItemIds.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
 
             if (command.StartPositionTicks.HasValue)
             {

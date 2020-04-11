@@ -552,8 +552,7 @@ namespace Emby.Server.Implementations.Library
             user.Policy.EnableRemoteControlOfOtherUsers = true;
             UpdateUserPolicy(user, user.Policy, false);
 
-            _users = new ConcurrentDictionary<Guid, User>();
-            _users[user.Id] = user;
+            _users = new ConcurrentDictionary<Guid, User> { [user.Id] = user };
         }
 
 #nullable restore

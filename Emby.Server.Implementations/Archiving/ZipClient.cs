@@ -35,8 +35,7 @@ namespace Emby.Server.Implementations.Archiving
         public void ExtractAll(Stream source, string targetPath, bool overwriteExistingFiles)
         {
             using var reader = ReaderFactory.Open(source);
-            var options = new ExtractionOptions();
-            options.ExtractFullPath = true;
+            var options = new ExtractionOptions { ExtractFullPath = true };
 
             if (overwriteExistingFiles)
             {
@@ -49,8 +48,7 @@ namespace Emby.Server.Implementations.Archiving
         public void ExtractAllFromZip(Stream source, string targetPath, bool overwriteExistingFiles)
         {
             using var reader = ZipReader.Open(source);
-            var options = new ExtractionOptions();
-            options.ExtractFullPath = true;
+            var options = new ExtractionOptions { ExtractFullPath = true };
 
             if (overwriteExistingFiles)
             {
@@ -63,8 +61,7 @@ namespace Emby.Server.Implementations.Archiving
         public void ExtractAllFromGz(Stream source, string targetPath, bool overwriteExistingFiles)
         {
             using var reader = GZipReader.Open(source);
-            var options = new ExtractionOptions();
-            options.ExtractFullPath = true;
+            var options = new ExtractionOptions { ExtractFullPath = true };
 
             if (overwriteExistingFiles)
             {
@@ -112,8 +109,7 @@ namespace Emby.Server.Implementations.Archiving
         {
             using var archive = SevenZipArchive.Open(source);
             using var reader = archive.ExtractAllEntries();
-            var options = new ExtractionOptions();
-            options.ExtractFullPath = true;
+            var options = new ExtractionOptions { ExtractFullPath = true };
 
             if (overwriteExistingFiles)
             {
@@ -145,8 +141,7 @@ namespace Emby.Server.Implementations.Archiving
         {
             using var archive = TarArchive.Open(source);
             using var reader = archive.ExtractAllEntries();
-            var options = new ExtractionOptions();
-            options.ExtractFullPath = true;
+            var options = new ExtractionOptions { ExtractFullPath = true };
 
             if (overwriteExistingFiles)
             {

@@ -93,6 +93,6 @@ namespace Emby.Server.Implementations.Devices
             _logger = loggerFactory.CreateLogger("SystemId");
         }
 
-        public string Value => _id ?? (_id = GetDeviceId());
+        public string Value => _id ??= GetDeviceId();
     }
 }

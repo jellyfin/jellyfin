@@ -105,9 +105,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _lastProgressMessageTimes[item.Id] = DateTime.UtcNow;
 
-            var dict = new Dictionary<string, string>();
-            dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
-            dict["Progress"] = progress.ToString(CultureInfo.InvariantCulture);
+            var dict = new Dictionary<string, string>
+            {
+                ["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture),
+                ["Progress"] = progress.ToString(CultureInfo.InvariantCulture)
+            };
 
             try
             {
@@ -121,9 +123,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
             foreach (var collectionFolder in collectionFolders)
             {
-                var collectionFolderDict = new Dictionary<string, string>();
-                collectionFolderDict["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture);
-                collectionFolderDict["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture);
+                var collectionFolderDict = new Dictionary<string, string>
+                {
+                    ["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
+                    ["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture)
+                };
 
                 try
                 {

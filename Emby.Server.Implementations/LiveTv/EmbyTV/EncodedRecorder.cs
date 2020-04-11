@@ -223,9 +223,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         protected string GetOutputSizeParam()
         {
-            var filters = new List<string>();
-
-            filters.Add("yadif=0:-1:0");
+            var filters = new List<string> { "yadif=0:-1:0" };
 
             var output = string.Empty;
 

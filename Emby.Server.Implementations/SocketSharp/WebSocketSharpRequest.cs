@@ -70,13 +70,12 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public string[] AcceptTypes => Request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
 
-        public Dictionary<string, object> Items => _items ?? (_items = new Dictionary<string, object>());
+        public Dictionary<string, object> Items => _items ??= new Dictionary<string, object>();
 
         public string ResponseContentType
         {
             get =>
-                _responseContentType
-                ?? (_responseContentType = GetResponseContentType(Request));
+                _responseContentType ??= GetResponseContentType(Request);
             set => _responseContentType = value;
         }
 

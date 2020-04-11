@@ -329,9 +329,11 @@ namespace Emby.Server.Implementations.Data
         /// <param name="reader"></param>
         private UserItemData ReadRow(IReadOnlyList<IResultSetValue> reader)
         {
-            var userData = new UserItemData();
+            var userData = new UserItemData
+            {
+                Key = reader[0].ToString()
+            };
 
-            userData.Key = reader[0].ToString();
             //userData.UserId = reader[1].ReadGuidFromBlob();
 
             if (reader[2].SQLiteType != SQLiteType.Null)

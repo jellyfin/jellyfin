@@ -1163,9 +1163,7 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            var image = new ItemImageInfo();
-
-            image.Path = RestorePath(parts[0]);
+            var image = new ItemImageInfo { Path = RestorePath(parts[0]) };
 
             if (long.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
             {
@@ -5753,10 +5751,11 @@ namespace Emby.Server.Implementations.Data
 
         private PersonInfo GetPerson(IReadOnlyList<IResultSetValue> reader)
         {
-            var item = new PersonInfo();
-
-            item.ItemId = reader.GetGuid(0);
-            item.Name = reader.GetString(1);
+            var item = new PersonInfo
+            {
+                ItemId = reader.GetGuid(0),
+                Name = reader.GetString(1)
+            };
 
             if (!reader.IsDBNull(2))
             {
@@ -5960,10 +5959,9 @@ namespace Emby.Server.Implementations.Data
         {
             var item = new MediaStream
             {
-                Index = reader[1].ToInt()
+                Index = reader[1].ToInt(),
+                Type = (MediaStreamType)Enum.Parse(typeof(MediaStreamType), reader[2].ToString(), true)
             };
-
-            item.Type = (MediaStreamType)Enum.Parse(typeof(MediaStreamType), reader[2].ToString(), true);
 
             if (reader[3].SQLiteType != SQLiteType.Null)
             {

@@ -101,7 +101,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc />
         public string InternalMetadataPath
         {
-            get => _internalMetadataPath ?? (_internalMetadataPath = Path.Combine(DataPath, "metadata"));
+            get => _internalMetadataPath ??= Path.Combine(DataPath, "metadata");
             set => _internalMetadataPath = value;
         }
 

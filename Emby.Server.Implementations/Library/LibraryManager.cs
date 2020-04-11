@@ -2247,10 +2247,9 @@ namespace Emby.Server.Implementations.Library
                     DateCreated = DateTime.UtcNow,
                     Name = name,
                     ViewType = viewType,
-                    ForcedSortName = sortName
+                    ForcedSortName = sortName,
+                    DisplayParentId = parentId
                 };
-
-                item.DisplayParentId = parentId;
 
                 CreateItem(item, null);
 
@@ -2318,10 +2317,9 @@ namespace Emby.Server.Implementations.Library
                     DateCreated = DateTime.UtcNow,
                     Name = name,
                     ViewType = viewType,
-                    ForcedSortName = sortName
+                    ForcedSortName = sortName,
+                    DisplayParentId = parentId
                 };
-
-                item.DisplayParentId = parentId;
 
                 CreateItem(item, null);
 

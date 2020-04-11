@@ -150,10 +150,9 @@ namespace Emby.Server.Implementations.Services
                 var requestType = args[0].ParameterType;
                 var actionCtx = new ServiceMethod
                 {
-                    Id = ServiceMethod.Key(serviceType, actionName, requestType.GetMethodName())
+                    Id = ServiceMethod.Key(serviceType, actionName, requestType.GetMethodName()),
+                    ServiceAction = CreateExecFn(serviceType, requestType, mi)
                 };
-
-                actionCtx.ServiceAction = CreateExecFn(serviceType, requestType, mi);
 
                 var reqFilters = new List<IHasRequestFilter>();
 

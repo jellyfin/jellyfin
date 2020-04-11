@@ -2205,13 +2205,12 @@ namespace Emby.Server.Implementations.LiveTv
             var info = new LiveTvInfo
             {
                 Services = services,
-                IsEnabled = services.Length > 0
+                IsEnabled = services.Length > 0,
+                EnabledUsers = _userManager.Users
+                    .Where(IsLiveTvEnabled)
+                    .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
+                    .ToArray()
             };
-
-            info.EnabledUsers = _userManager.Users
-                .Where(IsLiveTvEnabled)
-                .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
-                .ToArray();
 
             return info;
         }
