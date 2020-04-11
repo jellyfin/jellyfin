@@ -347,14 +347,12 @@ namespace Emby.Server.Implementations.Playlists
                         AlbumTitle = child.Album
                     };
 
-                    var hasAlbumArtist = child as IHasAlbumArtist;
-                    if (hasAlbumArtist != null)
+                    if (child is IHasAlbumArtist hasAlbumArtist)
                     {
                         entry.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
                     }
 
-                    var hasArtist = child as IHasArtist;
-                    if (hasArtist != null)
+                    if (child is IHasArtist hasArtist)
                     {
                         entry.TrackArtist = hasArtist.Artists.FirstOrDefault();
                     }
@@ -383,14 +381,12 @@ namespace Emby.Server.Implementations.Playlists
                         AlbumTitle = child.Album
                     };
 
-                    var hasAlbumArtist = child as IHasAlbumArtist;
-                    if (hasAlbumArtist != null)
+                    if (child is IHasAlbumArtist hasAlbumArtist)
                     {
                         entry.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
                     }
 
-                    var hasArtist = child as IHasArtist;
-                    if (hasArtist != null)
+                    if (child is IHasArtist hasArtist)
                     {
                         entry.TrackArtist = hasArtist.Artists.FirstOrDefault();
                     }
@@ -419,8 +415,7 @@ namespace Emby.Server.Implementations.Playlists
                         Album = child.Album
                     };
 
-                    var hasAlbumArtist = child as IHasAlbumArtist;
-                    if (hasAlbumArtist != null)
+                    if (child is IHasAlbumArtist hasAlbumArtist)
                     {
                         entry.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
                     }
@@ -450,8 +445,7 @@ namespace Emby.Server.Implementations.Playlists
                         Album = child.Album
                     };
 
-                    var hasAlbumArtist = child as IHasAlbumArtist;
-                    if (hasAlbumArtist != null)
+                    if (child is IHasAlbumArtist hasAlbumArtist)
                     {
                         entry.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
                     }

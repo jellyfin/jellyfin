@@ -46,9 +46,7 @@ namespace Emby.Server.Implementations.Collections
                 {
                     var subItem = i;
 
-                    var episode = subItem as Episode;
-
-                    if (episode != null)
+                    if (subItem is Episode episode)
                     {
                         var series = episode.Series;
                         if (series != null && series.HasImage(ImageType.Primary))

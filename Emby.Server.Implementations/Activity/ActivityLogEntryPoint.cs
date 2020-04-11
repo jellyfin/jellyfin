@@ -485,8 +485,7 @@ namespace Emby.Server.Implementations.Activity
             var result = e.Result;
             var task = e.Task;
 
-            var activityTask = task.ScheduledTask as IConfigurableScheduledTask;
-            if (activityTask != null && !activityTask.IsLogged)
+            if (task.ScheduledTask is IConfigurableScheduledTask activityTask && !activityTask.IsLogged)
             {
                 return;
             }

@@ -755,9 +755,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var dbItem = GetItemById(folder.Id) as BasePluginFolder;
-
-            if (dbItem != null && string.Equals(dbItem.Path, folder.Path, StringComparison.OrdinalIgnoreCase))
+            if (GetItemById(folder.Id) is BasePluginFolder dbItem && string.Equals(dbItem.Path, folder.Path, StringComparison.OrdinalIgnoreCase))
             {
                 folder = dbItem;
             }
@@ -956,9 +954,7 @@ namespace Emby.Server.Implementations.Library
 
             var id = GetItemByNameId<T>(getPathFn, name);
 
-            var item = GetItemById(id) as T;
-
-            if (item == null)
+            if (!(GetItemById(id) is T item))
             {
                 var path = getPathFn(name);
                 item = new T
@@ -1679,9 +1675,8 @@ namespace Emby.Server.Implementations.Library
                     else
                     {
                         // Pull the saved db item that will include metadata
-                        var dbItem = GetItemById(video.Id) as Video;
 
-                        if (dbItem != null)
+                        if (GetItemById(video.Id) is Video dbItem)
                         {
                             video = dbItem;
                         }
@@ -2594,9 +2589,8 @@ namespace Emby.Server.Implementations.Library
                 .Select(video =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = GetItemById(video.Id) as Trailer;
 
-                    if (dbItem != null)
+                    if (GetItemById(video.Id) is Trailer dbItem)
                     {
                         video = dbItem;
                     }
@@ -2639,9 +2633,8 @@ namespace Emby.Server.Implementations.Library
                 .Select(video =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = GetItemById(video.Id) as Video;
 
-                    if (dbItem != null)
+                    if (GetItemById(video.Id) is Video dbItem)
                     {
                         video = dbItem;
                     }

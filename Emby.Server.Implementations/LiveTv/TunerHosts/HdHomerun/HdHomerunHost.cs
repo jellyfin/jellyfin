@@ -296,9 +296,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // TODO Need faster way to determine UDP vs HTTP
             var channels = await GetChannels(info, true, cancellationToken).ConfigureAwait(false);
 
-            var hdHomerunChannelInfo = channels.FirstOrDefault() as HdHomerunChannelInfo;
-
-            if (hdHomerunChannelInfo == null || hdHomerunChannelInfo.IsLegacyTuner)
+            if (!(channels.FirstOrDefault() is HdHomerunChannelInfo hdHomerunChannelInfo) || hdHomerunChannelInfo.IsLegacyTuner)
             {
                 return await GetTunerInfosUdp(info, cancellationToken).ConfigureAwait(false);
             }
@@ -512,9 +510,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var channelId = channelInfo.Id;
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            var hdHomerunChannelInfo = channelInfo as HdHomerunChannelInfo;
-
-            var isLegacyTuner = hdHomerunChannelInfo != null && hdHomerunChannelInfo.IsLegacyTuner;
+            var isLegacyTuner = channelInfo is HdHomerunChannelInfo hdHomerunChannelInfo && hdHomerunChannelInfo.IsLegacyTuner;
 
             if (isLegacyTuner)
             {

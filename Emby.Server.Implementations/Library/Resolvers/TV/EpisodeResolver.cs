@@ -25,11 +25,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 return null;
             }
 
-            var season = parent as Season;
-
             // Just in case the user decided to nest episodes.
             // Not officially supported but in some cases we can handle it.
-            if (season == null)
+            if (!(parent is Season season))
             {
                 season = parent.GetParents().OfType<Season>().FirstOrDefault();
             }
@@ -44,8 +42,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                 if (episode != null)
                 {
-                    var series = parent as Series;
-                    if (series == null)
+                    if (!(parent is Series series))
                     {
                         series = parent.GetParents().OfType<Series>().FirstOrDefault();
                     }

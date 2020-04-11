@@ -85,8 +85,7 @@ namespace Emby.Server.Implementations.Channels
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
             var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
 
-            var supportsDelete = channel as ISupportsDelete;
-            return supportsDelete != null && supportsDelete.CanDelete(item);
+            return channel is ISupportsDelete supportsDelete && supportsDelete.CanDelete(item);
         }
 
         public bool EnableMediaProbe(BaseItem item)
@@ -107,9 +106,7 @@ namespace Emby.Server.Implementations.Channels
 
             var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
 
-            var supportsDelete = channel as ISupportsDelete;
-
-            if (supportsDelete == null)
+            if (!(channel is ISupportsDelete supportsDelete))
             {
                 throw new ArgumentException();
             }
@@ -146,9 +143,7 @@ namespace Emby.Server.Implementations.Channels
                 {
                     try
                     {
-                        var hasAttributes = GetChannelProvider(i) as IHasFolderAttributes;
-
-                        return (hasAttributes != null && hasAttributes.Attributes.Contains("Recordings", StringComparer.OrdinalIgnoreCase)) == val;
+                        return (GetChannelProvider(i) is IHasFolderAttributes hasAttributes && hasAttributes.Attributes.Contains("Recordings", StringComparer.OrdinalIgnoreCase)) == val;
                     }
                     catch
                     {
@@ -423,9 +418,7 @@ namespace Emby.Server.Implementations.Channels
             var isNew = false;
             var forceUpdate = false;
 
-            var item = _libraryManager.GetItemById(id) as Channel;
-
-            if (item == null)
+            if (!(_libraryManager.GetItemById(id) is Channel item))
             {
                 item = new Channel
                 {
@@ -841,8 +834,7 @@ namespace Emby.Server.Implementations.Channels
 
             var userCacheKey = string.Empty;
 
-            var hasCacheKey = channel as IHasCacheKey;
-            if (hasCacheKey != null)
+            if (channel is IHasCacheKey hasCacheKey)
             {
                 userCacheKey = hasCacheKey.GetCacheKey(userId) ?? string.Empty;
             }
@@ -1012,20 +1004,17 @@ namespace Emby.Server.Implementations.Channels
                 }
             }
 
-            var hasArtists = item as IHasArtist;
-            if (hasArtists != null)
+            if (item is IHasArtist hasArtists)
             {
                 hasArtists.Artists = info.Artists.ToArray();
             }
 
-            var hasAlbumArtists = item as IHasAlbumArtist;
-            if (hasAlbumArtists != null)
+            if (item is IHasAlbumArtist hasAlbumArtists)
             {
                 hasAlbumArtists.AlbumArtists = info.AlbumArtists.ToArray();
             }
 
-            var trailer = item as Trailer;
-            if (trailer != null)
+            if (item is Trailer trailer)
             {
                 if (!info.TrailerTypes.SequenceEqual(trailer.TrailerTypes))
                 {
@@ -1064,8 +1053,7 @@ namespace Emby.Server.Implementations.Channels
             }
             item.ParentId = parentFolderId;
 
-            var hasSeries = item as IHasSeries;
-            if (hasSeries != null)
+            if (item is IHasSeries hasSeries)
             {
                 if (!string.Equals(hasSeries.SeriesName, info.SeriesName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -1082,8 +1070,7 @@ namespace Emby.Server.Implementations.Channels
             }
             item.ExternalId = info.Id;
 
-            var channelAudioItem = item as Audio;
-            if (channelAudioItem != null)
+            if (item is Audio channelAudioItem)
             {
                 channelAudioItem.ExtraType = info.ExtraType;
 
@@ -1091,8 +1078,7 @@ namespace Emby.Server.Implementations.Channels
                 item.Path = mediaSource == null ? null : mediaSource.Path;
             }
 
-            var channelVideoItem = item as Video;
-            if (channelVideoItem != null)
+            if (item is Video channelVideoItem)
             {
                 channelVideoItem.ExtraType = info.ExtraType;
 

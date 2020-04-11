@@ -99,38 +99,32 @@ namespace Emby.Server.Implementations.Library
 
         public List<BaseItem> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions)
         {
-            var genre = item as MusicGenre;
-            if (genre != null)
+            if (item is MusicGenre genre)
             {
                 return GetInstantMixFromGenreIds(new[] { item.Id }, user, dtoOptions);
             }
 
-            var playlist = item as Playlist;
-            if (playlist != null)
+            if (item is Playlist playlist)
             {
                 return GetInstantMixFromPlaylist(playlist, user, dtoOptions);
             }
 
-            var album = item as MusicAlbum;
-            if (album != null)
+            if (item is MusicAlbum album)
             {
                 return GetInstantMixFromAlbum(album, user, dtoOptions);
             }
 
-            var artist = item as MusicArtist;
-            if (artist != null)
+            if (item is MusicArtist artist)
             {
                 return GetInstantMixFromArtist(artist, user, dtoOptions);
             }
 
-            var song = item as Audio;
-            if (song != null)
+            if (item is Audio song)
             {
                 return GetInstantMixFromSong(song, user, dtoOptions);
             }
 
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 return GetInstantMixFromFolder(folder, user, dtoOptions);
             }

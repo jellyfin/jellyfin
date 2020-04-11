@@ -148,9 +148,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private static bool EnableRefreshMessage(BaseItem item)
         {
-            var folder = item as Folder;
-
-            if (folder == null)
+            if (!(item is Folder folder))
             {
                 return false;
             }
@@ -205,8 +203,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Item.GetParent() as Folder;
-                if (parent != null)
+                if (e.Item.GetParent() is Folder parent)
                 {
                     _foldersAddedTo.Add(parent);
                 }
@@ -267,8 +264,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Parent as Folder;
-                if (parent != null)
+                if (e.Parent is Folder parent)
                 {
                     _foldersRemovedFrom.Add(parent);
                 }

@@ -75,8 +75,7 @@ namespace Emby.Server.Implementations.UserViews
                 return false;
             }
 
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 if (folder.IsTopParent)
                 {

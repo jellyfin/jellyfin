@@ -43,8 +43,7 @@ namespace Emby.Server.Implementations.Services
                 response.StatusCode = httpResult.Status;
             }
 
-            var responseOptions = result as IHasHeaders;
-            if (responseOptions != null)
+            if (result is IHasHeaders responseOptions)
             {
                 foreach (var responseHeaders in responseOptions.Headers)
                 {

@@ -190,9 +190,7 @@ namespace Emby.Server.Implementations.Collections
 
         private void AddToCollection(Guid collectionId, IEnumerable<string> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
-            var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
-
-            if (collection == null)
+            if (!(_libraryManager.GetItemById(collectionId) is BoxSet collection))
             {
                 throw new ArgumentException("No collection exists with the supplied Id");
             }
@@ -253,9 +251,7 @@ namespace Emby.Server.Implementations.Collections
 
         public void RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds)
         {
-            var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
-
-            if (collection == null)
+            if (!(_libraryManager.GetItemById(collectionId) is BoxSet collection))
             {
                 throw new ArgumentException("No collection exists with the supplied Id");
             }
@@ -309,9 +305,7 @@ namespace Emby.Server.Implementations.Collections
 
             foreach (var item in items)
             {
-                var grouping = item as ISupportsBoxSetGrouping;
-
-                if (grouping == null)
+                if (!(item is ISupportsBoxSetGrouping grouping))
                 {
                     results[item.Id] = item;
                 }

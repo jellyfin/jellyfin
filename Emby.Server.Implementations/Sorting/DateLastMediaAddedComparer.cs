@@ -44,9 +44,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private static DateTime GetDate(BaseItem x)
         {
-            var folder = x as Folder;
-
-            if (folder != null)
+            if (x is Folder folder)
             {
                 if (folder.DateLastMediaAdded.HasValue)
                 {

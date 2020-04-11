@@ -26,9 +26,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private static DateTime GetDate(BaseItem x)
         {
-            var hasStartDate = x as LiveTvProgram;
-
-            if (hasStartDate != null)
+            if (x is LiveTvProgram hasStartDate)
             {
                 return hasStartDate.StartDate;
             }
