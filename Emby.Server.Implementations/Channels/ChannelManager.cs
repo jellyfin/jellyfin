@@ -256,11 +256,9 @@ namespace Emby.Server.Implementations.Channels
 
             var internalResult = GetChannelsInternal(query);
 
-            var dtoOptions = new DtoOptions()
-            {
-            };
+            var dtoOptions = new DtoOptions();
 
-            //TODO Fix The co-variant conversion (internalResult.Items) between Folder[] and BaseItem[], this can generate runtime issues.
+            // TODO Fix The co-variant conversion (internalResult.Items) between Folder[] and BaseItem[], this can generate runtime issues.
             var returnItems = _dtoService.GetBaseItemDtos(internalResult.Items, dtoOptions, user);
 
             var result = new QueryResult<BaseItemDto>
