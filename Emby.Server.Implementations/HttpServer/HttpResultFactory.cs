@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out string expires))
+            if (addCachePrevention && !responseHeaders.TryGetValue(HeaderNames.Expires, out _))
             {
                 responseHeaders[HeaderNames.Expires] = "0";
             }

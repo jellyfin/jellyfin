@@ -203,7 +203,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         {
                             var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                             {
                                 numberString = numberPart;
                             }
@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 return false;
             }
 
-            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
             {
                 return false;
             }
@@ -282,7 +282,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                     {
                         //channel.Number = number.ToString();
                         nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });

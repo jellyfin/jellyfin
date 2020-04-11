@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Devices
                 {
                     var value = File.ReadAllText(CachePath, Encoding.UTF8);
 
-                    if (Guid.TryParse(value, out var guid))
+                    if (Guid.TryParse(value, out _))
                     {
                         return value;
                     }

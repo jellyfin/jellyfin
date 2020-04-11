@@ -443,7 +443,7 @@ namespace Emby.Server.Implementations.Library
                 ItemRepository.DeleteItem(child.Id, CancellationToken.None);
             }
 
-            _libraryItemsCache.TryRemove(item.Id, out BaseItem removed);
+            _libraryItemsCache.TryRemove(item.Id, out _);
 
             ReportItemRemoved(item, parent);
         }

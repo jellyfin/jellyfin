@@ -1373,7 +1373,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             TriggerRefresh(recordPath);
             _libraryMonitor.ReportFileSystemChangeComplete(recordPath, false);
 
-            _activeRecordings.TryRemove(timer.Id, out var removed);
+            _activeRecordings.TryRemove(timer.Id, out _);
 
             if (recordingStatus != RecordingStatus.Completed && DateTime.UtcNow < timer.EndDate && timer.RetryCount < 10)
             {

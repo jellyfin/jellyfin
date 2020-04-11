@@ -166,7 +166,7 @@ namespace Emby.Server.Implementations.Session
 
         private async Task SendRequest(HttpRequestOptions options)
         {
-            using (var response = await _httpClient.Post(options).ConfigureAwait(false))
+            using (await _httpClient.Post(options).ConfigureAwait(false))
             {
             }
         }

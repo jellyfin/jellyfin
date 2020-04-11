@@ -798,8 +798,6 @@ namespace Emby.Server.Implementations.Library
                     nameof(user));
             }
 
-            var configPath = GetConfigurationFilePath(user);
-
             _userRepository.DeleteUser(user);
 
             // Delete user config dir

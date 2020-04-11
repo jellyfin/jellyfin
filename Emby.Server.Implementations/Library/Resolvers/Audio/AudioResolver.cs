@@ -144,10 +144,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             where T : MediaBrowser.Controller.Entities.Audio.Audio, new()
         {
             // TODO: Allow GetMultiDiscMovie in here
-            const bool supportsMultiVersion = false;
 
             var result = ResolveMultipleAudio<T>(parent, fileSystemEntries, parseName) ??
-                new MultiItemResolverResult();
+                         new MultiItemResolverResult();
 
             if (result.Items.Count == 1)
             {
