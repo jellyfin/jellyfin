@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -1057,30 +1056,19 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.SpecialFeatureCount))
             {
-                if (allExtras == null)
-                {
-                    allExtras = item.GetExtras().ToArray();
-                }
-
+                allExtras = item.GetExtras().ToArray();
                 dto.SpecialFeatureCount = allExtras.Count(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value));
             }
 
             if (options.ContainsField(ItemFields.LocalTrailerCount))
             {
-                int trailerCount = 0;
-                if (allExtras == null)
-                {
-                    allExtras = item.GetExtras().ToArray();
-                }
-
-                trailerCount += allExtras.Count(i => i.ExtraType.HasValue && i.ExtraType.Value == ExtraType.Trailer);
+                allExtras ??= item.GetExtras().ToArray();
+                dto.LocalTrailerCount = allExtras.Count(i => i.ExtraType == ExtraType.Trailer);
 
                 if (item is IHasTrailers hasTrailers)
                 {
-                    trailerCount += hasTrailers.GetTrailerCount();
+                    dto.LocalTrailerCount += hasTrailers.GetTrailerCount();
                 }
-
-                dto.LocalTrailerCount = trailerCount;
             }
 
             // Add EpisodeInfo

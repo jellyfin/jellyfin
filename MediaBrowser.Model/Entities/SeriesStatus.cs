@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Entities
         /// The continuing.
         /// </summary>
         Continuing,
-        
+
         /// <summary>
         /// The ended.
         /// </summary>

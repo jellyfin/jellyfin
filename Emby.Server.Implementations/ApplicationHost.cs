@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -44,6 +43,7 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
+using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
@@ -100,8 +100,8 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
+using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.Providers.TV.TheTVDB;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
@@ -118,8 +118,12 @@ namespace Emby.Server.Implementations
     /// </summary>
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
-        private SqliteUserRepository _userRepository;
+        /// <summary>
+        /// The environment variable prefixes to log at server startup.
+        /// </summary>
+        private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
+        private SqliteUserRepository _userRepository;
         private SqliteDisplayPreferencesRepository _displayPreferencesRepository;
 
         /// <summary>
@@ -167,10 +171,9 @@ namespace Emby.Server.Implementations
         public bool IsShuttingDown { get; private set; }
 
         /// <summary>
-        /// Gets or sets the logger.
+        /// Gets the logger.
         /// </summary>
-        /// <value>The logger.</value>
-        protected ILogger Logger { get; set; }
+        protected ILogger Logger { get; }
 
         private IPlugin[] _plugins;
 
@@ -181,10 +184,9 @@ namespace Emby.Server.Implementations
         public IReadOnlyList<IPlugin> Plugins => _plugins;
 
         /// <summary>
-        /// Gets or sets the logger factory.
+        /// Gets the logger factory.
         /// </summary>
-        /// <value>The logger factory.</value>
-        public ILoggerFactory LoggerFactory { get; protected set; }
+        protected ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
         /// Gets or sets the application paths.
@@ -225,11 +227,6 @@ namespace Emby.Server.Implementations
         /// Gets the https port for the webhost.
         /// </summary>
         public int HttpsPort { get; private set; }
-
-        /// <summary>
-        /// Gets the content root for the webhost.
-        /// </summary>
-        public string ContentRoot { get; private set; }
 
         /// <summary>
         /// Gets the server configuration manager.
@@ -315,8 +312,6 @@ namespace Emby.Server.Implementations
 
         private IMediaSourceManager MediaSourceManager { get; set; }
 
-        private readonly IConfiguration _configuration;
-
         /// <summary>
         /// Gets the installation manager.
         /// </summary>
@@ -354,11 +349,8 @@ namespace Emby.Server.Implementations
             IStartupOptions options,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
-            INetworkManager networkManager,
-            IConfiguration configuration)
+            INetworkManager networkManager)
         {
-            _configuration = configuration;
-
             XmlSerializer = new MyXmlSerializer();
 
             NetworkManager = networkManager;
@@ -574,7 +566,8 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public async Task InitAsync(IServiceCollection serviceCollection)
+        /// <inheritdoc/>
+        public async Task InitAsync(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
@@ -607,13 +600,7 @@ namespace Emby.Server.Implementations
 
             DiscoverTypes();
 
-            await RegisterResources(serviceCollection).ConfigureAwait(false);
-
-            ContentRoot = ServerConfigurationManager.Configuration.DashboardSourcePath;
-            if (string.IsNullOrEmpty(ContentRoot))
-            {
-                ContentRoot = ServerConfigurationManager.ApplicationPaths.WebPath;
-            }
+            await RegisterServices(serviceCollection, startupConfig).ConfigureAwait(false);
         }
 
         public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
@@ -639,14 +626,14 @@ namespace Emby.Server.Implementations
             var response = context.Response;
             var localPath = context.Request.Path.ToString();
 
-            var req = new WebSocketSharpRequest(request, response, request.Path, Logger);
+            var req = new WebSocketSharpRequest(request, response, request.Path, LoggerFactory.CreateLogger<WebSocketSharpRequest>());
             await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Registers resources that classes will depend on
+        /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
-        protected async Task RegisterResources(IServiceCollection serviceCollection)
+        protected async Task RegisterServices(IServiceCollection serviceCollection, IConfiguration startupConfig)
         {
             serviceCollection.AddMemoryCache();
 
@@ -655,16 +642,13 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            serviceCollection.AddSingleton<IConfiguration>(_configuration);
-
             serviceCollection.AddSingleton(JsonSerializer);
 
-            serviceCollection.AddSingleton(LoggerFactory);
-            serviceCollection.AddLogging();
-            serviceCollection.AddSingleton(Logger);
+            // TODO: Support for injecting ILogger should be deprecated in favour of ILogger<T> and this removed
+            serviceCollection.AddSingleton<ILogger>(Logger);
 
             serviceCollection.AddSingleton(FileSystemManager);
-            serviceCollection.AddSingleton<TvDbClientManager>();
+            serviceCollection.AddSingleton<TvdbClientManager>();
 
             HttpClient = new HttpClientManager.HttpClientManager(
                 ApplicationPaths,
@@ -749,7 +733,7 @@ namespace Emby.Server.Implementations
                 ProcessFactory,
                 LocalizationManager,
                 () => SubtitleEncoder,
-                _configuration,
+                startupConfig,
                 StartupOptions.FFmpegPath);
             serviceCollection.AddSingleton(MediaEncoder);
 
@@ -767,20 +751,9 @@ namespace Emby.Server.Implementations
             CertificateInfo = GetCertificateInfo(true);
             Certificate = GetCertificate(CertificateInfo);
 
-            HttpServer = new HttpListenerHost(
-                this,
-                LoggerFactory.CreateLogger<HttpListenerHost>(),
-                ServerConfigurationManager,
-                _configuration,
-                NetworkManager,
-                JsonSerializer,
-                XmlSerializer,
-                CreateHttpListener())
-            {
-                GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading")
-            };
-
-            serviceCollection.AddSingleton(HttpServer);
+            serviceCollection.AddSingleton<ServiceController>();
+            serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
+            serviceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
             ImageProcessor = new ImageProcessor(LoggerFactory.CreateLogger<ImageProcessor>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager, ImageEncoder, () => LibraryManager, () => MediaEncoder);
             serviceCollection.AddSingleton(ImageProcessor);
@@ -806,7 +779,18 @@ namespace Emby.Server.Implementations
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
-            SessionManager = new SessionManager(UserDataManager, LoggerFactory, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, this, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            SessionManager = new SessionManager(
+                LoggerFactory.CreateLogger<SessionManager>(),
+                UserDataManager,
+                LibraryManager,
+                UserManager,
+                musicManager,
+                DtoService,
+                ImageProcessor,
+                this,
+                AuthenticationRepository,
+                DeviceManager,
+                MediaSourceManager);
             serviceCollection.AddSingleton(SessionManager);
 
             serviceCollection.AddSingleton<IDlnaManager>(
@@ -823,15 +807,23 @@ namespace Emby.Server.Implementations
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             serviceCollection.AddSingleton(UserViewManager);
 
-            NotificationManager = new NotificationManager(LoggerFactory, UserManager, ServerConfigurationManager);
+            NotificationManager = new NotificationManager(
+                LoggerFactory.CreateLogger<NotificationManager>(),
+                UserManager,
+                ServerConfigurationManager);
             serviceCollection.AddSingleton(NotificationManager);
 
             serviceCollection.AddSingleton<IDeviceDiscovery>(new DeviceDiscovery(ServerConfigurationManager));
 
-            ChapterManager = new ChapterManager(LibraryManager, LoggerFactory, ServerConfigurationManager, ItemRepository);
+            ChapterManager = new ChapterManager(ItemRepository);
             serviceCollection.AddSingleton(ChapterManager);
 
-            EncodingManager = new MediaEncoder.EncodingManager(FileSystemManager, LoggerFactory, MediaEncoder, ChapterManager, LibraryManager);
+            EncodingManager = new MediaEncoder.EncodingManager(
+                LoggerFactory.CreateLogger<MediaEncoder.EncodingManager>(),
+                FileSystemManager,
+                MediaEncoder,
+                ChapterManager,
+                LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
 
             var activityLogRepo = GetActivityLogRepository();
@@ -874,6 +866,14 @@ namespace Emby.Server.Implementations
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
         }
 
+        /// <summary>
+        /// Create services registered with the service container that need to be initialized at application startup.
+        /// </summary>
+        public void InitializeServices()
+        {
+            HttpServer = Resolve<IHttpServer>();
+        }
+
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
         {
             // Distinct these to prevent users from reporting problems that aren't actually problems
@@ -881,6 +881,18 @@ namespace Emby.Server.Implementations
                 .GetCommandLineArgs()
                 .Distinct();
 
+            // Get all relevant environment variables
+            var allEnvVars = Environment.GetEnvironmentVariables();
+            var relevantEnvVars = new Dictionary<object, object>();
+            foreach (var key in allEnvVars.Keys)
+            {
+                if (_relevantEnvVarPrefixes.Any(prefix => key.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                {
+                    relevantEnvVars.Add(key, allEnvVars[key]);
+                }
+            }
+
+            logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
             logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
@@ -990,48 +1002,12 @@ namespace Emby.Server.Implementations
             AuthenticatedAttribute.AuthService = AuthService;
         }
 
-        private async void PluginInstalled(object sender, GenericEventArgs<VersionInfo> args)
-        {
-            string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
-            var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
-                        .Select(Assembly.LoadFrom)
-                        .SelectMany(x => x.ExportedTypes)
-                        .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
-                        .ToArray();
-
-            int oldLen = _allConcreteTypes.Length;
-            Array.Resize(ref _allConcreteTypes, oldLen + types.Length);
-            types.CopyTo(_allConcreteTypes, oldLen);
-
-            var plugins = types.Where(x => x.IsAssignableFrom(typeof(IPlugin)))
-                    .Select(CreateInstanceSafe)
-                    .Where(x => x != null)
-                    .Cast<IPlugin>()
-                    .Select(LoadPlugin)
-                    .Where(x => x != null)
-                    .ToArray();
-
-            oldLen = _plugins.Length;
-            Array.Resize(ref _plugins, oldLen + plugins.Length);
-            plugins.CopyTo(_plugins, oldLen);
-
-            var entries = types.Where(x => x.IsAssignableFrom(typeof(IServerEntryPoint)))
-                .Select(CreateInstanceSafe)
-                .Where(x => x != null)
-                .Cast<IServerEntryPoint>()
-                .ToList();
-
-            await Task.WhenAll(StartEntryPoints(entries, true)).ConfigureAwait(false);
-            await Task.WhenAll(StartEntryPoints(entries, false)).ConfigureAwait(false);
-        }
-
         /// <summary>
         /// Finds the parts.
         /// </summary>
         public void FindParts()
         {
             InstallationManager = ServiceProvider.GetService<IInstallationManager>();
-            InstallationManager.PluginInstalled += PluginInstalled;
 
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
@@ -1045,7 +1021,7 @@ namespace Emby.Server.Implementations
                         .Where(i => i != null)
                         .ToArray();
 
-            HttpServer.Init(GetExports<IService>(false), GetExports<IWebSocketListener>(), GetUrlPrefixes());
+            HttpServer.Init(GetExportTypes<IService>(), GetExports<IWebSocketListener>(), GetUrlPrefixes());
 
             LibraryManager.AddParts(
                 GetExports<IResolverIgnoreRule>(),
@@ -1139,7 +1115,7 @@ namespace Emby.Server.Implementations
                 {
                     exportedTypes = ass.GetExportedTypes();
                 }
-                catch (TypeLoadException ex)
+                catch (FileNotFoundException ex)
                 {
                     Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
                     continue;
@@ -1178,8 +1154,6 @@ namespace Emby.Server.Implementations
                 return prefixes;
             });
         }
-
-        protected IHttpListener CreateHttpListener() => new WebSocketSharpListener(Logger);
 
         private CertificateInfo GetCertificateInfo(bool generateCertificate)
         {
@@ -1490,18 +1464,10 @@ namespace Emby.Server.Implementations
         public string GetLocalApiUrl(ReadOnlySpan<char> host)
         {
             var url = new StringBuilder(64);
-            if (EnableHttps)
-            {
-                url.Append("https://");
-            }
-            else
-            {
-                url.Append("http://");
-            }
-
-            url.Append(host)
+            url.Append(EnableHttps ? "https://" : "http://")
+                .Append(host)
                 .Append(':')
-                .Append(HttpPort);
+                .Append(EnableHttps ? HttpsPort : HttpPort);
 
             string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
             if (baseUrl.Length != 0)
@@ -1774,7 +1740,7 @@ namespace Emby.Server.Implementations
                 }
 
                 _userRepository?.Dispose();
-                _displayPreferencesRepository.Dispose();
+                _displayPreferencesRepository?.Dispose();
             }
 
             _userRepository = null;

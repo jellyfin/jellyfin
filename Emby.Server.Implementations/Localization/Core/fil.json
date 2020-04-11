@@ -16,7 +16,6 @@
     "TvShows": "Pelikula",
     "System": "Sistema",
     "Sync": "Pag-sync",
-    "SubtitlesDownloadedForItem": "Naidownload na ang subtitles {0}",
     "SubtitleDownloadFailureFromForItem": "Hindi naidownload ang subtitles {0} para sa {1}",
     "StartupEmbyServerIsLoading": "Nagloload ang Jellyfin Server. Sandaling maghintay.",
     "Songs": "Kanta",
@@ -91,5 +90,13 @@
     "Artists": "Artista",
     "Application": "Aplikasyon",
     "AppDeviceValues": "Aplikasyon: {0}, Aparato: {1}",
-    "Albums": "Albums"
+    "Albums": "Albums",
+    "TaskRefreshLibrary": "Suriin ang nasa librerya",
+    "TaskRefreshChapterImagesDescription": "Gumawa ng larawan para sa mga pelikula na may kabanata",
+    "TaskRefreshChapterImages": "Kunin ang mga larawan ng kabanata",
+    "TaskCleanCacheDescription": "Tanggalin ang mga cache file na hindi na kailangan ng systema.",
+    "TasksChannelsCategory": "Palabas sa internet",
+    "TasksLibraryCategory": "Librerya",
+    "TasksMaintenanceCategory": "Pagpapanatili",
+    "HomeVideos": "Sariling pelikula"
 }

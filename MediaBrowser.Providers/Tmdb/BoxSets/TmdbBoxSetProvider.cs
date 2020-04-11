@@ -37,7 +37,14 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
 
-        public TmdbBoxSetProvider(ILogger logger, IJsonSerializer json, IServerConfigurationManager config, IFileSystem fileSystem, ILocalizationManager localization, IHttpClient httpClient, ILibraryManager libraryManager)
+        public TmdbBoxSetProvider(
+            ILogger<TmdbBoxSetProvider> logger,
+            IJsonSerializer json,
+            IServerConfigurationManager config,
+            IFileSystem fileSystem,
+            ILocalizationManager localization,
+            IHttpClient httpClient,
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _json = json;

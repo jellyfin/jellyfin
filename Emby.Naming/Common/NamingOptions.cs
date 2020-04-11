@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Linq;
@@ -506,7 +505,63 @@ namespace Emby.Naming.Common
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-short",
                     MediaType = MediaType.Video
-                }
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.BehindTheScenes,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "behind the scenes",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.DeletedScene,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "deleted scenes",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Interview,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "interviews",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Scene,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "scenes",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Sample,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "samples",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Clip,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "shorts",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Clip,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "featurettes",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Unknown,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "extras",
+                    MediaType = MediaType.Video,
+                },
             };
 
             Format3DRules = new[]

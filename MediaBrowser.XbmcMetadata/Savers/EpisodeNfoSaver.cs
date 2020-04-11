@@ -12,14 +12,32 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
+    /// <summary>
+    /// Nfo saver for episodes.
+    /// </summary>
     public class EpisodeNfoSaver : BaseNfoSaver
     {
-        public EpisodeNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodeNfoSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="logger">The logger.</param>
+        public EpisodeNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger<EpisodeNfoSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
@@ -57,7 +75,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var formatString = ConfigurationManager.GetNfoConfiguration().ReleaseDateFormat;
 
-                writer.WriteElementString("aired", episode.PremiereDate.Value.ToLocalTime().ToString(formatString));
+                writer.WriteElementString("aired", episode.PremiereDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
             }
 
             if (!episode.ParentIndexNumber.HasValue || episode.ParentIndexNumber.Value == 0)

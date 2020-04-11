@@ -27,7 +27,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <param name="fileSystem">The file system.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="config">The configuration manager.</param>
-        public MusicArtistResolver(ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager, IServerConfigurationManager config)
+        public MusicArtistResolver(
+            ILogger<MusicArtistResolver> logger,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager,
+            IServerConfigurationManager config)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -80,14 +84,17 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             }
 
             // Avoid mis-identifying top folders
-            if (args.Parent.IsRoot) return null;
+            if (args.Parent.IsRoot)
+            {
+                return null;
+            }
 
             var directoryService = args.DirectoryService;
 
             var albumResolver = new MusicAlbumResolver(_logger, _fileSystem, _libraryManager);
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Where(i => i.IsDirectory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService, args.GetLibraryOptions())) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Where(i => i.IsDirectory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService)) ? new MusicArtist() : null;
         }
     }
 }

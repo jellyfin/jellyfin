@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.People
     {
         public PersonMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<PersonMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

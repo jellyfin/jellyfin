@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -438,10 +437,10 @@ namespace Emby.Server.Implementations.Library
 
             item.SetParent(null);
 
-            ItemRepository.DeleteItem(item.Id, CancellationToken.None);
+            ItemRepository.DeleteItem(item.Id);
             foreach (var child in children)
             {
-                ItemRepository.DeleteItem(child.Id, CancellationToken.None);
+                ItemRepository.DeleteItem(child.Id);
             }
 
             _libraryItemsCache.TryRemove(item.Id, out BaseItem removed);
@@ -944,7 +943,6 @@ namespace Emby.Server.Implementations.Library
                     IncludeItemTypes = new[] { typeof(T).Name },
                     Name = name,
                     DtoOptions = options
-
                 }).Cast<MusicArtist>()
                 .OrderBy(i => i.IsAccessedByName ? 1 : 0)
                 .Cast<T>()
@@ -1080,7 +1078,7 @@ namespace Emby.Server.Implementations.Library
 
             var innerProgress = new ActionableProgress<double>();
 
-            innerProgress.RegisterAction(pct => progress.Report(pct * pct * 0.96));
+            innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true).ConfigureAwait(false);
@@ -1174,7 +1172,6 @@ namespace Emby.Server.Implementations.Library
 
             return _fileSystem.GetDirectoryPaths(ConfigurationManager.ApplicationPaths.DefaultUserViewsPath)
                 .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders, refreshQueue))
-                .OrderBy(i => i.Name)
                 .ToList();
         }
 
@@ -1406,24 +1403,31 @@ namespace Emby.Server.Implementations.Library
 
         private void SetTopParentOrAncestorIds(InternalItemsQuery query)
         {
-            if (query.AncestorIds.Length == 0)
+            var ancestorIds = query.AncestorIds;
+            int len = ancestorIds.Length;
+            if (len == 0)
             {
                 return;
             }
 
-            var parents = query.AncestorIds.Select(i => GetItemById(i)).ToList();
-
-            if (parents.All(i => i is ICollectionFolder || i is UserView))
+            var parents = new BaseItem[len];
+            for (int i = 0; i < len; i++)
             {
-                // Optimize by querying against top level views
-                query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
-                query.AncestorIds = Array.Empty<Guid>();
-
-                // Prevent searching in all libraries due to empty filter
-                if (query.TopParentIds.Length == 0)
+                parents[i] = GetItemById(ancestorIds[i]);
+                if (!(parents[i] is ICollectionFolder || parents[i] is UserView))
                 {
-                    query.TopParentIds = new[] { Guid.NewGuid() };
+                    return;
                 }
+            }
+
+            // Optimize by querying against top level views
+            query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).ToArray();
+            query.AncestorIds = Array.Empty<Guid>();
+
+            // Prevent searching in all libraries due to empty filter
+            if (query.TopParentIds.Length == 0)
+            {
+                query.TopParentIds = new[] { Guid.NewGuid() };
             }
         }
 
@@ -1585,7 +1589,7 @@ namespace Emby.Server.Implementations.Library
         public async Task<IEnumerable<Video>> GetIntros(BaseItem item, User user)
         {
             var tasks = IntroProviders
-                .OrderBy(i => i.GetType().Name.IndexOf("Default", StringComparison.OrdinalIgnoreCase) == -1 ? 0 : 1)
+                .OrderBy(i => i.GetType().Name.Contains("Default", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
                 .Take(1)
                 .Select(i => GetIntros(i, item, user));
 
@@ -2363,33 +2367,22 @@ namespace Emby.Server.Implementations.Library
             new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
-        public bool IsVideoFile(string path, LibraryOptions libraryOptions)
+        /// <inheritdoc />
+        public bool IsVideoFile(string path)
         {
             var resolver = new VideoResolver(GetNamingOptions());
             return resolver.IsVideoFile(path);
         }
 
-        public bool IsVideoFile(string path)
-        {
-            return IsVideoFile(path, new LibraryOptions());
-        }
-
-        public bool IsAudioFile(string path, LibraryOptions libraryOptions)
-        {
-            var parser = new AudioFileParser(GetNamingOptions());
-            return parser.IsAudioFile(path);
-        }
-
+        /// <inheritdoc />
         public bool IsAudioFile(string path)
-        {
-            return IsAudioFile(path, new LibraryOptions());
-        }
+            => AudioFileParser.IsAudioFile(path, GetNamingOptions());
 
+        /// <inheritdoc />
         public int? GetSeasonNumberFromPath(string path)
-        {
-            return SeasonPathParser.Parse(path, true, true).SeasonNumber;
-        }
+            => SeasonPathParser.Parse(path, true, true).SeasonNumber;
 
+        /// <inheritdoc />
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
         {
             var series = episode.Series;
@@ -2616,14 +2609,12 @@ namespace Emby.Server.Implementations.Library
                 }).OrderBy(i => i.Path);
         }
 
-        private static readonly string[] ExtrasSubfolderNames = new[] { "extras", "specials", "shorts", "scenes", "featurettes", "behind the scenes", "deleted scenes", "interviews" };
-
         public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var namingOptions = GetNamingOptions();
 
             var files = owner.IsInMixedFolder ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => ExtrasSubfolderNames.Contains(i.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                .Where(i => BaseItem.AllExtrasTypesFolderNames.Contains(i.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 

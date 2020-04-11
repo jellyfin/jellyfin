@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Genres
     {
         public GenreMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<GenreMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

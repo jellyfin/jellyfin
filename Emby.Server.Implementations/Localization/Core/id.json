@@ -54,7 +54,6 @@
     "User": "Pengguna",
     "System": "Sistem",
     "Sync": "Sinkron",
-    "SubtitlesDownloadedForItem": "Talop telah diunduh untuk {0}",
     "Shows": "Tayangan",
     "ServerNameNeedsToBeRestarted": "{0} perlu dimuat ulang",
     "ScheduledTaskStartedWithName": "{0} dimulai",
@@ -91,5 +90,6 @@
     "NotificationOptionVideoPlayback": "Pemutaran video dimulai",
     "NotificationOptionAudioPlaybackStopped": "Pemutaran audio berhenti",
     "NotificationOptionAudioPlayback": "Pemutaran audio dimulai",
-    "MixedContent": "Konten campur"
+    "MixedContent": "Konten campur",
+    "PluginUninstalledWithName": "{0} telah dihapus"
 }

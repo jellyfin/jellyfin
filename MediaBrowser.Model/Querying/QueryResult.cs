@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -29,6 +28,12 @@ namespace MediaBrowser.Model.Querying
         public QueryResult()
         {
             Items = Array.Empty<T>();
+        }
+
+        public QueryResult(IReadOnlyList<T> items)
+        {
+            Items = items;
+            TotalRecordCount = items.Count;
         }
     }
 }

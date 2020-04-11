@@ -121,7 +121,24 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         private SubtitleResolver _subtitleResolver;
-        public FFProbeProvider(ILogger logger, IMediaSourceManager mediaSourceManager, IChannelManager channelManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager, ILibraryManager libraryManager)
+
+        public FFProbeProvider(
+            ILogger<FFProbeProvider> logger,
+            IMediaSourceManager mediaSourceManager,
+            IChannelManager channelManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IItemRepository itemRepo,
+            IBlurayExaminer blurayExaminer,
+            ILocalizationManager localization,
+            IApplicationPaths appPaths,
+            IJsonSerializer json,
+            IEncodingManager encodingManager,
+            IFileSystem fileSystem,
+            IServerConfigurationManager config,
+            ISubtitleManager subtitleManager,
+            IChapterManager chapterManager,
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -177,7 +194,19 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
             }
 
-            var prober = new FFProbeVideoInfo(_logger, _mediaSourceManager, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager, _chapterManager, _libraryManager);
+            var prober = new FFProbeVideoInfo(
+                _logger,
+                _mediaSourceManager,
+                _mediaEncoder,
+                _itemRepo,
+                _blurayExaminer,
+                _localization,
+                _encodingManager,
+                _fileSystem,
+                _config,
+                _subtitleManager,
+                _chapterManager,
+                _libraryManager);
 
             return prober.ProbeVideo(item, options, cancellationToken);
         }

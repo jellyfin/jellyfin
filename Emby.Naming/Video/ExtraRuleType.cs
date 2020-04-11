@@ -1,23 +1,27 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 namespace Emby.Naming.Video
 {
     public enum ExtraRuleType
     {
         /// <summary>
-        /// The suffix
+        /// Match <see cref="ExtraRule.Token"/> against a suffix in the file name.
         /// </summary>
         Suffix = 0,
 
         /// <summary>
-        /// The filename
+        /// Match <see cref="ExtraRule.Token"/> against the file name, excluding the file extension.
         /// </summary>
         Filename = 1,
 
         /// <summary>
-        /// The regex
+        /// Match <see cref="ExtraRule.Token"/> against the file name, including the file extension.
         /// </summary>
-        Regex = 2
+        Regex = 2,
+
+        /// <summary>
+        /// Match <see cref="ExtraRule.Token"/> against the name of the directory containing the file.
+        /// </summary>
+        DirectoryName = 3,
     }
 }

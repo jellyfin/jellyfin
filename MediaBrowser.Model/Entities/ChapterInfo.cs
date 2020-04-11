@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 
@@ -27,6 +26,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
+
         public DateTime ImageDateModified { get; set; }
 
         public string ImageTag { get; set; }

@@ -37,7 +37,12 @@ namespace MediaBrowser.Providers.Tmdb.People
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
 
-        public TmdbPersonProvider(IFileSystem fileSystem, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IHttpClient httpClient, ILogger logger)
+        public TmdbPersonProvider(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            IJsonSerializer jsonSerializer,
+            IHttpClient httpClient,
+            ILogger<TmdbPersonProvider> logger)
         {
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;

@@ -8,6 +8,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
@@ -25,15 +26,21 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         private readonly ILogger _logger;
 
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
-        public DeleteCacheFileTask(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        public DeleteCacheFileTask(
+            IApplicationPaths appPaths,
+            ILogger<DeleteCacheFileTask> logger,
+            IFileSystem fileSystem,
+            ILocalizationManager localization)
         {
             ApplicationPaths = appPaths;
             _logger = logger;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         /// <summary>
@@ -158,11 +165,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
-        public string Name => "Clean Cache Directory";
+        public string Name => _localization.GetLocalizedString("TaskCleanCache");
 
-        public string Description => "Deletes cache files no longer needed by the system.";
+        public string Description => _localization.GetLocalizedString("TaskCleanCacheDescription");
 
-        public string Category => "Maintenance";
+        public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
         public string Key => "DeleteCacheFiles";
 

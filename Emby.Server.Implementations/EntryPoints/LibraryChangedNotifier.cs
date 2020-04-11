@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -56,7 +55,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly IProviderManager _providerManager;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, IProviderManager providerManager)
+        public LibraryChangedNotifier(
+            ILibraryManager libraryManager,
+            ISessionManager sessionManager,
+            IUserManager userManager,
+            ILogger<LibraryChangedNotifier> logger,
+            IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -13,39 +12,38 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Session;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
-    public class UserDataChangeNotifier : IServerEntryPoint
+    public sealed class UserDataChangeNotifier : IServerEntryPoint
     {
+        private const int UpdateDuration = 500;
+
         private readonly ISessionManager _sessionManager;
-        private readonly ILogger _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly IUserManager _userManager;
 
-        private readonly object _syncLock = new object();
-        private Timer UpdateTimer { get; set; }
-        private const int UpdateDuration = 500;
-
         private readonly Dictionary<Guid, List<BaseItem>> _changedItems = new Dictionary<Guid, List<BaseItem>>();
 
-        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, ILogger logger, IUserManager userManager)
+        private readonly object _syncLock = new object();
+        private Timer _updateTimer;
+
+
+        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, IUserManager userManager)
         {
             _userDataManager = userDataManager;
             _sessionManager = sessionManager;
-            _logger = logger;
             _userManager = userManager;
         }
 
         public Task RunAsync()
         {
-            _userDataManager.UserDataSaved += _userDataManager_UserDataSaved;
+            _userDataManager.UserDataSaved += OnUserDataManagerUserDataSaved;
 
             return Task.CompletedTask;
         }
 
-        void _userDataManager_UserDataSaved(object sender, UserDataSaveEventArgs e)
+        void OnUserDataManagerUserDataSaved(object sender, UserDataSaveEventArgs e)
         {
             if (e.SaveReason == UserDataSaveReason.PlaybackProgress)
             {
@@ -54,14 +52,17 @@ namespace Emby.Server.Implementations.EntryPoints
 
             lock (_syncLock)
             {
-                if (UpdateTimer == null)
+                if (_updateTimer == null)
                 {
-                    UpdateTimer = new Timer(UpdateTimerCallback, null, UpdateDuration,
-                                                   Timeout.Infinite);
+                    _updateTimer = new Timer(
+                        UpdateTimerCallback,
+                        null,
+                        UpdateDuration,
+                        Timeout.Infinite);
                 }
                 else
                 {
-                    UpdateTimer.Change(UpdateDuration, Timeout.Infinite);
+                    _updateTimer.Change(UpdateDuration, Timeout.Infinite);
                 }
 
                 if (!_changedItems.TryGetValue(e.UserId, out List<BaseItem> keys))
@@ -97,10 +98,10 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 var task = SendNotifications(changes, CancellationToken.None);
 
-                if (UpdateTimer != null)
+                if (_updateTimer != null)
                 {
-                    UpdateTimer.Dispose();
-                    UpdateTimer = null;
+                    _updateTimer.Dispose();
+                    _updateTimer = null;
                 }
             }
         }
@@ -145,13 +146,13 @@ namespace Emby.Server.Implementations.EntryPoints
 
         public void Dispose()
         {
-            if (UpdateTimer != null)
+            if (_updateTimer != null)
             {
-                UpdateTimer.Dispose();
-                UpdateTimer = null;
+                _updateTimer.Dispose();
+                _updateTimer = null;
             }
 
-            _userDataManager.UserDataSaved -= _userDataManager_UserDataSaved;
+            _userDataManager.UserDataSaved -= OnUserDataManagerUserDataSaved;
         }
     }
 }

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
@@ -29,7 +27,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
-    public class ActivityLogEntryPoint : IServerEntryPoint
+    public sealed class ActivityLogEntryPoint : IServerEntryPoint
     {
         private readonly ILogger _logger;
         private readonly IInstallationManager _installationManager;
@@ -39,7 +37,6 @@ namespace Emby.Server.Implementations.Activity
         private readonly ILocalizationManager _localization;
         private readonly ISubtitleManager _subManager;
         private readonly IUserManager _userManager;
-        private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
 
         /// <summary>
@@ -64,8 +61,7 @@ namespace Emby.Server.Implementations.Activity
             ILocalizationManager localization,
             IInstallationManager installationManager,
             ISubtitleManager subManager,
-            IUserManager userManager,
-            IServerApplicationHost appHost)
+            IUserManager userManager)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -76,7 +72,6 @@ namespace Emby.Server.Implementations.Activity
             _installationManager = installationManager;
             _subManager = subManager;
             _userManager = userManager;
-            _appHost = appHost;
         }
 
         public Task RunAsync()
@@ -141,7 +136,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
                     e.Provider,
-                    Notifications.Notifications.GetItemName(e.Item)),
+                    Emby.Notifications.NotificationEntryPoint.GetItemName(e.Item)),
                 Type = "SubtitleDownloadFailure",
                 ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message
@@ -533,6 +528,7 @@ namespace Emby.Server.Implementations.Activity
         private void CreateLogEntry(ActivityLogEntry entry)
             => _activityManager.Create(entry);
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _taskManager.TaskCompleted -= OnTaskCompleted;

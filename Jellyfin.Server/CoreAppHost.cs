@@ -4,7 +4,6 @@ using Emby.Server.Implementations;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server
@@ -23,23 +22,20 @@ namespace Jellyfin.Server
         /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="imageEncoder">The <see cref="IImageEncoder" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
-        /// <param name="configuration">The <see cref="IConfiguration" /> to be used by the <see cref="CoreAppHost" />.</param>
         public CoreAppHost(
             ServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             StartupOptions options,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
-            INetworkManager networkManager,
-            IConfiguration configuration)
+            INetworkManager networkManager)
             : base(
                 applicationPaths,
                 loggerFactory,
                 options,
                 fileSystem,
                 imageEncoder,
-                networkManager,
-                configuration)
+                networkManager)
         {
         }
 

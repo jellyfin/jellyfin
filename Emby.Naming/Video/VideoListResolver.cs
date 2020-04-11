@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -34,11 +33,7 @@ namespace Emby.Naming.Video
             // See the unit test TestStackedWithTrailer
             var nonExtras = videoInfos
                 .Where(i => i.ExtraType == null)
-                .Select(i => new FileSystemMetadata
-                {
-                    FullName = i.Path,
-                    IsDirectory = i.IsDirectory
-                });
+                .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = i.IsDirectory });
 
             var stackResult = new StackResolver(_options)
                 .Resolve(nonExtras).ToList();
@@ -58,11 +53,7 @@ namespace Emby.Naming.Video
 
                 info.Year = info.Files[0].Year;
 
-                var extraBaseNames = new List<string>
-                {
-                    stack.Name,
-                    Path.GetFileNameWithoutExtension(stack.Files[0])
-                };
+                var extraBaseNames = new List<string> { stack.Name, Path.GetFileNameWithoutExtension(stack.Files[0]) };
 
                 var extras = GetExtras(remainingFiles, extraBaseNames);
 
@@ -84,10 +75,7 @@ namespace Emby.Naming.Video
 
             foreach (var media in standaloneMedia)
             {
-                var info = new VideoInfo(media.Name)
-                {
-                    Files = new List<VideoFileInfo> { media }
-                };
+                var info = new VideoInfo(media.Name) { Files = new List<VideoFileInfo> { media } };
 
                 info.Year = info.Files[0].Year;
 
@@ -223,8 +211,8 @@ namespace Emby.Naming.Video
             {
                 testFilename = testFilename.Substring(folderName.Length).Trim();
                 return string.IsNullOrEmpty(testFilename)
-                    || testFilename[0] == '-'
-                    || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
+                   || testFilename[0] == '-'
+                   || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 
             return false;
@@ -240,7 +228,8 @@ namespace Emby.Naming.Video
 
             return remainingFiles
                 .Where(i => i.ExtraType == null)
-                .Where(i => baseNames.Any(b => i.FileNameWithoutExtension.StartsWith(b, StringComparison.OrdinalIgnoreCase)))
+                .Where(i => baseNames.Any(b =>
+                    i.FileNameWithoutExtension.StartsWith(b, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
         }
     }

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -288,7 +287,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public static void TryBind(this IStatement statement, string name, byte[] value)
+        public static void TryBind(this IStatement statement, string name, ReadOnlySpan<byte> value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Runtime.InteropServices;
@@ -36,7 +35,7 @@ namespace MediaBrowser.Common.System
                     case OperatingSystemId.Linux: return "Linux";
                     case OperatingSystemId.Darwin: return "macOS";
                     case OperatingSystemId.Windows: return "Windows";
-                    default: throw new Exception($"Unknown OS {Id}");
+                    default: throw new PlatformNotSupportedException($"Unknown OS {Id}");
                 }
             }
         }
@@ -54,20 +53,20 @@ namespace MediaBrowser.Common.System
                 default:
                     {
                         string osDescription = RuntimeInformation.OSDescription;
-                        if (osDescription.IndexOf("linux", StringComparison.OrdinalIgnoreCase) != -1)
+                        if (osDescription.Contains("linux", StringComparison.OrdinalIgnoreCase))
                         {
                             return OperatingSystemId.Linux;
                         }
-                        else if (osDescription.IndexOf("darwin", StringComparison.OrdinalIgnoreCase) != -1)
+                        else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
                         {
                             return OperatingSystemId.Darwin;
                         }
-                        else if (osDescription.IndexOf("bsd", StringComparison.OrdinalIgnoreCase) != -1)
+                        else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
                         {
                             return OperatingSystemId.BSD;
                         }
 
-                        throw new Exception($"Can't resolve OS with description: '{osDescription}'");
+                        throw new PlatformNotSupportedException($"Can't resolve OS with description: '{osDescription}'");
                     }
             }
         }

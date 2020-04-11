@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +25,7 @@ namespace Emby.Server.Implementations.Data
             IServerApplicationPaths appPaths)
             : base(logger)
         {
-            _jsonOptions = JsonDefaults.GetOptions();;
+            _jsonOptions = JsonDefaults.GetOptions();
 
             DbFilePath = Path.Combine(appPaths.DataPath, "users.db");
         }

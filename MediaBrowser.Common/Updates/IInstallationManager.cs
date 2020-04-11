@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -89,7 +88,7 @@ namespace MediaBrowser.Common.Updates
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The available plugin updates.</returns>
-        IAsyncEnumerable<VersionInfo> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
+        Task<IEnumerable<VersionInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Installs the package.

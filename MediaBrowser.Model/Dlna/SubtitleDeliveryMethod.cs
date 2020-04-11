@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -19,7 +18,7 @@ namespace MediaBrowser.Model.Dlna
         /// The external
         /// </summary>
         External = 2,
-        
+
         /// <summary>
         /// The HLS
         /// </summary>

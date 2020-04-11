@@ -8,10 +8,9 @@ namespace MediaBrowser.Common.Net
     /// <summary>
     /// Class HttpResponseInfo.
     /// </summary>
-    public class HttpResponseInfo : IDisposable
+    public sealed class HttpResponseInfo : IDisposable
     {
 #pragma warning disable CS1591
-#pragma warning disable SA1600
         public HttpResponseInfo()
         {
         }
@@ -23,7 +22,6 @@ namespace MediaBrowser.Common.Net
         }
 
 #pragma warning restore CS1591
-#pragma warning restore SA1600
 
         /// <summary>
         /// Gets or sets the type of the content.

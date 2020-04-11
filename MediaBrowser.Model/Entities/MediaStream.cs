@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -70,9 +69,9 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
-        public string localizedUndefined  { get; set; }
-        public string localizedDefault  { get; set; }
-        public string localizedForced  { get; set; }
+        public string localizedUndefined { get; set; }
+        public string localizedDefault { get; set; }
+        public string localizedForced { get; set; }
 
         public string DisplayTitle
         {

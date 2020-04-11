@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,7 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 Url = url,
                 CancellationToken = CancellationToken.None,
                 BufferContent = false,
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             foreach (var header in mediaSource.RequiredHttpHeaders)

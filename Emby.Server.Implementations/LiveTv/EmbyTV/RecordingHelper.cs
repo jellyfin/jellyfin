@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using MediaBrowser.Controller.LiveTv;
@@ -21,7 +23,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (info.SeasonNumber.HasValue && info.EpisodeNumber.HasValue)
                 {
-                    name += string.Format(" S{0}E{1}", info.SeasonNumber.Value.ToString("00", CultureInfo.InvariantCulture), info.EpisodeNumber.Value.ToString("00", CultureInfo.InvariantCulture));
+                    name += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " S{0}E{1}",
+                        info.SeasonNumber.Value.ToString("00", CultureInfo.InvariantCulture),
+                        info.EpisodeNumber.Value.ToString("00", CultureInfo.InvariantCulture));
                     addHyphen = false;
                 }
                 else if (info.OriginalAirDate.HasValue)
@@ -32,7 +38,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                     else
                     {
-                        name += " " + info.OriginalAirDate.Value.ToLocalTime().ToString("yyyy-MM-dd");
+                        name += " " + info.OriginalAirDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                     }
                 }
                 else
@@ -67,14 +73,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             date = date.ToLocalTime();
 
-            return string.Format("{0}_{1}_{2}_{3}_{4}_{5}",
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}_{1}_{2}_{3}_{4}_{5}",
                 date.Year.ToString("0000", CultureInfo.InvariantCulture),
                 date.Month.ToString("00", CultureInfo.InvariantCulture),
                 date.Day.ToString("00", CultureInfo.InvariantCulture),
                 date.Hour.ToString("00", CultureInfo.InvariantCulture),
                 date.Minute.ToString("00", CultureInfo.InvariantCulture),
-                date.Second.ToString("00", CultureInfo.InvariantCulture)
-                );
+                date.Second.ToString("00", CultureInfo.InvariantCulture));
         }
     }
 }

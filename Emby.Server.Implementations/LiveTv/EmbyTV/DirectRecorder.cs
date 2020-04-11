@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Net.Http;
@@ -70,7 +72,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 UserAgent = "Emby/3.0",
 
                 // Shouldn't matter but may cause issues
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             using (var response = await _httpClient.SendAsync(httpRequestOptions, HttpMethod.Get).ConfigureAwait(false))

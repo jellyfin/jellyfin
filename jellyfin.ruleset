@@ -5,6 +5,8 @@
     <Rule Id="SA1202" Action="Info" />
     <!-- disable warning SA1204: Static members must appear before non-static members -->
     <Rule Id="SA1204" Action="Info" />
+    <!-- disable warning SA1404: Code analysis suppression should have justification -->
+    <Rule Id="SA1404" Action="Info" />
 
     <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
     <Rule Id="SA1009" Action="None" />
@@ -26,6 +28,8 @@
     <Rule Id="SA1512" Action="None" />
     <!-- disable warning SA1515: Single-line comment should be preceded by blank line -->
     <Rule Id="SA1515" Action="None" />
+    <!-- disable warning SA1600: Elements should be documented -->
+    <Rule Id="SA1600" Action="None" />
     <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
     <Rule Id="SA1633" Action="None" />
   </Rules>
