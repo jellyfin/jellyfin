@@ -84,7 +84,7 @@ namespace Emby.Server.Implementations.Udp
             _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _udpSocket.Bind(_endpoint);
 
-            _ = Task.Run(async () => await BeginReceiveAsync(cancellationToken).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
+            Task.Run(async () => await BeginReceiveAsync(cancellationToken).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
         }
 
         private async Task BeginReceiveAsync(CancellationToken cancellationToken)

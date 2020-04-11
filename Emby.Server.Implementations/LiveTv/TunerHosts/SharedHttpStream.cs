@@ -98,9 +98,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            var now = DateTime.UtcNow;
-
-            _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
+            await StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token).ConfigureAwait(true);
 
             //OpenedMediaSource.Protocol = MediaProtocol.File;
             //OpenedMediaSource.Path = tempFile;
