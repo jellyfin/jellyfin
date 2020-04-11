@@ -1700,13 +1700,16 @@ namespace Emby.Server.Implementations
                 throw new NotSupportedException();
             }
 
-            var processStartInfo = new ProcessStartInfo
+            var process = new Process
             {
-                FileName = url,
-                UseShellExecute = true,
-                ErrorDialog = false
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true,
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
             };
-            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
             process.Exited += (sender, args) => ((Process)sender).Dispose();
 
             try

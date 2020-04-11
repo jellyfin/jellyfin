@@ -90,9 +90,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
             };
-            _process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
-            var commandLineLogMessage = _process.StartInfo.FileName + " " + _process.StartInfo.Arguments;
+            var commandLineLogMessage = processStartInfo.FileName + " " + processStartInfo.Arguments;
             _logger.LogInformation(commandLineLogMessage);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "record-transcode-" + Guid.NewGuid() + ".txt");
@@ -104,6 +103,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
+            _process = new Process
+            {
+                StartInfo = processStartInfo,
+                EnableRaisingEvents = true
+            };
             _process.Exited += (sender, args) => OnFfMpegProcessExited(_process, inputFile);
 
             _process.Start();

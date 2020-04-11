@@ -359,30 +359,33 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
             args = string.Format(args, probeSizeArgument, inputPath).Trim();
 
-            var processStartInfo = new ProcessStartInfo
+            var process = new Process
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
 
-                // Must consume both or ffmpeg may hang due to deadlocks. See comments below.
-                RedirectStandardOutput = true,
+                    // Must consume both or ffmpeg may hang due to deadlocks. See comments below.
+                    RedirectStandardOutput = true,
 
-                FileName = _ffprobePath,
-                Arguments = args,
+                    FileName = _ffprobePath,
+                    Arguments = args,
 
 
-                WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false,
+                },
+                EnableRaisingEvents = true
             };
-            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
             if (forceEnableLogging)
             {
-                _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+                _logger.LogInformation("{ProcessFileName} {ProcessArgs}", process.StartInfo.FileName, process.StartInfo.Arguments);
             }
             else
             {
-                _logger.LogDebug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+                _logger.LogDebug("{ProcessFileName} {ProcessArgs}", process.StartInfo.FileName, process.StartInfo.Arguments);
             }
 
             using (var processWrapper = new ProcessWrapper(process, this))
@@ -568,19 +571,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var processStartInfo = new ProcessStartInfo
+            var process = new Process
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                FileName = _ffmpegPath,
-                Arguments = args,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false,
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    FileName = _ffmpegPath,
+                    Arguments = args,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false,
+                },
+                EnableRaisingEvents = true
             };
 
-            _logger.LogDebug("{0} {1}", processStartInfo.FileName, processStartInfo.Arguments);
+            _logger.LogDebug("{ProcessFileName} {ProcessArguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 bool ranToCompletion;
@@ -713,7 +719,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             bool ranToCompletion = false;
 
-            var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
+            var process = new Process
+            {
+                StartInfo = processStartInfo,
+                EnableRaisingEvents = true
+            };
             using (var processWrapper = new ProcessWrapper(process, this))
             {
                 try

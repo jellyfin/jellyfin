@@ -1680,16 +1680,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var processStartInfo = new ProcessStartInfo
+                var process = new Process
                 {
-                    Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
-                    CreateNoWindow = true,
-                    ErrorDialog = false,
-                    FileName = options.RecordingPostProcessor,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    UseShellExecute = false
+                    StartInfo = new ProcessStartInfo
+                    {
+                        Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
+                        CreateNoWindow = true,
+                        ErrorDialog = false,
+                        FileName = options.RecordingPostProcessor,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        UseShellExecute = false
+                    },
+                    EnableRaisingEvents = true
                 };
-                var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
 
                 _logger.LogInformation("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 

@@ -155,19 +155,22 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 inputPath,
                 attachmentStreamIndex,
                 outputPath);
-            var startInfo = new ProcessStartInfo
-            {
-                Arguments = processArgs,
-                FileName = _mediaEncoder.EncoderPath,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false
-            };
 
             int exitCode;
 
-            using (var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true })
+            using (var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    Arguments = processArgs,
+                    FileName = _mediaEncoder.EncoderPath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
+            })
             {
                 _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
