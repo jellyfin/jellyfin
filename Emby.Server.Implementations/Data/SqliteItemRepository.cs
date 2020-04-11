@@ -4890,17 +4890,11 @@ namespace Emby.Server.Implementations.Data
         {
             string sql = string.Join(
                 ";",
-                new string[]
-                {
-                    "delete from itemvalues where type = 6",
-
-                    "insert into itemvalues (ItemId, Type, Value, CleanValue)  select ItemId, 6, Value, CleanValue from ItemValues where Type=4",
-
-                    @"insert into itemvalues (ItemId, Type, Value, CleanValue) select AncestorIds.itemid, 6, ItemValues.Value, ItemValues.CleanValue
-FROM AncestorIds
-LEFT JOIN ItemValues ON (AncestorIds.AncestorId = ItemValues.ItemId)
-where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type = 4 "
-                });
+                "delete from itemvalues where type = 6",
+                "insert into itemvalues (ItemId, Type, Value, CleanValue)  select ItemId, 6, Value, CleanValue from ItemValues where Type=4",
+                @"insert into itemvalues (ItemId, Type, Value, CleanValue) select AncestorIds.itemid, 6, ItemValues.Value, ItemValues.CleanValue
+                    FROM AncestorIds LEFT JOIN ItemValues ON (AncestorIds.AncestorId = ItemValues.ItemId)
+                    where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type = 4 ");
 
             using (var connection = GetConnection())
             {
