@@ -154,7 +154,7 @@ namespace Emby.Server.Implementations.Updates
         {
             var appVer = _applicationHost.ApplicationVersion;
             availableVersions = availableVersions
-                .Where(x => Version.Parse(x.minimumServerVersion) <= appVer);
+                .Where(x => Version.Parse(x.targetAbi) <= appVer);
 
             if (minVersion != null)
             {

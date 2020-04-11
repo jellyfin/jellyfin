@@ -35,10 +35,10 @@ namespace MediaBrowser.Model.Updates
         public string description { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum required version for the server.
+        /// Gets or sets the ABI that this version was built against.
         /// </summary>
-        /// <value>The minimum required version.</value>
-        public string minimumServerVersion { get; set; }
+        /// <value>The target ABI version.</value>
+        public string targetAbi { get; set; }
 
         /// <summary>
         /// Gets or sets the source URL.
