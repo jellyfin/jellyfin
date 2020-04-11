@@ -2436,7 +2436,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 var info = config.ListingProviders.FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase));
 
-                var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+                var provider = _listingProviders.FirstOrDefault(i => string.Equals(info?.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
                 if (provider == null)
                 {
