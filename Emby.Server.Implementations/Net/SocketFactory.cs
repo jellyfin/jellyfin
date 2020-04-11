@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                retVal?.Dispose();
+                retVal.Dispose();
 
                 throw;
             }
@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                retVal?.Dispose();
+                retVal.Dispose();
 
                 throw;
             }
@@ -124,7 +124,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch
             {
-                retVal?.Dispose();
+                retVal.Dispose();
 
                 throw;
             }

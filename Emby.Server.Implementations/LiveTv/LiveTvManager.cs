@@ -827,8 +827,15 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (!string.IsNullOrWhiteSpace(query.SeriesTimerId))
             {
-                var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery { }, cancellationToken).ConfigureAwait(false);
-                var seriesTimer = seriesTimers.Items.FirstOrDefault(i => string.Equals(_tvDtoService.GetInternalSeriesTimerId(i.Id).ToString("N", CultureInfo.InvariantCulture), query.SeriesTimerId, StringComparison.OrdinalIgnoreCase));
+                var seriesTimers = await GetSeriesTimersInternal(
+                    new SeriesTimerQuery(),
+                    cancellationToken)
+                    .ConfigureAwait(false);
+                var seriesTimer = seriesTimers.Items.FirstOrDefault(i => string.Equals(
+                    _tvDtoService.GetInternalSeriesTimerId(i.Id).ToString("N", CultureInfo.InvariantCulture),
+                    query.SeriesTimerId,
+                    StringComparison.OrdinalIgnoreCase));
+
                 if (seriesTimer != null)
                 {
                     internalQuery.ExternalSeriesId = seriesTimer.SeriesId;
@@ -1177,8 +1184,8 @@ namespace Emby.Server.Implementations.LiveTv
                     var existingPrograms = _libraryManager.GetItemList(new InternalItemsQuery
                     {
 
-                        IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
-                        ChannelIds = new Guid[] { currentChannel.Id },
+                        IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                        ChannelIds = new[] { currentChannel.Id },
                         DtoOptions = new DtoOptions(true)
 
                     }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);

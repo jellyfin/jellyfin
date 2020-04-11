@@ -634,7 +634,7 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveItemsInTranscation(IDatabaseConnection db, IEnumerable<(BaseItem, List<Guid>, BaseItem, string, List<string>)> tuples)
         {
-            var statements = PrepareAll(db, new string[]
+            var statements = PrepareAll(db, new[]
             {
                 GetSaveItemCommandText(),
                 "delete from AncestorIds where ItemId=@ItemId"
@@ -802,7 +802,7 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@Height");
             }
 
-            if (item.DateLastRefreshed != default(DateTime))
+            if (item.DateLastRefreshed != default)
             {
                 saveItemStatement.TryBind("@DateLastRefreshed", item.DateLastRefreshed);
             }
@@ -811,7 +811,7 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@DateLastRefreshed");
             }
 
-            if (item.DateLastSaved != default(DateTime))
+            if (item.DateLastSaved != default)
             {
                 saveItemStatement.TryBind("@DateLastSaved", item.DateLastSaved);
             }

@@ -1082,7 +1082,10 @@ namespace Emby.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(
+                innerProgress,
+                cancellationToken,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))).ConfigureAwait(false);
 
             progress.Report(96);
 
@@ -1182,7 +1185,7 @@ namespace Emby.Server.Implementations.Library
             {
                 Name = Path.GetFileName(dir),
 
-                Locations = _fileSystem.GetFilePaths(dir, false)
+                Locations = _fileSystem.GetFilePaths(dir)
                 .Where(i => string.Equals(ShortcutFileExtension, Path.GetExtension(i), StringComparison.OrdinalIgnoreCase))
                     .Select(i =>
                     {

@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.Serialization
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            ServiceStack.Text.JsonSerializer.SerializeToStream<T>(obj, stream);
+            ServiceStack.Text.JsonSerializer.SerializeToStream(obj, stream);
         }
 
         /// <summary>

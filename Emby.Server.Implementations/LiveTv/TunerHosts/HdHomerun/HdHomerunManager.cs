@@ -184,7 +184,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         if (!ParseReturnMessage(buffer, receivedBytes, out _))
                         {
                             await ReleaseLockkey(_tcpClient, lockKeyValue).ConfigureAwait(false);
-                            continue;
                         }
                     }
 
