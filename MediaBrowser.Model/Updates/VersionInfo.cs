@@ -35,12 +35,6 @@ namespace MediaBrowser.Model.Updates
         public Version versionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the release channel.
-        /// </summary>
-        /// <value>The release channel for a given package version.</value>
-        public ReleaseChannel channel { get; set; }
-
-        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>The description.</value>

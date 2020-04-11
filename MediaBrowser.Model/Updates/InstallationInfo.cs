@@ -30,11 +30,5 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The version.</value>
         public string Version { get; set; }
-
-        /// <summary>
-        /// Gets or sets the update class.
-        /// </summary>
-        /// <value>The update class.</value>
-        public ReleaseChannel UpdateClass { get; set; }
     }
 }

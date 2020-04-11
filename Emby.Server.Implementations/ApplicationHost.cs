@@ -211,19 +211,6 @@ namespace Emby.Server.Implementations
 
         public IFileSystem FileSystemManager { get; set; }
 
-        /// <inheritdoc />
-        public ReleaseChannel SystemUpdateLevel
-        {
-            get
-            {
-#if NIGHTLY
-                return PackageChannel.Nightly;
-#else
-                return ReleaseChannel.Stable;
-#endif
-            }
-        }
-
         /// <summary>
         /// Gets or sets the service provider.
         /// </summary>
@@ -1416,7 +1403,6 @@ namespace Emby.Server.Implementations
                 SupportsLibraryMonitor = true,
                 EncoderLocation = MediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
-                SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = StartupOptions.PackageName
             };
         }

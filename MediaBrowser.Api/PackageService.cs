@@ -71,13 +71,6 @@ namespace MediaBrowser.Api
         /// <value>The version.</value>
         [ApiMember(Name = "Version", Description = "Optional version. Defaults to latest version.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Version { get; set; }
-
-        /// <summary>
-        /// Gets or sets the update class.
-        /// </summary>
-        /// <value>The update class.</value>
-        [ApiMember(Name = "UpdateClass", Description = "Optional update class (Dev, Beta, Release). Defaults to Release.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public ReleaseChannel UpdateClass { get; set; }
     }
 
     /// <summary>
@@ -152,8 +145,7 @@ namespace MediaBrowser.Api
                     packages,
                     request.Name,
                     string.IsNullOrEmpty(request.AssemblyGuid) ? Guid.Empty : Guid.Parse(request.AssemblyGuid),
-                    string.IsNullOrEmpty(request.Version) ? null : Version.Parse(request.Version),
-                    request.UpdateClass).FirstOrDefault();
+                    string.IsNullOrEmpty(request.Version) ? null : Version.Parse(request.Version)).FirstOrDefault();
 
             if (package == null)
             {

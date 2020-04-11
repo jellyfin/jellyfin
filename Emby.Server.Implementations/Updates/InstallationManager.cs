@@ -150,13 +150,11 @@ namespace Emby.Server.Implementations.Updates
         /// <inheritdoc />
         public IEnumerable<VersionInfo> GetCompatibleVersions(
             IEnumerable<VersionInfo> availableVersions,
-            Version minVersion = null,
-            ReleaseChannel releaseChannel = ReleaseChannel.Stable)
+            Version minVersion = null)
         {
             var appVer = _applicationHost.ApplicationVersion;
             availableVersions = availableVersions
-                .Where(x => x.channel == releaseChannel
-                    && Version.Parse(x.minimumServerVersion) <= appVer);
+                .Where(x => Version.Parse(x.minimumServerVersion) <= appVer);
 
             if (minVersion != null)
             {
@@ -171,8 +169,7 @@ namespace Emby.Server.Implementations.Updates
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
-            Version minVersion = null,
-            ReleaseChannel releaseChannel = ReleaseChannel.Stable)
+            Version minVersion = null)
         {
             var package = FilterPackages(availablePackages, name, guid).FirstOrDefault();
 
@@ -184,8 +181,7 @@ namespace Emby.Server.Implementations.Updates
 
             return GetCompatibleVersions(
                 package.versions,
-                minVersion,
-                releaseChannel);
+                minVersion);
         }
 
         /// <inheritdoc />
@@ -193,12 +189,10 @@ namespace Emby.Server.Implementations.Updates
         {
             var catalog = await GetAvailablePackages(cancellationToken).ConfigureAwait(false);
 
-            var systemUpdateLevel = _applicationHost.SystemUpdateLevel;
-
             // Figure out what needs to be installed
             foreach (var plugin in _applicationHost.Plugins)
             {
-                var compatibleVersions = GetCompatibleVersions(catalog, plugin.Name, plugin.Id, plugin.Version, systemUpdateLevel);
+                var compatibleVersions = GetCompatibleVersions(catalog, plugin.Name, plugin.Id, plugin.Version);
                 var version = compatibleVersions.FirstOrDefault(y => y.versionCode > plugin.Version);
                 if (version != null
                     && !CompletedInstallations.Any(x => string.Equals(x.AssemblyGuid, version.guid, StringComparison.OrdinalIgnoreCase)))
@@ -221,7 +215,6 @@ namespace Emby.Server.Implementations.Updates
                 Id = Guid.NewGuid(),
                 Name = package.name,
                 AssemblyGuid = package.guid,
-                UpdateClass = package.channel,
                 Version = package.versionString
             };
 
@@ -313,13 +306,13 @@ namespace Emby.Server.Implementations.Updates
             // Do plugin-specific processing
             if (plugin == null)
             {
-                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.versionString ?? string.Empty, package.channel);
+                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.versionString ?? string.Empty);
 
                 PluginInstalled?.Invoke(this, new GenericEventArgs<VersionInfo>(package));
             }
             else
             {
-                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.name, package.versionString ?? string.Empty, package.channel);
+                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.name, package.versionString ?? string.Empty);
 
                 PluginUpdated?.Invoke(this, new GenericEventArgs<(IPlugin, VersionInfo)>((plugin, package)));
             }

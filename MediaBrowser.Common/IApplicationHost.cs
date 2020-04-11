@@ -48,12 +48,6 @@ namespace MediaBrowser.Common
         bool CanSelfRestart { get; }
 
         /// <summary>
-        /// Gets the version class of the system.
-        /// </summary>
-        /// <value><see cref="ReleaseChannel.Stable" /> or <see cref="ReleaseChannel.Nightly" />.</value>
-        ReleaseChannel SystemUpdateLevel { get; }
-
-        /// <summary>
         /// Gets the application version.
         /// </summary>
         /// <value>The application version.</value>
