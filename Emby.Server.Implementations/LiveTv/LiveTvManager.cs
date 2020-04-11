@@ -520,7 +520,10 @@ namespace Emby.Server.Implementations.LiveTv
 
         private const string EtagKey = "ProgramEtag";
 
-        private Tuple<LiveTvProgram, bool, bool> GetProgram(ProgramInfo info, Dictionary<Guid, LiveTvProgram> allExistingPrograms, LiveTvChannel channel, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
+        private Tuple<LiveTvProgram, bool, bool> GetProgram(
+            ProgramInfo info,
+            Dictionary<Guid, LiveTvProgram> allExistingPrograms,
+            LiveTvChannel channel)
         {
             var id = _tvDtoService.GetInternalProgramId(info.Id);
 
@@ -1195,7 +1198,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                     foreach (var program in channelPrograms)
                     {
-                        var programTuple = GetProgram(program, existingPrograms, currentChannel, currentChannel.ChannelType, service.Name, cancellationToken);
+                        var programTuple = GetProgram(program, existingPrograms, currentChannel);
                         var programItem = programTuple.Item1;
 
                         if (programTuple.Item2)

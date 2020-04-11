@@ -1670,10 +1670,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void OnSuccessfulRecording(TimerInfo timer, string path)
         {
-            PostProcessRecording(timer, path);
+            PostProcessRecording(path);
         }
 
-        private void PostProcessRecording(TimerInfo timer, string path)
+        private void PostProcessRecording(string path)
         {
             var options = GetConfiguration();
             if (string.IsNullOrWhiteSpace(options.RecordingPostProcessor))
@@ -2165,12 +2165,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private LiveTvProgram GetProgramInfoFromCache(TimerInfo timer)
         {
-            return GetProgramInfoFromCache(timer.ProgramId, timer.ChannelId);
-        }
-
-        private LiveTvProgram GetProgramInfoFromCache(string programId, string channelId)
-        {
-            return GetProgramInfoFromCache(programId);
+            return GetProgramInfoFromCache(timer.ProgramId);
         }
 
         private LiveTvProgram GetProgramInfoFromCache(string channelId, DateTime startDateUtc)

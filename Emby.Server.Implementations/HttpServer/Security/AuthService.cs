@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
         {
-            var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
+            var req = new WebSocketSharpRequest(request, null, request.Path);
             var user = ValidateUser(req, authAttributes);
             return user;
         }
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (user != null)
             {
-                ValidateUserAccess(user, request, authAttribtues, auth);
+                ValidateUserAccess(user, request, authAttribtues);
             }
 
             var info = GetTokenInfo(request);
@@ -103,8 +103,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private void ValidateUserAccess(
             User user,
             IRequest request,
-            IAuthenticationAttributes authAttribtues,
-            AuthorizationInfo auth)
+            IAuthenticationAttributes authAttribtues)
         {
             if (user.Policy.IsDisabled)
             {

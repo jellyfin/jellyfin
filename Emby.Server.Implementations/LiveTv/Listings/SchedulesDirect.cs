@@ -163,12 +163,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                                 const double DesiredAspect = 2.0 / 3;
 
-                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, true, DesiredAspect) ??
-                                    GetProgramImage(ApiUrl, allImages, true, DesiredAspect);
+                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect) ??
+                                    GetProgramImage(ApiUrl, allImages, DesiredAspect);
 
                                 const double WideAspect = 16.0 / 9;
 
-                                programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, true, WideAspect);
+                                programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect);
 
                                 // Don't supply the same image twice
                                 if (string.Equals(programEntry.primaryImage, programEntry.thumbImage, StringComparison.Ordinal))
@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                                     programEntry.thumbImage = null;
                                 }
 
-                                programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, true, WideAspect);
+                                programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect);
 
                                 //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
@@ -403,7 +403,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return date;
         }
 
-        private string GetProgramImage(string apiUrl, IEnumerable<ScheduleDirect.ImageData> images, bool returnDefaultImage, double desiredAspect)
+        private string GetProgramImage(string apiUrl, IEnumerable<ScheduleDirect.ImageData> images, double desiredAspect)
         {
             var match = images
                 .OrderBy(i => Math.Abs(desiredAspect - GetAspectRatio(i)))

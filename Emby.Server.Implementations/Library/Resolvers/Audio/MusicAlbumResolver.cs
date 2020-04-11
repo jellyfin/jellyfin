@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// </summary>
         public bool IsMusicAlbum(string path, IDirectoryService directoryService)
         {
-            return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _fileSystem, _libraryManager);
+            return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _libraryManager);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             if (args.IsDirectory)
             {
                 // if (args.Parent is MusicArtist) return true;  //saves us from testing children twice
-                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _fileSystem, _libraryManager))
+                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _libraryManager))
                 {
                     return true;
                 }
@@ -110,7 +110,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             bool allowSubfolders,
             IDirectoryService directoryService,
             ILogger logger,
-            IFileSystem fileSystem,
             ILibraryManager libraryManager)
         {
             var discSubfolderCount = 0;
@@ -130,7 +129,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                         }
 
                         var path = fileSystemInfo.FullName;
-                        var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
+                        var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, libraryManager);
 
                         if (hasMusic)
                         {

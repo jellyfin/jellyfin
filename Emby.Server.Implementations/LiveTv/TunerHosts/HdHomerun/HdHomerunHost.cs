@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override string ChannelIdPrefix => "hdhr_";
 
-        private string GetChannelId(TunerHostInfo info, Channels i)
+        private string GetChannelId(Channels i)
             => ChannelIdPrefix + i.GuideNumber;
 
         private async Task<List<Channels>> GetLineup(TunerHostInfo info, CancellationToken cancellationToken)
@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 Name = i.GuideName,
                 Number = i.GuideNumber,
-                Id = GetChannelId(info, i),
+                Id = GetChannelId(i),
                 IsFavorite = i.Favorite,
                 TunerHostId = info.Id,
                 IsHD = i.HD == 1,

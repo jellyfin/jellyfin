@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.Dto
                             }
                         });
 
-                        SetItemByNameInfo(item, dto, libraryItems, user);
+                        SetItemByNameInfo(item, dto, libraryItems);
                     }
                 }
 
@@ -163,8 +163,7 @@ namespace Emby.Server.Implementations.Dto
                         new DtoOptions(false)
                         {
                             EnableImages = false
-                        }),
-                    user);
+                        }));
             }
 
             return dto;
@@ -319,13 +318,13 @@ namespace Emby.Server.Implementations.Dto
 
             if (taggedItems != null && options.ContainsField(ItemFields.ItemCounts))
             {
-                SetItemByNameInfo(item, dto, taggedItems, user);
+                SetItemByNameInfo(item, dto, taggedItems);
             }
 
             return dto;
         }
 
-        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems, User user = null)
+        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems)
         {
             if (item is MusicArtist)
             {

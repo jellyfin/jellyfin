@@ -489,7 +489,7 @@ namespace Emby.Server.Implementations.Library
             {
                 if (mediaSource.MediaStreams.Any(i => i.Index != -1) || !mediaSource.SupportsProbing)
                 {
-                    AddMediaInfo(mediaSource, isAudio);
+                    AddMediaInfo(mediaSource);
                 }
                 else
                 {
@@ -504,7 +504,7 @@ namespace Emby.Server.Implementations.Library
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error probing live tv stream");
-                AddMediaInfo(mediaSource, isAudio);
+                AddMediaInfo(mediaSource);
             }
 
             // TODO: @bond Fix
@@ -528,7 +528,7 @@ namespace Emby.Server.Implementations.Library
             }, liveStream as IDirectStreamProvider);
         }
 
-        private static void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)
+        private static void AddMediaInfo(MediaSourceInfo mediaSource)
         {
             mediaSource.DefaultSubtitleStreamIndex = null;
 

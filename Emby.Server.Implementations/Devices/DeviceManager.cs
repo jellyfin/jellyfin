@@ -124,11 +124,6 @@ namespace Emby.Server.Implementations.Devices
 
         public DeviceInfo GetDevice(string id)
         {
-            return GetDevice(id, true);
-        }
-
-        private DeviceInfo GetDevice(string id, bool includeCapabilities)
-        {
             var session = _authRepo.Get(new AuthenticationInfoQuery
             {
                 DeviceId = id
@@ -216,7 +211,7 @@ namespace Emby.Server.Implementations.Devices
 
         public async Task AcceptCameraUpload(string deviceId, Stream stream, LocalFileInfo file)
         {
-            var device = GetDevice(deviceId, false);
+            var device = GetDevice(deviceId);
             var uploadPathInfo = GetUploadPath(device);
 
             var path = uploadPathInfo.Item1;

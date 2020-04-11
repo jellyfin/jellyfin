@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 RedirectStandardInput = true,
 
                 FileName = _mediaEncoder.EncoderPath,
-                Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile, duration),
+                Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile),
 
                 IsHidden = true,
                 ErrorDialog = false,
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
-            process.Exited += (sender, args) => OnFfMpegProcessExited(process, inputFile);
+            process.Exited += (sender, args) => OnFfMpegProcessExited(process);
 
             process.Start();
 
@@ -125,7 +125,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return _taskCompletionSource.Task;
         }
 
-        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile, TimeSpan duration)
+        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
         {
             string videoArgs;
             if (EncodeVideo(mediaSource))
@@ -196,14 +196,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 inputTempFile,
                 targetFile,
                 videoArgs,
-                GetAudioArgs(mediaSource),
+                GetAudioArgs(),
                 subtitleArgs,
                 outputParam);
 
             return inputModifier + " " + commandLineArgs;
         }
 
-        private static string GetAudioArgs(MediaSourceInfo mediaSource)
+        private static string GetAudioArgs()
         {
             return "-codec:a:0 copy";
 
@@ -292,7 +292,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Processes the exited.
         /// </summary>
-        private void OnFfMpegProcessExited(IProcess process, string inputFile)
+        private void OnFfMpegProcessExited(IProcess process)
         {
             _hasExited = true;
 

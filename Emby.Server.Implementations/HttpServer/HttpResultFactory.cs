@@ -66,7 +66,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public object GetResult(IRequest requestContext, Stream content, string contentType, IDictionary<string, string> responseHeaders = null)
         {
-            return GetHttpResult(requestContext, content, contentType, true, responseHeaders);
+            return GetHttpResult(content, contentType, true, responseHeaders);
         }
 
         public object GetResult(IRequest requestContext, string content, string contentType, IDictionary<string, string> responseHeaders = null)
@@ -89,7 +89,11 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Gets the HTTP result.
         /// </summary>
-        private IHasHeaders GetHttpResult(IRequest requestContext, Stream content, string contentType, bool addCachePrevention, IDictionary<string, string> responseHeaders = null)
+        private IHasHeaders GetHttpResult(
+            Stream content,
+            string contentType,
+            bool addCachePrevention,
+            IDictionary<string, string> responseHeaders = null)
         {
             var result = new StreamWriter(content, contentType);
 
@@ -310,7 +314,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
             }
 
-            return GetHttpResult(request, ms, contentType, true, responseHeaders);
+            return GetHttpResult(ms, contentType, true, responseHeaders);
         }
 
         private IHasHeaders GetCompressedResult(byte[] content,

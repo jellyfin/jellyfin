@@ -82,13 +82,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<MusicVideo>(parent, files, directoryService, true, collectionType, false);
+                return ResolveVideos<MusicVideo>(parent, files, true, collectionType, false);
             }
 
             if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Video>(parent, files, directoryService, false, collectionType, false);
+                return ResolveVideos<Video>(parent, files, false, collectionType, false);
             }
 
             if (string.IsNullOrEmpty(collectionType))
@@ -96,7 +96,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 // Owned items should just use the plain video type
                 if (parent == null)
                 {
-                    return ResolveVideos<Video>(parent, files, directoryService, false, collectionType, false);
+                    return ResolveVideos<Video>(parent, files, false, collectionType, false);
                 }
 
                 if (parent is Series || parent.GetParents().OfType<Series>().Any())
@@ -104,12 +104,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
-                return ResolveVideos<Movie>(parent, files, directoryService, false, collectionType, true);
+                return ResolveVideos<Movie>(parent, files, false, collectionType, true);
             }
 
             if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Movie>(parent, files, directoryService, true, collectionType, true);
+                return ResolveVideos<Movie>(parent, files, true, collectionType, true);
             }
 
             return null;
@@ -118,7 +118,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         private MultiItemResolverResult ResolveVideos<T>(
             Folder parent,
             IEnumerable<FileSystemMetadata> fileSystemEntries,
-            IDirectoryService directoryService,
             bool suppportMultiEditions,
             string collectionType,
             bool parseName)
@@ -430,7 +429,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             // TODO: Allow GetMultiDiscMovie in here
             const bool SupportsMultiVersion = true;
 
-            var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, SupportsMultiVersion, collectionType, parseName) ??
+            var result = ResolveVideos<T>(parent, fileSystemEntries, SupportsMultiVersion, collectionType, parseName) ??
                 new MultiItemResolverResult();
 
             if (result.Items.Count == 1)

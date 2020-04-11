@@ -6,7 +6,6 @@ using System.Net.Mime;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
@@ -23,7 +22,7 @@ namespace Emby.Server.Implementations.SocketSharp
         private Dictionary<string, object> _items;
         private string _responseContentType;
 
-        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName, ILogger logger)
+        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName)
         {
             this.OperationName = operationName;
             this.Request = httpRequest;

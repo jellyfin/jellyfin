@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         {
             if (string.Equals(collectionType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveMultipleAudio<AudioBook>(parent, files, directoryService, false, collectionType, true);
+                return ResolveMultipleAudio<AudioBook>(parent, files, true);
             }
 
             return null;
@@ -87,7 +87,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
                     .ToList();
 
-                return FindAudio<AudioBook>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
+                return FindAudio<AudioBook>(args.Parent, files, false);
             }
 
             if (LibraryManager.IsAudioFile(args.Path))
@@ -137,13 +137,16 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             return null;
         }
 
-        private T FindAudio<T>(ItemResolveArgs args, string path, Folder parent, List<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, string collectionType, bool parseName)
+        private T FindAudio<T>(
+            Folder parent,
+            List<FileSystemMetadata> fileSystemEntries,
+            bool parseName)
             where T : MediaBrowser.Controller.Entities.Audio.Audio, new()
         {
             // TODO: Allow GetMultiDiscMovie in here
             const bool supportsMultiVersion = false;
 
-            var result = ResolveMultipleAudio<T>(parent, fileSystemEntries, directoryService, supportsMultiVersion, collectionType, parseName) ??
+            var result = ResolveMultipleAudio<T>(parent, fileSystemEntries, parseName) ??
                 new MultiItemResolverResult();
 
             if (result.Items.Count == 1)
@@ -158,7 +161,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             return null;
         }
 
-        private MultiItemResolverResult ResolveMultipleAudio<T>(Folder parent, IEnumerable<FileSystemMetadata> fileSystemEntries, IDirectoryService directoryService, bool suppportMultiEditions, string collectionType, bool parseName)
+        private MultiItemResolverResult ResolveMultipleAudio<T>(
+            Folder parent,
+            IEnumerable<FileSystemMetadata> fileSystemEntries,
+            bool parseName)
             where T : MediaBrowser.Controller.Entities.Audio.Audio, new()
         {
             var files = new List<FileSystemMetadata>();

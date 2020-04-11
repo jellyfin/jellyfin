@@ -274,14 +274,14 @@ namespace Emby.Server.Implementations.Library
 
             if (user != null)
             {
-                var authResult = await AuthenticateLocalUser(username, password, hashedPassword, user, remoteEndPoint).ConfigureAwait(false);
+                var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint).ConfigureAwait(false);
                 authenticationProvider = authResult.authenticationProvider;
                 success = authResult.success;
             }
             else
             {
                 // user is null
-                var authResult = await AuthenticateLocalUser(username, password, hashedPassword, null, remoteEndPoint).ConfigureAwait(false);
+                var authResult = await AuthenticateLocalUser(username, password, null, remoteEndPoint).ConfigureAwait(false);
                 authenticationProvider = authResult.authenticationProvider;
                 string updatedUsername = authResult.username;
                 success = authResult.success;
@@ -455,7 +455,6 @@ namespace Emby.Server.Implementations.Library
         private async Task<(IAuthenticationProvider? authenticationProvider, string username, bool success)> AuthenticateLocalUser(
             string username,
             string password,
-            string hashedPassword,
             User? user,
             string remoteEndPoint)
         {

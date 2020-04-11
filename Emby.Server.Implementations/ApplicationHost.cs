@@ -639,7 +639,7 @@ namespace Emby.Server.Implementations
             var response = context.Response;
             var localPath = context.Request.Path.ToString();
 
-            var req = new WebSocketSharpRequest(request, response, request.Path, LoggerFactory.CreateLogger<WebSocketSharpRequest>());
+            var req = new WebSocketSharpRequest(request, response, request.Path);
             await HttpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
         }
 
@@ -761,7 +761,7 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISearchEngine>(new SearchEngine(LoggerFactory, LibraryManager, UserManager));
 
-            CertificateInfo = GetCertificateInfo(true);
+            CertificateInfo = GetCertificateInfo();
             Certificate = GetCertificate(CertificateInfo);
 
             serviceCollection.AddSingleton<ServiceController>();
@@ -1204,7 +1204,7 @@ namespace Emby.Server.Implementations
             });
         }
 
-        private CertificateInfo GetCertificateInfo(bool generateCertificate)
+        private CertificateInfo GetCertificateInfo()
         {
             // Custom cert
             return new CertificateInfo
@@ -1246,7 +1246,7 @@ namespace Emby.Server.Implementations
             }
 
             var currentCertPath = CertificateInfo?.Path;
-            var newCertInfo = GetCertificateInfo(false);
+            var newCertInfo = GetCertificateInfo();
             var newCertPath = newCertInfo?.Path;
 
             if (!string.Equals(currentCertPath, newCertPath, StringComparison.OrdinalIgnoreCase))
