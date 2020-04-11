@@ -234,7 +234,7 @@ namespace MediaBrowser.Api.Playback
                         OpenToken = mediaSource.OpenToken
                     }).ConfigureAwait(false);
 
-                    info.MediaSources = new MediaSourceInfo[] { openStreamResult.MediaSource };
+                    info.MediaSources = new[] { openStreamResult.MediaSource };
                 }
             }
 
@@ -289,7 +289,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-                mediaSources = new MediaSourceInfo[] { mediaSource };
+                mediaSources = new[] { mediaSource };
             }
 
             if (mediaSources.Length == 0)
@@ -366,7 +366,7 @@ namespace MediaBrowser.Api.Playback
 
             var options = new VideoOptions
             {
-                MediaSources = new MediaSourceInfo[] { mediaSource },
+                MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
                 DeviceId = auth.DeviceId,
                 ItemId = item.Id,
@@ -583,7 +583,7 @@ namespace MediaBrowser.Api.Playback
         private long? GetMaxBitrate(long? clientMaxBitrate, User user)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = user == null ? 0 : user.Policy.RemoteClientBitrateLimit;
+            var remoteClientMaxBitrate = user?.Policy.RemoteClientBitrateLimit ?? 0;
 
             if (remoteClientMaxBitrate <= 0)
             {
@@ -662,17 +662,9 @@ namespace MediaBrowser.Api.Playback
                 };
             }).ThenBy(i =>
             {
-                if (maxBitrate.HasValue)
+                if (maxBitrate.HasValue && i.Bitrate.HasValue)
                 {
-                    if (i.Bitrate.HasValue)
-                    {
-                        if (i.Bitrate.Value <= maxBitrate.Value)
-                        {
-                            return 0;
-                        }
-
-                        return 2;
-                    }
+                    return i.Bitrate.Value <= maxBitrate.Value ? 0 : 2;
                 }
 
                 return 1;

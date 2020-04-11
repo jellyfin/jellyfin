@@ -199,14 +199,12 @@ namespace MediaBrowser.Api.UserLibrary
                 item = _libraryManager.GetUserRootFolder();
             }
 
-            Folder folder = item as Folder;
-            if (folder == null)
+            if (!(item is Folder folder))
             {
                 folder = _libraryManager.GetUserRootFolder();
             }
 
-            var hasCollectionType = folder as IHasCollectionType;
-            if (hasCollectionType != null
+            if (folder is IHasCollectionType hasCollectionType
                 && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 request.Recursive = true;
