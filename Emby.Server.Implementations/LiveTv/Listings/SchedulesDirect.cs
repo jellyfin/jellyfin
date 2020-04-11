@@ -585,7 +585,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return null;
             }
 
-            NameValuePair savedToken = null;
+            NameValuePair savedToken;
             if (!_tokens.TryGetValue(username, out savedToken))
             {
                 savedToken = new NameValuePair();
