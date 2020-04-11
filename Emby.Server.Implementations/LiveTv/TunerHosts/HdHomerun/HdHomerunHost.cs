@@ -590,44 +590,27 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     _streamHelper);
             }
 
-            var enableHttpStream = true;
-            if (enableHttpStream)
+            mediaSource.Protocol = MediaProtocol.Http;
+
+            var httpUrl = channelInfo.Path;
+
+            // If raw was used, the tuner doesn't support params
+            if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
             {
-                mediaSource.Protocol = MediaProtocol.Http;
-
-                var httpUrl = channelInfo.Path;
-
-                // If raw was used, the tuner doesn't support params
-                if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpUrl += "?transcode=" + profile;
-                }
-
-                mediaSource.Path = httpUrl;
-
-                return new SharedHttpStream(
-                    mediaSource,
-                    info,
-                    streamId,
-                    FileSystem,
-                    _httpClient,
-                    Logger,
-                    Config,
-                    _appHost,
-                    _streamHelper);
+                httpUrl += "?transcode=" + profile;
             }
 
-            return new HdHomerunUdpStream(
+            mediaSource.Path = httpUrl;
+
+            return new SharedHttpStream(
                 mediaSource,
                 info,
                 streamId,
-                new HdHomerunChannelCommands(hdhomerunChannel.Number, profile),
-                modelInfo.TunerCount,
                 FileSystem,
+                _httpClient,
                 Logger,
                 Config,
                 _appHost,
-                _networkManager,
                 _streamHelper);
         }
 
