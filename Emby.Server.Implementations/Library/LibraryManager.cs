@@ -2911,21 +2911,6 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        private static bool ValidateNetworkPath(string path)
-        {
-            //if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            //{
-            //    // We can't validate protocol-based paths, so just allow them
-            //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)
-            //    {
-            //        return Directory.Exists(path);
-            //    }
-            //}
-
-            // Without native support for unc, we cannot validate this when running under mono
-            return true;
-        }
-
         private const string ShortcutFileExtension = ".mblink";
 
         public void AddMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
@@ -2950,11 +2935,6 @@ namespace Emby.Server.Implementations.Library
             if (!Directory.Exists(path))
             {
                 throw new FileNotFoundException("The path does not exist.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
-            {
-                throw new FileNotFoundException("The network path does not exist.");
             }
 
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
@@ -2993,11 +2973,6 @@ namespace Emby.Server.Implementations.Library
             if (pathInfo == null)
             {
                 throw new ArgumentNullException(nameof(pathInfo));
-            }
-
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
-            {
-                throw new FileNotFoundException("The network path does not exist.");
             }
 
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
