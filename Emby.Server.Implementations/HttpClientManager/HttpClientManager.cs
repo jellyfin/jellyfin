@@ -213,18 +213,16 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             Directory.CreateDirectory(Path.GetDirectoryName(responseCachePath));
 
-            using (var fileStream = new FileStream(
+            using var fileStream = new FileStream(
                 responseCachePath,
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
                 IODefaults.FileStreamBufferSize,
-                true))
-            {
-                await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
+                true);
+            await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
 
-                response.Content.Position = 0;
-            }
+            response.Content.Position = 0;
         }
 
         private async Task<HttpResponseInfo> SendAsyncInternal(HttpRequestOptions options, HttpMethod httpMethod)

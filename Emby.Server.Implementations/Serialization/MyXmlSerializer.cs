@@ -39,11 +39,9 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object DeserializeFromStream(Type type, Stream stream)
         {
-            using (var reader = XmlReader.Create(stream))
-            {
-                var netSerializer = GetSerializer(type);
-                return netSerializer.Deserialize(reader);
-            }
+            using var reader = XmlReader.Create(stream);
+            var netSerializer = GetSerializer(type);
+            return netSerializer.Deserialize(reader);
         }
 
         /// <summary>
@@ -53,11 +51,9 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="stream">The stream.</param>
         public void SerializeToStream(object obj, Stream stream)
         {
-            using (var writer = new XmlTextWriter(stream, null))
-            {
-                writer.Formatting = Formatting.Indented;
-                SerializeToWriter(obj, writer);
-            }
+            using var writer = new XmlTextWriter(stream, null);
+            writer.Formatting = Formatting.Indented;
+            SerializeToWriter(obj, writer);
         }
 
         /// <summary>
@@ -67,10 +63,8 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
-            using (var stream = new FileStream(file, FileMode.Create))
-            {
-                SerializeToStream(obj, stream);
-            }
+            using var stream = new FileStream(file, FileMode.Create);
+            SerializeToStream(obj, stream);
         }
 
         /// <summary>
@@ -81,10 +75,8 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object DeserializeFromFile(Type type, string file)
         {
-            using (var stream = File.OpenRead(file))
-            {
-                return DeserializeFromStream(type, stream);
-            }
+            using var stream = File.OpenRead(file);
+            return DeserializeFromStream(type, stream);
         }
 
         /// <summary>
@@ -95,10 +87,8 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object DeserializeFromBytes(Type type, byte[] buffer)
         {
-            using (var stream = new MemoryStream(buffer))
-            {
-                return DeserializeFromStream(type, stream);
-            }
+            using var stream = new MemoryStream(buffer);
+            return DeserializeFromStream(type, stream);
         }
     }
 }

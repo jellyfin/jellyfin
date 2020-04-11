@@ -368,48 +368,38 @@ namespace Emby.Server.Implementations.HttpServer
         {
             // In .NET FX incompat-ville, you can't access compressed bytes without closing DeflateStream
             // Which means we must use MemoryStream since you have to use ToArray() on a closed Stream
-            using (var ms = new MemoryStream())
-            using (var zipStream = new DeflateStream(ms, CompressionMode.Compress))
-            {
-                zipStream.Write(bytes, 0, bytes.Length);
-                zipStream.Dispose();
+            using var ms = new MemoryStream();
+            using var zipStream = new DeflateStream(ms, CompressionMode.Compress);
+            zipStream.Write(bytes, 0, bytes.Length);
+            zipStream.Dispose();
 
-                return ms.ToArray();
-            }
+            return ms.ToArray();
         }
 
         private static byte[] GZip(byte[] buffer)
         {
-            using (var ms = new MemoryStream())
-            using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
-            {
-                zipStream.Write(buffer, 0, buffer.Length);
-                zipStream.Dispose();
+            using var ms = new MemoryStream();
+            using var zipStream = new GZipStream(ms, CompressionMode.Compress);
+            zipStream.Write(buffer, 0, buffer.Length);
+            zipStream.Dispose();
 
-                return ms.ToArray();
-            }
+            return ms.ToArray();
         }
 
         private static string SerializeToXmlString(object from)
         {
-            using (var ms = new MemoryStream())
-            {
-                var xwSettings = new XmlWriterSettings();
-                xwSettings.Encoding = new UTF8Encoding(false);
-                xwSettings.OmitXmlDeclaration = false;
+            using var ms = new MemoryStream();
+            var xwSettings = new XmlWriterSettings();
+            xwSettings.Encoding = new UTF8Encoding(false);
+            xwSettings.OmitXmlDeclaration = false;
 
-                using (var xw = XmlWriter.Create(ms, xwSettings))
-                {
-                    var serializer = new DataContractSerializer(from.GetType());
-                    serializer.WriteObject(xw, from);
-                    xw.Flush();
-                    ms.Seek(0, SeekOrigin.Begin);
-                    using (var reader = new StreamReader(ms))
-                    {
-                        return reader.ReadToEnd();
-                    }
-                }
-            }
+            using var xw = XmlWriter.Create(ms, xwSettings);
+            var serializer = new DataContractSerializer(@from.GetType());
+            serializer.WriteObject(xw, @from);
+            xw.Flush();
+            ms.Seek(0, SeekOrigin.Begin);
+            using var reader = new StreamReader(ms);
+            return reader.ReadToEnd();
         }
 
         /// <summary>

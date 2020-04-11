@@ -58,10 +58,8 @@ namespace Emby.Server.Implementations.Cryptography
             // with this downgrade we'll add a check to make sure we're on the downgrade method at the moment
             if (method == DefaultHashMethod)
             {
-                using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations))
-                {
-                    return r.GetBytes(32);
-                }
+                using var r = new Rfc2898DeriveBytes(bytes, salt, iterations);
+                return r.GetBytes(32);
             }
 
             throw new CryptographicException($"Cannot currently use PBKDF2 with requested hash method: {method}");
@@ -76,19 +74,17 @@ namespace Emby.Server.Implementations.Cryptography
             }
             else if (_supportedHashMethods.Contains(hashMethod))
             {
-                using (var h = HashAlgorithm.Create(hashMethod))
+                using var h = HashAlgorithm.Create(hashMethod);
+                if (salt.Length == 0)
                 {
-                    if (salt.Length == 0)
-                    {
-                        return h.ComputeHash(bytes);
-                    }
-                    else
-                    {
-                        byte[] salted = new byte[bytes.Length + salt.Length];
-                        Array.Copy(bytes, salted, bytes.Length);
-                        Array.Copy(salt, 0, salted, bytes.Length, salt.Length);
-                        return h.ComputeHash(salted);
-                    }
+                    return h.ComputeHash(bytes);
+                }
+                else
+                {
+                    byte[] salted = new byte[bytes.Length + salt.Length];
+                    Array.Copy(bytes, salted, bytes.Length);
+                    Array.Copy(salt, 0, salted, bytes.Length, salt.Length);
+                    return h.ComputeHash(salted);
                 }
             }
 

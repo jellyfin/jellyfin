@@ -113,84 +113,80 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             httpOptions.RequestHeaders["token"] = token;
 
-            using (var response = await Post(httpOptions, true, info).ConfigureAwait(false))
+            using var response = await Post(httpOptions, true, info).ConfigureAwait(false);
+            var dailySchedules = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Day>>(response.Content).ConfigureAwait(false);
+            _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
+
+            httpOptions = new HttpRequestOptions()
             {
-                var dailySchedules = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Day>>(response.Content).ConfigureAwait(false);
-                _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
+                Url = ApiUrl + "/programs",
+                UserAgent = UserAgent,
+                CancellationToken = cancellationToken,
+                LogErrorResponseBody = true
+            };
 
-                httpOptions = new HttpRequestOptions()
+            httpOptions.RequestHeaders["token"] = token;
+
+            var programsID = dailySchedules.SelectMany(d => d.programs.Select(s => s.programID)).Distinct();
+            httpOptions.RequestContent = "[\"" + string.Join("\", \"", programsID) + "\"]";
+
+            using var innerResponse = await Post(httpOptions, true, info).ConfigureAwait(false);
+            var programDetails = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ProgramDetails>>(innerResponse.Content).ConfigureAwait(false);
+            var programDict = programDetails.ToDictionary(p => p.programID, y => y);
+
+            var programIdsWithImages =
+                programDetails.Where(p => p.hasImageArtwork).Select(p => p.programID)
+                    .ToList();
+
+            var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken).ConfigureAwait(false);
+
+            var programsInfo = new List<ProgramInfo>();
+            foreach (ScheduleDirect.Program schedule in dailySchedules.SelectMany(d => d.programs))
+            {
+                //_logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
+                //              " which corresponds to channel " + channelNumber + " and program id " +
+                //              schedule.programID + " which says it has images? " +
+                //              programDict[schedule.programID].hasImageArtwork);
+
+                if (images != null)
                 {
-                    Url = ApiUrl + "/programs",
-                    UserAgent = UserAgent,
-                    CancellationToken = cancellationToken,
-                    LogErrorResponseBody = true
-                };
-
-                httpOptions.RequestHeaders["token"] = token;
-
-                var programsID = dailySchedules.SelectMany(d => d.programs.Select(s => s.programID)).Distinct();
-                httpOptions.RequestContent = "[\"" + string.Join("\", \"", programsID) + "\"]";
-
-                using (var innerResponse = await Post(httpOptions, true, info).ConfigureAwait(false))
-                {
-                    var programDetails = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ProgramDetails>>(innerResponse.Content).ConfigureAwait(false);
-                    var programDict = programDetails.ToDictionary(p => p.programID, y => y);
-
-                    var programIdsWithImages =
-                        programDetails.Where(p => p.hasImageArtwork).Select(p => p.programID)
-                        .ToList();
-
-                    var images = await GetImageForPrograms(info, programIdsWithImages, cancellationToken).ConfigureAwait(false);
-
-                    var programsInfo = new List<ProgramInfo>();
-                    foreach (ScheduleDirect.Program schedule in dailySchedules.SelectMany(d => d.programs))
+                    var imageIndex = images.FindIndex(i => i.programID == schedule.programID.Substring(0, 10));
+                    if (imageIndex > -1)
                     {
-                        //_logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
-                        //              " which corresponds to channel " + channelNumber + " and program id " +
-                        //              schedule.programID + " which says it has images? " +
-                        //              programDict[schedule.programID].hasImageArtwork);
+                        var programEntry = programDict[schedule.programID];
 
-                        if (images != null)
+                        var allImages = images[imageIndex].data ?? new List<ScheduleDirect.ImageData>();
+                        var imagesWithText = allImages.Where(i => string.Equals(i.text, "yes", StringComparison.OrdinalIgnoreCase));
+                        var imagesWithoutText = allImages.Where(i => string.Equals(i.text, "no", StringComparison.OrdinalIgnoreCase));
+
+                        const double DesiredAspect = 2.0 / 3;
+
+                        programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect) ??
+                                                    GetProgramImage(ApiUrl, allImages, DesiredAspect);
+
+                        const double WideAspect = 16.0 / 9;
+
+                        programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect);
+
+                        // Don't supply the same image twice
+                        if (string.Equals(programEntry.primaryImage, programEntry.thumbImage, StringComparison.Ordinal))
                         {
-                            var imageIndex = images.FindIndex(i => i.programID == schedule.programID.Substring(0, 10));
-                            if (imageIndex > -1)
-                            {
-                                var programEntry = programDict[schedule.programID];
-
-                                var allImages = images[imageIndex].data ?? new List<ScheduleDirect.ImageData>();
-                                var imagesWithText = allImages.Where(i => string.Equals(i.text, "yes", StringComparison.OrdinalIgnoreCase));
-                                var imagesWithoutText = allImages.Where(i => string.Equals(i.text, "no", StringComparison.OrdinalIgnoreCase));
-
-                                const double DesiredAspect = 2.0 / 3;
-
-                                programEntry.primaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect) ??
-                                    GetProgramImage(ApiUrl, allImages, DesiredAspect);
-
-                                const double WideAspect = 16.0 / 9;
-
-                                programEntry.thumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect);
-
-                                // Don't supply the same image twice
-                                if (string.Equals(programEntry.primaryImage, programEntry.thumbImage, StringComparison.Ordinal))
-                                {
-                                    programEntry.thumbImage = null;
-                                }
-
-                                programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect);
-
-                                //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
-                                //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
-                                //    GetProgramImage(ApiUrl, data, "Banner-LO", false) ??
-                                //    GetProgramImage(ApiUrl, data, "Banner-LOT", false);
-                            }
+                            programEntry.thumbImage = null;
                         }
 
-                        programsInfo.Add(GetProgram(channelId, schedule, programDict[schedule.programID]));
-                    }
+                        programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect);
 
-                    return programsInfo;
+                        //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
+                        //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
+                        //    GetProgramImage(ApiUrl, data, "Banner-LO", false) ??
+                        //    GetProgramImage(ApiUrl, data, "Banner-LOT", false);
+                    }
                 }
+
+                programsInfo.Add(GetProgram(channelId, schedule, programDict[schedule.programID]));
             }
+
+            return programsInfo;
         }
 
         private static int GetSizeOrder(ScheduleDirect.ImageData image)
@@ -491,11 +487,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             try
             {
-                using (var innerResponse2 = await Post(httpOptions, true, info).ConfigureAwait(false))
-                {
-                    return await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ShowImages>>(
-                        innerResponse2.Content).ConfigureAwait(false);
-                }
+                using var innerResponse2 = await Post(httpOptions, true, info).ConfigureAwait(false);
+                return await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ShowImages>>(
+                    innerResponse2.Content).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -528,29 +522,27 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             try
             {
-                using (var httpResponse = await Get(options, false, info).ConfigureAwait(false))
-                using (Stream responce = httpResponse.Content)
-                {
-                    var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(responce).ConfigureAwait(false);
+                using var httpResponse = await Get(options, false, info).ConfigureAwait(false);
+                using Stream responce = httpResponse.Content;
+                var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(responce).ConfigureAwait(false);
 
-                    if (root != null)
+                if (root != null)
+                {
+                    foreach (ScheduleDirect.Headends headend in root)
                     {
-                        foreach (ScheduleDirect.Headends headend in root)
+                        foreach (ScheduleDirect.Lineup lineup in headend.lineups)
                         {
-                            foreach (ScheduleDirect.Lineup lineup in headend.lineups)
+                            lineups.Add(new NameIdPair
                             {
-                                lineups.Add(new NameIdPair
-                                {
-                                    Name = string.IsNullOrWhiteSpace(lineup.name) ? lineup.lineup : lineup.name,
-                                    Id = lineup.uri.Substring(18)
-                                });
-                            }
+                                Name = string.IsNullOrWhiteSpace(lineup.name) ? lineup.lineup : lineup.name,
+                                Id = lineup.uri.Substring(18)
+                            });
                         }
                     }
-                    else
-                    {
-                        _logger.LogInformation("No lineups available");
-                    }
+                }
+                else
+                {
+                    _logger.LogInformation("No lineups available");
                 }
             }
             catch (Exception ex)
@@ -704,17 +696,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             //_logger.LogInformation("Obtaining token from Schedules Direct from addres: " + httpOptions.Url + " with body " +
             // httpOptions.RequestContent);
 
-            using (var response = await Post(httpOptions, false, null).ConfigureAwait(false))
+            using var response = await Post(httpOptions, false, null).ConfigureAwait(false);
+            var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Token>(response.Content).ConfigureAwait(false);
+            if (root.message == "OK")
             {
-                var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Token>(response.Content).ConfigureAwait(false);
-                if (root.message == "OK")
-                {
-                    _logger.LogInformation("Authenticated with Schedules Direct token: " + root.token);
-                    return root.token;
-                }
-
-                throw new Exception("Could not authenticate with Schedules Direct Error: " + root.message);
+                _logger.LogInformation("Authenticated with Schedules Direct token: " + root.token);
+                return root.token;
             }
+
+            throw new Exception("Could not authenticate with Schedules Direct Error: " + root.message);
         }
 
         private async Task AddLineupToAccount(ListingsProviderInfo info, CancellationToken cancellationToken)
@@ -777,13 +767,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             try
             {
-                using (var httpResponse = await Get(options, false, null).ConfigureAwait(false))
-                using (var response = httpResponse.Content)
-                {
-                    var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Lineups>(response).ConfigureAwait(false);
+                using var httpResponse = await Get(options, false, null).ConfigureAwait(false);
+                using var response = httpResponse.Content;
+                var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Lineups>(response).ConfigureAwait(false);
 
-                    return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
-                }
+                return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
             }
             catch (HttpException ex)
             {
@@ -859,8 +847,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             var list = new List<ChannelInfo>();
 
             using (var httpResponse = await Get(httpOptions, true, info).ConfigureAwait(false))
-            using (var response = httpResponse.Content)
             {
+                using var response = httpResponse.Content;
                 var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Channel>(response).ConfigureAwait(false);
                 _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root.map.Count);
                 _logger.LogInformation("Mapping Stations to Channel");

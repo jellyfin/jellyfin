@@ -1611,25 +1611,22 @@ namespace Emby.Server.Implementations
 
             try
             {
-                using (var response = await HttpClient.SendAsync(
+                using var response = await HttpClient.SendAsync(
                     new HttpRequestOptions
                     {
                         Url = apiUrl,
                         LogErrorResponseBody = false,
                         BufferContent = false,
                         CancellationToken = cancellationToken
-                    }, HttpMethod.Post).ConfigureAwait(false))
-                {
-                    using (var reader = new StreamReader(response.Content))
-                    {
-                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
+                    }, HttpMethod.Post).ConfigureAwait(false);
+                using var reader = new StreamReader(response.Content);
 
-                        _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
-                        Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
-                        return valid;
-                    }
-                }
+                var result = await reader.ReadToEndAsync().ConfigureAwait(false);
+                var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
+
+                _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
+                Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
+                return valid;
             }
             catch (OperationCanceledException)
             {

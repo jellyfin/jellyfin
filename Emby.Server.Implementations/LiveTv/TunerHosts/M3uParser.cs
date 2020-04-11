@@ -32,19 +32,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         public async Task<List<ChannelInfo>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
         {
             // Read the file and display it line by line.
-            using (var reader = new StreamReader(await GetListingsStream(url, cancellationToken).ConfigureAwait(false)))
-            {
-                return GetChannels(reader, channelIdPrefix, tunerHostId);
-            }
+            using var reader = new StreamReader(await GetListingsStream(url, cancellationToken).ConfigureAwait(false));
+            return GetChannels(reader, channelIdPrefix, tunerHostId);
         }
 
         public List<ChannelInfo> ParseString(string text, string channelIdPrefix, string tunerHostId)
         {
             // Read the file and display it line by line.
-            using (var reader = new StringReader(text))
-            {
-                return GetChannels(reader, channelIdPrefix, tunerHostId);
-            }
+            using var reader = new StringReader(text);
+            return GetChannels(reader, channelIdPrefix, tunerHostId);
         }
 
         public Task<Stream> GetListingsStream(string url, CancellationToken cancellationToken)

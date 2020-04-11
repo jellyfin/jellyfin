@@ -424,11 +424,9 @@ namespace Emby.Server.Implementations.Networking
         public int GetRandomUnusedUdpPort()
         {
             var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            using (var udpClient = new UdpClient(localEndPoint))
-            {
-                var port = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
-                return port;
-            }
+            using var udpClient = new UdpClient(localEndPoint);
+            var port = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+            return port;
         }
 
         private List<PhysicalAddress> _macAddresses;

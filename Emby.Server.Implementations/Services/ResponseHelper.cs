@@ -119,19 +119,17 @@ namespace Emby.Server.Implementations.Services
             var contentType = request.ResponseContentType;
             var serializer = RequestHelper.GetResponseWriter(HttpListenerHost.Instance, contentType);
 
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            serializer(result, ms);
+
+            ms.Position = 0;
+
+            var contentLength = ms.Length;
+            response.ContentLength = contentLength;
+
+            if (contentLength > 0)
             {
-                serializer(result, ms);
-
-                ms.Position = 0;
-
-                var contentLength = ms.Length;
-                response.ContentLength = contentLength;
-
-                if (contentLength > 0)
-                {
-                    await ms.CopyToAsync(response.Body).ConfigureAwait(false);
-                }
+                await ms.CopyToAsync(response.Body).ConfigureAwait(false);
             }
         }
     }

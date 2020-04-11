@@ -705,17 +705,15 @@ namespace Emby.Server.Implementations.IO
 
         private static void RunProcess(string path, string args, string workingDirectory)
         {
-            using (var process = Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 Arguments = args,
                 FileName = path,
                 CreateNoWindow = true,
                 WorkingDirectory = workingDirectory,
                 WindowStyle = ProcessWindowStyle.Normal
-            }))
-            {
-                process.WaitForExit();
-            }
+            });
+            process.WaitForExit();
         }
     }
 }

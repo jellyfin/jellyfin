@@ -121,11 +121,9 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            using (var stream = new MemoryStream())
-            {
-                json.SerializeToStream(obj, stream);
-                return stream.ToArray();
-            }
+            using var stream = new MemoryStream();
+            json.SerializeToStream(obj, stream);
+            return stream.ToArray();
         }
 
         public static void Attach(SQLiteDatabaseConnection db, string path, string alias)
@@ -135,11 +133,9 @@ namespace Emby.Server.Implementations.Data
                 "attach @path as {0};",
                 alias);
 
-            using (var statement = db.PrepareStatement(commandText))
-            {
-                statement.TryBind("@path", path);
-                statement.MoveNext();
-            }
+            using var statement = db.PrepareStatement(commandText);
+            statement.TryBind("@path", path);
+            statement.MoveNext();
         }
 
         public static bool IsDBNull(this IReadOnlyList<IResultSetValue> result, int index)

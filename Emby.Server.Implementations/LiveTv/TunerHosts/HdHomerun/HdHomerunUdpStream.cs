@@ -164,42 +164,38 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var resolved = false;
 
-            using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
+            using var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read);
+            while (true)
             {
-                while (true)
+                cancellationToken.ThrowIfCancellationRequested();
+                using var timeOutSource = new CancellationTokenSource();
+                using var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    cancellationToken,
+                    timeOutSource.Token);
+                var resTask = udpClient.ReceiveAsync();
+                if (await Task.WhenAny(resTask, Task.Delay(30000, linkedSource.Token)).ConfigureAwait(false) != resTask)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    using (var timeOutSource = new CancellationTokenSource())
-                    using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(
-                        cancellationToken,
-                        timeOutSource.Token))
-                    {
-                        var resTask = udpClient.ReceiveAsync();
-                        if (await Task.WhenAny(resTask, Task.Delay(30000, linkedSource.Token)).ConfigureAwait(false) != resTask)
-                        {
-                            resTask.Dispose();
-                            break;
-                        }
+                    resTask.Dispose();
+                    break;
+                }
 
-                        // We don't want all these delay tasks to keep running
-                        timeOutSource.Cancel();
-                        var res = await resTask.ConfigureAwait(false);
-                        var buffer = res.Buffer;
+                // We don't want all these delay tasks to keep running
+                timeOutSource.Cancel();
+                var res = await resTask.ConfigureAwait(false);
+                var buffer = res.Buffer;
 
-                        var read = buffer.Length - RtpHeaderBytes;
+                var read = buffer.Length - RtpHeaderBytes;
 
-                        if (read > 0)
-                        {
-                            fileStream.Write(buffer, RtpHeaderBytes, read);
-                        }
+                if (read > 0)
+                {
+                    fileStream.Write(buffer, RtpHeaderBytes, read);
+                }
 
-                        if (!resolved)
-                        {
-                            resolved = true;
-                            DateOpened = DateTime.UtcNow;
-                            openTaskCompletionSource.TrySetResult(true);
-                        }
-                    }
+                if (!resolved)
+                {
+                    resolved = true;
+                    DateOpened = DateTime.UtcNow;
+                    openTaskCompletionSource.TrySetResult(true);
                 }
             }
         }

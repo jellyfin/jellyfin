@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.Updates
         /// <inheritdoc />
         public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
         {
-            using (var response = await _httpClient.SendAsync(
+            using var response = await _httpClient.SendAsync(
                 new HttpRequestOptions
                 {
                     Url = "https://repo.jellyfin.org/releases/plugin/manifest.json",
@@ -120,12 +120,11 @@ namespace Emby.Server.Implementations.Updates
                     CacheMode = CacheMode.Unconditional,
                     CacheLength = TimeSpan.FromMinutes(3)
                 },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (Stream stream = response.Content)
-            {
-                return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(
-                    stream).ConfigureAwait(false);
-            }
+                HttpMethod.Get).ConfigureAwait(false);
+            await using Stream stream = response.Content;
+
+            return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(
+                stream).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -341,7 +340,7 @@ namespace Emby.Server.Implementations.Updates
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
-            using (var res = await _httpClient.SendAsync(
+            using var res = await _httpClient.SendAsync(
                 new HttpRequestOptions
                 {
                     Url = package.sourceUrl,
@@ -349,31 +348,29 @@ namespace Emby.Server.Implementations.Updates
                     // We need it to be buffered for setting the position
                     BufferContent = true
                 },
-                HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = res.Content)
-            using (var md5 = MD5.Create())
+                HttpMethod.Get).ConfigureAwait(false);
+            await using var stream = res.Content;
+            using var md5 = MD5.Create();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var hash = Hex.Encode(md5.ComputeHash(stream));
+            if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var hash = Hex.Encode(md5.ComputeHash(stream));
-                if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
-                {
-                    _logger.LogError(
-                        "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
-                        package.name,
-                        package.checksum,
-                        hash);
-                    throw new InvalidDataException("The checksum of the received data doesn't match.");
-                }
-
-                if (Directory.Exists(targetDir))
-                {
-                    Directory.Delete(targetDir, true);
-                }
-
-                stream.Position = 0;
-                _zipClient.ExtractAllFromZip(stream, targetDir, true);
+                _logger.LogError(
+                    "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
+                    package.name,
+                    package.checksum,
+                    hash);
+                throw new InvalidDataException("The checksum of the received data doesn't match.");
             }
+
+            if (Directory.Exists(targetDir))
+            {
+                Directory.Delete(targetDir, true);
+            }
+
+            stream.Position = 0;
+            _zipClient.ExtractAllFromZip(stream, targetDir, true);
 
 #pragma warning restore CA5351
         }

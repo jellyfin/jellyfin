@@ -74,8 +74,8 @@ namespace Emby.Server.Implementations.Localization
                 var dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
 
                 using (var str = _assembly.GetManifestResourceStream(resource))
-                using (var reader = new StreamReader(str))
                 {
+                    using var reader = new StreamReader(str);
                     string line;
                     while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
@@ -120,8 +120,8 @@ namespace Emby.Server.Implementations.Localization
             const string ResourcePath = "Emby.Server.Implementations.Localization.iso6392.txt";
 
             using (var stream = _assembly.GetManifestResourceStream(ResourcePath))
-            using (var reader = new StreamReader(stream))
             {
+                using var reader = new StreamReader(stream);
                 while (!reader.EndOfStream)
                 {
                     var line = await reader.ReadLineAsync().ConfigureAwait(false);
@@ -342,22 +342,20 @@ namespace Emby.Server.Implementations.Localization
 
         private async Task CopyInto(IDictionary<string, string> dictionary, string resourcePath)
         {
-            using (var stream = _assembly.GetManifestResourceStream(resourcePath))
+            using var stream = _assembly.GetManifestResourceStream(resourcePath);
+            // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
+            if (stream != null)
             {
-                // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
-                if (stream != null)
-                {
-                    var dict = await _jsonSerializer.DeserializeFromStreamAsync<Dictionary<string, string>>(stream).ConfigureAwait(false);
+                var dict = await _jsonSerializer.DeserializeFromStreamAsync<Dictionary<string, string>>(stream).ConfigureAwait(false);
 
-                    foreach (var key in dict.Keys)
-                    {
-                        dictionary[key] = dict[key];
-                    }
-                }
-                else
+                foreach (var key in dict.Keys)
                 {
-                    _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
+                    dictionary[key] = dict[key];
                 }
+            }
+            else
+            {
+                _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
             }
         }
 

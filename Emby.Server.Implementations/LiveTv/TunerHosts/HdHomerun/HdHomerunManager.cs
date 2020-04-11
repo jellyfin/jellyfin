@@ -96,24 +96,20 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public void Dispose()
         {
-            using (var socket = _tcpClient)
+            using var socket = _tcpClient;
+            if (socket != null)
             {
-                if (socket != null)
-                {
-                    _tcpClient = null;
+                _tcpClient = null;
 
-                    StopStreaming(socket).GetAwaiter().GetResult();
-                }
+                StopStreaming(socket).GetAwaiter().GetResult();
             }
         }
 
         public async Task<bool> CheckTunerAvailability(IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
         {
-            using (var client = new TcpClient(new IPEndPoint(remoteIp, HdHomeRunPort)))
-            using (var stream = client.GetStream())
-            {
-                return await CheckTunerAvailability(stream, tuner, cancellationToken).ConfigureAwait(false);
-            }
+            using var client = new TcpClient(new IPEndPoint(remoteIp, HdHomeRunPort));
+            using var stream = client.GetStream();
+            return await CheckTunerAvailability(stream, tuner, cancellationToken).ConfigureAwait(false);
         }
 
         private static async Task<bool> CheckTunerAvailability(NetworkStream stream, int tuner, CancellationToken cancellationToken)
@@ -219,30 +215,28 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 return;
             }
 
-            using (var tcpClient = new TcpClient(_remoteEndPoint))
-            using (var stream = tcpClient.GetStream())
+            using var tcpClient = new TcpClient(_remoteEndPoint);
+            using var stream = tcpClient.GetStream();
+            var commandList = commands.GetCommands();
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(8192);
+            try
             {
-                var commandList = commands.GetCommands();
-                byte[] buffer = ArrayPool<byte>.Shared.Rent(8192);
-                try
+                foreach (var command in commandList)
                 {
-                    foreach (var command in commandList)
-                    {
-                        var channelMsg = CreateSetMessage(_activeTuner, command.Item1, command.Item2, _lockkey);
-                        await stream.WriteAsync(channelMsg, 0, channelMsg.Length, cancellationToken).ConfigureAwait(false);
-                        int receivedBytes = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+                    var channelMsg = CreateSetMessage(_activeTuner, command.Item1, command.Item2, _lockkey);
+                    await stream.WriteAsync(channelMsg, 0, channelMsg.Length, cancellationToken).ConfigureAwait(false);
+                    int receivedBytes = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
 
-                        // parse response to make sure it worked
-                        if (!ParseReturnMessage(buffer, receivedBytes, out _))
-                        {
-                            return;
-                        }
+                    // parse response to make sure it worked
+                    if (!ParseReturnMessage(buffer, receivedBytes, out _))
+                    {
+                        return;
                     }
                 }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer);
-                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
 

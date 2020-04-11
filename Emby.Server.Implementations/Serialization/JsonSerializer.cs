@@ -82,10 +82,8 @@ namespace Emby.Server.Implementations.Serialization
                 throw new ArgumentNullException(nameof(file));
             }
 
-            using (var stream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
-            {
-                SerializeToStream(obj, stream);
-            }
+            using var stream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read);
+            SerializeToStream(obj, stream);
         }
 
         private static Stream OpenFile(string path)
@@ -112,10 +110,8 @@ namespace Emby.Server.Implementations.Serialization
                 throw new ArgumentNullException(nameof(file));
             }
 
-            using (var stream = OpenFile(file))
-            {
-                return DeserializeFromStream(stream, type);
-            }
+            using var stream = OpenFile(file);
+            return DeserializeFromStream(stream, type);
         }
 
         /// <summary>
@@ -133,10 +129,8 @@ namespace Emby.Server.Implementations.Serialization
                 throw new ArgumentNullException(nameof(file));
             }
 
-            using (var stream = OpenFile(file))
-            {
-                return DeserializeFromStream<T>(stream);
-            }
+            using var stream = OpenFile(file);
+            return DeserializeFromStream<T>(stream);
         }
 
         /// <summary>
@@ -217,12 +211,10 @@ namespace Emby.Server.Implementations.Serialization
                 throw new ArgumentNullException(nameof(type));
             }
 
-            using (var reader = new StreamReader(stream))
-            {
-                var json = await reader.ReadToEndAsync().ConfigureAwait(false);
+            using var reader = new StreamReader(stream);
+            var json = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                return ServiceStack.Text.JsonSerializer.DeserializeFromString(json, type);
-            }
+            return ServiceStack.Text.JsonSerializer.DeserializeFromString(json, type);
         }
 
         private static string SerializeGuid(Guid guid)

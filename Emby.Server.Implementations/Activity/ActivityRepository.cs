@@ -45,16 +45,14 @@ namespace Emby.Server.Implementations.Activity
 
         private void InitializeInternal()
         {
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunQueries(new[]
             {
-                connection.RunQueries(new[]
-                {
-                    "create table if not exists ActivityLog (Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",
-                    "drop index if exists idx_ActivityLogEntries"
-                });
+                "create table if not exists ActivityLog (Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",
+                "drop index if exists idx_ActivityLogEntries"
+            });
 
-                TryMigrate(connection);
-            }
+            TryMigrate(connection);
         }
 
         private void TryMigrate(ManagedConnection connection)
@@ -85,35 +83,31 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(db =>
             {
-                connection.RunInTransaction(db =>
+                using var statement = db.PrepareStatement("insert into ActivityLog (Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)");
+                statement.TryBind("@Name", entry.Name);
+
+                statement.TryBind("@Overview", entry.Overview);
+                statement.TryBind("@ShortOverview", entry.ShortOverview);
+                statement.TryBind("@Type", entry.Type);
+                statement.TryBind("@ItemId", entry.ItemId);
+
+                if (entry.UserId.Equals(Guid.Empty))
                 {
-                    using (var statement = db.PrepareStatement("insert into ActivityLog (Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
-                    {
-                        statement.TryBind("@Name", entry.Name);
+                    statement.TryBindNull("@UserId");
+                }
+                else
+                {
+                    statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
+                }
 
-                        statement.TryBind("@Overview", entry.Overview);
-                        statement.TryBind("@ShortOverview", entry.ShortOverview);
-                        statement.TryBind("@Type", entry.Type);
-                        statement.TryBind("@ItemId", entry.ItemId);
+                statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                statement.TryBind("@LogSeverity", entry.Severity.ToString());
 
-                        if (entry.UserId.Equals(Guid.Empty))
-                        {
-                            statement.TryBindNull("@UserId");
-                        }
-                        else
-                        {
-                            statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
-                        }
-
-                        statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
-                        statement.TryBind("@LogSeverity", entry.Severity.ToString());
-
-                        statement.MoveNext();
-                    }
-                }, TransactionMode);
-            }
+                statement.MoveNext();
+            }, TransactionMode);
         }
 
         public void Update(ActivityLogEntry entry)
@@ -123,36 +117,32 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(db =>
             {
-                connection.RunInTransaction(db =>
+                using var statement = db.PrepareStatement("Update ActivityLog set Name=@Name,Overview=@Overview,ShortOverview=@ShortOverview,Type=@Type,ItemId=@ItemId,UserId=@UserId,DateCreated=@DateCreated,LogSeverity=@LogSeverity where Id=@Id");
+                statement.TryBind("@Id", entry.Id);
+
+                statement.TryBind("@Name", entry.Name);
+                statement.TryBind("@Overview", entry.Overview);
+                statement.TryBind("@ShortOverview", entry.ShortOverview);
+                statement.TryBind("@Type", entry.Type);
+                statement.TryBind("@ItemId", entry.ItemId);
+
+                if (entry.UserId.Equals(Guid.Empty))
                 {
-                    using (var statement = db.PrepareStatement("Update ActivityLog set Name=@Name,Overview=@Overview,ShortOverview=@ShortOverview,Type=@Type,ItemId=@ItemId,UserId=@UserId,DateCreated=@DateCreated,LogSeverity=@LogSeverity where Id=@Id"))
-                    {
-                        statement.TryBind("@Id", entry.Id);
+                    statement.TryBindNull("@UserId");
+                }
+                else
+                {
+                    statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
+                }
 
-                        statement.TryBind("@Name", entry.Name);
-                        statement.TryBind("@Overview", entry.Overview);
-                        statement.TryBind("@ShortOverview", entry.ShortOverview);
-                        statement.TryBind("@Type", entry.Type);
-                        statement.TryBind("@ItemId", entry.ItemId);
+                statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                statement.TryBind("@LogSeverity", entry.Severity.ToString());
 
-                        if (entry.UserId.Equals(Guid.Empty))
-                        {
-                            statement.TryBindNull("@UserId");
-                        }
-                        else
-                        {
-                            statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
-                        }
-
-                        statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
-                        statement.TryBind("@LogSeverity", entry.Severity.ToString());
-
-                        statement.MoveNext();
-                    }
-                }, TransactionMode);
-            }
+                statement.MoveNext();
+            }, TransactionMode);
         }
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)

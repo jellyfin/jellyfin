@@ -162,17 +162,15 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                using (var source = SourceStream)
+                using var source = SourceStream;
+                // If the requested range is "0-", we can optimize by just doing a stream copy
+                if (RangeEnd >= TotalContentLength - 1)
                 {
-                    // If the requested range is "0-", we can optimize by just doing a stream copy
-                    if (RangeEnd >= TotalContentLength - 1)
-                    {
-                        await source.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await CopyToInternalAsync(source, responseStream, RangeLength).ConfigureAwait(false);
-                    }
+                    await source.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
+                }
+                else
+                {
+                    await CopyToInternalAsync(source, responseStream, RangeLength).ConfigureAwait(false);
                 }
             }
             finally

@@ -323,17 +323,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             try
             {
-                using (var reader = new StreamReader(source))
+                using var reader = new StreamReader(source);
+                while (!reader.EndOfStream)
                 {
-                    while (!reader.EndOfStream)
-                    {
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
+                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                        var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
+                    var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
-                        await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                        await target.FlushAsync().ConfigureAwait(false);
-                    }
+                    await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                    await target.FlushAsync().ConfigureAwait(false);
                 }
             }
             catch (ObjectDisposedException)

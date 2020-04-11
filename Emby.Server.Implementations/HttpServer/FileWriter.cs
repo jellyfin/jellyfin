@@ -231,21 +231,19 @@ namespace Emby.Server.Implementations.HttpServer
                 fileOptions |= FileOptions.Asynchronous;
             }
 
-            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, fileShare, IODefaults.FileStreamBufferSize, fileOptions))
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, fileShare, IODefaults.FileStreamBufferSize, fileOptions);
+            if (offset > 0)
             {
-                if (offset > 0)
-                {
-                    fs.Position = offset;
-                }
+                fs.Position = offset;
+            }
 
-                if (count > 0)
-                {
-                    await _streamHelper.CopyToAsync(fs, stream, count, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    await fs.CopyToAsync(stream, IODefaults.CopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                }
+            if (count > 0)
+            {
+                await _streamHelper.CopyToAsync(fs, stream, count, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await fs.CopyToAsync(stream, IODefaults.CopyToBufferSize, cancellationToken).ConfigureAwait(false);
             }
         }
     }

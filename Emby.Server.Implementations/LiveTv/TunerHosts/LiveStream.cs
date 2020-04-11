@@ -191,20 +191,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private async Task CopyFile(string path, bool seekFile, int emptyReadLimit, bool allowAsync, Stream stream, CancellationToken cancellationToken)
         {
-            using (var inputStream = GetInputStream(path, allowAsync))
+            using var inputStream = GetInputStream(path, allowAsync);
+            if (seekFile)
             {
-                if (seekFile)
-                {
-                    TrySeek(inputStream, -20000);
-                }
-
-                await StreamHelper.CopyToAsync(
-                    inputStream,
-                    stream,
-                    IODefaults.CopyToBufferSize,
-                    emptyReadLimit,
-                    cancellationToken).ConfigureAwait(false);
+                TrySeek(inputStream, -20000);
             }
+
+            await StreamHelper.CopyToAsync(
+                inputStream,
+                stream,
+                IODefaults.CopyToBufferSize,
+                emptyReadLimit,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private void TrySeek(FileStream stream, long offset)

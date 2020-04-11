@@ -86,15 +86,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     DecompressionMethod = CompressionMethods.Gzip,
                 },
                 HttpMethod.Get).ConfigureAwait(false))
-            using (var stream = res.Content)
-            using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew))
             {
+                using var stream = res.Content;
+                using var fileStream = new FileStream(cacheFile, FileMode.CreateNew);
                 if (res.ContentHeaders.ContentEncoding.Contains("gzip"))
                 {
-                    using (var gzStream = new GZipStream(stream, CompressionMode.Decompress))
-                    {
-                        await gzStream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
-                    }
+                    using var gzStream = new GZipStream(stream, CompressionMode.Decompress);
+                    await gzStream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -137,28 +135,24 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private string ExtractFirstFileFromGz(string file)
         {
-            using (var stream = File.OpenRead(file))
-            {
-                string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
-                Directory.CreateDirectory(tempFolder);
+            using var stream = File.OpenRead(file);
+            string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempFolder);
 
-                _zipClient.ExtractFirstFileFromGz(stream, tempFolder, "data.xml");
+            _zipClient.ExtractFirstFileFromGz(stream, tempFolder, "data.xml");
 
-                return tempFolder;
-            }
+            return tempFolder;
         }
 
         private string ExtractGz(string file)
         {
-            using (var stream = File.OpenRead(file))
-            {
-                string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
-                Directory.CreateDirectory(tempFolder);
+            using var stream = File.OpenRead(file);
+            string tempFolder = Path.Combine(_config.ApplicationPaths.TempDirectory, Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempFolder);
 
-                _zipClient.ExtractAllFromGz(stream, tempFolder, true);
+            _zipClient.ExtractAllFromGz(stream, tempFolder, true);
 
-                return tempFolder;
-            }
+            return tempFolder;
         }
 
         private string FindXmlFile(string directory)
