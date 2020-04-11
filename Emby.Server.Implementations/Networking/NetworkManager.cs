@@ -446,7 +446,7 @@ namespace Emby.Server.Implementations.Networking
             => NetworkInterface.GetAllNetworkInterfaces()
                 .Where(i => i.NetworkInterfaceType != NetworkInterfaceType.Loopback)
                 .Select(x => x.GetPhysicalAddress())
-                .Where(x => x != null && x != PhysicalAddress.None);
+                .Where(x => !Equals(x, PhysicalAddress.None));
 
         public bool IsInSameSubnet(IPAddress address1, IPAddress address2, IPAddress subnetMask)
         {
