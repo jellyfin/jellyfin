@@ -15,22 +15,16 @@ namespace MediaBrowser.Model.Updates
         public string name { get; set; }
 
         /// <summary>
-        /// Gets or sets the short description.
+        /// Gets or sets a long description of the plugin containing features or helpful explanations.
         /// </summary>
-        /// <value>The short description.</value>
-        public string shortDescription { get; set; }
+        /// <value>The description.</value>
+        public string description { get; set; }
 
         /// <summary>
-        /// Gets or sets the overview.
+        /// Gets or sets a short overview of what the plugin does.
         /// </summary>
         /// <value>The overview.</value>
         public string overview { get; set; }
-
-        /// <summary>
-        /// Gets or sets the target filename for the downloaded binary.
-        /// </summary>
-        /// <value>The target filename.</value>
-        public string filename { get; set; }
 
         /// <summary>
         /// Gets or sets the owner.
