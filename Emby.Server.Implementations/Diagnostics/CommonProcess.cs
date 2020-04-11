@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.Diagnostics
     {
         private readonly Process _process;
 
-        private bool _disposed = false;
+        private bool _disposed;
         private bool _hasExited;
 
         public CommonProcess(ProcessOptions options)

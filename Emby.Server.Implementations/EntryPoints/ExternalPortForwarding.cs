@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private Timer _timer;
         private string _lastConfigIdentifier;
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.

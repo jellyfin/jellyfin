@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private readonly SemaphoreSlim _recordingDeleteSemaphore = new SemaphoreSlim(1, 1);
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         public EmbyTV(
             IServerApplicationHost appHost,

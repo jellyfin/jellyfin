@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.Data
 {
     public abstract class BaseSqliteRepository : IDisposable
     {
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.

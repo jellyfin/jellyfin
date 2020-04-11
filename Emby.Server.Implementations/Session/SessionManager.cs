@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.Session
         private Timer _idleTimer;
 
         private DtoOptions _itemInfoDtoOptions;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public SessionManager(
             ILogger<SessionManager> logger,

@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             InitTriggerEvents();
         }
 
-        private bool _readFromFile = false;
+        private bool _readFromFile;
         /// <summary>
         /// The _last execution result
         /// </summary>

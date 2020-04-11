@@ -168,7 +168,6 @@ namespace Emby.Server.Implementations.Session
         {
             using (var response = await _httpClient.Post(options).ConfigureAwait(false))
             {
-
             }
         }
 

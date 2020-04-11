@@ -14,7 +14,7 @@ namespace Emby.Server.Implementations.Net
     {
         private Socket _socket;
         private int _localPort;
-        private bool _disposed = false;
+        private bool _disposed;
 
         public Socket Socket => _socket;
 

@@ -6,7 +6,7 @@ public sealed class HttpPostedFile : IDisposable
     private string _name;
     private string _contentType;
     private Stream _stream;
-    private bool _disposed = false;
+    private bool _disposed;
 
     internal HttpPostedFile(string name, string content_type, Stream base_stream, long offset, long length)
     {

@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private const ushort GetSetRequest = 4;
         private const ushort GetSetReply = 5;
 
-        private uint? _lockkey = null;
+        private uint? _lockkey;
         private int _activeTuner = -1;
         private IPEndPoint _remoteEndPoint;
 

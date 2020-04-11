@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Services
         private readonly string[] variablesNames;
 
         private readonly bool[] isWildcard;
-        private readonly int wildcardCount = 0;
+        private readonly int wildcardCount;
 
         internal static string[] IgnoreAttributesNamed = new[]
         {

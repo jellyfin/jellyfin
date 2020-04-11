@@ -2163,7 +2163,7 @@ namespace Emby.Server.Implementations.LiveTv
             Dispose(true);
         }
 
-        private bool _disposed = false;
+        private bool _disposed;
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>

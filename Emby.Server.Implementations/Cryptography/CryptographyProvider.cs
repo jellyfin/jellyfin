@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.Cryptography
 
         private RandomNumberGenerator _randomNumberGenerator;
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CryptographyProvider"/> class.

@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
-        private bool _disposed = false;
+        private bool _disposed;
 
         public HttpListenerHost(
             IServerApplicationHost applicationHost,

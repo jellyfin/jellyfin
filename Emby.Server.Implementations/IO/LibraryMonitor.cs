@@ -536,7 +536,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
