@@ -434,7 +434,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
                     e.Argument.Item2.version),
-                Overview = e.Argument.Item2.description
+                Overview = e.Argument.Item2.changelog
             });
         }
 

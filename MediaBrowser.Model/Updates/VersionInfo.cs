@@ -29,10 +29,10 @@ namespace MediaBrowser.Model.Updates
         public Version version { get; set; }
 
         /// <summary>
-        /// Gets or sets the description.
+        /// Gets or sets the changelog for this version.
         /// </summary>
-        /// <value>The description.</value>
-        public string description { get; set; }
+        /// <value>The changelog.</value>
+        public string changelog { get; set; }
 
         /// <summary>
         /// Gets or sets the ABI that this version was built against.
