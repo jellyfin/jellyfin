@@ -32,9 +32,9 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public List<MediaStream> GetExternalSubtitleStreams(
             Video video,
-          int startIndex,
-          IDirectoryService directoryService,
-          bool clearCache)
+            int startIndex,
+            IDirectoryService directoryService,
+            bool clearCache)
         {
             var streams = new List<MediaStream>();
 
