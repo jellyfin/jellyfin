@@ -132,7 +132,6 @@ namespace Emby.Server.Implementations
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
         private IHttpClient _httpClient;
-        private IInstallationManager _installationManager;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -725,8 +724,6 @@ namespace Emby.Server.Implementations
             var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, userManager);
 
-            Resolve<IInstallationManager>().PluginInstalled += PluginInstalled;
-
             FindParts();
         }
 
@@ -821,41 +818,6 @@ namespace Emby.Server.Implementations
             CollectionFolder.JsonSerializer = Resolve<IJsonSerializer>();
             CollectionFolder.ApplicationHost = this;
             AuthenticatedAttribute.AuthService = Resolve<IAuthService>();
-        }
-
-        private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
-        {
-            string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
-            var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
-                        .Select(Assembly.LoadFrom)
-                        .SelectMany(x => x.ExportedTypes)
-                        .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
-                        .ToArray();
-
-            int oldLen = _allConcreteTypes.Length;
-            Array.Resize(ref _allConcreteTypes, oldLen + types.Length);
-            types.CopyTo(_allConcreteTypes, oldLen);
-
-            var plugins = types.Where(x => x.IsAssignableFrom(typeof(IPlugin)))
-                    .Select(CreateInstanceSafe)
-                    .Where(x => x != null)
-                    .Cast<IPlugin>()
-                    .Select(LoadPlugin)
-                    .Where(x => x != null)
-                    .ToArray();
-
-            oldLen = _plugins.Length;
-            Array.Resize(ref _plugins, oldLen + plugins.Length);
-            plugins.CopyTo(_plugins, oldLen);
-
-            var entries = types.Where(x => x.IsAssignableFrom(typeof(IServerEntryPoint)))
-                .Select(CreateInstanceSafe)
-                .Where(x => x != null)
-                .Cast<IServerEntryPoint>()
-                .ToList();
-
-            await Task.WhenAll(StartEntryPoints(entries, true)).ConfigureAwait(false);
-            await Task.WhenAll(StartEntryPoints(entries, false)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1198,7 +1160,7 @@ namespace Emby.Server.Implementations
                 IsShuttingDown = IsShuttingDown,
                 Version = ApplicationVersionString,
                 WebSocketPortNumber = HttpPort,
-                CompletedInstallations = _installationManager.CompletedInstallations.ToArray(),
+                CompletedInstallations = Resolve<IInstallationManager>().CompletedInstallations.ToArray(),
                 Id = SystemId,
                 ProgramDataPath = ApplicationPaths.ProgramDataPath,
                 WebPath = ApplicationPaths.WebPath,

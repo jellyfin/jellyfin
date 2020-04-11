@@ -23,7 +23,7 @@ jobs:
             NugetPackageName: ${{ Package.value.NugetPackageName }}
             AssemblyFileName: ${{ Package.value.AssemblyFileName }}
       maxParallel: 2
-    dependsOn: MainBuild
+    dependsOn: Build
     steps:
       - checkout: none
 

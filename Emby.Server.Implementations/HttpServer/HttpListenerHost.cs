@@ -23,6 +23,7 @@ using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text.Jsv;
 
@@ -48,6 +49,8 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly string _baseUrlPrefix;
         private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
+        private readonly IHostEnvironment _hostEnvironment;
+
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private bool _disposed = false;
 
@@ -61,7 +64,8 @@ namespace Emby.Server.Implementations.HttpServer
             IXmlSerializer xmlSerializer,
             IHttpListener socketListener,
             ILocalizationManager localizationManager,
-            ServiceController serviceController)
+            ServiceController serviceController,
+            IHostEnvironment hostEnvironment)
         {
             _appHost = applicationHost;
             _logger = logger;
@@ -75,6 +79,7 @@ namespace Emby.Server.Implementations.HttpServer
             ServiceController = serviceController;
 
             _socketListener.WebSocketConnected = OnWebSocketConnected;
+            _hostEnvironment = hostEnvironment;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
@@ -530,22 +535,25 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    await ErrorHandler(new FileNotFoundException(), httpReq, false).ConfigureAwait(false);
+                    throw new FileNotFoundException();
                 }
-            }
-            catch (Exception ex) when (ex is SocketException || ex is IOException || ex is OperationCanceledException)
-            {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
-            }
-            catch (SecurityException ex)
-            {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
+                // Do not handle exceptions manually when in development mode
+                // The framework-defined development exception page will be returned instead
+                if (_hostEnvironment.IsDevelopment())
+                {
+                    throw;
+                }
 
-                await ErrorHandler(ex, httpReq, logException).ConfigureAwait(false);
+                bool ignoreStackTrace =
+                    ex is SocketException
+                    || ex is IOException
+                    || ex is OperationCanceledException
+                    || ex is SecurityException
+                    || ex is FileNotFoundException;
+                await ErrorHandler(ex, httpReq, ignoreStackTrace).ConfigureAwait(false);
             }
             finally
             {

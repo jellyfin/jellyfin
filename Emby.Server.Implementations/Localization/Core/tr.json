@@ -92,5 +92,10 @@
     "UserStoppedPlayingItemWithValues": "{0}, {2} cihazında {1} izlemeyi bitirdi",
     "ValueHasBeenAddedToLibrary": "Medya kitaplığınıza {0} eklendi",
     "ValueSpecialEpisodeName": "Özel - {0}",
-    "VersionNumber": "Versiyon {0}"
+    "VersionNumber": "Versiyon {0}",
+    "TaskCleanCache": "Geçici dosya klasörünü temizle",
+    "TasksChannelsCategory": "İnternet kanalları",
+    "TasksApplicationCategory": "Yazılım",
+    "TasksLibraryCategory": "Kütüphane",
+    "TasksMaintenanceCategory": "Onarım"
 }
