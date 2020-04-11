@@ -88,7 +88,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -106,7 +105,6 @@ using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
@@ -614,17 +612,11 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
             serviceCollection.AddSingleton<IUserManager, UserManager>();
 
-            // TODO: Add StartupOptions.FFmpegPath to IConfiguration so this doesn't need to be constructed manually
+            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
+            // TODO: Add StartupOptions.FFmpegPath to IConfiguration and remove this custom activation
+            serviceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
             serviceCollection.AddSingleton<IMediaEncoder>(provider =>
-                new MediaBrowser.MediaEncoding.Encoder.MediaEncoder(
-                    provider.GetRequiredService<ILogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>>(),
-                    provider.GetRequiredService<IServerConfigurationManager>(),
-                    provider.GetRequiredService<IFileSystem>(),
-                    provider.GetRequiredService<IProcessFactory>(),
-                    provider.GetRequiredService<ILocalizationManager>(),
-                    provider.GetRequiredService<ISubtitleEncoder>,
-                    provider.GetRequiredService<IConfiguration>(),
-                    _startupOptions.FFmpegPath));
+                ActivatorUtilities.CreateInstance<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(provider, _startupOptions.FFmpegPath ?? string.Empty));
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));

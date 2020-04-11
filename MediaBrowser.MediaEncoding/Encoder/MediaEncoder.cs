@@ -40,16 +40,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IFileSystem _fileSystem;
         private readonly IProcessFactory _processFactory;
         private readonly ILocalizationManager _localization;
-        private readonly Func<ISubtitleEncoder> _subtitleEncoder;
-        private readonly IConfiguration _configuration;
+        private readonly Lazy<EncodingHelper> _encodingHelperFactory;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
 
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
-
-        private EncodingHelper _encodingHelper;
 
         private string _ffmpegPath;
         private string _ffprobePath;
@@ -60,8 +57,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IFileSystem fileSystem,
             IProcessFactory processFactory,
             ILocalizationManager localization,
-            Func<ISubtitleEncoder> subtitleEncoder,
-            IConfiguration configuration,
+            Lazy<EncodingHelper> encodingHelperFactory,
             string startupOptionsFFmpegPath)
         {
             _logger = logger;
@@ -69,15 +65,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _fileSystem = fileSystem;
             _processFactory = processFactory;
             _localization = localization;
+            _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = startupOptionsFFmpegPath;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
         }
 
-        private EncodingHelper EncodingHelper
-            => LazyInitializer.EnsureInitialized(
-                ref _encodingHelper,
-                () => new EncodingHelper(this, _fileSystem, _subtitleEncoder(), _configuration));
+        private EncodingHelper EncodingHelper => _encodingHelperFactory.Value;
 
         /// <inheritdoc />
         public string EncoderPath => _ffmpegPath;
