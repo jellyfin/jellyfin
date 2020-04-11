@@ -17,7 +17,6 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestKodiExtras()
         {
-
             Test("trailer.mp4", ExtraType.Trailer, _videoOptions);
             Test("300-trailer.mp4", ExtraType.Trailer, _videoOptions);
 
