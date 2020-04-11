@@ -20,6 +20,8 @@ namespace Emby.Server.Implementations.Channels
             _channelManager = channelManager;
         }
 
+        public string Name => "Channel Image Provider";
+
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
             return GetChannel(item).GetSupportedChannelImages();
@@ -31,8 +33,6 @@ namespace Emby.Server.Implementations.Channels
 
             return channel.GetChannelImage(type, cancellationToken);
         }
-
-        public string Name => "Channel Image Provider";
 
         public bool Supports(BaseItem item)
         {
