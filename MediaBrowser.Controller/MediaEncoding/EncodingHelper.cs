@@ -2000,8 +2000,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 var codec = videoStream.Codec.ToLowerInvariant();
-                var IsColorDepth10 = (videoStream.Profile ?? string.Empty).IndexOf("Main 10", StringComparison.OrdinalIgnoreCase) != -1
-                    || (videoStream.Profile ?? string.Empty).IndexOf("High 10", StringComparison.OrdinalIgnoreCase) != -1;
+                var isColorDepth10 = !string.IsNullOrEmpty(videoStream.Profile) && (videoStream.Profile.Contains("Main 10", StringComparison.OrdinalIgnoreCase)
+                    || videoStream.Profile.Contains("High 10", StringComparison.OrdinalIgnoreCase));
 
                 // Assert 10-bit hardware VAAPI decodable
                 if (IsColorDepth10 && (string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
