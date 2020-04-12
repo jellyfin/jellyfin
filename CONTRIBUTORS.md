@@ -127,6 +127,7 @@
  - [xosdy](https://github.com/xosdy)
  - [XVicarious](https://github.com/XVicarious)
  - [YouKnowBlom](https://github.com/YouKnowBlom)
+ - [KristupasSavickas](https://github.com/KristupasSavickas)
 
 # Emby Contributors
 
