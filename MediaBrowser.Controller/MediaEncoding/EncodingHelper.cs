@@ -2004,7 +2004,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     || videoStream.Profile.Contains("High 10", StringComparison.OrdinalIgnoreCase));
 
                 // Assert 10-bit hardware VAAPI decodable
-                if (IsColorDepth10 && (string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
+                if (isColorDepth10 && (string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -2018,7 +2018,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 // Assert 8-bit hardware VAAPI decodable
-                else if (!IsColorDepth10)
+                else if (!isColorDepth10)
                 {
                     filters.Add("hwdownload");
                     filters.Add("format=nv12");
