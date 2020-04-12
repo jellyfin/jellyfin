@@ -28,11 +28,25 @@ jobs:
         submodules: true
         persistCredentials: false
 
+      # This is required for the SonarCloud analyzer
+      - task: UseDotNet@2
+        displayName: "Install .NET Core SDK 2.1"
+        inputs:
+          packageType: sdk
+          version: '2.1.805'
+
       - task: UseDotNet@2
         displayName: "Update DotNet"
         inputs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
+
+      - task: SonarCloudPrepare@1
+        displayName: 'Prepare analysis on SonarCloud'
+        inputs:
+          SonarCloud: 'Sonarcloud for Jellyfin'
+          organization: 'jellyfin'
+          projectKey: 'jellyfin_jellyfin'
 
       - task: DotNetCoreCLI@2
         displayName: 'Run CLI Tests'
@@ -43,6 +57,12 @@ jobs:
           publishTestResults: true
           testRunTitle: $(Agent.JobName)
           workingDirectory: "$(Build.SourcesDirectory)"
+
+      - task: SonarCloudAnalyze@1
+        displayName: 'Run Code Analysis'
+
+      - task: SonarCloudPublish@1
+        displayName: 'Publish Quality Gate Result'
 
       - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
@@ -62,3 +82,4 @@ jobs:
           summaryFileLocation: "$(Agent.TempDirectory)/merged/**.xml"
           pathToSources: $(Build.SourcesDirectory)
           failIfCoverageEmpty: true
+
