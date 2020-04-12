@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -242,18 +241,17 @@ namespace Emby.Server.Implementations.HttpServer
 
         private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
         {
-            string urlSuffix = string.Format(CultureInfo.InvariantCulture, "; URL being processed: {0}", urlToLog);
             try
             {
                 ex = GetActualException(ex);
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError(ex, "Error processing request{Suffix}", urlSuffix);
+                    _logger.LogError(ex, "Error processing request; URL being processed: {Url}", urlToLog);
                 }
                 else
                 {
-                    _logger.LogError("Error processing request: {Message}{Suffix}", ex.Message, urlSuffix);
+                    _logger.LogError("Error processing request: {Message}; URL being processed: {Url}", ex.Message, urlToLog);
                 }
 
                 var httpRes = httpReq.Response;
@@ -273,7 +271,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response){Suffix}", urlSuffix);
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response); URL being processed: {Url}", urlToLog);
             }
         }
 
