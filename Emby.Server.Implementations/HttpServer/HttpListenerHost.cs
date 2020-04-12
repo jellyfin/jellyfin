@@ -242,9 +242,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
         {
-            string urlSuffix = string.IsNullOrWhiteSpace(urlToLog)
-                ? string.Format(CultureInfo.InvariantCulture, "; URL being processed: {0}", urlToLog)
-                : "";
+            string urlSuffix = string.Format(CultureInfo.InvariantCulture, "; URL being processed: {0}", urlToLog);
             try
             {
                 ex = GetActualException(ex);
@@ -460,7 +458,7 @@ namespace Emby.Server.Implementations.HttpServer
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var httpRes = httpReq.Response;
-            string urlToLog = null;
+            string urlToLog = GetUrlToLog(urlString);
             string remoteIp = httpReq.RemoteIp;
 
             try
@@ -505,8 +503,6 @@ namespace Emby.Server.Implementations.HttpServer
                     await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
                     return;
                 }
-
-                urlToLog = GetUrlToLog(urlString);
 
                 if (string.Equals(localPath, _baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(localPath, _baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
