@@ -553,7 +553,7 @@ namespace Emby.Server.Implementations.HttpServer
                     || ex is OperationCanceledException
                     || ex is SecurityException
                     || ex is FileNotFoundException;
-                await ErrorHandler(ex, httpReq, ignoreStackTrace, urlToLog).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, !ignoreStackTrace, urlToLog).ConfigureAwait(false);
             }
             finally
             {
