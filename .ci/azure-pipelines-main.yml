@@ -27,8 +27,8 @@ jobs:
           path: '$(Agent.TempDirectory)'
           artifact: 'jellyfin-web-production'
           source: 'specific'
-          project: 'Jellyfin Web'
-          pipeline: 'Build'
+          project: 'jellyfin'
+          pipeline: 'Jellyfin Web'
           runBranch: variables['Build.SourceBranch']
 
       - task: DownloadPipelineArtifact@2
@@ -38,8 +38,8 @@ jobs:
           path: '$(Agent.TempDirectory)'
           artifact: 'jellyfin-web-production'
           source: 'specific'
-          project: 'Jellyfin Web'
-          pipeline: 'Build'
+          project: 'jellyfin'
+          pipeline: 'Jellyfin Web'
           runBranch: variables['System.PullRequest.TargetBranch']
 
       - task: ExtractFiles@1
