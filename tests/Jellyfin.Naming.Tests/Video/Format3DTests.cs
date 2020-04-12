@@ -25,8 +25,9 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 GetParser().ResolveFile(@"C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.3d.hsbs.mkv");
 
-            Assert.Equal("hsbs", result.Format3D);
-            Assert.Equal("Oblivion", result.Name);
+            Assert.NotNull(result);
+            Assert.Equal("hsbs", result!.Format3D);
+            Assert.Equal("Oblivion", result!.Name);
         }
 
         [Fact]
@@ -57,7 +58,7 @@ namespace Jellyfin.Naming.Tests.Video
             Test("Super movie [sbs3d].mp4", true, "sbs3d", options);
         }
 
-        private void Test(string input, bool is3D, string format3D, NamingOptions options)
+        private void Test(string input, bool is3D, string? format3D, NamingOptions options)
         {
             var parser = new Format3DParser(options);
 

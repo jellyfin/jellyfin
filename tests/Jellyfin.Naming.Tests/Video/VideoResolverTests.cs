@@ -1,10 +1,19 @@
 ﻿using MediaBrowser.Model.Entities;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 namespace Jellyfin.Naming.Tests.Video
 {
     public class VideoResolverTests : BaseVideoTest
     {
+
+        //Utility method to annotate nullability to avoid more boilerplate to avoid null warnings.
+        //Will be unnecessary once we update to a version of xunit that adds the nullability annotations
+        private static void NotNull([NotNull] object? @object)
+        {
+           Assert.NotNull(@object);
+        }
+
         // FIXME
         // [Fact]
         public void TestSimpleFile()
@@ -14,6 +23,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/Brave (2007)/Brave (2006).mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -30,6 +40,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/Bad Boys (1995)/Bad Boys (1995).mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(1995, result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -46,6 +57,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/300 (2007)/300 (2006).mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -62,6 +74,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/Brave (2007)/Brave (2006)-trailer.mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -78,6 +91,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/300 (2007)/300 (2006)-trailer.mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -94,6 +108,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/300 (2007)/300 (2006).bluray.disc");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.True(result.IsStub);
             Assert.Equal("bluray", result.StubType);
@@ -111,6 +126,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/Brave (2007)/Brave (2006).bluray.disc");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.True(result.IsStub);
             Assert.Equal("bluray", result.StubType);
@@ -128,6 +144,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/300 (2007)/300 (2006)-trailer.bluray.disc");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.True(result.IsStub);
             Assert.Equal("bluray", result.StubType);
@@ -146,6 +163,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/brave (2007)/brave (2006)-trailer.bluray.disc");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.True(result.IsStub);
             Assert.Equal("bluray", result.StubType);
@@ -163,6 +181,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/300 (2007)/300 (2006).3d.sbs.mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.False(result.IsStub);
             Assert.True(result.Is3D);
@@ -180,6 +199,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/300 (2007)/300 (2006).3d1.sbas.mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -197,6 +217,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/brave (2007)/brave (2006).3d.sbs.mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2006, result.Year);
             Assert.False(result.IsStub);
             Assert.True(result.Is3D);
@@ -213,6 +234,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/American Psycho/American.Psycho.mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Null(result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -231,6 +253,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/3.Days.to.Kill/3.Days.to.Kill.2014.720p.BluRay.x264.YIFY.mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2014, result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -249,6 +272,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/3 days to kill (2005)/3 days to kill (2005).mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Equal(2005, result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
@@ -265,6 +289,7 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 parser.ResolveFile(@"/server/Movies/7 Psychos.mkv/7 Psychos.mkv");
 
+            VideoResolverTests.NotNull(result);
             Assert.Null(result.Year);
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);

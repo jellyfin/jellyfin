@@ -21,7 +21,8 @@ namespace Jellyfin.Naming.Tests.TV
             var result = new EpisodeResolver(options)
                 .Resolve(path, false, null, null, true);
 
-            Assert.Equal(episodeNumber, result.EpisodeNumber);
+            Assert.NotNull(result);
+            Assert.Equal(episodeNumber, result!.EpisodeNumber);
         }
     }
 }

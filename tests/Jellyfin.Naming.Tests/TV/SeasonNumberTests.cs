@@ -59,7 +59,8 @@ namespace Jellyfin.Naming.Tests.TV
             var result = new EpisodeResolver(_namingOptions)
                 .Resolve(path, false);
 
-            Assert.Equal(expected, result.SeasonNumber);
+            Assert.NotNull(result);
+            Assert.Equal(expected, result!.SeasonNumber);
         }
     }
 }

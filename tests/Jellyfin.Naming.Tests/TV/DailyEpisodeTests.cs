@@ -23,12 +23,13 @@ namespace Jellyfin.Naming.Tests.TV
             var result = new EpisodeResolver(options)
                 .Resolve(path, false);
 
-            Assert.Null(result.SeasonNumber);
-            Assert.Null(result.EpisodeNumber);
-            Assert.Equal(year, result.Year);
-            Assert.Equal(month, result.Month);
-            Assert.Equal(day, result.Day);
-            Assert.Equal(seriesName, result.SeriesName, true);
+            Assert.NotNull(result);
+            Assert.Null(result!.SeasonNumber);
+            Assert.Null(result!.EpisodeNumber);
+            Assert.Equal(year, result!.Year);
+            Assert.Equal(month, result!.Month);
+            Assert.Equal(day, result!.Day);
+            Assert.Equal(seriesName, result!.SeriesName, true);
         }
     }
 }

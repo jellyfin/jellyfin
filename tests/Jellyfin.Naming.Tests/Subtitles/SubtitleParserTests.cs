@@ -25,7 +25,7 @@ namespace Jellyfin.Naming.Tests.Subtitles
             Test("The Skin I Live In (2011).default.foreign.eng.srt", "eng", true, true);
         }
 
-        private void Test(string input, string language, bool isDefault, bool isForced)
+        private void Test(string input, string? language, bool isDefault, bool isForced)
         {
             var parser = GetParser();
 
