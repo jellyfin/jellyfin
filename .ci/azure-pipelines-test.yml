@@ -1,26 +1,25 @@
 parameters:
-  - name: ImageNames
-    type: object
-    default:
-      Linux: "ubuntu-latest"
-      Windows: "windows-latest"
-      macOS: "macos-latest"
-  - name: TestProjects
-    type: string
-    default: "tests/**/*Tests.csproj"
-  - name: DotNetSdkVersion
-    type: string
-    default: 3.1.100
+- name: ImageNames
+  type: object
+  default:
+    Linux: "ubuntu-latest"
+    Windows: "windows-latest"
+    macOS: "macos-latest"
+- name: TestProjects
+  type: string
+  default: "tests/**/*Tests.csproj"
+- name: DotNetSdkVersion
+  type: string
+  default: 3.1.100
 
 jobs:
-  - job: MainTest
-    displayName: Main Test
+  - job: Test
+    displayName: Test
     strategy:
       matrix:
         ${{ each imageName in parameters.ImageNames }}:
           ${{ imageName.key }}:
             ImageName: ${{ imageName.value }}
-      maxParallel: 3
     pool:
       vmImage: "$(ImageName)"
     steps:
@@ -36,7 +35,7 @@ jobs:
           version: ${{ parameters.DotNetSdkVersion }}
 
       - task: DotNetCoreCLI@2
-        displayName: Run .NET Core CLI tests
+        displayName: 'Run CLI Tests'
         inputs:
           command: "test"
           projects: ${{ parameters.TestProjects }}
@@ -47,7 +46,7 @@ jobs:
 
       - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
-        displayName: ReportGenerator (merge)
+        displayName: 'Run ReportGenerator'
         inputs:
           reports: "$(Agent.TempDirectory)/**/coverage.cobertura.xml"
           targetdir: "$(Agent.TempDirectory)/merged/"
@@ -56,7 +55,7 @@ jobs:
       ## V2 is already in the repository but it does not work "wrong number of segments" YAML error.
       - task: PublishCodeCoverageResults@1
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
-        displayName: Publish Code Coverage
+        displayName: 'Publish Code Coverage'
         inputs:
           codeCoverageTool: "cobertura"
           #summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml' # !!THIS IS FOR V2
