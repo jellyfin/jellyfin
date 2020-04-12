@@ -247,11 +247,11 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError(ex, "Error processing request; URL being processed: {Url}", urlToLog);
+                    _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
                 }
                 else
                 {
-                    _logger.LogError("Error processing request: {Message}; URL being processed: {Url}", ex.Message, urlToLog);
+                    _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
                 }
 
                 var httpRes = httpReq.Response;
@@ -271,7 +271,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response); URL being processed: {Url}", urlToLog);
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response). URL: {Url}", urlToLog);
             }
         }
 
