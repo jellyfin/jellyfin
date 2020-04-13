@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -13,7 +14,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -29,8 +29,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
-        private IProcess _process;
-        private readonly IProcessFactory _processFactory;
+        private Process _process;
         private readonly IJsonSerializer _json;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly IServerConfigurationManager _config;
@@ -40,14 +39,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IMediaEncoder mediaEncoder,
             IServerApplicationPaths appPaths,
             IJsonSerializer json,
-            IProcessFactory processFactory,
             IServerConfigurationManager config)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
             _json = json;
-            _processFactory = processFactory;
             _config = config;
         }
 
@@ -79,7 +76,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-            var process = _processFactory.Create(new ProcessOptions
+            var processStartInfo = new ProcessStartInfo
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
@@ -90,14 +87,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile, duration),
 
-                IsHidden = true,
-                ErrorDialog = false,
-                EnableRaisingEvents = true
-            });
+                WindowStyle = ProcessWindowStyle.Hidden,
+                ErrorDialog = false
+            };
 
-            _process = process;
-
-            var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
+            var commandLineLogMessage = processStartInfo.FileName + " " + processStartInfo.Arguments;
             _logger.LogInformation(commandLineLogMessage);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "record-transcode-" + Guid.NewGuid() + ".txt");
@@ -109,16 +103,21 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
-            process.Exited += (sender, args) => OnFfMpegProcessExited(process, inputFile);
+            _process = new Process
+            {
+                StartInfo = processStartInfo,
+                EnableRaisingEvents = true
+            };
+            _process.Exited += (sender, args) => OnFfMpegProcessExited(_process, inputFile);
 
-            process.Start();
+            _process.Start();
 
             cancellationToken.Register(Stop);
 
             onStarted();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
+            StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
 
             _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
 
@@ -292,30 +291,33 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Processes the exited.
         /// </summary>
-        private void OnFfMpegProcessExited(IProcess process, string inputFile)
+        private void OnFfMpegProcessExited(Process process, string inputFile)
         {
-            _hasExited = true;
-
-            _logFileStream?.Dispose();
-            _logFileStream = null;
-
-            var exitCode = process.ExitCode;
-
-            _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {Path}", exitCode, _targetPath);
-
-            if (exitCode == 0)
+            using (process)
             {
-                _taskCompletionSource.TrySetResult(true);
-            }
-            else
-            {
-                _taskCompletionSource.TrySetException(
-                    new Exception(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Recording for {0} failed. Exit code {1}",
-                            _targetPath,
-                            exitCode)));
+                _hasExited = true;
+
+                _logFileStream?.Dispose();
+                _logFileStream = null;
+
+                var exitCode = process.ExitCode;
+
+                _logger.LogInformation("FFMpeg recording exited with code {ExitCode} for {Path}", exitCode, _targetPath);
+
+                if (exitCode == 0)
+                {
+                    _taskCompletionSource.TrySetResult(true);
+                }
+                else
+                {
+                    _taskCompletionSource.TrySetException(
+                        new Exception(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "Recording for {0} failed. Exit code {1}",
+                                _targetPath,
+                                exitCode)));
+                }
             }
         }
 

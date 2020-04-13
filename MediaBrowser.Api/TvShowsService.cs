@@ -424,9 +424,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrWhiteSpace(request.SeasonId))
             {
-                var season = _libraryManager.GetItemById(new Guid(request.SeasonId)) as Season;
-
-                if (season == null)
+                if (!(_libraryManager.GetItemById(new Guid(request.SeasonId)) is Season season))
                 {
                     throw new ResourceNotFoundException("No season exists with Id " + request.SeasonId);
                 }
@@ -444,14 +442,7 @@ namespace MediaBrowser.Api
 
                 var season = series.GetSeasons(user, dtoOptions).FirstOrDefault(i => i.IndexNumber == request.Season.Value);
 
-                if (season == null)
-                {
-                    episodes = new List<BaseItem>();
-                }
-                else
-                {
-                    episodes = ((Season)season).GetEpisodes(user, dtoOptions);
-                }
+                episodes = season == null ? new List<BaseItem>() : ((Season)season).GetEpisodes(user, dtoOptions);
             }
             else
             {

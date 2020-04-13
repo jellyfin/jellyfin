@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -25,7 +26,6 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
@@ -61,7 +61,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILibraryManager _libraryManager;
         private readonly IProviderManager _providerManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IProcessFactory _processFactory;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
 
@@ -88,8 +87,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor,
             IProviderManager providerManager,
-            IMediaEncoder mediaEncoder,
-            IProcessFactory processFactory)
+            IMediaEncoder mediaEncoder)
         {
             Current = this;
 
@@ -102,7 +100,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
-            _processFactory = processFactory;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
             _mediaSourceManager = mediaSourceManager;
@@ -1662,7 +1659,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _processFactory, _config);
+                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _config);
             }
 
             return new DirectRecorder(_logger, _httpClient, _streamHelper);
@@ -1683,16 +1680,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var process = _processFactory.Create(new ProcessOptions
+                var process = new Process
                 {
-                    Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
-                    CreateNoWindow = true,
-                    EnableRaisingEvents = true,
-                    ErrorDialog = false,
-                    FileName = options.RecordingPostProcessor,
-                    IsHidden = true,
-                    UseShellExecute = false
-                });
+                    StartInfo = new ProcessStartInfo
+                    {
+                        Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
+                        CreateNoWindow = true,
+                        ErrorDialog = false,
+                        FileName = options.RecordingPostProcessor,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        UseShellExecute = false
+                    },
+                    EnableRaisingEvents = true
+                };
 
                 _logger.LogInformation("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
@@ -1712,11 +1712,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void Process_Exited(object sender, EventArgs e)
         {
-            using (var process = (IProcess)sender)
+            using (var process = (Process)sender)
             {
                 _logger.LogInformation("Recording post-processing script completed with exit code {ExitCode}", process.ExitCode);
-
-                process.Dispose();
             }
         }
 

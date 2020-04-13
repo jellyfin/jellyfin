@@ -5,7 +5,7 @@
     "Collections": "Colecciones",
     "Artists": "Artistas",
     "DeviceOnlineWithName": "{0} está conectado",
-    "DeviceOfflineWithName": "{0} ha desconectado",
+    "DeviceOfflineWithName": "{0} se ha desconectado",
     "ChapterNameValue": "Capítulo {0}",
     "CameraImageUploadedFrom": "Se ha subido una nueva imagen de cámara desde {0}",
     "AuthenticationSucceededWithUserName": "{0} autenticado con éxito",

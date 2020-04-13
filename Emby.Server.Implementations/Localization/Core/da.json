@@ -1,5 +1,5 @@
 {
-    "Albums": "Album",
+    "Albums": "Albums",
     "AppDeviceValues": "App: {0}, Enhed: {1}",
     "Application": "Applikation",
     "Artists": "Kunstnere",
@@ -106,5 +106,7 @@
     "TasksChannelsCategory": "Internet Kanaler",
     "TasksApplicationCategory": "Applikation",
     "TasksLibraryCategory": "Bibliotek",
-    "TasksMaintenanceCategory": "Vedligeholdelse"
+    "TasksMaintenanceCategory": "Vedligeholdelse",
+    "TaskRefreshChapterImages": "Udtræk Kapitel billeder",
+    "TaskRefreshChapterImagesDescription": "Lav miniaturebilleder for videoer der har kapitler."
 }
