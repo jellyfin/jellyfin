@@ -517,28 +517,21 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    await ErrorHandler(new FileNotFoundException(), httpReq, false).ConfigureAwait(false);
+                    await ErrorHandler(new FileNotFoundException(), httpReq, false, urlToLog).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (ex is SocketException || ex is IOException || ex is OperationCanceledException)
             {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, false, urlToLog).ConfigureAwait(false);
             }
             catch (SecurityException ex)
             {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, false, urlToLog).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
-
-                bool ignoreStackTrace =
-                    ex is SocketException
-                    || ex is IOException
-                    || ex is OperationCanceledException
-                    || ex is SecurityException
-                    || ex is FileNotFoundException;
-                await ErrorHandler(ex, httpReq, !ignoreStackTrace, urlToLog).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, logException, urlToLog).ConfigureAwait(false);
             }
             finally
             {
