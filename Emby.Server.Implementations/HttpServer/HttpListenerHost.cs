@@ -269,25 +269,24 @@ namespace Emby.Server.Implementations.HttpServer
 
             httpRes.StatusCode = statusCode;
 
-            var errContent = NormalizeExceptionMessage(ex.Message);
+            var errContent = NormalizeExceptionMessage(ex) ?? string.Empty;
             httpRes.ContentType = "text/plain";
             httpRes.ContentLength = errContent.Length;
             await httpRes.WriteAsync(errContent).ConfigureAwait(false);
         }
 
-        private string NormalizeExceptionMessage(string msg)
+        private string NormalizeExceptionMessage(Exception ex)
         {
-            if (msg == null)
+            // Do not expose the exception message for AuthenticationException
+            if (ex is AuthenticationException)
             {
-                return string.Empty;
+                return null;
             }
 
             // Strip any information we don't want to reveal
-
-            msg = msg.Replace(_config.ApplicationPaths.ProgramSystemPath, string.Empty, StringComparison.OrdinalIgnoreCase);
-            msg = msg.Replace(_config.ApplicationPaths.ProgramDataPath, string.Empty, StringComparison.OrdinalIgnoreCase);
-
-            return msg;
+            return ex.Message
+                ?.Replace(_config.ApplicationPaths.ProgramSystemPath, string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace(_config.ApplicationPaths.ProgramDataPath, string.Empty, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
