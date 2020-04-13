@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Authentication;
 using Emby.Server.Implementations.SocketSharp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -68,7 +69,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (user == null && auth.UserId != Guid.Empty)
             {
-                throw new SecurityException("User with Id " + auth.UserId + " not found");
+                throw new AuthenticationException("User with Id " + auth.UserId + " not found");
             }
 
             if (user != null)
@@ -212,14 +213,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
         {
             if (string.IsNullOrEmpty(token))
             {
-                throw new SecurityException("Access token is required.");
+                throw new AuthenticationException("Access token is required.");
             }
 
             var info = GetTokenInfo(request);
 
             if (info == null)
             {
-                throw new SecurityException("Access token is invalid or expired.");
+                throw new AuthenticationException("Access token is invalid or expired.");
             }
 
             //if (!string.IsNullOrEmpty(info.UserId))

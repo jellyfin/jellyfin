@@ -14,6 +14,7 @@ using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
@@ -230,7 +231,8 @@ namespace Emby.Server.Implementations.HttpServer
             switch (ex)
             {
                 case ArgumentException _: return 400;
-                case SecurityException _: return 401;
+                case AuthenticationException _: return 401;
+                case SecurityException _: return 403;
                 case DirectoryNotFoundException _:
                 case FileNotFoundException _:
                 case ResourceNotFoundException _: return 404;
@@ -550,6 +552,7 @@ namespace Emby.Server.Implementations.HttpServer
                     || ex is IOException
                     || ex is OperationCanceledException
                     || ex is SecurityException
+                    || ex is AuthenticationException
                     || ex is FileNotFoundException;
                 await ErrorHandler(ex, httpReq, !ignoreStackTrace, urlToLog).ConfigureAwait(false);
             }

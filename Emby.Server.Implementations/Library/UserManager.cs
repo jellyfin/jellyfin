@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
@@ -324,21 +325,17 @@ namespace Emby.Server.Implementations.Library
 
             if (user.Policy.IsDisabled)
             {
-                throw new AuthenticationException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The {0} account is currently disabled. Please consult with your administrator.",
-                        user.Name));
+                throw new SecurityException($"The {user.Name} account is currently disabled. Please consult with your administrator.");
             }
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
-                throw new AuthenticationException("Forbidden.");
+                throw new SecurityException("Forbidden.");
             }
 
             if (!user.IsParentalScheduleAllowed())
             {
-                throw new AuthenticationException("User is not allowed access at this time.");
+                throw new SecurityException("User is not allowed access at this time.");
             }
 
             // Update LastActivityDate and LastLoginDate, then save
