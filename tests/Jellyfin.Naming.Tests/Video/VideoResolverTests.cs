@@ -7,8 +7,8 @@ namespace Jellyfin.Naming.Tests.Video
     public class VideoResolverTests : BaseVideoTest
     {
 
-        //Utility method to annotate nullability to avoid more boilerplate to avoid null warnings.
-        //Will be unnecessary once we update to a version of xunit that adds the nullability annotations
+        // Utility method to annotate nullability to avoid more boilerplate to avoid null warnings.
+        // Will be unnecessary once we update to a version of xunit that adds the nullability annotations
         private static void NotNull([NotNull] object? @object)
         {
            Assert.NotNull(@object);
