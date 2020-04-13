@@ -33,7 +33,7 @@ jobs:
 
       - task: DownloadPipelineArtifact@2
         displayName: "Download Web Target"
-        condition: in(variables['Build.Reason'], 'PullRequest')
+        condition: eq(variables['Build.Reason'], 'PullRequest')
         inputs:
           path: '$(Agent.TempDirectory)'
           artifact: 'jellyfin-web-production'
