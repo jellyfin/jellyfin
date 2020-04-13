@@ -241,40 +241,38 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, int statusCode, string urlToLog)
         {
-            try
+            bool ignoreStackTrace =
+                ex is SocketException
+                || ex is IOException
+                || ex is OperationCanceledException
+                || ex is SecurityException
+                || ex is AuthenticationException
+                || ex is FileNotFoundException;
+
+            if (ignoreStackTrace)
             {
-                ex = GetActualException(ex);
-
-                if (logExceptionStackTrace)
-                {
-                    _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
-                }
-                else
-                {
-                    _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
-                }
-
-                var httpRes = httpReq.Response;
-
-                if (httpRes.HasStarted)
-                {
-                    return;
-                }
-
-                var statusCode = GetStatusCode(ex);
-                httpRes.StatusCode = statusCode;
-
-                var errContent = NormalizeExceptionMessage(ex.Message);
-                httpRes.ContentType = "text/plain";
-                httpRes.ContentLength = errContent.Length;
-                await httpRes.WriteAsync(errContent).ConfigureAwait(false);
+                _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
             }
-            catch (Exception errorEx)
+            else
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response). URL: {Url}", urlToLog);
+                _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
             }
+
+            var httpRes = httpReq.Response;
+
+            if (httpRes.HasStarted)
+            {
+                return;
+            }
+
+            httpRes.StatusCode = statusCode;
+
+            var errContent = NormalizeExceptionMessage(ex.Message);
+            httpRes.ContentType = "text/plain";
+            httpRes.ContentLength = errContent.Length;
+            await httpRes.WriteAsync(errContent).ConfigureAwait(false);
         }
 
         private string NormalizeExceptionMessage(string msg)
@@ -538,23 +536,32 @@ namespace Emby.Server.Implementations.HttpServer
                     throw new FileNotFoundException();
                 }
             }
-            catch (Exception ex)
+            catch (Exception requestEx)
             {
-                // Do not handle exceptions manually when in development mode
-                // The framework-defined development exception page will be returned instead
-                if (_hostEnvironment.IsDevelopment())
+                try
                 {
-                    throw;
-                }
+                    var requestInnerEx = GetActualException(requestEx);
+                    var statusCode = GetStatusCode(requestInnerEx);
 
-                bool ignoreStackTrace =
-                    ex is SocketException
-                    || ex is IOException
-                    || ex is OperationCanceledException
-                    || ex is SecurityException
-                    || ex is AuthenticationException
-                    || ex is FileNotFoundException;
-                await ErrorHandler(ex, httpReq, !ignoreStackTrace, urlToLog).ConfigureAwait(false);
+                    // Do not handle 500 server exceptions manually when in development mode
+                    // The framework-defined development exception page will be returned instead
+                    if (statusCode == 500 && _hostEnvironment.IsDevelopment())
+                    {
+                        throw;
+                    }
+
+                    await ErrorHandler(requestInnerEx, httpReq, statusCode, urlToLog).ConfigureAwait(false);
+                }
+                catch (Exception handlerException)
+                {
+                    var aggregateEx = new AggregateException("Error while handling request exception", requestEx, handlerException);
+                    _logger.LogError(aggregateEx, "Error while handling exception in response to {Url}", urlToLog);
+
+                    if (_hostEnvironment.IsDevelopment())
+                    {
+                        throw aggregateEx;
+                    }
+                }
             }
             finally
             {
