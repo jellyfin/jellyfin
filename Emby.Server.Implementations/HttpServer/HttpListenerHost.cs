@@ -239,7 +239,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
         {
             try
             {
@@ -247,11 +247,11 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError(ex, "Error processing request");
+                    _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
                 }
                 else
                 {
-                    _logger.LogError("Error processing request: {Message}", ex.Message);
+                    _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
                 }
 
                 var httpRes = httpReq.Response;
@@ -271,7 +271,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response). URL: {Url}", urlToLog);
             }
         }
 
@@ -456,7 +456,7 @@ namespace Emby.Server.Implementations.HttpServer
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var httpRes = httpReq.Response;
-            string urlToLog = null;
+            string urlToLog = GetUrlToLog(urlString);
             string remoteIp = httpReq.RemoteIp;
 
             try
@@ -501,8 +501,6 @@ namespace Emby.Server.Implementations.HttpServer
                     await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
                     return;
                 }
-
-                urlToLog = GetUrlToLog(urlString);
 
                 if (string.Equals(localPath, _baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(localPath, _baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
@@ -553,7 +551,7 @@ namespace Emby.Server.Implementations.HttpServer
                     || ex is OperationCanceledException
                     || ex is SecurityException
                     || ex is FileNotFoundException;
-                await ErrorHandler(ex, httpReq, ignoreStackTrace).ConfigureAwait(false);
+                await ErrorHandler(ex, httpReq, !ignoreStackTrace, urlToLog).ConfigureAwait(false);
             }
             finally
             {

@@ -30,7 +30,6 @@ using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
-using Emby.Server.Implementations.Diagnostics;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
@@ -86,7 +85,6 @@ using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
@@ -573,8 +571,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ITaskManager, TaskManager>();
 
             serviceCollection.AddSingleton(_xmlSerializer);
-
-            serviceCollection.AddSingleton<IProcessFactory, ProcessFactory>();
 
             serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
@@ -1462,15 +1458,17 @@ namespace Emby.Server.Implementations
                 throw new NotSupportedException();
             }
 
-            var process = Resolve<IProcessFactory>().Create(new ProcessOptions
+            var process = new Process
             {
-                FileName = url,
-                EnableRaisingEvents = true,
-                UseShellExecute = true,
-                ErrorDialog = false
-            });
-
-            process.Exited += ProcessExited;
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true,
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
+            };
+            process.Exited += (sender, args) => ((Process)sender).Dispose();
 
             try
             {
@@ -1481,11 +1479,6 @@ namespace Emby.Server.Implementations
                 Logger.LogError(ex, "Error launching url: {url}", url);
                 throw;
             }
-        }
-
-        private static void ProcessExited(object sender, EventArgs e)
-        {
-            ((IProcess)sender).Dispose();
         }
 
         public virtual void EnableLoopback(string appName)

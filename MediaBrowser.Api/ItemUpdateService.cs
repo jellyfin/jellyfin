@@ -263,8 +263,7 @@ namespace MediaBrowser.Api
             item.Overview = request.Overview;
             item.Genres = request.Genres;
 
-            var episode = item as Episode;
-            if (episode != null)
+            if (item is Episode episode)
             {
                 episode.AirsAfterSeasonNumber = request.AirsAfterSeasonNumber;
                 episode.AirsBeforeEpisodeNumber = request.AirsBeforeEpisodeNumber;
@@ -302,14 +301,12 @@ namespace MediaBrowser.Api
             item.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
             item.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
 
-            var hasDisplayOrder = item as IHasDisplayOrder;
-            if (hasDisplayOrder != null)
+            if (item is IHasDisplayOrder hasDisplayOrder)
             {
                 hasDisplayOrder.DisplayOrder = request.DisplayOrder;
             }
 
-            var hasAspectRatio = item as IHasAspectRatio;
-            if (hasAspectRatio != null)
+            if (item is IHasAspectRatio hasAspectRatio)
             {
                 hasAspectRatio.AspectRatio = request.AspectRatio;
             }
@@ -337,16 +334,14 @@ namespace MediaBrowser.Api
 
             item.ProviderIds = request.ProviderIds;
 
-            var video = item as Video;
-            if (video != null)
+            if (item is Video video)
             {
                 video.Video3DFormat = request.Video3DFormat;
             }
 
             if (request.AlbumArtists != null)
             {
-                var hasAlbumArtists = item as IHasAlbumArtist;
-                if (hasAlbumArtists != null)
+                if (item is IHasAlbumArtist hasAlbumArtists)
                 {
                     hasAlbumArtists.AlbumArtists = request
                         .AlbumArtists
@@ -357,8 +352,7 @@ namespace MediaBrowser.Api
 
             if (request.ArtistItems != null)
             {
-                var hasArtists = item as IHasArtist;
-                if (hasArtists != null)
+                if (item is IHasArtist hasArtists)
                 {
                     hasArtists.Artists = request
                         .ArtistItems
@@ -367,20 +361,17 @@ namespace MediaBrowser.Api
                 }
             }
 
-            var song = item as Audio;
-            if (song != null)
+            if (item is Audio song)
             {
                 song.Album = request.Album;
             }
 
-            var musicVideo = item as MusicVideo;
-            if (musicVideo != null)
+            if (item is MusicVideo musicVideo)
             {
                 musicVideo.Album = request.Album;
             }
 
-            var series = item as Series;
-            if (series != null)
+            if (item is Series series)
             {
                 series.Status = GetSeriesStatus(request);
 
@@ -400,7 +391,6 @@ namespace MediaBrowser.Api
             }
 
             return (SeriesStatus)Enum.Parse(typeof(SeriesStatus), item.Status, true);
-
         }
     }
 }

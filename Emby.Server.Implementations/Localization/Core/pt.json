@@ -91,5 +91,9 @@
     "CameraImageUploadedFrom": "Uma nova imagem da câmara foi enviada a partir de {0}",
     "AuthenticationSucceededWithUserName": "{0} autenticado com sucesso",
     "Application": "Aplicação",
-    "AppDeviceValues": "Aplicação {0}, Dispositivo: {1}"
+    "AppDeviceValues": "Aplicação {0}, Dispositivo: {1}",
+    "TaskCleanCache": "Limpar Diretório de Cache",
+    "TasksApplicationCategory": "Aplicação",
+    "TasksLibraryCategory": "Biblioteca",
+    "TasksMaintenanceCategory": "Manutenção"
 }
