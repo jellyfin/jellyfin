@@ -1593,11 +1593,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             // Setup subtitle scaling
             if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
             {
-                // force_original_aspect_ratio=decrease
-                // Enable decreasing output video width or height if necessary to keep the original aspect ratio
                 videoSizeParam = string.Format(
                     CultureInfo.InvariantCulture,
-                    "scale={0}:{1}:force_original_aspect_ratio=decrease",
+                    "scale={0}:{1}",
                     state.VideoStream.Width.Value,
                     state.VideoStream.Height.Value);
 
@@ -1624,7 +1622,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         videoSizeParam = string.Format(
                         CultureInfo.InvariantCulture,
-                        "scale={0}:{1}:force_original_aspect_ratio=decrease",
+                        "scale={0}:{1}",
                         width.Value,
                         height.Value);
                     }
