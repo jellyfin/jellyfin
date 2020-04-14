@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -27,6 +25,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
+    /// <summary>
+    /// The activity log entry point.
+    /// <see cref="IServerEntryPoint"/>.
+    /// </summary>
     public sealed class ActivityLogEntryPoint : IServerEntryPoint
     {
         private readonly ILogger _logger;
@@ -42,16 +44,15 @@ namespace Emby.Server.Implementations.Activity
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLogEntryPoint"/> class.
         /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="sessionManager"></param>
-        /// <param name="deviceManager"></param>
-        /// <param name="taskManager"></param>
-        /// <param name="activityManager"></param>
-        /// <param name="localization"></param>
-        /// <param name="installationManager"></param>
-        /// <param name="subManager"></param>
-        /// <param name="userManager"></param>
-        /// <param name="appHost"></param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="deviceManager">The device manager.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="activityManager">The activity manager.</param>
+        /// <param name="localization">The localization manager.</param>
+        /// <param name="installationManager">The installation manager.</param>
+        /// <param name="subManager">The subtitle manager.</param>
+        /// <param name="userManager">The user manager.</param>
         public ActivityLogEntryPoint(
             ILogger<ActivityLogEntryPoint> logger,
             ISessionManager sessionManager,
@@ -74,6 +75,7 @@ namespace Emby.Server.Implementations.Activity
             _userManager = userManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _taskManager.TaskCompleted += OnTaskCompleted;
@@ -136,7 +138,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
                     e.Provider,
-                    Emby.Notifications.NotificationEntryPoint.GetItemName(e.Item)),
+                    Notifications.NotificationEntryPoint.GetItemName(e.Item)),
                 Type = "SubtitleDownloadFailure",
                 ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message
@@ -259,31 +261,20 @@ namespace Emby.Server.Implementations.Activity
 
         private void OnSessionEnded(object sender, SessionEventArgs e)
         {
-            string name;
             var session = e.SessionInfo;
 
             if (string.IsNullOrEmpty(session.UserName))
             {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("DeviceOfflineWithName"),
-                    session.DeviceName);
-
-                // Causing too much spam for now
                 return;
-            }
-            else
-            {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserOfflineFromDevice"),
-                    session.UserName,
-                    session.DeviceName);
             }
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = name,
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserOfflineFromDevice"),
+                    session.UserName,
+                    session.DeviceName),
                 Type = "SessionEnded",
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
@@ -382,31 +373,20 @@ namespace Emby.Server.Implementations.Activity
 
         private void OnSessionStarted(object sender, SessionEventArgs e)
         {
-            string name;
             var session = e.SessionInfo;
 
             if (string.IsNullOrEmpty(session.UserName))
             {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("DeviceOnlineWithName"),
-                    session.DeviceName);
-
-                // Causing too much spam for now
                 return;
-            }
-            else
-            {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserOnlineFromDevice"),
-                    session.UserName,
-                    session.DeviceName);
             }
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = name,
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserOnlineFromDevice"),
+                    session.UserName,
+                    session.DeviceName),
                 Type = "SessionStarted",
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
@@ -485,8 +465,7 @@ namespace Emby.Server.Implementations.Activity
             var result = e.Result;
             var task = e.Task;
 
-            var activityTask = task.ScheduledTask as IConfigurableScheduledTask;
-            if (activityTask != null && !activityTask.IsLogged)
+            if (task.ScheduledTask is IConfigurableScheduledTask activityTask && !activityTask.IsLogged)
             {
                 return;
             }
@@ -560,6 +539,8 @@ namespace Emby.Server.Implementations.Activity
         /// <summary>
         /// Constructs a user-friendly string for this TimeSpan instance.
         /// </summary>
+        /// <param name="span">The timespan.</param>
+        /// <returns>The user-friendly string.</returns>
         public static string ToUserFriendlyString(TimeSpan span)
         {
             const int DaysInYear = 365;
@@ -574,7 +555,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 int years = days / DaysInYear;
                 values.Add(CreateValueString(years, "year"));
-                days = days % DaysInYear;
+                days %= DaysInYear;
             }
 
             // Number of months
@@ -582,7 +563,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 int months = days / DaysInMonth;
                 values.Add(CreateValueString(months, "month"));
-                days = days % DaysInMonth;
+                days %= DaysInMonth;
             }
 
             // Number of days
