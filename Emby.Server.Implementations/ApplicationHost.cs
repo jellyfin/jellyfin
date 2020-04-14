@@ -833,7 +833,7 @@ namespace Emby.Server.Implementations
 
             var activityLogRepo = GetActivityLogRepository();
             serviceCollection.AddSingleton(activityLogRepo);
-            serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(LoggerFactory, activityLogRepo, UserManager));
+            serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(activityLogRepo, UserManager));
 
             var authContext = new AuthorizationContext(AuthenticationRepository, UserManager);
             serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
