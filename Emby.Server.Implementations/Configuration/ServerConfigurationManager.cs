@@ -69,21 +69,16 @@ namespace Emby.Server.Implementations.Configuration
         /// </summary>
         private void UpdateMetadataPath()
         {
-            if (string.IsNullOrWhiteSpace(Configuration.MetadataPath))
-            {
-                ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = Path.Combine(ApplicationPaths.ProgramDataPath, "metadata");
-            }
-            else
-            {
-                ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = Configuration.MetadataPath;
-            }
+            ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrWhiteSpace(Configuration.MetadataPath)
+                ? Path.Combine(ApplicationPaths.ProgramDataPath, "metadata")
+                : Configuration.MetadataPath;
         }
 
         /// <summary>
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException">If the configuration path doesn't exist.</exception>
         public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             var newConfig = (ServerConfiguration)newConfiguration;
