@@ -1,9 +1,8 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
@@ -26,6 +25,12 @@ namespace Emby.Server.Implementations.Data
 
         private readonly JsonSerializerOptions _jsonOptions;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqliteDisplayPreferencesRepository"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="fileSystem">The filesystem.</param>
         public SqliteDisplayPreferencesRepository(ILogger<SqliteDisplayPreferencesRepository> logger, IApplicationPaths appPaths, IFileSystem fileSystem)
             : base(logger)
         {
@@ -42,6 +47,9 @@ namespace Emby.Server.Implementations.Data
         /// <value>The name.</value>
         public string Name => "SQLite";
 
+        /// <summary>
+        /// Initializes the SQLiteDisplayPreferencesRepository.
+        /// </summary>
         public void Initialize()
         {
             try
@@ -59,9 +67,8 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Opens the connection to the database
+        /// Opens the connection to the database.
         /// </summary>
-        /// <returns>Task.</returns>
         private void InitializeInternal()
         {
             string[] queries =
@@ -70,10 +77,8 @@ namespace Emby.Server.Implementations.Data
                 "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)"
             };
 
-            using (var connection = GetConnection())
-            {
-                connection.RunQueries(queries);
-            }
+            using var connection = GetConnection();
+            connection.RunQueries(queries);
         }
 
         /// <summary>
@@ -98,27 +103,23 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db => SaveDisplayPreferences(displayPreferences, userId, client, db),
-                    TransactionMode);
-            }
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db => SaveDisplayPreferences(displayPreferences, userId, client, db),
+                TransactionMode);
         }
 
         private void SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, IDatabaseConnection connection)
         {
             var serialized = JsonSerializer.SerializeToUtf8Bytes(displayPreferences, _jsonOptions);
 
-            using (var statement = connection.PrepareStatement("replace into userdisplaypreferences (id, userid, client, data) values (@id, @userId, @client, @data)"))
-            {
-                statement.TryBind("@id", new Guid(displayPreferences.Id).ToByteArray());
-                statement.TryBind("@userId", userId.ToByteArray());
-                statement.TryBind("@client", client);
-                statement.TryBind("@data", serialized);
+            using var statement = connection.PrepareStatement("replace into userdisplaypreferences (id, userid, client, data) values (@id, @userId, @client, @data)");
+            statement.TryBind("@id", new Guid(displayPreferences.Id).ToByteArray());
+            statement.TryBind("@userId", userId.ToByteArray());
+            statement.TryBind("@client", client);
+            statement.TryBind("@data", serialized);
 
-                statement.MoveNext();
-            }
+            statement.MoveNext();
         }
 
         /// <summary>
@@ -137,18 +138,16 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = GetConnection())
-            {
-                connection.RunInTransaction(
-                    db =>
+            using var connection = GetConnection();
+            connection.RunInTransaction(
+                db =>
+                {
+                    foreach (var displayPreference in displayPreferences)
                     {
-                        foreach (var displayPreference in displayPreferences)
-                        {
-                            SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
-                        }
-                    },
-                    TransactionMode);
-            }
+                        SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
+                    }
+                },
+                TransactionMode);
         }
 
         /// <summary>
@@ -168,19 +167,15 @@ namespace Emby.Server.Implementations.Data
 
             var guidId = displayPreferencesId.GetMD5();
 
-            using (var connection = GetConnection(true))
-            {
-                using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
-                {
-                    statement.TryBind("@id", guidId.ToByteArray());
-                    statement.TryBind("@userId", userId.ToByteArray());
-                    statement.TryBind("@client", client);
+            using var connection = GetConnection();
+            using var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client");
+            statement.TryBind("@id", guidId.ToByteArray());
+            statement.TryBind("@userId", userId.ToByteArray());
+            statement.TryBind("@client", client);
 
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        return Get(row);
-                    }
-                }
+            foreach (var row in statement.ExecuteQuery())
+            {
+                return Get(row);
             }
 
             return new DisplayPreferences
@@ -197,28 +192,21 @@ namespace Emby.Server.Implementations.Data
         /// <exception cref="ArgumentNullException">item</exception>
         public IEnumerable<DisplayPreferences> GetAllDisplayPreferences(Guid userId)
         {
-            var list = new List<DisplayPreferences>();
+            using var connection = GetConnection();
+            using var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId");
+            statement.TryBind("@userId", userId.ToByteArray());
 
-            using (var connection = GetConnection(true))
-            using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
-            {
-                statement.TryBind("@userId", userId.ToByteArray());
-
-                foreach (var row in statement.ExecuteQuery())
-                {
-                    list.Add(Get(row));
-                }
-            }
-
-            return list;
+            return statement.ExecuteQuery().Select(row => Get(row)).ToList();
         }
 
         private DisplayPreferences Get(IReadOnlyList<IResultSetValue> row)
             => JsonSerializer.Deserialize<DisplayPreferences>(row[0].ToBlob(), _jsonOptions);
 
+        /// <inheritdoc />
         public void SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
             => SaveDisplayPreferences(displayPreferences, new Guid(userId), client, cancellationToken);
 
+        /// <inheritdoc />
         public DisplayPreferences GetDisplayPreferences(string displayPreferencesId, string userId, string client)
             => GetDisplayPreferences(displayPreferencesId, new Guid(userId), client);
     }

@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,17 +7,26 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Data
 {
+    /// <summary>
+    /// The "Clean Database" scheduled task.
+    /// </summary>
     public class CleanDatabaseScheduledTask : ILibraryPostScanTask
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CleanDatabaseScheduledTask"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logger">The logger.</param>
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger<CleanDatabaseScheduledTask> logger)
         {
             _libraryManager = libraryManager;
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             CleanDeadItems(cancellationToken, progress);
@@ -51,7 +58,6 @@ namespace Emby.Server.Implementations.Data
                     _libraryManager.DeleteItem(item, new DeleteOptions
                     {
                         DeleteFileLocation = false
-
                     });
                 }
 

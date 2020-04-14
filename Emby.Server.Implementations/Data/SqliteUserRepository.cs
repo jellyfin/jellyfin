@@ -1,8 +1,7 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
@@ -14,12 +13,17 @@ using SQLitePCL.pretty;
 namespace Emby.Server.Implementations.Data
 {
     /// <summary>
-    /// Class SQLiteUserRepository
+    /// Class SQLiteUserRepository.
     /// </summary>
     public class SqliteUserRepository : BaseSqliteRepository, IUserRepository
     {
         private readonly JsonSerializerOptions _jsonOptions;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqliteUserRepository"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="appPaths">The application paths.</param>
         public SqliteUserRepository(
             ILogger<SqliteUserRepository> logger,
             IServerApplicationPaths appPaths)
@@ -30,10 +34,7 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(appPaths.DataPath, "users.db");
         }
 
-        /// <summary>
-        /// Gets the name of the repository
-        /// </summary>
-        /// <value>The name.</value>
+        /// <inheritdoc />
         public string Name => "SQLite";
 
         /// <summary>
@@ -41,22 +42,20 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         public void Initialize()
         {
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            var localUsersTableExists = TableExists(connection, "LocalUsersv2");
+
+            connection.RunQueries(new[] {
+                "create table if not exists LocalUsersv2 (Id INTEGER PRIMARY KEY, guid GUID NOT NULL, data BLOB NOT NULL)",
+                "drop index if exists idx_users"
+            });
+
+            if (!localUsersTableExists && TableExists(connection, "Users"))
             {
-                var localUsersTableExists = TableExists(connection, "LocalUsersv2");
-
-                connection.RunQueries(new[] {
-                    "create table if not exists LocalUsersv2 (Id INTEGER PRIMARY KEY, guid GUID NOT NULL, data BLOB NOT NULL)",
-                    "drop index if exists idx_users"
-                });
-
-                if (!localUsersTableExists && TableExists(connection, "Users"))
-                {
-                    TryMigrateToLocalUsersTable(connection);
-                }
-
-                RemoveEmptyPasswordHashes(connection);
+                TryMigrateToLocalUsersTable(connection);
             }
+
+            RemoveEmptyPasswordHashes(connection);
         }
 
         private void TryMigrateToLocalUsersTable(ManagedConnection connection)
@@ -90,19 +89,15 @@ namespace Emby.Server.Implementations.Data
 
                 connection.RunInTransaction(db =>
                 {
-                    using (var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId"))
-                    {
-                        statement.TryBind("@InternalId", user.InternalId);
-                        statement.TryBind("@data", serialized);
-                        statement.MoveNext();
-                    }
+                    using var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId");
+                    statement.TryBind("@InternalId", user.InternalId);
+                    statement.TryBind("@data", serialized);
+                    statement.MoveNext();
                 }, TransactionMode);
             }
         }
 
-        /// <summary>
-        /// Save a user in the repo
-        /// </summary>
+        /// <inheritdoc />
         public void CreateUser(User user)
         {
             if (user == null)
@@ -112,31 +107,29 @@ namespace Emby.Server.Implementations.Data
 
             var serialized = JsonSerializer.SerializeToUtf8Bytes(user, _jsonOptions);
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(db =>
             {
-                connection.RunInTransaction(db =>
+                using (var statement = db.PrepareStatement("insert into LocalUsersv2 (guid, data) values (@guid, @data)"))
                 {
-                    using (var statement = db.PrepareStatement("insert into LocalUsersv2 (guid, data) values (@guid, @data)"))
-                    {
-                        statement.TryBind("@guid", user.Id.ToByteArray());
-                        statement.TryBind("@data", serialized);
+                    statement.TryBind("@guid", user.Id.ToByteArray());
+                    statement.TryBind("@data", serialized);
 
-                        statement.MoveNext();
-                    }
+                    statement.MoveNext();
+                }
 
-                    var createdUser = GetUser(user.Id, connection);
+                var createdUser = GetUser(user.Id, connection);
 
-                    if (createdUser == null)
-                    {
-                        throw new ApplicationException("created user should never be null");
-                    }
+                if (createdUser == null)
+                {
+                    throw new ApplicationException("created user should never be null");
+                }
 
-                    user.InternalId = createdUser.InternalId;
-
-                }, TransactionMode);
-            }
+                user.InternalId = createdUser.InternalId;
+            }, TransactionMode);
         }
 
+        /// <inheritdoc />
         public void UpdateUser(User user)
         {
             if (user == null)
@@ -146,34 +139,22 @@ namespace Emby.Server.Implementations.Data
 
             var serialized = JsonSerializer.SerializeToUtf8Bytes(user, _jsonOptions);
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(db =>
             {
-                connection.RunInTransaction(db =>
-                {
-                    using (var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId"))
-                    {
-                        statement.TryBind("@InternalId", user.InternalId);
-                        statement.TryBind("@data", serialized);
-                        statement.MoveNext();
-                    }
-
-                }, TransactionMode);
-            }
+                using var statement = db.PrepareStatement("update LocalUsersv2 set data=@data where Id=@InternalId");
+                statement.TryBind("@InternalId", user.InternalId);
+                statement.TryBind("@data", serialized);
+                statement.MoveNext();
+            }, TransactionMode);
         }
 
         private User GetUser(Guid guid, ManagedConnection connection)
         {
-            using (var statement = connection.PrepareStatement("select id,guid,data from LocalUsersv2 where guid=@guid"))
-            {
-                statement.TryBind("@guid", guid);
+            using var statement = connection.PrepareStatement("select id,guid,data from LocalUsersv2 where guid=@guid");
+            statement.TryBind("@guid", guid);
 
-                foreach (var row in statement.ExecuteQuery())
-                {
-                    return GetUser(row);
-                }
-            }
-
-            return null;
+            return statement.ExecuteQuery().Select(GetUser).FirstOrDefault();
         }
 
         private User GetUser(IReadOnlyList<IResultSetValue> row)
@@ -193,10 +174,8 @@ namespace Emby.Server.Implementations.Data
         /// <returns>IEnumerable{User}.</returns>
         public List<User> RetrieveAllUsers()
         {
-            using (var connection = GetConnection(true))
-            {
-                return new List<User>(RetrieveAllUsers(connection));
-            }
+            using var connection = GetConnection();
+            return new List<User>(RetrieveAllUsers(connection));
         }
 
         /// <summary>
@@ -205,18 +184,10 @@ namespace Emby.Server.Implementations.Data
         /// <returns>IEnumerable{User}.</returns>
         private IEnumerable<User> RetrieveAllUsers(ManagedConnection connection)
         {
-            foreach (var row in connection.Query("select id,guid,data from LocalUsersv2"))
-            {
-                yield return GetUser(row);
-            }
+            return connection.Query("select id,guid,data from LocalUsersv2").Select(GetUser);
         }
 
-        /// <summary>
-        /// Deletes the user.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
+        /// <inheritdoc />
         public void DeleteUser(User user)
         {
             if (user == null)
@@ -224,17 +195,13 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(user));
             }
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(db =>
             {
-                connection.RunInTransaction(db =>
-                {
-                    using (var statement = db.PrepareStatement("delete from LocalUsersv2 where Id=@id"))
-                    {
-                        statement.TryBind("@id", user.InternalId);
-                        statement.MoveNext();
-                    }
-                }, TransactionMode);
-            }
+                using var statement = db.PrepareStatement("delete from LocalUsersv2 where Id=@id");
+                statement.TryBind("@id", user.InternalId);
+                statement.MoveNext();
+            }, TransactionMode);
         }
     }
 }

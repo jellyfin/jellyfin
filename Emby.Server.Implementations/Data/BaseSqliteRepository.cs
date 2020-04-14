@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +7,12 @@ using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
+    /// <summary>
+    /// The base Sqlite repository class.
+    /// </summary>
     public abstract class BaseSqliteRepository : IDisposable
     {
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.
@@ -96,6 +97,10 @@ namespace Emby.Server.Implementations.Data
         /// <value>The write connection.</value>
         protected SQLiteDatabaseConnection WriteConnection { get; set; }
 
+        /// <summary>
+        /// Gets a connection to the database.
+        /// </summary>
+        /// <returns>A <see cref="ManagedConnection"/>.</returns>
         protected ManagedConnection GetConnection(bool _ = false)
         {
             WriteLock.Wait();
@@ -137,35 +142,56 @@ namespace Emby.Server.Implementations.Data
             return new ManagedConnection(WriteConnection, WriteLock);
         }
 
+        /// <summary>
+        /// Prepares the provided statement.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <param name="sql">The SQL statement.</param>
+        /// <returns>The resulting <see cref="IStatement"/>.</returns>
         public IStatement PrepareStatement(ManagedConnection connection, string sql)
             => connection.PrepareStatement(sql);
 
+        /// <summary>
+        /// Prepares the provided statement.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <param name="sql">The SQL statement.</param>
+        /// <returns>The resulting <see cref="IStatement"/>.</returns>
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
             => connection.PrepareStatement(sql);
 
+        /// <summary>
+        /// Prepares the given SQL statements and returns the result.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <param name="sql">The SQL statements.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing the results.</returns>
         public IEnumerable<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
             => sql.Select(connection.PrepareStatement);
 
+        /// <summary>
+        /// Checks whether a table with the given name exists.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <param name="name">The name.</param>
+        /// <returns>Whether a table with the given name exists.</returns>
         protected bool TableExists(ManagedConnection connection, string name)
         {
             return connection.RunInTransaction(db =>
             {
-                using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
-                {
-                    foreach (var row in statement.ExecuteQuery())
-                    {
-                        if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
-                }
+                using var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master");
 
-                return false;
-
+                return statement.ExecuteQuery()
+                    .Any(row => string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase));
             }, ReadTransactionMode);
         }
 
+        /// <summary>
+        /// Returns a <see cref="List{T}"/> containing the column names.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <param name="table">The table.</param>
+        /// <returns>A <see cref="List{T}"/> containing the column names.</returns>
         protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
         {
             var columnNames = new List<string>();
@@ -183,6 +209,14 @@ namespace Emby.Server.Implementations.Data
             return columnNames;
         }
 
+        /// <summary>
+        /// Adds a column.
+        /// </summary>
+        /// <param name="connection">The connection.</param>
+        /// <param name="table">The table.</param>
+        /// <param name="columnName">The column name.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="existingColumnNames">The existing column name.</param>
         protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
             if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
@@ -193,6 +227,10 @@ namespace Emby.Server.Implementations.Data
             connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
         }
 
+        /// <summary>
+        /// Checks whether this object has been disposed.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException">If this object has been disposed.</exception>
         protected void CheckDisposed()
         {
             if (_disposed)
