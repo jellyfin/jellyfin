@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,6 +9,9 @@ using MediaBrowser.Model.Dto;
 
 namespace Emby.Server.Implementations.Channels
 {
+    /// <summary>
+    /// A media source provider for channels.
+    /// </summary>
     public class ChannelDynamicMediaSourceProvider : IMediaSourceProvider
     {
         private readonly ChannelManager _channelManager;
@@ -27,12 +28,9 @@ namespace Emby.Server.Implementations.Channels
         /// <inheritdoc />
         public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
-            if (item.SourceType == SourceType.Channel)
-            {
-                return _channelManager.GetDynamicMediaSources(item, cancellationToken);
-            }
-
-            return Task.FromResult<IEnumerable<MediaSourceInfo>>(new List<MediaSourceInfo>());
+            return item.SourceType == SourceType.Channel
+                ? _channelManager.GetDynamicMediaSources(item, cancellationToken)
+                : Task.FromResult<IEnumerable<MediaSourceInfo>>(new List<MediaSourceInfo>());
         }
 
         /// <inheritdoc />
