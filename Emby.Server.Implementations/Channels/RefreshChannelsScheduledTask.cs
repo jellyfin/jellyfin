@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Channels
 
             await manager.RefreshChannels(new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 
-            await new ChannelPostScanTask(_channelManager, _userManager, _logger, _libraryManager).Run(progress, cancellationToken)
+            await new ChannelPostScanTask(_channelManager, _logger, _libraryManager).Run(progress, cancellationToken)
                     .ConfigureAwait(false);
         }
 

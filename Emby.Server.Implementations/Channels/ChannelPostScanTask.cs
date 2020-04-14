@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Linq;
 using System.Threading;
@@ -11,21 +9,35 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Channels
 {
+    /// <summary>
+    /// Channel post scan task.
+    /// This task removes all non-installed channels from the database.
+    /// </summary>
     public class ChannelPostScanTask
     {
         private readonly IChannelManager _channelManager;
-        private readonly IUserManager _userManager;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
-        public ChannelPostScanTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelPostScanTask"/> class.
+        /// </summary>
+        /// <param name="channelManager">The channel manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        public ChannelPostScanTask(IChannelManager channelManager, ILogger logger, ILibraryManager libraryManager)
         {
             _channelManager = channelManager;
-            _userManager = userManager;
             _logger = logger;
             _libraryManager = libraryManager;
         }
 
+        /// <summary>
+        /// Runs this task.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The completed task.</returns>
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             CleanDatabase(cancellationToken);
