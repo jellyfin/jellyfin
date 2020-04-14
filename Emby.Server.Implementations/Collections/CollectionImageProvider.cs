@@ -34,6 +34,7 @@ namespace Emby.Server.Implementations.Collections
         {
         }
 
+        /// <inheritdoc />
         protected override bool Supports(BaseItem item)
         {
             // Right now this is the only way to prevent this image from getting created ahead of internet image providers
@@ -45,6 +46,7 @@ namespace Emby.Server.Implementations.Collections
             return base.Supports(item);
         }
 
+        /// <inheritdoc />
         protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             var playlist = (BoxSet)item;
@@ -85,6 +87,7 @@ namespace Emby.Server.Implementations.Collections
                 .ToList();
         }
 
+        /// <inheritdoc />
         protected override string CreateImage(BaseItem item, IReadOnlyCollection<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
         {
             return CreateSingleImage(itemsWithImages, outputPathWithoutExtension, ImageType.Primary);
