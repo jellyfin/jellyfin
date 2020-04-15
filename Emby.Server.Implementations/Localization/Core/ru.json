@@ -92,5 +92,18 @@
     "UserStoppedPlayingItemWithValues": "{0} - воспр. «{1}» ост-но на {2}",
     "ValueHasBeenAddedToLibrary": "{0} (добавлено в медиатеку)",
     "ValueSpecialEpisodeName": "Спецэпизод - {0}",
-    "VersionNumber": "Версия {0}"
+    "VersionNumber": "Версия {0}",
+    "TaskDownloadMissingSubtitles": "Загрузка отсутствующих субтитров",
+    "TaskRefreshChannels": "Подновить каналы",
+    "TaskCleanTranscode": "Очистка каталога перекодировки",
+    "TaskUpdatePlugins": "Обновление плагинов",
+    "TaskRefreshPeople": "Подновить людей",
+    "TaskCleanLogs": "Очистка каталога журналов",
+    "TaskRefreshLibrary": "Сканирование медиатеки",
+    "TaskRefreshChapterImages": "Извлечение рисунков сцен",
+    "TaskCleanCache": "Очистка каталога кеша",
+    "TasksChannelsCategory": "Интернет-каналы",
+    "TasksApplicationCategory": "Приложение",
+    "TasksLibraryCategory": "Медиатека",
+    "TasksMaintenanceCategory": "Обслуживание"
 }
