@@ -7,6 +7,11 @@ namespace MediaBrowser.Model.Providers
     /// </summary>
     public class ImageProviderInfo
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageProviderInfo" /> class.
+        /// </summary>
+        /// <param name="name">The name of the image provider.</param>
+        /// <param name="supportedImages">The image types supported by the image provider.</param>
         public ImageProviderInfo(string name, ImageType[] supportedImages)
         {
             Name = name;
