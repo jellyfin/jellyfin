@@ -1995,9 +1995,9 @@ namespace Emby.Server.Implementations.Data
                     {
                         chapter.ImageTag = ImageProcessor.GetImageCacheTag(item, chapter);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        Logger.LogError(ex, "Failed to create image cache tag.");
                     }
                 }
             }
