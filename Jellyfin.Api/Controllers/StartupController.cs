@@ -60,18 +60,18 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Endpoint for updating the initial startup wizard configuration.
         /// </summary>
-        /// <param name="UICulture">The UI language culture.</param>
-        /// <param name="MetadataCountryCode">The metadata country code.</param>
-        /// <param name="PreferredMetadataLanguage">The preferred language for metadata.</param>
+        /// <param name="uiCulture">The UI language culture.</param>
+        /// <param name="metadataCountryCode">The metadata country code.</param>
+        /// <param name="preferredMetadataLanguage">The preferred language for metadata.</param>
         [HttpPost("Configuration")]
         public void UpdateInitialConfiguration(
-            [FromForm] string UICulture,
-            [FromForm] string MetadataCountryCode,
-            [FromForm] string PreferredMetadataLanguage)
+            [FromForm] string uiCulture,
+            [FromForm] string metadataCountryCode,
+            [FromForm] string preferredMetadataLanguage)
         {
-            _config.Configuration.UICulture = UICulture;
-            _config.Configuration.MetadataCountryCode = MetadataCountryCode;
-            _config.Configuration.PreferredMetadataLanguage = PreferredMetadataLanguage;
+            _config.Configuration.UICulture = uiCulture;
+            _config.Configuration.MetadataCountryCode = metadataCountryCode;
+            _config.Configuration.PreferredMetadataLanguage = preferredMetadataLanguage;
             _config.SaveConfiguration();
         }
 
