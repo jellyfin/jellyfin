@@ -1,3 +1,5 @@
+#nullable enable
+
 using MediaBrowser.Model.Notifications;
 
 namespace Jellyfin.Api.Models.NotificationDtos
@@ -15,6 +17,6 @@ namespace Jellyfin.Api.Models.NotificationDtos
         /// <summary>
         /// Gets or sets the maximum unread notification level.
         /// </summary>
-        public NotificationLevel MaxUnreadNotificationLevel { get; set; }
+        public NotificationLevel? MaxUnreadNotificationLevel { get; set; }
     }
 }

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using MediaBrowser.Model.Notifications;
 
@@ -24,28 +26,28 @@ namespace Jellyfin.Api.Models.NotificationDtos
         public DateTime Date { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the notification has been read.
+        /// Gets or sets a value indicating whether the notification has been read. Defaults to false.
         /// </summary>
-        public bool IsRead { get; set; }
+        public bool IsRead { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets the notification's name.
+        /// Gets or sets the notification's name. Defaults to an empty string.
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the notification's description.
+        /// Gets or sets the notification's description. Defaults to an empty string.
         /// </summary>
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the notification's URL.
+        /// Gets or sets the notification's URL. Defaults to null.
         /// </summary>
-        public string Url { get; set; } = string.Empty;
+        public string? Url { get; set; }
 
         /// <summary>
         /// Gets or sets the notification level.
         /// </summary>
-        public NotificationLevel Level { get; set; }
+        public NotificationLevel? Level { get; set; }
     }
 }

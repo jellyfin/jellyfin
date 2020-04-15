@@ -36,14 +36,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Endpoint for getting a user's notifications.
         /// </summary>
-        /// <param name="userID">The UserID.</param>
+        /// <param name="userId">The user's ID.</param>
         /// <param name="isRead">An optional filter by IsRead.</param>
         /// <param name="startIndex">The optional index to start at. All notifications with a lower index will be dropped from the results.</param>
         /// <param name="limit">An optional limit on the number of notifications returned.</param>
         /// <returns>A read-only list of all of the user's notifications.</returns>
         [HttpGet("{UserID}")]
         public IReadOnlyList<NotificationDto> GetNotifications(
-            [FromRoute] string userID,
+            [FromRoute] string userId,
             [FromQuery] bool? isRead,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit)
@@ -54,11 +54,11 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Endpoint for getting a user's notification summary.
         /// </summary>
-        /// <param name="userID">The userID.</param>
+        /// <param name="userId">The user's ID.</param>
         /// <returns>Notifications summary for the user.</returns>
         [HttpGet("{UserID}/Summary")]
         public NotificationsSummaryDto GetNotificationsSummary(
-            [FromRoute] string userID)
+            [FromRoute] string userId)
         {
             return new NotificationsSummaryDto();
         }
@@ -95,14 +95,14 @@ namespace Jellyfin.Api.Controllers
             [FromForm] string name,
             [FromForm] string description,
             [FromForm] string? url,
-            [FromForm] NotificationLevel level)
+            [FromForm] NotificationLevel? level)
         {
             var notification = new NotificationRequest
             {
                 Name = name,
                 Description = description,
                 Url = url,
-                Level = level,
+                Level = level ?? NotificationLevel.Normal,
                 UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray(),
                 Date = DateTime.UtcNow,
             };
@@ -113,11 +113,11 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Endpoint to set notifications as read.
         /// </summary>
-        /// <param name="userID">The userID.</param>
+        /// <param name="userId">The userID.</param>
         /// <param name="ids">The IDs of notifications which should be set as read.</param>
         [HttpPost("{UserID}/Read")]
         public void SetRead(
-            [FromRoute] string userID,
+            [FromRoute] string userId,
             [FromForm] List<string> ids)
         {
         }
@@ -125,11 +125,11 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Endpoint to set notifications as unread.
         /// </summary>
-        /// <param name="userID">The userID.</param>
+        /// <param name="userId">The userID.</param>
         /// <param name="ids">The IDs of notifications which should be set as unread.</param>
         [HttpPost("{UserID}/Unread")]
         public void SetUnread(
-            [FromRoute] string userID,
+            [FromRoute] string userId,
             [FromForm] List<string> ids)
         {
         }

@@ -71,7 +71,6 @@ namespace Jellyfin.Server.Extensions
                 // Clear app parts to avoid other assemblies being picked up
                 .ConfigureApplicationPartManager(a => a.ApplicationParts.Clear())
                 .AddApplicationPart(typeof(StartupController).Assembly)
-                .AddApplicationPart(typeof(NotificationsController).Assembly)
                 .AddControllersAsServices();
         }
 
