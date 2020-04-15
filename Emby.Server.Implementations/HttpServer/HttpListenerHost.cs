@@ -23,6 +23,7 @@ using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text.Jsv;
 
@@ -48,6 +49,8 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly string _baseUrlPrefix;
         private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
+        private readonly IHostEnvironment _hostEnvironment;
+
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private bool _disposed = false;
 
@@ -61,7 +64,8 @@ namespace Emby.Server.Implementations.HttpServer
             IXmlSerializer xmlSerializer,
             IHttpListener socketListener,
             ILocalizationManager localizationManager,
-            ServiceController serviceController)
+            ServiceController serviceController,
+            IHostEnvironment hostEnvironment)
         {
             _appHost = applicationHost;
             _logger = logger;
@@ -75,6 +79,7 @@ namespace Emby.Server.Implementations.HttpServer
             ServiceController = serviceController;
 
             _socketListener.WebSocketConnected = OnWebSocketConnected;
+            _hostEnvironment = hostEnvironment;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
@@ -234,7 +239,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
         {
             try
             {
@@ -242,11 +247,11 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError(ex, "Error processing request");
+                    _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
                 }
                 else
                 {
-                    _logger.LogError("Error processing request: {Message}", ex.Message);
+                    _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
                 }
 
                 var httpRes = httpReq.Response;
@@ -266,7 +271,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response). URL: {Url}", urlToLog);
             }
         }
 
@@ -451,7 +456,7 @@ namespace Emby.Server.Implementations.HttpServer
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var httpRes = httpReq.Response;
-            string urlToLog = null;
+            string urlToLog = GetUrlToLog(urlString);
             string remoteIp = httpReq.RemoteIp;
 
             try
@@ -497,8 +502,6 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                urlToLog = GetUrlToLog(urlString);
-
                 if (string.Equals(localPath, _baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(localPath, _baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase)
@@ -530,22 +533,25 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    await ErrorHandler(new FileNotFoundException(), httpReq, false).ConfigureAwait(false);
+                    throw new FileNotFoundException();
                 }
-            }
-            catch (Exception ex) when (ex is SocketException || ex is IOException || ex is OperationCanceledException)
-            {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
-            }
-            catch (SecurityException ex)
-            {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
+                // Do not handle exceptions manually when in development mode
+                // The framework-defined development exception page will be returned instead
+                if (_hostEnvironment.IsDevelopment())
+                {
+                    throw;
+                }
 
-                await ErrorHandler(ex, httpReq, logException).ConfigureAwait(false);
+                bool ignoreStackTrace =
+                    ex is SocketException
+                    || ex is IOException
+                    || ex is OperationCanceledException
+                    || ex is SecurityException
+                    || ex is FileNotFoundException;
+                await ErrorHandler(ex, httpReq, !ignoreStackTrace, urlToLog).ConfigureAwait(false);
             }
             finally
             {

@@ -1326,8 +1326,9 @@ namespace MediaBrowser.Controller.Entities
                         }
 
                         // Use some hackery to get the extra type based on foldername
-                        Enum.TryParse(extraFolderName.Replace(" ", ""), true, out ExtraType extraType);
-                        item.ExtraType = extraType;
+                        item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", string.Empty), true, out ExtraType extraType)
+                            ? extraType
+                            : Model.Entities.ExtraType.Unknown;
 
                         return item;
 
@@ -2877,14 +2878,29 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The remote trailers.</value>
         public IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
 
+        /// <summary>
+        /// Get all extras associated with this item, sorted by <see cref="SortName"/>.
+        /// </summary>
+        /// <returns>An enumerable containing the items.</returns>
         public IEnumerable<BaseItem> GetExtras()
         {
-            return ExtraIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
+            return ExtraIds
+                .Select(LibraryManager.GetItemById)
+                .Where(i => i != null)
+                .OrderBy(i => i.SortName);
         }
 
+        /// <summary>
+        /// Get all extras with specific types that are associated with this item.
+        /// </summary>
+        /// <param name="extraTypes">The types of extras to retrieve.</param>
+        /// <returns>An enumerable containing the extras.</returns>
         public IEnumerable<BaseItem> GetExtras(IReadOnlyCollection<ExtraType> extraTypes)
         {
-            return ExtraIds.Select(LibraryManager.GetItemById).Where(i => i?.ExtraType != null && extraTypes.Contains(i.ExtraType.Value));
+            return ExtraIds
+                .Select(LibraryManager.GetItemById)
+                .Where(i => i != null)
+                .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value));
         }
 
         public IEnumerable<BaseItem> GetTrailers()
@@ -2893,11 +2909,6 @@ namespace MediaBrowser.Controller.Entities
                 return ((IHasTrailers)this).LocalTrailerIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
             else
                 return Array.Empty<BaseItem>();
-        }
-
-        public IEnumerable<BaseItem> GetDisplayExtras()
-        {
-            return GetExtras(DisplayExtraTypes);
         }
 
         public virtual bool IsHD => Height >= 720;
@@ -2917,8 +2928,19 @@ namespace MediaBrowser.Controller.Entities
             return RunTimeTicks ?? 0;
         }
 
-        // Possible types of extra videos
-        public static readonly IReadOnlyCollection<ExtraType> DisplayExtraTypes = new[] { Model.Entities.ExtraType.BehindTheScenes, Model.Entities.ExtraType.Clip, Model.Entities.ExtraType.DeletedScene, Model.Entities.ExtraType.Interview, Model.Entities.ExtraType.Sample, Model.Entities.ExtraType.Scene };
+        /// <summary>
+        /// Extra types that should be counted and displayed as "Special Features" in the UI.
+        /// </summary>
+        public static readonly IReadOnlyCollection<ExtraType> DisplayExtraTypes = new HashSet<ExtraType>
+        {
+            Model.Entities.ExtraType.Unknown,
+            Model.Entities.ExtraType.BehindTheScenes,
+            Model.Entities.ExtraType.Clip,
+            Model.Entities.ExtraType.DeletedScene,
+            Model.Entities.ExtraType.Interview,
+            Model.Entities.ExtraType.Sample,
+            Model.Entities.ExtraType.Scene
+        };
 
         public virtual bool SupportsExternalTransfer => false;
 

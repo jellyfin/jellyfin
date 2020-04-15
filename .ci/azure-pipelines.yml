@@ -27,11 +27,6 @@ jobs:
         Windows: "windows-latest"
         macOS: "macos-latest"
 
-  - template: azure-pipelines-windows.yml
-    parameters:
-      WindowsImage: "windows-latest"
-      TestProjects: $(TestProjects)
-
   - template: azure-pipelines-compat.yml
     parameters:
       Packages:

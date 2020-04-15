@@ -1,5 +1,5 @@
 {
-    "Albums": "Album",
+    "Albums": "Albums",
     "AppDeviceValues": "App: {0}, Enhed: {1}",
     "Application": "Applikation",
     "Artists": "Kunstnere",
@@ -92,5 +92,21 @@
     "UserStoppedPlayingItemWithValues": "{0} har afsluttet afspilning af {1} på {2}",
     "ValueHasBeenAddedToLibrary": "{0} er blevet tilføjet til dit mediebibliotek",
     "ValueSpecialEpisodeName": "Special - {0}",
-    "VersionNumber": "Version {0}"
+    "VersionNumber": "Version {0}",
+    "TaskDownloadMissingSubtitlesDescription": "Søger på internettet efter manglende undertekster baseret på metadata konfiration.",
+    "TaskDownloadMissingSubtitles": "Download manglende undertekster",
+    "TaskUpdatePluginsDescription": "Downloader og installere opdateringer for plugins som er konfigureret til at opdatere automatisk.",
+    "TaskUpdatePlugins": "Opdater Plugins",
+    "TaskCleanLogsDescription": "Sletter log filer som er mere end {0} dage gammle.",
+    "TaskCleanLogs": "Ryd Log Mappe",
+    "TaskRefreshLibraryDescription": "Scanner dit medie bibliotek for nye filer og opdatere metadata.",
+    "TaskRefreshLibrary": "Scan Medie Bibliotek",
+    "TaskCleanCacheDescription": "Sletter cache filer som systemet ikke har brug for længere.",
+    "TaskCleanCache": "Ryd Cache Mappe",
+    "TasksChannelsCategory": "Internet Kanaler",
+    "TasksApplicationCategory": "Applikation",
+    "TasksLibraryCategory": "Bibliotek",
+    "TasksMaintenanceCategory": "Vedligeholdelse",
+    "TaskRefreshChapterImages": "Udtræk Kapitel billeder",
+    "TaskRefreshChapterImagesDescription": "Lav miniaturebilleder for videoer der har kapitler."
 }

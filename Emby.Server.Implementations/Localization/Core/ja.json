@@ -109,5 +109,8 @@
     "TaskUpdatePluginsDescription": "自動更新可能なプラグインのアップデートをダウンロードしてインストールします。",
     "TaskUpdatePlugins": "プラグインの更新",
     "TaskRefreshPeopleDescription": "メディアライブラリで俳優や監督のメタデータをリフレッシュします。",
-    "TaskRefreshPeople": "俳優や監督のデータのリフレッシュ"
+    "TaskRefreshPeople": "俳優や監督のデータのリフレッシュ",
+    "TaskDownloadMissingSubtitlesDescription": "メタデータ構成に基づいて、欠落している字幕をインターネットで検索します。",
+    "TaskRefreshChapterImagesDescription": "チャプターのあるビデオのサムネイルを作成します。",
+    "TaskRefreshChapterImages": "チャプター画像を抽出する"
 }

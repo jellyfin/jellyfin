@@ -30,7 +30,6 @@ using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.Cryptography;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Devices;
-using Emby.Server.Implementations.Diagnostics;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.Security;
@@ -86,7 +85,6 @@ using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
@@ -336,8 +334,6 @@ namespace Emby.Server.Implementations
         public IStartupOptions StartupOptions { get; }
 
         internal IImageEncoder ImageEncoder { get; private set; }
-
-        protected IProcessFactory ProcessFactory { get; private set; }
 
         protected readonly IXmlSerializer XmlSerializer;
 
@@ -680,9 +676,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(XmlSerializer);
 
-            ProcessFactory = new ProcessFactory();
-            serviceCollection.AddSingleton(ProcessFactory);
-
             serviceCollection.AddSingleton(typeof(IStreamHelper), typeof(StreamHelper));
 
             var cryptoProvider = new CryptographyProvider();
@@ -743,7 +736,6 @@ namespace Emby.Server.Implementations
                 LoggerFactory.CreateLogger<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(),
                 ServerConfigurationManager,
                 FileSystemManager,
-                ProcessFactory,
                 LocalizationManager,
                 () => SubtitleEncoder,
                 startupConfig,
@@ -857,8 +849,7 @@ namespace Emby.Server.Implementations
                 FileSystemManager,
                 MediaEncoder,
                 HttpClient,
-                MediaSourceManager,
-                ProcessFactory);
+                MediaSourceManager);
             serviceCollection.AddSingleton(SubtitleEncoder);
 
             serviceCollection.AddSingleton(typeof(IResourceFileManager), typeof(ResourceFileManager));
@@ -1015,48 +1006,12 @@ namespace Emby.Server.Implementations
             AuthenticatedAttribute.AuthService = AuthService;
         }
 
-        private async void PluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> args)
-        {
-            string dir = Path.Combine(ApplicationPaths.PluginsPath, args.Argument.name);
-            var types = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories)
-                        .Select(Assembly.LoadFrom)
-                        .SelectMany(x => x.ExportedTypes)
-                        .Where(x => x.IsClass && !x.IsAbstract && !x.IsInterface && !x.IsGenericType)
-                        .ToArray();
-
-            int oldLen = _allConcreteTypes.Length;
-            Array.Resize(ref _allConcreteTypes, oldLen + types.Length);
-            types.CopyTo(_allConcreteTypes, oldLen);
-
-            var plugins = types.Where(x => x.IsAssignableFrom(typeof(IPlugin)))
-                    .Select(CreateInstanceSafe)
-                    .Where(x => x != null)
-                    .Cast<IPlugin>()
-                    .Select(LoadPlugin)
-                    .Where(x => x != null)
-                    .ToArray();
-
-            oldLen = _plugins.Length;
-            Array.Resize(ref _plugins, oldLen + plugins.Length);
-            plugins.CopyTo(_plugins, oldLen);
-
-            var entries = types.Where(x => x.IsAssignableFrom(typeof(IServerEntryPoint)))
-                .Select(CreateInstanceSafe)
-                .Where(x => x != null)
-                .Cast<IServerEntryPoint>()
-                .ToList();
-
-            await Task.WhenAll(StartEntryPoints(entries, true)).ConfigureAwait(false);
-            await Task.WhenAll(StartEntryPoints(entries, false)).ConfigureAwait(false);
-        }
-
         /// <summary>
         /// Finds the parts.
         /// </summary>
         public void FindParts()
         {
             InstallationManager = ServiceProvider.GetService<IInstallationManager>();
-            InstallationManager.PluginInstalled += PluginInstalled;
 
             if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
@@ -1714,15 +1669,17 @@ namespace Emby.Server.Implementations
                 throw new NotSupportedException();
             }
 
-            var process = ProcessFactory.Create(new ProcessOptions
+            var process = new Process
             {
-                FileName = url,
-                EnableRaisingEvents = true,
-                UseShellExecute = true,
-                ErrorDialog = false
-            });
-
-            process.Exited += ProcessExited;
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true,
+                    ErrorDialog = false
+                },
+                EnableRaisingEvents = true
+            };
+            process.Exited += (sender, args) => ((Process)sender).Dispose();
 
             try
             {
@@ -1733,11 +1690,6 @@ namespace Emby.Server.Implementations
                 Logger.LogError(ex, "Error launching url: {url}", url);
                 throw;
             }
-        }
-
-        private static void ProcessExited(object sender, EventArgs e)
-        {
-            ((IProcess)sender).Dispose();
         }
 
         public virtual void EnableLoopback(string appName)

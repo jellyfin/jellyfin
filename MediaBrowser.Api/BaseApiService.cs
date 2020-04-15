@@ -58,12 +58,9 @@ namespace MediaBrowser.Api
 
         public static string[] SplitValue(string value, char delim)
         {
-            if (value == null)
-            {
-                return Array.Empty<string>();
-            }
-
-            return value.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);
+            return value == null
+                ? Array.Empty<string>()
+                : value.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public static Guid[] GetGuids(string value)
@@ -97,19 +94,10 @@ namespace MediaBrowser.Api
             var authenticatedUser = auth.User;
 
             // If they're going to update the record of another user, they must be an administrator
-            if (!userId.Equals(auth.UserId))
+            if ((!userId.Equals(auth.UserId) && !authenticatedUser.Policy.IsAdministrator)
+                || (restrictUserPreferences && !authenticatedUser.Policy.EnableUserPreferenceAccess))
             {
-                if (!authenticatedUser.Policy.IsAdministrator)
-                {
-                    throw new SecurityException("Unauthorized access.");
-                }
-            }
-            else if (restrictUserPreferences)
-            {
-                if (!authenticatedUser.Policy.EnableUserPreferenceAccess)
-                {
-                    throw new SecurityException("Unauthorized access.");
-                }
+                throw new SecurityException("Unauthorized access.");
             }
         }
 
@@ -138,8 +126,8 @@ namespace MediaBrowser.Api
                 options.Fields = hasFields.GetItemFields();
             }
 
-            if (!options.ContainsField(Model.Querying.ItemFields.RecursiveItemCount)
-                || !options.ContainsField(Model.Querying.ItemFields.ChildCount))
+            if (!options.ContainsField(ItemFields.RecursiveItemCount)
+                || !options.ContainsField(ItemFields.ChildCount))
             {
                 var client = authContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
                 if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
@@ -150,7 +138,7 @@ namespace MediaBrowser.Api
                     int oldLen = options.Fields.Length;
                     var arr = new ItemFields[oldLen + 1];
                     options.Fields.CopyTo(arr, 0);
-                    arr[oldLen] = Model.Querying.ItemFields.RecursiveItemCount;
+                    arr[oldLen] = ItemFields.RecursiveItemCount;
                     options.Fields = arr;
                 }
 
@@ -166,7 +154,7 @@ namespace MediaBrowser.Api
                     int oldLen = options.Fields.Length;
                     var arr = new ItemFields[oldLen + 1];
                     options.Fields.CopyTo(arr, 0);
-                    arr[oldLen] = Model.Querying.ItemFields.ChildCount;
+                    arr[oldLen] = ItemFields.ChildCount;
                     options.Fields = arr;
                 }
             }
@@ -282,27 +270,21 @@ namespace MediaBrowser.Api
 
             }).OfType<T>().FirstOrDefault();
 
-            if (result == null)
+            result ??= libraryManager.GetItemList(new InternalItemsQuery
             {
-                result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    Name = name.Replace(BaseItem.SlugChar, '/'),
-                    IncludeItemTypes = new[] { typeof(T).Name },
-                    DtoOptions = dtoOptions
+                Name = name.Replace(BaseItem.SlugChar, '/'),
+                IncludeItemTypes = new[] { typeof(T).Name },
+                DtoOptions = dtoOptions
 
-                }).OfType<T>().FirstOrDefault();
-            }
+            }).OfType<T>().FirstOrDefault();
 
-            if (result == null)
+            result ??= libraryManager.GetItemList(new InternalItemsQuery
             {
-                result = libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    Name = name.Replace(BaseItem.SlugChar, '?'),
-                    IncludeItemTypes = new[] { typeof(T).Name },
-                    DtoOptions = dtoOptions
+                Name = name.Replace(BaseItem.SlugChar, '?'),
+                IncludeItemTypes = new[] { typeof(T).Name },
+                DtoOptions = dtoOptions
 
-                }).OfType<T>().FirstOrDefault();
-            }
+            }).OfType<T>().FirstOrDefault();
 
             return result;
         }

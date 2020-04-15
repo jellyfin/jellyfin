@@ -253,12 +253,7 @@ namespace MediaBrowser.Api
                     return false;
                 }
 
-                if (!request.IncludeDirectories && isDirectory)
-                {
-                    return false;
-                }
-
-                return true;
+                return request.IncludeDirectories || !isDirectory;
             });
 
             return entries.Select(f => new FileSystemEntryInfo(f.Name, f.FullName, f.IsDirectory ? FileSystemEntryType.Directory : FileSystemEntryType.File));
