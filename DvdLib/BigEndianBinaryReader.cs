@@ -1,4 +1,4 @@
-using System;
+using System.Buffers.Binary;
 using System.IO;
 
 namespace DvdLib
@@ -12,19 +12,12 @@ namespace DvdLib
 
         public override ushort ReadUInt16()
         {
-            return BitConverter.ToUInt16(ReadAndReverseBytes(2), 0);
+            return BinaryPrimitives.ReadUInt16BigEndian(base.ReadBytes(2));
         }
 
         public override uint ReadUInt32()
         {
-            return BitConverter.ToUInt32(ReadAndReverseBytes(4), 0);
-        }
-
-        private byte[] ReadAndReverseBytes(int count)
-        {
-            byte[] val = base.ReadBytes(count);
-            Array.Reverse(val, 0, count);
-            return val;
+            return BinaryPrimitives.ReadUInt32BigEndian(base.ReadBytes(4));
         }
     }
 }
