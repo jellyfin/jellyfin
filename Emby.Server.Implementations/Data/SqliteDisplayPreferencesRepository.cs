@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.Data
 
             var guidId = displayPreferencesId.GetMD5();
 
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client");
             statement.TryBind("@id", guidId.ToByteArray());
             statement.TryBind("@userId", userId.ToByteArray());
