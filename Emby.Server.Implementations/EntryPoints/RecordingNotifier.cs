@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Linq;
 using System.Threading;
@@ -12,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
+    /// <summary>
+    /// The recording notifier server entry point.
+    /// </summary>
     public sealed class RecordingNotifier : IServerEntryPoint
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -19,6 +20,13 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecordingNotifier"/> class.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="liveTvManager">The LiveTV manager.</param>
         public RecordingNotifier(
             ISessionManager sessionManager,
             IUserManager userManager,

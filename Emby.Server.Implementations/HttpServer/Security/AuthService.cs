@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Linq;
 using Emby.Server.Implementations.SocketSharp;
@@ -15,6 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
+    /// <inheritdoc />
     public class AuthService : IAuthService
     {
         private readonly ILogger<AuthService> _logger;
@@ -23,6 +22,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthService"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="authorizationContext">The authorization context.</param>
+        /// <param name="config">The server configuration manager.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="networkManager">The network manager.</param>
         public AuthService(
             ILogger<AuthService> logger,
             IAuthorizationContext authorizationContext,
@@ -37,11 +44,13 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _networkManager = networkManager;
         }
 
+        /// <inheritdoc />
         public void Authenticate(IRequest request, IAuthenticationAttributes authAttribtues)
         {
             ValidateUser(request, authAttribtues);
         }
 
+        /// <inheritdoc />
         public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
         {
             var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
@@ -73,7 +82,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (user != null)
             {
-                ValidateUserAccess(user, request, authAttribtues, auth);
+                ValidateUserAccess(user, request, authAttribtues);
             }
 
             var info = GetTokenInfo(request);
@@ -103,8 +112,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private void ValidateUserAccess(
             User user,
             IRequest request,
-            IAuthenticationAttributes authAttribtues,
-            AuthorizationInfo auth)
+            IAuthenticationAttributes authAttributes)
         {
             if (user.Policy.IsDisabled)
             {
@@ -123,7 +131,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
 
             if (!user.Policy.IsAdministrator
-                && !authAttribtues.EscapeParentalControl
+                && !authAttributes.EscapeParentalControl
                 && !user.IsParentalScheduleAllowed())
             {
                 request.Response.Headers.Add("X-Application-Error-Code", "ParentalControl");
@@ -135,53 +143,26 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
         }
 
-        private bool IsExemptFromAuthenticationToken(IAuthenticationAttributes authAttribtues, IRequest request)
+        private bool IsExemptFromAuthenticationToken(IAuthenticationAttributes authAttributes, IRequest request)
         {
-            if (!_config.Configuration.IsStartupWizardCompleted && authAttribtues.AllowBeforeStartupWizard)
+            if (!_config.Configuration.IsStartupWizardCompleted && authAttributes.AllowBeforeStartupWizard)
             {
                 return true;
             }
 
-            if (authAttribtues.AllowLocal && request.IsLocal)
-            {
-                return true;
-            }
-            if (authAttribtues.AllowLocalOnly && request.IsLocal)
-            {
-                return true;
-            }
-
-            return false;
+            return (authAttributes.AllowLocal || authAttributes.AllowLocalOnly) && request.IsLocal;
         }
 
-        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttribtues, IRequest request, AuthenticationInfo tokenInfo)
+        private bool IsExemptFromRoles(AuthorizationInfo auth, IAuthenticationAttributes authAttributes, IRequest request, AuthenticationInfo tokenInfo)
         {
-            if (!_config.Configuration.IsStartupWizardCompleted && authAttribtues.AllowBeforeStartupWizard)
+            if (!_config.Configuration.IsStartupWizardCompleted && authAttributes.AllowBeforeStartupWizard)
             {
                 return true;
             }
 
-            if (authAttribtues.AllowLocal && request.IsLocal)
-            {
-                return true;
-            }
-
-            if (authAttribtues.AllowLocalOnly && request.IsLocal)
-            {
-                return true;
-            }
-
-            if (string.IsNullOrEmpty(auth.Token))
-            {
-                return true;
-            }
-
-            if (tokenInfo != null && tokenInfo.UserId.Equals(Guid.Empty))
-            {
-                return true;
-            }
-
-            return false;
+            return ((authAttributes.AllowLocal || authAttributes.AllowLocalOnly) && request.IsLocal)
+                   || string.IsNullOrEmpty(auth.Token)
+                   || (tokenInfo != null && tokenInfo.UserId.Equals(Guid.Empty));
         }
 
         private static void ValidateRoles(string[] roles, User user)

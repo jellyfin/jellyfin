@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,6 +13,9 @@ using MediaBrowser.Model.Session;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
+    /// <summary>
+    /// The user data change entry point.
+    /// </summary>
     public sealed class UserDataChangeNotifier : IServerEntryPoint
     {
         private const int UpdateDuration = 500;
@@ -29,6 +30,12 @@ namespace Emby.Server.Implementations.EntryPoints
         private Timer _updateTimer;
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserDataChangeNotifier"/> class.
+        /// </summary>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="userManager">The user manager.</param>
         public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, IUserManager userManager)
         {
             _userDataManager = userDataManager;
@@ -36,6 +43,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _userManager = userManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _userDataManager.UserDataSaved += OnUserDataManagerUserDataSaved;
@@ -144,6 +152,7 @@ namespace Emby.Server.Implementations.EntryPoints
             };
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             if (_updateTimer != null)

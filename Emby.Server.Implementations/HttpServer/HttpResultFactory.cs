@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -50,6 +48,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Gets the result.
         /// </summary>
+        /// <param name="requestContext">The request context.</param>
         /// <param name="content">The content.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="responseHeaders">The response headers.</param>
@@ -59,21 +58,25 @@ namespace Emby.Server.Implementations.HttpServer
             return GetHttpResult(requestContext, content, contentType, true, responseHeaders);
         }
 
+        /// <inheritdoc />
         public object GetResult(string content, string contentType, IDictionary<string, string> responseHeaders = null)
         {
             return GetHttpResult(null, content, contentType, true, responseHeaders);
         }
 
+        /// <inheritdoc />
         public object GetResult(IRequest requestContext, Stream content, string contentType, IDictionary<string, string> responseHeaders = null)
         {
             return GetHttpResult(requestContext, content, contentType, true, responseHeaders);
         }
 
+        /// <inheritdoc />
         public object GetResult(IRequest requestContext, string content, string contentType, IDictionary<string, string> responseHeaders = null)
         {
             return GetHttpResult(requestContext, content, contentType, true, responseHeaders);
         }
 
+        /// <inheritdoc />
         public object GetRedirectResult(string url)
         {
             var responseHeaders = new Dictionary<string, string>();
@@ -201,7 +204,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Gets the optimized result.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of the result.</typeparam>
         public object GetResult<T>(IRequest requestContext, T result, IDictionary<string, string> responseHeaders = null)
             where T : class
         {
@@ -291,8 +294,6 @@ namespace Emby.Server.Implementations.HttpServer
                 case "application/json":
                 case "text/json":
                     return GetHttpResult(request, _jsonSerializer.SerializeToString(dto), contentType, false, responseHeaders);
-                default:
-                    break;
             }
 
             var isHeadRequest = string.Equals(request.Verb, "head", StringComparison.OrdinalIgnoreCase);
@@ -306,10 +307,8 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (isHeadRequest)
             {
-                using (ms)
-                {
-                    return GetHttpResult(request, Array.Empty<byte>(), contentType, true, responseHeaders);
-                }
+                using var stream = ms;
+                return GetHttpResult(request, Array.Empty<byte>(), contentType, true, responseHeaders);
             }
 
             return GetHttpResult(request, ms, contentType, true, responseHeaders);
@@ -366,48 +365,40 @@ namespace Emby.Server.Implementations.HttpServer
         {
             // In .NET FX incompat-ville, you can't access compressed bytes without closing DeflateStream
             // Which means we must use MemoryStream since you have to use ToArray() on a closed Stream
-            using (var ms = new MemoryStream())
-            using (var zipStream = new DeflateStream(ms, CompressionMode.Compress))
-            {
-                zipStream.Write(bytes, 0, bytes.Length);
-                zipStream.Dispose();
+            using var ms = new MemoryStream();
+            using var zipStream = new DeflateStream(ms, CompressionMode.Compress);
+            zipStream.Write(bytes, 0, bytes.Length);
+            zipStream.Dispose();
 
-                return ms.ToArray();
-            }
+            return ms.ToArray();
         }
 
         private static byte[] GZip(byte[] buffer)
         {
-            using (var ms = new MemoryStream())
-            using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
-            {
-                zipStream.Write(buffer, 0, buffer.Length);
-                zipStream.Dispose();
+            using var ms = new MemoryStream();
+            using var zipStream = new GZipStream(ms, CompressionMode.Compress);
+            zipStream.Write(buffer, 0, buffer.Length);
+            zipStream.Dispose();
 
-                return ms.ToArray();
-            }
+            return ms.ToArray();
         }
 
         private static string SerializeToXmlString(object from)
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            var xwSettings = new XmlWriterSettings
             {
-                var xwSettings = new XmlWriterSettings();
-                xwSettings.Encoding = new UTF8Encoding(false);
-                xwSettings.OmitXmlDeclaration = false;
+                Encoding = new UTF8Encoding(false),
+                OmitXmlDeclaration = false
+            };
 
-                using (var xw = XmlWriter.Create(ms, xwSettings))
-                {
-                    var serializer = new DataContractSerializer(from.GetType());
-                    serializer.WriteObject(xw, from);
-                    xw.Flush();
-                    ms.Seek(0, SeekOrigin.Begin);
-                    using (var reader = new StreamReader(ms))
-                    {
-                        return reader.ReadToEnd();
-                    }
-                }
-            }
+            using var xw = XmlWriter.Create(ms, xwSettings);
+            var serializer = new DataContractSerializer(@from.GetType());
+            serializer.WriteObject(xw, @from);
+            xw.Flush();
+            ms.Seek(0, SeekOrigin.Begin);
+            using var reader = new StreamReader(ms);
+            return reader.ReadToEnd();
         }
 
         /// <summary>
@@ -418,25 +409,28 @@ namespace Emby.Server.Implementations.HttpServer
             bool noCache = (requestContext.Headers[HeaderNames.CacheControl].ToString()).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
             AddCachingHeaders(responseHeaders, options.CacheDuration, noCache, options.DateLastModified);
 
-            if (!noCache)
+            if (noCache)
             {
-                DateTime.TryParse(requestContext.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader);
-
-                if (IsNotModified(ifModifiedSinceHeader, options.CacheDuration, options.DateLastModified))
-                {
-                    AddAgeHeader(responseHeaders, options.DateLastModified);
-
-                    var result = new HttpResult(Array.Empty<byte>(), options.ContentType ?? "text/html", HttpStatusCode.NotModified);
-
-                    AddResponseHeaders(result, responseHeaders);
-
-                    return result;
-                }
+                return null;
             }
 
-            return null;
+            DateTime.TryParse(requestContext.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader);
+
+            if (!IsNotModified(ifModifiedSinceHeader, options.CacheDuration, options.DateLastModified))
+            {
+                return null;
+            }
+
+            AddAgeHeader(responseHeaders, options.DateLastModified);
+
+            var result = new HttpResult(Array.Empty<byte>(), options.ContentType ?? "text/html", HttpStatusCode.NotModified);
+
+            AddResponseHeaders(result, responseHeaders);
+
+            return result;
         }
 
+        /// <inheritdoc />
         public Task<object> GetStaticFileResult(IRequest requestContext,
             string path,
             FileShare fileShare = FileShare.Read)
@@ -453,6 +447,7 @@ namespace Emby.Server.Implementations.HttpServer
             });
         }
 
+        /// <inheritdoc />
         public Task<object> GetStaticFileResult(IRequest requestContext, StaticFileResultOptions options)
         {
             var path = options.Path;
@@ -480,7 +475,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             options.ContentFactory = () => Task.FromResult(GetFileStream(path, fileShare));
 
-            options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            options.ResponseHeaders ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             return GetStaticResult(requestContext, options);
         }
@@ -496,6 +491,7 @@ namespace Emby.Server.Implementations.HttpServer
             return new FileStream(path, FileMode.Open, FileAccess.Read, fileShare);
         }
 
+        /// <inheritdoc />
         public Task<object> GetStaticResult(IRequest requestContext,
             Guid cacheKey,
             DateTime? lastDateModified,
@@ -516,9 +512,10 @@ namespace Emby.Server.Implementations.HttpServer
             });
         }
 
+        /// <inheritdoc />
         public async Task<object> GetStaticResult(IRequest requestContext, StaticResultOptions options)
         {
-            options.ResponseHeaders = options.ResponseHeaders ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            options.ResponseHeaders ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var contentType = options.ContentType;
             if (!StringValues.IsNullOrEmpty(requestContext.Headers[HeaderNames.IfModifiedSince]))
@@ -588,10 +585,8 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (isHeadRequest)
                 {
-                    using (stream)
-                    {
-                        return GetHttpResult(requestContext, Array.Empty<byte>(), contentType, true, responseHeaders);
-                    }
+                    await using var stream1 = stream;
+                    return GetHttpResult(requestContext, Array.Empty<byte>(), contentType, true, responseHeaders);
                 }
 
                 var hasHeaders = new StreamWriter(stream, contentType)

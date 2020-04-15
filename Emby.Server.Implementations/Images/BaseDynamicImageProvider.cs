@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,9 +18,20 @@ using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.Images
 {
+    /// <summary>
+    /// A dynamic image provider.
+    /// </summary>
+    /// <typeparam name="T">The item type.</typeparam>
     public abstract class BaseDynamicImageProvider<T> : IHasItemChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
         where T : BaseItem
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseDynamicImageProvider{T}"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="providerManager">The provider manager.</param>
+        /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="imageProcessor">The image processor.</param>
         protected BaseDynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor)
         {
             ApplicationPaths = applicationPaths;
@@ -31,26 +40,51 @@ namespace Emby.Server.Implementations.Images
             ImageProcessor = imageProcessor;
         }
 
+        /// <summary>
+        /// Gets the filesystem.
+        /// </summary>
         protected IFileSystem FileSystem { get; }
 
+        /// <summary>
+        /// Gets the provider manager.
+        /// </summary>
         protected IProviderManager ProviderManager { get; }
 
+        /// <summary>
+        /// Gets the application paths.
+        /// </summary>
         protected IApplicationPaths ApplicationPaths { get; }
 
+        /// <summary>
+        /// Gets and sets the image processor.
+        /// </summary>
         protected IImageProcessor ImageProcessor { get; set; }
 
+        /// <summary>
+        /// Gets the supported images.
+        /// </summary>
         protected virtual IReadOnlyCollection<ImageType> SupportedImages { get; }
-            = new ImageType[] { ImageType.Primary };
+            = new[] { ImageType.Primary };
 
         /// <inheritdoc />
         public string Name => "Dynamic Image Provider";
 
+        /// <summary>
+        /// Gets the maximum image age in days.
+        /// </summary>
         protected virtual int MaxImageAgeDays => 7;
 
+        /// <inheritdoc />
         public int Order => 0;
 
+        /// <summary>
+        /// Returns whether or not this supports the provided item.
+        /// </summary>
+        /// <param name="_">The item.</param>
+        /// <returns>Whether or not it is supported.</returns>
         protected virtual bool Supports(BaseItem _) => true;
 
+        /// <inheritdoc />
         public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             if (!Supports(item))
@@ -75,6 +109,14 @@ namespace Emby.Server.Implementations.Images
             return updateType;
         }
 
+        /// <summary>
+        /// Fetches the
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="imageType">The image type.</param>
+        /// <param name="options">The metadata refresh options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A task </returns>
         protected Task<ItemUpdateType> FetchAsync(BaseItem item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var image = item.GetImageInfo(imageType, 0);
@@ -97,6 +139,14 @@ namespace Emby.Server.Implementations.Images
             return FetchToFileInternal(item, items, imageType, cancellationToken);
         }
 
+        /// <summary>
+        /// Updates the specified images.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="itemsWithImages">The items with images.</param>
+        /// <param name="imageType">The image type.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the operation.</returns>
         protected async Task<ItemUpdateType> FetchToFileInternal(
             BaseItem item,
             IReadOnlyList<BaseItem> itemsWithImages,
@@ -124,13 +174,31 @@ namespace Emby.Server.Implementations.Images
             return ItemUpdateType.ImageUpdate;
         }
 
+        /// <summary>
+        /// Returns a read-only list of items with images.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>A read-only list containing items with images.</returns>
         protected abstract IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item);
 
+        /// <summary>
+        /// Creates a thumbnail collage.
+        /// </summary>
+        /// <param name="primaryItem">The primary item.</param>
+        /// <param name="items">The items.</param>
+        /// <param name="outputPath">The output path.</param>
+        /// <returns>The resulting path, or null.</returns>
         protected string CreateThumbCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 640, 360);
         }
 
+        /// <summary>
+        /// Gets the collage image paths.
+        /// </summary>
+        /// <param name="primaryItem">The primary item.</param>
+        /// <param name="items">The items.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing the image paths.</returns>
         protected virtual IEnumerable<string> GetStripCollageImagePaths(BaseItem primaryItem, IEnumerable<BaseItem> items)
         {
             return items
@@ -153,16 +221,39 @@ namespace Emby.Server.Implementations.Images
                 .Where(i => !string.IsNullOrEmpty(i));
         }
 
+        /// <summary>
+        /// Creates a poster collage.
+        /// </summary>
+        /// <param name="primaryItem">The primary item.</param>
+        /// <param name="items">The items.</param>
+        /// <param name="outputPath">The output path.</param>
+        /// <returns>The resulting path, or null.</returns>
         protected string CreatePosterCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 400, 600);
         }
 
+        /// <summary>
+        /// Creates a square collage.
+        /// </summary>
+        /// <param name="primaryItem">The primary item.</param>
+        /// <param name="items">The items.</param>
+        /// <param name="outputPath">The output path.</param>
+        /// <returns>The resulting path, or null.</returns>
         protected string CreateSquareCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
             return CreateCollage(primaryItem, items, outputPath, 600, 600);
         }
 
+        /// <summary>
+        /// Creates a thumbnail collage.
+        /// </summary>
+        /// <param name="primaryItem">The primary item.</param>
+        /// <param name="items">The items.</param>
+        /// <param name="outputPath">The output path.</param>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        /// <returns>The resulting path, or null.</returns>
         protected string CreateThumbCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath, int width, int height)
         {
             return CreateCollage(primaryItem, items, outputPath, width, height);
@@ -194,6 +285,16 @@ namespace Emby.Server.Implementations.Images
             return outputPath;
         }
 
+        /// <summary>
+        /// Creates an image.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="itemsWithImages">The items with the images.</param>
+        /// <param name="outputPathWithoutExtension">The output path without an extension.</param>
+        /// <param name="imageType">The image type.</param>
+        /// <param name="imageIndex">The image index.</param>
+        /// <returns>The resulting image's path, or null.</returns>
+        /// <exception cref="ArgumentException">If the image type is unsupported.</exception>
         protected virtual string CreateImage(BaseItem item,
             IReadOnlyCollection<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
@@ -225,6 +326,7 @@ namespace Emby.Server.Implementations.Images
             throw new ArgumentException("Unexpected image type", nameof(imageType));
         }
 
+        /// <inheritdoc />
         public bool HasChanged(BaseItem item, IDirectoryService directoryServicee)
         {
             if (!Supports(item))
@@ -244,37 +346,45 @@ namespace Emby.Server.Implementations.Images
             return false;
         }
 
+        /// <summary>
+        /// Returns whether the item's image has changed.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="type">The image type.</param>
+        /// <returns>Whether the image has changed.</returns>
         protected bool HasChanged(BaseItem item, ImageType type)
         {
             var image = item.GetImageInfo(type, 0);
 
-            if (image != null)
+            if (image == null)
             {
-                if (!image.IsLocalFile)
-                {
-                    return false;
-                }
-
-                if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
-                {
-                    return false;
-                }
-
-                if (!HasChangedByDate(item, image))
-                {
-                    return false;
-                }
+                return true;
             }
 
-            return true;
+            return image.IsLocalFile
+                   && FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path)
+                   && HasChangedByDate(item, image);
         }
 
+        /// <summary>
+        /// Returns whether the provided image is older than <see cref="MaxImageAgeDays"/>.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="image">The image.</param>
+        /// <returns>Whether the image is older than <see cref="MaxImageAgeDays"/>.</returns>
         protected virtual bool HasChangedByDate(BaseItem item, ItemImageInfo image)
         {
             var age = DateTime.UtcNow - image.DateModified;
             return age.TotalDays > MaxImageAgeDays;
         }
 
+        /// <summary>
+        /// Creates an image based on the provided items at the specified path.
+        /// </summary>
+        /// <param name="itemsWithImages">The items.</param>
+        /// <param name="outputPathWithoutExtension">The output path without the file extension.</param>
+        /// <param name="imageType">The image type.</param>
+        /// <returns>The output path of the created image, or null.</returns>
         protected string CreateSingleImage(IEnumerable<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType)
         {
             var image = itemsWithImages

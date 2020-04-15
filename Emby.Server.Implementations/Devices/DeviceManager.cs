@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -29,6 +27,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Devices
 {
+    /// <inheritdoc />
     public class DeviceManager : IDeviceManager
     {
         private readonly IJsonSerializer _json;
@@ -41,12 +40,26 @@ namespace Emby.Server.Implementations.Devices
 
         private readonly IAuthenticationRepository _authRepo;
 
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
+
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
 
         private readonly object _cameraUploadSyncLock = new object();
         private readonly object _capabilitiesSyncLock = new object();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceManager"/> class.
+        /// </summary>
+        /// <param name="authRepo">The authorization repository.</param>
+        /// <param name="json">The JSON serializer.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="localizationManager">The localization manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="libraryMonitor">The library monitor.</param>
+        /// <param name="config">The server configuration manager.</param>
         public DeviceManager(
             IAuthenticationRepository authRepo,
             IJsonSerializer json,
@@ -69,6 +82,8 @@ namespace Emby.Server.Implementations.Devices
 
 
         private Dictionary<string, ClientCapabilities> _capabilitiesCache = new Dictionary<string, ClientCapabilities>(StringComparer.OrdinalIgnoreCase);
+
+        /// <inheritdoc />
         public void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "capabilities.json");
@@ -82,24 +97,24 @@ namespace Emby.Server.Implementations.Devices
             }
         }
 
+        /// <inheritdoc />
         public void UpdateDeviceOptions(string deviceId, DeviceOptions options)
         {
             _authRepo.UpdateDeviceOptions(deviceId, options);
 
-            if (DeviceOptionsUpdated != null)
+            DeviceOptionsUpdated?.Invoke(this, new GenericEventArgs<Tuple<string, DeviceOptions>>
             {
-                DeviceOptionsUpdated(this, new GenericEventArgs<Tuple<string, DeviceOptions>>()
-                {
-                    Argument = new Tuple<string, DeviceOptions>(deviceId, options)
-                });
-            }
+                Argument = new Tuple<string, DeviceOptions>(deviceId, options)
+            });
         }
 
+        /// <inheritdoc />
         public DeviceOptions GetDeviceOptions(string deviceId)
         {
             return _authRepo.GetDeviceOptions(deviceId);
         }
 
+        /// <inheritdoc />
         public ClientCapabilities GetCapabilities(string id)
         {
             lock (_capabilitiesSyncLock)
@@ -122,6 +137,7 @@ namespace Emby.Server.Implementations.Devices
             return new ClientCapabilities();
         }
 
+        /// <inheritdoc />
         public DeviceInfo GetDevice(string id)
         {
             return GetDevice(id, true);
@@ -139,6 +155,7 @@ namespace Emby.Server.Implementations.Devices
             return device;
         }
 
+        /// <inheritdoc />
         public QueryResult<DeviceInfo> GetDevices(DeviceQuery query)
         {
             IEnumerable<AuthenticationInfo> sessions = _authRepo.Get(new AuthenticationInfoQuery
@@ -194,6 +211,7 @@ namespace Emby.Server.Implementations.Devices
             return Path.Combine(GetDevicesPath(), id.GetMD5().ToString("N", CultureInfo.InvariantCulture));
         }
 
+        /// <inheritdoc />
         public ContentUploadHistory GetCameraUploadHistory(string deviceId)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "camerauploads.json");
@@ -214,6 +232,7 @@ namespace Emby.Server.Implementations.Devices
             }
         }
 
+        /// <inheritdoc />
         public async Task AcceptCameraUpload(string deviceId, Stream stream, LocalFileInfo file)
         {
             var device = GetDevice(deviceId, false);
@@ -237,7 +256,7 @@ namespace Emby.Server.Implementations.Devices
 
             try
             {
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
                 }
@@ -249,17 +268,14 @@ namespace Emby.Server.Implementations.Devices
                 _libraryMonitor.ReportFileSystemChangeComplete(path, true);
             }
 
-            if (CameraImageUploaded != null)
+            CameraImageUploaded?.Invoke(this, new GenericEventArgs<CameraImageUploadInfo>
             {
-                CameraImageUploaded?.Invoke(this, new GenericEventArgs<CameraImageUploadInfo>
+                Argument = new CameraImageUploadInfo
                 {
-                    Argument = new CameraImageUploadInfo
-                    {
-                        Device = device,
-                        FileInfo = file
-                    }
-                });
-            }
+                    Device = device,
+                    FileInfo = file
+                }
+            });
         }
 
         private void AddCameraUpload(string deviceId, LocalFileInfo file)
@@ -360,6 +376,7 @@ namespace Emby.Server.Implementations.Devices
 
         private string DefaultCameraUploadsPath => Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads");
 
+        /// <inheritdoc />
         public bool CanAccessDevice(User user, string deviceId)
         {
             if (user == null)
@@ -386,26 +403,29 @@ namespace Emby.Server.Implementations.Devices
 
         private static bool CanAccessDevice(UserPolicy policy, string id)
         {
-            if (policy.EnableAllDevices)
-            {
-                return true;
-            }
-
-            if (policy.IsAdministrator)
-            {
-                return true;
-            }
-
-            return policy.EnabledDevices.Contains(id, StringComparer.OrdinalIgnoreCase);
+            return policy.EnableAllDevices
+                   || policy.IsAdministrator
+                   || policy.EnabledDevices.Contains(id, StringComparer.OrdinalIgnoreCase);
         }
     }
 
+    /// <summary>
+    /// The entry point for the Device Manager.
+    /// </summary>
     public class DeviceManagerEntryPoint : IServerEntryPoint
     {
         private readonly DeviceManager _deviceManager;
         private readonly IServerConfigurationManager _config;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
+        private bool disposed;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceManagerEntryPoint"/> class.
+        /// </summary>
+        /// <param name="deviceManager">The device manager.</param>
+        /// <param name="config">The configuration manager.</param>
+        /// <param name="logger">The logger.</param>
         public DeviceManagerEntryPoint(
             IDeviceManager deviceManager,
             IServerConfigurationManager config,
@@ -416,6 +436,7 @@ namespace Emby.Server.Implementations.Devices
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public async Task RunAsync()
         {
             if (!_config.Configuration.CameraUploadUpgraded && _config.Configuration.IsStartupWizardCompleted)
@@ -439,23 +460,26 @@ namespace Emby.Server.Implementations.Devices
             }
         }
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
+        /// <summary>
+        /// Releases the resources held by this object.
+        /// </summary>
+        /// <param name="disposing">Whether to dispose managed resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (disposed)
             {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
+                return;
             }
+
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects).
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+            // TODO: set large fields to null.
+
+            disposed = true;
         }
 
         // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
@@ -465,6 +489,8 @@ namespace Emby.Server.Implementations.Devices
         // }
 
         // This code added to correctly implement the disposable pattern.
+
+        /// <inheritdoc />
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
@@ -472,14 +498,15 @@ namespace Emby.Server.Implementations.Devices
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
-        #endregion
     }
 
+    /// <inheritdoc />
     public class DevicesConfigStore : IConfigurationFactory
     {
+        /// <inheritdoc />
         public IEnumerable<ConfigurationStore> GetConfigurations()
         {
-            return new ConfigurationStore[]
+            return new[]
             {
                 new ConfigurationStore
                 {
@@ -490,8 +517,16 @@ namespace Emby.Server.Implementations.Devices
         }
     }
 
+    /// <summary>
+    /// A utility class for devices.
+    /// </summary>
     public static class UploadConfigExtension
     {
+        /// <summary>
+        /// Returns the unload options for the provided configuration manager.
+        /// </summary>
+        /// <param name="config">The configuration manager.</param>
+        /// <returns>A <see cref="DeviceOptions"/> object for the provided configuration manager.</returns>
         public static DevicesOptions GetUploadOptions(this IConfigurationManager config)
         {
             return config.GetConfiguration<DevicesOptions>("devices");

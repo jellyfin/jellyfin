@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,6 +13,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
+    /// <summary>
+    /// The library monitor.
+    /// </summary>
     public class LibraryMonitor : ILibraryMonitor
     {
         /// <summary>
@@ -45,7 +46,7 @@ namespace Emby.Server.Implementations.IO
             "TempSBE"
         };
 
-        private static readonly string[] _alwaysIgnoreSubstrings = new string[]
+        private static readonly string[] _alwaysIgnoreSubstrings =
         {
             // Synology
             "eaDir",
@@ -73,6 +74,11 @@ namespace Emby.Server.Implementations.IO
             _tempIgnoredPaths[path] = path;
         }
 
+        /// <summary>
+        /// Starts the process of reporting filesystem changes.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <exception cref="ArgumentNullException">If the path is null or empty.</exception>
         public void ReportFileSystemChangeBeginning(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -83,6 +89,11 @@ namespace Emby.Server.Implementations.IO
             TemporarilyIgnore(path);
         }
 
+        /// <summary>
+        /// Returns whether the provided path is locked.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Whether the path is locked.</returns>
         public bool IsPathLocked(string path)
         {
             // This method is not used by the core but it used by auto-organize
@@ -91,6 +102,12 @@ namespace Emby.Server.Implementations.IO
             return lockedPaths.Any(i => _fileSystem.AreEqual(i, path) || _fileSystem.ContainsSubPath(i, path));
         }
 
+        /// <summary>
+        /// Reports the file system change.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="refreshPath">The refresh path.</param>
+        /// <exception cref="ArgumentNullException">If the path is null or empty.</exception>
         public async void ReportFileSystemChangeComplete(string path, bool refreshPath)
         {
             if (string.IsNullOrEmpty(path))
@@ -153,14 +170,10 @@ namespace Emby.Server.Implementations.IO
 
             var options = LibraryManager.GetLibraryOptions(item);
 
-            if (options != null)
-            {
-                return options.EnableRealtimeMonitor;
-            }
-
-            return false;
+            return options != null && options.EnableRealtimeMonitor;
         }
 
+        /// <inheritdoc />
         public void Start()
         {
             LibraryManager.ItemAdded += OnLibraryManagerItemAdded;
@@ -394,6 +407,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public void ReportFileSystemChanged(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -435,7 +449,6 @@ namespace Emby.Server.Implementations.IO
                 }
 
                 return false;
-
             }))
             {
                 monitorPath = false;
@@ -536,7 +549,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -567,21 +580,30 @@ namespace Emby.Server.Implementations.IO
         }
     }
 
+    /// <summary>
+    /// The library monitor server entry point.
+    /// </summary>
     public class LibraryMonitorStartup : IServerEntryPoint
     {
         private readonly ILibraryMonitor _monitor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LibraryMonitorStartup"/> class.
+        /// </summary>
+        /// <param name="monitor">The library monitor.</param>
         public LibraryMonitorStartup(ILibraryMonitor monitor)
         {
             _monitor = monitor;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _monitor.Start();
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
         }

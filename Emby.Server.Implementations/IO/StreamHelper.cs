@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Buffers;
 using System.IO;
@@ -9,10 +7,14 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.IO
 {
+    /// <summary>
+    /// A utility class for streams.
+    /// </summary>
     public class StreamHelper : IStreamHelper
     {
         private const int StreamCopyToBufferSize = 81920;
 
+        /// <inheritdoc />
         public async Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action onStarted, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
@@ -38,6 +40,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public async Task CopyToAsync(Stream source, Stream destination, int bufferSize, int emptyReadLimit, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
@@ -83,6 +86,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public async Task<int> CopyToAsync(Stream source, Stream destination, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(StreamCopyToBufferSize);
@@ -111,6 +115,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public async Task CopyToAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(StreamCopyToBufferSize);
@@ -141,6 +146,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public async Task CopyUntilCancelled(Stream source, Stream target, int bufferSize, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);

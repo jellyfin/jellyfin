@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,6 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
+    /// <inheritdoc />
     public class LibraryChangedNotifier : IServerEntryPoint
     {
         /// <summary>
@@ -55,6 +54,14 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly IProviderManager _providerManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LibraryChangedNotifier"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="providerManager">The provider manager.</param>
         public LibraryChangedNotifier(
             ILibraryManager libraryManager,
             ISessionManager sessionManager,
@@ -69,6 +76,7 @@ namespace Emby.Server.Implementations.EntryPoints
             _providerManager = providerManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _libraryManager.ItemAdded += libraryManager_ItemAdded;
@@ -105,9 +113,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
             _lastProgressMessageTimes[item.Id] = DateTime.UtcNow;
 
-            var dict = new Dictionary<string, string>();
-            dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
-            dict["Progress"] = progress.ToString(CultureInfo.InvariantCulture);
+            var dict = new Dictionary<string, string>
+            {
+                ["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture),
+                ["Progress"] = progress.ToString(CultureInfo.InvariantCulture)
+            };
 
             try
             {
@@ -121,9 +131,11 @@ namespace Emby.Server.Implementations.EntryPoints
 
             foreach (var collectionFolder in collectionFolders)
             {
-                var collectionFolderDict = new Dictionary<string, string>();
-                collectionFolderDict["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture);
-                collectionFolderDict["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture);
+                var collectionFolderDict = new Dictionary<string, string>
+                {
+                    ["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
+                    ["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture)
+                };
 
                 try
                 {
@@ -205,8 +217,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Item.GetParent() as Folder;
-                if (parent != null)
+                if (e.Item.GetParent() is Folder parent)
                 {
                     _foldersAddedTo.Add(parent);
                 }
@@ -231,8 +242,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
-                                                   Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
                 else
                 {
@@ -267,8 +277,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Parent as Folder;
-                if (parent != null)
+                if (e.Parent is Folder parent)
                 {
                     _foldersRemovedFrom.Add(parent);
                 }
@@ -420,19 +429,9 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             var list = new List<string>();
 
-            foreach (var item in items)
+            foreach (var unused in items.Where(item => !(item is AggregateFolder)))
             {
-                // If the physical root changed, return the user root
-                if (item is AggregateFolder)
-                {
-                    continue;
-                }
-
-                var collectionFolders = _libraryManager.GetCollectionFolders(item, allUserRootChildren);
-                foreach (var folder in allUserRootChildren)
-                {
-                    list.Add(folder.Id.ToString("N", CultureInfo.InvariantCulture));
-                }
+                list.AddRange(allUserRootChildren.Select(folder => folder.Id.ToString("N", CultureInfo.InvariantCulture)));
             }
 
             return list.Distinct(StringComparer.Ordinal);

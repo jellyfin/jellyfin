@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,6 +27,9 @@ using ServiceStack.Text.Jsv;
 
 namespace Emby.Server.Implementations.HttpServer
 {
+    /// <summary>
+    /// The HTTP listener host.
+    /// </summary>
     public class HttpListenerHost : IHttpServer, IDisposable
     {
         /// <summary>
@@ -52,8 +53,22 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IHostEnvironment _hostEnvironment;
 
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
-        private bool _disposed = false;
+        private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpListenerHost"/> class.
+        /// </summary>
+        /// <param name="applicationHost">The application host.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="config">The server configuration manager.</param>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="networkManager">The network manager.</param>
+        /// <param name="jsonSerializer">The JSON serializer.</param>
+        /// <param name="xmlSerializer">The XML serializer.</param>
+        /// <param name="socketListener">The socket listener.</param>
+        /// <param name="localizationManager">The localization manager.</param>
+        /// <param name="serviceController">The service controller.</param>
+        /// <param name="hostEnvironment">The host environment.</param>
         public HttpListenerHost(
             IServerApplicationHost applicationHost,
             ILogger<HttpListenerHost> logger,
@@ -88,18 +103,35 @@ namespace Emby.Server.Implementations.HttpServer
             GlobalResponse = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         }
 
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
+        /// <summary>
+        /// Gets or sets the ResponseFilters action.
+        /// </summary>
         public Action<IRequest, HttpResponse, object>[] ResponseFilters { get; set; }
 
+        /// <summary>
+        /// The HttpListenerHost instance.
+        /// </summary>
         public static HttpListenerHost Instance { get; protected set; }
 
+        /// <inheritdoc />
         public string[] UrlPrefixes { get; private set; }
 
+        /// <inheritdoc />
         public string GlobalResponse { get; set; }
 
+        /// <summary>
+        /// Gets the service controller.
+        /// </summary>
         public ServiceController ServiceController { get; }
 
+        /// <summary>
+        /// Creates an instance.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>The new instance.</returns>
         public object CreateInstance(Type type)
         {
             return _appHost.CreateInstance(type);
@@ -123,7 +155,6 @@ namespace Emby.Server.Implementations.HttpServer
         /// Applies the request filters. Returns whether or not the request has been handled
         /// and no more processing should be done.
         /// </summary>
-        /// <returns></returns>
         public void ApplyRequestFilters(IRequest req, HttpResponse res, object requestDto)
         {
             // Exec all RequestFilter attributes with Priority < 0
@@ -145,12 +176,22 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        /// <summary>
+        /// Gets the service type from a request type.
+        /// </summary>
+        /// <param name="requestType">The request type.</param>
+        /// <returns>The service type.</returns>
         public Type GetServiceTypeByRequest(Type requestType)
         {
             _serviceOperationsMap.TryGetValue(requestType, out var serviceType);
             return serviceType;
         }
 
+        /// <summary>
+        /// Adds a service type.
+        /// </summary>
+        /// <param name="serviceType">The service type.</param>
+        /// <param name="requestType">The request type.</param>
         public void AddServiceInfo(Type serviceType, Type requestType)
         {
             _serviceOperationsMap[requestType] = serviceType;
@@ -227,16 +268,16 @@ namespace Emby.Server.Implementations.HttpServer
 
         private int GetStatusCode(Exception ex)
         {
-            switch (ex)
+            return ex switch
             {
-                case ArgumentException _: return 400;
-                case SecurityException _: return 401;
-                case DirectoryNotFoundException _:
-                case FileNotFoundException _:
-                case ResourceNotFoundException _: return 404;
-                case MethodNotAllowedException _: return 405;
-                default: return 500;
-            }
+                ArgumentException _ => 400,
+                SecurityException _ => 401,
+                DirectoryNotFoundException _ => 404,
+                FileNotFoundException _ => 404,
+                ResourceNotFoundException _ => 404,
+                MethodNotAllowedException _ => 405,
+                _ => 500
+            };
         }
 
         private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
@@ -291,7 +332,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Shut down the Web Service
+        /// Shut down the Web Service.
         /// </summary>
         public void Stop()
         {
@@ -316,6 +357,12 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        /// <summary>
+        /// Removes the key.
+        /// </summary>
+        /// <param name="url">The url.</param>
+        /// <param name="key">The key.</param>
+        /// <returns>The result.</returns>
         public static string RemoveQueryStringByKey(string url, string key)
         {
             var uri = new Uri(url);
@@ -448,9 +495,7 @@ namespace Emby.Server.Implementations.HttpServer
             return true;
         }
 
-        /// <summary>
-        /// Overridable method that can be used to implement a custom handler.
-        /// </summary>
+        /// <inheritdoc />
         public async Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath, CancellationToken cancellationToken)
         {
             var stopWatch = new Stopwatch();
@@ -569,7 +614,12 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        // Entry point for HttpListener
+        /// <summary>
+        /// Returns a service handler for the provided HTTP request.
+        /// Entry point for HttpListener.
+        /// </summary>
+        /// <param name="httpReq">The HTTP request.</param>
+        /// <returns>The service handler.</returns>
         public ServiceHandler GetServiceHandler(IHttpRequest httpReq)
         {
             var pathInfo = httpReq.PathInfo;
@@ -619,6 +669,11 @@ namespace Emby.Server.Implementations.HttpServer
             };
         }
 
+        /// <summary>
+        /// Gets the route attributes of the provided request type.
+        /// </summary>
+        /// <param name="requestType">The request type.</param>
+        /// <returns></returns>
         public RouteAttribute[] GetRouteAttributes(Type requestType)
         {
             var routes = requestType.GetTypeInfo().GetCustomAttributes<RouteAttribute>(true).ToList();
@@ -651,31 +706,59 @@ namespace Emby.Server.Implementations.HttpServer
             return routes.ToArray();
         }
 
+        /// <summary>
+        /// Returns a function that parses the provided property type.
+        /// </summary>
+        /// <param name="propertyType">the type.</param>
+        /// <returns>The function.</returns>
         public Func<string, object> GetParseFn(Type propertyType)
         {
             return _funcParseFn(propertyType);
         }
 
+        /// <summary>
+        /// Serializes the provided object to JSON.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="stream">The stream.</param>
         public void SerializeToJson(object o, Stream stream)
         {
             _jsonSerializer.SerializeToStream(o, stream);
         }
 
+        /// <summary>
+        /// Serializes the provided object to XML.
+        /// </summary>
+        /// <param name="o">The object.</param>
+        /// <param name="stream">The stream.</param>
         public void SerializeToXml(object o, Stream stream)
         {
             _xmlSerializer.SerializeToStream(o, stream);
         }
 
+        /// <summary>
+        /// Deserializes the provided type from XML.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="stream">The stream.</param>
+        /// <returns>The deserialized object.</returns>
         public Task<object> DeserializeXml(Type type, Stream stream)
         {
             return Task.FromResult(_xmlSerializer.DeserializeFromStream(type, stream));
         }
 
+        /// <summary>
+        /// Deserializes the provided type from JSON.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="stream">The stream.</param>
+        /// <returns>The deserialized object.</returns>
         public Task<object> DeserializeJson(Type type, Stream stream)
         {
             return _jsonSerializer.DeserializeFromStreamAsync(stream, type);
         }
 
+        /// <inheritdoc />
         public Task ProcessWebSocketRequest(HttpContext context)
         {
             return _socketListener.ProcessWebSocketRequest(context);
@@ -706,6 +789,10 @@ namespace Emby.Server.Implementations.HttpServer
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
+        /// <param name="disposing">Whether or not to release managed resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)

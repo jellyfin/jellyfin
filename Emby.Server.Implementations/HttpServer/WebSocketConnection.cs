@@ -137,14 +137,9 @@ namespace Emby.Server.Implementations.HttpServer
             }
             var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
 
-            if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
-            {
-                OnReceiveInternal(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
-            }
-            else
-            {
-                OnReceiveInternal(Encoding.ASCII.GetString(bytes, 0, bytes.Length));
-            }
+            OnReceiveInternal(string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase)
+                ? Encoding.UTF8.GetString(bytes, 0, bytes.Length)
+                : Encoding.ASCII.GetString(bytes, 0, bytes.Length));
         }
 
         private void OnReceiveInternal(string message)
@@ -185,7 +180,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type.</typeparam>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>

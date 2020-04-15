@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +11,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
+    /// <summary>
+    /// A range request writer.
+    /// </summary>
     public class RangeRequestWriter : IAsyncStreamWriter, IHttpResult
     {
         /// <summary>
@@ -28,6 +29,9 @@ namespace Emby.Server.Implementations.HttpServer
         private long RangeLength { get; set; }
         private long TotalContentLength { get; set; }
 
+        /// <summary>
+        /// The OnComplete action.
+        /// </summary>
         public Action OnComplete { get; set; }
         private readonly ILogger _logger;
 
@@ -152,6 +156,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        /// <inheritdoc />
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {
             try
@@ -162,25 +167,20 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                using (var source = SourceStream)
+                await using var source = SourceStream;
+                // If the requested range is "0-", we can optimize by just doing a stream copy
+                if (RangeEnd >= TotalContentLength - 1)
                 {
-                    // If the requested range is "0-", we can optimize by just doing a stream copy
-                    if (RangeEnd >= TotalContentLength - 1)
-                    {
-                        await source.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await CopyToInternalAsync(source, responseStream, RangeLength).ConfigureAwait(false);
-                    }
+                    await source.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
+                }
+                else
+                {
+                    await CopyToInternalAsync(source, responseStream, RangeLength).ConfigureAwait(false);
                 }
             }
             finally
             {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
+                OnComplete?.Invoke();
             }
         }
 
@@ -208,14 +208,19 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        /// <inheritdoc />
         public string ContentType { get; set; }
 
+        /// <inheritdoc />
         public IRequest RequestContext { get; set; }
 
+        /// <inheritdoc />
         public object Response { get; set; }
 
+        /// <inheritdoc />
         public int Status { get; set; }
 
+        /// <inheritdoc />
         public HttpStatusCode StatusCode
         {
             get => (HttpStatusCode)Status;

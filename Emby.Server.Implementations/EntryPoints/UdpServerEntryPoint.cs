@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private UdpServer _udpServer;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
@@ -39,8 +39,6 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             _logger = logger;
             _appHost = appHost;
-
-
         }
 
         /// <inheritdoc />

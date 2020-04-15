@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Globalization;
 using System.IO;
@@ -9,6 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Devices
 {
+    /// <summary>
+    /// A device ID.
+    /// </summary>
     public class DeviceId
     {
         private readonly IApplicationPaths _appPaths;
@@ -87,12 +88,20 @@ namespace Emby.Server.Implementations.Devices
 
         private string _id;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceId"/> class.
+        /// </summary>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
         public DeviceId(IApplicationPaths appPaths, ILoggerFactory loggerFactory)
         {
             _appPaths = appPaths;
             _logger = loggerFactory.CreateLogger("SystemId");
         }
 
-        public string Value => _id ?? (_id = GetDeviceId());
+        /// <summary>
+        /// Gets the value of the device ID.
+        /// </summary>
+        public string Value => _id ??= GetDeviceId();
     }
 }

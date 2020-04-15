@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,12 +18,20 @@ namespace Emby.Server.Implementations.IO
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
+        /// <summary>
+        /// The logger.
+        /// </summary>
         protected ILogger Logger;
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
         private readonly bool _isEnvironmentCaseInsensitive;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ManagedFileSystem"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="applicationPaths">The application paths.</param>
         public ManagedFileSystem(
             ILogger<ManagedFileSystem> logger,
             IApplicationPaths applicationPaths)
@@ -36,6 +42,7 @@ namespace Emby.Server.Implementations.IO
             _isEnvironmentCaseInsensitive = OperatingSystem.Id == OperatingSystemId.Windows;
         }
 
+        /// <inheritdoc />
         public virtual void AddShortcutHandler(IShortcutHandler handler)
         {
             _shortcutHandlers.Add(handler);
@@ -77,6 +84,7 @@ namespace Emby.Server.Implementations.IO
             return handler?.Resolve(filename);
         }
 
+        /// <inheritdoc />
         public virtual string MakeAbsolutePath(string folderPath, string filePath)
         {
             // path is actually a stream
@@ -325,11 +333,21 @@ namespace Emby.Server.Implementations.IO
             return GetCreationTimeUtc(GetFileSystemInfo(path));
         }
 
+        /// <summary>
+        /// Gets the creation time UTC.
+        /// </summary>
+        /// <param name="info">The file info.</param>
+        /// <returns>DateTime.</returns>
         public virtual DateTime GetCreationTimeUtc(FileSystemMetadata info)
         {
             return info.CreationTimeUtc;
         }
 
+        /// <summary>
+        /// Gets the last write time UTC.
+        /// </summary>
+        /// <param name="info">The file info.</param>
+        /// <returns>DateTime.</returns>
         public virtual DateTime GetLastWriteTimeUtc(FileSystemMetadata info)
         {
             return info.LastWriteTimeUtc;
@@ -364,6 +382,7 @@ namespace Emby.Server.Implementations.IO
             return GetLastWriteTimeUtc(GetFileSystemInfo(path));
         }
 
+        /// <inheritdoc />
         public virtual void SetHidden(string path, bool isHidden)
         {
             if (OperatingSystem.Id != OperatingSystemId.Windows)
@@ -388,6 +407,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public virtual void SetReadOnly(string path, bool isReadOnly)
         {
             if (OperatingSystem.Id != OperatingSystemId.Windows)
@@ -412,6 +432,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
             if (OperatingSystem.Id != OperatingSystemId.Windows)
@@ -489,6 +510,7 @@ namespace Emby.Server.Implementations.IO
             File.Copy(temp1, file2, true);
         }
 
+        /// <inheritdoc />
         public virtual bool ContainsSubPath(string parentPath, string path)
         {
             if (string.IsNullOrEmpty(parentPath))
@@ -506,6 +528,7 @@ namespace Emby.Server.Implementations.IO
             return path.IndexOf(parentPath.TrimEnd(separatorChar) + separatorChar, StringComparison.OrdinalIgnoreCase) != -1;
         }
 
+        /// <inheritdoc />
         public virtual bool IsRootPath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -523,6 +546,7 @@ namespace Emby.Server.Implementations.IO
             return true;
         }
 
+        /// <inheritdoc />
         public virtual string NormalizePath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -538,6 +562,7 @@ namespace Emby.Server.Implementations.IO
             return path.TrimEnd(Path.DirectorySeparatorChar);
         }
 
+        /// <inheritdoc />
         public virtual bool AreEqual(string path1, string path2)
         {
             if (path1 == null && path2 == null)
@@ -553,6 +578,7 @@ namespace Emby.Server.Implementations.IO
             return string.Equals(NormalizePath(path1), NormalizePath(path2), StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <inheritdoc />
         public virtual string GetFileNameWithoutExtension(FileSystemMetadata info)
         {
             if (info.IsDirectory)
@@ -563,6 +589,7 @@ namespace Emby.Server.Implementations.IO
             return Path.GetFileNameWithoutExtension(info.FullName);
         }
 
+        /// <inheritdoc />
         public virtual bool IsPathFile(string path)
         {
             // Cannot use Path.IsPathRooted because it returns false under mono when using windows-based paths, e.g. C:\\
@@ -575,12 +602,14 @@ namespace Emby.Server.Implementations.IO
             return true;
         }
 
+        /// <inheritdoc />
         public virtual void DeleteFile(string path)
         {
             SetAttributes(path, false, false);
             File.Delete(path);
         }
 
+        /// <inheritdoc />
         public virtual List<FileSystemMetadata> GetDrives()
         {
             // check for ready state to avoid waiting for drives to timeout
@@ -594,6 +623,7 @@ namespace Emby.Server.Implementations.IO
                 }).ToList();
         }
 
+        /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false)
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -601,11 +631,13 @@ namespace Emby.Server.Implementations.IO
             return ToMetadata(new DirectoryInfo(path).EnumerateDirectories("*", searchOption));
         }
 
+        /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false)
         {
             return GetFiles(path, null, false, recursive);
         }
 
+        /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string> extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -635,6 +667,7 @@ namespace Emby.Server.Implementations.IO
             return ToMetadata(files);
         }
 
+        /// <inheritdoc />
         public virtual IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false)
         {
             var directoryInfo = new DirectoryInfo(path);
@@ -649,17 +682,20 @@ namespace Emby.Server.Implementations.IO
             return infos.Select(GetFileSystemMetadata);
         }
 
+        /// <inheritdoc />
         public virtual IEnumerable<string> GetDirectoryPaths(string path, bool recursive = false)
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             return Directory.EnumerateDirectories(path, "*", searchOption);
         }
 
+        /// <inheritdoc />
         public virtual IEnumerable<string> GetFilePaths(string path, bool recursive = false)
         {
             return GetFilePaths(path, null, false, recursive);
         }
 
+        /// <inheritdoc />
         public virtual IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -689,12 +725,14 @@ namespace Emby.Server.Implementations.IO
             return files;
         }
 
+        /// <inheritdoc />
         public virtual IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             return Directory.EnumerateFileSystemEntries(path, "*", searchOption);
         }
 
+        /// <inheritdoc />
         public virtual void SetExecutable(string path)
         {
             if (OperatingSystem.Id == OperatingSystemId.Darwin)
@@ -705,17 +743,15 @@ namespace Emby.Server.Implementations.IO
 
         private static void RunProcess(string path, string args, string workingDirectory)
         {
-            using (var process = Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 Arguments = args,
                 FileName = path,
                 CreateNoWindow = true,
                 WorkingDirectory = workingDirectory,
                 WindowStyle = ProcessWindowStyle.Normal
-            }))
-            {
-                process.WaitForExit();
-            }
+            });
+            process.WaitForExit();
         }
     }
 }

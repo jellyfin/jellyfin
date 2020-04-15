@@ -21,6 +21,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// Initializes a new instance of the <see cref="StartupWizard"/> class.
         /// </summary>
         /// <param name="appHost">The application host.</param>
+        /// <param name="appConfig">The configuration.</param>
         /// <param name="config">The configuration manager.</param>
         public StartupWizard(IServerApplicationHost appHost, IConfiguration appConfig, IServerConfigurationManager config)
         {

@@ -99,16 +99,13 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    using (var src = SourceStream)
-                    {
-                        await src.CopyToAsync(responseStream).ConfigureAwait(false);
-                    }
+                    await using var src = SourceStream;
+                    await src.CopyToAsync(responseStream).ConfigureAwait(false);
                 }
             }
             catch
             {
                 OnError?.Invoke();
-
                 throw;
             }
             finally

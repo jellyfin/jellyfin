@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +7,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Emby.Server.Implementations.HttpServer
 {
+    /// <summary>
+    /// An HTTP listener.
+    /// </summary>
     public interface IHttpListener : IDisposable
     {
         /// <summary>
@@ -32,8 +33,14 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Stops this instance.
         /// </summary>
+        /// <returns>The task.</returns>
         Task Stop();
 
+        /// <summary>
+        /// Process the web socket request.
+        /// </summary>
+        /// <param name="ctx">The HTTP context.</param>
+        /// <returns>The task.</returns>
         Task ProcessWebSocketRequest(HttpContext ctx);
     }
 }

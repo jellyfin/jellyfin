@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,6 +15,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
+    /// <summary>
+    /// A file writer.
+    /// </summary>
     public class FileWriter : IHttpResult
     {
         private static readonly CultureInfo UsCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
@@ -29,7 +30,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         private readonly IStreamHelper _streamHelper;
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// The _options
@@ -41,6 +41,16 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private List<KeyValuePair<long, long?>> _requestedRanges;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileWriter"/> class.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="contentType">The content type.</param>
+        /// <param name="rangeHeader">The range header.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="streamHelper">The stream helper.</param>
+        /// <exception cref="ArgumentNullException">If contentType is null or empty.</exception>
         public FileWriter(string path, string contentType, string rangeHeader, ILogger logger, IFileSystem fileSystem, IStreamHelper streamHelper)
         {
             if (string.IsNullOrEmpty(contentType))
@@ -49,7 +59,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             _streamHelper = streamHelper;
-            _fileSystem = fileSystem;
 
             Path = path;
             _logger = logger;
@@ -85,14 +94,29 @@ namespace Emby.Server.Implementations.HttpServer
 
         private long RangeLength { get; set; }
 
+        /// <summary>
+        /// The total content length.
+        /// </summary>
         public long TotalContentLength { get; set; }
 
+        /// <summary>
+        /// The OnComplete action.
+        /// </summary>
         public Action OnComplete { get; set; }
 
+        /// <summary>
+        /// The OnError action.
+        /// </summary>
         public Action OnError { get; set; }
 
+        /// <summary>
+        /// The cookies.
+        /// </summary>
         public List<Cookie> Cookies { get; private set; }
 
+        /// <summary>
+        /// The file share.
+        /// </summary>
         public FileShare FileShare { get; set; }
 
         /// <summary>
@@ -101,6 +125,9 @@ namespace Emby.Server.Implementations.HttpServer
         /// <value>The options.</value>
         public IDictionary<string, string> Headers => _options;
 
+        /// <summary>
+        /// The path.
+        /// </summary>
         public string Path { get; set; }
 
         /// <summary>
@@ -143,14 +170,19 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        /// <inheritdoc />
         public string ContentType { get; set; }
 
+        /// <inheritdoc />
         public IRequest RequestContext { get; set; }
 
+        /// <inheritdoc />
         public object Response { get; set; }
 
+        /// <inheritdoc />
         public int Status { get; set; }
 
+        /// <inheritdoc />
         public HttpStatusCode StatusCode
         {
             get => (HttpStatusCode)Status;
@@ -186,6 +218,12 @@ namespace Emby.Server.Implementations.HttpServer
             _logger.LogDebug("Setting range response values for {0}. RangeRequest: {1} Content-Length: {2}, Content-Range: {3}", Path, RangeHeader, lengthString, rangeString);
         }
 
+        /// <summary>
+        /// Writes the given response.
+        /// </summary>
+        /// <param name="response">The response.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The completed task.</returns>
         public async Task WriteToAsync(HttpResponse response, CancellationToken cancellationToken)
         {
             try
@@ -200,7 +238,7 @@ namespace Emby.Server.Implementations.HttpServer
                 var offset = RangeStart;
                 var count = RangeLength;
 
-                if (string.IsNullOrWhiteSpace(RangeHeader) || RangeStart <= 0 && RangeEnd >= TotalContentLength - 1)
+                if (string.IsNullOrWhiteSpace(RangeHeader) || (RangeStart <= 0 && RangeEnd >= TotalContentLength - 1))
                 {
                     var extension = System.IO.Path.GetExtension(path);
 
@@ -221,6 +259,16 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        /// <summary>
+        /// Transmits the provided file.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="offset">The offset.</param>
+        /// <param name="count">The count.</param>
+        /// <param name="fileShare">The fileshare.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The completed task.</returns>
         public async Task TransmitFile(Stream stream, string path, long offset, long count, FileShare fileShare, CancellationToken cancellationToken)
         {
             var fileOptions = FileOptions.SequentialScan;
@@ -231,21 +279,19 @@ namespace Emby.Server.Implementations.HttpServer
                 fileOptions |= FileOptions.Asynchronous;
             }
 
-            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, fileShare, IODefaults.FileStreamBufferSize, fileOptions))
+            await using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, fileShare, IODefaults.FileStreamBufferSize, fileOptions);
+            if (offset > 0)
             {
-                if (offset > 0)
-                {
-                    fs.Position = offset;
-                }
+                fs.Position = offset;
+            }
 
-                if (count > 0)
-                {
-                    await _streamHelper.CopyToAsync(fs, stream, count, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    await fs.CopyToAsync(stream, IODefaults.CopyToBufferSize, cancellationToken).ConfigureAwait(false);
-                }
+            if (count > 0)
+            {
+                await _streamHelper.CopyToAsync(fs, stream, count, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await fs.CopyToAsync(stream, IODefaults.CopyToBufferSize, cancellationToken).ConfigureAwait(false);
             }
         }
     }

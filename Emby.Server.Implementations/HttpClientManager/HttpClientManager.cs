@@ -105,8 +105,6 @@ namespace Emby.Server.Implementations.HttpClientManager
                 case CompressionMethods.Gzip:
                     request.Headers.Add(HeaderNames.AcceptEncoding, "gzip");
                     break;
-                default:
-                    break;
             }
 
             if (options.EnableKeepAlive)
@@ -215,18 +213,16 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             Directory.CreateDirectory(Path.GetDirectoryName(responseCachePath));
 
-            using (var fileStream = new FileStream(
+            await using var fileStream = new FileStream(
                 responseCachePath,
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
                 IODefaults.FileStreamBufferSize,
-                true))
-            {
-                await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
+                true);
+            await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
 
-                response.Content.Position = 0;
-            }
+            response.Content.Position = 0;
         }
 
         private async Task<HttpResponseInfo> SendAsyncInternal(HttpRequestOptions options, HttpMethod httpMethod)
@@ -298,18 +294,15 @@ namespace Emby.Server.Implementations.HttpClientManager
         {
             var index = url.IndexOf("://", StringComparison.OrdinalIgnoreCase);
 
-            if (index != -1)
+            if (index == -1)
             {
-                url = url.Substring(index + 3);
-                var host = url.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(host))
-                {
-                    return host;
-                }
+                return url;
             }
 
-            return url;
+            url = url.Substring(index + 3);
+            var host = url.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+
+            return string.IsNullOrWhiteSpace(host) ? url : host;
         }
 
         private async Task EnsureSuccessStatusCode(HttpResponseMessage response, HttpRequestOptions options)

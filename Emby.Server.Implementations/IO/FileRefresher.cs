@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
+    /// <summary>
+    ///
+    /// </summary>
     public class FileRefresher : IDisposable
     {
         private readonly ILogger _logger;
@@ -22,6 +23,13 @@ namespace Emby.Server.Implementations.IO
         private readonly object _timerLock = new object();
         private Timer _timer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileRefresher"/> class.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logger">The logger.</param>
         public FileRefresher(string path, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger logger)
         {
             logger.LogDebug("New file refresher created for {0}", path);
@@ -33,8 +41,14 @@ namespace Emby.Server.Implementations.IO
             AddPath(path);
         }
 
+        /// <summary>
+        /// An event that fires when the refresh is completed.
+        /// </summary>
         public event EventHandler<EventArgs> Completed;
 
+        /// <summary>
+        /// Gets the path of the file.
+        /// </summary>
         public string Path { get; private set; }
 
         private void AddAffectedPath(string path)
@@ -50,6 +64,11 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <summary>
+        /// Adds a specified path to the file refresher.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <exception cref="ArgumentNullException">If the path is null or empty.</exception>
         public void AddPath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -65,6 +84,9 @@ namespace Emby.Server.Implementations.IO
             RestartTimer();
         }
 
+        /// <summary>
+        /// Restarts the timer.
+        /// </summary>
         public void RestartTimer()
         {
             if (_disposed)
@@ -90,6 +112,11 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <summary>
+        /// Resets the provided file at the given path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="affectedFile">The affected file.</param>
         public void ResetPath(string path, string affectedFile)
         {
             lock (_timerLock)
@@ -214,6 +241,8 @@ namespace Emby.Server.Implementations.IO
         }
 
         private bool _disposed;
+
+        /// <inheritdoc />
         public void Dispose()
         {
             _disposed = true;

@@ -1,22 +1,29 @@
-#pragma warning disable CS1591
-
 using System;
 using System.IO;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.IO
 {
+    /// <summary>
+    /// A shortcut handler for .mblink files.
+    /// </summary>
     public class MbLinkShortcutHandler : IShortcutHandler
     {
         private readonly IFileSystem _fileSystem;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MbLinkShortcutHandler"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The filesystem.</param>
         public MbLinkShortcutHandler(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
         }
 
+        /// <inheritdoc />
         public string Extension => ".mblink";
 
+        /// <inheritdoc />
         public string Resolve(string shortcutPath)
         {
             if (string.IsNullOrEmpty(shortcutPath))
@@ -34,6 +41,7 @@ namespace Emby.Server.Implementations.IO
             return null;
         }
 
+        /// <inheritdoc />
         public void Create(string shortcutPath, string targetPath)
         {
             if (string.IsNullOrEmpty(shortcutPath))

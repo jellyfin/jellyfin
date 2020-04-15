@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,22 +10,30 @@ using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
+    /// <inheritdoc />
     public class AuthorizationContext : IAuthorizationContext
     {
         private readonly IAuthenticationRepository _authRepo;
         private readonly IUserManager _userManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthorizationContext"/> class.
+        /// </summary>
+        /// <param name="authRepo">The authorization repository.</param>
+        /// <param name="userManager">The user manager.</param>
         public AuthorizationContext(IAuthenticationRepository authRepo, IUserManager userManager)
         {
             _authRepo = authRepo;
             _userManager = userManager;
         }
 
+        /// <inheritdoc />
         public AuthorizationInfo GetAuthorizationInfo(object requestContext)
         {
             return GetAuthorizationInfo((IRequest)requestContext);
         }
 
+        /// <inheritdoc />
         public AuthorizationInfo GetAuthorizationInfo(IRequest requestContext)
         {
             if (requestContext.Items.TryGetValue("AuthorizationInfo", out var cached))
@@ -116,7 +122,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     {
                         info.Device = tokenInfo.DeviceName;
                     }
-
                     else if (!string.Equals(info.Device, tokenInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
                     {
                         if (allowTokenInfoUpdate)
@@ -161,6 +166,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         _authRepo.Update(tokenInfo);
                     }
                 }
+
                 httpReq.Items["OriginalAuthenticationInfo"] = tokenInfo;
             }
 
@@ -236,12 +242,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         private static string NormalizeValue(string value)
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                return value;
-            }
-
-            return WebUtility.HtmlEncode(value);
+            return string.IsNullOrEmpty(value) ? value : WebUtility.HtmlEncode(value);
         }
     }
 }
