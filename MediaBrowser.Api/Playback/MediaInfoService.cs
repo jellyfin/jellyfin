@@ -521,10 +521,7 @@ namespace MediaBrowser.Api.Playback
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
                         mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                        if (!allowAudioStreamCopy)
-                        {
-                            mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
-                        }
+                        mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         
