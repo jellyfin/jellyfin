@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.HttpServer
         // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
         private const string HttpDateFormat = "ddd, dd MMM yyyy HH:mm:ss \"GMT\"";
         // We specifically use en-US culture because both day of week and month names must be in it9
-        private static readonly CultureInfo _enUSculture = CultureInfo.CreateSpecificCulture("en-US");
+        private static readonly CultureInfo _enUSculture = new CultureInfo("en-US", false);
 
         /// <summary>
         /// The logger.
