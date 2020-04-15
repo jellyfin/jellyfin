@@ -27,7 +27,6 @@ namespace Emby.Server.Implementations.Activity
 {
     /// <summary>
     /// The activity log entry point.
-    /// <see cref="IServerEntryPoint"/>.
     /// </summary>
     public sealed class ActivityLogEntryPoint : IServerEntryPoint
     {

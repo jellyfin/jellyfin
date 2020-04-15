@@ -21,7 +21,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Collections
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// The collection manager.
+    /// </summary>
     public class CollectionManager : ICollectionManager
     {
         private readonly ILibraryManager _libraryManager;

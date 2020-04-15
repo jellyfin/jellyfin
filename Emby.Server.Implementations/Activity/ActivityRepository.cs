@@ -13,7 +13,9 @@ using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Activity
 {
-    /// <inheritdoc cref="IActivityRepository" />
+    /// <summary>
+    /// The activity log repository.
+    /// </summary>
     public class ActivityRepository : BaseSqliteRepository, IActivityRepository
     {
         private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));

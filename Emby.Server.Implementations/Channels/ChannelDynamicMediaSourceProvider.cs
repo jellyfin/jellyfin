@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
@@ -30,7 +31,7 @@ namespace Emby.Server.Implementations.Channels
         {
             return item.SourceType == SourceType.Channel
                 ? _channelManager.GetDynamicMediaSources(item, cancellationToken)
-                : Task.FromResult<IEnumerable<MediaSourceInfo>>(new List<MediaSourceInfo>());
+                : Task.FromResult(Enumerable.Empty<MediaSourceInfo>());
         }
 
         /// <inheritdoc />

@@ -6,7 +6,9 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Activity
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// The activity log manager.
+    /// </summary>
     public class ActivityManager : IActivityManager
     {
         /// <inheritdoc />
