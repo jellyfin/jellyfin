@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.Syncplay
 {
     /// <summary>
-    /// Enum SyncplayRequestType
+    /// Enum PlaybackRequestType
     /// </summary>
-    public enum SyncplayRequestType
+    public enum PlaybackRequestType
     {
         /// <summary>
         /// A user is requesting a play command for the group.

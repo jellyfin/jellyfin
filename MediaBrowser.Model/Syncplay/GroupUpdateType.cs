@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.Syncplay
 {
     /// <summary>
-    /// Enum SyncplayGroupUpdateType
+    /// Enum GroupUpdateType
     /// </summary>
-    public enum SyncplayGroupUpdateType
+    public enum GroupUpdateType
     {
         /// <summary>
         /// The user-joined update. Tells members of a group about a new user.

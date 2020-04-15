@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.Syncplay
 {
     /// <summary>
-    /// Class SyncplayGroupUpdate.
+    /// Class GroupUpdate.
     /// </summary>
-    public class SyncplayGroupUpdate<T>
+    public class GroupUpdate<T>
     {
         /// <summary>
         /// Gets or sets the group identifier.
@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Syncplay
         /// Gets or sets the update type.
         /// </summary>
         /// <value>The update type.</value>
-        public SyncplayGroupUpdateType Type { get; set; }
+        public GroupUpdateType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the data.

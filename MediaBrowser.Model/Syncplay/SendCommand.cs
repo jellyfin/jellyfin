@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.Syncplay
 {
     /// <summary>
-    /// Class SyncplayCommand.
+    /// Class SendCommand.
     /// </summary>
-    public class SyncplayCommand
+    public class SendCommand
     {
         /// <summary>
         /// Gets or sets the group identifier.
@@ -27,6 +27,12 @@ namespace MediaBrowser.Model.Syncplay
         /// Gets or sets the command.
         /// </summary>
         /// <value>The command.</value>
-        public SyncplayCommandType Command { get; set; }
+        public SendCommandType Command { get; set; }
+
+        /// <summary>
+        /// Gets or sets the UTC time when this command has been emitted.
+        /// </summary>
+        /// <value>The UTC time when this command has been emitted.</value>
+        public string EmittedAt { get; set; }
     }
 }

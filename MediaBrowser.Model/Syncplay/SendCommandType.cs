@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.Syncplay
 {
     /// <summary>
-    /// Enum SyncplayCommandType.
+    /// Enum SendCommandType.
     /// </summary>
-    public enum SyncplayCommandType
+    public enum SendCommandType
     {
         /// <summary>
         /// The play command. Instructs users to start playback.

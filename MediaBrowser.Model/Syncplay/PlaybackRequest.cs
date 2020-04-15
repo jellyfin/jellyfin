@@ -3,15 +3,15 @@ using System;
 namespace MediaBrowser.Model.Syncplay
 {
     /// <summary>
-    /// Class SyncplayRequestInfo.
+    /// Class PlaybackRequest.
     /// </summary>
-    public class SyncplayRequestInfo
+    public class PlaybackRequest
     {
         /// <summary>
         /// Gets or sets the request type.
         /// </summary>
         /// <value>The request type.</value>
-        public SyncplayRequestType Type;
+        public PlaybackRequestType Type;
 
         /// <summary>
         /// Gets or sets when the request has been made by the client.

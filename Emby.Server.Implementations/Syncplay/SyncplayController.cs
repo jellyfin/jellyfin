@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.Syncplay
             }
         }
 
-        private Task SendGroupUpdate<T>(SessionInfo from, BroadcastType type, SyncplayGroupUpdate<T> message)
+        private Task SendGroupUpdate<T>(SessionInfo from, BroadcastType type, GroupUpdate<T> message)
         {
             IEnumerable<Task> GetTasks()
             {
@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.Syncplay
             return Task.WhenAll(GetTasks());
         }
 
-        private Task SendCommand(SessionInfo from, BroadcastType type, SyncplayCommand message)
+        private Task SendCommand(SessionInfo from, BroadcastType type, SendCommand message)
         {
             IEnumerable<Task> GetTasks()
             {
@@ -157,18 +157,20 @@ namespace Emby.Server.Implementations.Syncplay
             return Task.WhenAll(GetTasks());
         }
 
-        private SyncplayCommand NewSyncplayCommand(SyncplayCommandType type) {
-            var command = new SyncplayCommand();
+        private SendCommand NewSyncplayCommand(SendCommandType type)
+        {
+            var command = new SendCommand();
             command.GroupId = _group.GroupId.ToString();
             command.Command = type;
             command.PositionTicks = _group.PositionTicks;
             command.When = _group.LastActivity.ToUniversalTime().ToString("o");
+            command.EmittedAt = DateTime.UtcNow.ToUniversalTime().ToString("o");
             return command;
         }
 
-        private SyncplayGroupUpdate<T> NewSyncplayGroupUpdate<T>(SyncplayGroupUpdateType type, T data)
+        private GroupUpdate<T> NewSyncplayGroupUpdate<T>(GroupUpdateType type, T data)
         {
-            var command = new SyncplayGroupUpdate<T>();
+            var command = new GroupUpdate<T>();
             command.GroupId = _group.GroupId.ToString();
             command.Type = type;
             command.Data = data;
@@ -186,35 +188,37 @@ namespace Emby.Server.Implementations.Syncplay
             _group.PositionTicks = session.PlayState.PositionTicks ??= 0;
             _group.LastActivity = DateTime.UtcNow;
 
-            var updateSession = NewSyncplayGroupUpdate(SyncplayGroupUpdateType.GroupJoined, DateTime.UtcNow.ToUniversalTime().ToString("o"));
+            var updateSession = NewSyncplayGroupUpdate(GroupUpdateType.GroupJoined, DateTime.UtcNow.ToUniversalTime().ToString("o"));
             SendGroupUpdate(session, BroadcastType.SingleSession, updateSession);
-            var pauseCommand = NewSyncplayCommand(SyncplayCommandType.Pause);
+            var pauseCommand = NewSyncplayCommand(SendCommandType.Pause);
             SendCommand(session, BroadcastType.SingleSession, pauseCommand);
         }
 
         /// <inheritdoc />
-        public void SessionJoin(SessionInfo session)
+        public void SessionJoin(SessionInfo session, JoinGroupRequest request)
         {
-            if (session.NowPlayingItem != null && session.NowPlayingItem.Id.Equals(_group.PlayingItem.Id))
+            if (session.NowPlayingItem != null &&
+                session.NowPlayingItem.Id.Equals(_group.PlayingItem.Id) &&
+                request.PlayingItemId.Equals(_group.PlayingItem.Id))
             {
                 _group.AddSession(session);
                 _syncplayManager.MapSessionToGroup(session, this);
 
-                var updateSession = NewSyncplayGroupUpdate(SyncplayGroupUpdateType.GroupJoined, _group.PositionTicks);
+                var updateSession = NewSyncplayGroupUpdate(GroupUpdateType.GroupJoined, DateTime.UtcNow.ToUniversalTime().ToString("o"));
                 SendGroupUpdate(session, BroadcastType.SingleSession, updateSession);
 
-                var updateOthers = NewSyncplayGroupUpdate(SyncplayGroupUpdateType.UserJoined, session.UserName);
+                var updateOthers = NewSyncplayGroupUpdate(GroupUpdateType.UserJoined, session.UserName);
                 SendGroupUpdate(session, BroadcastType.AllExceptSession, updateOthers);
 
                 // Client join and play, syncing will happen client side
                 if (!_group.IsPaused)
                 {
-                    var playCommand = NewSyncplayCommand(SyncplayCommandType.Play);
+                    var playCommand = NewSyncplayCommand(SendCommandType.Play);
                     SendCommand(session, BroadcastType.SingleSession, playCommand);
                 }
                 else
                 {
-                    var pauseCommand = NewSyncplayCommand(SyncplayCommandType.Pause);
+                    var pauseCommand = NewSyncplayCommand(SendCommandType.Pause);
                     SendCommand(session, BroadcastType.SingleSession, pauseCommand);
                 }
             }
@@ -223,7 +227,7 @@ namespace Emby.Server.Implementations.Syncplay
                 var playRequest = new PlayRequest();
                 playRequest.ItemIds = new Guid[] { _group.PlayingItem.Id };
                 playRequest.StartPositionTicks = _group.PositionTicks;
-                var update = NewSyncplayGroupUpdate(SyncplayGroupUpdateType.PrepareSession, playRequest);
+                var update = NewSyncplayGroupUpdate(GroupUpdateType.PrepareSession, playRequest);
                 SendGroupUpdate(session, BroadcastType.SingleSession, update);
             }
         }
@@ -234,17 +238,17 @@ namespace Emby.Server.Implementations.Syncplay
             _group.RemoveSession(session);
             _syncplayManager.UnmapSessionFromGroup(session, this);
 
-            var updateSession = NewSyncplayGroupUpdate(SyncplayGroupUpdateType.GroupLeft, _group.PositionTicks);
+            var updateSession = NewSyncplayGroupUpdate(GroupUpdateType.GroupLeft, _group.PositionTicks);
             SendGroupUpdate(session, BroadcastType.SingleSession, updateSession);
 
-            var updateOthers = NewSyncplayGroupUpdate(SyncplayGroupUpdateType.UserLeft, session.UserName);
+            var updateOthers = NewSyncplayGroupUpdate(GroupUpdateType.UserLeft, session.UserName);
             SendGroupUpdate(session, BroadcastType.AllExceptSession, updateOthers);
         }
 
         /// <inheritdoc />
-        public void HandleRequest(SessionInfo session, SyncplayRequestInfo request)
+        public void HandleRequest(SessionInfo session, PlaybackRequest request)
         {
-            if (request.Type.Equals(SyncplayRequestType.Play))
+            if (request.Type.Equals(PlaybackRequestType.Play))
             {
                 if (_group.IsPaused)
                 {
@@ -256,17 +260,17 @@ namespace Emby.Server.Implementations.Syncplay
                         delay
                     );
 
-                    var command = NewSyncplayCommand(SyncplayCommandType.Play);
+                    var command = NewSyncplayCommand(SendCommandType.Play);
                     SendCommand(session, BroadcastType.AllGroup, command);
                 }
                 else
                 {
                     // Client got lost
-                    var command = NewSyncplayCommand(SyncplayCommandType.Play);
+                    var command = NewSyncplayCommand(SendCommandType.Play);
                     SendCommand(session, BroadcastType.SingleSession, command);
                 }
             }
-            else if (request.Type.Equals(SyncplayRequestType.Pause))
+            else if (request.Type.Equals(PlaybackRequestType.Pause))
             {
                 if (!_group.IsPaused)
                 {
@@ -276,16 +280,16 @@ namespace Emby.Server.Implementations.Syncplay
                     _group.LastActivity = currentTime;
                     _group.PositionTicks += elapsedTime.Ticks > 0 ? elapsedTime.Ticks : 0;
 
-                    var command = NewSyncplayCommand(SyncplayCommandType.Pause);
+                    var command = NewSyncplayCommand(SendCommandType.Pause);
                     SendCommand(session, BroadcastType.AllGroup, command);
                 }
                 else
                 {
-                    var command = NewSyncplayCommand(SyncplayCommandType.Pause);
+                    var command = NewSyncplayCommand(SendCommandType.Pause);
                     SendCommand(session, BroadcastType.SingleSession, command);
                 }
             }
-            else if (request.Type.Equals(SyncplayRequestType.Seek))
+            else if (request.Type.Equals(PlaybackRequestType.Seek))
             {
                 // Sanitize PositionTicks
                 var ticks = request.PositionTicks ??= 0;
@@ -300,11 +304,11 @@ namespace Emby.Server.Implementations.Syncplay
                 _group.PositionTicks = ticks;
                 _group.LastActivity = DateTime.UtcNow;
 
-                var command = NewSyncplayCommand(SyncplayCommandType.Seek);
+                var command = NewSyncplayCommand(SendCommandType.Seek);
                 SendCommand(session, BroadcastType.AllGroup, command);
             }
             // TODO: client does not implement this yet
-            else if (request.Type.Equals(SyncplayRequestType.Buffering))
+            else if (request.Type.Equals(PlaybackRequestType.Buffering))
             {
                 if (!_group.IsPaused)
                 {
@@ -317,20 +321,20 @@ namespace Emby.Server.Implementations.Syncplay
                     _group.SetBuffering(session, true);
 
                     // Send pause command to all non-buffering sessions
-                    var command = NewSyncplayCommand(SyncplayCommandType.Pause);
+                    var command = NewSyncplayCommand(SendCommandType.Pause);
                     SendCommand(session, BroadcastType.AllReady, command);
 
-                    var updateOthers = NewSyncplayGroupUpdate(SyncplayGroupUpdateType.GroupWait, session.UserName);
+                    var updateOthers = NewSyncplayGroupUpdate(GroupUpdateType.GroupWait, session.UserName);
                     SendGroupUpdate(session, BroadcastType.AllExceptSession, updateOthers);
                 }
                 else
                 {
-                    var command = NewSyncplayCommand(SyncplayCommandType.Pause);
+                    var command = NewSyncplayCommand(SendCommandType.Pause);
                     SendCommand(session, BroadcastType.SingleSession, command);
                 }
             }
             // TODO: client does not implement this yet
-            else if (request.Type.Equals(SyncplayRequestType.BufferingComplete))
+            else if (request.Type.Equals(PlaybackRequestType.BufferingComplete))
             {
                 if (_group.IsPaused)
                 {
@@ -344,7 +348,7 @@ namespace Emby.Server.Implementations.Syncplay
                         var clientPosition = TimeSpan.FromTicks(request.PositionTicks ??= 0) + elapsedTime;
                         var delay = _group.PositionTicks - clientPosition.Ticks;
 
-                        var command = NewSyncplayCommand(SyncplayCommandType.Pause);
+                        var command = NewSyncplayCommand(SendCommandType.Pause);
                         command.When = currentTime.AddMilliseconds(
                             delay
                         ).ToUniversalTime().ToString("o");
@@ -367,7 +371,7 @@ namespace Emby.Server.Implementations.Syncplay
                             _group.LastActivity = currentTime.AddMilliseconds(
                                 delay
                             );
-                            var command = NewSyncplayCommand(SyncplayCommandType.Play);
+                            var command = NewSyncplayCommand(SendCommandType.Play);
                             SendCommand(session, BroadcastType.AllExceptSession, command);
                         }
                         else
@@ -380,7 +384,7 @@ namespace Emby.Server.Implementations.Syncplay
                                 delay
                             );
 
-                            var command = NewSyncplayCommand(SyncplayCommandType.Play);
+                            var command = NewSyncplayCommand(SendCommandType.Play);
                             SendCommand(session, BroadcastType.AllGroup, command);
                         }
                     }                    
@@ -388,17 +392,17 @@ namespace Emby.Server.Implementations.Syncplay
                 else
                 {
                     // Make sure client has latest group state
-                    var command = NewSyncplayCommand(SyncplayCommandType.Play);
+                    var command = NewSyncplayCommand(SendCommandType.Play);
                     SendCommand(session, BroadcastType.SingleSession, command);
                 }
             }
-            else if (request.Type.Equals(SyncplayRequestType.KeepAlive))
+            else if (request.Type.Equals(PlaybackRequestType.KeepAlive))
             {
                 _group.UpdatePing(session, request.Ping ??= _group.DefaulPing);
 
-                var keepAlive = new SyncplayGroupUpdate<string>();
+                var keepAlive = new GroupUpdate<string>();
                 keepAlive.GroupId = _group.GroupId.ToString();
-                keepAlive.Type = SyncplayGroupUpdateType.KeepAlive;
+                keepAlive.Type = GroupUpdateType.KeepAlive;
                 SendGroupUpdate(session, BroadcastType.SingleSession, keepAlive);
             }
         }

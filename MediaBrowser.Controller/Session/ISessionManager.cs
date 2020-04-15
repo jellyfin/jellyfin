@@ -148,7 +148,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncplayCommand(string sessionId, SyncplayCommand command, CancellationToken cancellationToken);
+        Task SendSyncplayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the SyncplayGroupUpdate.
@@ -157,7 +157,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="command">The group update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncplayGroupUpdate<T>(string sessionId, SyncplayGroupUpdate<T> command, CancellationToken cancellationToken);
+        Task SendSyncplayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.

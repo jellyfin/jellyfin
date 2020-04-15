@@ -1156,7 +1156,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task SendSyncplayCommand(string sessionId, SyncplayCommand command, CancellationToken cancellationToken)
+        public async Task SendSyncplayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken)
         {
             CheckDisposed();
             var session = GetSessionToRemoteControl(sessionId);
@@ -1164,7 +1164,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task SendSyncplayGroupUpdate<T>(string sessionId, SyncplayGroupUpdate<T> command, CancellationToken cancellationToken)
+        public async Task SendSyncplayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken)
         {
             CheckDisposed();
             var session = GetSessionToRemoteControl(sessionId);

@@ -21,7 +21,8 @@ namespace MediaBrowser.Controller.Syncplay
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="groupId">The group id.</param>
-        void JoinGroup(SessionInfo session, string groupId);
+        /// <param name="request">The request.</param>
+        void JoinGroup(SessionInfo session, string groupId, JoinGroupRequest request);
 
         /// <summary>
         /// Removes the session from a group.
@@ -41,7 +42,7 @@ namespace MediaBrowser.Controller.Syncplay
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="request">The request.</param>
-        void HandleRequest(SessionInfo session, SyncplayRequestInfo request);
+        void HandleRequest(SessionInfo session, PlaybackRequest request);
 
         /// <summary>
         /// Maps a session to a group.

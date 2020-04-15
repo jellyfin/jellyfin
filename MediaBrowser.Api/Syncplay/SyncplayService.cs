@@ -31,6 +31,13 @@ namespace MediaBrowser.Api.Syncplay
         /// <value>The Group id to join.</value>
         [ApiMember(Name = "GroupId", Description = "Group Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the playing item id.
+        /// </summary>
+        /// <value>The client's currently playing item id.</value>
+        [ApiMember(Name = "PlayingItemId", Description = "Client's playing item id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string PlayingItemId { get; set; }
     }
 
     [Route("/Syncplay/{SessionId}/LeaveGroup", "POST", Summary = "Leave joined Syncplay group")]
@@ -160,7 +167,21 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayJoinGroup request)
         {
             var currentSession = GetSession(_sessionContext);
-            _syncplayManager.JoinGroup(currentSession, request.GroupId);
+            var joinRequest = new JoinGroupRequest();
+            joinRequest.GroupId = Guid.Parse(request.GroupId);
+            try
+            {
+                joinRequest.PlayingItemId = Guid.Parse(request.PlayingItemId);
+            }
+            catch (ArgumentNullException)
+            {
+                // Do nothing
+            }
+            catch (FormatException)
+            {
+                // Do nothing
+            }
+            _syncplayManager.JoinGroup(currentSession, request.GroupId, joinRequest);
         }
 
         /// <summary>
@@ -191,8 +212,8 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayPlayRequest request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new SyncplayRequestInfo();
-            syncplayRequest.Type = SyncplayRequestType.Play;
+            var syncplayRequest = new PlaybackRequest();
+            syncplayRequest.Type = PlaybackRequestType.Play;
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
 
@@ -203,8 +224,8 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayPauseRequest request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new SyncplayRequestInfo();
-            syncplayRequest.Type = SyncplayRequestType.Pause;
+            var syncplayRequest = new PlaybackRequest();
+            syncplayRequest.Type = PlaybackRequestType.Pause;
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
 
@@ -215,8 +236,8 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplaySeekRequest request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new SyncplayRequestInfo();
-            syncplayRequest.Type = SyncplayRequestType.Seek;
+            var syncplayRequest = new PlaybackRequest();
+            syncplayRequest.Type = PlaybackRequestType.Seek;
             syncplayRequest.PositionTicks = request.PositionTicks;
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
@@ -228,8 +249,8 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayBufferingRequest request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new SyncplayRequestInfo();
-            syncplayRequest.Type = request.Resume ? SyncplayRequestType.BufferingComplete : SyncplayRequestType.Buffering;
+            var syncplayRequest = new PlaybackRequest();
+            syncplayRequest.Type = request.Resume ? PlaybackRequestType.BufferingComplete : PlaybackRequestType.Buffering;
             syncplayRequest.When = DateTime.Parse(request.When);
             syncplayRequest.PositionTicks = request.PositionTicks;
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
@@ -242,8 +263,8 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayKeepAlive request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new SyncplayRequestInfo();
-            syncplayRequest.Type = SyncplayRequestType.KeepAlive;
+            var syncplayRequest = new PlaybackRequest();
+            syncplayRequest.Type = PlaybackRequestType.KeepAlive;
             syncplayRequest.Ping = Convert.ToInt64(request.Ping);
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
