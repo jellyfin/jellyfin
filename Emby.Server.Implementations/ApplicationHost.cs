@@ -789,7 +789,16 @@ namespace Emby.Server.Implementations
             DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => LiveTvManager);
             serviceCollection.AddSingleton(DtoService);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
+            ChannelManager = new ChannelManager(
+                UserManager,
+                DtoService,
+                LibraryManager,
+                LoggerFactory.CreateLogger<ChannelManager>(),
+                ServerConfigurationManager,
+                FileSystemManager,
+                UserDataManager,
+                JsonSerializer,
+                ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
             SessionManager = new SessionManager(
@@ -979,7 +988,7 @@ namespace Emby.Server.Implementations
 
         private IActivityRepository GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager);
+            var repo = new ActivityRepository(LoggerFactory.CreateLogger<ActivityRepository>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager);
 
             repo.Initialize();
 
