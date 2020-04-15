@@ -74,6 +74,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
@@ -856,6 +857,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<EncodingHelper>();
 
             serviceCollection.AddSingleton(typeof(IAttachmentExtractor), typeof(MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor));
+
+            serviceCollection.AddSingleton(typeof(IQuickConnect), typeof(QuickConnect.QuickConnectManager));
 
             _displayPreferencesRepository.Initialize();
 

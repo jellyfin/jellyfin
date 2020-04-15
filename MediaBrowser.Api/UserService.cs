@@ -117,6 +117,17 @@ namespace MediaBrowser.Api
         public string Pw { get; set; }
     }
 
+    [Route("/Users/AuthenticateWithQuickConnect", "POST", Summary = "Authenticates a user")]
+    public class AuthenticateUserQuickConnect : IReturn<AuthenticationResult>
+    {
+        /// <summary>
+        /// Gets or sets the token.
+        /// </summary>
+        /// <value>The token</value>
+        [ApiMember(Name = "Token", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Token { get; set; }
+    }
+
     /// <summary>
     /// Class UpdateUserPassword
     /// </summary>
@@ -420,6 +431,29 @@ namespace MediaBrowser.Api
                     RemoteEndPoint = Request.RemoteIp,
                     Username = request.Username
                 }).ConfigureAwait(false);
+
+                return ToOptimizedResult(result);
+            }
+            catch (SecurityException e)
+            {
+                // rethrow adding IP address to message
+                throw new SecurityException($"[{Request.RemoteIp}] {e.Message}");
+            }
+        }
+
+        public async Task<object> Post(AuthenticateUserQuickConnect request)
+        {
+            var auth = _authContext.GetAuthorizationInfo(Request);
+
+            try
+            {
+                var result = await _sessionMananger.AuthenticateQuickConnect(new AuthenticationRequest
+                {
+                    App = auth.Client,
+                    AppVersion = auth.Version,
+                    DeviceId = auth.DeviceId,
+                    DeviceName = auth.Device
+                }, request.Token).ConfigureAwait(false);
 
                 return ToOptimizedResult(result);
             }
