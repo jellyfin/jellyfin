@@ -73,6 +73,7 @@ namespace Jellyfin.Server.Extensions
                 .AddApplicationPart(typeof(StartupController).Assembly)
                 .AddJsonOptions(options =>
                 {
+                    // Setting the naming policy to null leaves the property names as-is when serializing objects to JSON.
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
                 })
                 .AddControllersAsServices();
