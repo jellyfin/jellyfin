@@ -79,8 +79,10 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public object GetRedirectResult(string url)
         {
-            var responseHeaders = new Dictionary<string, string>();
-            responseHeaders[HeaderNames.Location] = url;
+            var responseHeaders = new Dictionary<string, string>
+            {
+                [HeaderNames.Location] = url
+            };
 
             var result = new HttpResult(Array.Empty<byte>(), "text/plain", HttpStatusCode.Redirect);
 
@@ -368,7 +370,6 @@ namespace Emby.Server.Implementations.HttpServer
             using var ms = new MemoryStream();
             using var zipStream = new DeflateStream(ms, CompressionMode.Compress);
             zipStream.Write(bytes, 0, bytes.Length);
-            zipStream.Dispose();
 
             return ms.ToArray();
         }
@@ -378,7 +379,6 @@ namespace Emby.Server.Implementations.HttpServer
             using var ms = new MemoryStream();
             using var zipStream = new GZipStream(ms, CompressionMode.Compress);
             zipStream.Write(buffer, 0, buffer.Length);
-            zipStream.Dispose();
 
             return ms.ToArray();
         }
@@ -562,7 +562,6 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (NotSupportedException)
                 {
-
                 }
             }
 

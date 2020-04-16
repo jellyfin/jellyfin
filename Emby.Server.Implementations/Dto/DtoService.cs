@@ -978,7 +978,6 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-
                     }).Where(i => i != null).ToArray();
             }
 
