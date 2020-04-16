@@ -111,14 +111,6 @@ namespace MediaBrowser.Api.Syncplay
         public double Ping { get; set; }
     }
 
-    [Route("/Syncplay/{SessionId}/GetUtcTime", "POST", Summary = "Get UtcTime")]
-    [Authenticated]
-    public class SyncplayGetUtcTime : IReturnVoid
-    {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
-    }
-
     /// <summary>
     /// Class SyncplayService.
     /// </summary>
@@ -129,6 +121,9 @@ namespace MediaBrowser.Api.Syncplay
         /// </summary>
         private readonly ISessionManager _sessionManager;
 
+        /// <summary>
+        /// The session context.
+        /// </summary>
         private readonly ISessionContext _sessionContext;
 
         /// <summary>
@@ -267,16 +262,6 @@ namespace MediaBrowser.Api.Syncplay
             syncplayRequest.Type = PlaybackRequestType.KeepAlive;
             syncplayRequest.Ping = Convert.ToInt64(request.Ping);
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
-        }
-
-        /// <summary>
-        /// Handles the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <value>The current UTC time.</value>
-        public string Post(SyncplayGetUtcTime request)
-        {
-            return DateTime.UtcNow.ToUniversalTime().ToString("o");
         }
     }
 }
