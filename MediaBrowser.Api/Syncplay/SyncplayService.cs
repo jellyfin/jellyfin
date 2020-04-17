@@ -100,9 +100,9 @@ namespace MediaBrowser.Api.Syncplay
         public bool Resume { get; set; }
     }
 
-    [Route("/Syncplay/{SessionId}/KeepAlive", "POST", Summary = "Keep session alive")]
+    [Route("/Syncplay/{SessionId}/UpdatePing", "POST", Summary = "Update session ping")]
     [Authenticated]
-    public class SyncplayKeepAlive : IReturnVoid
+    public class SyncplayUpdatePing : IReturnVoid
     {
         [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string SessionId { get; set; }
@@ -255,11 +255,11 @@ namespace MediaBrowser.Api.Syncplay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncplayKeepAlive request)
+        public void Post(SyncplayUpdatePing request)
         {
             var currentSession = GetSession(_sessionContext);
             var syncplayRequest = new PlaybackRequest();
-            syncplayRequest.Type = PlaybackRequestType.KeepAlive;
+            syncplayRequest.Type = PlaybackRequestType.UpdatePing;
             syncplayRequest.Ping = Convert.ToInt64(request.Ping);
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }

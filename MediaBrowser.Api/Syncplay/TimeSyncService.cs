@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Controller.Syncplay;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Syncplay;
 using Microsoft.Extensions.Logging;

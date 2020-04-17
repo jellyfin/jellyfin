@@ -396,14 +396,9 @@ namespace Emby.Server.Implementations.Syncplay
                     SendCommand(session, BroadcastType.SingleSession, command);
                 }
             }
-            else if (request.Type.Equals(PlaybackRequestType.KeepAlive))
+            else if (request.Type.Equals(PlaybackRequestType.UpdatePing))
             {
                 _group.UpdatePing(session, request.Ping ??= _group.DefaulPing);
-
-                var keepAlive = new GroupUpdate<string>();
-                keepAlive.GroupId = _group.GroupId.ToString();
-                keepAlive.Type = GroupUpdateType.KeepAlive;
-                SendGroupUpdate(session, BroadcastType.SingleSession, keepAlive);
             }
         }
 

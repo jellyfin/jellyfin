@@ -28,6 +28,6 @@ namespace MediaBrowser.Model.Syncplay
         /// <summary>
         /// A user is reporting its ping.
         /// </summary>
-        KeepAlive = 5
+        UpdatePing = 5
     }
 }

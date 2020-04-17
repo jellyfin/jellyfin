@@ -30,10 +30,6 @@ namespace MediaBrowser.Model.Syncplay
         /// </summary>
         PrepareSession = 5,
         /// <summary>
-        /// The keep-alive update. An update to keep alive the socket.
-        /// </summary>
-        KeepAlive = 6,
-        /// <summary>
         /// The not-in-group update. Tells a user that no group has been joined.
         /// </summary>
         NotInGroup = 7
