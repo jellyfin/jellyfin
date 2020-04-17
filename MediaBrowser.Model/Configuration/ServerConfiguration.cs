@@ -15,9 +15,8 @@ namespace MediaBrowser.Model.Configuration
         private string _baseUrl;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable u pn p].
+        /// Gets or sets a value indicating whether to enable automatic port forwarding.
         /// </summary>
-        /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
         public bool EnableUPnP { get; set; }
 
         /// <summary>
