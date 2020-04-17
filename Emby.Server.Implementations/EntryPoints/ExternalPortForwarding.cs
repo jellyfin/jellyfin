@@ -61,6 +61,7 @@ namespace Emby.Server.Implementations.EntryPoints
             return new StringBuilder(32)
                 .Append(config.EnableUPnP).Append(Separator)
                 .Append(config.PublicPort).Append(Separator)
+                .Append(config.PublicHttpsPort).Append(Separator)
                 .Append(_appHost.HttpPort).Append(Separator)
                 .Append(_appHost.HttpsPort).Append(Separator)
                 .Append(_appHost.EnableHttps).Append(Separator)
