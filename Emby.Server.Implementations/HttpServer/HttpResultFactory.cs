@@ -565,13 +565,12 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (NotSupportedException)
                 {
-
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(rangeHeader) && totalContentLength.HasValue)
             {
-                var hasHeaders = new RangeRequestWriter(rangeHeader, totalContentLength.Value, stream, contentType, isHeadRequest, _logger)
+                var hasHeaders = new RangeRequestWriter(rangeHeader, totalContentLength.Value, stream, contentType, isHeadRequest)
                 {
                     OnComplete = options.OnComplete
                 };
@@ -608,8 +607,11 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the caching responseHeaders.
         /// </summary>
-        private void AddCachingHeaders(IDictionary<string, string> responseHeaders, TimeSpan? cacheDuration,
-            bool noCache, DateTime? lastModifiedDate)
+        private void AddCachingHeaders(
+            IDictionary<string, string> responseHeaders,
+            TimeSpan? cacheDuration,
+            bool noCache,
+            DateTime? lastModifiedDate)
         {
             if (noCache)
             {
