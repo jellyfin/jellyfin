@@ -94,6 +94,9 @@ namespace Emby.Server.Implementations.HttpServer
         /// <value>The last activity date.</value>
         public DateTime LastActivityDate { get; private set; }
 
+        /// <inheritdoc />
+        public DateTime LastKeepAliveDate { get; set; }
+
         /// <summary>
         /// Gets the id.
         /// </summary>
@@ -158,11 +161,6 @@ namespace Emby.Server.Implementations.HttpServer
                 return;
             }
 
-            if (OnReceive == null)
-            {
-                return;
-            }
-
             try
             {
                 var stub = (WebSocketMessage<object>)_jsonSerializer.DeserializeFromString(message, typeof(WebSocketMessage<object>));
@@ -174,7 +172,15 @@ namespace Emby.Server.Implementations.HttpServer
                     Connection = this
                 };
 
-                OnReceive(info);
+                if (info.MessageType.Equals("KeepAlive", StringComparison.Ordinal))
+                {
+                    SendKeepAliveResponse();
+                }
+
+                if (OnReceive != null)
+                {
+                    OnReceive(info);
+                }
             }
             catch (Exception ex)
             {
@@ -231,6 +237,15 @@ namespace Emby.Server.Implementations.HttpServer
             cancellationToken.ThrowIfCancellationRequested();
 
             return _socket.SendAsync(text, true, cancellationToken);
+        }
+
+        private Task SendKeepAliveResponse()
+        {
+            LastKeepAliveDate = DateTime.UtcNow;
+            return SendAsync(new WebSocketMessage<string>
+            {
+                MessageType = "KeepAlive"
+            }, CancellationToken.None);
         }
 
         /// <inheritdoc />

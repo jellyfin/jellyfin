@@ -27,6 +27,12 @@ namespace MediaBrowser.Controller.Net
         DateTime LastActivityDate { get; }
 
         /// <summary>
+        /// Gets or sets the date of last Keeplive received.
+        /// </summary>
+        /// <value>The date of last Keeplive received.</value>
+        public DateTime LastKeepAliveDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the URL.
         /// </summary>
         /// <value>The URL.</value>
