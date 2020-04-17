@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Emby.Drawing;
@@ -42,10 +43,18 @@ namespace Jellyfin.Server
         /// <inheritdoc/>
         protected override void RegisterServices(IServiceCollection serviceCollection)
         {
-            var imageEncoderType = SkiaEncoder.IsNativeLibAvailable()
+            // Register an image encoder
+            bool useSkiaEncoder = SkiaEncoder.IsNativeLibAvailable();
+            Type imageEncoderType = useSkiaEncoder
                 ? typeof(SkiaEncoder)
                 : typeof(NullImageEncoder);
             serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
+
+            // Log a warning if the Skia encoder could not be used
+            if (!useSkiaEncoder)
+            {
+                Logger.LogWarning($"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
+            }
 
             base.RegisterServices(serviceCollection);
         }
