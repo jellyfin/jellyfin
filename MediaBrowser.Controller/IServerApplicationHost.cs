@@ -44,12 +44,6 @@ namespace MediaBrowser.Controller
         bool ListenWithHttps { get; }
 
         /// <summary>
-        /// Gets a value indicating whether a client can connect to the server over HTTPS, either directly or via a
-        /// reverse proxy.
-        /// </summary>
-        bool CanConnectWithHttps { get; }
-
-        /// <summary>
         /// Gets a value indicating whether this instance has update available.
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>

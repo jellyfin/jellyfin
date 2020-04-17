@@ -1413,7 +1413,7 @@ namespace Emby.Server.Implementations
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
                 HttpServerPortNumber = HttpPort,
-                SupportsHttps = CanConnectWithHttps,
+                SupportsHttps = ListenWithHttps || ServerConfigurationManager.Configuration.IsBehindProxy,
                 HttpsPortNumber = HttpsPort,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 OperatingSystemDisplayName = OperatingSystem.Name,
@@ -1455,8 +1455,6 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
 
         /// <inheritdoc/>
-        public bool CanConnectWithHttps => ListenWithHttps || ServerConfigurationManager.Configuration.IsBehindProxy;
-
         public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
         {
             try
