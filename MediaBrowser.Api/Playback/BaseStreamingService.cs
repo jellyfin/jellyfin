@@ -131,12 +131,10 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         private string GetOutputFilePath(StreamState state, EncodingOptions encodingOptions, string outputFileExtension)
         {
-            if (outputFileExtension == null) outputFileExtension = "";
-            
             var data = $"{state.MediaPath}-{state.UserAgent}-{state.Request.DeviceId}-{state.Request.PlaySessionId}";
 
             var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-            var ext = outputFileExtension.ToLowerInvariant();
+            var ext = outputFileExtension?.ToLowerInvariant();
             var folder = ServerConfigurationManager.GetTranscodePath();
 
             return EnableOutputInSubFolder
