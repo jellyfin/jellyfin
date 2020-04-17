@@ -56,29 +56,33 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
-        /// Gets the local ip address.
+        /// Gets all the local IP addresses of this API instance. Each address is validated by sending a 'ping' request
+        /// to the API that should exist at the address.
         /// </summary>
-        /// <value>The local ip address.</value>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
+        /// <returns>A list containing all the local IP addresses of the server.</returns>
         Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the local API URL.
+        /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured
+        /// IP address that can be found via <see cref="GetLocalIpAddresses"/>.
         /// </summary>
-        /// <value>The local API URL.</value>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
+        /// <returns>The server URL.</returns>
         Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the local API URL.
+        /// Gets a local (LAN) URL that can be used to access the API.
         /// </summary>
-        /// <param name="hostname">The hostname.</param>
-        /// <returns>The local API URL.</returns>
+        /// <param name="hostname">The hostname to use in the URL.</param>
+        /// <returns>The API URL.</returns>
         string GetLocalApiUrl(ReadOnlySpan<char> hostname);
 
         /// <summary>
-        /// Gets the local API URL.
+        /// Gets a local (LAN) URL that can be used to access the API.
         /// </summary>
-        /// <param name="address">The IP address.</param>
-        /// <returns>The local API URL.</returns>
+        /// <param name="address">The IP address to use as the hostname in the URL.</param>
+        /// <returns>The API URL.</returns>
         string GetLocalApiUrl(IPAddress address);
 
         /// <summary>

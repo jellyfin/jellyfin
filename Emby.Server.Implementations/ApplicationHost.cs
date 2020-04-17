@@ -1510,7 +1510,7 @@ namespace Emby.Server.Implementations
             return GetLocalApiUrl(ipAddress.ToString());
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public string GetLocalApiUrl(ReadOnlySpan<char> host)
         {
             var url = new StringBuilder(64);
@@ -1559,7 +1559,7 @@ namespace Emby.Server.Implementations
                     }
                 }
 
-                var valid = await IsIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
+                var valid = await IsLocalIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
                 if (valid)
                 {
                     resultList.Add(address);
@@ -1593,7 +1593,7 @@ namespace Emby.Server.Implementations
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
-        private async Task<bool> IsIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
+        private async Task<bool> IsLocalIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
         {
             if (address.Equals(IPAddress.Loopback)
                 || address.Equals(IPAddress.IPv6Loopback))
