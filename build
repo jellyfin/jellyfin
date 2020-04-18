@@ -81,7 +81,14 @@ if [[ $1 == '-b' || $1 == '--web-branch' ]]; then
 	web_branch="$2"
 	shift 2
 else
-    web_branch="$( git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
+    web_branch="$( git describe --tags --exact-match || true )"
+    if [[ -z "$web_branch" ]]; then
+        web_branch="$( git branch 2>/dev/null | grep -v 'HEAD detached' | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/' )"
+        if [[ -z "${web_branch}" ]]; then
+            echo "Cannot determine web branch, pass it explicitly via --web-branch option"
+            exit 1
+        fi
+    fi
 fi
 
 # Parse platform option
