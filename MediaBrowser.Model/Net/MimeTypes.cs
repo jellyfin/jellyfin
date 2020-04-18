@@ -106,6 +106,7 @@ namespace MediaBrowser.Model.Net
             { ".3g2", "video/3gpp2" },
             { ".mpd", "video/vnd.mpeg.dash.mpd" },
             { ".ts", "video/mp2t" },
+            { ".mpegts", "video/mp2t" },
 
             // Type audio
             { ".mp3", "audio/mpeg" },
