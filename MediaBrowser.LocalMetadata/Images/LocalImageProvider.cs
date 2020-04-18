@@ -218,7 +218,8 @@ namespace MediaBrowser.LocalMetadata.Images
             "folder",
             "poster",
             "cover",
-            "default"
+            "front",
+            "default",
         };
 
         private static readonly string[] PersonImageFileNames = new[]
