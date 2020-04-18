@@ -1,6 +1,7 @@
 using Jellyfin.Api.Models.Branding;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -24,6 +25,7 @@ namespace Jellyfin.Api.Controllers
         /// Endpoint for getting a servers branding settings.
         /// </summary>
         /// <returns>Branding settings of the server.</returns>
+        [HttpGet("Configuration")]
         public BrandingDto GetBrandingOptions()
         {
             return this._serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
@@ -33,6 +35,8 @@ namespace Jellyfin.Api.Controllers
         /// Endpoint for getting a servers branding css.
         /// </summary>
         /// <returns>String representation of the server.</returns>
+        [HttpGet("Css")]
+        [HttpGet("Css.css")]
         public string GetBrandingCss()
         {
             var result = this._serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
