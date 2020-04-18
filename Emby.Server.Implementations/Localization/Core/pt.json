@@ -95,5 +95,13 @@
     "TaskCleanCache": "Limpar Diretório de Cache",
     "TasksApplicationCategory": "Aplicação",
     "TasksLibraryCategory": "Biblioteca",
-    "TasksMaintenanceCategory": "Manutenção"
+    "TasksMaintenanceCategory": "Manutenção",
+    "TaskRefreshChannels": "Atualizar Canais",
+    "TaskUpdatePlugins": "Atualizar Plugins",
+    "TaskCleanLogsDescription": "Deletar arquivos de log que existe a mais de {0} dias.",
+    "TaskCleanLogs": "Limpar diretório de log",
+    "TaskRefreshLibrary": "Escanear biblioteca de mídias",
+    "TaskRefreshChapterImagesDescription": "Criar miniaturas para videos que tem capítulos.",
+    "TaskCleanCacheDescription": "Deletar arquivos de cache que não são mais usados pelo sistema.",
+    "TasksChannelsCategory": "Canais de Internet"
 }
