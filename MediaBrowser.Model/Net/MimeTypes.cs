@@ -123,6 +123,8 @@ namespace MediaBrowser.Model.Net
             { ".xsp", "audio/xsp" },
             { ".dsp", "audio/dsp" },
             { ".flac", "audio/flac" },
+            { ".ape", "audio/x-ape" },
+            { ".wv", "audio/x-wavpack" },
         };
 
         private static readonly Dictionary<string, string> _extensionLookup = CreateExtensionLookup();
