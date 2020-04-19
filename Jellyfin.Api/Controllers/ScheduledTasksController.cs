@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Scheduled Tasks Controller.
     /// </summary>
+    [Authenticated]
     public class ScheduledTasksController : BaseJellyfinApiController
     {
         private readonly ITaskManager _taskManager;
@@ -183,7 +185,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateTask([FromRoute] string taskId, [FromBody] TaskTriggerInfo[] triggerInfos)
+        public IActionResult UpdateTask([FromRoute] string taskId, [FromBody, BindRequired] TaskTriggerInfo[] triggerInfos)
         {
             try
             {
