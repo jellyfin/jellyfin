@@ -36,9 +36,15 @@ namespace MediaBrowser.Controller.QuickConnect
         void AssertActive();
 
         /// <summary>
+        /// Temporarily activates quick connect for a short amount of time.
+        /// </summary>
+        /// <returns>A quick connect result object indicating success.</returns>
+        QuickConnectResult Activate();
+
+        /// <summary>
         /// Changes the status of quick connect.
         /// </summary>
-        /// <param name="newState">New state to change to</param>
+        /// <param name="newState">New state to change to.</param>
         void SetEnabled(QuickConnectState newState);
 
         /// <summary>

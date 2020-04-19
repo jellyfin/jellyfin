@@ -98,6 +98,11 @@ namespace MediaBrowser.Api.QuickConnect
 
         public object Get(QuickConnectList request)
         {
+            if(_quickConnect.State != QuickConnectState.Active)
+            {
+                return Array.Empty<QuickConnectResultDto>();
+            }
+
             return _quickConnect.GetCurrentRequests();
         }
 
@@ -124,15 +129,40 @@ namespace MediaBrowser.Api.QuickConnect
 
         public object Post(Activate request)
         {
-            if (_quickConnect.State == QuickConnectState.Available)
-            {
-                _quickConnect.SetEnabled(QuickConnectState.Active);
+            string name = _authContext.GetAuthorizationInfo(Request).User.Name;
 
-                string name = _authContext.GetAuthorizationInfo(Request).User.Name;
-                Logger.LogInformation("{name} enabled quick connect", name);
+            if(_quickConnect.State == QuickConnectState.Unavailable)
+            {
+                return new QuickConnectResult()
+                {
+                    Error = "Quick connect is not enabled on this server"
+                };
             }
 
-            return _quickConnect.State;
+            else if(_quickConnect.State == QuickConnectState.Available)
+            {
+                var result = _quickConnect.Activate();
+
+                if (string.IsNullOrEmpty(result.Error))
+                {
+                    Logger.LogInformation("{name} temporarily activated quick connect", name);
+                }
+
+                return result;
+            }
+
+            else if(_quickConnect.State == QuickConnectState.Active)
+            {
+                return new QuickConnectResult()
+                {
+                    Error = ""
+                };
+            }
+
+            return new QuickConnectResult()
+            {
+                Error = "Unknown current state"
+            };
         }
 
         public object Post(Available request)
