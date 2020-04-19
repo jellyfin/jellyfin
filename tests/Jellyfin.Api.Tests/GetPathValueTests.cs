@@ -1,4 +1,5 @@
 using MediaBrowser.Api;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
@@ -31,10 +32,11 @@ namespace Jellyfin.Api.Tests
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
 
-            var service = new BrandingService(
-                new NullLogger<BrandingService>(),
+            var service = new PackageService(
+                new NullLogger<PackageService>(),
                 confManagerMock,
-                Mock.Of<IHttpResultFactory>())
+                Mock.Of<IHttpResultFactory>(),
+                Mock.Of<IInstallationManager>())
             {
                 Request = reqMock
             };
