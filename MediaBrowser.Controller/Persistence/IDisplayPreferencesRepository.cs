@@ -6,30 +6,34 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Persistence
 {
     /// <summary>
-    /// Interface IDisplayPreferencesRepository
+    /// Interface IDisplayPreferencesRepository.
     /// </summary>
     public interface IDisplayPreferencesRepository : IRepository
     {
         /// <summary>
-        /// Saves display preferences for an item
+        /// Saves display preferences for an item.
         /// </summary>
         /// <param name="displayPreferences">The display preferences.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="client">The client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        void SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client,
-                                    CancellationToken cancellationToken);
+        void SaveDisplayPreferences(
+            DisplayPreferences displayPreferences,
+            string userId,
+            string client,
+            CancellationToken cancellationToken);
 
         /// <summary>
-        /// Saves all display preferences for a user
+        /// Saves all display preferences for a user.
         /// </summary>
         /// <param name="displayPreferences">The display preferences.</param>
         /// <param name="userId">The user id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        void SaveAllDisplayPreferences(IEnumerable<DisplayPreferences> displayPreferences, Guid userId,
-                                    CancellationToken cancellationToken);
+        void SaveAllDisplayPreferences(
+            IEnumerable<DisplayPreferences> displayPreferences,
+            Guid userId,
+            CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the display preferences.
         /// </summary>

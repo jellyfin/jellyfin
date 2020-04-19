@@ -52,7 +52,9 @@ namespace Emby.Server.Implementations.Collections
         }
 
         public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+
         public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+
         public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
 
         private IEnumerable<Folder> FindFolders(string path)
@@ -109,9 +111,9 @@ namespace Emby.Server.Implementations.Collections
         {
             var folder = GetCollectionsFolder(false).Result;
 
-            return folder == null ?
-                new List<BoxSet>() :
-                folder.GetChildren(user, true).OfType<BoxSet>();
+            return folder == null
+                ? Enumerable.Empty<BoxSet>()
+                : folder.GetChildren(user, true).OfType<BoxSet>();
         }
 
         public BoxSet CreateCollection(CollectionCreationOptions options)
@@ -191,7 +193,6 @@ namespace Emby.Server.Implementations.Collections
         private void AddToCollection(Guid collectionId, IEnumerable<string> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
-
             if (collection == null)
             {
                 throw new ArgumentException("No collection exists with the supplied Id");
@@ -289,10 +290,13 @@ namespace Emby.Server.Implementations.Collections
             }
 
             collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
-            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-            {
-                ForceSave = true
-            }, RefreshPriority.High);
+            _providerManager.QueueRefresh(
+                collection.Id,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    ForceSave = true
+                },
+                RefreshPriority.High);
 
             ItemsRemovedFromCollection?.Invoke(this, new CollectionModifiedEventArgs
             {

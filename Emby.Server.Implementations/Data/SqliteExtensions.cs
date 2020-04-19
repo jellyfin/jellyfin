@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using MediaBrowser.Model.Serialization;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
@@ -137,29 +135,6 @@ namespace Emby.Server.Implementations.Data
             return null;
         }
 
-        /// <summary>
-        /// Serializes to bytes.
-        /// </summary>
-        /// <returns>The serialized bytes.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="obj" /> is null.</exception>
-        public static byte[] SerializeToBytes(this IJsonSerializer json, object obj)
-        {
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj));
-            }
-
-            using var stream = new MemoryStream();
-            json.SerializeToStream(obj, stream);
-            return stream.ToArray();
-        }
-
-        /// <summary>
-        /// Attaches a statement based on the provided alias at the specified path.
-        /// </summary>
-        /// <param name="db">The database.</param>
-        /// <param name="path">The path.</param>
-        /// <param name="alias">The alias.</param>
         public static void Attach(SQLiteDatabaseConnection db, string path, string alias)
         {
             var commandText = string.Format(
