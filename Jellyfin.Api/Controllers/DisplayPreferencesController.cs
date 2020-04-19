@@ -53,7 +53,6 @@ namespace Jellyfin.Api.Controllers
                     return NotFound();
                 }
 
-                // TODO ToOptimizedResult
                 return Ok(result);
             }
             catch (Exception e)
