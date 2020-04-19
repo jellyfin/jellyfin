@@ -1,3 +1,5 @@
+#nullable enable
+
 using Jellyfin.Api.Models.Branding;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -10,7 +12,7 @@ namespace Jellyfin.Api.Controllers
     /// </summary>
     public class BrandingController : BaseJellyfinApiController
     {
-        private IServerConfigurationManager _serverConfigurationManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BrandingController"/> class.
@@ -18,7 +20,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverConfigurationManager">Instance of ServerConfigurationManager.</param>
         public BrandingController(IServerConfigurationManager serverConfigurationManager)
         {
-            this._serverConfigurationManager = serverConfigurationManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>String representation of the server.</returns>
         [HttpGet("Css")]
         [HttpGet("Css.css")]
+        [Produces("text/css")]
         public string GetBrandingCss()
         {
             var result = this._serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
