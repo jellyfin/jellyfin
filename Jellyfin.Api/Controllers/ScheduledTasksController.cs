@@ -75,7 +75,6 @@ namespace Jellyfin.Api.Controllers
 
                 var taskInfos = tasks.Select(ScheduledTaskHelpers.GetTaskInfo);
 
-                // TODO ToOptimizedResult
                 return Ok(taskInfos);
             }
             catch (Exception e)
