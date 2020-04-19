@@ -134,7 +134,7 @@ namespace MediaBrowser.Api.Playback
             var data = $"{state.MediaPath}-{state.UserAgent}-{state.Request.DeviceId}-{state.Request.PlaySessionId}";
 
             var filename = data.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-            var ext = outputFileExtension.ToLowerInvariant();
+            var ext = outputFileExtension?.ToLowerInvariant();
             var folder = ServerConfigurationManager.GetTranscodePath();
 
             if (EnableOutputInSubFolder)
