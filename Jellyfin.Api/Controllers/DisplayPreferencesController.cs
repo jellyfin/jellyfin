@@ -84,7 +84,11 @@ namespace Jellyfin.Api.Controllers
                     return BadRequest(ModelState);
                 }
 
-                displayPreferences.Id = displayPreferencesId;
+                if (displayPreferencesId == null)
+                {
+                    // do nothing.
+                }
+
                 _displayPreferencesRepository.SaveDisplayPreferences(
                     displayPreferences,
                     userId,
