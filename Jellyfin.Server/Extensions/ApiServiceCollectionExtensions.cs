@@ -4,6 +4,7 @@ using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Converters;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +76,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     // Setting the naming policy to null leaves the property names as-is when serializing objects to JSON.
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    options.JsonSerializerOptions.Converters.Add(new LongToStringConverter());
                 })
                 .AddControllersAsServices();
         }
