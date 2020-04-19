@@ -41,13 +41,13 @@ namespace Jellyfin.Api.Models.NotificationDtos
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the notification's URL. Defaults to null.
+        /// Gets or sets the notification's URL. Defaults to an empty string.
         /// </summary>
-        public string? Url { get; set; }
+        public string Url { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the notification level.
         /// </summary>
-        public NotificationLevel? Level { get; set; }
+        public NotificationLevel Level { get; set; }
     }
 }

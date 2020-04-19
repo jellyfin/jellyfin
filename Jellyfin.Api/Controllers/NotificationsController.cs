@@ -42,13 +42,13 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">An optional limit on the number of notifications returned.</param>
         /// <returns>A read-only list of all of the user's notifications.</returns>
         [HttpGet("{UserID}")]
-        public IReadOnlyList<NotificationDto> GetNotifications(
+        public NotificationResultDto GetNotifications(
             [FromRoute] string userId,
             [FromQuery] bool? isRead,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit)
         {
-            return new List<NotificationDto>();
+            return new NotificationResultDto();
         }
 
         /// <summary>
@@ -92,10 +92,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="level">The level of the notification.</param>
         [HttpPost("Admin")]
         public void CreateAdminNotification(
-            [FromForm] string name,
-            [FromForm] string description,
-            [FromForm] string? url,
-            [FromForm] NotificationLevel? level)
+            [FromQuery] string name,
+            [FromQuery] string description,
+            [FromQuery] string? url,
+            [FromQuery] NotificationLevel? level)
         {
             var notification = new NotificationRequest
             {
@@ -114,11 +114,11 @@ namespace Jellyfin.Api.Controllers
         /// Endpoint to set notifications as read.
         /// </summary>
         /// <param name="userId">The userID.</param>
-        /// <param name="ids">The IDs of notifications which should be set as read.</param>
+        /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
         [HttpPost("{UserID}/Read")]
         public void SetRead(
             [FromRoute] string userId,
-            [FromForm] List<string> ids)
+            [FromQuery] string ids)
         {
         }
 
@@ -126,11 +126,11 @@ namespace Jellyfin.Api.Controllers
         /// Endpoint to set notifications as unread.
         /// </summary>
         /// <param name="userId">The userID.</param>
-        /// <param name="ids">The IDs of notifications which should be set as unread.</param>
+        /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
         [HttpPost("{UserID}/Unread")]
         public void SetUnread(
             [FromRoute] string userId,
-            [FromForm] List<string> ids)
+            [FromQuery] string ids)
         {
         }
     }
