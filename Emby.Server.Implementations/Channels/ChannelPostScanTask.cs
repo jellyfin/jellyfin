@@ -14,14 +14,12 @@ namespace Emby.Server.Implementations.Channels
     public class ChannelPostScanTask
     {
         private readonly IChannelManager _channelManager;
-        private readonly IUserManager _userManager;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
-        public ChannelPostScanTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
+        public ChannelPostScanTask(IChannelManager channelManager, ILogger logger, ILibraryManager libraryManager)
         {
             _channelManager = channelManager;
-            _userManager = userManager;
             _logger = logger;
             _libraryManager = libraryManager;
         }
