@@ -478,7 +478,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "I-frame image extraction failed, will attempt standard way. Input: {arguments}", inputArgument);
+                    _logger.LogError(ex, "I-frame image extraction failed, will attempt standard way. Input: {Arguments}", inputArgument);
                 }
             }
 
@@ -969,7 +969,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             public int? ExitCode { get; private set; }
 
-            void OnProcessExited(object sender, EventArgs e)
+            private void OnProcessExited(object sender, EventArgs e)
             {
                 var process = (Process)sender;
 
