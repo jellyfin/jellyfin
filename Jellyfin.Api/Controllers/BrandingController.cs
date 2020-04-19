@@ -24,7 +24,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for getting a servers branding settings.
+        /// Endpoint for getting a server's branding settings.
         /// </summary>
         /// <returns>Branding settings of the server.</returns>
         [HttpGet("Configuration")]
@@ -34,7 +34,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for getting a servers branding css.
+        /// Endpoint for getting a server's branding css.
         /// </summary>
         /// <returns>String representation of the server.</returns>
         [HttpGet("Css")]
@@ -43,7 +43,7 @@ namespace Jellyfin.Api.Controllers
         public string GetBrandingCss()
         {
             var result = _serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
-            return result.CustomCss ?? string.Empty;
+            return result.CustomCss;
         }
     }
 }
