@@ -203,8 +203,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
         protected void ParseProviderLinks(T item, string xml)
         {
-            //Look for a match for the Regex pattern "tt" followed by 7 digits
-            var m = Regex.Match(xml, @"tt([0-9]{7})", RegexOptions.IgnoreCase);
+            // Look for a match for the Regex pattern "tt" followed by 7 or 8 digits
+            var m = Regex.Match(xml, "tt([0-9]{7,8})", RegexOptions.IgnoreCase);
             if (m.Success)
             {
                 item.SetProviderId(MetadataProviders.Imdb, m.Value);

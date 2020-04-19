@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Library
             // for imdbid we also accept pattern matching
             if (string.Equals(attrib, "imdbid", StringComparison.OrdinalIgnoreCase))
             {
-                var m = Regex.Match(str, "tt\\d{7}", RegexOptions.IgnoreCase);
+                var m = Regex.Match(str, "tt([0-9]{7,8})", RegexOptions.IgnoreCase);
                 return m.Success ? m.Value : null;
             }
 
