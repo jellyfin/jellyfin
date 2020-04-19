@@ -53,9 +53,12 @@ namespace Emby.Server.Implementations.Data
             {
                 db.ExecuteAll(string.Join(";",
                     "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
-                    "drop index if exists idx_userdata", "drop index if exists idx_userdata1",
-                    "drop index if exists idx_userdata2", "drop index if exists userdataindex1",
-                    "drop index if exists userdataindex", "drop index if exists userdataindex3",
+                    "drop index if exists idx_userdata",
+                    "drop index if exists idx_userdata1",
+                    "drop index if exists idx_userdata2",
+                    "drop index if exists userdataindex1",
+                    "drop index if exists userdataindex",
+                    "drop index if exists userdataindex3",
                     "drop index if exists userdataindex4",
                     "create unique index if not exists UserDatasIndex1 on UserDatas (key, userId)",
                     "create index if not exists UserDatasIndex2 on UserDatas (key, userId, played)",
@@ -264,7 +267,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(key));
             }
 
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId");
             statement.TryBind("@UserId", internalUserId);
             statement.TryBind("@Key", key);

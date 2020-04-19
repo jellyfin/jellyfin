@@ -1199,7 +1199,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = PrepareStatement(connection,
                 "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid");
             statement.TryBind("@guid", id);
@@ -1851,7 +1851,7 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = PrepareStatement(connection,
                 "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName +
                 " where ItemId = @ItemId order by ChapterIndex asc");
@@ -1871,7 +1871,7 @@ namespace Emby.Server.Implementations.Data
         {
             CheckDisposed();
 
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = PrepareStatement(connection,
                 "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName +
                 " where ItemId = @ItemId and ChapterIndex=@ChapterIndex");
@@ -2022,45 +2022,46 @@ namespace Emby.Server.Implementations.Data
         {
             return field switch
             {
-                ItemFields.Settings => new[]
-                {
-                    "IsLocked", "PreferredMetadataCountryCode", "PreferredMetadataLanguage", "LockedFields"
-                },
-                ItemFields.ServiceName => new[] {"ExternalServiceId"},
-                ItemFields.SortName => new[] {"ForcedSortName"},
-                ItemFields.Taglines => new[] {"Tagline"},
-                ItemFields.Tags => new[] {"Tags"},
+                ItemFields.Settings => new[] { "IsLocked", "PreferredMetadataCountryCode", "PreferredMetadataLanguage", "LockedFields" },
+                ItemFields.ServiceName => new[] { "ExternalServiceId" },
+                ItemFields.SortName => new[] { "ForcedSortName" },
+                ItemFields.Taglines => new[] { "Tagline" },
+                ItemFields.Tags => new[] { "Tags" },
                 ItemFields.IsHD => Array.Empty<string>(),
-                _ => new[] {field.ToString()}
+                _ => new[] { field.ToString() }
             };
         }
 
         private bool HasField(InternalItemsQuery query, ItemFields name)
         {
-            return name switch
+            switch (name)
             {
-                ItemFields.Tags => (query.DtoOptions.ContainsField(name) || HasProgramAttributes(query)),
-                ItemFields.CustomRating => query.DtoOptions.ContainsField(name),
-                ItemFields.ProductionLocations => query.DtoOptions.ContainsField(name),
-                ItemFields.Settings => query.DtoOptions.ContainsField(name),
-                ItemFields.OriginalTitle => query.DtoOptions.ContainsField(name),
-                ItemFields.Taglines => query.DtoOptions.ContainsField(name),
-                ItemFields.SortName => query.DtoOptions.ContainsField(name),
-                ItemFields.Studios => query.DtoOptions.ContainsField(name),
-                ItemFields.ExtraIds => query.DtoOptions.ContainsField(name),
-                ItemFields.DateCreated => query.DtoOptions.ContainsField(name),
-                ItemFields.Overview => query.DtoOptions.ContainsField(name),
-                ItemFields.Genres => query.DtoOptions.ContainsField(name),
-                ItemFields.DateLastMediaAdded => query.DtoOptions.ContainsField(name),
-                ItemFields.PresentationUniqueKey => query.DtoOptions.ContainsField(name),
-                ItemFields.InheritedParentalRatingValue => query.DtoOptions.ContainsField(name),
-                ItemFields.ExternalSeriesId => query.DtoOptions.ContainsField(name),
-                ItemFields.SeriesPresentationUniqueKey => query.DtoOptions.ContainsField(name),
-                ItemFields.DateLastRefreshed => query.DtoOptions.ContainsField(name),
-                ItemFields.DateLastSaved => query.DtoOptions.ContainsField(name),
-                ItemFields.ServiceName => HasServiceName(query),
-                _ => true
-            };
+                case ItemFields.Tags:
+                    return query.DtoOptions.ContainsField(name) || HasProgramAttributes(query);
+                case ItemFields.CustomRating:
+                case ItemFields.ProductionLocations:
+                case ItemFields.Settings:
+                case ItemFields.OriginalTitle:
+                case ItemFields.Taglines:
+                case ItemFields.SortName:
+                case ItemFields.Studios:
+                case ItemFields.ExtraIds:
+                case ItemFields.DateCreated:
+                case ItemFields.Overview:
+                case ItemFields.Genres:
+                case ItemFields.DateLastMediaAdded:
+                case ItemFields.PresentationUniqueKey:
+                case ItemFields.InheritedParentalRatingValue:
+                case ItemFields.ExternalSeriesId:
+                case ItemFields.SeriesPresentationUniqueKey:
+                case ItemFields.DateLastRefreshed:
+                case ItemFields.DateLastSaved:
+                    return query.DtoOptions.ContainsField(name);
+                case ItemFields.ServiceName:
+                    return HasServiceName(query);
+                default:
+                    return true;
+            }
         }
 
         private static readonly HashSet<string> _programExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -2462,7 +2463,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             int count;
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = PrepareStatement(connection, commandText);
             if (EnableJoinUserData(query))
             {
@@ -2738,11 +2739,10 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<BaseItem>();
             var result = new QueryResult<BaseItem>();
-            using (var connection = GetConnection())
+            using (var connection = GetConnection(true))
             {
                 connection.RunInTransaction(db =>
                 {
-
                     var statements = PrepareAll(db, statementTexts).ToList();
 
                     if (!isReturningZeroItems)
@@ -2963,7 +2963,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = PrepareStatement(connection, commandText);
             if (EnableJoinUserData(query))
             {
@@ -3021,7 +3021,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             var list = new List<Tuple<Guid, string>>();
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = PrepareStatement(connection, commandText);
             if (EnableJoinUserData(query))
             {
@@ -3133,7 +3133,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<Guid>();
             var result = new QueryResult<Guid>();
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             connection.RunInTransaction(db =>
             {
                 var statements = PrepareAll(db, statementTexts).ToList();
@@ -4430,7 +4430,10 @@ namespace Emby.Server.Implementations.Data
         private void UpdateInheritedTags()
         {
             string sql = string.Join(
-                ";", "delete from itemvalues where type = 6", "insert into itemvalues (ItemId, Type, Value, CleanValue)  select ItemId, 6, Value, CleanValue from ItemValues where Type=4", @"insert into itemvalues (ItemId, Type, Value, CleanValue) select AncestorIds.itemid, 6, ItemValues.Value, ItemValues.CleanValue
+                ";",
+                "delete from itemvalues where type = 6",
+                "insert into itemvalues (ItemId, Type, Value, CleanValue)  select ItemId, 6, Value, CleanValue from ItemValues where Type=4",
+                @"insert into itemvalues (ItemId, Type, Value, CleanValue) select AncestorIds.itemid, 6, ItemValues.Value, ItemValues.CleanValue
 FROM AncestorIds
 LEFT JOIN ItemValues ON (AncestorIds.AncestorId = ItemValues.ItemId)
 where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type = 4 ");
@@ -4789,7 +4792,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             commandText += " Group By CleanValue";
 
             var list = new List<string>();
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             using var statement = PrepareStatement(connection, commandText);
             foreach (var row in statement.ExecuteQuery())
             {
@@ -4971,7 +4974,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             var list = new List<(BaseItem, ItemCounts)>();
             var result = new QueryResult<(BaseItem, ItemCounts)>();
-            using var connection = GetConnection();
+            using var connection = GetConnection(true);
             connection.RunInTransaction(
                 db =>
                 {

@@ -276,9 +276,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, string value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -301,9 +301,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, bool value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -319,9 +319,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, float value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -337,9 +337,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, int value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -355,9 +355,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, Guid value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -373,9 +373,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, DateTime value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -391,9 +391,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, long value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -409,9 +409,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, ReadOnlySpan<byte> value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -427,8 +427,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind null to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
         public static void TryBindNull(this IStatement statement, string name)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -444,9 +444,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, DateTime? value)
         {
             if (value.HasValue)
@@ -462,9 +462,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, Guid? value)
         {
             if (value.HasValue)
@@ -480,9 +480,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, double? value)
         {
             if (value.HasValue)
@@ -498,9 +498,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, int? value)
         {
             if (value.HasValue)
@@ -516,9 +516,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, float? value)
         {
             if (value.HasValue)
@@ -534,9 +534,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, bool? value)
         {
             if (value.HasValue)
@@ -556,9 +556,9 @@ namespace Emby.Server.Implementations.Data
         /// <returns>A lazily-evaluated <see cref="IEnumerable{T}"/> containing the results of the statement.</returns>
         public static IEnumerable<IReadOnlyList<IResultSetValue>> ExecuteQuery(this IStatement statement)
         {
-            while (This.MoveNext())
+            while (statement.MoveNext())
             {
-                yield return This.Current;
+                yield return statement.Current;
             }
         }
     }
