@@ -125,9 +125,8 @@ After the required extensions are installed, you can can run the server by press
 To run the server from the command line you can use the `dotnet run` command. The example below shows how to do this if you have cloned the repository into a directory named `jellyfin` (the default directory name) and should work on all operating systems.
 
 ```bash
-cd jellyfin         # Move into the repository directory
-cd Jellyfin.Server  # Move into the server startup project directory
-dotnet run          # Run the server startup project
+cd jellyfin                          # Move into the repository directory
+dotnet run --project Jellyfin.Server # Run the server startup project
 ```
 
 A second option is to build the project and then run the resulting executable file directly. When running the executable directly you can easily add command line options. Add the `--help` flag to list details on all the supported command line options.
