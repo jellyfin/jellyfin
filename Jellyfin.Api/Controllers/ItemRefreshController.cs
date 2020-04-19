@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,7 @@ namespace Jellyfin.Api.Controllers
     /// Item Refresh Controller.
     /// </summary>
     /// [Authenticated]
+    [Authenticated]
     [Route("/Items")]
     public class ItemRefreshController : BaseJellyfinApiController
     {
