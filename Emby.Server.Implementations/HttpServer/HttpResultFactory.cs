@@ -31,7 +31,7 @@ namespace Emby.Server.Implementations.HttpServer
         // Last-Modified and If-Modified-Since must follow strict date format,
         // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
         private const string HttpDateFormat = "ddd, dd MMM yyyy HH:mm:ss \"GMT\"";
-        // We specifically use en-US culture because both day of week and month names must be in it9
+        // We specifically use en-US culture because both day of week and month names require it
         private static readonly CultureInfo _enUSculture = new CultureInfo("en-US", false);
 
         /// <summary>
