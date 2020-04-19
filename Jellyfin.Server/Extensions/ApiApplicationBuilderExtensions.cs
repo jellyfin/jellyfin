@@ -21,10 +21,12 @@ namespace Jellyfin.Server.Extensions
                 .UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint(specEndpoint, "Jellyfin API V1");
+                    c.RoutePrefix = "api-docs/swagger";
                 })
                 .UseReDoc(c =>
                 {
                     c.SpecUrl(specEndpoint);
+                    c.RoutePrefix = "api-docs/redoc";
                 });
         }
     }
