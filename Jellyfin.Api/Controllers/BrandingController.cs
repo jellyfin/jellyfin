@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Configuration")]
         public BrandingDto GetBrandingOptions()
         {
-            return this._serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
+            return _serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Jellyfin.Api.Controllers
         [Produces("text/css")]
         public string GetBrandingCss()
         {
-            var result = this._serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
+            var result = _serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
             return result.CustomCss ?? string.Empty;
         }
     }
