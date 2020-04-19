@@ -107,6 +107,7 @@ namespace MediaBrowser.Model.Net
             { ".3g2", "video/3gpp2" },
             { ".mpd", "video/vnd.mpeg.dash.mpd" },
             { ".ts", "video/mp2t" },
+            { ".mpegts", "video/mp2t" },
 
             // Type audio
             { ".mp3", "audio/mpeg" },
@@ -124,6 +125,8 @@ namespace MediaBrowser.Model.Net
             { ".xsp", "audio/xsp" },
             { ".dsp", "audio/dsp" },
             { ".flac", "audio/flac" },
+            { ".ape", "audio/x-ape" },
+            { ".wv", "audio/x-wavpack" },
         };
 
         private static readonly Dictionary<string, string> _extensionLookup = CreateExtensionLookup();
