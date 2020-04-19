@@ -17,7 +17,8 @@ namespace Jellyfin.Server.Extensions
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
             const string specEndpoint = "/swagger/v1/swagger.json";
-            return applicationBuilder.UseSwagger()
+            return applicationBuilder
+                .UseSwagger()
                 .UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint(specEndpoint, "Jellyfin API V1");
