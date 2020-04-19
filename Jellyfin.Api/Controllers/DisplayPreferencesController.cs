@@ -1,6 +1,9 @@
+#nullable enable
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +15,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Display Preferences Controller.
     /// </summary>
+    [Authenticated]
     public class DisplayPreferencesController : BaseJellyfinApiController
     {
         private readonly IDisplayPreferencesRepository _displayPreferencesRepository;
