@@ -549,8 +549,7 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The date modified.</value>
         [JsonIgnore]
         public DateTime DateModified { get; set; }
-
-        [JsonIgnore]
+    
         public DateTime DateLastSaved { get; set; }
 
         [JsonIgnore]
