@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json.Serialization;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
@@ -75,6 +80,9 @@ namespace Jellyfin.Server.Extensions
                 {
                     // Setting the naming policy to null leaves the property names as-is when serializing objects to JSON.
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
+
+                    // Accept string enums
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 })
                 .AddControllersAsServices();
         }
@@ -89,6 +97,17 @@ namespace Jellyfin.Server.Extensions
             return serviceCollection.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+
+                // Add all xml doc files to swagger generator.
+                var xmlFiles = Directory.GetFiles(
+                    AppContext.BaseDirectory,
+                    "*.xml",
+                    SearchOption.TopDirectoryOnly);
+
+                foreach (var xmlFile in xmlFiles)
+                {
+                    c.IncludeXmlComments(xmlFile);
+                }
             });
         }
     }
