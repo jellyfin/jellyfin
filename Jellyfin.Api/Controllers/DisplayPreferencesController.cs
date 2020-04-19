@@ -26,21 +26,20 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Get Display Preferences
+        /// Get Display Preferences.
         /// </summary>
         /// <param name="displayPreferencesId">Display preferences id.</param>
         /// <param name="userId">User id.</param>
         /// <param name="client">Client.</param>
         /// <returns>Display Preferences.</returns>
-        [HttpGet("{DisplayPreferencesId")]
+        [HttpGet("{DisplayPreferencesId}")]
         [ProducesResponseType(typeof(DisplayPreferences), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public IActionResult GetDisplayPreferences(
             [FromRoute] string displayPreferencesId,
             [FromQuery] [Required] string userId,
-            [FromQuery] [Required] string client
-        )
+            [FromQuery] [Required] string client)
         {
             try
             {
@@ -60,7 +59,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Update Display Preferences
+        /// Update Display Preferences.
         /// </summary>
         /// <param name="displayPreferencesId">Display preferences id.</param>
         /// <param name="userId">User Id.</param>
