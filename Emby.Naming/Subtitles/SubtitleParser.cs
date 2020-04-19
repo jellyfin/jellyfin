@@ -21,7 +21,7 @@ namespace Emby.Naming.Subtitles
         {
             if (path.Length == 0)
             {
-                throw new ArgumentException("String can't be empty.", nameof(path));
+                throw new ArgumentException("File path can't be empty.", nameof(path));
             }
 
             var extension = Path.GetExtension(path);

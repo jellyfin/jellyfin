@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
 
@@ -22,8 +21,7 @@ namespace Emby.Naming.Audio
         public bool IsMultiPart(string path)
         {
             var filename = Path.GetFileName(path);
-
-            if (path.Length == 0)
+            if (filename.Length == 0)
             {
                 return false;
             }

@@ -17,7 +17,7 @@ namespace Jellyfin.Naming.Tests.Subtitles
         [InlineData("The Skin I Live In (2011).eng.foreign.srt", "eng", false, true)]
         [InlineData("The Skin I Live In (2011).eng.default.foreign.srt", "eng", true, true)]
         [InlineData("The Skin I Live In (2011).default.foreign.eng.srt", "eng", true, true)]
-        public void TestSubtitles(string input, string language, bool isDefault, bool isForced)
+        public void SubtitleParser_ValidFileNames_Parses(string input, string language, bool isDefault, bool isForced)
         {
             var parser = new SubtitleParser(_namingOptions);
 
@@ -30,7 +30,7 @@ namespace Jellyfin.Naming.Tests.Subtitles
 
         [Theory]
         [InlineData("The Skin I Live In (2011).mp4")]
-        public void TestNonSubtitles(string input)
+        public void SubtitleParser_InvalidFileNames_ReturnsNull(string input)
         {
             var parser = new SubtitleParser(_namingOptions);
 
@@ -38,7 +38,7 @@ namespace Jellyfin.Naming.Tests.Subtitles
         }
 
         [Fact]
-        public void TestEmptySubtitlesPath()
+        public void SubtitleParser_EmptyFileNames_ThrowsArgumentException()
         {
             Assert.Throws<ArgumentException>(() => new SubtitleParser(_namingOptions).ParseFile(string.Empty));
         }
