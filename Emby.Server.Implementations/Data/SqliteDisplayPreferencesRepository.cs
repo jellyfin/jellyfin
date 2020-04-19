@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.Data
         public string Name => "SQLite";
 
         /// <summary>
-        /// Initializes the SQLiteDisplayPreferencesRepository.
+        /// Initializes the repository.
         /// </summary>
         public void Initialize()
         {
@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.Data
             using var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId");
             statement.TryBind("@userId", userId.ToByteArray());
 
-            return statement.ExecuteQuery().Select(row => Get(row)).ToList();
+            return statement.ExecuteQuery().Select(Get).ToList();
         }
 
         private DisplayPreferences Get(IReadOnlyList<IResultSetValue> row)

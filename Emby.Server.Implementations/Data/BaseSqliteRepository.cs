@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.Data
         /// Checks whether a table with the given name exists.
         /// </summary>
         /// <param name="connection">The connection.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The table name to check for.</param>
         /// <returns>Whether a table with the given name exists.</returns>
         protected bool TableExists(ManagedConnection connection, string name)
         {
@@ -187,10 +187,10 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Returns a <see cref="List{T}"/> containing the column names.
+        /// Returns a <see cref="List{T}"/> containing the column names for a table.
         /// </summary>
         /// <param name="connection">The connection.</param>
-        /// <param name="table">The table.</param>
+        /// <param name="table">The name of the table to get column names for.</param>
         /// <returns>A <see cref="List{T}"/> containing the column names.</returns>
         protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
         {
@@ -210,13 +210,13 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Adds a column.
+        /// Adds a column to a table.
         /// </summary>
         /// <param name="connection">The connection.</param>
-        /// <param name="table">The table.</param>
-        /// <param name="columnName">The column name.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="existingColumnNames">The existing column name.</param>
+        /// <param name="table">The table to add the column to.</param>
+        /// <param name="columnName">The name of the new column.</param>
+        /// <param name="type">The data type for the new column.</param>
+        /// <param name="existingColumnNames">The existing column names. If <paramref name="columnName"/> already exists in this list, then this method does nothing.</param>
         protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
             if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
@@ -228,7 +228,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Checks whether this object has been disposed.
+        /// Ensures that this object has not been disposed.
         /// </summary>
         /// <exception cref="ObjectDisposedException">If this object has been disposed.</exception>
         protected void CheckDisposed()

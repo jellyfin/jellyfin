@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Data
         /// Prepares all of the provided SQL statements.
         /// </summary>
         /// <param name="sql">The SQL statements.</param>
-        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/>.</returns>
+        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> containing the prepared statements.</returns>
         public IEnumerable<IStatement> PrepareAll(string sql)
         {
             return _db.PrepareAll(sql);
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Data
         /// Executes a SQL statement with the provided parameters
         /// </summary>
         /// <param name="sql">The SQl statement.</param>
-        /// <param name="values">The Bind parameter values</param>
+        /// <param name="values">The parameter values to bind when executing the SQL statement.</param>
         public void Execute(string sql, params object[] values)
         {
             _db.Execute(sql, values);
@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.Data
         /// Runs the provided action in a transaction.
         /// </summary>
         /// <param name="action">The action to run.</param>
-        /// <param name="mode">The mode.</param>
+        /// <param name="mode">The transaction mode to use.</param>
         public void RunInTransaction(Action<IDatabaseConnection> action, TransactionMode mode)
         {
             _db.RunInTransaction(action, mode);
@@ -86,10 +86,10 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Runs the provided function in a transaction and returns the result.
         /// </summary>
-        /// <param name="action">The function to run</param>
+        /// <param name="action">The function to run.</param>
         /// <param name="mode">The transaction mode.</param>
-        /// <typeparam name="T">The result type</typeparam>
-        /// <returns>The result.</returns>
+        /// <typeparam name="T">The result type.</typeparam>
+        /// <returns>The result of invoking the function.</returns>
         public T RunInTransaction<T>(Func<IDatabaseConnection, T> action, TransactionMode mode)
         {
             return _db.RunInTransaction(action, mode);
@@ -109,8 +109,8 @@ namespace Emby.Server.Implementations.Data
         /// Queries the database with the provided statement and parameters.
         /// </summary>
         /// <param name="sql">The SQL statement.</param>
-        /// <param name="values">The bind parameter values.</param>
-        /// <returns>An <see cref="IEnumerable{T}"/> of rows in the result set.</returns>
+        /// <param name="values">The parameter values to bind when executing the SQL statement.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing the rows in the result set.</returns>
         public IEnumerable<IReadOnlyList<IResultSetValue>> Query(string sql, params object[] values)
         {
             return _db.Query(sql, values);

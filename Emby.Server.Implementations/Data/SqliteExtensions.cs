@@ -54,11 +54,11 @@ namespace Emby.Server.Implementations.Data
         };
 
         /// <summary>
-        /// Runs the provided queries.
+        /// Runs the provided queries in a transaction.
         /// </summary>
-        /// <param name="connection">The connection.</param>
-        /// <param name="queries">The queries.</param>
-        /// <exception cref="ArgumentNullException">If queries is null.</exception>
+        /// <param name="connection">The connection to use to run the queries.</param>
+        /// <param name="queries">The queries to run.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="queries"/> is null.</exception>
         public static void RunQueries(this SQLiteDatabaseConnection connection, string[] queries)
         {
             if (queries == null)
@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Reads a <see cref="Guid"/> from the provided blob.
         /// </summary>
-        /// <param name="result">the blob.</param>
+        /// <param name="result">The blob.</param>
         /// <returns>The Guid.</returns>
         public static Guid ReadGuidFromBlob(this IResultSetValue result)
         {
@@ -85,8 +85,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Converts a <see cref="DateTime"/> object to a SQL-friendly string.
         /// </summary>
-        /// <param name="dateValue">The provided date.</param>
-        /// <returns>A SQL-friendly string.</returns>
+        /// <param name="dateValue">The <see cref="DateTime"/> to convert.</param>
+        /// <returns>The converted SQL-friendly string.</returns>
         public static string ToDateTimeParamValue(this DateTime dateValue)
         {
             var kind = DateTimeKind.Utc;
@@ -104,10 +104,10 @@ namespace Emby.Server.Implementations.Data
             => (kind == DateTimeKind.Utc) ? DatetimeFormatUtc : DatetimeFormatLocal;
 
         /// <summary>
-        /// Creates a <see cref="DateTime"/> object from a SQL query result.
+        /// Parses a <see cref="DateTime"/> from a SQL query result value.
         /// </summary>
-        /// <param name="result">The query result.</param>
-        /// <returns>A <see cref="DateTime"/> object.</returns>
+        /// <param name="result">The query result value.</param>
+        /// <returns>The parsed <see cref="DateTime"/>.</returns>
         public static DateTime ReadDateTime(this IResultSetValue result)
         {
             var dateText = result.ToString();
@@ -120,10 +120,10 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Attempts to read a DateTime from the provided result.
+        /// Attempts to parse a <see cref="DateTime"/> from the provided SQL query result value.
         /// </summary>
-        /// <param name="result">The result.</param>
-        /// <returns>A <see cref="DateTime"/> object, or null</returns>
+        /// <param name="result">The query result value.</param>
+        /// <returns>The successfully parsed <see cref="DateTime"/>, or null if a value could not be parsed.</returns>
         public static DateTime? TryReadDateTime(this IResultSetValue result)
         {
             var dateText = result.ToString();
@@ -139,8 +139,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Serializes to bytes.
         /// </summary>
-        /// <returns>System.Byte[][].</returns>
-        /// <exception cref="ArgumentNullException">If obj is null.</exception>
+        /// <returns>The serialized bytes.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="obj" /> is null.</exception>
         public static byte[] SerializeToBytes(this IJsonSerializer json, object obj)
         {
             if (obj == null)
@@ -172,10 +172,10 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Returns whether the result at the provided index is null.
+        /// Checks whether the result at the provided index is null.
         /// </summary>
         /// <param name="result">The results.</param>
-        /// <param name="index">The index.</param>
+        /// <param name="index">The index of the result to check.</param>
         /// <returns>Whether the result at the provided index is null.</returns>
         public static bool IsDBNull(this IReadOnlyList<IResultSetValue> result, int index)
         {
@@ -183,11 +183,11 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Returns the result at the provided index as a string.
+        /// Gets the result at the provided index as a string.
         /// </summary>
         /// <param name="result">The results.</param>
-        /// <param name="index">The index.</param>
-        /// <returns>A string representation of the specified result.</returns>
+        /// <param name="index">The index of the result to get.</param>
+        /// <returns>A string representation of the result at the specified index.</returns>
         public static string GetString(this IReadOnlyList<IResultSetValue> result, int index)
         {
             return result[index].ToString();
@@ -258,9 +258,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Tries to bind the provided value to the statement based on the given name.
         /// </summary>
-        /// <param name="statement">The statement.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
+        /// <param name="statement">The statement to bind the parameter to.</param>
+        /// <param name="name">The name of the parameter to bind.</param>
+        /// <param name="value">The value to bind to the parameter.</param>
         public static void TryBind(this IStatement statement, string name, double value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
@@ -554,7 +554,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="This">The statement to execute.</param>
         /// <returns>A lazily-evaluated <see cref="IEnumerable{T}"/> containing the results of the statement.</returns>
-        public static IEnumerable<IReadOnlyList<IResultSetValue>> ExecuteQuery(this IStatement This)
+        public static IEnumerable<IReadOnlyList<IResultSetValue>> ExecuteQuery(this IStatement statement)
         {
             while (This.MoveNext())
             {

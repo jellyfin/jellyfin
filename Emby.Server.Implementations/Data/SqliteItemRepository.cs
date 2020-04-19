@@ -557,7 +557,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentNullException">item.</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="item"/> is null.</exception>
         public void SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
@@ -1125,8 +1125,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Converts the provided image to a value string.
         /// </summary>
-        /// <param name="image">The image.</param>
-        /// <returns>The value string.</returns>
+        /// <param name="image">The image to convert.</param>
+        /// <returns>The value string created from the image.</returns>
         public string ToValueString(ItemImageInfo image)
         {
             var delimeter = "*";
@@ -1147,8 +1147,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Converts the provided value to an <see cref="ItemImageInfo"/>.
         /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The converted <see cref="ItemImageInfo"/></returns>
+        /// <param name="value">The value to convert.</param>
+        /// <returns>The converted <see cref="ItemImageInfo"/>.</returns>
         public ItemImageInfo ItemImageInfoFromValueString(string value)
         {
             var parts = value.Split(new[] { '*' }, StringSplitOptions.None);
@@ -1188,8 +1188,8 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="ArgumentNullException">id.</exception>
-        /// <exception cref="ArgumentException">If id is null.</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="id"/> is null.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="id"/> is an empty Guid.</exception>
         public BaseItem RetrieveItem(Guid id)
         {
             if (id == Guid.Empty)
@@ -1885,8 +1885,8 @@ namespace Emby.Server.Implementations.Data
         /// Gets the chapter.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        /// <returns>ChapterInfo.</returns>
+        /// <param name="item">The item the chapter is for.</param>
+        /// <returns>The retrieved <see cref="ChapterInfo"/>.</returns>
         private ChapterInfo GetChapter(IReadOnlyList<IResultSetValue> reader, BaseItem item)
         {
             var chapter = new ChapterInfo
@@ -2552,7 +2552,8 @@ namespace Emby.Server.Implementations.Data
 
             var items = statement.ExecuteQuery()
                 .Select(row => GetItem(row, query, hasProgramAttributes, hasEpisodeAttributes, hasServiceName, hasStartDate, hasTrailerTypes, hasArtistFields, hasSeriesFields))
-                .Where(item => item != null).ToList();
+                .Where(item => item != null)
+                .ToList();
 
             // Hack for right now since we currently don't support filtering out these duplicates within a query
             if (query.EnableGroupByMetadataKey)
@@ -4587,7 +4588,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             // Run this again to bind the params
             GetPeopleWhereClauses(query, statement);
 
-            return statement.ExecuteQuery().Select(row => GetPerson(row)).ToList();
+            return statement.ExecuteQuery().Select(GetPerson).ToList();
         }
 
         private List<string> GetPeopleWhereClauses(InternalPeopleQuery query, IStatement statement)
@@ -5355,7 +5356,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 statement.TryBind("@StreamIndex", query.Index.Value);
             }
 
-            return statement.ExecuteQuery().Select(row => GetMediaStream(row)).ToList();
+            return statement.ExecuteQuery().Select(GetMediaStream).ToList();
         }
 
         /// <inheritdoc />
@@ -5688,7 +5689,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 statement.TryBind("@AttachmentIndex", query.Index.Value);
             }
 
-            return statement.ExecuteQuery().Select(row => GetMediaAttachment(row)).ToList();
+            return statement.ExecuteQuery().Select(GetMediaAttachment).ToList();
         }
 
         /// <inheritdoc />
