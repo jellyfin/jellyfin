@@ -10,8 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Channels
 {
     /// <summary>
-    /// Channel post scan task.
-    /// This task removes all non-installed channels from the database.
+    /// A task to remove all non-installed channels from the database.
     /// </summary>
     public class ChannelPostScanTask
     {

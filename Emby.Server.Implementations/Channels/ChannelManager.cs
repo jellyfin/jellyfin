@@ -141,9 +141,9 @@ namespace Emby.Server.Implementations.Channels
         }
 
         /// <summary>
-        /// Returns an <see cref="IEnumerable{T}"/> containing installed channel ID's.
+        /// Get the installed channel IDs.
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{T}"/> containing installed channel ID's.</returns>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing installed channel IDs.</returns>
         public IEnumerable<Guid> GetInstalledChannelIds()
         {
             return GetAllChannels().Select(i => GetInternalChannelId(i.Name));
@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Channels
         /// Refreshes the associated channels.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
         /// <returns>The completed task.</returns>
         public async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
@@ -384,8 +384,8 @@ namespace Emby.Server.Implementations.Channels
         /// Gets the dynamic media sources based on the provided item.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The completed task.</returns>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>The task representing the operation to get the media sources.</returns>
         public async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
             var channel = GetChannel(item.ChannelId);
@@ -578,7 +578,8 @@ namespace Emby.Server.Implementations.Channels
         /// <param name="provider">The provider.</param>
         /// <param name="features">The features.</param>
         /// <returns>The supported features.</returns>
-        public ChannelFeatures GetChannelFeaturesDto(Channel channel,
+        public ChannelFeatures GetChannelFeaturesDto(
+            Channel channel,
             IChannel provider,
             InternalChannelFeatures features)
         {
@@ -961,27 +962,15 @@ namespace Emby.Server.Implementations.Channels
 
             if (info.Type == ChannelItemType.Folder)
             {
-                switch (info.FolderType)
+                item = info.FolderType switch
                 {
-                    case ChannelFolderType.MusicAlbum:
-                        item = GetItemById<MusicAlbum>(info.Id, channelProvider.Name, out isNew);
-                        break;
-                    case ChannelFolderType.MusicArtist:
-                        item = GetItemById<MusicArtist>(info.Id, channelProvider.Name, out isNew);
-                        break;
-                    case ChannelFolderType.PhotoAlbum:
-                        item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, out isNew);
-                        break;
-                    case ChannelFolderType.Series:
-                        item = GetItemById<Series>(info.Id, channelProvider.Name, out isNew);
-                        break;
-                    case ChannelFolderType.Season:
-                        item = GetItemById<Season>(info.Id, channelProvider.Name, out isNew);
-                        break;
-                    default:
-                        item = GetItemById<Folder>(info.Id, channelProvider.Name, out isNew);
-                        break;
-                }
+                    ChannelFolderType.MusicAlbum => GetItemById<MusicAlbum>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.MusicArtist => GetItemById<MusicArtist>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.PhotoAlbum => GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.Series => GetItemById<Series>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.Season => GetItemById<Season>(info.Id, channelProvider.Name, out isNew),
+                    _ => GetItemById<Folder>(info.Id, channelProvider.Name, out isNew)
+                };
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
@@ -991,26 +980,14 @@ namespace Emby.Server.Implementations.Channels
             }
             else
             {
-                switch (info.ContentType)
+                item = info.ContentType switch
                 {
-                    case ChannelMediaContentType.Episode:
-                        item = GetItemById<Episode>(info.Id, channelProvider.Name, out isNew);
-                        break;
-                    case ChannelMediaContentType.Movie:
-                        item = GetItemById<Movie>(info.Id, channelProvider.Name, out isNew);
-                        break;
-                    default:
-                        if (info.ContentType == ChannelMediaContentType.Trailer || info.ExtraType == ExtraType.Trailer)
-                        {
-                            item = GetItemById<Trailer>(info.Id, channelProvider.Name, out isNew);
-                        }
-                        else
-                        {
-                            item = GetItemById<Video>(info.Id, channelProvider.Name, out isNew);
-                        }
-
-                        break;
-                }
+                    ChannelMediaContentType.Episode => GetItemById<Episode>(info.Id, channelProvider.Name, out isNew),
+                    ChannelMediaContentType.Movie => GetItemById<Movie>(info.Id, channelProvider.Name, out isNew),
+                    var x when x == ChannelMediaContentType.Trailer || info.ExtraType == ExtraType.Trailer
+                    => GetItemById<Trailer>(info.Id, channelProvider.Name, out isNew),
+                    _ => GetItemById<Video>(info.Id, channelProvider.Name, out isNew)
+                };
             }
 
             var enableMediaProbe = channelProvider is ISupportsMediaProbe;

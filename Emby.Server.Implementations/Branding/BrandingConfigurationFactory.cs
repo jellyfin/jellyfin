@@ -5,7 +5,7 @@ using MediaBrowser.Model.Branding;
 namespace Emby.Server.Implementations.Branding
 {
     /// <summary>
-    /// Branding configuration factory.
+    /// A configuration factory for <see cref="BrandingOptions"/>.
     /// </summary>
     public class BrandingConfigurationFactory : IConfigurationFactory
     {
