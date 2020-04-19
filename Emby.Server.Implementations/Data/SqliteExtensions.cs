@@ -108,6 +108,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="result">The query result value.</param>
         /// <returns>The parsed <see cref="DateTime"/>.</returns>
+        /// <exception cref="FormatException">If the result is empty, or does not match a supported format.</exception>
         public static DateTime ReadDateTime(this IResultSetValue result)
         {
             var dateText = result.ToString();
