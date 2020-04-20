@@ -1,4 +1,4 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.3
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -61,6 +61,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Implementations.Tests", "tests\Jellyfin.Server.Implementations.Tests\Jellyfin.Server.Implementations.Tests.csproj", "{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Controller.Tests", "tests\Jellyfin.Controller.Tests\Jellyfin.Controller.Tests.csproj", "{462584F7-5023-4019-9EAC-B98CA458C0A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Api.Tests", "tests\MediaBrowser.Api.Tests\MediaBrowser.Api.Tests.csproj", "{7C93C84F-105C-48E5-A878-406FA0A5B296}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
