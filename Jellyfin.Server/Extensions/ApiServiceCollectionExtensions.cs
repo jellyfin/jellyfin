@@ -80,9 +80,6 @@ namespace Jellyfin.Server.Extensions
                 {
                     // Setting the naming policy to null leaves the property names as-is when serializing objects to JSON.
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
-
-                    // Accept string enums
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 })
                 .AddControllersAsServices();
         }
