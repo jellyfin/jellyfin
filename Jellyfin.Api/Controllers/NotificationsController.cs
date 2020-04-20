@@ -72,7 +72,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>All notification types.</returns>
         [HttpGet("Types")]
         [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetNotificationTypes()
         {
             try
@@ -91,7 +90,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>All notification services.</returns>
         [HttpGet("Services")]
         [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetNotificationServices()
         {
             try
@@ -114,7 +112,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Status.</returns>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult CreateAdminNotification(
             [FromQuery] string name,
             [FromQuery] string description,
@@ -148,14 +145,12 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
-        /// <returns>Status.</returns>
         [HttpPost("{UserID}/Read")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult SetRead(
+        public void SetRead(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
-            return Ok();
         }
 
         /// <summary>
@@ -163,14 +158,12 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
-        /// <returns>Status.</returns>
         [HttpPost("{UserID}/Unread")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult SetUnread(
+        public void SetUnread(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
-            return Ok();
         }
     }
 }
