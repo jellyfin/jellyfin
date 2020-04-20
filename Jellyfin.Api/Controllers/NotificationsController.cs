@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Notifications;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -42,13 +43,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">An optional limit on the number of notifications returned.</param>
         /// <returns>A read-only list of all of the user's notifications.</returns>
         [HttpGet("{UserID}")]
-        public NotificationResultDto GetNotifications(
+        [ProducesResponseType(typeof(IEnumerable<NotificationResultDto>), StatusCodes.Status200OK)]
+        public IActionResult GetNotifications(
             [FromRoute] string userId,
             [FromQuery] bool? isRead,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit)
         {
-            return new NotificationResultDto();
+            return Ok(new NotificationResultDto());
         }
 
         /// <summary>
@@ -57,10 +59,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user's ID.</param>
         /// <returns>Notifications summary for the user.</returns>
         [HttpGet("{UserID}/Summary")]
-        public NotificationsSummaryDto GetNotificationsSummary(
+        [ProducesResponseType(typeof(NotificationsSummaryDto), StatusCodes.Status200OK)]
+        public IActionResult GetNotificationsSummary(
             [FromRoute] string userId)
         {
-            return new NotificationsSummaryDto();
+            return Ok(new NotificationsSummaryDto());
         }
 
         /// <summary>
@@ -68,9 +71,18 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>All notification types.</returns>
         [HttpGet("Types")]
-        public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
+        [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public IActionResult GetNotificationTypes()
         {
-            return _notificationManager.GetNotificationTypes();
+            try
+            {
+                return Ok(_notificationManager.GetNotificationTypes());
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         /// <summary>
@@ -78,9 +90,18 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>All notification services.</returns>
         [HttpGet("Services")]
-        public IEnumerable<NameIdPair> GetNotificationServices()
+        [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public IActionResult GetNotificationServices()
         {
-            return _notificationManager.GetNotificationServices();
+            try
+            {
+                return Ok(_notificationManager.GetNotificationServices());
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         /// <summary>
@@ -90,24 +111,36 @@ namespace Jellyfin.Api.Controllers
         /// <param name="description">The description of the notification.</param>
         /// <param name="url">The URL of the notification.</param>
         /// <param name="level">The level of the notification.</param>
+        /// <returns>Status.</returns>
         [HttpPost("Admin")]
-        public void CreateAdminNotification(
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public IActionResult CreateAdminNotification(
             [FromQuery] string name,
             [FromQuery] string description,
             [FromQuery] string? url,
             [FromQuery] NotificationLevel? level)
         {
-            var notification = new NotificationRequest
+            try
             {
-                Name = name,
-                Description = description,
-                Url = url,
-                Level = level ?? NotificationLevel.Normal,
-                UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray(),
-                Date = DateTime.UtcNow,
-            };
+                var notification = new NotificationRequest
+                {
+                    Name = name,
+                    Description = description,
+                    Url = url,
+                    Level = level ?? NotificationLevel.Normal,
+                    UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray(),
+                    Date = DateTime.UtcNow,
+                };
 
-            _notificationManager.SendNotification(notification, CancellationToken.None);
+                _notificationManager.SendNotification(notification, CancellationToken.None);
+
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         /// <summary>
@@ -115,11 +148,14 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
+        /// <returns>Status.</returns>
         [HttpPost("{UserID}/Read")]
-        public void SetRead(
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult SetRead(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
+            return Ok();
         }
 
         /// <summary>
@@ -127,11 +163,14 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
+        /// <returns>Status.</returns>
         [HttpPost("{UserID}/Unread")]
-        public void SetUnread(
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult SetUnread(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
+            return Ok();
         }
     }
 }
