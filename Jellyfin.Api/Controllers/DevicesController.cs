@@ -48,6 +48,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">/// Gets or sets the user identifier.</param>
         /// <returns>Device Infos.</returns>
         [HttpGet]
+        [Authenticated(Roles = "Admin")]
         [ProducesResponseType(typeof(DeviceInfo[]), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
@@ -70,6 +71,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">Device Id.</param>
         /// <returns>Device Info.</returns>
         [HttpGet("Info")]
+        [Authenticated(Roles = "Admin")]
         [ProducesResponseType(typeof(DeviceInfo), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
@@ -97,6 +99,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">Device Id.</param>
         /// <returns>Device Info.</returns>
         [HttpGet("Options")]
+        [Authenticated(Roles = "Admin")]
         [ProducesResponseType(typeof(DeviceOptions), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
@@ -125,6 +128,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceOptions">Device Options.</param>
         /// <returns>Status.</returns>
         [HttpPost("Options")]
+        [Authenticated(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
