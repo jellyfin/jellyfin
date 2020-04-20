@@ -4,7 +4,6 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Movies
 {
-
     public class ImdbPersonExternalId : IExternalId
     {
         /// <inheritdoc />
