@@ -11,7 +11,7 @@ namespace Jellyfin.Model.Tests.Extensions
         [InlineData("banana", "Banana")]
         [InlineData("Banana", "Banana")]
         [InlineData("ä", "Ä")]
-        public void FirstToUpperTest(string str, string result)
+        public void StringHelper_ValidArgs_Success(string str, string result)
         {
             Assert.Equal(result, StringHelper.FirstToUpper(str));
         }
