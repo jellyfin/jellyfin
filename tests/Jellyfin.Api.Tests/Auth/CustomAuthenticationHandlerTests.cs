@@ -83,7 +83,7 @@ namespace Jellyfin.Api.Tests.Auth
                     a => a.Authenticate(
                         It.IsAny<HttpRequest>(),
                         It.IsAny<AuthenticatedAttribute>()))
-                .Returns((User)null);
+                .Returns((User?)null);
 
             var authenticateResult = await _sut.AuthenticateAsync();
 

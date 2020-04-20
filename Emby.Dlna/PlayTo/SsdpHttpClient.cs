@@ -1,13 +1,15 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -19,12 +21,10 @@ namespace Emby.Dlna.PlayTo
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IHttpClient _httpClient;
-        private readonly IServerConfigurationManager _config;
 
-        public SsdpHttpClient(IHttpClient httpClient, IServerConfigurationManager config)
+        public SsdpHttpClient(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _config = config;
         }
 
         public async Task<XDocument> SendCommandAsync(
@@ -32,18 +32,15 @@ namespace Emby.Dlna.PlayTo
             DeviceService service,
             string command,
             string postData,
-            bool logRequest = true,
-            string header = null)
+            string header = null,
+            CancellationToken cancellationToken = default)
         {
-            var cancellationToken = CancellationToken.None;
-
             var url = NormalizeServiceUrl(baseUrl, service.ControlUrl);
             using (var response = await PostSoapDataAsync(
                 url,
                 $"\"{service.ServiceType}#{command}\"",
                 postData,
                 header,
-                logRequest,
                 cancellationToken)
                 .ConfigureAwait(false))
             using (var stream = response.Content)
@@ -63,8 +60,10 @@ namespace Emby.Dlna.PlayTo
                 return serviceUrl;
             }
 
-            if (!serviceUrl.StartsWith("/"))
+            if (!serviceUrl.StartsWith("/", StringComparison.Ordinal))
+            {
                 serviceUrl = "/" + serviceUrl;
+            }
 
             return baseUrl + serviceUrl;
         }
@@ -90,7 +89,7 @@ namespace Emby.Dlna.PlayTo
             options.RequestHeaders["NT"] = "upnp:event";
             options.RequestHeaders["TIMEOUT"] = "Second-" + timeOut.ToString(_usCulture);
 
-            using (await _httpClient.SendAsync(options, "SUBSCRIBE").ConfigureAwait(false))
+            using (await _httpClient.SendAsync(options, new HttpMethod("SUBSCRIBE")).ConfigureAwait(false))
             {
 
             }
@@ -110,7 +109,7 @@ namespace Emby.Dlna.PlayTo
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
 
-            using (var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
@@ -125,7 +124,6 @@ namespace Emby.Dlna.PlayTo
             string soapAction,
             string postData,
             string header,
-            bool logRequest,
             CancellationToken cancellationToken)
         {
             if (soapAction[0] != '\"')

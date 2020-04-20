@@ -7,8 +7,17 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
+    /// <summary>
+    /// Nfo parser for seasons.
+    /// </summary>
     public class SeasonNfoParser : BaseNfoParser<Season>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeasonNfoParser"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="config">the configuration manager.</param>
+        /// <param name="providerManager">The provider manager.</param>
         public SeasonNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
             : base(logger, config, providerManager)
         {
@@ -32,6 +41,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 item.IndexNumber = num;
                             }
                         }
+
                         break;
                     }
 

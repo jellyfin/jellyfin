@@ -12,7 +12,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Providers.TV.TheTVDB;
+using MediaBrowser.Providers.Plugins.TheTvdb;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.TV
@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.TV
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
         private readonly IFileSystem _fileSystem;
-        private readonly TvDbClientManager _tvDbClientManager;
+        private readonly TvdbClientManager _tvdbClientManager;
 
         public MissingEpisodeProvider(
             ILogger logger,
@@ -34,14 +34,14 @@ namespace MediaBrowser.Providers.TV
             ILibraryManager libraryManager,
             ILocalizationManager localization,
             IFileSystem fileSystem,
-            TvDbClientManager tvDbClientManager)
+            TvdbClientManager tvdbClientManager)
         {
             _logger = logger;
             _config = config;
             _libraryManager = libraryManager;
             _localization = localization;
             _fileSystem = fileSystem;
-            _tvDbClientManager = tvDbClientManager;
+            _tvdbClientManager = tvdbClientManager;
         }
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.TV
                 return false;
             }
 
-            var episodes = await _tvDbClientManager.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), series.GetPreferredMetadataLanguage(), cancellationToken);
+            var episodes = await _tvdbClientManager.GetAllEpisodesAsync(Convert.ToInt32(tvdbId), series.GetPreferredMetadataLanguage(), cancellationToken);
 
             var episodeLookup = episodes
                 .Select(i =>

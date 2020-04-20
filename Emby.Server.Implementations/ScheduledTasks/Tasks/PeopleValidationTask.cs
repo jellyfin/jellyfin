@@ -5,40 +5,42 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class PeopleValidationTask
+    /// Class PeopleValidationTask.
     /// </summary>
     public class PeopleValidationTask : IScheduledTask
     {
         /// <summary>
-        /// The _library manager
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         private readonly IServerApplicationHost _appHost;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PeopleValidationTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="appHost">The server application host</param>
-        public PeopleValidationTask(ILibraryManager libraryManager, IServerApplicationHost appHost)
+        public PeopleValidationTask(ILibraryManager libraryManager, IServerApplicationHost appHost, ILocalizationManager localization)
         {
             _libraryManager = libraryManager;
             _appHost = appHost;
+            _localization = localization;
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[]
             {
-                // Every so often
                 new TaskTriggerInfo
                 {
                     Type = TaskTriggerInfo.TriggerInterval,
@@ -48,7 +50,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -58,11 +60,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
             return _libraryManager.ValidatePeople(cancellationToken, progress);
         }
 
-        public string Name => "Refresh people";
+        public string Name => _localization.GetLocalizedString("TaskRefreshPeople");
 
-        public string Description => "Updates metadata for actors and directors in your media library.";
+        public string Description => _localization.GetLocalizedString("TaskRefreshPeopleDescription");
 
-        public string Category => "Library";
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
 
         public string Key => "RefreshPeople";
 

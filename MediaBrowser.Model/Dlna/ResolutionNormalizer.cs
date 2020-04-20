@@ -1,5 +1,6 @@
+#pragma warning disable CS1591
+
 using System;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -76,9 +77,9 @@ namespace MediaBrowser.Model.Dlna
 
         private static double GetVideoBitrateScaleFactor(string codec)
         {
-            if (StringHelper.EqualsIgnoreCase(codec, "h265") ||
-                StringHelper.EqualsIgnoreCase(codec, "hevc") ||
-                StringHelper.EqualsIgnoreCase(codec, "vp9"))
+            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
             {
                 return .5;
             }

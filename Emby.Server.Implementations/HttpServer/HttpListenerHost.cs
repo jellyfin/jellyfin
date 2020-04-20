@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -18,11 +17,13 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text.Jsv;
 
@@ -30,6 +31,12 @@ namespace Emby.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : IHttpServer, IDisposable
     {
+        /// <summary>
+        /// The key for a setting that specifies the default redirect path
+        /// to use for requests where the URL base prefix is invalid or missing.
+        /// </summary>
+        public const string DefaultRedirectKey = "HttpListenerHost:DefaultRedirectPath";
+
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
@@ -40,9 +47,11 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly Func<Type, Func<string, object>> _funcParseFn;
         private readonly string _defaultRedirectPath;
         private readonly string _baseUrlPrefix;
-        private readonly Dictionary<Type, Type> ServiceOperationsMap = new Dictionary<Type, Type>();
-        private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
+        private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
+        private readonly IHostEnvironment _hostEnvironment;
+
+        private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private bool _disposed = false;
 
         public HttpListenerHost(
@@ -53,24 +62,33 @@ namespace Emby.Server.Implementations.HttpServer
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
-            IHttpListener socketListener)
+            IHttpListener socketListener,
+            ILocalizationManager localizationManager,
+            ServiceController serviceController,
+            IHostEnvironment hostEnvironment)
         {
             _appHost = applicationHost;
             _logger = logger;
             _config = config;
-            _defaultRedirectPath = configuration["HttpListenerHost:DefaultRedirectPath"];
+            _defaultRedirectPath = configuration[DefaultRedirectKey];
             _baseUrlPrefix = _config.Configuration.BaseUrl;
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
             _socketListener = socketListener;
+            ServiceController = serviceController;
+
             _socketListener.WebSocketConnected = OnWebSocketConnected;
+            _hostEnvironment = hostEnvironment;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
             Instance = this;
             ResponseFilters = Array.Empty<Action<IRequest, HttpResponse, object>>();
+            GlobalResponse = localizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
         }
+
+        public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
         public Action<IRequest, HttpResponse, object>[] ResponseFilters { get; set; }
 
@@ -80,9 +98,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        public ServiceController ServiceController { get; private set; }
-
-        public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
+        public ServiceController ServiceController { get; }
 
         public object CreateInstance(Type type)
         {
@@ -91,7 +107,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         private static string NormalizeUrlPath(string path)
         {
-            if (path.StartsWith("/"))
+            if (path.Length > 0 && path[0] == '/')
             {
                 // If the path begins with a leading slash, just return it as-is
                 return path;
@@ -131,13 +147,13 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Type GetServiceTypeByRequest(Type requestType)
         {
-            ServiceOperationsMap.TryGetValue(requestType, out var serviceType);
+            _serviceOperationsMap.TryGetValue(requestType, out var serviceType);
             return serviceType;
         }
 
         public void AddServiceInfo(Type serviceType, Type requestType)
         {
-            ServiceOperationsMap[requestType] = serviceType;
+            _serviceOperationsMap[requestType] = serviceType;
         }
 
         private List<IHasRequestFilter> GetRequestFilterAttributes(Type requestDtoType)
@@ -199,7 +215,7 @@ namespace Emby.Server.Implementations.HttpServer
                 else
                 {
                     var inners = agg.InnerExceptions;
-                    if (inners != null && inners.Count > 0)
+                    if (inners.Count > 0)
                     {
                         return GetActualException(inners[0]);
                     }
@@ -223,7 +239,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
         {
             try
             {
@@ -231,11 +247,11 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (logExceptionStackTrace)
                 {
-                    _logger.LogError(ex, "Error processing request");
+                    _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
                 }
                 else
                 {
-                    _logger.LogError("Error processing request: {Message}", ex.Message);
+                    _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
                 }
 
                 var httpRes = httpReq.Response;
@@ -255,7 +271,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
             catch (Exception errorEx)
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response)");
+                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response). URL: {Url}", urlToLog);
             }
         }
 
@@ -362,7 +378,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return true;
             }
 
-            host = host ?? string.Empty;
+            host ??= string.Empty;
 
             if (_networkManager.IsInPrivateAddressSpace(host))
             {
@@ -433,14 +449,14 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Overridable method that can be used to implement a custom hnandler
+        /// Overridable method that can be used to implement a custom handler.
         /// </summary>
         public async Task RequestHandler(IHttpRequest httpReq, string urlString, string host, string localPath, CancellationToken cancellationToken)
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var httpRes = httpReq.Response;
-            string urlToLog = null;
+            string urlToLog = GetUrlToLog(urlString);
             string remoteIp = httpReq.RemoteIp;
 
             try
@@ -486,13 +502,11 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                urlToLog = GetUrlToLog(urlString);
-
                 if (string.Equals(localPath, _baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(localPath, _baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase)
                     || string.IsNullOrEmpty(localPath)
-                    || !localPath.StartsWith(_baseUrlPrefix))
+                    || !localPath.StartsWith(_baseUrlPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     // Always redirect back to the default path if the base prefix is invalid or missing
                     _logger.LogDebug("Normalizing a URL at {0}", localPath);
@@ -519,22 +533,25 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    await ErrorHandler(new FileNotFoundException(), httpReq, false).ConfigureAwait(false);
+                    throw new FileNotFoundException();
                 }
-            }
-            catch (Exception ex) when (ex is SocketException || ex is IOException || ex is OperationCanceledException)
-            {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
-            }
-            catch (SecurityException ex)
-            {
-                await ErrorHandler(ex, httpReq, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                var logException = !string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase);
+                // Do not handle exceptions manually when in development mode
+                // The framework-defined development exception page will be returned instead
+                if (_hostEnvironment.IsDevelopment())
+                {
+                    throw;
+                }
 
-                await ErrorHandler(ex, httpReq, logException).ConfigureAwait(false);
+                bool ignoreStackTrace =
+                    ex is SocketException
+                    || ex is IOException
+                    || ex is OperationCanceledException
+                    || ex is SecurityException
+                    || ex is FileNotFoundException;
+                await ErrorHandler(ex, httpReq, !ignoreStackTrace, urlToLog).ConfigureAwait(false);
             }
             finally
             {
@@ -586,17 +603,15 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the rest handlers.
         /// </summary>
-        /// <param name="services">The services.</param>
-        /// <param name="listeners"></param>
-        /// <param name="urlPrefixes"></param>
-        public void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
+        /// <param name="serviceTypes">The service types to register with the <see cref="ServiceController"/>.</param>
+        /// <param name="listeners">The web socket listeners.</param>
+        /// <param name="urlPrefixes">The URL prefixes. See <see cref="UrlPrefixes"/>.</param>
+        public void Init(IEnumerable<Type> serviceTypes, IEnumerable<IWebSocketListener> listeners, IEnumerable<string> urlPrefixes)
         {
             _webSocketListeners = listeners.ToArray();
             UrlPrefixes = urlPrefixes.ToArray();
-            ServiceController = new ServiceController();
 
-            var types = services.Select(r => r.GetType());
-            ServiceController.Init(this, types);
+            ServiceController.Init(this, serviceTypes);
 
             ResponseFilters = new Action<IRequest, HttpResponse, object>[]
             {
@@ -693,7 +708,10 @@ namespace Emby.Server.Implementations.HttpServer
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed) return;
+            if (_disposed)
+            {
+                return;
+            }
 
             if (disposing)
             {

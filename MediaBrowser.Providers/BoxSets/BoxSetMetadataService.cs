@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.BoxSets
     {
         public BoxSetMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<BoxSetMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

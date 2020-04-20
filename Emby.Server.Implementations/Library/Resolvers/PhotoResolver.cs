@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +7,6 @@ using System.Linq;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
@@ -57,11 +55,10 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
                         // Make sure the image doesn't belong to a video file
                         var files = args.DirectoryService.GetFiles(Path.GetDirectoryName(args.Path));
-                        var libraryOptions = args.GetLibraryOptions();
 
                         foreach (var file in files)
                         {
-                            if (IsOwnedByMedia(_libraryManager, libraryOptions, file.FullName, filename))
+                            if (IsOwnedByMedia(_libraryManager, file.FullName, filename))
                             {
                                 return null;
                             }
@@ -78,17 +75,17 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        internal static bool IsOwnedByMedia(ILibraryManager libraryManager, LibraryOptions libraryOptions, string file, string imageFilename)
+        internal static bool IsOwnedByMedia(ILibraryManager libraryManager, string file, string imageFilename)
         {
-            if (libraryManager.IsVideoFile(file, libraryOptions))
+            if (libraryManager.IsVideoFile(file))
             {
-                return IsOwnedByResolvedMedia(libraryManager, libraryOptions, file, imageFilename);
+                return IsOwnedByResolvedMedia(libraryManager, file, imageFilename);
             }
 
             return false;
         }
 
-        internal static bool IsOwnedByResolvedMedia(ILibraryManager libraryManager, LibraryOptions libraryOptions, string file, string imageFilename)
+        internal static bool IsOwnedByResolvedMedia(ILibraryManager libraryManager, string file, string imageFilename)
             => imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase);
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)

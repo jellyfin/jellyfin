@@ -1,8 +1,9 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Net
 {
@@ -63,6 +64,7 @@ namespace MediaBrowser.Model.Net
             { ".m3u8", "application/x-mpegURL" },
             { ".mobi", "application/x-mobipocket-ebook" },
             { ".xml", "application/xml" },
+            { ".wasm", "application/wasm" },
 
             // Type image
             { ".jpg", "image/jpeg" },
@@ -104,6 +106,7 @@ namespace MediaBrowser.Model.Net
             { ".3g2", "video/3gpp2" },
             { ".mpd", "video/vnd.mpeg.dash.mpd" },
             { ".ts", "video/mp2t" },
+            { ".mpegts", "video/mp2t" },
 
             // Type audio
             { ".mp3", "audio/mpeg" },
@@ -121,6 +124,8 @@ namespace MediaBrowser.Model.Net
             { ".xsp", "audio/xsp" },
             { ".dsp", "audio/dsp" },
             { ".flac", "audio/flac" },
+            { ".ape", "audio/x-ape" },
+            { ".wv", "audio/x-wavpack" },
         };
 
         private static readonly Dictionary<string, string> _extensionLookup = CreateExtensionLookup();
@@ -165,20 +170,20 @@ namespace MediaBrowser.Model.Net
             }
 
             // Type text
-            if (StringHelper.EqualsIgnoreCase(ext, ".html")
-                || StringHelper.EqualsIgnoreCase(ext, ".htm"))
+            if (string.Equals(ext, ".html", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".htm", StringComparison.OrdinalIgnoreCase))
             {
                 return "text/html; charset=UTF-8";
             }
 
-            if (StringHelper.EqualsIgnoreCase(ext, ".log")
-                || StringHelper.EqualsIgnoreCase(ext, ".srt"))
+            if (string.Equals(ext, ".log", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(ext, ".srt", StringComparison.OrdinalIgnoreCase))
             {
                 return "text/plain";
             }
 
             // Misc
-            if (StringHelper.EqualsIgnoreCase(ext, ".dll"))
+            if (string.Equals(ext, ".dll", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/octet-stream";
             }

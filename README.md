@@ -14,7 +14,7 @@
 <img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin.svg"/>
 </a>
 <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget">
-<img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg" alt="Translation Status"/>
+<img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/>
 </a>
 <a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=1">
 <img alt="Azure Builds" src="https://dev.azure.com/jellyfin-project/jellyfin/_apis/build/status/Jellyfin%20CI"/>
@@ -38,6 +38,12 @@
 <a href="https://www.reddit.com/r/jellyfin">
 <img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"/>
 </a>
+<a href="https://github.com/jellyfin/jellyfin/releases.atom">
+<img alt="Release RSS Feed"" src="https://img.shields.io/badge/rss-releases-ffa500?logo=rss" />
+</a>
+<a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
+<img alt="Master Commits RSS Feed"" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
+</a>
 </p>
 
 ---
@@ -47,7 +53,7 @@ Jellyfin is a Free Software Media System that puts you in control of managing an
 For further details, please see [our documentation page](https://docs.jellyfin.org/). To receive the latest updates, get help with Jellyfin, and join the community, please visit [one of our communication channels](https://docs.jellyfin.org/general/getting-help.html). For more information about the project, please see our [about page](https://docs.jellyfin.org/general/about.html).
 
 <strong>Want to get started?</strong><br/>
-Choose from <a href="https://docs.jellyfin.org/general/administration/installing.html">Prebuilt Packages</a> or <a href="https://docs.jellyfin.org/general/administration/building.html">Build from Source</a>, then see our <a href="https://docs.jellyfin.org/general/administration/quick-start.html">quick start guide</a>.<br/>
+Choose from <a href="https://docs.jellyfin.org/general/administration/installing.html">Prebuilt Packages</a> or <a href="https://docs.jellyfin.org/general/administration/building.html">Build from Source</a>, then see our <a href="https://docs.jellyfin.org/general/quick-start.html">quick start guide</a>.<br/>
 
 <strong>Something not working right?</strong><br/>
 Open an <a href="https://docs.jellyfin.org/general/contributing/issues.html">Issue</a> on GitHub.<br/>

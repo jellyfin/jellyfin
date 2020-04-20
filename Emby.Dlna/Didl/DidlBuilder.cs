@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -18,7 +20,6 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
@@ -44,6 +45,7 @@ namespace Emby.Dlna.Didl
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly ILibraryManager _libraryManager;
 
         public DidlBuilder(
             DeviceProfile profile,
@@ -55,7 +57,8 @@ namespace Emby.Dlna.Didl
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
             ILogger logger,
-            IMediaEncoder mediaEncoder)
+            IMediaEncoder mediaEncoder,
+            ILibraryManager libraryManager)
         {
             _profile = profile;
             _user = user;
@@ -67,6 +70,7 @@ namespace Emby.Dlna.Didl
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
             _mediaEncoder = mediaEncoder;
+            _libraryManager = libraryManager;
         }
 
         public static string NormalizeDlnaMediaUrl(string url)
@@ -74,7 +78,7 @@ namespace Emby.Dlna.Didl
             return url + "&dlnaheaders=true";
         }
 
-        public string GetItemDidl(DlnaOptions options, BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
+        public string GetItemDidl(BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var settings = new XmlWriterSettings
             {
@@ -99,7 +103,7 @@ namespace Emby.Dlna.Didl
 
                     WriteXmlRootAttributes(_profile, writer);
 
-                    WriteItemElement(options, writer, item, user, context, null, deviceId, filter, streamInfo);
+                    WriteItemElement(writer, item, user, context, null, deviceId, filter, streamInfo);
 
                     writer.WriteFullEndElement();
                     //writer.WriteEndDocument();
@@ -126,7 +130,6 @@ namespace Emby.Dlna.Didl
         }
 
         public void WriteItemElement(
-            DlnaOptions options,
             XmlWriter writer,
             BaseItem item,
             User user,
@@ -163,25 +166,23 @@ namespace Emby.Dlna.Didl
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
 
-            var hasMediaSources = item as IHasMediaSources;
-
-            if (hasMediaSources != null)
+            if (item is IHasMediaSources)
             {
                 if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddAudioResource(options, writer, item, deviceId, filter, streamInfo);
+                    AddAudioResource(writer, item, deviceId, filter, streamInfo);
                 }
                 else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddVideoResource(options, writer, item, deviceId, filter, streamInfo);
+                    AddVideoResource(writer, item, deviceId, filter, streamInfo);
                 }
             }
 
-            AddCover(item, context, null, writer);
+            AddCover(item, null, writer);
             writer.WriteFullEndElement();
         }
 
-        private void AddVideoResource(DlnaOptions options, XmlWriter writer, BaseItem video, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddVideoResource(XmlWriter writer, BaseItem video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             if (streamInfo == null)
             {
@@ -225,7 +226,7 @@ namespace Emby.Dlna.Didl
 
             foreach (var contentFeature in contentFeatureList)
             {
-                AddVideoResource(writer, video, deviceId, filter, contentFeature, streamInfo);
+                AddVideoResource(writer, filter, contentFeature, streamInfo);
             }
 
             var subtitleProfiles = streamInfo.GetSubtitleProfiles(_mediaEncoder, false, _serverAddress, _accessToken);
@@ -282,7 +283,10 @@ namespace Emby.Dlna.Didl
             else
             {
                 writer.WriteStartElement(string.Empty, "res", NS_DIDL);
-                var protocolInfo = string.Format("http-get:*:text/{0}:*", info.Format.ToLowerInvariant());
+                var protocolInfo = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "http-get:*:text/{0}:*",
+                    info.Format.ToLowerInvariant());
                 writer.WriteAttributeString("protocolInfo", protocolInfo);
 
                 writer.WriteString(info.Url);
@@ -292,7 +296,7 @@ namespace Emby.Dlna.Didl
             return true;
         }
 
-        private void AddVideoResource(XmlWriter writer, BaseItem video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
+        private void AddVideoResource(XmlWriter writer, Filter filter, string contentFeatures, StreamInfo streamInfo)
         {
             writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
@@ -334,7 +338,13 @@ namespace Emby.Dlna.Didl
             {
                 if (targetWidth.HasValue && targetHeight.HasValue)
                 {
-                    writer.WriteAttributeString("resolution", string.Format("{0}x{1}", targetWidth.Value, targetHeight.Value));
+                    writer.WriteAttributeString(
+                        "resolution",
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{0}x{1}",
+                            targetWidth.Value,
+                            targetHeight.Value));
                 }
             }
 
@@ -368,17 +378,19 @@ namespace Emby.Dlna.Didl
                 streamInfo.TargetVideoCodecTag,
                 streamInfo.IsTargetAVC);
 
-            var filename = url.Substring(0, url.IndexOf('?'));
+            var filename = url.Substring(0, url.IndexOf('?', StringComparison.Ordinal));
 
             var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
                ? MimeTypes.GetMimeType(filename)
                : mediaProfile.MimeType;
 
-            writer.WriteAttributeString("protocolInfo", string.Format(
-                "http-get:*:{0}:{1}",
-                mimeType,
-                contentFeatures
-                ));
+            writer.WriteAttributeString(
+                "protocolInfo",
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "http-get:*:{0}:{1}",
+                    mimeType,
+                    contentFeatures));
 
             writer.WriteString(url);
 
@@ -391,24 +403,24 @@ namespace Emby.Dlna.Didl
             {
                 switch (itemStubType.Value)
                 {
-                    case StubType.Latest:           return _localization.GetLocalizedString("Latest");
-                    case StubType.Playlists:        return _localization.GetLocalizedString("Playlists");
-                    case StubType.AlbumArtists:     return _localization.GetLocalizedString("HeaderAlbumArtists");
-                    case StubType.Albums:           return _localization.GetLocalizedString("Albums");
-                    case StubType.Artists:          return _localization.GetLocalizedString("Artists");
-                    case StubType.Songs:            return _localization.GetLocalizedString("Songs");
-                    case StubType.Genres:           return _localization.GetLocalizedString("Genres");
-                    case StubType.FavoriteAlbums:   return _localization.GetLocalizedString("HeaderFavoriteAlbums");
-                    case StubType.FavoriteArtists:  return _localization.GetLocalizedString("HeaderFavoriteArtists");
-                    case StubType.FavoriteSongs:    return _localization.GetLocalizedString("HeaderFavoriteSongs");
+                    case StubType.Latest: return _localization.GetLocalizedString("Latest");
+                    case StubType.Playlists: return _localization.GetLocalizedString("Playlists");
+                    case StubType.AlbumArtists: return _localization.GetLocalizedString("HeaderAlbumArtists");
+                    case StubType.Albums: return _localization.GetLocalizedString("Albums");
+                    case StubType.Artists: return _localization.GetLocalizedString("Artists");
+                    case StubType.Songs: return _localization.GetLocalizedString("Songs");
+                    case StubType.Genres: return _localization.GetLocalizedString("Genres");
+                    case StubType.FavoriteAlbums: return _localization.GetLocalizedString("HeaderFavoriteAlbums");
+                    case StubType.FavoriteArtists: return _localization.GetLocalizedString("HeaderFavoriteArtists");
+                    case StubType.FavoriteSongs: return _localization.GetLocalizedString("HeaderFavoriteSongs");
                     case StubType.ContinueWatching: return _localization.GetLocalizedString("HeaderContinueWatching");
-                    case StubType.Movies:           return _localization.GetLocalizedString("Movies");
-                    case StubType.Collections:      return _localization.GetLocalizedString("Collections");
-                    case StubType.Favorites:        return _localization.GetLocalizedString("Favorites");
-                    case StubType.NextUp:           return _localization.GetLocalizedString("HeaderNextUp");
-                    case StubType.FavoriteSeries:   return _localization.GetLocalizedString("HeaderFavoriteShows");
+                    case StubType.Movies: return _localization.GetLocalizedString("Movies");
+                    case StubType.Collections: return _localization.GetLocalizedString("Collections");
+                    case StubType.Favorites: return _localization.GetLocalizedString("Favorites");
+                    case StubType.NextUp: return _localization.GetLocalizedString("HeaderNextUp");
+                    case StubType.FavoriteSeries: return _localization.GetLocalizedString("HeaderFavoriteShows");
                     case StubType.FavoriteEpisodes: return _localization.GetLocalizedString("HeaderFavoriteEpisodes");
-                    case StubType.Series:           return _localization.GetLocalizedString("Shows");
+                    case StubType.Series: return _localization.GetLocalizedString("Shows");
                     default: break;
                 }
             }
@@ -419,7 +431,10 @@ namespace Emby.Dlna.Didl
                 if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value == 0
                     && season.IndexNumber.HasValue && season.IndexNumber.Value != 0)
                 {
-                    return string.Format(_localization.GetLocalizedString("ValueSpecialEpisodeName"), item.Name);
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        _localization.GetLocalizedString("ValueSpecialEpisodeName"),
+                        item.Name);
                 }
 
                 if (item.IndexNumber.HasValue)
@@ -434,11 +449,34 @@ namespace Emby.Dlna.Didl
                     return number + " - " + item.Name;
                 }
             }
+            else if (item is Episode ep)
+            {
+                var parent = ep.GetParent();
+                var name = parent.Name + " - ";
+
+                if (ep.ParentIndexNumber.HasValue)
+                {
+                    name += "S" + ep.ParentIndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+                }
+                else if (!item.IndexNumber.HasValue)
+                {
+                    return name + " - " + item.Name;
+                }
+
+                name += "E" + ep.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+                if (ep.IndexNumberEnd.HasValue)
+                {
+                    name += "-" + ep.IndexNumberEnd.Value.ToString("00", CultureInfo.InvariantCulture);
+                }
+
+                name += " - " + item.Name;
+                return name;
+            }
 
             return item.Name;
         }
 
-        private void AddAudioResource(DlnaOptions options, XmlWriter writer, BaseItem audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddAudioResource(XmlWriter writer, BaseItem audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
@@ -504,7 +542,7 @@ namespace Emby.Dlna.Didl
                 targetSampleRate,
                 targetAudioBitDepth);
 
-            var filename = url.Substring(0, url.IndexOf('?'));
+            var filename = url.Substring(0, url.IndexOf('?', StringComparison.Ordinal));
 
             var mimeType = mediaProfile == null || string.IsNullOrEmpty(mediaProfile.MimeType)
                 ? MimeTypes.GetMimeType(filename)
@@ -520,11 +558,13 @@ namespace Emby.Dlna.Didl
                 streamInfo.RunTimeTicks ?? 0,
                 streamInfo.TranscodeSeekInfo);
 
-            writer.WriteAttributeString("protocolInfo", string.Format(
-                "http-get:*:{0}:{1}",
-                mimeType,
-                contentFeatures
-                ));
+            writer.WriteAttributeString(
+                "protocolInfo",
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "http-get:*:{0}:{1}",
+                    mimeType,
+                    contentFeatures));
 
             writer.WriteString(url);
 
@@ -547,7 +587,7 @@ namespace Emby.Dlna.Didl
 
             var clientId = GetClientId(folder, stubType);
 
-            if (string.Equals(requestedId, "0"))
+            if (string.Equals(requestedId, "0", StringComparison.Ordinal))
             {
                 writer.WriteAttributeString("id", "0");
                 writer.WriteAttributeString("parentID", "-1");
@@ -576,7 +616,7 @@ namespace Emby.Dlna.Didl
 
             AddGeneralProperties(folder, stubType, context, writer, filter);
 
-            AddCover(folder, context, stubType, writer);
+            AddCover(folder, stubType, writer);
 
             writer.WriteFullEndElement();
         }
@@ -609,7 +649,10 @@ namespace Emby.Dlna.Didl
 
             if (playbackPositionTicks > 0)
             {
-                var elementValue = string.Format("BM={0}", Convert.ToInt32(TimeSpan.FromTicks(playbackPositionTicks).TotalSeconds).ToString(_usCulture));
+                var elementValue = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "BM={0}",
+                    Convert.ToInt32(TimeSpan.FromTicks(playbackPositionTicks).TotalSeconds));
                 AddValue(writer, "sec", "dcmInfo", elementValue, secAttribute.Value);
             }
         }
@@ -632,7 +675,7 @@ namespace Emby.Dlna.Didl
             {
                 if (item.PremiereDate.HasValue)
                 {
-                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
+                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o", CultureInfo.InvariantCulture), NS_DC);
                 }
             }
 
@@ -762,37 +805,36 @@ namespace Emby.Dlna.Didl
 
         private void AddPeople(BaseItem item, XmlWriter writer)
         {
-            //var types = new[]
-            //{
-            //    PersonType.Director,
-            //    PersonType.Writer,
-            //    PersonType.Producer,
-            //    PersonType.Composer,
-            //    "Creator"
-            //};
+            if (!item.SupportsPeople)
+            {
+                return;
+            }
 
-            //var people = _libraryManager.GetPeople(item);
+            var types = new[]
+            {
+                PersonType.Director,
+                PersonType.Writer,
+                PersonType.Producer,
+                PersonType.Composer,
+                "creator"
+            };
 
-            //var index = 0;
+            // Seeing some LG models locking up due content with large lists of people
+            // The actual issue might just be due to processing a more metadata than it can handle
+            var people = _libraryManager.GetPeople(
+                new InternalPeopleQuery
+                {
+                    ItemId = item.Id,
+                    Limit = 6
+                });
 
-            //// Seeing some LG models locking up due content with large lists of people
-            //// The actual issue might just be due to processing a more metadata than it can handle
-            //var limit = 6;
+            foreach (var actor in people)
+            {
+                var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
+                    ?? PersonType.Actor;
 
-            //foreach (var actor in people)
-            //{
-            //    var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
-            //        ?? PersonType.Actor;
-
-            //    AddValue(writer, "upnp", type.ToLowerInvariant(), actor.Name, NS_UPNP);
-
-            //    index++;
-
-            //    if (index >= limit)
-            //    {
-            //        break;
-            //    }
-            //}
+                AddValue(writer, "upnp", type.ToLowerInvariant(), actor.Name, NS_UPNP);
+            }
         }
 
         private void AddGeneralProperties(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
@@ -869,7 +911,7 @@ namespace Emby.Dlna.Didl
             }
         }
 
-        private void AddCover(BaseItem item, BaseItem context, StubType? stubType, XmlWriter writer)
+        private void AddCover(BaseItem item, StubType? stubType, XmlWriter writer)
         {
             ImageDownloadInfo imageInfo = GetImageInfo(item);
 
@@ -914,17 +956,8 @@ namespace Emby.Dlna.Didl
 
         }
 
-        private void AddEmbeddedImageAsCover(string name, XmlWriter writer)
-        {
-            writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
-            writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
-            writer.WriteString(_serverAddress + "/Dlna/icons/people480.jpg");
-            writer.WriteFullEndElement();
-
-            writer.WriteElementString("upnp", "icon", NS_UPNP, _serverAddress + "/Dlna/icons/people48.jpg");
-        }
-
-        private void AddImageResElement(BaseItem item,
+        private void AddImageResElement(
+            BaseItem item,
             XmlWriter writer,
             int maxWidth,
             int maxHeight,
@@ -950,13 +983,17 @@ namespace Emby.Dlna.Didl
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
 
-            writer.WriteAttributeString("protocolInfo", string.Format(
-                "http-get:*:{0}:{1}",
-                MimeTypes.GetMimeType("file." + format),
-                contentFeatures
-                ));
+            writer.WriteAttributeString(
+                "protocolInfo",
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "http-get:*:{0}:{1}",
+                    MimeTypes.GetMimeType("file." + format),
+                    contentFeatures));
 
-            writer.WriteAttributeString("resolution", string.Format("{0}x{1}", width, height));
+            writer.WriteAttributeString(
+                "resolution",
+                string.Format(CultureInfo.InvariantCulture, "{0}x{1}", width, height));
 
             writer.WriteString(albumartUrlInfo.Url);
 
@@ -1095,7 +1132,9 @@ namespace Emby.Dlna.Didl
 
         private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, string format)
         {
-            var url = string.Format("{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}/0/0",
+            var url = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}/0/0",
                 _serverAddress,
                 info.ItemId.ToString("N", CultureInfo.InvariantCulture),
                 info.Type,

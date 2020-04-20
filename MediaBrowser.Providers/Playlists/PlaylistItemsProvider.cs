@@ -23,7 +23,7 @@ namespace MediaBrowser.Providers.Playlists
         private ILogger _logger;
         private IFileSystem _fileSystem;
 
-        public PlaylistItemsProvider(IFileSystem fileSystem, ILogger logger)
+        public PlaylistItemsProvider(IFileSystem fileSystem, ILogger<PlaylistItemsProvider> logger)
         {
             _fileSystem = fileSystem;
             _logger = logger;

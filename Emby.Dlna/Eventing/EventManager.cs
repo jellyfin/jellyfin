@@ -1,8 +1,11 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -164,7 +167,7 @@ namespace Emby.Dlna.Eventing
 
             try
             {
-                using (await _httpClient.SendAsync(options, "NOTIFY").ConfigureAwait(false))
+                using (await _httpClient.SendAsync(options, new HttpMethod("NOTIFY")).ConfigureAwait(false))
                 {
 
                 }

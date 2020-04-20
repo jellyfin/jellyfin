@@ -9,7 +9,7 @@ using MediaBrowser.Model.IO;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Class ResolverHelper
+    /// Class ResolverHelper.
     /// </summary>
     public static class ResolverHelper
     {

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Linq;
@@ -15,14 +14,12 @@ namespace Emby.Server.Implementations.Channels
     public class ChannelPostScanTask
     {
         private readonly IChannelManager _channelManager;
-        private readonly IUserManager _userManager;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
-        public ChannelPostScanTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
+        public ChannelPostScanTask(IChannelManager channelManager, ILogger logger, ILibraryManager libraryManager)
         {
             _channelManager = channelManager;
-            _userManager = userManager;
             _logger = logger;
             _libraryManager = libraryManager;
         }
@@ -33,14 +30,6 @@ namespace Emby.Server.Implementations.Channels
 
             progress.Report(100);
             return Task.CompletedTask;
-        }
-
-        public static string GetUserDistinctValue(User user)
-        {
-            var channels = user.Policy.EnabledChannels
-                .OrderBy(i => i);
-
-            return string.Join("|", channels);
         }
 
         private void CleanDatabase(CancellationToken cancellationToken)
@@ -75,19 +64,23 @@ namespace Emby.Server.Implementations.Channels
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-
-                }, false);
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             // Finally, delete the channel itself
-            _libraryManager.DeleteItem(channel, new DeleteOptions
-            {
-                DeleteFileLocation = false
-
-            }, false);
+            _libraryManager.DeleteItem(
+                channel,
+                new DeleteOptions
+                {
+                    DeleteFileLocation = false
+                },
+                false);
         }
     }
 }

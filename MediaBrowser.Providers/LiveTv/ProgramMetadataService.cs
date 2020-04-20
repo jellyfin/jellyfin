@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.LiveTv
     {
         public LiveTvMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<LiveTvMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

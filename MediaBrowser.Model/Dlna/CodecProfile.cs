@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+
+using System;
 using System.Xml.Serialization;
 using MediaBrowser.Model.Extensions;
 
@@ -20,8 +23,8 @@ namespace MediaBrowser.Model.Dlna
 
         public CodecProfile()
         {
-            Conditions = new ProfileCondition[] { };
-            ApplyConditions = new ProfileCondition[] { };
+            Conditions = Array.Empty<ProfileCondition>();
+            ApplyConditions = Array.Empty<ProfileCondition>();
         }
 
         public string[] GetCodecs()

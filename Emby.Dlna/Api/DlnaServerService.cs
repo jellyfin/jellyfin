@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -149,6 +152,7 @@ namespace Emby.Dlna.Api
             return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, XMLContentType, () => Task.FromResult<Stream>(new MemoryStream(bytes)));
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetContentDirectory request)
         {
             var xml = ContentDirectory.GetServiceXml();
@@ -156,6 +160,7 @@ namespace Emby.Dlna.Api
             return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetMediaReceiverRegistrar request)
         {
             var xml = MediaReceiverRegistrar.GetServiceXml();
@@ -163,6 +168,7 @@ namespace Emby.Dlna.Api
             return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetConnnectionManager request)
         {
             var xml = ConnectionManager.GetServiceXml();
@@ -170,32 +176,32 @@ namespace Emby.Dlna.Api
             return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
-        public object Post(ProcessMediaReceiverRegistrarControlRequest request)
+        public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
-            var response = PostAsync(request.RequestStream, MediaReceiverRegistrar);
+            var response = await PostAsync(request.RequestStream, MediaReceiverRegistrar).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
-        public object Post(ProcessContentDirectoryControlRequest request)
+        public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
-            var response = PostAsync(request.RequestStream, ContentDirectory);
+            var response = await PostAsync(request.RequestStream, ContentDirectory).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
-        public object Post(ProcessConnectionManagerControlRequest request)
+        public async Task<object> Post(ProcessConnectionManagerControlRequest request)
         {
-            var response = PostAsync(request.RequestStream, ConnectionManager);
+            var response = await PostAsync(request.RequestStream, ConnectionManager).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
-        private ControlResponse PostAsync(Stream requestStream, IUpnpService service)
+        private Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
         {
             var id = GetPathValue(2).ToString();
 
-            return service.ProcessControlRequest(new ControlRequest
+            return service.ProcessControlRequestAsync(new ControlRequest
             {
                 Headers = Request.Headers,
                 InputXml = requestStream,
@@ -311,31 +317,37 @@ namespace Emby.Dlna.Api
             return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, contentType, () => Task.FromResult(_dlnaManager.GetIcon(request.Filename).Stream));
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Subscribe(ProcessContentDirectoryEventRequest request)
         {
             return ProcessEventRequest(ContentDirectory);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Subscribe(ProcessConnectionManagerEventRequest request)
         {
             return ProcessEventRequest(ConnectionManager);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Subscribe(ProcessMediaReceiverRegistrarEventRequest request)
         {
             return ProcessEventRequest(MediaReceiverRegistrar);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Unsubscribe(ProcessContentDirectoryEventRequest request)
         {
             return ProcessEventRequest(ContentDirectory);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Unsubscribe(ProcessConnectionManagerEventRequest request)
         {
             return ProcessEventRequest(ConnectionManager);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Unsubscribe(ProcessMediaReceiverRegistrarEventRequest request)
         {
             return ProcessEventRequest(MediaReceiverRegistrar);

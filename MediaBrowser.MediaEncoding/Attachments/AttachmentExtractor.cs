@@ -1,6 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -155,47 +155,44 @@ namespace MediaBrowser.MediaEncoding.Attachments
                 inputPath,
                 attachmentStreamIndex,
                 outputPath);
-            var startInfo = new ProcessStartInfo
-            {
-                Arguments = processArgs,
-                FileName = _mediaEncoder.EncoderPath,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false
-            };
-            var process = new Process
-            {
-                StartInfo = startInfo
-            };
 
-            _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            int exitCode;
 
-            process.Start();
-
-            var processTcs = new TaskCompletionSource<bool>();
-            process.EnableRaisingEvents = true;
-            process.Exited += (sender, args) => processTcs.TrySetResult(true);
-            var unregister = cancellationToken.Register(() => processTcs.TrySetResult(process.HasExited));
-            var ranToCompletion = await processTcs.Task.ConfigureAwait(false);
-            unregister.Dispose();
-
-            if (!ranToCompletion)
-            {
-                try
+            using (var process = new Process
                 {
-                    _logger.LogWarning("Killing ffmpeg attachment extraction process");
-                    process.Kill();
-                }
-                catch (Exception ex)
+                    StartInfo = new ProcessStartInfo
+                    {
+                        Arguments = processArgs,
+                        FileName = _mediaEncoder.EncoderPath,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        ErrorDialog = false
+                    },
+                    EnableRaisingEvents = true
+                })
+            {
+                _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+                process.Start();
+
+                var ranToCompletion = await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+
+                if (!ranToCompletion)
                 {
-                    _logger.LogError(ex, "Error killing attachment extraction process");
+                    try
+                    {
+                        _logger.LogWarning("Killing ffmpeg attachment extraction process");
+                        process.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error killing attachment extraction process");
+                    }
                 }
+
+                exitCode = ranToCompletion ? process.ExitCode : -1;
             }
-
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
-
-            process.Dispose();
 
             var failed = false;
 

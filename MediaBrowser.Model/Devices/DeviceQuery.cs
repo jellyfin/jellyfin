@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 
 namespace MediaBrowser.Model.Devices
@@ -9,6 +11,7 @@ namespace MediaBrowser.Model.Devices
         /// </summary>
         /// <value><c>null</c> if [supports synchronize] contains no value, <c>true</c> if [supports synchronize]; otherwise, <c>false</c>.</value>
         public bool? SupportsSync { get; set; }
+
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>

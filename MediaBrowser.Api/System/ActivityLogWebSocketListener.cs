@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
@@ -24,7 +23,7 @@ namespace MediaBrowser.Api.System
         /// </summary>
         private readonly IActivityManager _activityManager;
 
-        public ActivityLogWebSocketListener(ILogger logger, IActivityManager activityManager) : base(logger)
+        public ActivityLogWebSocketListener(ILogger<ActivityLogWebSocketListener> logger, IActivityManager activityManager) : base(logger)
         {
             _activityManager = activityManager;
             _activityManager.EntryCreated += _activityManager_EntryCreated;

@@ -1,5 +1,9 @@
+#pragma warning disable CS1591
+
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -182,7 +186,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = _fileSystem.GetFileStream(source, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
+            var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, true);
 
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
@@ -897,7 +901,10 @@ namespace MediaBrowser.Providers.Manager
                 return new ExternalUrl
                 {
                     Name = i.Name,
-                    Url = string.Format(i.UrlFormatString, value)
+                    Url = string.Format(
+                        CultureInfo.InvariantCulture,
+                        i.UrlFormatString,
+                        value)
                 };
 
             }).Where(i => i != null).Concat(item.GetRelatedUrls());
@@ -911,11 +918,10 @@ namespace MediaBrowser.Providers.Manager
                     Name = i.Name,
                     Key = i.Key,
                     UrlFormatString = i.UrlFormatString
-
                 });
         }
 
-        private Dictionary<Guid, double> _activeRefreshes = new Dictionary<Guid, double>();
+        private ConcurrentDictionary<Guid, double> _activeRefreshes = new ConcurrentDictionary<Guid, double>();
 
         public Dictionary<Guid, Guid> GetRefreshQueue()
         {
@@ -927,66 +933,54 @@ namespace MediaBrowser.Providers.Manager
                 {
                     dict[item.Item1] = item.Item1;
                 }
+
                 return dict;
             }
         }
 
         public void OnRefreshStart(BaseItem item)
         {
-            //_logger.LogInformation("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
-            var id = item.Id;
-
-            lock (_activeRefreshes)
-            {
-                _activeRefreshes[id] = 0;
-            }
-
+            _logger.LogInformation("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _activeRefreshes[item.Id] = 0;
             RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
         }
 
         public void OnRefreshComplete(BaseItem item)
         {
-            //_logger.LogInformation("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
-            lock (_activeRefreshes)
-            {
-                _activeRefreshes.Remove(item.Id);
-            }
+            _logger.LogInformation("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+
+            _activeRefreshes.Remove(item.Id, out _);
 
             RefreshCompleted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
         }
 
         public double? GetRefreshProgress(Guid id)
         {
-            lock (_activeRefreshes)
+            if (_activeRefreshes.TryGetValue(id, out double value))
             {
-                if (_activeRefreshes.TryGetValue(id, out double value))
-                {
-                    return value;
-                }
-
-                return null;
+                return value;
             }
+
+            return null;
         }
 
         public void OnRefreshProgress(BaseItem item, double progress)
         {
-            //_logger.LogInformation("OnRefreshProgress {0} {1}", item.Id.ToString("N", CultureInfo.InvariantCulture), progress);
             var id = item.Id;
+            _logger.LogInformation("OnRefreshProgress {0} {1}", id.ToString("N", CultureInfo.InvariantCulture), progress);
 
-            lock (_activeRefreshes)
-            {
-                if (_activeRefreshes.ContainsKey(id))
-                {
-                    _activeRefreshes[id] = progress;
+            // TODO: Need to hunt down the conditions for this happening
+            _activeRefreshes.AddOrUpdate(
+                id,
+                (_) => throw new Exception(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
+                        item.GetType().Name,
+                        item.Id.ToString("N", CultureInfo.InvariantCulture))),
+                (_, __) => progress);
 
-                    RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
-                }
-                else
-                {
-                    // TODO: Need to hunt down the conditions for this happening
-                    //throw new Exception(string.Format("Refresh for item {0} {1} is not in progress", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture)));
-                }
-            }
+            RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
         }
 
         private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
@@ -1040,10 +1034,9 @@ namespace MediaBrowser.Providers.Manager
                         // Try to throttle this a little bit.
                         await Task.Delay(100).ConfigureAwait(false);
 
-                        var artist = item as MusicArtist;
-                        var task = artist == null
-                            ? RefreshItem(item, refreshItem.Item2, cancellationToken)
-                            : RefreshArtist(artist, refreshItem.Item2, cancellationToken);
+                        var task = item is MusicArtist artist
+                            ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
+                            : RefreshItem(item, refreshItem.Item2, cancellationToken);
 
                         await task.ConfigureAwait(false);
                     }
@@ -1125,8 +1118,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options,
-            CancellationToken cancellationToken)
+        public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return RefreshItem(item, options, cancellationToken);
         }

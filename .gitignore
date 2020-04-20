@@ -39,6 +39,7 @@ ProgramData*/
 CorePlugins*/
 ProgramData-Server*/
 ProgramData-UI*/
+MediaBrowser.WebDashboard/jellyfin-web/**
 
 #################
 ## Visual Studio

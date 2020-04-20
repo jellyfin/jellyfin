@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -265,6 +264,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(username))
             {
+                _logger.LogInformation("Authentication request without username has been denied (IP: {IP}).", remoteEndPoint);
                 throw new ArgumentNullException(nameof(username));
             }
 
@@ -291,10 +291,11 @@ namespace Emby.Server.Implementations.Library
                     && authenticationProvider != null
                     && !(authenticationProvider is DefaultAuthenticationProvider))
                 {
-                    // We should trust the user that the authprovider says, not what was typed
+                    // Trust the username returned by the authentication provider
                     username = updatedUsername;
 
-                    // Search the database for the user again; the authprovider might have created it
+                    // Search the database for the user again
+                    // the authentication provider might have created it
                     user = Users
                         .FirstOrDefault(i => string.Equals(username, i.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -319,11 +320,13 @@ namespace Emby.Server.Implementations.Library
 
             if (user == null)
             {
+                _logger.LogInformation("Authentication request for {UserName} has been denied (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
             if (user.Policy.IsDisabled)
             {
+                _logger.LogInformation("Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException(
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -333,11 +336,13 @@ namespace Emby.Server.Implementations.Library
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
+                _logger.LogInformation("Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException("Forbidden.");
             }
 
             if (!user.IsParentalScheduleAllowed())
             {
+                _logger.LogInformation("Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException("User is not allowed access at this time.");
             }
 
@@ -351,13 +356,13 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 ResetInvalidLoginAttemptCount(user);
+                _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Name);
             }
             else
             {
                 IncrementInvalidLoginAttemptCount(user);
+                _logger.LogInformation("Authentication request for {UserName} has been denied (IP: {IP}).", user.Name, remoteEndPoint);
             }
-
-            _logger.LogInformation("Authentication request for {0} {1}.", user.Name, success ? "has succeeded" : "has been denied");
 
             return success ? user : null;
         }
@@ -667,7 +672,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Invalid username", nameof(newName));
             }
 
-            if (user.Name.Equals(newName, StringComparison.OrdinalIgnoreCase))
+            if (user.Name.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
@@ -805,17 +810,17 @@ namespace Emby.Server.Implementations.Library
 
             // Delete user config dir
             lock (_configSyncLock)
-            lock (_policySyncLock)
-            {
-                try
+                lock (_policySyncLock)
                 {
-                    Directory.Delete(user.ConfigurationDirectoryPath, true);
+                    try
+                    {
+                        Directory.Delete(user.ConfigurationDirectoryPath, true);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogError(ex, "Error deleting user config dir: {Path}", user.ConfigurationDirectoryPath);
+                    }
                 }
-                catch (IOException ex)
-                {
-                    _logger.LogError(ex, "Error deleting user config dir: {Path}", user.ConfigurationDirectoryPath);
-                }
-            }
 
             _users.TryRemove(user.Id, out _);
 

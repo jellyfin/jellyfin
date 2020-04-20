@@ -1,5 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Xml;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -12,29 +15,28 @@ namespace Emby.Dlna.ConnectionManager
     {
         private readonly DeviceProfile _profile;
 
-        protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams)
+        public ControlHandler(IServerConfigurationManager config, ILogger logger, DeviceProfile profile)
+            : base(config, logger)
+        {
+            _profile = profile;
+        }
+
+        /// <inheritdoc />
+        protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
             if (string.Equals(methodName, "GetProtocolInfo", StringComparison.OrdinalIgnoreCase))
             {
-                return HandleGetProtocolInfo();
+                HandleGetProtocolInfo(xmlWriter);
+                return;
             }
 
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
         }
 
-        private IEnumerable<KeyValuePair<string, string>> HandleGetProtocolInfo()
+        private void HandleGetProtocolInfo(XmlWriter xmlWriter)
         {
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "Source", _profile.ProtocolInfo },
-                { "Sink", "" }
-            };
-        }
-
-        public ControlHandler(IServerConfigurationManager config, ILogger logger, DeviceProfile profile)
-            : base(config, logger)
-        {
-            _profile = profile;
+            xmlWriter.WriteElementString("Source", _profile.ProtocolInfo);
+            xmlWriter.WriteElementString("Sink", string.Empty);
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Class PackageInfo
+    /// Class PackageInfo.
     /// </summary>
     public class PackageInfo
     {
@@ -170,7 +170,7 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         public PackageInfo()
         {
-            versions = new PackageVersionInfo[] { };
+            versions = Array.Empty<PackageVersionInfo>();
         }
     }
 }

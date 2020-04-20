@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.IO;
@@ -31,7 +30,6 @@ namespace Emby.Naming.Subtitles
             }
 
             var flags = GetFlags(path);
-
             var info = new SubtitleInfo
             {
                 Path = path,
@@ -39,13 +37,14 @@ namespace Emby.Naming.Subtitles
                 IsForced = _options.SubtitleForcedFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase))
             };
 
-            var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparer.OrdinalIgnoreCase) && !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))
+            var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparer.OrdinalIgnoreCase)
+                && !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             // Should have a name, language and file extension
             if (parts.Count >= 3)
             {
-                info.Language = parts[parts.Count - 2];
+                info.Language = parts[^2];
             }
 
             return info;

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -5,7 +7,6 @@ using System.Linq;
 using System.Text;
 using Emby.Dlna.Common;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Dlna.Server
 {

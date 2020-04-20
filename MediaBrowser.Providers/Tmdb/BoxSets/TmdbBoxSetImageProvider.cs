@@ -10,7 +10,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Providers.Movies;
 using MediaBrowser.Providers.Tmdb.Models.Collections;
 using MediaBrowser.Providers.Tmdb.Models.General;
 using MediaBrowser.Providers.Tmdb.Movies;

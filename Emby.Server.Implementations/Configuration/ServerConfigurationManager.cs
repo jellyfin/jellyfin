@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Emby.Server.Implementations.AppBase;
@@ -133,7 +132,7 @@ namespace Emby.Server.Implementations.Configuration
             var newPath = newConfig.MetadataPath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(Configuration.MetadataPath, newPath,  StringComparison.Ordinal))
+                && !string.Equals(Configuration.MetadataPath, newPath, StringComparison.Ordinal))
             {
                 // Validate
                 if (!Directory.Exists(newPath))

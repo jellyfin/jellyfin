@@ -68,7 +68,7 @@ namespace Emby.Naming.Video
         public string StubType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type.
+        /// Gets or sets a value indicating whether this instance is a directory.
         /// </summary>
         /// <value>The type.</value>
         public bool IsDirectory { get; set; }
@@ -77,7 +77,9 @@ namespace Emby.Naming.Video
         /// Gets the file name without extension.
         /// </summary>
         /// <value>The file name without extension.</value>
-        public string FileNameWithoutExtension => !IsDirectory ? System.IO.Path.GetFileNameWithoutExtension(Path) : System.IO.Path.GetFileName(Path);
+        public string FileNameWithoutExtension => !IsDirectory
+            ? System.IO.Path.GetFileNameWithoutExtension(Path)
+            : System.IO.Path.GetFileName(Path);
 
         /// <inheritdoc />
         public override string ToString()

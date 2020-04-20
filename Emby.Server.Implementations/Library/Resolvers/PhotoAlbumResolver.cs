@@ -63,13 +63,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
             {
                 if (!file.IsDirectory && PhotoResolver.IsImageFile(file.FullName, _imageProcessor))
                 {
-                    var libraryOptions = args.GetLibraryOptions();
                     var filename = file.Name;
                     var ownedByMedia = false;
 
                     foreach (var siblingFile in files)
                     {
-                        if (PhotoResolver.IsOwnedByMedia(_libraryManager, libraryOptions, siblingFile.FullName, filename))
+                        if (PhotoResolver.IsOwnedByMedia(_libraryManager, siblingFile.FullName, filename))
                         {
                             ownedByMedia = true;
                             break;

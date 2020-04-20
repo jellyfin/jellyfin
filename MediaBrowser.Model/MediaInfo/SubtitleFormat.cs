@@ -1,6 +1,8 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.MediaInfo
 {
-    public class SubtitleFormat
+    public static class SubtitleFormat
     {
         public const string SRT = "srt";
         public const string SSA = "ssa";

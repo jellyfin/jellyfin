@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -20,34 +19,26 @@ namespace Emby.Naming.Video
             _options = options;
         }
 
-        public StackResult ResolveDirectories(IEnumerable<string> files)
+        public IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata
-            {
-                FullName = i,
-                IsDirectory = true
-            }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }));
         }
 
-        public StackResult ResolveFiles(IEnumerable<string> files)
+        public IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata
-            {
-                FullName = i,
-                IsDirectory = false
-            }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }));
         }
 
-        public StackResult ResolveAudioBooks(IEnumerable<FileSystemMetadata> files)
+        public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<FileSystemMetadata> files)
         {
-            var result = new StackResult();
-            foreach (var directory in files.GroupBy(file => file.IsDirectory ? file.FullName : Path.GetDirectoryName(file.FullName)))
+            var groupedDirectoryFiles = files.GroupBy(file =>
+                file.IsDirectory
+                    ? file.FullName
+                    : Path.GetDirectoryName(file.FullName));
+
+            foreach (var directory in groupedDirectoryFiles)
             {
-                var stack = new FileStack()
-                {
-                    Name = Path.GetFileName(directory.Key),
-                    IsDirectoryStack = false
-                };
+                var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
                 foreach (var file in directory)
                 {
                     if (file.IsDirectory)
@@ -58,20 +49,16 @@ namespace Emby.Naming.Video
                     stack.Files.Add(file.FullName);
                 }
 
-                result.Stacks.Add(stack);
+                yield return stack;
             }
-
-            return result;
         }
 
-        public StackResult Resolve(IEnumerable<FileSystemMetadata> files)
+        public IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files)
         {
-            var result = new StackResult();
-
             var resolver = new VideoResolver(_options);
 
             var list = files
-                .Where(i => i.IsDirectory || (resolver.IsVideoFile(i.FullName) || resolver.IsStubFile(i.FullName)))
+                .Where(i => i.IsDirectory || resolver.IsVideoFile(i.FullName) || resolver.IsStubFile(i.FullName))
                 .OrderBy(i => i.FullName)
                 .ToList();
 
@@ -191,17 +178,15 @@ namespace Emby.Naming.Video
 
                     if (stack.Files.Count > 1)
                     {
-                        result.Stacks.Add(stack);
+                        yield return stack;
                         i += stack.Files.Count - 1;
                         break;
                     }
                 }
             }
-
-            return result;
         }
 
-        private string GetRegexInput(FileSystemMetadata file)
+        private static string GetRegexInput(FileSystemMetadata file)
         {
             // For directories, dummy up an extension otherwise the expressions will fail
             var input = !file.IsDirectory
@@ -211,7 +196,7 @@ namespace Emby.Naming.Video
             return Path.GetFileName(input);
         }
 
-        private Match FindMatch(FileSystemMetadata input, Regex regex, int offset)
+        private static Match FindMatch(FileSystemMetadata input, Regex regex, int offset)
         {
             var regexInput = GetRegexInput(input);
 

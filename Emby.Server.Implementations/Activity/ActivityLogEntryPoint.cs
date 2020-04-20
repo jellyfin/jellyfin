@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-#pragma warning disable SA1600
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
@@ -29,7 +25,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
-    public class ActivityLogEntryPoint : IServerEntryPoint
+    /// <summary>
+    /// Entry point for the activity logger.
+    /// </summary>
+    public sealed class ActivityLogEntryPoint : IServerEntryPoint
     {
         private readonly ILogger _logger;
         private readonly IInstallationManager _installationManager;
@@ -39,22 +38,20 @@ namespace Emby.Server.Implementations.Activity
         private readonly ILocalizationManager _localization;
         private readonly ISubtitleManager _subManager;
         private readonly IUserManager _userManager;
-        private readonly IServerApplicationHost _appHost;
         private readonly IDeviceManager _deviceManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLogEntryPoint"/> class.
         /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="sessionManager"></param>
-        /// <param name="deviceManager"></param>
-        /// <param name="taskManager"></param>
-        /// <param name="activityManager"></param>
-        /// <param name="localization"></param>
-        /// <param name="installationManager"></param>
-        /// <param name="subManager"></param>
-        /// <param name="userManager"></param>
-        /// <param name="appHost"></param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="deviceManager">The device manager.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="activityManager">The activity manager.</param>
+        /// <param name="localization">The localization manager.</param>
+        /// <param name="installationManager">The installation manager.</param>
+        /// <param name="subManager">The subtitle manager.</param>
+        /// <param name="userManager">The user manager.</param>
         public ActivityLogEntryPoint(
             ILogger<ActivityLogEntryPoint> logger,
             ISessionManager sessionManager,
@@ -64,8 +61,7 @@ namespace Emby.Server.Implementations.Activity
             ILocalizationManager localization,
             IInstallationManager installationManager,
             ISubtitleManager subManager,
-            IUserManager userManager,
-            IServerApplicationHost appHost)
+            IUserManager userManager)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -76,9 +72,9 @@ namespace Emby.Server.Implementations.Activity
             _installationManager = installationManager;
             _subManager = subManager;
             _userManager = userManager;
-            _appHost = appHost;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _taskManager.TaskCompleted += OnTaskCompleted;
@@ -141,7 +137,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
                     e.Provider,
-                    Notifications.Notifications.GetItemName(e.Item)),
+                    Emby.Notifications.NotificationEntryPoint.GetItemName(e.Item)),
                 Type = "SubtitleDownloadFailure",
                 ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message
@@ -173,7 +169,12 @@ namespace Emby.Server.Implementations.Activity
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserStoppedPlayingItemWithValues"), user.Name, GetItemName(item), e.DeviceName),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserStoppedPlayingItemWithValues"),
+                    user.Name,
+                    GetItemName(item),
+                    e.DeviceName),
                 Type = GetPlaybackStoppedNotificationType(item.MediaType),
                 UserId = user.Id
             });
@@ -490,8 +491,8 @@ namespace Emby.Server.Implementations.Activity
             var result = e.Result;
             var task = e.Task;
 
-            var activityTask = task.ScheduledTask as IConfigurableScheduledTask;
-            if (activityTask != null && !activityTask.IsLogged)
+            if (task.ScheduledTask is IConfigurableScheduledTask activityTask
+                && !activityTask.IsLogged)
             {
                 return;
             }
@@ -533,6 +534,7 @@ namespace Emby.Server.Implementations.Activity
         private void CreateLogEntry(ActivityLogEntry entry)
             => _activityManager.Create(entry);
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _taskManager.TaskCompleted -= OnTaskCompleted;
@@ -564,7 +566,7 @@ namespace Emby.Server.Implementations.Activity
         /// <summary>
         /// Constructs a user-friendly string for this TimeSpan instance.
         /// </summary>
-        public static string ToUserFriendlyString(TimeSpan span)
+        private static string ToUserFriendlyString(TimeSpan span)
         {
             const int DaysInYear = 365;
             const int DaysInMonth = 30;

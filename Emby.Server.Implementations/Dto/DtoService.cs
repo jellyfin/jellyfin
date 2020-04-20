@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -1057,30 +1056,19 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.SpecialFeatureCount))
             {
-                if (allExtras == null)
-                {
-                    allExtras = item.GetExtras().ToArray();
-                }
-
+                allExtras = item.GetExtras().ToArray();
                 dto.SpecialFeatureCount = allExtras.Count(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value));
             }
 
             if (options.ContainsField(ItemFields.LocalTrailerCount))
             {
-                int trailerCount = 0;
-                if (allExtras == null)
-                {
-                    allExtras = item.GetExtras().ToArray();
-                }
-
-                trailerCount += allExtras.Count(i => i.ExtraType.HasValue && i.ExtraType.Value == ExtraType.Trailer);
+                allExtras ??= item.GetExtras().ToArray();
+                dto.LocalTrailerCount = allExtras.Count(i => i.ExtraType == ExtraType.Trailer);
 
                 if (item is IHasTrailers hasTrailers)
                 {
-                    trailerCount += hasTrailers.GetTrailerCount();
+                    dto.LocalTrailerCount += hasTrailers.GetTrailerCount();
                 }
-
-                dto.LocalTrailerCount = trailerCount;
             }
 
             // Add EpisodeInfo
@@ -1362,56 +1350,33 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
-            var supportedEnhancers = _imageProcessor.GetSupportedEnhancers(item, ImageType.Primary).ToArray();
-
             ImageDimensions size;
 
             var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
 
             if (defaultAspectRatio > 0)
             {
-                if (supportedEnhancers.Length == 0)
-                {
-                    return defaultAspectRatio;
-                }
-
-                int dummyWidth = 200;
-                int dummyHeight = Convert.ToInt32(dummyWidth / defaultAspectRatio);
-                size = new ImageDimensions(dummyWidth, dummyHeight);
+                return defaultAspectRatio;
             }
-            else
+
+            if (!imageInfo.IsLocalFile)
             {
-                if (!imageInfo.IsLocalFile)
+                return null;
+            }
+
+            try
+            {
+                size = _imageProcessor.GetImageDimensions(item, imageInfo);
+
+                if (size.Width <= 0 || size.Height <= 0)
                 {
                     return null;
                 }
-
-                try
-                {
-                    size = _imageProcessor.GetImageDimensions(item, imageInfo);
-
-                    if (size.Width <= 0 || size.Height <= 0)
-                    {
-                        return null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to determine primary image aspect ratio for {0}", imageInfo.Path);
-                    return null;
-                }
             }
-
-            foreach (var enhancer in supportedEnhancers)
+            catch (Exception ex)
             {
-                try
-                {
-                    size = enhancer.GetEnhancedImageSize(item, ImageType.Primary, 0, size);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in image enhancer: {0}", enhancer.GetType().Name);
-                }
+                _logger.LogError(ex, "Failed to determine primary image aspect ratio for {0}", imageInfo.Path);
+                return null;
             }
 
             var width = size.Width;

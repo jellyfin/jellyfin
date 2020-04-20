@@ -14,7 +14,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Controller.Providers
 {
     /// <summary>
-    /// Interface IProviderManager
+    /// Interface IProviderManager.
     /// </summary>
     public interface IProviderManager
     {
@@ -159,13 +159,17 @@ namespace MediaBrowser.Controller.Providers
         Dictionary<Guid, Guid> GetRefreshQueue();
 
         void OnRefreshStart(BaseItem item);
+
         void OnRefreshProgress(BaseItem item, double progress);
+
         void OnRefreshComplete(BaseItem item);
 
         double? GetRefreshProgress(Guid id);
 
         event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
+
         event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
+
         event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
     }
 

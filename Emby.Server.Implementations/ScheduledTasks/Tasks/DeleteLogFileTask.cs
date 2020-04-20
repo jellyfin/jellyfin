@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
-    /// Deletes old log files
+    /// Deletes old log files.
     /// </summary>
     public class DeleteLogFileTask : IScheduledTask, IConfigurableScheduledTask
     {
@@ -21,32 +22,32 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         private IConfigurationManager ConfigurationManager { get; set; }
 
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem)
+        public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization)
         {
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[] {
-
-                // Every so often
                 new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
             };
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -81,11 +82,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             return Task.CompletedTask;
         }
 
-        public string Name => "Log file cleanup";
+        public string Name => _localization.GetLocalizedString("TaskCleanLogs");
 
-        public string Description => string.Format("Deletes log files that are more than {0} days old.", ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
+        public string Description => string.Format(_localization.GetLocalizedString("TaskCleanLogsDescription"), ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
 
-        public string Category => "Maintenance";
+        public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
         public string Key => "CleanLogFiles";
 

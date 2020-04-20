@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -365,87 +364,6 @@ namespace Emby.Server.Implementations.IO
             return GetLastWriteTimeUtc(GetFileSystemInfo(path));
         }
 
-        /// <summary>
-        /// Gets the file stream.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="mode">The mode.</param>
-        /// <param name="access">The access.</param>
-        /// <param name="share">The share.</param>
-        /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
-        /// <returns>FileStream.</returns>
-        public virtual Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, bool isAsync = false)
-        {
-            if (isAsync)
-            {
-                return GetFileStream(path, mode, access, share, FileOpenOptions.Asynchronous);
-            }
-
-            return GetFileStream(path, mode, access, share, FileOpenOptions.None);
-        }
-
-        public virtual Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions)
-            => new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 4096, GetFileOptions(fileOpenOptions));
-
-        private static FileOptions GetFileOptions(FileOpenOptions mode)
-        {
-            var val = (int)mode;
-            return (FileOptions)val;
-        }
-
-        private static FileMode GetFileMode(FileOpenMode mode)
-        {
-            switch (mode)
-            {
-                //case FileOpenMode.Append:
-                //    return FileMode.Append;
-                case FileOpenMode.Create:
-                    return FileMode.Create;
-                case FileOpenMode.CreateNew:
-                    return FileMode.CreateNew;
-                case FileOpenMode.Open:
-                    return FileMode.Open;
-                case FileOpenMode.OpenOrCreate:
-                    return FileMode.OpenOrCreate;
-                //case FileOpenMode.Truncate:
-                //    return FileMode.Truncate;
-                default:
-                    throw new Exception("Unrecognized FileOpenMode");
-            }
-        }
-
-        private static FileAccess GetFileAccess(FileAccessMode mode)
-        {
-            switch (mode)
-            {
-                //case FileAccessMode.ReadWrite:
-                //    return FileAccess.ReadWrite;
-                case FileAccessMode.Write:
-                    return FileAccess.Write;
-                case FileAccessMode.Read:
-                    return FileAccess.Read;
-                default:
-                    throw new Exception("Unrecognized FileAccessMode");
-            }
-        }
-
-        private static FileShare GetFileShare(FileShareMode mode)
-        {
-            switch (mode)
-            {
-                case FileShareMode.ReadWrite:
-                    return FileShare.ReadWrite;
-                case FileShareMode.Write:
-                    return FileShare.Write;
-                case FileShareMode.Read:
-                    return FileShare.Read;
-                case FileShareMode.None:
-                    return FileShare.None;
-                default:
-                    throw new Exception("Unrecognized FileShareMode");
-            }
-        }
-
         public virtual void SetHidden(string path, bool isHidden)
         {
             if (OperatingSystem.Id != OperatingSystemId.Windows)
@@ -669,11 +587,11 @@ namespace Emby.Server.Implementations.IO
             // some drives on linux have no actual size or are used for other purposes
             return DriveInfo.GetDrives().Where(d => d.IsReady && d.TotalSize != 0 && d.DriveType != DriveType.Ram)
                 .Select(d => new FileSystemMetadata
-            {
-                Name = d.Name,
-                FullName = d.RootDirectory.FullName,
-                IsDirectory = true
-            }).ToList();
+                {
+                    Name = d.Name,
+                    FullName = d.RootDirectory.FullName,
+                    IsDirectory = true
+                }).ToList();
         }
 
         public virtual IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false)

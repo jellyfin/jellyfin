@@ -107,6 +107,8 @@ namespace MediaBrowser.Controller.Session
 
         public BaseItem FullNowPlayingItem { get; set; }
 
+        public BaseItemDto NowViewingItem { get; set; }
+
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>
@@ -125,12 +127,6 @@ namespace MediaBrowser.Controller.Session
         /// <value>The session controller.</value>
         [JsonIgnore]
         public ISessionController[] SessionControllers { get; set; }
-
-        /// <summary>
-        /// Gets or sets the application icon URL.
-        /// </summary>
-        /// <value>The application icon URL.</value>
-        public string AppIconUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the supported commands.
@@ -245,11 +241,6 @@ namespace MediaBrowser.Controller.Session
             SessionControllers = controllers.ToArray();
         }
 
-        public bool ContainsUser(string userId)
-        {
-            return ContainsUser(new Guid(userId));
-        }
-
         public bool ContainsUser(Guid userId)
         {
             if (UserId.Equals(userId))
@@ -259,7 +250,7 @@ namespace MediaBrowser.Controller.Session
 
             foreach (var additionalUser in AdditionalUsers)
             {
-                if (userId.Equals(userId))
+                if (additionalUser.UserId.Equals(userId))
                 {
                     return true;
                 }
@@ -321,7 +312,7 @@ namespace MediaBrowser.Controller.Session
 
             var newPositionTicks = positionTicks + ProgressIncrement;
             var item = progressInfo.Item;
-            long? runtimeTicks = item == null ? null : item.RunTimeTicks;
+            long? runtimeTicks = item?.RunTimeTicks;
 
             // Don't report beyond the runtime
             if (runtimeTicks.HasValue && newPositionTicks >= runtimeTicks.Value)

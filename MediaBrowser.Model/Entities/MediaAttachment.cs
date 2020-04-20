@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Class MediaAttachment
+    /// Class MediaAttachment.
     /// </summary>
     public class MediaAttachment
     {

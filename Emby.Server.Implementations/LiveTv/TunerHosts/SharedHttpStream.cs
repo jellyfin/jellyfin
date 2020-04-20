@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,7 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 Url = url,
                 CancellationToken = CancellationToken.None,
                 BufferContent = false,
-                DecompressionMethod = CompressionMethod.None
+                DecompressionMethod = CompressionMethods.None
             };
 
             foreach (var header in mediaSource.RequiredHttpHeaders)
@@ -127,12 +129,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
                     using (response)
                     using (var stream = response.Content)
-                    using (var fileStream = FileSystem.GetFileStream(TempFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.None))
+                    using (var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
                         await StreamHelper.CopyToAsync(
                             stream,
                             fileStream,
-                            StreamDefaults.DefaultCopyToBufferSize,
+                            IODefaults.CopyToBufferSize,
                             () => Resolve(openTaskCompletionSource),
                             cancellationToken).ConfigureAwait(false);
                     }

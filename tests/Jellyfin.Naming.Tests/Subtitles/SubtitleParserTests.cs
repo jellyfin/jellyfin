@@ -22,7 +22,6 @@ namespace Jellyfin.Naming.Tests.Subtitles
             Test("The Skin I Live In (2011).eng.forced.srt", "eng", false, true);
             Test("The Skin I Live In (2011).eng.foreign.srt", "eng", false, true);
             Test("The Skin I Live In (2011).eng.default.foreign.srt", "eng", true, true);
-
             Test("The Skin I Live In (2011).default.foreign.eng.srt", "eng", true, true);
         }
 
