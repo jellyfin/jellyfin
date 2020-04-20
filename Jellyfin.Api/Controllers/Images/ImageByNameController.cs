@@ -244,7 +244,7 @@ namespace Jellyfin.Api.Controllers.Images
             }
         }
 
-        private string GetThemeName(string path, string rootImagePath)
+        private string? GetThemeName(string path, string rootImagePath)
         {
             var parentName = Path.GetDirectoryName(path);
 
