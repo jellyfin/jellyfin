@@ -5,7 +5,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     /// <summary>
-    /// TheAduioDb Album External Id.
+    /// TheAudioDb Album External Id.
     /// </summary>
     public class AudioDbOtherAlbumExternalId : IExternalId
     {
