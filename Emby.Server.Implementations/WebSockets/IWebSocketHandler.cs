@@ -6,7 +6,7 @@ using MediaBrowser.Model.Net;
 namespace Emby.Server.Implementations.WebSockets
 {
     /// <summary>
-    /// This interface defines a Websocket Handler.
+    /// This interface defines a websocket handler.
     /// </summary>
     public interface IWebSocketHandler
     {

@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Entities.Movies;
 namespace MediaBrowser.Controller.Collections
 {
     /// <summary>
-    /// Object storing the arguments for the CollectionCreated event.
+    /// Object storing the arguments for the <c>CollectionCreated</c> event.
     /// </summary>
     public class CollectionCreatedEventArgs : EventArgs
     {
