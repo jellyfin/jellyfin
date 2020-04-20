@@ -1,3 +1,5 @@
+#pragma warning disable SA1649
+
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 

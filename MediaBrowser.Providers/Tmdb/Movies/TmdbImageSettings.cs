@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MediaBrowser.Providers.Tmdb.Movies
 {
@@ -13,10 +13,5 @@ namespace MediaBrowser.Providers.Tmdb.Movies
         {
             return secure_base_url + image;
         }
-    }
-
-    internal class TmdbSettingsResult
-    {
-        public TmdbImageSettings images { get; set; }
     }
 }
