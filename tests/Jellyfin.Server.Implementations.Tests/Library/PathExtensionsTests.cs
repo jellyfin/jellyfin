@@ -1,3 +1,4 @@
+using System;
 using Emby.Server.Implementations.Library;
 using Xunit;
 
@@ -9,9 +10,18 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("Superman: Red Son [imdbid=tt10985510]", "imdbid", "tt10985510")]
         [InlineData("Superman: Red Son - tt10985510", "imdbid", "tt10985510")]
         [InlineData("Superman: Red Son", "imdbid", null)]
-        public void GetAttributeValueTest(string input, string attribute, string? result)
+        public void GetAttributeValue_ValidArgs_Correct(string input, string attribute, string? result)
         {
             Assert.Equal(result, PathExtensions.GetAttributeValue(input, attribute));
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("Superman: Red Son [imdbid=tt10985510]", "")]
+        [InlineData("", "imdbid")]
+        public void GetAttributeValue_EmptyString_ThrowsArgumentException(string input, string attribute)
+        {
+            Assert.Throws<ArgumentException>(() => PathExtensions.GetAttributeValue(input, attribute));
         }
     }
 }
