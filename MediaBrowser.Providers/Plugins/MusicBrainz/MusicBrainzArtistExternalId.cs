@@ -6,20 +6,20 @@ using MediaBrowser.Providers.Plugins.MusicBrainz;
 namespace MediaBrowser.Providers.Music
 {
     /// <summary>
-    /// MusicBrainz Album Artist External Id.
+    /// MusicBrainz Artist External Id.
     /// </summary>
-    public class MusicBrainzAlbumArtistExternalId : IExternalId
+    public class MusicBrainzArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz Album Artist";
+        public string Name => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.MusicBrainzAlbumArtist.ToString();
+        public string Key => MetadataProviders.MusicBrainzArtist.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
 
         /// <inheritdoc />
-        public bool Supports(IHasProviderIds item) => item is Audio;
+        public bool Supports(IHasProviderIds item) => item is MusicArtist;
     }
 }

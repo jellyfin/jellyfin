@@ -9,8 +9,19 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Movies
 {
+    /// <summary>
+    /// Movie Metadata Service.
+    /// </summary>
     public class MovieMetadataService : MetadataService<Movie, MovieInfo>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MovieMetadataService"/> class.
+        /// </summary>
+        /// <param name="serverConfigurationManager">The <see cref="IServerConfigurationManager"/> to use.</param>
+        /// <param name="logger">A logger the service can use to log messages.</param>
+        /// <param name="providerManager">The <see cref="IProviderManager"/> to use.</param>
+        /// <param name="fileSystem">The <see cref="IFileSystem"/> to use.</param>
+        /// <param name="libraryManager">The <see cref="ILibraryManager"/> to use.</param>
         public MovieMetadataService(
             IServerConfigurationManager serverConfigurationManager,
             ILogger<MovieMetadataService> logger,
@@ -28,10 +39,12 @@ namespace MediaBrowser.Providers.Movies
             {
                 return false;
             }
+
             if (!item.ProductionYear.HasValue)
             {
                 return false;
             }
+
             return base.IsFullLocalMetadata(item);
         }
 

@@ -1,9 +1,12 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
+    /// <summary>
+    /// External Id for TheAudioDb Artist.
+    /// </summary>
     public class AudioDbArtistExternalId : IExternalId
     {
         /// <inheritdoc />

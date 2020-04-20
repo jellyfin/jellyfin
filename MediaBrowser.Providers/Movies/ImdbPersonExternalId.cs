@@ -1,10 +1,12 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Movies
 {
-
+    /// <summary>
+    /// External Id for IMDB.
+    /// </summary>
     public class ImdbPersonExternalId : IExternalId
     {
         /// <inheritdoc />

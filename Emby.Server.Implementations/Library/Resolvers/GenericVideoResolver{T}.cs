@@ -1,5 +1,4 @@
-#pragma warning disable CS1591
-#pragma warning disable SA1649
+﻿#pragma warning disable CS1591
 
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;

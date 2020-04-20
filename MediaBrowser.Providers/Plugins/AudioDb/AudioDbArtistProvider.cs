@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,6 +19,9 @@ using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
+    /// <summary>
+    /// TheAudioDb Artist Provider.
+    /// </summary>
     public class AudioDbArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
@@ -26,11 +29,21 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _json;
 
+        /// <summary>
+        /// The current <see cref="AudioDbArtistProvider"/>.
+        /// </summary>
         public static AudioDbArtistProvider Current;
 
         private const string ApiKey = "195003";
         public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioDbArtistProvider"/> class.
+        /// </summary>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> to use.</param>
+        /// <param name="fileSystem">The <see cref="IFileSystem"/> to use.</param>
+        /// <param name="httpClient">The <see cref="IHttpClient"/> to use.</param>
+        /// <param name="json">The <see cref="IJsonSerializer"/> to use.</param>
         public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClient httpClient, IJsonSerializer json)
         {
             _config = config;

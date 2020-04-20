@@ -5,19 +5,21 @@ using MediaBrowser.Providers.Plugins.MusicBrainz;
 
 namespace MediaBrowser.Providers.Music
 {
+
     /// <summary>
-    /// MusicBrainz Release Group External Id.
+    /// MusicBrainz Artist External Id.
     /// </summary>
-    public class MusicBrainzReleaseGroupExternalId : IExternalId
+    public class MusicBrainzOtherArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz Release Group";
+        public string Name => "MusicBrainz Artist";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.MusicBrainzReleaseGroup.ToString();
+
+        public string Key => MetadataProviders.MusicBrainzArtist.ToString();
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/release-group/{0}";
+        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;

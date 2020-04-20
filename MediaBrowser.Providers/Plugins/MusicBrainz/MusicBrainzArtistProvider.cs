@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -18,6 +18,9 @@ using MediaBrowser.Providers.Plugins.MusicBrainz;
 
 namespace MediaBrowser.Providers.Music
 {
+    /// <summary>
+    /// MusicBrainz Artist Provider.
+    /// </summary>
     public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
         /// <inheritdoc />

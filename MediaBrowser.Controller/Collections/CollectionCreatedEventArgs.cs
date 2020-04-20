@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using MediaBrowser.Controller.Entities.Movies;
 
 namespace MediaBrowser.Controller.Collections
 {
+    /// <summary>
+    /// Object storing the arguments for the CollectionCreated event.
+    /// </summary>
     public class CollectionCreatedEventArgs : EventArgs
     {
         /// <summary>
