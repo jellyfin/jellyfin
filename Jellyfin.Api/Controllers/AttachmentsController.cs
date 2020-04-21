@@ -79,10 +79,6 @@ namespace Jellyfin.Api.Controllers
             {
                 return StatusCode(StatusCodes.Status404NotFound, e.Message);
             }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
         }
     }
 }
