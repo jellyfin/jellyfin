@@ -11,7 +11,6 @@ namespace MediaBrowser.Controller.Collections
         /// <summary>
         /// Gets or sets the collection.
         /// </summary>
-        /// <value>The collection.</value>
         public BoxSet Collection { get; set; }
 
         /// <summary>
