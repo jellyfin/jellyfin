@@ -1,5 +1,3 @@
-using Jellyfin.Api.Models.ExceptionDtos;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api
@@ -9,7 +7,6 @@ namespace Jellyfin.Api
     /// </summary>
     [ApiController]
     [Route("[controller]")]
-    [ProducesResponseType(typeof(ExceptionDto), StatusCodes.Status500InternalServerError)]
     public class BaseJellyfinApiController : ControllerBase
     {
     }
