@@ -58,6 +58,8 @@ namespace Jellyfin.Server
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseExceptionMiddleware();
+
             app.UseWebSockets();
 
             app.UseResponseCompression();
