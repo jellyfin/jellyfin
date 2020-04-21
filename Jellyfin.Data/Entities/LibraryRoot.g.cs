@@ -45,10 +45,13 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="path">Absolute Path</param>
-      public LibraryRoot(string path)
+      /// <param name="lastmodified"></param>
+      public LibraryRoot(string path, DateTime lastmodified)
       {
          if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
          this.Path = path;
+
+         this.LastModified = lastmodified;
 
 
          Init();
@@ -58,9 +61,10 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="path">Absolute Path</param>
-      public static LibraryRoot Create(string path)
+      /// <param name="lastmodified"></param>
+      public static LibraryRoot Create(string path, DateTime lastmodified)
       {
-         return new LibraryRoot(path);
+         return new LibraryRoot(path, lastmodified);
       }
 
       /*************************************************************************
@@ -184,9 +188,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

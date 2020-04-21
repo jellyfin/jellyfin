@@ -86,7 +86,7 @@ namespace Jellyfin.Data
       /// </summary>
       [Key]
       [Required]
-      public int Id { get; protected set; }
+      public Guid Id { get; protected set; }
 
       /// <summary>
       /// Required

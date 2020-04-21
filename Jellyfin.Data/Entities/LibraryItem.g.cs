@@ -37,9 +37,12 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
-      protected LibraryItem(Guid urlid, DateTime dateadded)
+      /// <param name="lastmodified"></param>
+      protected LibraryItem(Guid urlid, DateTime dateadded, DateTime lastmodified)
       {
          this.UrlId = urlid;
+
+         this.LastModified = lastmodified;
 
 
          Init();
@@ -162,9 +165,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

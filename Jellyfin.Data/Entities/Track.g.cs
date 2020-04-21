@@ -51,13 +51,16 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
+      /// <param name="lastmodified"></param>
       /// <param name="_musicalbum0"></param>
-      public Track(Guid urlid, DateTime dateadded, global::Jellyfin.Data.MusicAlbum _musicalbum0)
+      public Track(Guid urlid, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.MusicAlbum _musicalbum0)
       {
          // NOTE: This class has one-to-one associations with LibraryRoot, LibraryItem and CollectionItem.
          // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
 
          this.UrlId = urlid;
+
+         this.LastModified = lastmodified;
 
          if (_musicalbum0 == null) throw new ArgumentNullException(nameof(_musicalbum0));
          _musicalbum0.Tracks.Add(this);
@@ -72,10 +75,11 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
+      /// <param name="lastmodified"></param>
       /// <param name="_musicalbum0"></param>
-      public static Track Create(Guid urlid, DateTime dateadded, global::Jellyfin.Data.MusicAlbum _musicalbum0)
+      public static Track Create(Guid urlid, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.MusicAlbum _musicalbum0)
       {
-         return new Track(urlid, dateadded, _musicalbum0);
+         return new Track(urlid, dateadded, lastmodified, _musicalbum0);
       }
 
       /*************************************************************************
@@ -113,6 +117,12 @@ namespace Jellyfin.Data
             }
          }
       }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

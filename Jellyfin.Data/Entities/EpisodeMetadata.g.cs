@@ -47,7 +47,7 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_episode0"></param>
-      public EpisodeMetadata(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.Episode _episode0)
+      public EpisodeMetadata(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Episode _episode0)
       {
          if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
          this.Title = title;
@@ -68,9 +68,9 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_episode0"></param>
-      public static EpisodeMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.Episode _episode0)
+      public static EpisodeMetadata Create(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Episode _episode0)
       {
-         return new EpisodeMetadata(title, language, dateadded, datemodified, _episode0);
+         return new EpisodeMetadata(title, language, dateadded, lastmodified, _episode0);
       }
 
       /*************************************************************************
@@ -187,6 +187,12 @@ namespace Jellyfin.Data
             }
          }
       }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

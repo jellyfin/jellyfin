@@ -48,9 +48,12 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
-      public Movie(Guid urlid, DateTime dateadded)
+      /// <param name="lastmodified"></param>
+      public Movie(Guid urlid, DateTime dateadded, DateTime lastmodified)
       {
          this.UrlId = urlid;
+
+         this.LastModified = lastmodified;
 
          this.Releases = new System.Collections.Generic.HashSet<global::Jellyfin.Data.Release>();
          this.MovieMetadata = new System.Collections.Generic.HashSet<global::Jellyfin.Data.MovieMetadata>();
@@ -62,14 +65,21 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
-      public static Movie Create(Guid urlid, DateTime dateadded)
+      /// <param name="lastmodified"></param>
+      public static Movie Create(Guid urlid, DateTime dateadded, DateTime lastmodified)
       {
-         return new Movie(urlid, dateadded);
+         return new Movie(urlid, dateadded, lastmodified);
       }
 
       /*************************************************************************
        * Properties
        *************************************************************************/
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

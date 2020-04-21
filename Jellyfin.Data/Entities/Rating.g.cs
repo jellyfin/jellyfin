@@ -45,10 +45,13 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="value"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
-      public Rating(double value, global::Jellyfin.Data.Metadata _metadata0)
+      public Rating(double value, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0)
       {
          this.Value = value;
+
+         this.LastModified = lastmodified;
 
          if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
          _metadata0.Ratings.Add(this);
@@ -61,10 +64,11 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="value"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
-      public static Rating Create(double value, global::Jellyfin.Data.Metadata _metadata0)
+      public static Rating Create(double value, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0)
       {
-         return new Rating(value, _metadata0);
+         return new Rating(value, lastmodified, _metadata0);
       }
 
       /*************************************************************************
@@ -179,9 +183,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

@@ -50,13 +50,16 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="type"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
-      public PersonRole(global::Jellyfin.Data.PersonRoleType type, global::Jellyfin.Data.Metadata _metadata0)
+      public PersonRole(global::Jellyfin.Data.PersonRoleType type, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0)
       {
          // NOTE: This class has one-to-one associations with PersonRole.
          // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
 
          this.Type = type;
+
+         this.LastModified = lastmodified;
 
          if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
          _metadata0.PersonRoles.Add(this);
@@ -70,10 +73,11 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="type"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
-      public static PersonRole Create(global::Jellyfin.Data.PersonRoleType type, global::Jellyfin.Data.Metadata _metadata0)
+      public static PersonRole Create(global::Jellyfin.Data.PersonRoleType type, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0)
       {
-         return new PersonRole(type, _metadata0);
+         return new PersonRole(type, lastmodified, _metadata0);
       }
 
       /*************************************************************************
@@ -193,9 +197,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

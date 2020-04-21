@@ -49,12 +49,15 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="maximumvalue"></param>
       /// <param name="minimumvalue"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_rating0"></param>
-      public RatingSource(double maximumvalue, double minimumvalue, global::Jellyfin.Data.Rating _rating0)
+      public RatingSource(double maximumvalue, double minimumvalue, DateTime lastmodified, global::Jellyfin.Data.Rating _rating0)
       {
          this.MaximumValue = maximumvalue;
 
          this.MinimumValue = minimumvalue;
+
+         this.LastModified = lastmodified;
 
          if (_rating0 == null) throw new ArgumentNullException(nameof(_rating0));
          _rating0.RatingType = this;
@@ -68,10 +71,11 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="maximumvalue"></param>
       /// <param name="minimumvalue"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_rating0"></param>
-      public static RatingSource Create(double maximumvalue, double minimumvalue, global::Jellyfin.Data.Rating _rating0)
+      public static RatingSource Create(double maximumvalue, double minimumvalue, DateTime lastmodified, global::Jellyfin.Data.Rating _rating0)
       {
-         return new RatingSource(maximumvalue, minimumvalue, _rating0);
+         return new RatingSource(maximumvalue, minimumvalue, lastmodified, _rating0);
       }
 
       /*************************************************************************
@@ -227,9 +231,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

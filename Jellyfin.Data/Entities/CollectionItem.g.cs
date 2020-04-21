@@ -47,13 +47,16 @@ namespace Jellyfin.Data
       /// <summary>
       /// Public constructor with required data
       /// </summary>
+      /// <param name="lastmodified"></param>
       /// <param name="_collection0"></param>
       /// <param name="_collectionitem1"></param>
       /// <param name="_collectionitem2"></param>
-      public CollectionItem(global::Jellyfin.Data.Collection _collection0, global::Jellyfin.Data.CollectionItem _collectionitem1, global::Jellyfin.Data.CollectionItem _collectionitem2)
+      public CollectionItem(DateTime lastmodified, global::Jellyfin.Data.Collection _collection0, global::Jellyfin.Data.CollectionItem _collectionitem1, global::Jellyfin.Data.CollectionItem _collectionitem2)
       {
          // NOTE: This class has one-to-one associations with CollectionItem.
          // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
+
+         this.LastModified = lastmodified;
 
          if (_collection0 == null) throw new ArgumentNullException(nameof(_collection0));
          _collection0.CollectionItem.Add(this);
@@ -71,12 +74,13 @@ namespace Jellyfin.Data
       /// <summary>
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
+      /// <param name="lastmodified"></param>
       /// <param name="_collection0"></param>
       /// <param name="_collectionitem1"></param>
       /// <param name="_collectionitem2"></param>
-      public static CollectionItem Create(global::Jellyfin.Data.Collection _collection0, global::Jellyfin.Data.CollectionItem _collectionitem1, global::Jellyfin.Data.CollectionItem _collectionitem2)
+      public static CollectionItem Create(DateTime lastmodified, global::Jellyfin.Data.Collection _collection0, global::Jellyfin.Data.CollectionItem _collectionitem1, global::Jellyfin.Data.CollectionItem _collectionitem2)
       {
-         return new CollectionItem(_collection0, _collectionitem1, _collectionitem2);
+         return new CollectionItem(lastmodified, _collection0, _collectionitem1, _collectionitem2);
       }
 
       /*************************************************************************
@@ -123,9 +127,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

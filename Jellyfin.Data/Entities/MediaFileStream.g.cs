@@ -45,10 +45,13 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="streamnumber"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_mediafile0"></param>
-      public MediaFileStream(int streamnumber, global::Jellyfin.Data.MediaFile _mediafile0)
+      public MediaFileStream(int streamnumber, DateTime lastmodified, global::Jellyfin.Data.MediaFile _mediafile0)
       {
          this.StreamNumber = streamnumber;
+
+         this.LastModified = lastmodified;
 
          if (_mediafile0 == null) throw new ArgumentNullException(nameof(_mediafile0));
          _mediafile0.MediaFileStreams.Add(this);
@@ -61,10 +64,11 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="streamnumber"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_mediafile0"></param>
-      public static MediaFileStream Create(int streamnumber, global::Jellyfin.Data.MediaFile _mediafile0)
+      public static MediaFileStream Create(int streamnumber, DateTime lastmodified, global::Jellyfin.Data.MediaFile _mediafile0)
       {
-         return new MediaFileStream(streamnumber, _mediafile0);
+         return new MediaFileStream(streamnumber, lastmodified, _mediafile0);
       }
 
       /*************************************************************************
@@ -147,9 +151,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

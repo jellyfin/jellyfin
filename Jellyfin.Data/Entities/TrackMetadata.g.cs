@@ -47,7 +47,7 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_track0"></param>
-      public TrackMetadata(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.Track _track0)
+      public TrackMetadata(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Track _track0)
       {
          if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
          this.Title = title;
@@ -68,14 +68,20 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_track0"></param>
-      public static TrackMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.Track _track0)
+      public static TrackMetadata Create(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Track _track0)
       {
-         return new TrackMetadata(title, language, dateadded, datemodified, _track0);
+         return new TrackMetadata(title, language, dateadded, lastmodified, _track0);
       }
 
       /*************************************************************************
        * Properties
        *************************************************************************/
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

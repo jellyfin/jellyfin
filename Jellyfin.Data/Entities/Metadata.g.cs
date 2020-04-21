@@ -44,7 +44,7 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
-      protected Metadata(string title, string language, DateTime dateadded, DateTime datemodified)
+      protected Metadata(string title, string language, DateTime dateadded, DateTime lastmodified)
       {
          if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
          this.Title = title;
@@ -324,47 +324,46 @@ namespace Jellyfin.Data
       }
 
       /// <summary>
-      /// Backing field for DateModified
+      /// Backing field for LastModified
       /// </summary>
-      protected DateTime _DateModified;
+      protected DateTime _LastModified;
       /// <summary>
-      /// When provided in a partial class, allows value of DateModified to be changed before setting.
+      /// When provided in a partial class, allows value of LastModified to be changed before setting.
       /// </summary>
-      partial void SetDateModified(DateTime oldValue, ref DateTime newValue);
+      partial void SetLastModified(DateTime oldValue, ref DateTime newValue);
       /// <summary>
-      /// When provided in a partial class, allows value of DateModified to be changed before returning.
+      /// When provided in a partial class, allows value of LastModified to be changed before returning.
       /// </summary>
-      partial void GetDateModified(ref DateTime result);
+      partial void GetLastModified(ref DateTime result);
 
       /// <summary>
       /// Required
       /// </summary>
       [Required]
-      public DateTime DateModified
+      public DateTime LastModified
       {
          get
          {
-            DateTime value = _DateModified;
-            GetDateModified(ref value);
-            return (_DateModified = value);
+            DateTime value = _LastModified;
+            GetLastModified(ref value);
+            return (_LastModified = value);
          }
          internal set
          {
-            DateTime oldValue = _DateModified;
-            SetDateModified(oldValue, ref value);
+            DateTime oldValue = _LastModified;
+            SetLastModified(oldValue, ref value);
             if (oldValue != value)
             {
-               _DateModified = value;
+               _LastModified = value;
             }
          }
       }
 
       /// <summary>
-      /// Required
+      /// Concurrency token
       /// </summary>
-      [ConcurrencyCheck]
-      [Required]
-      public byte[] Timestamp { get; set; }
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

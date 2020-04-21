@@ -46,9 +46,10 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="name"></param>
       /// <param name="type"></param>
+      /// <param name="userid"></param>
       /// <param name="datecreated"></param>
       /// <param name="logseverity"></param>
-      public ActivityLog(string name, string type, DateTime datecreated, string logseverity)
+      public ActivityLog(string name, string type, Guid userid, DateTime datecreated, global::Microsoft.Extensions.Logging.LogLevel logseverity)
       {
          if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
          this.Name = name;
@@ -56,9 +57,10 @@ namespace Jellyfin.Data
          if (string.IsNullOrEmpty(type)) throw new ArgumentNullException(nameof(type));
          this.Type = type;
 
+         this.UserId = userid;
+
          this.DateCreated = datecreated;
 
-         if (string.IsNullOrEmpty(logseverity)) throw new ArgumentNullException(nameof(logseverity));
          this.LogSeverity = logseverity;
 
 
@@ -70,11 +72,12 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="name"></param>
       /// <param name="type"></param>
+      /// <param name="userid"></param>
       /// <param name="datecreated"></param>
       /// <param name="logseverity"></param>
-      public static ActivityLog Create(string name, string type, DateTime datecreated, string logseverity)
+      public static ActivityLog Create(string name, string type, Guid userid, DateTime datecreated, global::Microsoft.Extensions.Logging.LogLevel logseverity)
       {
-         return new ActivityLog(name, type, datecreated, logseverity);
+         return new ActivityLog(name, type, userid, datecreated, logseverity);
       }
 
       /*************************************************************************
@@ -119,18 +122,17 @@ namespace Jellyfin.Data
       public string Type { get; set; }
 
       /// <summary>
-      /// Max length = 256
+      /// Required
       /// </summary>
-      [MaxLength(256)]
-      [StringLength(256)]
-      public string ItemId { get; set; }
+      [Required]
+      public Guid UserId { get; set; }
 
       /// <summary>
       /// Max length = 256
       /// </summary>
       [MaxLength(256)]
       [StringLength(256)]
-      public string UserId { get; set; }
+      public string ItemId { get; set; }
 
       /// <summary>
       /// Required
@@ -139,12 +141,10 @@ namespace Jellyfin.Data
       public DateTime DateCreated { get; set; }
 
       /// <summary>
-      /// Required, Max length = 256
+      /// Required
       /// </summary>
       [Required]
-      [MaxLength(256)]
-      [StringLength(256)]
-      public string LogSeverity { get; set; }
+      public global::Microsoft.Extensions.Logging.LogLevel LogSeverity { get; set; }
 
       /// <summary>
       /// Concurrency token

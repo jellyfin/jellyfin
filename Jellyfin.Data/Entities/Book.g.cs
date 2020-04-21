@@ -48,9 +48,12 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
-      public Book(Guid urlid, DateTime dateadded)
+      /// <param name="lastmodified"></param>
+      public Book(Guid urlid, DateTime dateadded, DateTime lastmodified)
       {
          this.UrlId = urlid;
+
+         this.LastModified = lastmodified;
 
          this.BookMetadata = new System.Collections.Generic.HashSet<global::Jellyfin.Data.BookMetadata>();
          this.Releases = new System.Collections.Generic.HashSet<global::Jellyfin.Data.Release>();
@@ -62,14 +65,21 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
-      public static Book Create(Guid urlid, DateTime dateadded)
+      /// <param name="lastmodified"></param>
+      public static Book Create(Guid urlid, DateTime dateadded, DateTime lastmodified)
       {
-         return new Book(urlid, dateadded);
+         return new Book(urlid, dateadded, lastmodified);
       }
 
       /*************************************************************************
        * Properties
        *************************************************************************/
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

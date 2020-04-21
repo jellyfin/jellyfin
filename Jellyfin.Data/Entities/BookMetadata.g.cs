@@ -49,7 +49,7 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_book0"></param>
-      public BookMetadata(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.Book _book0)
+      public BookMetadata(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Book _book0)
       {
          if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
          this.Title = title;
@@ -71,9 +71,9 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_book0"></param>
-      public static BookMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.Book _book0)
+      public static BookMetadata Create(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Book _book0)
       {
-         return new BookMetadata(title, language, dateadded, datemodified, _book0);
+         return new BookMetadata(title, language, dateadded, lastmodified, _book0);
       }
 
       /*************************************************************************
@@ -111,6 +111,12 @@ namespace Jellyfin.Data
             }
          }
       }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

@@ -124,17 +124,16 @@ namespace Jellyfin.Data
                      .HasMaxLength(256)
                      .IsRequired();
          modelBuilder.Entity<global::Jellyfin.Data.ActivityLog>()
-                     .Property(t => t.ItemId)
-                     .HasMaxLength(256);
-         modelBuilder.Entity<global::Jellyfin.Data.ActivityLog>()
                      .Property(t => t.UserId)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.ActivityLog>()
+                     .Property(t => t.ItemId)
                      .HasMaxLength(256);
          modelBuilder.Entity<global::Jellyfin.Data.ActivityLog>()
                      .Property(t => t.DateCreated)
                      .IsRequired();
          modelBuilder.Entity<global::Jellyfin.Data.ActivityLog>()
                      .Property(t => t.LogSeverity)
-                     .HasMaxLength(256)
                      .IsRequired();
          modelBuilder.Entity<global::Jellyfin.Data.ActivityLog>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
@@ -160,12 +159,11 @@ namespace Jellyfin.Data
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.Artwork>().HasIndex(t => t.Kind);
          modelBuilder.Entity<global::Jellyfin.Data.Artwork>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.Artwork>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
+         modelBuilder.Entity<global::Jellyfin.Data.Book>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Book>()
                      .HasMany(x => x.BookMetadata)
                      .WithOne()
@@ -181,6 +179,7 @@ namespace Jellyfin.Data
                      .Property(t => t.ISBN)
                      .HasField("_ISBN")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.BookMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.BookMetadata>()
                      .HasMany(x => x.Publishers)
                      .WithOne()
@@ -217,11 +216,9 @@ namespace Jellyfin.Data
                      .HasField("_TimeEnd")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.Chapter>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.Chapter>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.Collection>()
                      .ToTable("Collection")
@@ -238,11 +235,9 @@ namespace Jellyfin.Data
                      .HasField("_Name")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.Collection>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.Collection>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Collection>()
                      .HasMany(x => x.CollectionItem)
                      .WithOne()
@@ -259,11 +254,9 @@ namespace Jellyfin.Data
                      .UsePropertyAccessMode(PropertyAccessMode.Property)
                      .ValueGeneratedOnAdd();
          modelBuilder.Entity<global::Jellyfin.Data.CollectionItem>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.CollectionItem>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.CollectionItem>()
                      .HasOne(x => x.LibraryItem)
                      .WithOne()
@@ -290,11 +283,9 @@ namespace Jellyfin.Data
                      .UsePropertyAccessMode(PropertyAccessMode.Property)
                      .ValueGeneratedOnAdd();
          modelBuilder.Entity<global::Jellyfin.Data.Company>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.Company>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Company>()
                      .HasMany(x => x.CompanyMetadata)
                      .WithOne()
@@ -326,7 +317,9 @@ namespace Jellyfin.Data
                      .HasMaxLength(1024)
                      .HasField("_Homepage")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.CompanyMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
+         modelBuilder.Entity<global::Jellyfin.Data.CustomItem>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.CustomItem>()
                      .HasMany(x => x.CustomItemMetadata)
                      .WithOne()
@@ -338,11 +331,13 @@ namespace Jellyfin.Data
                      .HasForeignKey("Release_Releases_Id")
                      .IsRequired();
 
+         modelBuilder.Entity<global::Jellyfin.Data.CustomItemMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.Episode>()
                      .Property(t => t.EpisodeNumber)
                      .HasField("_EpisodeNumber")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.Episode>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Episode>()
                      .HasMany(x => x.Releases)
                      .WithOne()
@@ -369,6 +364,7 @@ namespace Jellyfin.Data
                      .HasMaxLength(1024)
                      .HasField("_Tagline")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.EpisodeMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.Genre>()
                      .ToTable("Genre")
@@ -388,11 +384,9 @@ namespace Jellyfin.Data
          modelBuilder.Entity<global::Jellyfin.Data.Genre>().HasIndex(t => t.Name)
                      .IsUnique();
          modelBuilder.Entity<global::Jellyfin.Data.Genre>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.Genre>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.Group>()
                      .ToTable("Groups")
@@ -438,11 +432,9 @@ namespace Jellyfin.Data
                      .HasField("_Name")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.Library>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.Library>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.LibraryItem>()
                      .ToTable("LibraryItem")
@@ -466,11 +458,9 @@ namespace Jellyfin.Data
                      .HasField("_DateAdded")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.LibraryItem>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.LibraryItem>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.LibraryItem>()
                      .HasOne(x => x.LibraryRoot)
                      .WithOne()
@@ -498,11 +488,9 @@ namespace Jellyfin.Data
                      .HasField("_NetworkPath")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.LibraryRoot>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.LibraryRoot>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.LibraryRoot>()
                      .HasOne(x => x.Library)
                      .WithOne()
@@ -530,11 +518,9 @@ namespace Jellyfin.Data
                      .HasField("_Kind")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.MediaFile>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.MediaFile>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.MediaFile>()
                      .HasMany(x => x.MediaFileStreams)
                      .WithOne()
@@ -556,11 +542,9 @@ namespace Jellyfin.Data
                      .HasField("_StreamNumber")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.MediaFileStream>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.MediaFileStream>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.Metadata>()
                      .ToTable("Metadata")
@@ -603,16 +587,11 @@ namespace Jellyfin.Data
                      .HasField("_DateAdded")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.Metadata>()
-                     .Property(t => t.DateModified)
+                     .Property(t => t.LastModified)
                      .IsRequired()
-                     .HasField("_DateModified")
+                     .HasField("_LastModified")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
-         modelBuilder.Entity<global::Jellyfin.Data.Metadata>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+         modelBuilder.Entity<global::Jellyfin.Data.Metadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Metadata>()
                      .HasMany(x => x.PersonRoles)
                      .WithOne()
@@ -655,11 +634,9 @@ namespace Jellyfin.Data
                      .HasField("_Name")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.MetadataProvider>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.MetadataProvider>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.MetadataProviderId>()
                      .ToTable("MetadataProviderId")
@@ -677,17 +654,16 @@ namespace Jellyfin.Data
                      .HasField("_ProviderId")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.MetadataProviderId>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.MetadataProviderId>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.MetadataProviderId>()
                      .HasOne(x => x.MetadataProvider)
                      .WithOne()
                      .HasForeignKey<global::Jellyfin.Data.MetadataProviderId>("MetadataProvider_Id")
                      .IsRequired();
 
+         modelBuilder.Entity<global::Jellyfin.Data.Movie>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Movie>()
                      .HasMany(x => x.Releases)
                      .WithOne()
@@ -719,12 +695,14 @@ namespace Jellyfin.Data
                      .HasMaxLength(2)
                      .HasField("_Country")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.MovieMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.MovieMetadata>()
                      .HasMany(x => x.Studios)
                      .WithOne()
                      .HasForeignKey("Company_Studios_Id")
                      .IsRequired();
 
+         modelBuilder.Entity<global::Jellyfin.Data.MusicAlbum>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.MusicAlbum>()
                      .HasMany(x => x.MusicAlbumMetadata)
                      .WithOne()
@@ -751,6 +729,7 @@ namespace Jellyfin.Data
                      .HasMaxLength(2)
                      .HasField("_Country")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.MusicAlbumMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.MusicAlbumMetadata>()
                      .HasMany(x => x.Labels)
                      .WithOne()
@@ -805,16 +784,11 @@ namespace Jellyfin.Data
                      .HasField("_DateAdded")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.Person>()
-                     .Property(t => t.DateModified)
+                     .Property(t => t.LastModified)
                      .IsRequired()
-                     .HasField("_DateModified")
+                     .HasField("_LastModified")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
-         modelBuilder.Entity<global::Jellyfin.Data.Person>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+         modelBuilder.Entity<global::Jellyfin.Data.Person>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Person>()
                      .HasMany(x => x.Sources)
                      .WithOne()
@@ -841,11 +815,9 @@ namespace Jellyfin.Data
                      .HasField("_Type")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.PersonRole>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.PersonRole>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.PersonRole>()
                      .HasOne(x => x.Person)
                      .WithOne()
@@ -863,6 +835,7 @@ namespace Jellyfin.Data
                      .HasForeignKey("MetadataProviderId_Sources_Id")
                      .IsRequired();
 
+         modelBuilder.Entity<global::Jellyfin.Data.Photo>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Photo>()
                      .HasMany(x => x.PhotoMetadata)
                      .WithOne()
@@ -874,6 +847,7 @@ namespace Jellyfin.Data
                      .HasForeignKey("Release_Releases_Id")
                      .IsRequired();
 
+         modelBuilder.Entity<global::Jellyfin.Data.PhotoMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.Preference>()
                      .ToTable("Preferences")
@@ -931,11 +905,9 @@ namespace Jellyfin.Data
                      .HasField("_Votes")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.Rating>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.Rating>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Rating>()
                      .HasOne(x => x.RatingType)
                      .WithOne()
@@ -967,11 +939,9 @@ namespace Jellyfin.Data
                      .HasField("_MinimumValue")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.RatingSource>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.RatingSource>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.RatingSource>()
                      .HasOne(x => x.Source)
                      .WithOne()
@@ -994,11 +964,9 @@ namespace Jellyfin.Data
                      .HasField("_Name")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
          modelBuilder.Entity<global::Jellyfin.Data.Release>()
-                     .Property(t => t.Timestamp)
-                     .IsRequired()
-                     .HasField("_Timestamp")
-                     .UsePropertyAccessMode(PropertyAccessMode.Property)
-                     .IsRowVersion();
+                     .Property(t => t.LastModified)
+                     .IsRequired();
+         modelBuilder.Entity<global::Jellyfin.Data.Release>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Release>()
                      .HasMany(x => x.MediaFiles)
                      .WithOne()
@@ -1014,6 +982,7 @@ namespace Jellyfin.Data
                      .Property(t => t.SeasonNumber)
                      .HasField("_SeasonNumber")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.Season>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Season>()
                      .HasMany(x => x.SeasonMetadata)
                      .WithOne()
@@ -1030,6 +999,7 @@ namespace Jellyfin.Data
                      .HasMaxLength(1024)
                      .HasField("_Outline")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.SeasonMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.Series>()
                      .Property(t => t.Outline)
@@ -1048,6 +1018,7 @@ namespace Jellyfin.Data
                      .Property(t => t.FirstAired)
                      .HasField("_FirstAired")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.Series>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Series>()
                      .HasMany(x => x.SeriesMetadata)
                      .WithOne()
@@ -1079,6 +1050,7 @@ namespace Jellyfin.Data
                      .HasMaxLength(2)
                      .HasField("_Country")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.SeriesMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.SeriesMetadata>()
                      .HasMany(x => x.Networks)
                      .WithOne()
@@ -1089,6 +1061,7 @@ namespace Jellyfin.Data
                      .Property(t => t.TrackNumber)
                      .HasField("_TrackNumber")
                      .UsePropertyAccessMode(PropertyAccessMode.Property);
+         modelBuilder.Entity<global::Jellyfin.Data.Track>().Property<byte[]>("Timestamp").IsConcurrencyToken();
          modelBuilder.Entity<global::Jellyfin.Data.Track>()
                      .HasMany(x => x.Releases)
                      .WithOne()
@@ -1100,6 +1073,7 @@ namespace Jellyfin.Data
                      .HasForeignKey("TrackMetadata_TrackMetadata_Id")
                      .IsRequired();
 
+         modelBuilder.Entity<global::Jellyfin.Data.TrackMetadata>().Property<byte[]>("Timestamp").IsConcurrencyToken();
 
          modelBuilder.Entity<global::Jellyfin.Data.User>()
                      .ToTable("Users")

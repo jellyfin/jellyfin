@@ -46,13 +46,16 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="timestart"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_release0"></param>
-      public Chapter(string language, long timestart, global::Jellyfin.Data.Release _release0)
+      public Chapter(string language, long timestart, DateTime lastmodified, global::Jellyfin.Data.Release _release0)
       {
          if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
          this.Language = language;
 
          this.TimeStart = timestart;
+
+         this.LastModified = lastmodified;
 
          if (_release0 == null) throw new ArgumentNullException(nameof(_release0));
          _release0.Chapters.Add(this);
@@ -66,10 +69,11 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="timestart"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_release0"></param>
-      public static Chapter Create(string language, long timestart, global::Jellyfin.Data.Release _release0)
+      public static Chapter Create(string language, long timestart, DateTime lastmodified, global::Jellyfin.Data.Release _release0)
       {
-         return new Chapter(language, timestart, _release0);
+         return new Chapter(language, timestart, lastmodified, _release0);
       }
 
       /*************************************************************************
@@ -261,9 +265,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

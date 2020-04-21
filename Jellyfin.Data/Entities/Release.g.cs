@@ -48,16 +48,19 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="name"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_movie0"></param>
       /// <param name="_episode1"></param>
       /// <param name="_track2"></param>
       /// <param name="_customitem3"></param>
       /// <param name="_book4"></param>
       /// <param name="_photo5"></param>
-      public Release(string name, global::Jellyfin.Data.Movie _movie0, global::Jellyfin.Data.Episode _episode1, global::Jellyfin.Data.Track _track2, global::Jellyfin.Data.CustomItem _customitem3, global::Jellyfin.Data.Book _book4, global::Jellyfin.Data.Photo _photo5)
+      public Release(string name, DateTime lastmodified, global::Jellyfin.Data.Movie _movie0, global::Jellyfin.Data.Episode _episode1, global::Jellyfin.Data.Track _track2, global::Jellyfin.Data.CustomItem _customitem3, global::Jellyfin.Data.Book _book4, global::Jellyfin.Data.Photo _photo5)
       {
          if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
          this.Name = name;
+
+         this.LastModified = lastmodified;
 
          if (_movie0 == null) throw new ArgumentNullException(nameof(_movie0));
          _movie0.Releases.Add(this);
@@ -87,15 +90,16 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="name"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_movie0"></param>
       /// <param name="_episode1"></param>
       /// <param name="_track2"></param>
       /// <param name="_customitem3"></param>
       /// <param name="_book4"></param>
       /// <param name="_photo5"></param>
-      public static Release Create(string name, global::Jellyfin.Data.Movie _movie0, global::Jellyfin.Data.Episode _episode1, global::Jellyfin.Data.Track _track2, global::Jellyfin.Data.CustomItem _customitem3, global::Jellyfin.Data.Book _book4, global::Jellyfin.Data.Photo _photo5)
+      public static Release Create(string name, DateTime lastmodified, global::Jellyfin.Data.Movie _movie0, global::Jellyfin.Data.Episode _episode1, global::Jellyfin.Data.Track _track2, global::Jellyfin.Data.CustomItem _customitem3, global::Jellyfin.Data.Book _book4, global::Jellyfin.Data.Photo _photo5)
       {
-         return new Release(name, _movie0, _episode1, _track2, _customitem3, _book4, _photo5);
+         return new Release(name, lastmodified, _movie0, _episode1, _track2, _customitem3, _book4, _photo5);
       }
 
       /*************************************************************************
@@ -180,9 +184,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

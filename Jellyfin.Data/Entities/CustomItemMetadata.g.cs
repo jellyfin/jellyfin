@@ -47,7 +47,7 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_customitem0"></param>
-      public CustomItemMetadata(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.CustomItem _customitem0)
+      public CustomItemMetadata(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.CustomItem _customitem0)
       {
          if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
          this.Title = title;
@@ -68,14 +68,20 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_customitem0"></param>
-      public static CustomItemMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.CustomItem _customitem0)
+      public static CustomItemMetadata Create(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.CustomItem _customitem0)
       {
-         return new CustomItemMetadata(title, language, dateadded, datemodified, _customitem0);
+         return new CustomItemMetadata(title, language, dateadded, lastmodified, _customitem0);
       }
 
       /*************************************************************************
        * Properties
        *************************************************************************/
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

@@ -46,14 +46,17 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="path"></param>
       /// <param name="kind"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
       /// <param name="_personrole1"></param>
-      public Artwork(string path, global::Jellyfin.Data.ArtKind kind, global::Jellyfin.Data.Metadata _metadata0, global::Jellyfin.Data.PersonRole _personrole1)
+      public Artwork(string path, global::Jellyfin.Data.ArtKind kind, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0, global::Jellyfin.Data.PersonRole _personrole1)
       {
          if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
          this.Path = path;
 
          this.Kind = kind;
+
+         this.LastModified = lastmodified;
 
          if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
          _metadata0.Artwork.Add(this);
@@ -70,11 +73,12 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="path"></param>
       /// <param name="kind"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
       /// <param name="_personrole1"></param>
-      public static Artwork Create(string path, global::Jellyfin.Data.ArtKind kind, global::Jellyfin.Data.Metadata _metadata0, global::Jellyfin.Data.PersonRole _personrole1)
+      public static Artwork Create(string path, global::Jellyfin.Data.ArtKind kind, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0, global::Jellyfin.Data.PersonRole _personrole1)
       {
-         return new Artwork(path, kind, _metadata0, _personrole1);
+         return new Artwork(path, kind, lastmodified, _metadata0, _personrole1);
       }
 
       /*************************************************************************
@@ -195,9 +199,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

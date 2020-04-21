@@ -48,17 +48,20 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="providerid"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
       /// <param name="_person1"></param>
       /// <param name="_personrole2"></param>
       /// <param name="_ratingsource3"></param>
-      public MetadataProviderId(string providerid, global::Jellyfin.Data.Metadata _metadata0, global::Jellyfin.Data.Person _person1, global::Jellyfin.Data.PersonRole _personrole2, global::Jellyfin.Data.RatingSource _ratingsource3)
+      public MetadataProviderId(string providerid, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0, global::Jellyfin.Data.Person _person1, global::Jellyfin.Data.PersonRole _personrole2, global::Jellyfin.Data.RatingSource _ratingsource3)
       {
          // NOTE: This class has one-to-one associations with MetadataProviderId.
          // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
 
          if (string.IsNullOrEmpty(providerid)) throw new ArgumentNullException(nameof(providerid));
          this.ProviderId = providerid;
+
+         this.LastModified = lastmodified;
 
          if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
          _metadata0.Sources.Add(this);
@@ -80,13 +83,14 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="providerid"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
       /// <param name="_person1"></param>
       /// <param name="_personrole2"></param>
       /// <param name="_ratingsource3"></param>
-      public static MetadataProviderId Create(string providerid, global::Jellyfin.Data.Metadata _metadata0, global::Jellyfin.Data.Person _person1, global::Jellyfin.Data.PersonRole _personrole2, global::Jellyfin.Data.RatingSource _ratingsource3)
+      public static MetadataProviderId Create(string providerid, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0, global::Jellyfin.Data.Person _person1, global::Jellyfin.Data.PersonRole _personrole2, global::Jellyfin.Data.RatingSource _ratingsource3)
       {
-         return new MetadataProviderId(providerid, _metadata0, _person1, _personrole2, _ratingsource3);
+         return new MetadataProviderId(providerid, lastmodified, _metadata0, _person1, _personrole2, _ratingsource3);
       }
 
       /*************************************************************************
@@ -171,9 +175,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

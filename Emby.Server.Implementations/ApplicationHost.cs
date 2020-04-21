@@ -22,7 +22,6 @@ using Emby.Dlna.Ssdp;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
-using Emby.Server.Implementations.Activity;
 using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
@@ -47,6 +46,7 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
+using Jellyfin.Server.Implementations.Activity;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -86,7 +86,6 @@ using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -95,7 +94,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
@@ -104,6 +102,7 @@ using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -309,6 +308,8 @@ namespace Emby.Server.Implementations
         private ICollectionManager CollectionManager { get; set; }
 
         private IMediaSourceManager MediaSourceManager { get; set; }
+
+        private JellyfinDbProvider DatabaseProvider { get; set; }
 
         /// <summary>
         /// Gets the installation manager.
@@ -644,6 +645,16 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ILogger>(Logger);
 
             serviceCollection.AddSingleton(FileSystemManager);
+
+            serviceCollection.AddDbContextPool<Jellyfin.Data.JellyfinDb>(
+                options =>
+            {
+                Directory.CreateDirectory(ApplicationPaths.DataPath);
+                options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}");
+            });
+
+            DatabaseProvider = new JellyfinDbProvider(serviceCollection.BuildServiceProvider());
+
             serviceCollection.AddSingleton<TvdbClientManager>();
 
             HttpClient = new HttpClientManager.HttpClientManager(
@@ -827,9 +838,7 @@ namespace Emby.Server.Implementations
                 LibraryManager);
             serviceCollection.AddSingleton(EncodingManager);
 
-            var activityLogRepo = GetActivityLogRepository();
-            serviceCollection.AddSingleton(activityLogRepo);
-            serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(activityLogRepo, UserManager));
+            serviceCollection.AddSingleton<IActivityManager>(new ActivityManager(DatabaseProvider));
 
             var authContext = new AuthorizationContext(AuthenticationRepository, UserManager);
             serviceCollection.AddSingleton<IAuthorizationContext>(authContext);
@@ -958,15 +967,6 @@ namespace Emby.Server.Implementations
         private IAuthenticationRepository GetAuthenticationRepository()
         {
             var repo = new AuthenticationRepository(LoggerFactory, ServerConfigurationManager);
-
-            repo.Initialize();
-
-            return repo;
-        }
-
-        private IActivityRepository GetActivityLogRepository()
-        {
-            var repo = new ActivityRepository(LoggerFactory.CreateLogger<ActivityRepository>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager);
 
             repo.Initialize();
 

@@ -45,11 +45,14 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="name"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
-      public Genre(string name, global::Jellyfin.Data.Metadata _metadata0)
+      public Genre(string name, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0)
       {
          if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
          this.Name = name;
+
+         this.LastModified = lastmodified;
 
          if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
          _metadata0.Genres.Add(this);
@@ -62,10 +65,11 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="name"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_metadata0"></param>
-      public static Genre Create(string name, global::Jellyfin.Data.Metadata _metadata0)
+      public static Genre Create(string name, DateTime lastmodified, global::Jellyfin.Data.Metadata _metadata0)
       {
-         return new Genre(name, _metadata0);
+         return new Genre(name, lastmodified, _metadata0);
       }
 
       /*************************************************************************
@@ -150,9 +154,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

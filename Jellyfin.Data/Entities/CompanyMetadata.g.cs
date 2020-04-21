@@ -47,7 +47,7 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_company0"></param>
-      public CompanyMetadata(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.Company _company0)
+      public CompanyMetadata(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Company _company0)
       {
          if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
          this.Title = title;
@@ -68,9 +68,9 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_company0"></param>
-      public static CompanyMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.Company _company0)
+      public static CompanyMetadata Create(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Company _company0)
       {
-         return new CompanyMetadata(title, language, dateadded, datemodified, _company0);
+         return new CompanyMetadata(title, language, dateadded, lastmodified, _company0);
       }
 
       /*************************************************************************
@@ -224,6 +224,12 @@ namespace Jellyfin.Data
             }
          }
       }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

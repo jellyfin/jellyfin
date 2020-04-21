@@ -46,13 +46,16 @@ namespace Jellyfin.Data
       /// <summary>
       /// Public constructor with required data
       /// </summary>
+      /// <param name="lastmodified"></param>
       /// <param name="_moviemetadata0"></param>
       /// <param name="_seriesmetadata1"></param>
       /// <param name="_musicalbummetadata2"></param>
       /// <param name="_bookmetadata3"></param>
       /// <param name="_company4"></param>
-      public Company(global::Jellyfin.Data.MovieMetadata _moviemetadata0, global::Jellyfin.Data.SeriesMetadata _seriesmetadata1, global::Jellyfin.Data.MusicAlbumMetadata _musicalbummetadata2, global::Jellyfin.Data.BookMetadata _bookmetadata3, global::Jellyfin.Data.Company _company4)
+      public Company(DateTime lastmodified, global::Jellyfin.Data.MovieMetadata _moviemetadata0, global::Jellyfin.Data.SeriesMetadata _seriesmetadata1, global::Jellyfin.Data.MusicAlbumMetadata _musicalbummetadata2, global::Jellyfin.Data.BookMetadata _bookmetadata3, global::Jellyfin.Data.Company _company4)
       {
+         this.LastModified = lastmodified;
+
          if (_moviemetadata0 == null) throw new ArgumentNullException(nameof(_moviemetadata0));
          _moviemetadata0.Studios.Add(this);
 
@@ -76,14 +79,15 @@ namespace Jellyfin.Data
       /// <summary>
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
+      /// <param name="lastmodified"></param>
       /// <param name="_moviemetadata0"></param>
       /// <param name="_seriesmetadata1"></param>
       /// <param name="_musicalbummetadata2"></param>
       /// <param name="_bookmetadata3"></param>
       /// <param name="_company4"></param>
-      public static Company Create(global::Jellyfin.Data.MovieMetadata _moviemetadata0, global::Jellyfin.Data.SeriesMetadata _seriesmetadata1, global::Jellyfin.Data.MusicAlbumMetadata _musicalbummetadata2, global::Jellyfin.Data.BookMetadata _bookmetadata3, global::Jellyfin.Data.Company _company4)
+      public static Company Create(DateTime lastmodified, global::Jellyfin.Data.MovieMetadata _moviemetadata0, global::Jellyfin.Data.SeriesMetadata _seriesmetadata1, global::Jellyfin.Data.MusicAlbumMetadata _musicalbummetadata2, global::Jellyfin.Data.BookMetadata _bookmetadata3, global::Jellyfin.Data.Company _company4)
       {
-         return new Company(_moviemetadata0, _seriesmetadata1, _musicalbummetadata2, _bookmetadata3, _company4);
+         return new Company(lastmodified, _moviemetadata0, _seriesmetadata1, _musicalbummetadata2, _bookmetadata3, _company4);
       }
 
       /*************************************************************************
@@ -130,9 +134,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

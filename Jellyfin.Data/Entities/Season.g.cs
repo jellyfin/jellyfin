@@ -51,13 +51,16 @@ namespace Jellyfin.Data
       /// Public constructor with required data
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
+      /// <param name="lastmodified"></param>
       /// <param name="_series0"></param>
-      public Season(Guid urlid, DateTime dateadded, global::Jellyfin.Data.Series _series0)
+      public Season(Guid urlid, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Series _series0)
       {
          // NOTE: This class has one-to-one associations with LibraryRoot, LibraryItem and CollectionItem.
          // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
 
          this.UrlId = urlid;
+
+         this.LastModified = lastmodified;
 
          if (_series0 == null) throw new ArgumentNullException(nameof(_series0));
          _series0.Seasons.Add(this);
@@ -72,10 +75,11 @@ namespace Jellyfin.Data
       /// Static create function (for use in LINQ queries, etc.)
       /// </summary>
       /// <param name="urlid">This is whats gets displayed in the Urls and APi requests. This could also be a string.</param>
+      /// <param name="lastmodified"></param>
       /// <param name="_series0"></param>
-      public static Season Create(Guid urlid, DateTime dateadded, global::Jellyfin.Data.Series _series0)
+      public static Season Create(Guid urlid, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.Series _series0)
       {
-         return new Season(urlid, dateadded, _series0);
+         return new Season(urlid, dateadded, lastmodified, _series0);
       }
 
       /*************************************************************************
@@ -113,6 +117,12 @@ namespace Jellyfin.Data
             }
          }
       }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

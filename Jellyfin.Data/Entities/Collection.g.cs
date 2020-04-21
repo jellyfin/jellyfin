@@ -26,13 +26,43 @@ namespace Jellyfin.Data
       partial void Init();
 
       /// <summary>
-      /// Default constructor
+      /// Default constructor. Protected due to required properties, but present because EF needs it.
       /// </summary>
-      public Collection()
+      protected Collection()
       {
          CollectionItem = new System.Collections.Generic.LinkedList<global::Jellyfin.Data.CollectionItem>();
 
          Init();
+      }
+
+      /// <summary>
+      /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+      /// </summary>
+      public static Collection CreateCollectionUnsafe()
+      {
+         return new Collection();
+      }
+
+      /// <summary>
+      /// Public constructor with required data
+      /// </summary>
+      /// <param name="lastmodified"></param>
+      public Collection(DateTime lastmodified)
+      {
+         this.LastModified = lastmodified;
+
+         this.CollectionItem = new System.Collections.Generic.LinkedList<global::Jellyfin.Data.CollectionItem>();
+
+         Init();
+      }
+
+      /// <summary>
+      /// Static create function (for use in LINQ queries, etc.)
+      /// </summary>
+      /// <param name="lastmodified"></param>
+      public static Collection Create(DateTime lastmodified)
+      {
+         return new Collection(lastmodified);
       }
 
       /*************************************************************************
@@ -116,9 +146,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

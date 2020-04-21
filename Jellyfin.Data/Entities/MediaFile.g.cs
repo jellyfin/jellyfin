@@ -48,13 +48,16 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="path">Relative to the LibraryRoot</param>
       /// <param name="kind"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_release0"></param>
-      public MediaFile(string path, global::Jellyfin.Data.MediaFileKind kind, global::Jellyfin.Data.Release _release0)
+      public MediaFile(string path, global::Jellyfin.Data.MediaFileKind kind, DateTime lastmodified, global::Jellyfin.Data.Release _release0)
       {
          if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
          this.Path = path;
 
          this.Kind = kind;
+
+         this.LastModified = lastmodified;
 
          if (_release0 == null) throw new ArgumentNullException(nameof(_release0));
          _release0.MediaFiles.Add(this);
@@ -69,10 +72,11 @@ namespace Jellyfin.Data
       /// </summary>
       /// <param name="path">Relative to the LibraryRoot</param>
       /// <param name="kind"></param>
+      /// <param name="lastmodified"></param>
       /// <param name="_release0"></param>
-      public static MediaFile Create(string path, global::Jellyfin.Data.MediaFileKind kind, global::Jellyfin.Data.Release _release0)
+      public static MediaFile Create(string path, global::Jellyfin.Data.MediaFileKind kind, DateTime lastmodified, global::Jellyfin.Data.Release _release0)
       {
-         return new MediaFile(path, kind, _release0);
+         return new MediaFile(path, kind, lastmodified, _release0);
       }
 
       /*************************************************************************
@@ -194,9 +198,14 @@ namespace Jellyfin.Data
       /// <summary>
       /// Required
       /// </summary>
-      [ConcurrencyCheck]
       [Required]
-      public byte[] Timestamp { get; set; }
+      public DateTime LastModified { get; set; }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties

@@ -49,7 +49,7 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_musicalbum0"></param>
-      public MusicAlbumMetadata(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.MusicAlbum _musicalbum0)
+      public MusicAlbumMetadata(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.MusicAlbum _musicalbum0)
       {
          if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
          this.Title = title;
@@ -71,9 +71,9 @@ namespace Jellyfin.Data
       /// <param name="title">The title or name of the object</param>
       /// <param name="language">ISO-639-3 3-character language codes</param>
       /// <param name="_musicalbum0"></param>
-      public static MusicAlbumMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, global::Jellyfin.Data.MusicAlbum _musicalbum0)
+      public static MusicAlbumMetadata Create(string title, string language, DateTime dateadded, DateTime lastmodified, global::Jellyfin.Data.MusicAlbum _musicalbum0)
       {
-         return new MusicAlbumMetadata(title, language, dateadded, datemodified, _musicalbum0);
+         return new MusicAlbumMetadata(title, language, dateadded, lastmodified, _musicalbum0);
       }
 
       /*************************************************************************
@@ -190,6 +190,12 @@ namespace Jellyfin.Data
             }
          }
       }
+
+      /// <summary>
+      /// Concurrency token
+      /// </summary>
+      [Timestamp]
+      public Byte[] Timestamp { get; set; }
 
       /*************************************************************************
        * Navigation properties
