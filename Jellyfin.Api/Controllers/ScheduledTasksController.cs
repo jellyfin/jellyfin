@@ -41,48 +41,41 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isHidden = false,
             [FromQuery] bool? isEnabled = false)
         {
-            try
+            IEnumerable<IScheduledTaskWorker> tasks = _taskManager.ScheduledTasks.OrderBy(o => o.Name);
+
+            if (isHidden.HasValue)
             {
-                IEnumerable<IScheduledTaskWorker> tasks = _taskManager.ScheduledTasks.OrderBy(o => o.Name);
-
-                if (isHidden.HasValue)
+                var hiddenValue = isHidden.Value;
+                tasks = tasks.Where(o =>
                 {
-                    var hiddenValue = isHidden.Value;
-                    tasks = tasks.Where(o =>
+                    var itemIsHidden = false;
+                    if (o.ScheduledTask is IConfigurableScheduledTask configurableScheduledTask)
                     {
-                        var itemIsHidden = false;
-                        if (o.ScheduledTask is IConfigurableScheduledTask configurableScheduledTask)
-                        {
-                            itemIsHidden = configurableScheduledTask.IsHidden;
-                        }
+                        itemIsHidden = configurableScheduledTask.IsHidden;
+                    }
 
-                        return itemIsHidden == hiddenValue;
-                    });
-                }
-
-                if (isEnabled.HasValue)
-                {
-                    var enabledValue = isEnabled.Value;
-                    tasks = tasks.Where(o =>
-                    {
-                        var itemIsEnabled = false;
-                        if (o.ScheduledTask is IConfigurableScheduledTask configurableScheduledTask)
-                        {
-                            itemIsEnabled = configurableScheduledTask.IsEnabled;
-                        }
-
-                        return itemIsEnabled == enabledValue;
-                    });
-                }
-
-                var taskInfos = tasks.Select(ScheduledTaskHelpers.GetTaskInfo);
-
-                return Ok(taskInfos);
+                    return itemIsHidden == hiddenValue;
+                });
             }
-            catch (Exception e)
+
+            if (isEnabled.HasValue)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                var enabledValue = isEnabled.Value;
+                tasks = tasks.Where(o =>
+                {
+                    var itemIsEnabled = false;
+                    if (o.ScheduledTask is IConfigurableScheduledTask configurableScheduledTask)
+                    {
+                        itemIsEnabled = configurableScheduledTask.IsEnabled;
+                    }
+
+                    return itemIsEnabled == enabledValue;
+                });
             }
+
+            var taskInfos = tasks.Select(ScheduledTaskHelpers.GetTaskInfo);
+
+            return Ok(taskInfos);
         }
 
         /// <summary>
@@ -96,23 +89,16 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetTask([FromRoute] string taskId)
         {
-            try
-            {
-                var task = _taskManager.ScheduledTasks.FirstOrDefault(i =>
-                    string.Equals(i.Id, taskId, StringComparison.OrdinalIgnoreCase));
+            var task = _taskManager.ScheduledTasks.FirstOrDefault(i =>
+                string.Equals(i.Id, taskId, StringComparison.OrdinalIgnoreCase));
 
-                if (task == null)
-                {
-                    return NotFound();
-                }
-
-                var result = ScheduledTaskHelpers.GetTaskInfo(task);
-                return Ok(result);
-            }
-            catch (Exception e)
+            if (task == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                return NotFound();
             }
+
+            var result = ScheduledTaskHelpers.GetTaskInfo(task);
+            return Ok(result);
         }
 
         /// <summary>
@@ -126,23 +112,16 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult StartTask([FromRoute] string taskId)
         {
-            try
-            {
-                var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
-                    o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
+            var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
+                o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
 
-                if (task == null)
-                {
-                    return NotFound();
-                }
-
-                _taskManager.Execute(task, new TaskOptions());
-                return Ok();
-            }
-            catch (Exception e)
+            if (task == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                return NotFound();
             }
+
+            _taskManager.Execute(task, new TaskOptions());
+            return Ok();
         }
 
         /// <summary>
@@ -156,23 +135,16 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult StopTask([FromRoute] string taskId)
         {
-            try
-            {
-                var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
-                    o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
+            var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
+                o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
 
-                if (task == null)
-                {
-                    return NotFound();
-                }
-
-                _taskManager.Cancel(task);
-                return Ok();
-            }
-            catch (Exception e)
+            if (task == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                return NotFound();
             }
+
+            _taskManager.Cancel(task);
+            return Ok();
         }
 
         /// <summary>
@@ -185,24 +157,19 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateTask([FromRoute] string taskId, [FromBody, BindRequired] TaskTriggerInfo[] triggerInfos)
+        public IActionResult UpdateTask(
+            [FromRoute] string taskId,
+            [FromBody, BindRequired] TaskTriggerInfo[] triggerInfos)
         {
-            try
+            var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
+                o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
+            if (task == null)
             {
-                var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
-                    o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
-                if (task == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                task.Triggers = triggerInfos;
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            task.Triggers = triggerInfos;
+            return Ok();
         }
     }
 }
