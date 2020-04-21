@@ -11,11 +11,11 @@ namespace Jellyfin.Naming.Tests.Video
     {
         private readonly NamingOptions _namingOptions = new NamingOptions();
 
-        private class ResolveFileTestData : IEnumerable<object?[]>
+        private class ResolveFileTestData : IEnumerable<object[]>
         {
-            public IEnumerator<object?[]> GetEnumerator()
+            public IEnumerator<object[]> GetEnumerator()
             {
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -24,7 +24,7 @@ namespace Jellyfin.Naming.Tests.Video
                         Name = "7 Psychos"
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -34,7 +34,7 @@ namespace Jellyfin.Naming.Tests.Video
                         Year = 2005
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -43,7 +43,7 @@ namespace Jellyfin.Naming.Tests.Video
                         Name = "American.Psycho",
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -55,7 +55,7 @@ namespace Jellyfin.Naming.Tests.Video
                         Format3D = "sbs",
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -65,7 +65,7 @@ namespace Jellyfin.Naming.Tests.Video
                         Year = 2006
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -77,7 +77,7 @@ namespace Jellyfin.Naming.Tests.Video
                         Format3D = "sbs",
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -89,7 +89,7 @@ namespace Jellyfin.Naming.Tests.Video
                         StubType = "bluray",
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -101,7 +101,7 @@ namespace Jellyfin.Naming.Tests.Video
                         StubType = "bluray",
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -113,7 +113,7 @@ namespace Jellyfin.Naming.Tests.Video
                         StubType = "bluray",
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -125,7 +125,7 @@ namespace Jellyfin.Naming.Tests.Video
                         StubType = "bluray",
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -136,7 +136,7 @@ namespace Jellyfin.Naming.Tests.Video
                         ExtraType = ExtraType.Trailer,
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -147,7 +147,7 @@ namespace Jellyfin.Naming.Tests.Video
                         ExtraType = ExtraType.Trailer,
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -157,7 +157,7 @@ namespace Jellyfin.Naming.Tests.Video
                         Year = 2006
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -167,7 +167,7 @@ namespace Jellyfin.Naming.Tests.Video
                         Year = 1995,
                     }
                 };
-                yield return new object?[]
+                yield return new object[]
                 {
                     new VideoFileInfo()
                     {
@@ -184,10 +184,11 @@ namespace Jellyfin.Naming.Tests.Video
 
         [Theory]
         [ClassData(typeof(ResolveFileTestData))]
-        public void ResolveFile_ValidFileName_Success(VideoFileInfo? expectedResult)
+        public void ResolveFile_ValidFileName_Success(VideoFileInfo expectedResult)
         {
             var result = new VideoResolver(_namingOptions).ResolveFile(expectedResult.Path);
 
+            Assert.NotNull(result);
             Assert.Equal(result.Path, expectedResult.Path);
             Assert.Equal(result.Container, expectedResult.Container);
             Assert.Equal(result.Name, expectedResult.Name);
