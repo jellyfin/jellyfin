@@ -1,9 +1,12 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.TV
 {
+    /// <summary>
+    /// Zap2It external id.
+    /// </summary>
     public class Zap2ItExternalId : IExternalId
     {
         /// <inheritdoc />

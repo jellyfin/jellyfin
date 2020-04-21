@@ -1,10 +1,13 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.Plugins.TheTvdb;
 
 namespace MediaBrowser.Providers.TV
 {
+    /// <summary>
+    /// Tvdb external id.
+    /// </summary>
     public class TvdbExternalId : IExternalId
     {
         /// <inheritdoc />
@@ -18,6 +21,5 @@ namespace MediaBrowser.Providers.TV
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Series;
-
     }
 }

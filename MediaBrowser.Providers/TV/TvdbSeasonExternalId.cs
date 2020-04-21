@@ -1,9 +1,12 @@
-﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.TV
 {
+    /// <summary>
+    /// Tvdb season external id.
+    /// </summary>
     public class TvdbSeasonExternalId : IExternalId
     {
         /// <inheritdoc />
