@@ -422,7 +422,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        private void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, PackageVersionInfo)> e)
+        private void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, VersionInfo)> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -434,8 +434,8 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.Item2.versionStr),
-                Overview = e.Argument.Item2.description
+                    e.Argument.Item2.version),
+                Overview = e.Argument.Item2.changelog
             });
         }
 
@@ -451,7 +451,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        private void OnPluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> e)
+        private void OnPluginInstalled(object sender, GenericEventArgs<VersionInfo> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -463,7 +463,7 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.versionStr)
+                    e.Argument.version)
             });
         }
 

@@ -91,5 +91,18 @@
     "VersionNumber": "版本 {0}",
     "HeaderRecordingGroups": "錄製組",
     "Inherit": "繼承",
-    "SubtitleDownloadFailureFromForItem": "無法為 {1} 從 {0} 下載字幕"
+    "SubtitleDownloadFailureFromForItem": "無法為 {1} 從 {0} 下載字幕",
+    "TaskDownloadMissingSubtitlesDescription": "在網路上透過描述資料搜尋遺失的字幕。",
+    "TaskDownloadMissingSubtitles": "下載遺失的字幕",
+    "TaskRefreshChannels": "重新整理頻道",
+    "TaskUpdatePlugins": "更新插件",
+    "TaskRefreshPeople": "重新整理人員",
+    "TaskCleanLogsDescription": "刪除超過{0}天的紀錄檔案。",
+    "TaskCleanLogs": "清空紀錄資料夾",
+    "TaskRefreshLibraryDescription": "掃描媒體庫內新的檔案並重新整理描述資料。",
+    "TaskRefreshLibrary": "掃描媒體庫",
+    "TaskRefreshChapterImages": "擷取章節圖片",
+    "TaskCleanCacheDescription": "刪除系統長時間不需要的快取。",
+    "TaskCleanCache": "清除快取資料夾",
+    "TasksLibraryCategory": "媒體庫"
 }
