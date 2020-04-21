@@ -89,14 +89,14 @@ namespace Emby.Naming.Video
             if (parseName)
             {
                 var cleanDateTimeResult = CleanDateTime(name);
+                name = cleanDateTimeResult.Name;
+                year = cleanDateTimeResult.Year;
 
                 if (extraResult.ExtraType == null
                     && TryCleanString(cleanDateTimeResult.Name, out ReadOnlySpan<char> newName))
                 {
                     name = newName.ToString();
                 }
-
-                year = cleanDateTimeResult.Year;
             }
 
             return new VideoFileInfo
