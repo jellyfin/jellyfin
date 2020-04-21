@@ -44,9 +44,8 @@ namespace Jellyfin.Api.Controllers.Images
         /// </summary>
         /// <returns>General images.</returns>
         [HttpGet("General")]
-        [ProducesResponseType(typeof(ImageByNameInfo[]), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetGeneralImages()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<ImageByNameInfo[]> GetGeneralImages()
         {
             return Ok(GetImageList(_applicationPaths.GeneralPath, false));
         }
@@ -58,10 +57,10 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="type">Image Type (primary, backdrop, logo, etc).</param>
         /// <returns>Image Stream.</returns>
         [HttpGet("General/{Name}/{Type}")]
-        [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetGeneralImage([FromRoute] string name, [FromRoute] string type)
+        public ActionResult<FileStreamResult> GetGeneralImage([FromRoute] string name, [FromRoute] string type)
         {
             var filename = string.Equals(type, "primary", StringComparison.OrdinalIgnoreCase)
                 ? "folder"
@@ -85,9 +84,8 @@ namespace Jellyfin.Api.Controllers.Images
         /// </summary>
         /// <returns>General images.</returns>
         [HttpGet("Ratings")]
-        [ProducesResponseType(typeof(ImageByNameInfo[]), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetRatingImages()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<ImageByNameInfo[]> GetRatingImages()
         {
             return Ok(GetImageList(_applicationPaths.RatingsPath, false));
         }
@@ -99,10 +97,10 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="name">The name of the image.</param>
         /// <returns>Image Stream.</returns>
         [HttpGet("Ratings/{Theme}/{Name}")]
-        [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetRatingImage(
+        public ActionResult<FileStreamResult> GetRatingImage(
             [FromRoute] string theme,
             [FromRoute] string name)
         {
@@ -114,9 +112,8 @@ namespace Jellyfin.Api.Controllers.Images
         /// </summary>
         /// <returns>Media Info images.</returns>
         [HttpGet("MediaInfo")]
-        [ProducesResponseType(typeof(ImageByNameInfo[]), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetMediaInfoImages()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<ImageByNameInfo[]> GetMediaInfoImages()
         {
             return Ok(GetImageList(_applicationPaths.MediaInfoImagesPath, false));
         }
@@ -128,10 +125,10 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="name">The name of the image.</param>
         /// <returns>Image Stream.</returns>
         [HttpGet("MediaInfo/{Theme}/{Name}")]
-        [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetMediaInfoImage(
+        public ActionResult<FileStreamResult> GetMediaInfoImage(
             [FromRoute] string theme,
             [FromRoute] string name)
         {
@@ -145,7 +142,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="theme">Theme to search.</param>
         /// <param name="name">File name to search for.</param>
         /// <returns>Image Stream.</returns>
-        private IActionResult GetImageFile(string basePath, string theme, string name)
+        private ActionResult<FileStreamResult> GetImageFile(string basePath, string theme, string name)
         {
             var themeFolder = Path.Combine(basePath, theme);
             if (Directory.Exists(themeFolder))
