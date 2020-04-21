@@ -63,10 +63,9 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="includeAllLanguages">Optinal. Include all languages.</param>
         /// <returns>Remote Image Result.</returns>
         [HttpGet("{Id}/RemoteImages")]
-        [ProducesResponseType(typeof(RemoteImageResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetRemoteImages(
+        public async Task<ActionResult<RemoteImageResult>> GetRemoteImages(
             [FromRoute] string id,
             [FromQuery] ImageType? type,
             [FromQuery] int? startIndex,
@@ -126,10 +125,9 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="id">Item Id.</param>
         /// <returns>List of providers.</returns>
         [HttpGet("{Id}/RemoteImages/Providers")]
-        [ProducesResponseType(typeof(ImageProviderInfo[]), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetRemoteImageProviders([FromRoute] string id)
+        public ActionResult<ImageProviderInfo[]> GetRemoteImageProviders([FromRoute] string id)
         {
             var item = _libraryManager.GetItemById(id);
             if (item == null)
@@ -147,10 +145,10 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="imageUrl">The image url.</param>
         /// <returns>Image Stream.</returns>
         [HttpGet("Remote")]
-        [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetRemoteImage([FromQuery, BindRequired] string imageUrl)
+        public async Task<ActionResult<FileStreamResult>> GetRemoteImage([FromQuery, BindRequired] string imageUrl)
         {
             var urlHash = imageUrl.GetMD5();
             var pointerCachePath = GetFullCachePath(urlHash.ToString());
@@ -200,8 +198,7 @@ namespace Jellyfin.Api.Controllers.Images
         [HttpPost("{Id}/RemoteImages/Download")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DownloadRemoteImage(
+        public async Task<ActionResult> DownloadRemoteImage(
             [FromRoute] string id,
             [FromQuery, BindRequired] ImageType type,
             [FromQuery] string imageUrl)
