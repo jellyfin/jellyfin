@@ -213,19 +213,6 @@ namespace Emby.Server.Implementations
         /// <value>The configuration manager.</value>
         protected IConfigurationManager ConfigurationManager { get; set; }
 
-        /// <inheritdoc />
-        public PackageVersionClass SystemUpdateLevel
-        {
-            get
-            {
-#if BETA
-                return PackageVersionClass.Beta;
-#else
-                return PackageVersionClass.Release;
-#endif
-            }
-        }
-
         /// <summary>
         /// Gets or sets the service provider.
         /// </summary>
@@ -1170,7 +1157,6 @@ namespace Emby.Server.Implementations
                 SupportsLibraryMonitor = true,
                 EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
-                SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = _startupOptions.PackageName
             };
         }

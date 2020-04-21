@@ -11,21 +11,16 @@ namespace Emby.Server.Implementations.Activity
 {
     public class ActivityManager : IActivityManager
     {
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
-
         private readonly IActivityRepository _repo;
-        private readonly ILogger _logger;
         private readonly IUserManager _userManager;
 
-        public ActivityManager(
-            ILogger<ActivityManager> logger,
-            IActivityRepository repo,
-            IUserManager userManager)
+        public ActivityManager(IActivityRepository repo, IUserManager userManager)
         {
-            _logger = logger;
             _repo = repo;
             _userManager = userManager;
         }
+
+        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
         public void Create(ActivityLogEntry entry)
         {

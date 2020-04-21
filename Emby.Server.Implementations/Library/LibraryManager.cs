@@ -2335,7 +2335,7 @@ namespace Emby.Server.Implementations.Library
             string videoPath,
             string[] files)
         {
-            new SubtitleResolver(BaseItem.LocalizationManager, _fileSystem).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
+            new SubtitleResolver(BaseItem.LocalizationManager).AddExternalSubtitleStreams(streams, videoPath, streams.Count, files);
         }
 
         /// <inheritdoc />
