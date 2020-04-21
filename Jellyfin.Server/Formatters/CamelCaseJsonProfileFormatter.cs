@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Jellyfin.Server.Models;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Formatters
         /// <summary>
         /// Initializes a new instance of the <see cref="CamelCaseJsonProfileFormatter"/> class.
         /// </summary>
-        public CamelCaseJsonProfileFormatter() : base(new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
+        public CamelCaseJsonProfileFormatter() : base(JsonOptions.CamelCase)
         {
             SupportedMediaTypes.Clear();
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json;profile=\"CamelCase\""));
