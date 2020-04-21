@@ -19,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Jellyfin.Data
 {
    /// <inheritdoc/>
-   public partial class Jellyfin : DbContext
+   public partial class JellyfinDb : DbContext
    {
       #region DbSets
       public virtual Microsoft.EntityFrameworkCore.DbSet<global::Jellyfin.Data.ActivityLog> ActivityLogs { get; set; }
@@ -79,7 +79,7 @@ namespace Jellyfin.Data
       public static string ConnectionString { get; set; } = @"Data Source=jellyfin.db";
 
       /// <inheritdoc />
-      public Jellyfin(DbContextOptions<Jellyfin> options) : base(options)
+      public JellyfinDb(DbContextOptions<JellyfinDb> options) : base(options)
       {
       }
 
