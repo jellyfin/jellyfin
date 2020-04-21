@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="str">The STR.</param>
         /// <param name="attribute">The attrib.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentException"><c>str</c> or <c>attribute</c> is empty.</exception>
+        /// <exception cref="ArgumentException"><paramref name="str" /> or <paramref name="attribute" /> is empty.</exception>
         public static string? GetAttributeValue(this string str, string attribute)
         {
             if (str.Length == 0)
