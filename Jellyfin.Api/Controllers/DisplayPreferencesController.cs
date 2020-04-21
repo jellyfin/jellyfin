@@ -1,6 +1,5 @@
 #nullable enable
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using MediaBrowser.Controller.Net;
@@ -45,20 +44,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] [Required] string userId,
             [FromQuery] [Required] string client)
         {
-            try
+            var result = _displayPreferencesRepository.GetDisplayPreferences(displayPreferencesId, userId, client);
+            if (result == null)
             {
-                var result = _displayPreferencesRepository.GetDisplayPreferences(displayPreferencesId, userId, client);
-                if (result == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                return Ok(result);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return Ok(result);
         }
 
         /// <summary>
@@ -80,30 +72,23 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, BindRequired] string client,
             [FromBody, BindRequired] DisplayPreferences displayPreferences)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                if (displayPreferencesId == null)
-                {
-                    // do nothing.
-                }
-
-                _displayPreferencesRepository.SaveDisplayPreferences(
-                    displayPreferences,
-                    userId,
-                    client,
-                    CancellationToken.None);
-
-                return Ok();
+                return BadRequest(ModelState);
             }
-            catch (Exception e)
+
+            if (displayPreferencesId == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                // do nothing.
             }
+
+            _displayPreferencesRepository.SaveDisplayPreferences(
+                displayPreferences,
+                userId,
+                client,
+                CancellationToken.None);
+
+            return Ok();
         }
     }
 }
