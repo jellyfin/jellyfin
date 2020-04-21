@@ -255,7 +255,7 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
-            Logger = LoggerFactory.CreateLogger("App");
+            Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
             _startupOptions = options;
 

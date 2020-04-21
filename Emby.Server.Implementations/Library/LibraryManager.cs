@@ -3091,7 +3091,7 @@ namespace Emby.Server.Implementations.Library
             {
                 _configurationManager.Configuration.ContentTypes = _configurationManager.Configuration.ContentTypes
                     .Except(removeList)
-                        .ToArray();
+                    .ToArray();
 
                 _configurationManager.SaveConfiguration();
             }
