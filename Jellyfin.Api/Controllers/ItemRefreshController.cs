@@ -1,6 +1,5 @@
 #nullable enable
 
-using System;
 using System.ComponentModel;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -60,33 +59,26 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool replaceAllMetadata,
             [FromQuery] bool replaceAllImages)
         {
-            try
+            var item = _libraryManager.GetItemById(id);
+            if (item == null)
             {
-                var item = _libraryManager.GetItemById(id);
-                if (item == null)
-                {
-                    return NotFound();
-                }
-
-                var refreshOptions = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-                {
-                    MetadataRefreshMode = metadataRefreshMode,
-                    ImageRefreshMode = imageRefreshMode,
-                    ReplaceAllImages = replaceAllImages,
-                    ReplaceAllMetadata = replaceAllMetadata,
-                    ForceSave = metadataRefreshMode == MetadataRefreshMode.FullRefresh ||
-                                imageRefreshMode == MetadataRefreshMode.FullRefresh ||
-                                replaceAllImages || replaceAllMetadata,
-                    IsAutomated = false
-                };
-
-                _providerManager.QueueRefresh(item.Id, refreshOptions, RefreshPriority.High);
-                return Ok();
+                return NotFound();
             }
-            catch (Exception e)
+
+            var refreshOptions = new MetadataRefreshOptions(new DirectoryService(_fileSystem))
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+                MetadataRefreshMode = metadataRefreshMode,
+                ImageRefreshMode = imageRefreshMode,
+                ReplaceAllImages = replaceAllImages,
+                ReplaceAllMetadata = replaceAllMetadata,
+                ForceSave = metadataRefreshMode == MetadataRefreshMode.FullRefresh ||
+                            imageRefreshMode == MetadataRefreshMode.FullRefresh ||
+                            replaceAllImages || replaceAllMetadata,
+                IsAutomated = false
+            };
+
+            _providerManager.QueueRefresh(item.Id, refreshOptions, RefreshPriority.High);
+            return Ok();
         }
     }
 }
