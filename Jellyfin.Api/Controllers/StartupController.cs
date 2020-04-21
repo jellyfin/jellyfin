@@ -36,7 +36,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Status.</returns>
         [HttpPost("Complete")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult CompleteWizard()
+        public ActionResult CompleteWizard()
         {
             _config.Configuration.IsStartupWizardCompleted = true;
             _config.SetOptimalValues();
@@ -49,8 +49,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>The initial startup wizard configuration.</returns>
         [HttpGet("Configuration")]
-        [ProducesResponseType(typeof(StartupConfigurationDto), StatusCodes.Status200OK)]
-        public IActionResult GetStartupConfiguration()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<StartupConfigurationDto> GetStartupConfiguration()
         {
             var result = new StartupConfigurationDto
             {
@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Status.</returns>
         [HttpPost("Configuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult UpdateInitialConfiguration(
+        public ActionResult UpdateInitialConfiguration(
             [FromForm] string uiCulture,
             [FromForm] string metadataCountryCode,
             [FromForm] string preferredMetadataLanguage)
@@ -91,7 +91,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Status.</returns>
         [HttpPost("RemoteAccess")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult SetRemoteAccess([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
+        public ActionResult SetRemoteAccess([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
         {
             _config.Configuration.EnableRemoteAccess = enableRemoteAccess;
             _config.Configuration.EnableUPnP = enableAutomaticPortMapping;
@@ -104,8 +104,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>The first user.</returns>
         [HttpGet("User")]
-        [ProducesResponseType(typeof(StartupUserDto), StatusCodes.Status200OK)]
-        public IActionResult GetFirstUser()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<StartupUserDto> GetFirstUser()
         {
             var user = _userManager.Users.First();
             return Ok(new StartupUserDto { Name = user.Name, Password = user.Password });
@@ -118,7 +118,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The async task.</returns>
         [HttpPost("User")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateUser([FromForm] StartupUserDto startupUserDto)
+        public async Task<ActionResult> UpdateUser([FromForm] StartupUserDto startupUserDto)
         {
             var user = _userManager.Users.First();
 
