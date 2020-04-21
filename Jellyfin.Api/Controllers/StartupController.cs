@@ -5,6 +5,7 @@ using Jellyfin.Api.Models.StartupDtos;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -32,12 +33,15 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Api endpoint for completing the startup wizard.
         /// </summary>
+        /// <returns>Status.</returns>
         [HttpPost("Complete")]
-        public void CompleteWizard()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult CompleteWizard()
         {
             _config.Configuration.IsStartupWizardCompleted = true;
             _config.SetOptimalValues();
             _config.SaveConfiguration();
+            return Ok();
         }
 
         /// <summary>
@@ -45,7 +49,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>The initial startup wizard configuration.</returns>
         [HttpGet("Configuration")]
-        public StartupConfigurationDto GetStartupConfiguration()
+        [ProducesResponseType(typeof(StartupConfigurationDto), StatusCodes.Status200OK)]
+        public IActionResult GetStartupConfiguration()
         {
             var result = new StartupConfigurationDto
             {
@@ -54,7 +59,7 @@ namespace Jellyfin.Api.Controllers
                 PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
             };
 
-            return result;
+            return Ok(result);
         }
 
         /// <summary>
@@ -63,8 +68,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="uiCulture">The UI language culture.</param>
         /// <param name="metadataCountryCode">The metadata country code.</param>
         /// <param name="preferredMetadataLanguage">The preferred language for metadata.</param>
+        /// <returns>Status.</returns>
         [HttpPost("Configuration")]
-        public void UpdateInitialConfiguration(
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult UpdateInitialConfiguration(
             [FromForm] string uiCulture,
             [FromForm] string metadataCountryCode,
             [FromForm] string preferredMetadataLanguage)
@@ -73,6 +80,7 @@ namespace Jellyfin.Api.Controllers
             _config.Configuration.MetadataCountryCode = metadataCountryCode;
             _config.Configuration.PreferredMetadataLanguage = preferredMetadataLanguage;
             _config.SaveConfiguration();
+            return Ok();
         }
 
         /// <summary>
@@ -80,12 +88,15 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="enableRemoteAccess">Enable remote access.</param>
         /// <param name="enableAutomaticPortMapping">Enable UPnP.</param>
+        /// <returns>Status.</returns>
         [HttpPost("RemoteAccess")]
-        public void SetRemoteAccess([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult SetRemoteAccess([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
         {
             _config.Configuration.EnableRemoteAccess = enableRemoteAccess;
             _config.Configuration.EnableUPnP = enableAutomaticPortMapping;
             _config.SaveConfiguration();
+            return Ok();
         }
 
         /// <summary>
@@ -93,14 +104,11 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>The first user.</returns>
         [HttpGet("User")]
-        public StartupUserDto GetFirstUser()
+        [ProducesResponseType(typeof(StartupUserDto), StatusCodes.Status200OK)]
+        public IActionResult GetFirstUser()
         {
             var user = _userManager.Users.First();
-            return new StartupUserDto
-            {
-                Name = user.Name,
-                Password = user.Password
-            };
+            return Ok(new StartupUserDto { Name = user.Name, Password = user.Password });
         }
 
         /// <summary>
@@ -109,7 +117,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startupUserDto">The DTO containing username and password.</param>
         /// <returns>The async task.</returns>
         [HttpPost("User")]
-        public async Task UpdateUser([FromForm] StartupUserDto startupUserDto)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateUser([FromForm] StartupUserDto startupUserDto)
         {
             var user = _userManager.Users.First();
 
@@ -121,6 +130,8 @@ namespace Jellyfin.Api.Controllers
             {
                 await _userManager.ChangePassword(user, startupUserDto.Password).ConfigureAwait(false);
             }
+
+            return Ok();
         }
     }
 }
