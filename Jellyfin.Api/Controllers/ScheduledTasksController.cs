@@ -14,7 +14,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Scheduled Tasks Controller.
     /// </summary>
-    [Authenticated]
+    // [Authenticated]
     public class ScheduledTasksController : BaseJellyfinApiController
     {
         private readonly ITaskManager _taskManager;
@@ -35,47 +35,30 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isEnabled">Optional filter tasks that are enabled, or not.</param>
         /// <returns>Task list.</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(TaskInfo[]), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetTasks(
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IEnumerable<IScheduledTaskWorker> GetTasks(
             [FromQuery] bool? isHidden = false,
             [FromQuery] bool? isEnabled = false)
         {
             IEnumerable<IScheduledTaskWorker> tasks = _taskManager.ScheduledTasks.OrderBy(o => o.Name);
 
-            if (isHidden.HasValue)
+            foreach (var task in tasks)
             {
-                var hiddenValue = isHidden.Value;
-                tasks = tasks.Where(o =>
+                if (task.ScheduledTask is IConfigurableScheduledTask scheduledTask)
                 {
-                    var itemIsHidden = false;
-                    if (o.ScheduledTask is IConfigurableScheduledTask configurableScheduledTask)
+                    if (isHidden.HasValue && isHidden.Value != scheduledTask.IsHidden)
                     {
-                        itemIsHidden = configurableScheduledTask.IsHidden;
+                        continue;
                     }
 
-                    return itemIsHidden == hiddenValue;
-                });
-            }
-
-            if (isEnabled.HasValue)
-            {
-                var enabledValue = isEnabled.Value;
-                tasks = tasks.Where(o =>
-                {
-                    var itemIsEnabled = false;
-                    if (o.ScheduledTask is IConfigurableScheduledTask configurableScheduledTask)
+                    if (isEnabled.HasValue && isEnabled.Value != scheduledTask.IsEnabled)
                     {
-                        itemIsEnabled = configurableScheduledTask.IsEnabled;
+                        continue;
                     }
+                }
 
-                    return itemIsEnabled == enabledValue;
-                });
+                yield return task;
             }
-
-            var taskInfos = tasks.Select(ScheduledTaskHelpers.GetTaskInfo);
-
-            return Ok(taskInfos);
         }
 
         /// <summary>
@@ -84,10 +67,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="taskId">Task Id.</param>
         /// <returns>Task Info.</returns>
         [HttpGet("{TaskID}")]
-        [ProducesResponseType(typeof(TaskInfo), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetTask([FromRoute] string taskId)
+        public ActionResult<TaskInfo> GetTask([FromRoute] string taskId)
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(i =>
                 string.Equals(i.Id, taskId, StringComparison.OrdinalIgnoreCase));
@@ -109,8 +91,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Running/{TaskID}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult StartTask([FromRoute] string taskId)
+        public ActionResult StartTask([FromRoute] string taskId)
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
                 o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
@@ -132,8 +113,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Running/{TaskID}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult StopTask([FromRoute] string taskId)
+        public ActionResult StopTask([FromRoute] string taskId)
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
                 o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
@@ -156,8 +136,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{TaskID}/Triggers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateTask(
+        public ActionResult UpdateTask(
             [FromRoute] string taskId,
             [FromBody, BindRequired] TaskTriggerInfo[] triggerInfos)
         {
