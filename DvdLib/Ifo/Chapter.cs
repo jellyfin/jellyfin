@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 namespace DvdLib.Ifo
 {
     public class Chapter
