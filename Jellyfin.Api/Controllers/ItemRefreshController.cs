@@ -51,8 +51,7 @@ namespace Jellyfin.Api.Controllers
         [Description("Refreshes matadata for an item.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult Post(
+        public ActionResult Post(
             [FromRoute] string id,
             [FromQuery] MetadataRefreshMode metadataRefreshMode,
             [FromQuery] MetadataRefreshMode imageRefreshMode,
