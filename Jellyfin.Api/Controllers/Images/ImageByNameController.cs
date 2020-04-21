@@ -48,14 +48,7 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetGeneralImages()
         {
-            try
-            {
-                return Ok(GetImageList(_applicationPaths.GeneralPath, false));
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return Ok(GetImageList(_applicationPaths.GeneralPath, false));
         }
 
         /// <summary>
@@ -70,28 +63,21 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetGeneralImage([FromRoute] string name, [FromRoute] string type)
         {
-            try
+            var filename = string.Equals(type, "primary", StringComparison.OrdinalIgnoreCase)
+                ? "folder"
+                : type;
+
+            var paths = BaseItem.SupportedImageExtensions
+                .Select(i => Path.Combine(_applicationPaths.GeneralPath, name, filename + i)).ToList();
+
+            var path = paths.FirstOrDefault(System.IO.File.Exists) ?? paths.FirstOrDefault();
+            if (path == null || !System.IO.File.Exists(path))
             {
-                var filename = string.Equals(type, "primary", StringComparison.OrdinalIgnoreCase)
-                    ? "folder"
-                    : type;
-
-                var paths = BaseItem.SupportedImageExtensions
-                    .Select(i => Path.Combine(_applicationPaths.GeneralPath, name, filename + i)).ToList();
-
-                var path = paths.FirstOrDefault(System.IO.File.Exists) ?? paths.FirstOrDefault();
-                if (path == null || !System.IO.File.Exists(path))
-                {
-                    return NotFound();
-                }
-
-                var contentType = MimeTypes.GetMimeType(path);
-                return new FileStreamResult(System.IO.File.OpenRead(path), contentType);
+                return NotFound();
             }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+
+            var contentType = MimeTypes.GetMimeType(path);
+            return new FileStreamResult(System.IO.File.OpenRead(path), contentType);
         }
 
         /// <summary>
@@ -103,14 +89,7 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetRatingImages()
         {
-            try
-            {
-                return Ok(GetImageList(_applicationPaths.RatingsPath, false));
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return Ok(GetImageList(_applicationPaths.RatingsPath, false));
         }
 
         /// <summary>
@@ -127,14 +106,7 @@ namespace Jellyfin.Api.Controllers.Images
             [FromRoute] string theme,
             [FromRoute] string name)
         {
-            try
-            {
-                return GetImageFile(_applicationPaths.RatingsPath, theme, name);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return GetImageFile(_applicationPaths.RatingsPath, theme, name);
         }
 
         /// <summary>
@@ -146,14 +118,7 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetMediaInfoImages()
         {
-            try
-            {
-                return Ok(GetImageList(_applicationPaths.MediaInfoImagesPath, false));
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return Ok(GetImageList(_applicationPaths.MediaInfoImagesPath, false));
         }
 
         /// <summary>
@@ -170,14 +135,7 @@ namespace Jellyfin.Api.Controllers.Images
             [FromRoute] string theme,
             [FromRoute] string name)
         {
-            try
-            {
-                return GetImageFile(_applicationPaths.MediaInfoImagesPath, theme, name);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return GetImageFile(_applicationPaths.MediaInfoImagesPath, theme, name);
         }
 
         /// <summary>
