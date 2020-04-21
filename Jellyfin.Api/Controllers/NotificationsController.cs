@@ -43,14 +43,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">An optional limit on the number of notifications returned.</param>
         /// <returns>A read-only list of all of the user's notifications.</returns>
         [HttpGet("{UserID}")]
-        [ProducesResponseType(typeof(IEnumerable<NotificationResultDto>), StatusCodes.Status200OK)]
-        public IActionResult GetNotifications(
+        [ProducesResponseType(typeof(NotificationResultDto), StatusCodes.Status200OK)]
+        public NotificationResultDto GetNotifications(
             [FromRoute] string userId,
             [FromQuery] bool? isRead,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit)
         {
-            return Ok(new NotificationResultDto());
+            return new NotificationResultDto();
         }
 
         /// <summary>
@@ -60,10 +60,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Notifications summary for the user.</returns>
         [HttpGet("{UserID}/Summary")]
         [ProducesResponseType(typeof(NotificationsSummaryDto), StatusCodes.Status200OK)]
-        public IActionResult GetNotificationsSummary(
+        public NotificationsSummaryDto GetNotificationsSummary(
             [FromRoute] string userId)
         {
-            return Ok(new NotificationsSummaryDto());
+            return new NotificationsSummaryDto();
         }
 
         /// <summary>
@@ -71,10 +71,10 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>All notification types.</returns>
         [HttpGet("Types")]
-        [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
-        public IActionResult GetNotificationTypes()
+        [ProducesResponseType(typeof(IEnumerable<NotificationTypeInfo>), StatusCodes.Status200OK)]
+        public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
         {
-            return Ok(_notificationManager.GetNotificationTypes());
+            return _notificationManager.GetNotificationTypes();
         }
 
         /// <summary>
@@ -83,9 +83,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>All notification services.</returns>
         [HttpGet("Services")]
         [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
-        public IActionResult GetNotificationServices()
+        public IEnumerable<NameIdPair> GetNotificationServices()
         {
-            return Ok(_notificationManager.GetNotificationServices());
+            return _notificationManager.GetNotificationServices();
         }
 
         /// <summary>
