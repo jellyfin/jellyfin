@@ -74,57 +74,50 @@ namespace Jellyfin.Api.Controllers.Images
             [FromQuery] string providerName,
             [FromQuery] bool includeAllLanguages)
         {
-            try
+            var item = _libraryManager.GetItemById(id);
+            if (item == null)
             {
-                var item = _libraryManager.GetItemById(id);
-                if (item == null)
-                {
-                    return NotFound();
-                }
-
-                var images = await _providerManager.GetAvailableRemoteImages(
-                        item,
-                        new RemoteImageQuery
-                        {
-                            ProviderName = providerName,
-                            IncludeAllLanguages = includeAllLanguages,
-                            IncludeDisabledProviders = true,
-                            ImageType = type
-                        }, CancellationToken.None)
-                    .ConfigureAwait(false);
-
-                var imageArray = images.ToArray();
-                var allProviders = _providerManager.GetRemoteImageProviderInfo(item);
-                if (type.HasValue)
-                {
-                    allProviders = allProviders.Where(o => o.SupportedImages.Contains(type.Value));
-                }
-
-                var result = new RemoteImageResult
-                {
-                    TotalRecordCount = imageArray.Length,
-                    Providers = allProviders.Select(o => o.Name)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToArray()
-                };
-
-                if (startIndex.HasValue)
-                {
-                    imageArray = imageArray.Skip(startIndex.Value).ToArray();
-                }
-
-                if (limit.HasValue)
-                {
-                    imageArray = imageArray.Take(limit.Value).ToArray();
-                }
-
-                result.Images = imageArray;
-                return Ok(result);
+                return NotFound();
             }
-            catch (Exception e)
+
+            var images = await _providerManager.GetAvailableRemoteImages(
+                    item,
+                    new RemoteImageQuery
+                    {
+                        ProviderName = providerName,
+                        IncludeAllLanguages = includeAllLanguages,
+                        IncludeDisabledProviders = true,
+                        ImageType = type
+                    }, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            var imageArray = images.ToArray();
+            var allProviders = _providerManager.GetRemoteImageProviderInfo(item);
+            if (type.HasValue)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                allProviders = allProviders.Where(o => o.SupportedImages.Contains(type.Value));
             }
+
+            var result = new RemoteImageResult
+            {
+                TotalRecordCount = imageArray.Length,
+                Providers = allProviders.Select(o => o.Name)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray()
+            };
+
+            if (startIndex.HasValue)
+            {
+                imageArray = imageArray.Skip(startIndex.Value).ToArray();
+            }
+
+            if (limit.HasValue)
+            {
+                imageArray = imageArray.Take(limit.Value).ToArray();
+            }
+
+            result.Images = imageArray;
+            return Ok(result);
         }
 
         /// <summary>
@@ -138,21 +131,14 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetRemoteImageProviders([FromRoute] string id)
         {
-            try
+            var item = _libraryManager.GetItemById(id);
+            if (item == null)
             {
-                var item = _libraryManager.GetItemById(id);
-                if (item == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                var providers = _providerManager.GetRemoteImageProviderInfo(item);
-                return Ok(providers);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            var providers = _providerManager.GetRemoteImageProviderInfo(item);
+            return Ok(providers);
         }
 
         /// <summary>
@@ -166,49 +152,42 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetRemoteImage([FromQuery, BindRequired] string imageUrl)
         {
+            var urlHash = imageUrl.GetMD5();
+            var pointerCachePath = GetFullCachePath(urlHash.ToString());
+
+            string? contentPath = null;
+            bool hasFile = false;
+
             try
             {
-                var urlHash = imageUrl.GetMD5();
-                var pointerCachePath = GetFullCachePath(urlHash.ToString());
-
-                string? contentPath = null;
-                bool hasFile = false;
-
-                try
+                contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
+                if (System.IO.File.Exists(contentPath))
                 {
-                    contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
-                    if (System.IO.File.Exists(contentPath))
-                    {
-                        hasFile = true;
-                    }
+                    hasFile = true;
                 }
-                catch (FileNotFoundException)
-                {
-                    // Means the file isn't cached yet
-                }
-                catch (IOException)
-                {
-                    // Means the file isn't cached yet
-                }
-
-                if (!hasFile)
-                {
-                    await DownloadImage(imageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
-                    contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
-                }
-
-                if (string.IsNullOrEmpty(contentPath))
-                {
-                    return NotFound();
-                }
-
-                var contentType = MimeTypes.GetMimeType(contentPath);
-                return new FileStreamResult(System.IO.File.OpenRead(contentPath), contentType);
             }
-            catch (Exception e)
+            catch (FileNotFoundException)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                // Means the file isn't cached yet
             }
+            catch (IOException)
+            {
+                // Means the file isn't cached yet
+            }
+
+            if (!hasFile)
+            {
+                await DownloadImage(imageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
+                contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
+            }
+
+            if (string.IsNullOrEmpty(contentPath))
+            {
+                return NotFound();
+            }
+
+            var contentType = MimeTypes.GetMimeType(contentPath);
+            return new FileStreamResult(System.IO.File.OpenRead(contentPath), contentType);
         }
 
         /// <summary>
@@ -227,24 +206,17 @@ namespace Jellyfin.Api.Controllers.Images
             [FromQuery, BindRequired] ImageType type,
             [FromQuery] string imageUrl)
         {
-            try
+            var item = _libraryManager.GetItemById(id);
+            if (item == null)
             {
-                var item = _libraryManager.GetItemById(id);
-                if (item == null)
-                {
-                    return NotFound();
-                }
-
-                await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
-                    .ConfigureAwait(false);
-
-                item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
-                return Ok();
+                return NotFound();
             }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+
+            await _providerManager.SaveImage(item, imageUrl, type, null, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+            return Ok();
         }
 
         /// <summary>
