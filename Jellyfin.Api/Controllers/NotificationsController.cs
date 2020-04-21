@@ -95,7 +95,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="description">The description of the notification.</param>
         /// <param name="url">The URL of the notification.</param>
         /// <param name="level">The level of the notification.</param>
-        /// <returns>Status.</returns>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public void CreateAdminNotification(
