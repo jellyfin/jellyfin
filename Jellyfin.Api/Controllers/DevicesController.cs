@@ -49,9 +49,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Device Infos.</returns>
         [HttpGet]
         [Authenticated(Roles = "Admin")]
-        [ProducesResponseType(typeof(DeviceInfo[]), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<DeviceInfo[]> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
             var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
             var devices = _deviceManager.GetDevices(deviceQuery);
@@ -65,10 +64,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Device Info.</returns>
         [HttpGet("Info")]
         [Authenticated(Roles = "Admin")]
-        [ProducesResponseType(typeof(DeviceInfo), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetDeviceInfo([FromQuery, BindRequired] string id)
+        public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, BindRequired] string id)
         {
             var deviceInfo = _deviceManager.GetDevice(id);
             if (deviceInfo == null)
@@ -86,10 +84,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Device Info.</returns>
         [HttpGet("Options")]
         [Authenticated(Roles = "Admin")]
-        [ProducesResponseType(typeof(DeviceOptions), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetDeviceOptions([FromQuery, BindRequired] string id)
+        public ActionResult<DeviceInfo> GetDeviceOptions([FromQuery, BindRequired] string id)
         {
             var deviceInfo = _deviceManager.GetDeviceOptions(id);
             if (deviceInfo == null)
@@ -110,8 +107,7 @@ namespace Jellyfin.Api.Controllers
         [Authenticated(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateDeviceOptions(
+        public ActionResult UpdateDeviceOptions(
             [FromQuery, BindRequired] string id,
             [FromBody, BindRequired] DeviceOptions deviceOptions)
         {
@@ -132,8 +128,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Status.</returns>
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult DeleteDevice([FromQuery, BindRequired] string id)
+        public ActionResult DeleteDevice([FromQuery, BindRequired] string id)
         {
             var sessions = _authenticationRepository.Get(new AuthenticationInfoQuery { DeviceId = id }).Items;
 
@@ -151,9 +146,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">Device Id.</param>
         /// <returns>Content Upload History.</returns>
         [HttpGet("CameraUploads")]
-        [ProducesResponseType(typeof(ContentUploadHistory), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult GetCameraUploads([FromQuery, BindRequired] string id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<ContentUploadHistory> GetCameraUploads([FromQuery, BindRequired] string id)
         {
             var uploadHistory = _deviceManager.GetCameraUploadHistory(id);
             return Ok(uploadHistory);
@@ -170,8 +164,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("CameraUploads")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> PostCameraUploadAsync(
+        public async Task<ActionResult> PostCameraUploadAsync(
             [FromQuery, BindRequired] string deviceId,
             [FromQuery, BindRequired] string album,
             [FromQuery, BindRequired] string name,
