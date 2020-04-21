@@ -44,10 +44,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Attachment.</returns>
         [HttpGet("{VideoID}/{MediaSourceID}/Attachments/{Index}")]
         [Produces("application/octet-stream")]
-        [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAttachment(
+        public async Task<ActionResult<FileStreamResult>> GetAttachment(
             [FromRoute] Guid videoId,
             [FromRoute] string mediaSourceId,
             [FromRoute] int index)
