@@ -1,8 +1,8 @@
 #nullable enable
 
-using Jellyfin.Api.Models.Branding;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Branding;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -28,9 +28,9 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>Branding settings of the server.</returns>
         [HttpGet("Configuration")]
-        public BrandingDto GetBrandingOptions()
+        public BrandingOptions GetBrandingOptions()
         {
-            return _serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
+            return _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Jellyfin.Api.Controllers
         [Produces("text/css")]
         public string GetBrandingCss()
         {
-            var result = _serverConfigurationManager.GetConfiguration<BrandingDto>("branding");
+            var result = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
             return result.CustomCss;
         }
     }
