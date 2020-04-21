@@ -36,10 +36,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="client">Client.</param>
         /// <returns>Display Preferences.</returns>
         [HttpGet("{DisplayPreferencesId}")]
-        [ProducesResponseType(typeof(DisplayPreferences), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult GetDisplayPreferences(
+        public ActionResult<DisplayPreferences> GetDisplayPreferences(
             [FromRoute] string displayPreferencesId,
             [FromQuery] [Required] string userId,
             [FromQuery] [Required] string client)
@@ -65,8 +64,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ModelStateDictionary), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public IActionResult UpdateDisplayPreferences(
+        public ActionResult UpdateDisplayPreferences(
             [FromRoute] string displayPreferencesId,
             [FromQuery, BindRequired] string userId,
             [FromQuery, BindRequired] string client,
