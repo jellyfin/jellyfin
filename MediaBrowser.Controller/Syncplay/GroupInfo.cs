@@ -46,11 +46,11 @@ namespace MediaBrowser.Controller.Syncplay
         public DateTime LastActivity { get; set; }
 
         /// <summary>
-        /// Gets the partecipants.
+        /// Gets the participants.
         /// </summary>
-        /// <value>The partecipants.</value>
-        public readonly ConcurrentDictionary<string, GroupMember> Partecipants =
-        new ConcurrentDictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
+        /// <value>The participants, or members of the group.</value>
+        public readonly ConcurrentDictionary<string, GroupMember> Participants =
+            new ConcurrentDictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Checks if a session is in this group.
@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Syncplay
         /// <value><c>true</c> if the session is in this group; <c>false</c> otherwise.</value>
         public bool ContainsSession(string sessionId)
         {
-            return Partecipants.ContainsKey(sessionId);
+            return Participants.ContainsKey(sessionId);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.Syncplay
             member.Session = session;
             member.Ping = DefaulPing;
             member.IsBuffering = false;
-            Partecipants[session.Id.ToString()] = member;
+            Participants[session.Id.ToString()] = member;
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.Syncplay
         {
             if (!ContainsSession(session.Id.ToString())) return;
             GroupMember member;
-            Partecipants.Remove(session.Id.ToString(), out member);
+            Participants.Remove(session.Id.ToString(), out member);
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace MediaBrowser.Controller.Syncplay
         public void UpdatePing(SessionInfo session, long ping)
         {
             if (!ContainsSession(session.Id.ToString())) return;
-            Partecipants[session.Id.ToString()].Ping = ping;
+            Participants[session.Id.ToString()].Ping = ping;
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.Syncplay
         public long GetHighestPing()
         {
             long max = Int64.MinValue;
-            foreach (var session in Partecipants.Values)
+            foreach (var session in Participants.Values)
             {
                 max = Math.Max(max, session.Ping);
             }
@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.Syncplay
         public void SetBuffering(SessionInfo session, bool isBuffering)
         {
             if (!ContainsSession(session.Id.ToString())) return;
-            Partecipants[session.Id.ToString()].IsBuffering = isBuffering;
+            Participants[session.Id.ToString()].IsBuffering = isBuffering;
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Syncplay
         /// <value><c>true</c> if there is a session buffering in the group; <c>false</c> otherwise.</value>
         public bool IsBuffering()
         {
-            foreach (var session in Partecipants.Values)
+            foreach (var session in Participants.Values)
             {
                 if (session.IsBuffering) return true;
             }
@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Syncplay
         /// <value><c>true</c> if the group is empty; <c>false</c> otherwise.</value>
         public bool IsEmpty()
         {
-            return Partecipants.Count == 0;
+            return Participants.Count == 0;
         }
     }
 }

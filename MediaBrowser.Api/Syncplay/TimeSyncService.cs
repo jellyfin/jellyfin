@@ -54,7 +54,6 @@ namespace MediaBrowser.Api.Syncplay
 
             var response = new UtcTimeResponse();
             response.RequestReceptionTime = requestReceptionTime;
-            var currentSession = GetSession(_sessionContext);
 
             // Important to keep the following two lines at the end
             var responseTransmissionTime = DateTime.UtcNow.ToUniversalTime().ToString("o");

@@ -49,7 +49,7 @@ namespace Emby.Server.Implementations.Syncplay
         /// The groups.
         /// </summary>
         private readonly ConcurrentDictionary<string, ISyncplayController> _groups =
-        new ConcurrentDictionary<string, ISyncplayController>(StringComparer.OrdinalIgnoreCase);
+            new ConcurrentDictionary<string, ISyncplayController>(StringComparer.OrdinalIgnoreCase);
 
         private bool _disposed = false;
 
@@ -64,8 +64,8 @@ namespace Emby.Server.Implementations.Syncplay
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
 
-            _sessionManager.SessionEnded += _sessionManager_SessionEnded;
-            _sessionManager.PlaybackStopped += _sessionManager_PlaybackStopped;
+            _sessionManager.SessionEnded += OnSessionManagerSessionEnded;
+            _sessionManager.PlaybackStopped += OnSessionManagerPlaybackStopped;
         }
 
         /// <summary>
@@ -92,8 +92,8 @@ namespace Emby.Server.Implementations.Syncplay
                 return;
             }
 
-            _sessionManager.SessionEnded -= _sessionManager_SessionEnded;
-            _sessionManager.PlaybackStopped -= _sessionManager_PlaybackStopped;
+            _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
+            _sessionManager.PlaybackStopped -= OnSessionManagerPlaybackStopped;
 
             _disposed = true;
         }
@@ -106,14 +106,14 @@ namespace Emby.Server.Implementations.Syncplay
             }
         }
 
-        void _sessionManager_SessionEnded(object sender, SessionEventArgs e)
+        private void OnSessionManagerSessionEnded(object sender, SessionEventArgs e)
         {
             var session = e.SessionInfo;
             if (!IsSessionInGroup(session)) return;
             LeaveGroup(session);
         }
 
-        void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
+        private void OnSessionManagerPlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
             var session = e.Session;
             if (!IsSessionInGroup(session)) return;
@@ -130,13 +130,13 @@ namespace Emby.Server.Implementations.Syncplay
             var item = _libraryManager.GetItemById(itemId);
             var hasParentalRatingAccess = user.Policy.MaxParentalRating.HasValue ? item.InheritedParentalRatingValue <= user.Policy.MaxParentalRating : true;
 
-            if (!user.Policy.EnableAllFolders)
+            if (!user.Policy.EnableAllFolders && hasParentalRatingAccess)
             {
                 var collections = _libraryManager.GetCollectionFolders(item).Select(
                     folder => folder.Id.ToString("N", CultureInfo.InvariantCulture)
                 );
                 var intersect = collections.Intersect(user.Policy.EnabledFolders);
-                return intersect.Count() > 0 && hasParentalRatingAccess;
+                return intersect.Count() > 0;
             }
             else
             {
@@ -165,7 +165,7 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (user.Policy.SyncplayAccess != SyncplayAccess.CreateAndJoinGroups)
             {
-                // TODO: shall an error message be sent back to the client?
+                // TODO: report the error to the client
                 throw new ArgumentException("User does not have permission to create groups");
             }
 
@@ -187,14 +187,8 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (user.Policy.SyncplayAccess == SyncplayAccess.None)
             {
-                // TODO: shall an error message be sent back to the client?
+                // TODO: report the error to the client
                 throw new ArgumentException("User does not have access to syncplay");
-            }
-
-            if (IsSessionInGroup(session))
-            {
-                if (GetSessionGroup(session).Equals(groupId)) return;
-                LeaveGroup(session);
             }
 
             ISyncplayController group;
@@ -202,7 +196,7 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (group == null)
             {
-                _logger.LogError("Syncplaymanager JoinGroup: " + groupId + " does not exist.");
+                _logger.LogWarning("Syncplaymanager JoinGroup: {0} does not exist.", groupId);
 
                 var update = new GroupUpdate<string>();
                 update.Type = GroupUpdateType.NotInGroup;
@@ -215,20 +209,26 @@ namespace Emby.Server.Implementations.Syncplay
                 throw new ArgumentException("User does not have access to playing item");
             }
 
+            if (IsSessionInGroup(session))
+            {
+                if (GetSessionGroup(session).Equals(groupId)) return;
+                LeaveGroup(session);
+            }
+
             group.SessionJoin(session, request);
         }
 
         /// <inheritdoc />
         public void LeaveGroup(SessionInfo session)
         {
-            // TODO: what happens to users that are in a group and get their permissions revoked?
+            // TODO: determine what happens to users that are in a group and get their permissions revoked
 
             ISyncplayController group;
             _sessionToGroupMap.TryGetValue(session.Id, out group);
 
             if (group == null)
             {
-                _logger.LogWarning("Syncplaymanager HandleRequest: " + session.Id + " not in group.");
+                _logger.LogWarning("Syncplaymanager LeaveGroup: {0} does not belong to any group.", session.Id);
 
                 var update = new GroupUpdate<string>();
                 update.Type = GroupUpdateType.NotInGroup;
@@ -257,9 +257,7 @@ namespace Emby.Server.Implementations.Syncplay
             if (session.NowPlayingItem != null)
             {
                 return _groups.Values.Where(
-                    group => HasAccessToItem(user, group.GetPlayingItemId())
-                ).Where(
-                    group => group.GetPlayingItemId().Equals(session.FullNowPlayingItem.Id)
+                    group => group.GetPlayingItemId().Equals(session.FullNowPlayingItem.Id) && HasAccessToItem(user, group.GetPlayingItemId())
                 ).Select(
                     group => group.GetInfo()
                 ).ToList();
@@ -291,7 +289,7 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (group == null)
             {
-                _logger.LogWarning("Syncplaymanager HandleRequest: " + session.Id + " not in group.");
+                _logger.LogWarning("Syncplaymanager HandleRequest: {0} not in a group.", session.Id);
 
                 var update = new GroupUpdate<string>();
                 update.Type = GroupUpdateType.NotInGroup;
@@ -302,7 +300,7 @@ namespace Emby.Server.Implementations.Syncplay
         }
 
         /// <inheritdoc />
-        public void MapSessionToGroup(SessionInfo session, ISyncplayController group)
+        public void AddSessionToGroup(SessionInfo session, ISyncplayController group)
         {
             if (IsSessionInGroup(session))
             {
@@ -312,7 +310,7 @@ namespace Emby.Server.Implementations.Syncplay
         }
 
         /// <inheritdoc />
-        public void UnmapSessionFromGroup(SessionInfo session, ISyncplayController group)
+        public void RemoveSessionFromGroup(SessionInfo session, ISyncplayController group)
         {
             if (!IsSessionInGroup(session))
             {

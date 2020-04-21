@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace Emby.Server.Implementations.Session
         public readonly int WebSocketLostTimeout = 60;
 
         /// <summary>
-        /// The timer factor; controls the frequency of the timer.
+        /// The keep-alive timer factor; controls how often the timer will check on the status of the WebSockets.
         /// </summary>
         public readonly double TimerFactor = 0.2;
 
@@ -136,11 +137,10 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="sender">The WebSocket.</param>
         /// <param name="e">The event arguments.</param>
-        private void _webSocket_Closed(object sender, EventArgs e)
+        private void OnWebSocketClosed(object sender, EventArgs e)
         {
             var webSocket = (IWebSocketConnection) sender;
-            webSocket.Closed -= _webSocket_Closed;
-            _webSockets.TryRemove(webSocket, out _);
+            RemoveWebSocket(webSocket);
         }
 
         /// <summary>
@@ -149,8 +149,12 @@ namespace Emby.Server.Implementations.Session
         /// <param name="webSocket">The WebSocket to monitor.</param>
         private async void KeepAliveWebSocket(IWebSocketConnection webSocket)
         {
-            _webSockets.TryAdd(webSocket, 0);
-            webSocket.Closed += _webSocket_Closed;
+            if (!_webSockets.TryAdd(webSocket, 0))
+            {
+                _logger.LogWarning("Multiple attempts to keep alive single WebSocket {0}", webSocket);
+                return;
+            }
+            webSocket.Closed += OnWebSocketClosed;
             webSocket.LastKeepAliveDate = DateTime.UtcNow;
 
             // Notify WebSocket about timeout
@@ -160,10 +164,20 @@ namespace Emby.Server.Implementations.Session
             }
             catch (WebSocketException exception)
             {
-                _logger.LogDebug(exception, "Error sending ForceKeepAlive message to WebSocket.");
+                _logger.LogWarning(exception, "Error sending ForceKeepAlive message to WebSocket.");
             }
 
             StartKeepAliveTimer();
+        }
+
+        /// <summary>
+        /// Removes a WebSocket from the KeepAlive watchlist.
+        /// </summary>
+        /// <param name="webSocket">The WebSocket to remove.</param>
+        private void RemoveWebSocket(IWebSocketConnection webSocket)
+        {
+            webSocket.Closed -= OnWebSocketClosed;
+            _webSockets.TryRemove(webSocket, out _);
         }
 
         /// <summary>
@@ -195,7 +209,7 @@ namespace Emby.Server.Implementations.Session
 
             foreach (var pair in _webSockets)
             {
-                pair.Key.Closed -= _webSocket_Closed;
+                pair.Key.Closed -= OnWebSocketClosed;
             }
         }
 
@@ -214,7 +228,7 @@ namespace Emby.Server.Implementations.Session
 
             if (inactive.Any())
             {
-                _logger.LogDebug("Sending ForceKeepAlive message to {0} WebSockets.", inactive.Count());
+                _logger.LogDebug("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count());
             }
 
             foreach (var webSocket in inactive)
@@ -225,15 +239,19 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (WebSocketException exception)
                 {
-                    _logger.LogDebug(exception, "Error sending ForceKeepAlive message to WebSocket.");
+                    _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
                     lost.Append(webSocket);
                 }
             }
 
             if (lost.Any())
             {
-                // TODO: handle lost webSockets
-                _logger.LogDebug("Lost {0} WebSockets.", lost.Count());
+                _logger.LogInformation("Lost {0} WebSockets.", lost.Count());
+                foreach (var webSocket in lost)
+                {
+                    // TODO: handle session relative to the lost webSocket
+                    RemoveWebSocket(webSocket);
+                }
             }
 
             if (!_webSockets.Any())

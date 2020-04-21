@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Syncplay
 {
     /// <summary>
-    /// Class GroupInfoModel.
+    /// Class GroupInfoView.
     /// </summary>
     public class GroupInfoView
     {
@@ -30,9 +30,9 @@ namespace MediaBrowser.Model.Syncplay
         public long PositionTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets the partecipants.
+        /// Gets or sets the participants.
         /// </summary>
-        /// <value>The partecipants.</value>
-        public string[] Partecipants { get; set; }
+        /// <value>The participants.</value>
+        public string[] Participants { get; set; }
     }
 }

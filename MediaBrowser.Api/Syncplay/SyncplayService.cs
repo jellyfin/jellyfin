@@ -90,12 +90,20 @@ namespace MediaBrowser.Api.Syncplay
         [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string SessionId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date used to pin PositionTicks in time.
+        /// </summary>
+        /// <value>The date related to PositionTicks.</value>
         [ApiMember(Name = "When", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string When { get; set; }
 
         [ApiMember(Name = "PositionTicks", IsRequired = true, DataType = "long", ParameterType = "query", Verb = "POST")]
         public long PositionTicks { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether this is a buffering or a buffering-done request.
+        /// </summary>
+        /// <value><c>true</c> if buffering is complete; <c>false</c> otherwise.</value>
         [ApiMember(Name = "Resume", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool Resume { get; set; }
     }
@@ -162,8 +170,10 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayJoinGroup request)
         {
             var currentSession = GetSession(_sessionContext);
-            var joinRequest = new JoinGroupRequest();
-            joinRequest.GroupId = Guid.Parse(request.GroupId);
+            var joinRequest = new JoinGroupRequest()
+            {
+                GroupId = Guid.Parse(request.GroupId)
+            };
             try
             {
                 joinRequest.PlayingItemId = Guid.Parse(request.PlayingItemId);
@@ -207,8 +217,10 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayPlayRequest request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new PlaybackRequest();
-            syncplayRequest.Type = PlaybackRequestType.Play;
+            var syncplayRequest = new PlaybackRequest()
+            {
+                Type = PlaybackRequestType.Play
+            };
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
 
@@ -219,8 +231,10 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayPauseRequest request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new PlaybackRequest();
-            syncplayRequest.Type = PlaybackRequestType.Pause;
+            var syncplayRequest = new PlaybackRequest()
+            {
+                Type = PlaybackRequestType.Pause
+            };
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
 
@@ -231,9 +245,11 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplaySeekRequest request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new PlaybackRequest();
-            syncplayRequest.Type = PlaybackRequestType.Seek;
-            syncplayRequest.PositionTicks = request.PositionTicks;
+            var syncplayRequest = new PlaybackRequest()
+            {
+                Type = PlaybackRequestType.Seek,
+                PositionTicks = request.PositionTicks
+            };
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
 
@@ -244,10 +260,12 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayBufferingRequest request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new PlaybackRequest();
-            syncplayRequest.Type = request.Resume ? PlaybackRequestType.BufferingComplete : PlaybackRequestType.Buffering;
-            syncplayRequest.When = DateTime.Parse(request.When);
-            syncplayRequest.PositionTicks = request.PositionTicks;
+            var syncplayRequest = new PlaybackRequest()
+            {
+                Type = request.Resume ? PlaybackRequestType.BufferingDone : PlaybackRequestType.Buffering,
+                When = DateTime.Parse(request.When),
+                PositionTicks = request.PositionTicks
+            };
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
 
@@ -258,9 +276,11 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayUpdatePing request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncplayRequest = new PlaybackRequest();
-            syncplayRequest.Type = PlaybackRequestType.UpdatePing;
-            syncplayRequest.Ping = Convert.ToInt64(request.Ping);
+            var syncplayRequest = new PlaybackRequest()
+            {
+                Type = PlaybackRequestType.UpdatePing,
+                Ping = Convert.ToInt64(request.Ping)
+            };
             _syncplayManager.HandleRequest(currentSession, syncplayRequest);
         }
     }

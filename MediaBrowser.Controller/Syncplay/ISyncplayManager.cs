@@ -50,7 +50,7 @@ namespace MediaBrowser.Controller.Syncplay
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void MapSessionToGroup(SessionInfo session, ISyncplayController group);
+        void AddSessionToGroup(SessionInfo session, ISyncplayController group);
 
         /// <summary>
         /// Unmaps a session from a group.
@@ -58,6 +58,6 @@ namespace MediaBrowser.Controller.Syncplay
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void UnmapSessionFromGroup(SessionInfo session, ISyncplayController group);
+        void RemoveSessionFromGroup(SessionInfo session, ISyncplayController group);
     }
 }

@@ -176,10 +176,9 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     SendKeepAliveResponse();
                 }
-
-                if (OnReceive != null)
+                else
                 {
-                    OnReceive(info);
+                    OnReceive?.Invoke(info);
                 }
             }
             catch (Exception ex)
