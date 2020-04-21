@@ -74,14 +74,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
         public IActionResult GetNotificationTypes()
         {
-            try
-            {
-                return Ok(_notificationManager.GetNotificationTypes());
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return Ok(_notificationManager.GetNotificationTypes());
         }
 
         /// <summary>
@@ -92,14 +85,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
         public IActionResult GetNotificationServices()
         {
-            try
-            {
-                return Ok(_notificationManager.GetNotificationServices());
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return Ok(_notificationManager.GetNotificationServices());
         }
 
         /// <summary>
@@ -112,32 +98,23 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Status.</returns>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult CreateAdminNotification(
+        public void CreateAdminNotification(
             [FromQuery] string name,
             [FromQuery] string description,
             [FromQuery] string? url,
             [FromQuery] NotificationLevel? level)
         {
-            try
+            var notification = new NotificationRequest
             {
-                var notification = new NotificationRequest
-                {
-                    Name = name,
-                    Description = description,
-                    Url = url,
-                    Level = level ?? NotificationLevel.Normal,
-                    UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray(),
-                    Date = DateTime.UtcNow,
-                };
+                Name = name,
+                Description = description,
+                Url = url,
+                Level = level ?? NotificationLevel.Normal,
+                UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray(),
+                Date = DateTime.UtcNow,
+            };
 
-                _notificationManager.SendNotification(notification, CancellationToken.None);
-
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            _notificationManager.SendNotification(notification, CancellationToken.None);
         }
 
         /// <summary>
