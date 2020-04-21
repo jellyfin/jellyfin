@@ -1,3 +1,4 @@
+using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 
 namespace Jellyfin.Server.Extensions
@@ -11,23 +12,36 @@ namespace Jellyfin.Server.Extensions
         /// Adds swagger and swagger UI to the application pipeline.
         /// </summary>
         /// <param name="applicationBuilder">The application builder.</param>
+        /// <param name="serverConfigurationManager">The server configuration.</param>
         /// <returns>The updated application builder.</returns>
-        public static IApplicationBuilder UseJellyfinApiSwagger(this IApplicationBuilder applicationBuilder)
+        public static IApplicationBuilder UseJellyfinApiSwagger(
+            this IApplicationBuilder applicationBuilder,
+            IServerConfigurationManager serverConfigurationManager)
         {
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
-            const string specEndpoint = "/swagger/v1/swagger.json";
+
+            var baseUrl = serverConfigurationManager.Configuration.BaseUrl.Trim('/');
+            if (!string.IsNullOrEmpty(baseUrl))
+            {
+                baseUrl += '/';
+            }
+
             return applicationBuilder
-                .UseSwagger()
+                .UseSwagger(c =>
+                {
+                    c.RouteTemplate = $"/{baseUrl}api-docs/{{documentName}}/openapi.json";
+                })
                 .UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint(specEndpoint, "Jellyfin API V1");
-                    c.RoutePrefix = "api-docs/swagger";
+                    c.SwaggerEndpoint($"/{baseUrl}api-docs/v1/openapi.json", "Jellyfin API v1");
+                    c.RoutePrefix = $"{baseUrl}api-docs/v1/swagger";
                 })
                 .UseReDoc(c =>
                 {
-                    c.SpecUrl(specEndpoint);
-                    c.RoutePrefix = "api-docs/redoc";
+                    c.DocumentTitle = "Jellyfin API v1";
+                    c.SpecUrl($"/{baseUrl}api-docs/v1/openapi.json");
+                    c.RoutePrefix = $"{baseUrl}api-docs/v1/redoc";
                 });
         }
     }

@@ -66,7 +66,7 @@ namespace Jellyfin.Server
             app.Use(serverApplicationHost.ExecuteWebsocketHandlerAsync);
 
             // TODO use when old API is removed: app.UseAuthentication();
-            app.UseJellyfinApiSwagger();
+            app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
