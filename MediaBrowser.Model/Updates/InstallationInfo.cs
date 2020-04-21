@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the guid.
         /// </summary>
         /// <value>The guid.</value>
-        public string Guid { get; set; }
+        public Guid Guid { get; set; }
 
         /// <summary>
         /// Gets or sets the name.

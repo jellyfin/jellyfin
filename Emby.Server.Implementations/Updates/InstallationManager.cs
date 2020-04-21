@@ -3,22 +3,20 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -35,13 +33,14 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         public const string PluginManifestUrlKey = "InstallationManager:PluginManifestUrl";
 
+        private readonly JsonSerializerOptions _jsonOptions;
+
         /// <summary>
         /// The logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IHttpClient _httpClient;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
 
@@ -71,17 +70,11 @@ namespace Emby.Server.Implementations.Updates
             IApplicationHost appHost,
             IApplicationPaths appPaths,
             IHttpClient httpClient,
-            IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             IZipClient zipClient,
             IConfiguration appConfig)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             _currentInstallations = new List<(InstallationInfo, CancellationTokenSource)>();
             _completedInstallationsInternal = new ConcurrentBag<InstallationInfo>();
 
@@ -89,11 +82,12 @@ namespace Emby.Server.Implementations.Updates
             _applicationHost = appHost;
             _appPaths = appPaths;
             _httpClient = httpClient;
-            _jsonSerializer = jsonSerializer;
             _config = config;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
             _appConfig = appConfig;
+
+            _jsonOptions = JsonDefaults.GetOptions();
         }
 
         /// <inheritdoc />
@@ -140,9 +134,9 @@ namespace Emby.Server.Implementations.Updates
                 {
                     try
                     {
-                        return await _jsonSerializer.DeserializeFromStreamAsync<IReadOnlyList<PackageInfo>>(stream).ConfigureAwait(false);
+                        return await JsonSerializer.DeserializeAsync<PackageInfo[]>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                     }
-                    catch (SerializationException ex)
+                    catch (JsonException ex)
                     {
                         const string LogTemplate =
                             "Failed to deserialize the plugin manifest retrieved from {PluginManifestUrl}. If you " +
@@ -171,12 +165,12 @@ namespace Emby.Server.Implementations.Updates
         {
             if (name != null)
             {
-                availablePackages = availablePackages.Where(x => x.name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
             if (guid != Guid.Empty)
             {
-                availablePackages = availablePackages.Where(x => Guid.Parse(x.guid) == guid);
+                availablePackages = availablePackages.Where(x => x.Guid == guid);
             }
 
             return availablePackages;
@@ -189,14 +183,14 @@ namespace Emby.Server.Implementations.Updates
         {
             var appVer = _applicationHost.ApplicationVersion;
             availableVersions = availableVersions
-                .Where(x => Version.Parse(x.targetAbi) <= appVer);
+                .Where(x => x.TargetAbi <= appVer);
 
             if (minVersion != null)
             {
-                availableVersions = availableVersions.Where(x => x.version >= minVersion);
+                availableVersions = availableVersions.Where(x => x.Version >= minVersion);
             }
 
-            return availableVersions.OrderByDescending(x => x.version);
+            return availableVersions.OrderByDescending(x => x.Version);
         }
 
         /// <inheritdoc />
@@ -215,7 +209,7 @@ namespace Emby.Server.Implementations.Updates
             }
 
             return GetCompatibleVersions(
-                package.versions,
+                package.Versions,
                 minVersion);
         }
 
@@ -231,8 +225,8 @@ namespace Emby.Server.Implementations.Updates
             foreach (var plugin in _applicationHost.Plugins)
             {
                 var compatibleversions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, plugin.Version);
-                var version = compatibleversions.FirstOrDefault(y => y.version > plugin.Version);
-                if (version != null && !CompletedInstallations.Any(x => string.Equals(x.Guid, version.guid, StringComparison.OrdinalIgnoreCase)))
+                var version = compatibleversions.FirstOrDefault(y => y.Version > plugin.Version);
+                if (version != null && !CompletedInstallations.Any(x => x.Guid == version.Guid))
                 {
                     yield return version;
                 }
@@ -249,9 +243,9 @@ namespace Emby.Server.Implementations.Updates
 
             var installationInfo = new InstallationInfo
             {
-                Guid = package.guid,
-                Name = package.name,
-                Version = package.version.ToString()
+                Guid = package.Guid,
+                Name = package.Name,
+                Version = package.Version.ToString()
             };
 
             var innerCancellationTokenSource = new CancellationTokenSource();
@@ -294,7 +288,7 @@ namespace Emby.Server.Implementations.Updates
                     _currentInstallations.Remove(tuple);
                 }
 
-                _logger.LogInformation("Package installation cancelled: {0} {1}", package.name, package.version);
+                _logger.LogInformation("Package installation cancelled: {0} {1}", package.Name, package.Version);
 
                 PackageInstallationCancelled?.Invoke(this, installationEventArgs);
 
@@ -333,8 +327,8 @@ namespace Emby.Server.Implementations.Updates
         private async Task InstallPackageInternal(VersionInfo package, CancellationToken cancellationToken)
         {
             // Set last update time if we were installed before
-            IPlugin plugin = _applicationHost.Plugins.FirstOrDefault(p => string.Equals(p.Id.ToString(), package.guid, StringComparison.OrdinalIgnoreCase))
-                           ?? _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
+            IPlugin plugin = _applicationHost.Plugins.FirstOrDefault(p => p.Id == package.Guid)
+                           ?? _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase));
 
             // Do the install
             await PerformPackageInstallation(package, cancellationToken).ConfigureAwait(false);
@@ -342,13 +336,13 @@ namespace Emby.Server.Implementations.Updates
             // Do plugin-specific processing
             if (plugin == null)
             {
-                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.version);
+                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.Name, package.Version);
 
                 PluginInstalled?.Invoke(this, new GenericEventArgs<VersionInfo>(package));
             }
             else
             {
-                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.name, package.version);
+                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.Name, package.Version);
 
                 PluginUpdated?.Invoke(this, new GenericEventArgs<(IPlugin, VersionInfo)>((plugin, package)));
             }
@@ -358,22 +352,22 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(VersionInfo package, CancellationToken cancellationToken)
         {
-            var extension = Path.GetExtension(package.filename);
+            var extension = Path.GetExtension(package.Filename);
             if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogError("Only zip packages are supported. {Filename} is not a zip archive.", package.filename);
+                _logger.LogError("Only zip packages are supported. {Filename} is not a zip archive.", package.Filename);
                 return;
             }
 
             // Always override the passed-in target (which is a file) and figure it out again
-            string targetDir = Path.Combine(_appPaths.PluginsPath, package.name);
+            string targetDir = Path.Combine(_appPaths.PluginsPath, package.Name);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
             using (var res = await _httpClient.SendAsync(
                 new HttpRequestOptions
                 {
-                    Url = package.sourceUrl,
+                    Url = package.SourceUrl,
                     CancellationToken = cancellationToken,
                     // We need it to be buffered for setting the position
                     BufferContent = true
@@ -385,12 +379,12 @@ namespace Emby.Server.Implementations.Updates
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var hash = Hex.Encode(md5.ComputeHash(stream));
-                if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogError(
                         "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
-                        package.name,
-                        package.checksum,
+                        package.Name,
+                        package.Checksum,
                         hash);
                     throw new InvalidDataException("The checksum of the received data doesn't match.");
                 }
@@ -466,7 +460,7 @@ namespace Emby.Server.Implementations.Updates
         {
             lock (_currentInstallationsLock)
             {
-                var install = _currentInstallations.Find(x => x.info.Guid == id.ToString());
+                var install = _currentInstallations.Find(x => x.info.Guid == id);
                 if (install == default((InstallationInfo, CancellationTokenSource)))
                 {
                     return false;
