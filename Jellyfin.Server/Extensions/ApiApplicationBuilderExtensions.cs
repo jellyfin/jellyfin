@@ -34,6 +34,7 @@ namespace Jellyfin.Server.Extensions
                 })
                 .UseSwaggerUI(c =>
                 {
+                    c.DocumentTitle = "Jellyfin API v1";
                     c.SwaggerEndpoint($"/{baseUrl}api-docs/v1/openapi.json", "Jellyfin API v1");
                     c.RoutePrefix = $"{baseUrl}api-docs/v1/swagger";
                 })
