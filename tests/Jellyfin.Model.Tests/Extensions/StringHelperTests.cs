@@ -11,9 +11,9 @@ namespace Jellyfin.Model.Tests.Extensions
         [InlineData("banana", "Banana")]
         [InlineData("Banana", "Banana")]
         [InlineData("ä", "Ä")]
-        public void StringHelper_ValidArgs_Success(string str, string result)
+        public void StringHelper_ValidArgs_Success(string input, string expectedResult)
         {
-            Assert.Equal(result, StringHelper.FirstToUpper(str));
+            Assert.Equal(expectedResult, StringHelper.FirstToUpper(input));
         }
     }
 }
