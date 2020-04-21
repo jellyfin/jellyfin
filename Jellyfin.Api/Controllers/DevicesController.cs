@@ -53,16 +53,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
-            try
-            {
-                var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
-                var devices = _deviceManager.GetDevices(deviceQuery);
-                return Ok(devices);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
+            var devices = _deviceManager.GetDevices(deviceQuery);
+            return Ok(devices);
         }
 
         /// <summary>
@@ -77,20 +70,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetDeviceInfo([FromQuery, BindRequired] string id)
         {
-            try
+            var deviceInfo = _deviceManager.GetDevice(id);
+            if (deviceInfo == null)
             {
-                var deviceInfo = _deviceManager.GetDevice(id);
-                if (deviceInfo == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                return Ok(deviceInfo);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return Ok(deviceInfo);
         }
 
         /// <summary>
@@ -105,20 +91,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetDeviceOptions([FromQuery, BindRequired] string id)
         {
-            try
+            var deviceInfo = _deviceManager.GetDeviceOptions(id);
+            if (deviceInfo == null)
             {
-                var deviceInfo = _deviceManager.GetDeviceOptions(id);
-                if (deviceInfo == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                return Ok(deviceInfo);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            return Ok(deviceInfo);
         }
 
         /// <summary>
@@ -136,21 +115,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, BindRequired] string id,
             [FromBody, BindRequired] DeviceOptions deviceOptions)
         {
-            try
+            var existingDeviceOptions = _deviceManager.GetDeviceOptions(id);
+            if (existingDeviceOptions == null)
             {
-                var existingDeviceOptions = _deviceManager.GetDeviceOptions(id);
-                if (existingDeviceOptions == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                _deviceManager.UpdateDeviceOptions(id, deviceOptions);
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            _deviceManager.UpdateDeviceOptions(id, deviceOptions);
+            return Ok();
         }
 
         /// <summary>
@@ -163,21 +135,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult DeleteDevice([FromQuery, BindRequired] string id)
         {
-            try
-            {
-                var sessions = _authenticationRepository.Get(new AuthenticationInfoQuery { DeviceId = id }).Items;
+            var sessions = _authenticationRepository.Get(new AuthenticationInfoQuery { DeviceId = id }).Items;
 
-                foreach (var session in sessions)
-                {
-                    _sessionManager.Logout(session);
-                }
-
-                return Ok();
-            }
-            catch (Exception e)
+            foreach (var session in sessions)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                _sessionManager.Logout(session);
             }
+
+            return Ok();
         }
 
         /// <summary>
@@ -190,15 +155,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public IActionResult GetCameraUploads([FromQuery, BindRequired] string id)
         {
-            try
-            {
-                var uploadHistory = _deviceManager.GetCameraUploadHistory(id);
-                return Ok(uploadHistory);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+            var uploadHistory = _deviceManager.GetCameraUploadHistory(id);
+            return Ok(uploadHistory);
         }
 
         /// <summary>
@@ -219,46 +177,33 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, BindRequired] string name,
             [FromQuery, BindRequired] string id)
         {
-            try
-            {
-                Stream fileStream;
-                string contentType;
+            Stream fileStream;
+            string contentType;
 
-                if (Request.HasFormContentType)
+            if (Request.HasFormContentType)
+            {
+                if (Request.Form.Files.Any())
                 {
-                    if (Request.Form.Files.Any())
-                    {
-                        fileStream = Request.Form.Files[0].OpenReadStream();
-                        contentType = Request.Form.Files[0].ContentType;
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
+                    fileStream = Request.Form.Files[0].OpenReadStream();
+                    contentType = Request.Form.Files[0].ContentType;
                 }
                 else
                 {
-                    fileStream = Request.Body;
-                    contentType = Request.ContentType;
+                    return BadRequest();
                 }
-
-                await _deviceManager.AcceptCameraUpload(
-                    deviceId,
-                    fileStream,
-                    new LocalFileInfo
-                    {
-                        MimeType = contentType,
-                        Album = album,
-                        Name = name,
-                        Id = id
-                    }).ConfigureAwait(false);
-
-                return Ok();
             }
-            catch (Exception e)
+            else
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                fileStream = Request.Body;
+                contentType = Request.ContentType;
             }
+
+            await _deviceManager.AcceptCameraUpload(
+                deviceId,
+                fileStream,
+                new LocalFileInfo { MimeType = contentType, Album = album, Name = name, Id = id }).ConfigureAwait(false);
+
+            return Ok();
         }
     }
 }
