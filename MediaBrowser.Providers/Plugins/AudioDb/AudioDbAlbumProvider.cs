@@ -21,7 +21,7 @@ using MediaBrowser.Providers.Music;
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     /// <summary>
-    /// TheAdioDb album provider.
+    /// TheAudioDb album provider.
     /// </summary>
     public class AudioDbAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {

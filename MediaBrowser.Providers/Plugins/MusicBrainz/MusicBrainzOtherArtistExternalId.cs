@@ -7,7 +7,7 @@ namespace MediaBrowser.Providers.Music
 {
 
     /// <summary>
-    /// MusicBrainz Artist External Id.
+    /// MusicBrainz other artist external id.
     /// </summary>
     public class MusicBrainzOtherArtistExternalId : IExternalId
     {
