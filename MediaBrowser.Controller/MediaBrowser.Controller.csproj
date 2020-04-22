@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</ProjectGuid>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Controller</PackageId>

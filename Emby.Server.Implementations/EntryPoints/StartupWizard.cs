@@ -40,28 +40,39 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
+            Run();
+            return Task.CompletedTask;
+        }
+
+        private void Run()
+        {
             if (!_appHost.CanLaunchWebBrowser)
             {
-                return Task.CompletedTask;
+                return;
             }
 
-            if (!_appConfig.HostWebClient())
+            // Always launch the startup wizard if possible when it has not been completed
+            if (!_config.Configuration.IsStartupWizardCompleted && _appConfig.HostWebClient())
             {
-                BrowserLauncher.OpenSwaggerPage(_appHost);
+                BrowserLauncher.OpenWebApp(_appHost);
+                return;
             }
-            else if (!_config.Configuration.IsStartupWizardCompleted)
+
+            // Do nothing if the web app is configured to not run automatically
+            if (!_config.Configuration.AutoRunWebApp || _startupOptions.NoAutoRunWebApp)
+            {
+                return;
+            }
+
+            // Launch the swagger page if the web client is not hosted, otherwise open the web client
+            if (_appConfig.HostWebClient())
             {
                 BrowserLauncher.OpenWebApp(_appHost);
             }
-            else if (_config.Configuration.AutoRunWebApp)
+            else
             {
-                if (!_startupOptions.NoAutoRunWebApp)
-                {
-                    BrowserLauncher.OpenWebApp(_appHost);
-                }
+                BrowserLauncher.OpenSwaggerPage(_appHost);
             }
-
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
