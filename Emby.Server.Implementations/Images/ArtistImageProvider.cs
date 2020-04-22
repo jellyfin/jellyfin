@@ -29,16 +29,19 @@ namespace Emby.Server.Implementations.Images
 
         protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
-            return _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                ArtistIds = new[] { item.Id },
-                IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
-                OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
-                Limit = 4,
-                Recursive = true,
-                ImageTypes = new[] { ImageType.Primary },
-                DtoOptions = new DtoOptions(false)
-            });
+            return Array.Empty<BaseItem>();
+
+            // TODO enable this when BaseDynamicImageProvider objects are configurable
+            // return _libraryManager.GetItemList(new InternalItemsQuery
+            // {
+            //    ArtistIds = new[] { item.Id },
+            //    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+            //    OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
+            //    Limit = 4,
+            //    Recursive = true,
+            //    ImageTypes = new[] { ImageType.Primary },
+            //    DtoOptions = new DtoOptions(false)
+            // });
         }
     }
 }
