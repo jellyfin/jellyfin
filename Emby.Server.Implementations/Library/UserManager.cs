@@ -44,22 +44,14 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly object _policySyncLock = new object();
         private readonly object _configSyncLock = new object();
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        private readonly ILogger _logger;
 
-        /// <summary>
-        /// Gets the active user repository.
-        /// </summary>
-        /// <value>The user repository.</value>
+        private readonly ILogger _logger;
         private readonly IUserRepository _userRepository;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly INetworkManager _networkManager;
-
-        private readonly Func<IImageProcessor> _imageProcessorFactory;
-        private readonly Func<IDtoService> _dtoServiceFactory;
+        private readonly IImageProcessor _imageProcessor;
+        private readonly Lazy<IDtoService> _dtoServiceFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
         private readonly ICryptoProvider _cryptoProvider;
@@ -74,13 +66,15 @@ namespace Emby.Server.Implementations.Library
         private IPasswordResetProvider[] _passwordResetProviders;
         private DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
+        private IDtoService DtoService => _dtoServiceFactory.Value;
+
         public UserManager(
             ILogger<UserManager> logger,
             IUserRepository userRepository,
             IXmlSerializer xmlSerializer,
             INetworkManager networkManager,
-            Func<IImageProcessor> imageProcessorFactory,
-            Func<IDtoService> dtoServiceFactory,
+            IImageProcessor imageProcessor,
+            Lazy<IDtoService> dtoServiceFactory,
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
@@ -90,7 +84,7 @@ namespace Emby.Server.Implementations.Library
             _userRepository = userRepository;
             _xmlSerializer = xmlSerializer;
             _networkManager = networkManager;
-            _imageProcessorFactory = imageProcessorFactory;
+            _imageProcessor = imageProcessor;
             _dtoServiceFactory = dtoServiceFactory;
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
@@ -605,7 +599,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    _dtoServiceFactory().AttachPrimaryImageAspectRatio(dto, user);
+                    DtoService.AttachPrimaryImageAspectRatio(dto, user);
                 }
                 catch (Exception ex)
                 {
@@ -630,7 +624,7 @@ namespace Emby.Server.Implementations.Library
         {
             try
             {
-                return _imageProcessorFactory().GetImageCacheTag(item, image);
+                return _imageProcessor.GetImageCacheTag(item, image);
             }
             catch (Exception ex)
             {
