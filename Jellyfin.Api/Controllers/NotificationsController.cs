@@ -39,7 +39,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The user's ID.</param>
         /// <param name="isRead">An optional filter by notification read state.</param>
-        /// <param name="startIndex">The optional index to start at. All notifications with a lower index will be dropped from the results.</param>
+        /// <param name="startIndex">The optional index to start at. All notifications with a lower index will be omitted from the results.</param>
         /// <param name="limit">An optional limit on the number of notifications returned.</param>
         /// <returns>A read-only list of all of the user's notifications.</returns>
         [HttpGet("{UserID}")]
