@@ -14,6 +14,9 @@ jobs:
           BuildConfiguration: Debug
     pool:
       vmImage: "${{ parameters.LinuxImage }}"
+    dependsOn: GitVersion
+    variables:
+      InformationalVersion: $[ dependencies.GitVersion.outputs['Versions.InformationalVersion'] ]
     steps:
       - checkout: self
         clean: true
@@ -41,6 +44,13 @@ jobs:
           project: 'jellyfin'
           pipeline: 'Jellyfin Web'
           runBranch: variables['System.PullRequest.TargetBranch']
+
+      - task: Bash@3
+        displayName: 'Update Informational Version'
+        inputs:
+          targetType: 'filePath'
+          filePath: '.ci/update-informational-version.sh'
+          arguments: "$(InformationalVersion)"
 
       - task: ExtractFiles@1
         displayName: "Extract Web Client"

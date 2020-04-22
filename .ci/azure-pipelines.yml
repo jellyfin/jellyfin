@@ -1,4 +1,4 @@
-name: $(Date:yyyyMMdd)$(Rev:.r)
+name: '$(GITVERSION_SemVer)+$(GITVERSION_ShortSha)'
 
 variables:
 - name: TestProjects
@@ -15,6 +15,29 @@ trigger:
   batch: true
 
 jobs:
+  - job: GitVersion
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: UseGitVersion@5
+        inputs:
+          versionSpec: '5.x'
+          includePrerelease: true
+          #targetPath: 'wording dir'
+          #useConfigFile: true
+          #configFilePath: 'config_file.yml'
+          #updateAssemblyInfo: true
+          #updateAssemblyInfoFilename: 'SharedVersion.cs'
+          #additionalArguments: '--additional args'
+      - task: Bash@3
+        displayName: "Export GitVersion Variables"
+        name: Versions
+        inputs:
+          targetType: 'inline'
+          script: |
+            echo "##vso[task.setvariable variable=ProductVersion;isOutput=true;]$(GitVersion.MajorMinorPatch)"
+            echo "##vso[task.setvariable variable=InformationalVersion;isOutput=true;]$(GitVersion.InformationalVersion)"
+
   - template: azure-pipelines-main.yml
     parameters:
       LinuxImage: "ubuntu-latest"
