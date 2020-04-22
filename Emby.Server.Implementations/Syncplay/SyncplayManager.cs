@@ -165,8 +165,14 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (user.Policy.SyncplayAccess != SyncplayAccess.CreateAndJoinGroups)
             {
-                // TODO: report the error to the client
-                throw new ArgumentException("User does not have permission to create groups");
+                _logger.LogWarning("Syncplaymanager NewGroup: {0} does not have permission to create groups.", session.Id);
+
+                var error = new GroupUpdate<string>()
+                {
+                    Type = GroupUpdateType.CreateGroupDenied
+                };
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
+                return;
             }
 
             if (IsSessionInGroup(session))
@@ -187,8 +193,14 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (user.Policy.SyncplayAccess == SyncplayAccess.None)
             {
-                // TODO: report the error to the client
-                throw new ArgumentException("User does not have access to syncplay");
+                _logger.LogWarning("Syncplaymanager JoinGroup: {0} does not have access to Syncplay.", session.Id);
+
+                var error = new GroupUpdate<string>()
+                {
+                    Type = GroupUpdateType.JoinGroupDenied
+                };
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
+                return;
             }
 
             ISyncplayController group;
@@ -196,17 +208,27 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (group == null)
             {
-                _logger.LogWarning("Syncplaymanager JoinGroup: {0} does not exist.", groupId);
+                _logger.LogWarning("Syncplaymanager JoinGroup: {0} tried to join group {0} that does not exist.", session.Id, groupId);
 
-                var update = new GroupUpdate<string>();
-                update.Type = GroupUpdateType.NotInGroup;
-                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), update, CancellationToken.None);
+                var error = new GroupUpdate<string>()
+                {
+                    Type = GroupUpdateType.GroupNotJoined
+                };
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
                 return;
             }
 
             if (!HasAccessToItem(user, group.GetPlayingItemId()))
             {
-                throw new ArgumentException("User does not have access to playing item");
+                _logger.LogWarning("Syncplaymanager JoinGroup: {0} does not have access to {1}.", session.Id, group.GetPlayingItemId());
+
+                var error = new GroupUpdate<string>()
+                {
+                    GroupId = group.GetGroupId().ToString(),
+                    Type = GroupUpdateType.LibraryAccessDenied
+                };
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
+                return;
             }
 
             if (IsSessionInGroup(session))
@@ -230,9 +252,11 @@ namespace Emby.Server.Implementations.Syncplay
             {
                 _logger.LogWarning("Syncplaymanager LeaveGroup: {0} does not belong to any group.", session.Id);
 
-                var update = new GroupUpdate<string>();
-                update.Type = GroupUpdateType.NotInGroup;
-                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), update, CancellationToken.None);
+                var error = new GroupUpdate<string>()
+                {
+                    Type = GroupUpdateType.NotInGroup
+                };
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
                 return;
             }
             group.SessionLeave(session);
@@ -280,8 +304,14 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (user.Policy.SyncplayAccess == SyncplayAccess.None)
             {
-                // TODO: same as LeaveGroup
-                throw new ArgumentException("User does not have access to syncplay");
+                _logger.LogWarning("Syncplaymanager HandleRequest: {0} does not have access to Syncplay.", session.Id);
+
+                var error = new GroupUpdate<string>()
+                {
+                    Type = GroupUpdateType.JoinGroupDenied
+                };
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
+                return;
             }
 
             ISyncplayController group;
@@ -289,11 +319,13 @@ namespace Emby.Server.Implementations.Syncplay
 
             if (group == null)
             {
-                _logger.LogWarning("Syncplaymanager HandleRequest: {0} not in a group.", session.Id);
+                _logger.LogWarning("Syncplaymanager HandleRequest: {0} does not belong to any group.", session.Id);
 
-                var update = new GroupUpdate<string>();
-                update.Type = GroupUpdateType.NotInGroup;
-                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), update, CancellationToken.None);
+                var error = new GroupUpdate<string>()
+                {
+                    Type = GroupUpdateType.NotInGroup
+                };
+                _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
                 return;
             }
             group.HandleRequest(session, request);
