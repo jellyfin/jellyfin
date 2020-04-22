@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (resolvedUser == null)
             {
-                throw new ArgumentNullException(nameof(resolvedUser));
+                throw new AuthenticationException("Invalid username or password");
             }
 
             bool success = false;
