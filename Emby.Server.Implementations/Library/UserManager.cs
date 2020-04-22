@@ -265,6 +265,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(username))
             {
+                _logger.LogInformation("Authentication request without username has been denied (IP: {IP}).", remoteEndPoint);
                 throw new ArgumentNullException(nameof(username));
             }
 
@@ -320,21 +321,25 @@ namespace Emby.Server.Implementations.Library
 
             if (user == null)
             {
+                _logger.LogInformation("Authentication request for {UserName} has been denied (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
             if (user.Policy.IsDisabled)
             {
+                _logger.LogInformation("Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).", username, remoteEndPoint);
                 throw new SecurityException($"The {user.Name} account is currently disabled. Please consult with your administrator.");
             }
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
+                _logger.LogInformation("Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).", username, remoteEndPoint);
                 throw new SecurityException("Forbidden.");
             }
 
             if (!user.IsParentalScheduleAllowed())
             {
+                _logger.LogInformation("Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).", username, remoteEndPoint);
                 throw new SecurityException("User is not allowed access at this time.");
             }
 
@@ -348,13 +353,13 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 ResetInvalidLoginAttemptCount(user);
+                _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Name);
             }
             else
             {
                 IncrementInvalidLoginAttemptCount(user);
+                _logger.LogInformation("Authentication request for {UserName} has been denied (IP: {IP}).", user.Name, remoteEndPoint);
             }
-
-            _logger.LogInformation("Authentication request for {0} {1}.", user.Name, success ? "has succeeded" : "has been denied");
 
             return success ? user : null;
         }

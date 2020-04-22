@@ -39,7 +39,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
         private readonly IEncodingManager _encodingManager;
-        private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
@@ -56,7 +55,6 @@ namespace MediaBrowser.Providers.MediaInfo
             IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IEncodingManager encodingManager,
-            IFileSystem fileSystem,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
@@ -68,7 +66,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _blurayExaminer = blurayExaminer;
             _localization = localization;
             _encodingManager = encodingManager;
-            _fileSystem = fileSystem;
             _config = config;
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
@@ -76,7 +73,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
         }
 
-        public async Task<ItemUpdateType> ProbeVideo<T>(T item,
+        public async Task<ItemUpdateType> ProbeVideo<T>(
+            T item,
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
             where T : Video
@@ -99,7 +97,6 @@ namespace MediaBrowser.Providers.MediaInfo
                         return ItemUpdateType.MetadataImport;
                     }
                 }
-
                 else if (item.VideoType == VideoType.BluRay)
                 {
                     var inputPath = item.Path;
@@ -130,7 +127,8 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
+        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
+            Video item,
             string[] streamFileNames,
             CancellationToken cancellationToken)
         {
@@ -145,22 +143,24 @@ namespace MediaBrowser.Providers.MediaInfo
                 protocol = _mediaSourceManager.GetPathProtocol(path);
             }
 
-            return _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-            {
-                PlayableStreamFileNames = streamFileNames,
-                ExtractChapters = true,
-                MediaType = DlnaProfileType.Video,
-                MediaSource = new MediaSourceInfo
+            return _mediaEncoder.GetMediaInfo(
+                new MediaInfoRequest
                 {
-                    Path = path,
-                    Protocol = protocol,
-                    VideoType = item.VideoType
-                }
-
-            }, cancellationToken);
+                    PlayableStreamFileNames = streamFileNames,
+                    ExtractChapters = true,
+                    MediaType = DlnaProfileType.Video,
+                    MediaSource = new MediaSourceInfo
+                    {
+                        Path = path,
+                        Protocol = protocol,
+                        VideoType = item.VideoType
+                    }
+                },
+                cancellationToken);
         }
 
-        protected async Task Fetch(Video video,
+        protected async Task Fetch(
+            Video video,
             CancellationToken cancellationToken,
             Model.MediaInfo.MediaInfo mediaInfo,
             BlurayDiscInfo blurayInfo,
@@ -491,12 +491,13 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="options">The refreshOptions.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task AddExternalSubtitles(Video video,
+        private async Task AddExternalSubtitles(
+            Video video,
             List<MediaStream> currentStreams,
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var subtitleResolver = new SubtitleResolver(_localization, _fileSystem);
+            var subtitleResolver = new SubtitleResolver(_localization);
 
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
             var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false);
@@ -605,7 +606,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private string[] FetchFromDvdLib(Video item)
         {
             var path = item.Path;
-            var dvd = new Dvd(path, _fileSystem);
+            var dvd = new Dvd(path);
 
             var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
 
