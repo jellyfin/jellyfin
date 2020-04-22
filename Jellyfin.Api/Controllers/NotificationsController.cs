@@ -43,8 +43,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">An optional limit on the number of notifications returned.</param>
         /// <returns>A read-only list of all of the user's notifications.</returns>
         [HttpGet("{UserID}")]
-        [ProducesResponseType(typeof(NotificationResultDto), StatusCodes.Status200OK)]
-        public NotificationResultDto GetNotifications(
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<NotificationResultDto> GetNotifications(
             [FromRoute] string userId,
             [FromQuery] bool? isRead,
             [FromQuery] int? startIndex,
@@ -59,8 +59,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user's ID.</param>
         /// <returns>Notifications summary for the user.</returns>
         [HttpGet("{UserID}/Summary")]
-        [ProducesResponseType(typeof(NotificationsSummaryDto), StatusCodes.Status200OK)]
-        public NotificationsSummaryDto GetNotificationsSummary(
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<NotificationsSummaryDto> GetNotificationsSummary(
             [FromRoute] string userId)
         {
             return new NotificationsSummaryDto();
@@ -71,8 +71,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>All notification types.</returns>
         [HttpGet("Types")]
-        [ProducesResponseType(typeof(IEnumerable<NotificationTypeInfo>), StatusCodes.Status200OK)]
-        public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<NotificationTypeInfo>> GetNotificationTypes()
         {
             return _notificationManager.GetNotificationTypes();
         }
@@ -82,10 +82,10 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>All notification services.</returns>
         [HttpGet("Services")]
-        [ProducesResponseType(typeof(IEnumerable<NameIdPair>), StatusCodes.Status200OK)]
-        public IEnumerable<NameIdPair> GetNotificationServices()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<NameIdPair>> GetNotificationServices()
         {
-            return _notificationManager.GetNotificationServices();
+            return _notificationManager.GetNotificationServices().ToList();
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="level">The level of the notification.</param>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public void CreateAdminNotification(
+        public ActionResult CreateAdminNotification(
             [FromQuery] string name,
             [FromQuery] string description,
             [FromQuery] string? url,
@@ -114,6 +114,8 @@ namespace Jellyfin.Api.Controllers
             };
 
             _notificationManager.SendNotification(notification, CancellationToken.None);
+
+            return Ok();
         }
 
         /// <summary>
@@ -123,10 +125,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
         [HttpPost("{UserID}/Read")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public void SetRead(
+        public ActionResult SetRead(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
+            return Ok();
         }
 
         /// <summary>
@@ -136,10 +139,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
         [HttpPost("{UserID}/Unread")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public void SetUnread(
+        public ActionResult SetUnread(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
+            return Ok();
         }
     }
 }
