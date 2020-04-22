@@ -85,8 +85,6 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        private const string BaseActivitySelectText = "select Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity from ActivityLog";
-
         /// <inheritdoc />
         public void Create(ActivityLogEntry entry)
         {
