@@ -26,7 +26,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Activity
 {
     /// <summary>
-    /// The activity log entry point.
+    /// Entry point for the activity logger.
     /// </summary>
     public sealed class ActivityLogEntryPoint : IServerEntryPoint
     {
@@ -169,7 +169,12 @@ namespace Emby.Server.Implementations.Activity
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserStoppedPlayingItemWithValues"), user.Name, GetItemName(item), e.DeviceName),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserStoppedPlayingItemWithValues"),
+                    user.Name,
+                    GetItemName(item),
+                    e.DeviceName),
                 Type = GetPlaybackStoppedNotificationType(item.MediaType),
                 UserId = user.Id
             });
@@ -395,7 +400,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        private void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, PackageVersionInfo)> e)
+        private void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, VersionInfo)> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -407,8 +412,8 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.Item2.versionStr),
-                Overview = e.Argument.Item2.description
+                    e.Argument.Item2.version),
+                Overview = e.Argument.Item2.changelog
             });
         }
 
@@ -424,7 +429,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        private void OnPluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> e)
+        private void OnPluginInstalled(object sender, GenericEventArgs<VersionInfo> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -436,7 +441,7 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.versionStr)
+                    e.Argument.version)
             });
         }
 
@@ -464,7 +469,8 @@ namespace Emby.Server.Implementations.Activity
             var result = e.Result;
             var task = e.Task;
 
-            if (task.ScheduledTask is IConfigurableScheduledTask activityTask && !activityTask.IsLogged)
+            if (task.ScheduledTask is IConfigurableScheduledTask activityTask
+                && !activityTask.IsLogged)
             {
                 return;
             }
@@ -538,9 +544,7 @@ namespace Emby.Server.Implementations.Activity
         /// <summary>
         /// Constructs a user-friendly string for this TimeSpan instance.
         /// </summary>
-        /// <param name="span">The timespan.</param>
-        /// <returns>The user-friendly string.</returns>
-        public static string ToUserFriendlyString(TimeSpan span)
+        private static string ToUserFriendlyString(TimeSpan span)
         {
             const int DaysInYear = 365;
             const int DaysInMonth = 30;

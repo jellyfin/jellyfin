@@ -11,9 +11,6 @@ namespace Emby.Server.Implementations.Activity
     /// </summary>
     public class ActivityManager : IActivityManager
     {
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
-
         private readonly IActivityRepository _repo;
         private readonly IUserManager _userManager;
 
@@ -22,15 +19,15 @@ namespace Emby.Server.Implementations.Activity
         /// </summary>
         /// <param name="repo">The activity repository.</param>
         /// <param name="userManager">The user manager.</param>
-        public ActivityManager(
-            IActivityRepository repo,
-            IUserManager userManager)
+        public ActivityManager(IActivityRepository repo, IUserManager userManager)
         {
             _repo = repo;
             _userManager = userManager;
         }
 
         /// <inheritdoc />
+        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+
         public void Create(ActivityLogEntry entry)
         {
             entry.Date = DateTime.UtcNow;

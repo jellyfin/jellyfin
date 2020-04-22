@@ -211,19 +211,6 @@ namespace Emby.Server.Implementations
 
         public IFileSystem FileSystemManager { get; set; }
 
-        /// <inheritdoc />
-        public PackageVersionClass SystemUpdateLevel
-        {
-            get
-            {
-#if BETA
-                return PackageVersionClass.Beta;
-#else
-                return PackageVersionClass.Release;
-#endif
-            }
-        }
-
         /// <summary>
         /// Gets or sets the service provider.
         /// </summary>
@@ -781,7 +768,16 @@ namespace Emby.Server.Implementations
             DtoService = new DtoService(LoggerFactory, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ProviderManager, this, () => MediaSourceManager, () => LiveTvManager);
             serviceCollection.AddSingleton(DtoService);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LoggerFactory, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, ProviderManager);
+            ChannelManager = new ChannelManager(
+                UserManager,
+                DtoService,
+                LibraryManager,
+                LoggerFactory.CreateLogger<ChannelManager>(),
+                ServerConfigurationManager,
+                FileSystemManager,
+                UserDataManager,
+                JsonSerializer,
+                ProviderManager);
             serviceCollection.AddSingleton(ChannelManager);
 
             SessionManager = new SessionManager(
@@ -970,7 +966,7 @@ namespace Emby.Server.Implementations
 
         private IActivityRepository GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LoggerFactory, ServerConfigurationManager.ApplicationPaths, FileSystemManager);
+            var repo = new ActivityRepository(LoggerFactory.CreateLogger<ActivityRepository>(), ServerConfigurationManager.ApplicationPaths, FileSystemManager);
 
             repo.Initialize();
 
@@ -1381,7 +1377,6 @@ namespace Emby.Server.Implementations
                 SupportsLibraryMonitor = true,
                 EncoderLocation = MediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
-                SystemUpdateLevel = SystemUpdateLevel,
                 PackageName = StartupOptions.PackageName
             };
         }

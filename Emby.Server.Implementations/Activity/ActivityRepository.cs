@@ -18,17 +18,18 @@ namespace Emby.Server.Implementations.Activity
     /// </summary>
     public class ActivityRepository : BaseSqliteRepository, IActivityRepository
     {
-        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
+        private const string BaseActivitySelectText = "select Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity from ActivityLog";
+
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityRepository"/> class.
         /// </summary>
-        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="fileSystem">The filesystem.</param>
-        public ActivityRepository(ILoggerFactory loggerFactory, IServerApplicationPaths appPaths, IFileSystem fileSystem)
-            : base(loggerFactory.CreateLogger(nameof(ActivityRepository)))
+        public ActivityRepository(ILogger<ActivityRepository> logger, IServerApplicationPaths appPaths, IFileSystem fileSystem)
+            : base(logger)
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "activitylog.db");
             _fileSystem = fileSystem;
@@ -205,7 +206,7 @@ namespace Emby.Server.Implementations.Activity
 
             if (limit.HasValue)
             {
-                commandText += " LIMIT " + limit.Value.ToString(_usCulture);
+                commandText += " LIMIT " + limit.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             var statementTexts = new[]
@@ -300,7 +301,7 @@ namespace Emby.Server.Implementations.Activity
             index++;
             if (reader[index].SQLiteType != SQLiteType.Null)
             {
-                info.Severity = (LogLevel)Enum.Parse(typeof(LogLevel), reader[index].ToString(), true);
+                info.Severity = Enum.Parse<LogLevel>(reader[index].ToString(), true);
             }
 
             return info;
