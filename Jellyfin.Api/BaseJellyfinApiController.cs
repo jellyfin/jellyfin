@@ -7,6 +7,7 @@ namespace Jellyfin.Api
     /// </summary>
     [ApiController]
     [Route("[controller]")]
+    [Produces("application/json")]
     public class BaseJellyfinApiController : ControllerBase
     {
     }
