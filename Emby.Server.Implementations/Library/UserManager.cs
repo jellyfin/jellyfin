@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
@@ -321,23 +322,19 @@ namespace Emby.Server.Implementations.Library
             if (user.Policy.IsDisabled)
             {
                 _logger.LogInformation("Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).", username, remoteEndPoint);
-                throw new AuthenticationException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The {0} account is currently disabled. Please consult with your administrator.",
-                        user.Name));
+                throw new SecurityException($"The {user.Name} account is currently disabled. Please consult with your administrator.");
             }
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
                 _logger.LogInformation("Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).", username, remoteEndPoint);
-                throw new AuthenticationException("Forbidden.");
+                throw new SecurityException("Forbidden.");
             }
 
             if (!user.IsParentalScheduleAllowed())
             {
                 _logger.LogInformation("Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).", username, remoteEndPoint);
-                throw new AuthenticationException("User is not allowed access at this time.");
+                throw new SecurityException("User is not allowed access at this time.");
             }
 
             // Update LastActivityDate and LastLoginDate, then save
