@@ -23,12 +23,6 @@ jobs:
         inputs:
           versionSpec: '5.x'
           includePrerelease: true
-          #targetPath: 'wording dir'
-          #useConfigFile: true
-          #configFilePath: 'config_file.yml'
-          #updateAssemblyInfo: true
-          #updateAssemblyInfoFilename: 'SharedVersion.cs'
-          #additionalArguments: '--additional args'
       - task: Bash@3
         displayName: "Export GitVersion Variables"
         name: Versions
