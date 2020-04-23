@@ -1,9 +1,6 @@
-using System;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Jellyfin.Server;
 using MediaBrowser.Model.Branding;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace MediaBrowser.Api.Tests
