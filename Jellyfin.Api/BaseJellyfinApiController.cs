@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api
@@ -7,6 +8,7 @@ namespace Jellyfin.Api
     /// </summary>
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class BaseJellyfinApiController : ControllerBase
     {
     }
