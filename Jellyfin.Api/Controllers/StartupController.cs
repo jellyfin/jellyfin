@@ -59,7 +59,7 @@ namespace Jellyfin.Api.Controllers
                 PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
             };
 
-            return Ok(result);
+            return result;
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<StartupUserDto> GetFirstUser()
         {
             var user = _userManager.Users.First();
-            return Ok(new StartupUserDto { Name = user.Name, Password = user.Password });
+            return new StartupUserDto { Name = user.Name, Password = user.Password };
         }
 
         /// <summary>
