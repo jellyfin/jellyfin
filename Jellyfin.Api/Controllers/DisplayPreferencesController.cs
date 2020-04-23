@@ -2,9 +2,9 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -14,7 +14,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Display Preferences Controller.
     /// </summary>
-    [Authenticated]
+    [Authorize]
     public class DisplayPreferencesController : BaseJellyfinApiController
     {
         private readonly IDisplayPreferencesRepository _displayPreferencesRepository;
