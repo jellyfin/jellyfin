@@ -272,22 +272,24 @@ namespace Jellyfin.Server
                         {
                             _logger.LogInformation("Kestrel listening on {IpAddress}", address);
                             options.Listen(address, appHost.HttpPort);
-
-                            if (appHost.EnableHttps && appHost.Certificate != null)
+                            if (appHost.EnableHttps)
                             {
-                                options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                if (appHost.Certificate != null)
                                 {
-                                    listenOptions.UseHttps(appHost.Certificate);
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
-                            }
-                            else if (builderContext.HostingEnvironment.IsDevelopment())
-                            {
-                                options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                    {
+                                        listenOptions.UseHttps(appHost.Certificate);
+                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                    });
+                                }
+                                else if (builderContext.HostingEnvironment.IsDevelopment())
                                 {
-                                    listenOptions.UseHttps();
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
+                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                    {
+                                        listenOptions.UseHttps();
+                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                    });
+                                }
                             }
                         }
                     }
@@ -296,21 +298,24 @@ namespace Jellyfin.Server
                         _logger.LogInformation("Kestrel listening on all interfaces");
                         options.ListenAnyIP(appHost.HttpPort);
 
-                        if (appHost.EnableHttps && appHost.Certificate != null)
+                        if (appHost.EnableHttps)
                         {
-                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                            if (appHost.Certificate != null)
                             {
-                                listenOptions.UseHttps(appHost.Certificate);
-                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                            });
-                        }
-                        else if (builderContext.HostingEnvironment.IsDevelopment())
-                        {
-                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                                {
+                                    listenOptions.UseHttps(appHost.Certificate);
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                });
+                            }
+                            else if (builderContext.HostingEnvironment.IsDevelopment())
                             {
-                                listenOptions.UseHttps();
-                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                            });
+                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                                {
+                                    listenOptions.UseHttps();
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                });
+                            }
                         }
                     }
                 })
