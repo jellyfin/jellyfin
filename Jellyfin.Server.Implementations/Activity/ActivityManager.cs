@@ -1,31 +1,43 @@
-#pragma warning disable CS1591
-
 using System;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Jellyfin.Data;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Activity
 {
+    /// <summary>
+    /// Manages the storage and retrieval of <see cref="ActivityLog"/> instances.
+    /// </summary>
     public class ActivityManager : IActivityManager
     {
+        /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
         private JellyfinDbProvider _provider;
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="ActivityManager"/> class.
+        /// </summary>
+        /// <param name="provider">The Jellyfin database provider.</param>
         public ActivityManager(JellyfinDbProvider provider)
         {
             _provider = provider;
         }
 
+        /// <inheritdoc/>
+        public void Create(ActivityLog entry)
+        {
+            using var dbContext = _provider.GetConnection();
+            dbContext.ActivityLogs.Add(entry);
+            dbContext.SaveChanges();
 
+            EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
+        }
+
+        /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
         {
             using var dbContext = _provider.GetConnection();
@@ -35,13 +47,10 @@ namespace Jellyfin.Server.Implementations.Activity
             EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(ConvertToOldModel(entry)));
         }
 
+        /// <inheritdoc/>
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
             using var dbConnection = _provider.GetConnection();
-
-            var elements = dbConnection.ActivityLogs.ToImmutableList();
-            
-
             var result = dbConnection.ActivityLogs.AsQueryable();
 
             if (minDate.HasValue)
@@ -59,8 +68,7 @@ namespace Jellyfin.Server.Implementations.Activity
                 result = result.Where(entry => entry.Id >= startIndex.Value);
             }
 
-            // Old code had a check limit > 0, still needed?
-            if (limit.HasValue)
+            if (limit.HasValue && limit.Value > 0)
             {
                 result = result.OrderByDescending(entry => entry.DateCreated).Take(limit.Value);
             }
@@ -74,6 +82,7 @@ namespace Jellyfin.Server.Implementations.Activity
             };
         }
 
+        /// <inheritdoc/>
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
         {
             return GetActivityLogEntries(minDate, null, startIndex, limit);

@@ -759,7 +759,7 @@ namespace MediaBrowser.Api.Library
         {
             try
             {
-                _activityManager.CreateAsync(new Jellyfin.Data.ActivityLog(
+                _activityManager.Create(new Jellyfin.Data.ActivityLog(
                     string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
                     "UserDownloadingContent",
                     auth.UserId,

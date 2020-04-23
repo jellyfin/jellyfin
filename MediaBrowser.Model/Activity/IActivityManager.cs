@@ -12,6 +12,8 @@ namespace MediaBrowser.Model.Activity
     {
         event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
+        void Create(ActivityLog entry);
+
         Task CreateAsync(ActivityLog entry);
 
         QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit);

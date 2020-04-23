@@ -46,6 +46,7 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
+using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
@@ -309,7 +310,7 @@ namespace Emby.Server.Implementations
 
         private IMediaSourceManager MediaSourceManager { get; set; }
 
-        private JellyfinDbProvider DatabaseProvider { get; set; }
+        public JellyfinDbProvider DatabaseProvider { get; private set; }
 
         /// <summary>
         /// Gets the installation manager.
@@ -646,12 +647,13 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(FileSystemManager);
 
-            serviceCollection.AddDbContextPool<Jellyfin.Data.JellyfinDb>(
+            // TODO: properly set up scoping and switch to AddDbContextPool
+            serviceCollection.AddDbContext<Jellyfin.Data.JellyfinDb>(
                 options =>
             {
                 Directory.CreateDirectory(ApplicationPaths.DataPath);
                 options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}");
-            });
+            }, ServiceLifetime.Transient);
 
             DatabaseProvider = new JellyfinDbProvider(serviceCollection.BuildServiceProvider());
 
