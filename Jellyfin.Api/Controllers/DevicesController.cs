@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            return Ok(deviceInfo);
+            return deviceInfo;
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Jellyfin.Api.Controllers
         [Authenticated(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceInfo> GetDeviceOptions([FromQuery, BindRequired] string id)
+        public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, BindRequired] string id)
         {
             var deviceInfo = _deviceManager.GetDeviceOptions(id);
             if (deviceInfo == null)
@@ -94,7 +94,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            return Ok(deviceInfo);
+            return deviceInfo;
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<ContentUploadHistory> GetCameraUploads([FromQuery, BindRequired] string id)
         {
             var uploadHistory = _deviceManager.GetCameraUploadHistory(id);
-            return Ok(uploadHistory);
+            return uploadHistory;
         }
 
         /// <summary>
