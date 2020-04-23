@@ -28,7 +28,6 @@ namespace Emby.Server.Implementations.LiveTv
 
         private readonly ILogger _logger;
         private readonly IImageProcessor _imageProcessor;
-
         private readonly IDtoService _dtoService;
         private readonly IApplicationHost _appHost;
         private readonly ILibraryManager _libraryManager;

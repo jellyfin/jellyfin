@@ -82,11 +82,10 @@ namespace MediaBrowser.Api.Tests
                 loggerFactory,
                 commandLineOpts,
                 new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new SkiaEncoder(loggerFactory.CreateLogger<SkiaEncoder>(), appPaths),
                 new NetworkManager(loggerFactory.CreateLogger<NetworkManager>()));
             _appHosts.Add(appHost);
             var serviceCollection = new ServiceCollection();
-            appHost.InitAsync(serviceCollection, startupConfig).Wait();
+            appHost.Init(serviceCollection);
 
             // Configure the web host builder
             Program.ConfigureWebHostBuilder(builder, appHost, serviceCollection, commandLineOpts, startupConfig, appPaths);
@@ -101,8 +100,7 @@ namespace MediaBrowser.Api.Tests
             // Finish initializing the app host
             var appHost = (CoreAppHost)testServer.Services.GetRequiredService<IApplicationHost>();
             appHost.ServiceProvider = testServer.Services;
-            appHost.InitializeServices();
-            appHost.FindParts();
+            appHost.InitializeServices().Wait();
             appHost.RunStartupTasksAsync().Wait();
 
             return testServer;
