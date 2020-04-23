@@ -23,9 +23,14 @@ namespace Jellyfin.Server.Migrations.Routines
                 ConnectionFlags.ReadOnly,
                 null))
             {
+                logger.LogInformation("This may take a while, do not stop Jellyfin.");
                 using var dbContext = host.DatabaseProvider.GetConnection();
 
                 var queryResult = connection.Query("SELECT * FROM ActivityLog ORDER BY Id ASC");
+
+                // Make sure that the database is empty in case of failed migration due to power outages, etc.
+                dbContext.Database.EnsureDeleted();
+                dbContext.Database.EnsureCreated();
 
                 foreach (var entry in queryResult)
                 {
@@ -34,7 +39,7 @@ namespace Jellyfin.Server.Migrations.Routines
                         entry[4].ToString(),
                         entry[6].SQLiteType == SQLiteType.Null ? Guid.Empty : Guid.Parse(entry[6].ToString()),
                         entry[7].ReadDateTime(),
-                        Enum.Parse<LogLevel>(entry[8].ToString(), true));
+                        ParseLogLevel(entry[8].ToString()));
 
                     if (entry[2].SQLiteType != SQLiteType.Null)
                     {
@@ -64,6 +69,33 @@ namespace Jellyfin.Server.Migrations.Routines
             {
                 logger.LogError("Error renaming file: ", e);
             }
+        }
+
+        private LogLevel ParseLogLevel(string entry)
+        {
+            if (string.Equals(entry, "Debug", StringComparison.OrdinalIgnoreCase))
+            {
+                return LogLevel.Debug;
+            }
+
+            if (string.Equals(entry, "Information", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(entry, "Info", StringComparison.OrdinalIgnoreCase))
+            {
+                return LogLevel.Information;
+            }
+
+            if (string.Equals(entry, "Warning", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(entry, "Warn", StringComparison.OrdinalIgnoreCase))
+            {
+                return LogLevel.Warning;
+            }
+
+            if (string.Equals(entry, "Error", StringComparison.OrdinalIgnoreCase))
+            {
+                return LogLevel.Error;
+            }
+
+            return LogLevel.Trace;
         }
     }
 }
