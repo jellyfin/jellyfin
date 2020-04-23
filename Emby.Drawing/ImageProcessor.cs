@@ -116,11 +116,6 @@ namespace Emby.Drawing
         /// <inheritdoc />
         public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
 
@@ -325,19 +320,12 @@ namespace Emby.Drawing
         /// <inheritdoc />
         public string GetImageCacheTag(BaseItem item, ChapterInfo chapter)
         {
-            try
+            return GetImageCacheTag(item, new ItemImageInfo
             {
-                return GetImageCacheTag(item, new ItemImageInfo
-                {
-                    Path = chapter.ImagePath,
-                    Type = ImageType.Chapter,
-                    DateModified = chapter.ImageDateModified
-                });
-            }
-            catch
-            {
-                return null;
-            }
+                Path = chapter.ImagePath,
+                Type = ImageType.Chapter,
+                DateModified = chapter.ImageDateModified
+            });
         }
 
         private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)

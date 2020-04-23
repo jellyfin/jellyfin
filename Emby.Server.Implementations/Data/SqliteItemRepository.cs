@@ -1990,7 +1990,14 @@ namespace Emby.Server.Implementations.Data
 
                 if (!string.IsNullOrEmpty(chapter.ImagePath))
                 {
-                    chapter.ImageTag = _imageProcessor.GetImageCacheTag(item, chapter);
+                    try
+                    {
+                        chapter.ImageTag = _imageProcessor.GetImageCacheTag(item, chapter);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Failed to create image cache tag.");
+                    }
                 }
             }
 
