@@ -19,7 +19,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
@@ -39,16 +38,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
-        private readonly Func<ISubtitleEncoder> _subtitleEncoder;
-        private readonly IConfiguration _configuration;
+        private readonly Lazy<EncodingHelper> _encodingHelperFactory;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
 
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
-
-        private EncodingHelper _encodingHelper;
 
         private string _ffmpegPath;
         private string _ffprobePath;
@@ -58,23 +54,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             ILocalizationManager localization,
-            Func<ISubtitleEncoder> subtitleEncoder,
-            IConfiguration configuration,
+            Lazy<EncodingHelper> encodingHelperFactory,
             string startupOptionsFFmpegPath)
         {
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
+            _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = startupOptionsFFmpegPath;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
         }
 
-        private EncodingHelper EncodingHelper
-            => LazyInitializer.EnsureInitialized(
-                ref _encodingHelper,
-                () => new EncodingHelper(this, _fileSystem, _subtitleEncoder(), _configuration));
+        private EncodingHelper EncodingHelper => _encodingHelperFactory.Value;
 
         /// <inheritdoc />
         public string EncoderPath => _ffmpegPath;
