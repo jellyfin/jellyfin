@@ -60,7 +60,7 @@ namespace Jellyfin.Server.Implementations.Activity
 
             if (hasUserId.HasValue)
             {
-                result = result.Where(entry => !Equals(entry.UserId, Guid.Empty));
+                result = result.Where(entry => hasUserId.Value != Equals(entry.UserId, Guid.Empty));
             }
 
             if (startIndex.HasValue)
