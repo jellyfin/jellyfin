@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using System.Globalization;
 using CommandLine;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Updates;
 using MediaBrowser.Controller.Extensions;
 
 namespace Jellyfin.Server
@@ -76,6 +76,10 @@ namespace Jellyfin.Server
         [Option("restartargs", Required = false, HelpText = "Arguments for restart script.")]
         public string? RestartArgs { get; set; }
 
+        /// <inheritdoc />
+        [Option("plugin-manifest-url", Required = false, HelpText = "A custom URL for the plugin repository JSON manifest")]
+        public string? PluginManifestUrl { get; set; }
+
         /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
@@ -83,6 +87,11 @@ namespace Jellyfin.Server
         public Dictionary<string, string> ConvertToConfig()
         {
             var config = new Dictionary<string, string>();
+
+            if (PluginManifestUrl != null)
+            {
+                config.Add(InstallationManager.PluginManifestUrlKey, PluginManifestUrl);
+            }
 
             if (NoWebClient)
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -31,7 +31,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IHttpClient _httpClient;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IProcessFactory _processFactory;
 
         public SubtitleEncoder(
             ILibraryManager libraryManager,
@@ -40,8 +39,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IFileSystem fileSystem,
             IMediaEncoder mediaEncoder,
             IHttpClient httpClient,
-            IMediaSourceManager mediaSourceManager,
-            IProcessFactory processFactory)
+            IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -50,7 +48,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _mediaEncoder = mediaEncoder;
             _httpClient = httpClient;
             _mediaSourceManager = mediaSourceManager;
-            _processFactory = processFactory;
         }
 
         private string SubtitleCachePath => Path.Combine(_appPaths.DataPath, "subtitles");
@@ -429,49 +426,53 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 encodingParam = " -sub_charenc " + encodingParam;
             }
 
-            var process = _processFactory.Create(new ProcessOptions
+            int exitCode;
+
+            using (var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        FileName = _mediaEncoder.EncoderPath,
+                        Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        ErrorDialog = false
+                    },
+                    EnableRaisingEvents = true
+                })
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                FileName = _mediaEncoder.EncoderPath,
-                Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
-                EnableRaisingEvents = true,
-                IsHidden = true,
-                ErrorDialog = false
-            });
+                _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            _logger.LogInformation("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
-
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting ffmpeg");
-
-                throw;
-            }
-
-            var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
-
-            if (!ranToCompletion)
-            {
                 try
                 {
-                    _logger.LogInformation("Killing ffmpeg subtitle conversion process");
-
-                    process.Kill();
+                    process.Start();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error killing subtitle conversion process");
+                    _logger.LogError(ex, "Error starting ffmpeg");
+
+                    throw;
                 }
+
+                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+
+                if (!ranToCompletion)
+                {
+                    try
+                    {
+                        _logger.LogInformation("Killing ffmpeg subtitle conversion process");
+
+                        process.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error killing subtitle conversion process");
+                    }
+                }
+
+                exitCode = ranToCompletion ? process.ExitCode : -1;
             }
-
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
-
-            process.Dispose();
 
             var failed = false;
 
@@ -578,49 +579,53 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 outputCodec,
                 outputPath);
 
-            var process = _processFactory.Create(new ProcessOptions
+            int exitCode;
+
+            using (var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        FileName = _mediaEncoder.EncoderPath,
+                        Arguments = processArgs,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        ErrorDialog = false
+                    },
+                    EnableRaisingEvents = true
+                })
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                EnableRaisingEvents = true,
-                FileName = _mediaEncoder.EncoderPath,
-                Arguments = processArgs,
-                IsHidden = true,
-                ErrorDialog = false
-            });
+                _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            _logger.LogInformation("{File} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
-
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting ffmpeg");
-
-                throw;
-            }
-
-            var ranToCompletion = await process.WaitForExitAsync(300000).ConfigureAwait(false);
-
-            if (!ranToCompletion)
-            {
                 try
                 {
-                    _logger.LogWarning("Killing ffmpeg subtitle extraction process");
-
-                    process.Kill();
+                    process.Start();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error killing subtitle extraction process");
+                    _logger.LogError(ex, "Error starting ffmpeg");
+
+                    throw;
                 }
+
+                var ranToCompletion = await process.WaitForExitAsync(TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+
+                if (!ranToCompletion)
+                {
+                    try
+                    {
+                        _logger.LogWarning("Killing ffmpeg subtitle extraction process");
+
+                        process.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error killing subtitle extraction process");
+                    }
+                }
+
+                exitCode = ranToCompletion ? process.ExitCode : -1;
             }
-
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
-
-            process.Dispose();
 
             var failed = false;
 

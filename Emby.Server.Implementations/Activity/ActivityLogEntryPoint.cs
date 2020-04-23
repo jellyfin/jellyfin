@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -27,6 +25,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
+    /// <summary>
+    /// Entry point for the activity logger.
+    /// </summary>
     public sealed class ActivityLogEntryPoint : IServerEntryPoint
     {
         private readonly ILogger _logger;
@@ -42,16 +43,15 @@ namespace Emby.Server.Implementations.Activity
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLogEntryPoint"/> class.
         /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="sessionManager"></param>
-        /// <param name="deviceManager"></param>
-        /// <param name="taskManager"></param>
-        /// <param name="activityManager"></param>
-        /// <param name="localization"></param>
-        /// <param name="installationManager"></param>
-        /// <param name="subManager"></param>
-        /// <param name="userManager"></param>
-        /// <param name="appHost"></param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="deviceManager">The device manager.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="activityManager">The activity manager.</param>
+        /// <param name="localization">The localization manager.</param>
+        /// <param name="installationManager">The installation manager.</param>
+        /// <param name="subManager">The subtitle manager.</param>
+        /// <param name="userManager">The user manager.</param>
         public ActivityLogEntryPoint(
             ILogger<ActivityLogEntryPoint> logger,
             ISessionManager sessionManager,
@@ -74,6 +74,7 @@ namespace Emby.Server.Implementations.Activity
             _userManager = userManager;
         }
 
+        /// <inheritdoc />
         public Task RunAsync()
         {
             _taskManager.TaskCompleted += OnTaskCompleted;
@@ -168,7 +169,12 @@ namespace Emby.Server.Implementations.Activity
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = string.Format(_localization.GetLocalizedString("UserStoppedPlayingItemWithValues"), user.Name, GetItemName(item), e.DeviceName),
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserStoppedPlayingItemWithValues"),
+                    user.Name,
+                    GetItemName(item),
+                    e.DeviceName),
                 Type = GetPlaybackStoppedNotificationType(item.MediaType),
                 UserId = user.Id
             });
@@ -416,7 +422,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        private void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, PackageVersionInfo)> e)
+        private void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, VersionInfo)> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -428,8 +434,8 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.Item2.versionStr),
-                Overview = e.Argument.Item2.description
+                    e.Argument.Item2.version),
+                Overview = e.Argument.Item2.changelog
             });
         }
 
@@ -445,7 +451,7 @@ namespace Emby.Server.Implementations.Activity
             });
         }
 
-        private void OnPluginInstalled(object sender, GenericEventArgs<PackageVersionInfo> e)
+        private void OnPluginInstalled(object sender, GenericEventArgs<VersionInfo> e)
         {
             CreateLogEntry(new ActivityLogEntry
             {
@@ -457,7 +463,7 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.versionStr)
+                    e.Argument.version)
             });
         }
 
@@ -485,8 +491,8 @@ namespace Emby.Server.Implementations.Activity
             var result = e.Result;
             var task = e.Task;
 
-            var activityTask = task.ScheduledTask as IConfigurableScheduledTask;
-            if (activityTask != null && !activityTask.IsLogged)
+            if (task.ScheduledTask is IConfigurableScheduledTask activityTask
+                && !activityTask.IsLogged)
             {
                 return;
             }
@@ -560,7 +566,7 @@ namespace Emby.Server.Implementations.Activity
         /// <summary>
         /// Constructs a user-friendly string for this TimeSpan instance.
         /// </summary>
-        public static string ToUserFriendlyString(TimeSpan span)
+        private static string ToUserFriendlyString(TimeSpan span)
         {
             const int DaysInYear = 365;
             const int DaysInMonth = 30;

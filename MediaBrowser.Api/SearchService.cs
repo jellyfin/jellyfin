@@ -234,59 +234,48 @@ namespace MediaBrowser.Api
             SetThumbImageInfo(result, item);
             SetBackdropImageInfo(result, item);
 
-            var program = item as LiveTvProgram;
-            if (program != null)
+            switch (item)
             {
-                result.StartDate = program.StartDate;
-            }
+                case IHasSeries hasSeries:
+                    result.Series = hasSeries.SeriesName;
+                    break;
+                case LiveTvProgram program:
+                    result.StartDate = program.StartDate;
+                    break;
+                case Series series:
+                    if (series.Status.HasValue)
+                    {
+                        result.Status = series.Status.Value.ToString();
+                    }
 
-            var hasSeries = item as IHasSeries;
-            if (hasSeries != null)
-            {
-                result.Series = hasSeries.SeriesName;
-            }
+                    break;
+                case MusicAlbum album:
+                    result.Artists = album.Artists;
+                    result.AlbumArtist = album.AlbumArtist;
+                    break;
+                case Audio song:
+                    result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
+                    result.Artists = song.Artists;
 
-            var series = item as Series;
-            if (series != null)
-            {
-                if (series.Status.HasValue)
-                {
-                    result.Status = series.Status.Value.ToString();
-                }
-            }
+                    MusicAlbum musicAlbum = song.AlbumEntity;
 
-            var album = item as MusicAlbum;
+                    if (musicAlbum != null)
+                    {
+                        result.Album = musicAlbum.Name;
+                        result.AlbumId = musicAlbum.Id;
+                    }
+                    else
+                    {
+                        result.Album = song.Album;
+                    }
 
-            if (album != null)
-            {
-                result.Artists = album.Artists;
-                result.AlbumArtist = album.AlbumArtist;
-            }
-
-            var song = item as Audio;
-
-            if (song != null)
-            {
-                result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
-                result.Artists = song.Artists;
-
-                album = song.AlbumEntity;
-
-                if (album != null)
-                {
-                    result.Album = album.Name;
-                    result.AlbumId = album.Id;
-                }
-                else
-                {
-                    result.Album = song.Album;
-                }
+                    break;
             }
 
             if (!item.ChannelId.Equals(Guid.Empty))
             {
                 var channel = _libraryManager.GetItemById(item.ChannelId);
-                result.ChannelName = channel == null ? null : channel.Name;
+                result.ChannelName = channel?.Name;
             }
 
             return result;
@@ -296,12 +285,9 @@ namespace MediaBrowser.Api
         {
             var itemWithImage = item.HasImage(ImageType.Thumb) ? item : null;
 
-            if (itemWithImage == null)
+            if (itemWithImage == null && item is Episode)
             {
-                if (item is Episode)
-                {
-                    itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
-                }
+                itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
             }
 
             if (itemWithImage == null)
@@ -323,12 +309,8 @@ namespace MediaBrowser.Api
 
         private void SetBackdropImageInfo(SearchHint hint, BaseItem item)
         {
-            var itemWithImage = item.HasImage(ImageType.Backdrop) ? item : null;
-
-            if (itemWithImage == null)
-            {
-                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
-            }
+            var itemWithImage = (item.HasImage(ImageType.Backdrop) ? item : null)
+                ?? GetParentWithImage<BaseItem>(item, ImageType.Backdrop);
 
             if (itemWithImage != null)
             {

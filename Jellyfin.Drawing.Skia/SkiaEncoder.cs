@@ -78,12 +78,21 @@ namespace Jellyfin.Drawing.Skia
             => new HashSet<ImageFormat>() { ImageFormat.Webp, ImageFormat.Jpg, ImageFormat.Png };
 
         /// <summary>
-        /// Test to determine if the native lib is available.
+        /// Check if the native lib is available.
         /// </summary>
-        public static void TestSkia()
+        /// <returns>True if the native lib is available, otherwise false.</returns>
+        public static bool IsNativeLibAvailable()
         {
-            // test an operation that requires the native library
-            SKPMColor.PreMultiply(SKColors.Black);
+            try
+            {
+                // test an operation that requires the native library
+                SKPMColor.PreMultiply(SKColors.Black);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private static bool IsTransparent(SKColor color)

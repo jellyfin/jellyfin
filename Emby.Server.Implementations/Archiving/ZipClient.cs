@@ -50,6 +50,7 @@ namespace Emby.Server.Implementations.Archiving
             }
         }
 
+        /// <inheritdoc />
         public void ExtractAllFromZip(Stream source, string targetPath, bool overwriteExistingFiles)
         {
             using (var reader = ZipReader.Open(source))
@@ -66,6 +67,7 @@ namespace Emby.Server.Implementations.Archiving
             }
         }
 
+        /// <inheritdoc />
         public void ExtractAllFromGz(Stream source, string targetPath, bool overwriteExistingFiles)
         {
             using (var reader = GZipReader.Open(source))
@@ -82,6 +84,7 @@ namespace Emby.Server.Implementations.Archiving
             }
         }
 
+        /// <inheritdoc />
         public void ExtractFirstFileFromGz(Stream source, string targetPath, string defaultFileName)
         {
             using (var reader = GZipReader.Open(source))

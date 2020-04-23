@@ -885,11 +885,10 @@ namespace MediaBrowser.Api.LiveTv
         {
             // SchedulesDirect requires a SHA1 hash of the user's password
             // https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#obtain-a-token
-            using (SHA1 sha = SHA1.Create())
-            {
-                return Hex.Encode(
-                    sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
-            }
+            using SHA1 sha = SHA1.Create();
+
+            return Hex.Encode(
+                sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
         }
 
         public void Delete(DeleteListingProvider request)
@@ -1050,8 +1049,7 @@ namespace MediaBrowser.Api.LiveTv
             {
                 query.IsSeries = true;
 
-                var series = _libraryManager.GetItemById(request.LibrarySeriesId) as Series;
-                if (series != null)
+                if (_libraryManager.GetItemById(request.LibrarySeriesId) is Series series)
                 {
                     query.Name = series.Name;
                 }

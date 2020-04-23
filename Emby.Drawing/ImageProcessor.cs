@@ -8,7 +8,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -33,8 +32,7 @@ namespace Emby.Drawing
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IImageEncoder _imageEncoder;
-        private readonly Func<ILibraryManager> _libraryManager;
-        private readonly Func<IMediaEncoder> _mediaEncoder;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private bool _disposed = false;
 
@@ -45,20 +43,17 @@ namespace Emby.Drawing
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="imageEncoder">The image encoder.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         public ImageProcessor(
             ILogger<ImageProcessor> logger,
             IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
-            Func<ILibraryManager> libraryManager,
-            Func<IMediaEncoder> mediaEncoder)
+            IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _imageEncoder = imageEncoder;
-            _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
         }
@@ -121,20 +116,8 @@ namespace Emby.Drawing
         /// <inheritdoc />
         public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
-            var libraryManager = _libraryManager();
-
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
-
-            if (!originalImage.IsLocalFile)
-            {
-                if (item == null)
-                {
-                    item = libraryManager.GetItemById(options.ItemId);
-                }
-
-                originalImage = await libraryManager.ConvertImageToLocal(item, originalImage, options.ImageIndex).ConfigureAwait(false);
-            }
 
             string originalImagePath = originalImage.Path;
             DateTime dateModified = originalImage.DateModified;
@@ -307,10 +290,6 @@ namespace Emby.Drawing
 
         /// <inheritdoc />
         public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info)
-            => GetImageDimensions(item, info, true);
-
-        /// <inheritdoc />
-        public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem)
         {
             int width = info.Width;
             int height = info.Height;
@@ -326,11 +305,6 @@ namespace Emby.Drawing
             ImageDimensions size = GetImageDimensions(path);
             info.Width = size.Width;
             info.Height = size.Height;
-
-            if (updateItem)
-            {
-                _libraryManager().UpdateImages(item);
-            }
 
             return size;
         }
@@ -372,13 +346,13 @@ namespace Emby.Drawing
                 {
                     string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
-                    string cacheExtension = _mediaEncoder().SupportsEncoder("libwebp") ? ".webp" : ".png";
+                    string cacheExtension = _mediaEncoder.SupportsEncoder("libwebp") ? ".webp" : ".png";
                     var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
 
                     var file = _fileSystem.GetFileInfo(outputPath);
                     if (!file.Exists)
                     {
-                        await _mediaEncoder().ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
+                        await _mediaEncoder.ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
                         dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
                     }
                     else

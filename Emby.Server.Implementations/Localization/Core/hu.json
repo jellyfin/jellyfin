@@ -71,7 +71,7 @@
     "ScheduledTaskFailedWithName": "{0} sikertelen",
     "ScheduledTaskStartedWithName": "{0} elkezdve",
     "ServerNameNeedsToBeRestarted": "{0}-t újra kell indítani",
-    "Shows": "Műsorok",
+    "Shows": "Sorozatok",
     "Songs": "Dalok",
     "StartupEmbyServerIsLoading": "A Jellyfin Szerver betöltődik. Kérlek, próbáld újra hamarosan.",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",

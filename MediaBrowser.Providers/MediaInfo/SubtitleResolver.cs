@@ -13,7 +13,6 @@ namespace MediaBrowser.Providers.MediaInfo
     public class SubtitleResolver
     {
         private readonly ILocalizationManager _localization;
-        private readonly IFileSystem _fileSystem;
 
         private static readonly HashSet<string> SubtitleExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -26,16 +25,16 @@ namespace MediaBrowser.Providers.MediaInfo
             ".vtt"
         };
 
-        public SubtitleResolver(ILocalizationManager localization, IFileSystem fileSystem)
+        public SubtitleResolver(ILocalizationManager localization)
         {
             _localization = localization;
-            _fileSystem = fileSystem;
         }
 
-        public List<MediaStream> GetExternalSubtitleStreams(Video video,
-          int startIndex,
-          IDirectoryService directoryService,
-          bool clearCache)
+        public List<MediaStream> GetExternalSubtitleStreams(
+            Video video,
+            int startIndex,
+            IDirectoryService directoryService,
+            bool clearCache)
         {
             var streams = new List<MediaStream>();
 

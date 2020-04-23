@@ -15,8 +15,8 @@ namespace Emby.Server.Implementations.Security
 {
     public class AuthenticationRepository : BaseSqliteRepository, IAuthenticationRepository
     {
-        public AuthenticationRepository(ILoggerFactory loggerFactory, IServerConfigurationManager config)
-            : base(loggerFactory.CreateLogger(nameof(AuthenticationRepository)))
+        public AuthenticationRepository(ILogger<AuthenticationRepository> logger, IServerConfigurationManager config)
+            : base(logger)
         {
             DbFilePath = Path.Combine(config.ApplicationPaths.DataPath, "authentication.db");
         }
