@@ -49,7 +49,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            return Ok(result);
+            return result;
         }
 
         /// <summary>
