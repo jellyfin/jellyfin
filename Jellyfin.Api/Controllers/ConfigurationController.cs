@@ -1,12 +1,13 @@
 #nullable enable
 
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -17,7 +18,7 @@ namespace Jellyfin.Api.Controllers
     /// Configuration Controller.
     /// </summary>
     [Route("System")]
-    [Authenticated]
+    [Authorize]
     public class ConfigurationController : BaseJellyfinApiController
     {
         private readonly IServerConfigurationManager _configurationManager;
@@ -48,7 +49,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<ServerConfiguration> GetConfiguration()
         {
-            return Ok(_configurationManager.Configuration);
+            return _configurationManager.Configuration;
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="configuration">Configuration.</param>
         /// <returns>Status.</returns>
         [HttpPost("Configuration")]
-        [Authenticated(Roles = "Admin")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult UpdateConfiguration([FromBody, BindRequired] ServerConfiguration configuration)
         {
@@ -74,7 +75,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<object> GetNamedConfiguration([FromRoute] string key)
         {
-            return Ok(_configurationManager.GetConfiguration(key));
+            return _configurationManager.GetConfiguration(key);
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="key">Configuration key.</param>
         /// <returns>Status.</returns>
         [HttpPost("Configuration/{Key}")]
-        [Authenticated(Roles = "Admin")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string key)
         {
@@ -104,11 +105,11 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>MetadataOptions.</returns>
         [HttpGet("Configuration/MetadataOptions/Default")]
-        [Authenticated(Roles = "Admin")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<MetadataOptions> GetDefaultMetadataOptions()
         {
-            return Ok(new MetadataOptions());
+            return new MetadataOptions();
         }
 
         /// <summary>
@@ -117,7 +118,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="mediaEncoderPath">Media encoder path form body.</param>
         /// <returns>Status.</returns>
         [HttpPost("MediaEncoder/Path")]
-        [Authenticated(Roles = "Admin", AllowBeforeStartupWizard = true)]
+        [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult UpdateMediaEncoderPath([FromForm, BindRequired] MediaEncoderPathDto mediaEncoderPath)
         {
