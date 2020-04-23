@@ -52,9 +52,8 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
 
                     dbContext.ActivityLogs.Add(newEntry);
+                    dbContext.SaveChanges();
                 }
-
-                dbContext.SaveChanges();
             }
 
             try
