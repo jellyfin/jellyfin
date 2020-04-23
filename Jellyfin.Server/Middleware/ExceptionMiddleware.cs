@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -22,15 +23,15 @@ namespace Jellyfin.Server.Middleware
         /// Initializes a new instance of the <see cref="ExceptionMiddleware"/> class.
         /// </summary>
         /// <param name="next">Next request delegate.</param>
-        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{ExceptionMiddleware}"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         public ExceptionMiddleware(
             RequestDelegate next,
-            ILoggerFactory loggerFactory,
+            ILogger<ExceptionMiddleware> logger,
             IServerConfigurationManager serverConfigurationManager)
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<ExceptionMiddleware>();
+            _logger = logger;
             _configuration = serverConfigurationManager;
         }
 
@@ -54,9 +55,14 @@ namespace Jellyfin.Server.Middleware
                 }
 
                 ex = GetActualException(ex);
-                _logger.LogError(ex, "Error processing request: {0}", ex.Message);
+                _logger.LogError(
+                    ex,
+                    "Error processing request: {ExceptionMessage}. URL {Method} {Url}. ",
+                    ex.Message,
+                    context.Request.Method,
+                    context.Request.Path);
                 context.Response.StatusCode = GetStatusCode(ex);
-                context.Response.ContentType = "text/plain";
+                context.Response.ContentType = MediaTypeNames.Text.Plain;
 
                 var errorContent = NormalizeExceptionMessage(ex.Message);
                 await context.Response.WriteAsync(errorContent).ConfigureAwait(false);
@@ -105,16 +111,14 @@ namespace Jellyfin.Server.Middleware
             }
 
             // Strip any information we don't want to reveal
-            msg = msg.Replace(
-                _configuration.ApplicationPaths.ProgramSystemPath,
-                string.Empty,
-                StringComparison.OrdinalIgnoreCase);
-            msg = msg.Replace(
-                _configuration.ApplicationPaths.ProgramDataPath,
-                string.Empty,
-                StringComparison.OrdinalIgnoreCase);
-
-            return msg;
+            return msg.Replace(
+                    _configuration.ApplicationPaths.ProgramSystemPath,
+                    string.Empty,
+                    StringComparison.OrdinalIgnoreCase)
+                .Replace(
+                    _configuration.ApplicationPaths.ProgramDataPath,
+                    string.Empty,
+                    StringComparison.OrdinalIgnoreCase);
         }
     }
 }
