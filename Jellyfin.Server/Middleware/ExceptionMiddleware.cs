@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Net.Mime;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
@@ -55,15 +57,35 @@ namespace Jellyfin.Server.Middleware
                 }
 
                 ex = GetActualException(ex);
-                _logger.LogError(
-                    ex,
-                    "Error processing request: {ExceptionMessage}. URL {Method} {Url}. ",
-                    ex.Message,
-                    context.Request.Method,
-                    context.Request.Path);
+
+                bool ignoreStackTrace =
+                    ex is SocketException
+                    || ex is IOException
+                    || ex is OperationCanceledException
+                    || ex is SecurityException
+                    || ex is AuthenticationException
+                    || ex is FileNotFoundException;
+
+                if (ignoreStackTrace)
+                {
+                    _logger.LogError(
+                        "Error processing request: {ExceptionMessage}. URL {Method} {Url}.",
+                        ex.Message.TrimEnd('.'),
+                        context.Request.Method,
+                        context.Request.Path);
+                }
+                else
+                {
+                    _logger.LogError(
+                        ex,
+                        "Error processing request. URL {Method} {Url}.",
+                        ex.Message.TrimEnd('.'),
+                        context.Request.Method,
+                        context.Request.Path);
+                }
+
                 context.Response.StatusCode = GetStatusCode(ex);
                 context.Response.ContentType = MediaTypeNames.Text.Plain;
-
                 var errorContent = NormalizeExceptionMessage(ex.Message);
                 await context.Response.WriteAsync(errorContent).ConfigureAwait(false);
             }
