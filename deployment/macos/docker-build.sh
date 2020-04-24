@@ -19,6 +19,9 @@ fi
 yarn install
 mkdir -p ${web_target}
 mv dist/* ${web_target}/
+git clone https://github.com/jellyfin/jellyfin-noto
+cp -r jellyfin-noto/subsetted/* ${web_target}/assets/
+rm -rf jellyfin-noto
 popd
 rm -rf ${web_build_dir}
 

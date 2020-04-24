@@ -50,6 +50,9 @@ override_dh_auto_build:
 	cd $(CURDIR)/web/ && npm install yarn
 	cd $(CURDIR)/web/ && node_modules/yarn/bin/yarn install
 	mv $(CURDIR)/web/dist/* $(WEB_TARGET)/
+	git clone https://github.com/jellyfin/jellyfin-noto
+	cp -r jellyfin-noto/subsetted/* $(WEB_TARGET)/assets/
+	rm -rf jellyfin-noto
 	# Build the application
 	dotnet publish --configuration $(CONFIG) --output='$(CURDIR)/usr/lib/jellyfin/bin' --self-contained --runtime $(DOTNETRUNTIME) \
 		"-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" Jellyfin.Server
