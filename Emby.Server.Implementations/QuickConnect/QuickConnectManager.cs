@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.QuickConnect
         /// Should only be called at server startup when a singleton is created.
         /// </summary>
         /// <param name="config">Configuration.</param>
-        /// <param name="loggerFactory">Logger.</param>
+        /// <param name="logger">Logger.</param>
         /// <param name="userManager">User manager.</param>
         /// <param name="localization">Localization.</param>
         /// <param name="jsonSerializer">JSON serializer.</param>
@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <param name="taskManager">Task scheduler.</param>
         public QuickConnectManager(
             IServerConfigurationManager config,
-            ILoggerFactory loggerFactory,
+            ILogger<QuickConnectManager> logger,
             IUserManager userManager,
             ILocalizationManager localization,
             IJsonSerializer jsonSerializer,
@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.QuickConnect
             ITaskManager taskManager)
         {
             _config = config;
-            _logger = loggerFactory.CreateLogger(nameof(QuickConnectManager));
+            _logger = logger;
             _userManager = userManager;
             _localizationManager = localization;
             _jsonSerializer = jsonSerializer;
@@ -196,8 +196,6 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <inheritdoc/>
         public string GenerateCode()
         {
-            // TODO: output may be biased
-
             int min = (int)Math.Pow(10, CodeLength - 1);
             int max = (int)Math.Pow(10, CodeLength);
 
