@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -84,7 +83,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     CancellationToken = cancellationToken,
                     Url = path,
-                    DecompressionMethod = CompressionMethod.Gzip,
+                    DecompressionMethod = CompressionMethods.Gzip,
                 },
                 HttpMethod.Get).ConfigureAwait(false))
             using (var stream = res.Content)

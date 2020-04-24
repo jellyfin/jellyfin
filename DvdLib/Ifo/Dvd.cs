@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.IO;
 
 namespace DvdLib.Ifo
 {
@@ -13,13 +12,10 @@ namespace DvdLib.Ifo
 
         private ushort _titleCount;
         public readonly Dictionary<ushort, string> VTSPaths = new Dictionary<ushort, string>();
-        private readonly IFileSystem _fileSystem;
-
-        public Dvd(string path, IFileSystem fileSystem)
+        public Dvd(string path)
         {
-            _fileSystem = fileSystem;
             Titles = new List<Title>();
-            var allFiles = _fileSystem.GetFiles(path, true).ToList();
+            var allFiles = new DirectoryInfo(path).GetFiles(path, SearchOption.AllDirectories);
 
             var vmgPath = allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.IFO", StringComparison.OrdinalIgnoreCase)) ??
                 allFiles.FirstOrDefault(i => string.Equals(i.Name, "VIDEO_TS.BUP", StringComparison.OrdinalIgnoreCase));
@@ -33,7 +29,7 @@ namespace DvdLib.Ifo
                         continue;
                     }
 
-                    var nums = ifo.Name.Split(new [] { '_' }, StringSplitOptions.RemoveEmptyEntries);
+                    var nums = ifo.Name.Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries);
                     if (nums.Length >= 2 && ushort.TryParse(nums[1], out var ifoNumber))
                     {
                         ReadVTS(ifoNumber, ifo.FullName);
@@ -76,7 +72,7 @@ namespace DvdLib.Ifo
             }
         }
 
-        private void ReadVTS(ushort vtsNum, IEnumerable<FileSystemMetadata> allFiles)
+        private void ReadVTS(ushort vtsNum, IReadOnlyList<FileInfo> allFiles)
         {
             var filename = string.Format("VTS_{0:00}_0.IFO", vtsNum);
 

@@ -1,13 +1,13 @@
 parameters:
-  - name: Packages
-    type: object
-    default: {}
-  - name: LinuxImage
-    type: string
-    default: "ubuntu-latest"
-  - name: DotNetSdkVersion
-    type: string
-    default: 3.1.100
+- name: Packages
+  type: object
+  default: {}
+- name: LinuxImage
+  type: string
+  default: "ubuntu-latest"
+- name: DotNetSdkVersion
+  type: string
+  default: 3.1.100
 
 jobs:
   - job: CompatibilityCheck
@@ -23,7 +23,7 @@ jobs:
             NugetPackageName: ${{ Package.value.NugetPackageName }}
             AssemblyFileName: ${{ Package.value.AssemblyFileName }}
       maxParallel: 2
-    dependsOn: MainBuild
+    dependsOn: Build
     steps:
       - checkout: none
 

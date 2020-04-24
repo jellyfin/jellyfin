@@ -284,7 +284,7 @@ namespace MediaBrowser.Api.Playback.Hls
             //}
 
             Logger.LogDebug("returning {0} [general case]", segmentPath);
-            job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+            job ??= ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, requestedIndex, job, cancellationToken).ConfigureAwait(false);
         }
 
@@ -438,8 +438,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var segmentId = "0";
 
-            var segmentRequest = request as GetHlsVideoSegment;
-            if (segmentRequest != null)
+            if (request is GetHlsVideoSegment segmentRequest)
             {
                 segmentId = segmentRequest.SegmentId;
             }
@@ -690,8 +689,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
-            var request = state.Request as IMasterHlsRequest;
-            if (request != null && !request.EnableAdaptiveBitrateStreaming)
+            if (state.Request is IMasterHlsRequest request && !request.EnableAdaptiveBitrateStreaming)
             {
                 return false;
             }
@@ -927,51 +925,64 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
+                var gopArg = string.Empty;
                 var keyFrameArg = string.Format(
                     CultureInfo.InvariantCulture,
                     " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
                     GetStartNumber(state) * state.SegmentLength,
                     state.SegmentLength);
-                if (state.TargetFramerate.HasValue)
+
+                var framerate = state.VideoStream?.RealFrameRate;
+
+                if (framerate.HasValue)
                 {
                     // This is to make sure keyframe interval is limited to our segment,
                     // as forcing keyframes is not enough.
                     // Example: we encoded half of desired length, then codec detected
                     // scene cut and inserted a keyframe; next forced keyframe would
-                    // be created outside of segment, which breaks seeking.
-                    keyFrameArg += string.Format(
+                    // be created outside of segment, which breaks seeking
+                    // -sc_threshold 0 is used to prevent the hardware encoder from post processing to break the set keyframe
+                    gopArg = string.Format(
                         CultureInfo.InvariantCulture,
-                        " -g {0} -keyint_min {0}",
-                        (int)(state.SegmentLength * state.TargetFramerate)
+                        " -g {0} -keyint_min {0} -sc_threshold 0",
+                        Math.Ceiling(state.SegmentLength * framerate.Value)
                     );
                 }
 
                 args += " " + EncodingHelper.GetVideoQualityParam(state, codec, encodingOptions, GetDefaultEncoderPreset());
 
-                // Unable to force key frames to h264_qsv transcode
-                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                // Unable to force key frames using these hw encoders, set key frames by GOP
+                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger.LogInformation("Bug Workaround: Disabling force_key_frames for h264_qsv");
+                    args += " " + gopArg;
                 }
                 else
                 {
-                    args += " " + keyFrameArg;
+                    args += " " + keyFrameArg + gopArg;
                 }
 
                 //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                // Add resolution params, if specified
-                if (!hasGraphicalSubs)
-                {
-                    args += EncodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
-                }
-
                 // This is for graphical subs
                 if (hasGraphicalSubs)
                 {
                     args += EncodingHelper.GetGraphicalSubtitleParam(state, encodingOptions, codec);
+                }
+                // Add resolution params, if specified
+                else
+                {
+                    args += EncodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
+                }
+
+                // -start_at_zero is necessary to use with -ss when seeking,
+                // otherwise the target position cannot be determined.
+                if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
+                {
+                    args += " -start_at_zero";
                 }
 
                 if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))

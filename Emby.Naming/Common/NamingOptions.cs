@@ -136,7 +136,8 @@ namespace Emby.Naming.Common
 
             CleanDateTimes = new[]
             {
-                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19\d{2}|20\d{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19\d{2}|20\d{2})*"
+                @"(.+[^_\,\.\(\)\[\]\-])[_\.\(\)\[\]\-](19\d{2}|20\d{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19\d{2}|20\d{2})*",
+                @"(.+[^_\,\.\(\)\[\]\-])[ _\.\(\)\[\]\-]+(19\d{2}|20\d{2})([ _\,\.\(\)\[\]\-][^0-9]|).*(19\d{2}|20\d{2})*"
             };
 
             CleanStrings = new[]
@@ -505,7 +506,63 @@ namespace Emby.Naming.Common
                     RuleType = ExtraRuleType.Suffix,
                     Token = "-short",
                     MediaType = MediaType.Video
-                }
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.BehindTheScenes,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "behind the scenes",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.DeletedScene,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "deleted scenes",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Interview,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "interviews",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Scene,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "scenes",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Sample,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "samples",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Clip,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "shorts",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Clip,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "featurettes",
+                    MediaType = MediaType.Video,
+                },
+                new ExtraRule
+                {
+                    ExtraType = ExtraType.Unknown,
+                    RuleType = ExtraRuleType.DirectoryName,
+                    Token = "extras",
+                    MediaType = MediaType.Video,
+                },
             };
 
             Format3DRules = new[]

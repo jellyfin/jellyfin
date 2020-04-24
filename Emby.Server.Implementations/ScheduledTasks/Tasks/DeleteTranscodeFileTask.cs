@@ -8,6 +8,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
@@ -19,6 +20,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         private readonly ILogger _logger;
         private readonly IConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteTranscodeFileTask" /> class.
@@ -26,11 +28,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public DeleteTranscodeFileTask(
             ILogger<DeleteTranscodeFileTask> logger,
             IFileSystem fileSystem,
-            IConfigurationManager configurationManager)
+            IConfigurationManager configurationManager,
+            ILocalizationManager localization)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
+            _localization = localization;
         }
 
         /// <summary>
@@ -128,11 +132,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
-        public string Name => "Clean Transcode Directory";
+        public string Name => _localization.GetLocalizedString("TaskCleanTranscode");
 
-        public string Description => "Deletes transcode files more than one day old.";
+        public string Description => _localization.GetLocalizedString("TaskCleanTranscodeDescription");
 
-        public string Category => "Maintenance";
+        public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
         public string Key => "DeleteTranscodeFiles";
 

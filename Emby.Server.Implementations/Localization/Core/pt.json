@@ -31,7 +31,6 @@
     "User": "Utilizador",
     "TvShows": "Séries",
     "System": "Sistema",
-    "SubtitlesDownloadedForItem": "Legendas transferidas para {0}",
     "SubtitleDownloadFailureFromForItem": "Falha na transferência de legendas de {0} para {1}",
     "StartupEmbyServerIsLoading": "O servidor Jellyfin está a iniciar. Tente novamente dentro de momentos.",
     "ServerNameNeedsToBeRestarted": "{0} necessita ser reiniciado",
@@ -92,5 +91,17 @@
     "CameraImageUploadedFrom": "Uma nova imagem da câmara foi enviada a partir de {0}",
     "AuthenticationSucceededWithUserName": "{0} autenticado com sucesso",
     "Application": "Aplicação",
-    "AppDeviceValues": "Aplicação {0}, Dispositivo: {1}"
+    "AppDeviceValues": "Aplicação {0}, Dispositivo: {1}",
+    "TaskCleanCache": "Limpar Diretório de Cache",
+    "TasksApplicationCategory": "Aplicação",
+    "TasksLibraryCategory": "Biblioteca",
+    "TasksMaintenanceCategory": "Manutenção",
+    "TaskRefreshChannels": "Atualizar Canais",
+    "TaskUpdatePlugins": "Atualizar Plugins",
+    "TaskCleanLogsDescription": "Deletar arquivos de log que existe a mais de {0} dias.",
+    "TaskCleanLogs": "Limpar diretório de log",
+    "TaskRefreshLibrary": "Escanear biblioteca de mídias",
+    "TaskRefreshChapterImagesDescription": "Criar miniaturas para videos que tem capítulos.",
+    "TaskCleanCacheDescription": "Deletar arquivos de cache que não são mais usados pelo sistema.",
+    "TasksChannelsCategory": "Canais de Internet"
 }

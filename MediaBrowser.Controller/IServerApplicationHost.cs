@@ -65,23 +65,32 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
+        /// <param name="cancellationToken">Token to cancel the request if needed.</param>
+        /// <param name="forceHttp">Whether to force usage of plain HTTP protocol.</param>
         /// <value>The local API URL.</value>
-        Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
+        Task<string> GetLocalApiUrl(CancellationToken cancellationToken, bool forceHttp=false);
 
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
         /// <param name="hostname">The hostname.</param>
+        /// <param name="forceHttp">Whether to force usage of plain HTTP protocol.</param>
         /// <returns>The local API URL.</returns>
-        string GetLocalApiUrl(ReadOnlySpan<char> hostname);
+        string GetLocalApiUrl(ReadOnlySpan<char> hostname, bool forceHttp=false);
 
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
         /// <param name="address">The IP address.</param>
+        /// <param name="forceHttp">Whether to force usage of plain HTTP protocol.</param>
         /// <returns>The local API URL.</returns>
-        string GetLocalApiUrl(IPAddress address);
+        string GetLocalApiUrl(IPAddress address, bool forceHttp=false);
 
+        /// <summary>
+        /// Open a URL in an external browser window.
+        /// </summary>
+        /// <param name="url">The URL to open.</param>
+        /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
         void LaunchUrl(string url);
 
         void EnableLoopback(string appName);

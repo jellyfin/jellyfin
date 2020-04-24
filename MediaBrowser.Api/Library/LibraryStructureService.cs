@@ -327,15 +327,11 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                var mediaPath = request.PathInfo;
-
-                if (mediaPath == null)
+                var mediaPath = request.PathInfo ?? new MediaPathInfo
                 {
-                    mediaPath = new MediaPathInfo
-                    {
-                        Path = request.Path
-                    };
-                }
+                    Path = request.Path
+                };
+
                 _libraryManager.AddMediaPath(request.Name, mediaPath);
             }
             finally

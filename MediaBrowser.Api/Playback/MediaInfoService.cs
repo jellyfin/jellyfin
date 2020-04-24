@@ -5,8 +5,8 @@
 using System;
 using System.Buffers;
 using System.Globalization;
-using System.Text.Json;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -234,7 +234,7 @@ namespace MediaBrowser.Api.Playback
                         OpenToken = mediaSource.OpenToken
                     }).ConfigureAwait(false);
 
-                    info.MediaSources = new MediaSourceInfo[] { openStreamResult.MediaSource };
+                    info.MediaSources = new[] { openStreamResult.MediaSource };
                 }
             }
 
@@ -289,7 +289,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-                mediaSources = new MediaSourceInfo[] { mediaSource };
+                mediaSources = new[] { mediaSource };
             }
 
             if (mediaSources.Length == 0)
@@ -366,7 +366,7 @@ namespace MediaBrowser.Api.Playback
 
             var options = new VideoOptions
             {
-                MediaSources = new MediaSourceInfo[] { mediaSource },
+                MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
                 DeviceId = auth.DeviceId,
                 ItemId = item.Id,
@@ -470,7 +470,7 @@ namespace MediaBrowser.Api.Playback
                 else
                 {
                     options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
-                    
+
                     if (item is Audio)
                     {
                         if (!user.Policy.EnableAudioPlaybackTranscoding)
@@ -486,10 +486,10 @@ namespace MediaBrowser.Api.Playback
                         }
                     }
 
-                // The MediaSource supports direct stream, now test to see if the client supports it
-                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                    ? streamBuilder.BuildAudioItem(options)
-                    : streamBuilder.BuildVideoItem(options);
+                    // The MediaSource supports direct stream, now test to see if the client supports it
+                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                        ? streamBuilder.BuildAudioItem(options)
+                        : streamBuilder.BuildVideoItem(options);
 
                     if (streamInfo == null || !streamInfo.IsDirectStream)
                     {
@@ -516,17 +516,17 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (streamInfo != null)
                     {
-                        streamInfo.PlaySessionId = playSessionId;    
+                        streamInfo.PlaySessionId = playSessionId;
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
                         mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                         mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-                        
+
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
-                    }				
+                    }
                 }
                 else
                 {
@@ -569,8 +569,7 @@ namespace MediaBrowser.Api.Playback
             {
                 attachment.DeliveryUrl = string.Format(
                     CultureInfo.InvariantCulture,
-                    "{0}/Videos/{1}/{2}/Attachments/{3}",
-                    ServerConfigurationManager.Configuration.BaseUrl,
+                    "/Videos/{0}/{1}/Attachments/{2}",
                     item.Id,
                     mediaSource.Id,
                     attachment.Index);
@@ -580,7 +579,7 @@ namespace MediaBrowser.Api.Playback
         private long? GetMaxBitrate(long? clientMaxBitrate, User user)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = user == null ? 0 : user.Policy.RemoteClientBitrateLimit;
+            var remoteClientMaxBitrate = user?.Policy.RemoteClientBitrateLimit ?? 0;
 
             if (remoteClientMaxBitrate <= 0)
             {
@@ -659,17 +658,9 @@ namespace MediaBrowser.Api.Playback
                 };
             }).ThenBy(i =>
             {
-                if (maxBitrate.HasValue)
+                if (maxBitrate.HasValue && i.Bitrate.HasValue)
                 {
-                    if (i.Bitrate.HasValue)
-                    {
-                        if (i.Bitrate.Value <= maxBitrate.Value)
-                        {
-                            return 0;
-                        }
-
-                        return 2;
-                    }
+                    return i.Bitrate.Value <= maxBitrate.Value ? 0 : 2;
                 }
 
                 return 1;

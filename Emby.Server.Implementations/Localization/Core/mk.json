@@ -86,7 +86,6 @@
     "TvShows": "ТВ Серии",
     "System": "Систем",
     "Sync": "Синхронизација",
-    "SubtitlesDownloadedForItem": "Спуштање превод за {0}",
     "SubtitleDownloadFailureFromForItem": "Преводот неуспешно се спушти од {0} за {1}",
     "StartupEmbyServerIsLoading": "Jellyfin Server се пушта. Ве молиме причекајте.",
     "Songs": "Песни",

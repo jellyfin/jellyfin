@@ -177,7 +177,7 @@ namespace MediaBrowser.Api
         }
 
         public object Get(GetDefaultDirectoryBrowser request) =>
-            ToOptimizedResult(new DefaultDirectoryBrowserInfo {Path = null});
+            ToOptimizedResult(new DefaultDirectoryBrowserInfo { Path = null });
 
         /// <summary>
         /// Gets the specified request.
@@ -258,12 +258,7 @@ namespace MediaBrowser.Api
                     return false;
                 }
 
-                if (!request.IncludeDirectories && isDirectory)
-                {
-                    return false;
-                }
-
-                return true;
+                return request.IncludeDirectories || !isDirectory;
             });
 
             return entries.Select(f => new FileSystemEntryInfo

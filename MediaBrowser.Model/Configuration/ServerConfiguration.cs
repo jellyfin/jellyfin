@@ -15,9 +15,8 @@ namespace MediaBrowser.Model.Configuration
         private string _baseUrl;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable u pn p].
+        /// Gets or sets a value indicating whether to enable automatic port forwarding.
         /// </summary>
-        /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
         public bool EnableUPnP { get; set; }
 
         /// <summary>
@@ -148,9 +147,9 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDashboardResponseCaching { get; set; }
 
         /// <summary>
-        /// Allows the dashboard to be served from a custom path.
+        /// Gets or sets a custom path to serve the dashboard from.
         /// </summary>
-        /// <value>The dashboard source path.</value>
+        /// <value>The dashboard source path, or null if the default path should be used.</value>
         public string DashboardSourcePath { get; set; }
 
         /// <summary>
@@ -254,7 +253,7 @@ namespace MediaBrowser.Model.Configuration
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 
-            EnableUPnP = true;
+            EnableUPnP = false;
             MinResumePct = 5;
             MaxResumePct = 90;
 

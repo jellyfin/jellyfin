@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -636,7 +635,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             ListingsProviderInfo providerInfo)
         {
             // Schedules direct requires that the client support compression and will return a 400 response without it
-            options.DecompressionMethod = CompressionMethod.Deflate;
+            options.DecompressionMethod = CompressionMethods.Deflate;
 
             try
             {
@@ -666,7 +665,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             ListingsProviderInfo providerInfo)
         {
             // Schedules direct requires that the client support compression and will return a 400 response without it
-            options.DecompressionMethod = CompressionMethod.Deflate;
+            options.DecompressionMethod = CompressionMethods.Deflate;
 
             try
             {

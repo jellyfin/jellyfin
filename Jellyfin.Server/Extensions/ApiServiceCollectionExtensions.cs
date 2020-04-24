@@ -71,6 +71,11 @@ namespace Jellyfin.Server.Extensions
                 // Clear app parts to avoid other assemblies being picked up
                 .ConfigureApplicationPartManager(a => a.ApplicationParts.Clear())
                 .AddApplicationPart(typeof(StartupController).Assembly)
+                .AddJsonOptions(options =>
+                {
+                    // Setting the naming policy to null leaves the property names as-is when serializing objects to JSON.
+                    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                })
                 .AddControllersAsServices();
         }
 
