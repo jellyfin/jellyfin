@@ -38,21 +38,23 @@ namespace Emby.Server.Implementations.Dto
         private readonly IProviderManager _providerManager;
 
         private readonly IApplicationHost _appHost;
-        private readonly Func<IMediaSourceManager> _mediaSourceManager;
-        private readonly Func<ILiveTvManager> _livetvManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
+
+        private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
 
         public DtoService(
-            ILoggerFactory loggerFactory,
+            ILogger<DtoService> logger,
             ILibraryManager libraryManager,
             IUserDataManager userDataRepository,
             IItemRepository itemRepo,
             IImageProcessor imageProcessor,
             IProviderManager providerManager,
             IApplicationHost appHost,
-            Func<IMediaSourceManager> mediaSourceManager,
-            Func<ILiveTvManager> livetvManager)
+            IMediaSourceManager mediaSourceManager,
+            Lazy<ILiveTvManager> livetvManagerFactory)
         {
-            _logger = loggerFactory.CreateLogger(nameof(DtoService));
+            _logger = logger;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
             _itemRepo = itemRepo;
@@ -60,7 +62,7 @@ namespace Emby.Server.Implementations.Dto
             _providerManager = providerManager;
             _appHost = appHost;
             _mediaSourceManager = mediaSourceManager;
-            _livetvManager = livetvManager;
+            _livetvManagerFactory = livetvManagerFactory;
         }
 
         /// <summary>
@@ -125,12 +127,12 @@ namespace Emby.Server.Implementations.Dto
 
             if (programTuples.Count > 0)
             {
-                _livetvManager().AddInfoToProgramDto(programTuples, options.Fields, user).GetAwaiter().GetResult();
+                LivetvManager.AddInfoToProgramDto(programTuples, options.Fields, user).GetAwaiter().GetResult();
             }
 
             if (channelTuples.Count > 0)
             {
-                _livetvManager().AddChannelInfo(channelTuples, options, user);
+                LivetvManager.AddChannelInfo(channelTuples, options, user);
             }
 
             return returnItems;
@@ -142,12 +144,12 @@ namespace Emby.Server.Implementations.Dto
             if (item is LiveTvChannel tvChannel)
             {
                 var list = new List<(BaseItemDto, LiveTvChannel)>(1) { (dto, tvChannel) };
-                _livetvManager().AddChannelInfo(list, options, user);
+                LivetvManager.AddChannelInfo(list, options, user);
             }
             else if (item is LiveTvProgram)
             {
                 var list = new List<(BaseItem, BaseItemDto)>(1) { (item, dto) };
-                var task = _livetvManager().AddInfoToProgramDto(list, options.Fields, user);
+                var task = LivetvManager.AddInfoToProgramDto(list, options.Fields, user);
                 Task.WaitAll(task);
             }
 
@@ -223,7 +225,7 @@ namespace Emby.Server.Implementations.Dto
             if (item is IHasMediaSources
                 && options.ContainsField(ItemFields.MediaSources))
             {
-                dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(item, true, user).ToArray();
+                dto.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, true, user).ToArray();
 
                 NormalizeMediaSourceContainers(dto);
             }
@@ -254,7 +256,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.Etag = item.GetEtag(user);
             }
 
-            var liveTvManager = _livetvManager();
+            var liveTvManager = LivetvManager;
             var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
             if (activeRecording != null)
             {
@@ -1045,7 +1047,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                     else
                     {
-                        mediaStreams = _mediaSourceManager().GetStaticMediaSources(item, true)[0].MediaStreams.ToArray();
+                        mediaStreams = _mediaSourceManager.GetStaticMediaSources(item, true)[0].MediaStreams.ToArray();
                     }
 
                     dto.MediaStreams = mediaStreams;

@@ -332,7 +332,8 @@ namespace MediaBrowser.Api.Images
                     var fileInfo = _fileSystem.GetFileInfo(info.Path);
                     length = fileInfo.Length;
 
-                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info, true);
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info);
+                    _libraryManager.UpdateImages(item);
                     width = size.Width;
                     height = size.Height;
 
@@ -606,6 +607,12 @@ namespace MediaBrowser.Api.Images
             IDictionary<string, string> headers,
             bool isHeadRequest)
         {
+            if (!image.IsLocalFile)
+            {
+                item ??= _libraryManager.GetItemById(itemId);
+                image = await _libraryManager.ConvertImageToLocal(item, image, request.Index ?? 0).ConfigureAwait(false);
+            }
+
             var options = new ImageProcessingOptions
             {
                 CropWhiteSpace = cropwhitespace,

@@ -39,12 +39,11 @@ namespace Emby.Server.Implementations.Data
     {
         private const string ChaptersTableName = "Chapters2";
 
-        /// <summary>
-        /// The _app paths
-        /// </summary>
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
         private readonly ILocalizationManager _localization;
+        // TODO: Remove this dependency. GetImageCacheTag() is the only method used and it can be converted to a static helper method
+        private readonly IImageProcessor _imageProcessor;
 
         private readonly TypeMapper _typeMapper;
         private readonly JsonSerializerOptions _jsonOptions;
@@ -71,7 +70,8 @@ namespace Emby.Server.Implementations.Data
             IServerConfigurationManager config,
             IServerApplicationHost appHost,
             ILogger<SqliteItemRepository> logger,
-            ILocalizationManager localization)
+            ILocalizationManager localization,
+            IImageProcessor imageProcessor)
             : base(logger)
         {
             if (config == null)
@@ -82,6 +82,7 @@ namespace Emby.Server.Implementations.Data
             _config = config;
             _appHost = appHost;
             _localization = localization;
+            _imageProcessor = imageProcessor;
 
             _typeMapper = new TypeMapper();
             _jsonOptions = JsonDefaults.GetOptions();
@@ -97,11 +98,6 @@ namespace Emby.Server.Implementations.Data
 
         /// <inheritdoc />
         protected override TempStoreMode TempStore => TempStoreMode.Memory;
-
-        /// <summary>
-        /// The image processor.
-        /// </summary>
-        public IImageProcessor ImageProcessor { get; set; }
 
         /// <summary>
         /// Opens the connection to the database.
@@ -1905,7 +1901,14 @@ namespace Emby.Server.Implementations.Data
 
                 if (!string.IsNullOrEmpty(chapter.ImagePath))
                 {
-                    chapter.ImageTag = ImageProcessor.GetImageCacheTag(item, chapter);
+                    try
+                    {
+                        chapter.ImageTag = _imageProcessor.GetImageCacheTag(item, chapter);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Failed to create image cache tag.");
+                    }
                 }
             }
 

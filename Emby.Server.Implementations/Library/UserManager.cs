@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
@@ -44,22 +45,14 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly object _policySyncLock = new object();
         private readonly object _configSyncLock = new object();
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        private readonly ILogger _logger;
 
-        /// <summary>
-        /// Gets the active user repository.
-        /// </summary>
-        /// <value>The user repository.</value>
+        private readonly ILogger _logger;
         private readonly IUserRepository _userRepository;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly INetworkManager _networkManager;
-
-        private readonly Func<IImageProcessor> _imageProcessorFactory;
-        private readonly Func<IDtoService> _dtoServiceFactory;
+        private readonly IImageProcessor _imageProcessor;
+        private readonly Lazy<IDtoService> _dtoServiceFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
         private readonly ICryptoProvider _cryptoProvider;
@@ -74,13 +67,15 @@ namespace Emby.Server.Implementations.Library
         private IPasswordResetProvider[] _passwordResetProviders;
         private DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
+        private IDtoService DtoService => _dtoServiceFactory.Value;
+
         public UserManager(
             ILogger<UserManager> logger,
             IUserRepository userRepository,
             IXmlSerializer xmlSerializer,
             INetworkManager networkManager,
-            Func<IImageProcessor> imageProcessorFactory,
-            Func<IDtoService> dtoServiceFactory,
+            IImageProcessor imageProcessor,
+            Lazy<IDtoService> dtoServiceFactory,
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
@@ -90,7 +85,7 @@ namespace Emby.Server.Implementations.Library
             _userRepository = userRepository;
             _xmlSerializer = xmlSerializer;
             _networkManager = networkManager;
-            _imageProcessorFactory = imageProcessorFactory;
+            _imageProcessor = imageProcessor;
             _dtoServiceFactory = dtoServiceFactory;
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
@@ -327,23 +322,19 @@ namespace Emby.Server.Implementations.Library
             if (user.Policy.IsDisabled)
             {
                 _logger.LogInformation("Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).", username, remoteEndPoint);
-                throw new AuthenticationException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The {0} account is currently disabled. Please consult with your administrator.",
-                        user.Name));
+                throw new SecurityException($"The {user.Name} account is currently disabled. Please consult with your administrator.");
             }
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
                 _logger.LogInformation("Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).", username, remoteEndPoint);
-                throw new AuthenticationException("Forbidden.");
+                throw new SecurityException("Forbidden.");
             }
 
             if (!user.IsParentalScheduleAllowed())
             {
                 _logger.LogInformation("Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).", username, remoteEndPoint);
-                throw new AuthenticationException("User is not allowed access at this time.");
+                throw new SecurityException("User is not allowed access at this time.");
             }
 
             // Update LastActivityDate and LastLoginDate, then save
@@ -605,7 +596,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    _dtoServiceFactory().AttachPrimaryImageAspectRatio(dto, user);
+                    DtoService.AttachPrimaryImageAspectRatio(dto, user);
                 }
                 catch (Exception ex)
                 {
@@ -630,7 +621,7 @@ namespace Emby.Server.Implementations.Library
         {
             try
             {
-                return _imageProcessorFactory().GetImageCacheTag(item, image);
+                return _imageProcessor.GetImageCacheTag(item, image);
             }
             catch (Exception ex)
             {

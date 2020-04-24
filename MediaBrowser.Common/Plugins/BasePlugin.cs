@@ -67,7 +67,7 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Called when just before the plugin is uninstalled from the server.
+        /// Called just before the plugin is uninstalled from the server.
         /// </summary>
         public virtual void OnUninstalling()
         {
@@ -101,7 +101,7 @@ namespace MediaBrowser.Common.Plugins
         private readonly object _configurationSyncLock = new object();
 
         /// <summary>
-        /// The save lock.
+        /// The configuration save lock.
         /// </summary>
         private readonly object _configurationSaveLock = new object();
 
@@ -148,7 +148,7 @@ namespace MediaBrowser.Common.Plugins
         protected string AssemblyFileName => Path.GetFileName(AssemblyFilePath);
 
         /// <summary>
-        /// Gets or sets the plugin's configuration.
+        /// Gets or sets the plugin configuration.
         /// </summary>
         /// <value>The configuration.</value>
         public TConfigurationType Configuration
@@ -186,7 +186,7 @@ namespace MediaBrowser.Common.Plugins
         public string ConfigurationFilePath => Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
 
         /// <summary>
-        /// Gets the plugin's configuration.
+        /// Gets the plugin configuration.
         /// </summary>
         /// <value>The configuration.</value>
         BasePluginConfiguration IHasPluginConfiguration.Configuration => Configuration;

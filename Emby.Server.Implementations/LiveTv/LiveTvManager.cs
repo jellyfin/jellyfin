@@ -49,29 +49,24 @@ namespace Emby.Server.Implementations.LiveTv
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
+        private readonly IDtoService _dtoService;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly Func<IChannelManager> _channelManager;
-
-        private readonly IDtoService _dtoService;
         private readonly ILocalizationManager _localization;
-
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IFileSystem _fileSystem;
+        private readonly IChannelManager _channelManager;
         private readonly LiveTvDtoService _tvDtoService;
 
         private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
-
         private ITunerHost[] _tunerHosts = Array.Empty<ITunerHost>();
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
-        private readonly IFileSystem _fileSystem;
 
         public LiveTvManager(
-            IServerApplicationHost appHost,
             IServerConfigurationManager config,
-            ILoggerFactory loggerFactory,
+            ILogger<LiveTvManager> logger,
             IItemRepository itemRepo,
-            IImageProcessor imageProcessor,
             IUserDataManager userDataManager,
             IDtoService dtoService,
             IUserManager userManager,
@@ -80,10 +75,11 @@ namespace Emby.Server.Implementations.LiveTv
             ILocalizationManager localization,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
-            Func<IChannelManager> channelManager)
+            IChannelManager channelManager,
+            LiveTvDtoService liveTvDtoService)
         {
             _config = config;
-            _logger = loggerFactory.CreateLogger(nameof(LiveTvManager));
+            _logger = logger;
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -94,8 +90,7 @@ namespace Emby.Server.Implementations.LiveTv
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _channelManager = channelManager;
-
-            _tvDtoService = new LiveTvDtoService(dtoService, imageProcessor, loggerFactory.CreateLogger<LiveTvDtoService>(), appHost, _libraryManager);
+            _tvDtoService = liveTvDtoService;
         }
 
         public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
@@ -2496,7 +2491,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .OrderBy(i => i.SortName)
                 .ToList();
 
-            folders.AddRange(_channelManager().GetChannelsInternal(new MediaBrowser.Model.Channels.ChannelQuery
+            folders.AddRange(_channelManager.GetChannelsInternal(new MediaBrowser.Model.Channels.ChannelQuery
             {
                 UserId = user.Id,
                 IsRecordingsFolder = true,
