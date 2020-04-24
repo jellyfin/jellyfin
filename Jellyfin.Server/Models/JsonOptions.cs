@@ -8,18 +8,13 @@ namespace Jellyfin.Server.Models
     public static class JsonOptions
     {
         /// <summary>
-        /// Base Json Serializer Options.
-        /// </summary>
-        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions();
-
-        /// <summary>
         /// Gets CamelCase json options.
         /// </summary>
         public static JsonSerializerOptions CamelCase
         {
             get
             {
-                var options = _jsonOptions;
+                var options = DefaultJsonOptions;
                 options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 return options;
             }
@@ -32,10 +27,15 @@ namespace Jellyfin.Server.Models
         {
             get
             {
-                var options = _jsonOptions;
+                var options = DefaultJsonOptions;
                 options.PropertyNamingPolicy = null;
                 return options;
             }
         }
+
+        /// <summary>
+        /// Gets base Json Serializer Options.
+        /// </summary>
+        private static JsonSerializerOptions DefaultJsonOptions => new JsonSerializerOptions();
     }
 }
