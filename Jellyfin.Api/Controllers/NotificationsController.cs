@@ -95,6 +95,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="description">The description of the notification.</param>
         /// <param name="url">The URL of the notification.</param>
         /// <param name="level">The level of the notification.</param>
+        /// <returns>Status.</returns>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult CreateAdminNotification(
@@ -123,6 +124,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
+        /// <returns>Status.</returns>
         [HttpPost("{UserID}/Read")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult SetRead(
@@ -137,6 +139,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
+        /// <returns>Status.</returns>
         [HttpPost("{UserID}/Unread")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult SetUnread(
