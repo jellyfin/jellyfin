@@ -24,15 +24,5 @@ namespace Jellyfin.Server.Extensions
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jellyfin API V1");
             });
         }
-
-        /// <summary>
-        /// Adds exception middleware to the application pipeline.
-        /// </summary>
-        /// <param name="applicationBuilder">The application builder.</param>
-        /// <returns>The updated application builder.</returns>
-        public static IApplicationBuilder UseExceptionMiddleware(this IApplicationBuilder applicationBuilder)
-        {
-            return applicationBuilder.UseMiddleware<ExceptionMiddleware>();
-        }
     }
 }
