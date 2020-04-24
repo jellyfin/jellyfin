@@ -16,7 +16,8 @@ namespace Jellyfin.Server.Migrations
         internal static readonly IMigrationRoutine[] Migrations =
         {
             new Routines.DisableTranscodingThrottling(),
-            new Routines.CreateUserLoggingConfigFile()
+            new Routines.CreateUserLoggingConfigFile(),
+            new Routines.MigrateActivityLogDb()
         };
 
         /// <summary>
