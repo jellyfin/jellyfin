@@ -79,7 +79,6 @@ namespace Jellyfin.Server.Middleware
                     _logger.LogError(
                         ex,
                         "Error processing request. URL {Method} {Url}.",
-                        ex.Message.TrimEnd('.'),
                         context.Request.Method,
                         context.Request.Path);
                 }
