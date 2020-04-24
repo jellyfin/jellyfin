@@ -135,7 +135,7 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <inheritdoc/>
         public QuickConnectResult TryConnect(string friendlyName)
         {
-            ExpireRequests(true);
+            ExpireRequests();
 
             if (State != QuickConnectState.Active)
             {
@@ -282,18 +282,17 @@ namespace Emby.Server.Implementations.QuickConnect
             return string.Join(string.Empty, bytes.Select(x => x.ToString("x2", CultureInfo.InvariantCulture)));
         }
 
-        private void ExpireRequests(bool onlyCheckTime = false)
+        private void ExpireRequests()
         {
+            bool expireAll = false;
+
             // check if quick connect should be deactivated
             if (TemporaryActivation && DateTime.Now > DateActivated.AddMinutes(10) && State == QuickConnectState.Active)
             {
                 _logger.LogDebug("Quick connect time expired, deactivating");
                 SetEnabled(QuickConnectState.Available);
-            }
-
-            if (onlyCheckTime)
-            {
-                return;
+                expireAll = true;
+                TemporaryActivation = false;
             }
 
             // expire stale connection requests
@@ -302,7 +301,7 @@ namespace Emby.Server.Implementations.QuickConnect
 
             for (int i = 0; i < _currentRequests.Count; i++)
             {
-                if (DateTime.Now > values[i].DateAdded.AddMinutes(RequestExpiry))
+                if (DateTime.Now > values[i].DateAdded.AddMinutes(RequestExpiry) || expireAll)
                 {
                     delete.Add(values[i].Lookup);
                 }
