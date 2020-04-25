@@ -65,7 +65,7 @@ namespace MediaBrowser.Api.Tests
 
             // Create the logging config file
             // TODO: We shouldn't need to do this since we are only logging to console
-            Program.InitLoggingConfigFile(appPaths).Wait();
+            Program.InitLoggingConfigFile(appPaths).GetAwaiter().GetResult();
 
             // Create a copy of the application configuration to use for startup
             var startupConfig = Program.CreateAppConfiguration(commandLineOpts, appPaths);
@@ -95,8 +95,8 @@ namespace MediaBrowser.Api.Tests
             // Finish initializing the app host
             var appHost = (CoreAppHost)testServer.Services.GetRequiredService<IApplicationHost>();
             appHost.ServiceProvider = testServer.Services;
-            appHost.InitializeServices().Wait();
-            appHost.RunStartupTasksAsync().Wait();
+            appHost.InitializeServices().GetAwaiter().GetResult();
+            appHost.RunStartupTasksAsync().GetAwaiter().GetResult();
 
             return testServer;
         }
