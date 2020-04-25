@@ -529,7 +529,7 @@ namespace Jellyfin.Server
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
             if (startupConfig != null && !startupConfig.HostWebClient())
             {
-                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
+                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "api-docs/v1/swagger";
             }
 
             return config
