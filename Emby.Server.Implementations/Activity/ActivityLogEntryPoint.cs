@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
                     e.Provider,
-                    Emby.Notifications.NotificationEntryPoint.GetItemName(e.Item)),
+                    Notifications.NotificationEntryPoint.GetItemName(e.Item)),
                 Type = "SubtitleDownloadFailure",
                 ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message
@@ -265,31 +265,20 @@ namespace Emby.Server.Implementations.Activity
 
         private void OnSessionEnded(object sender, SessionEventArgs e)
         {
-            string name;
             var session = e.SessionInfo;
 
             if (string.IsNullOrEmpty(session.UserName))
             {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("DeviceOfflineWithName"),
-                    session.DeviceName);
-
-                // Causing too much spam for now
                 return;
-            }
-            else
-            {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserOfflineFromDevice"),
-                    session.UserName,
-                    session.DeviceName);
             }
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = name,
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserOfflineFromDevice"),
+                    session.UserName,
+                    session.DeviceName),
                 Type = "SessionEnded",
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
@@ -388,31 +377,20 @@ namespace Emby.Server.Implementations.Activity
 
         private void OnSessionStarted(object sender, SessionEventArgs e)
         {
-            string name;
             var session = e.SessionInfo;
 
             if (string.IsNullOrEmpty(session.UserName))
             {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("DeviceOnlineWithName"),
-                    session.DeviceName);
-
-                // Causing too much spam for now
                 return;
-            }
-            else
-            {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserOnlineFromDevice"),
-                    session.UserName,
-                    session.DeviceName);
             }
 
             CreateLogEntry(new ActivityLogEntry
             {
-                Name = name,
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserOnlineFromDevice"),
+                    session.UserName,
+                    session.DeviceName),
                 Type = "SessionStarted",
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
@@ -580,7 +558,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 int years = days / DaysInYear;
                 values.Add(CreateValueString(years, "year"));
-                days = days % DaysInYear;
+                days %= DaysInYear;
             }
 
             // Number of months
@@ -588,7 +566,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 int months = days / DaysInMonth;
                 values.Add(CreateValueString(months, "month"));
-                days = days % DaysInMonth;
+                days %= DaysInMonth;
             }
 
             // Number of days
