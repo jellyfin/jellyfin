@@ -56,7 +56,7 @@ namespace Jellyfin.Naming.Tests.Video
             Test("Super movie [sbs3d].mp4", true, "sbs3d");
         }
 
-        private void Test(string input, bool is3D, string format3D)
+        private void Test(string input, bool is3D, string? format3D)
         {
             var parser = new Format3DParser(_namingOptions);
 
