@@ -39,11 +39,11 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Package info.</returns>
         [HttpGet("/{Name}")]
         [ProducesResponseType(typeof(PackageInfo), StatusCodes.Status200OK)]
-        public ActionResult<PackageInfo> GetPackageInfo(
+        public async Task<ActionResult<PackageInfo>> GetPackageInfo(
             [FromRoute] [Required] string name,
             [FromQuery] string? assemblyGuid)
         {
-            var packages = _installationManager.GetAvailablePackages().GetAwaiter().GetResult();
+            var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             var result = _installationManager.FilterPackages(
                 packages,
                 name,
@@ -58,11 +58,11 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Packages information.</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PackageInfo[]), StatusCodes.Status200OK)]
-        public async Task<ActionResult<PackageInfo[]>> GetPackages()
+        public async Task<IEnumerable<PackageInfo>> GetPackages()
         {
             IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
 
-            return Ok(packages.ToArray());
+            return packages;
         }
 
         /// <summary>
@@ -75,6 +75,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Installed/{Name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Policy = Policies.RequiresElevation)]
         public async Task<ActionResult> InstallPackage(
             [FromRoute] [Required] string name,
             [FromQuery] string assemblyGuid,
