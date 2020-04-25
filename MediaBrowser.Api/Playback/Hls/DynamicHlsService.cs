@@ -723,10 +723,36 @@ namespace MediaBrowser.Api.Playback.Hls
         }
 
         /// <summary>
+        /// Get the H.26X level of the output video stream.
+        /// </summary>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>H.26X level of the output video stream.</returns>
+        private int? GetOutputVideoCodecLevel(StreamState state)
+        {
+            string levelString;
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase)
+                && state.VideoStream.Level.HasValue)
+            {
+                levelString = state.VideoStream?.Level.ToString();
+            }
+            else
+            {
+                levelString = state.GetRequestedLevel(state.ActualOutputVideoCodec);
+            }
+
+            if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
+            {
+                return parsedLevel;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets a formatted string of the output audio codec, for use in the CODECS field.
         /// </summary>
         /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
-        /// <seealso cref="GetPlaylistVideoCodecs(StreamState)"/>
+        /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
         /// <param name="state">StreamState of the current stream.</param>
         /// <returns>Formatted audio codec string.</returns>
         private string GetPlaylistAudioCodecs(StreamState state)
@@ -761,18 +787,24 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
         /// <param name="state">StreamState of the current stream.</param>
         /// <returns>Formatted video codec string.</returns>
-        private string GetPlaylistVideoCodecs(StreamState state)
+        private string GetPlaylistVideoCodecs(StreamState state, string codec, int level)
         {
-            int level = Convert.ToInt32(state.GetRequestedLevel(state.ActualOutputVideoCodec));
+            if (level == 0)
+            {
+                // This is 0 when there's no requested H.26X level in the device profile
+                // and the source is not encoded in H.26X
+                Logger.LogError("Got invalid H.26X level when building CODECS field for HLS master playlist");
+                return string.Empty;
+            }
 
-            if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
             {
                 string profile = state.GetRequestedProfiles("h264").FirstOrDefault();
 
                 return HlsCodecStringFactory.GetH264String(profile, level);
             }
-            else if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
             {
                 string profile = state.GetRequestedProfiles("h265").FirstOrDefault();
 
@@ -787,7 +819,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// the active streams output video and audio codecs.
         /// </summary>
         /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
-        /// <seealso cref="GetPlaylistVideoCodecs(StreamState)"/>
+        /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
         /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
         /// <param name="builder">StringBuilder to append the field to.</param>
         /// <param name="state">StreamState of the current stream.</param>
@@ -795,9 +827,10 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             // Video
             string videoCodecs = string.Empty;
-            if (!string.IsNullOrEmpty(state.ActualOutputVideoCodec))
+            int? videoCodecLevel = GetOutputVideoCodecLevel(state);
+            if (!string.IsNullOrEmpty(state.ActualOutputVideoCodec) && videoCodecLevel.HasValue)
             {
-                videoCodecs = GetPlaylistVideoCodecs(state);
+                videoCodecs = GetPlaylistVideoCodecs(state, state.ActualOutputVideoCodec, videoCodecLevel.Value);
             }
 
             // Audio
@@ -807,26 +840,17 @@ namespace MediaBrowser.Api.Playback.Hls
                 audioCodecs = GetPlaylistAudioCodecs(state);
             }
 
-            if (!string.IsNullOrEmpty(videoCodecs) || !string.IsNullOrEmpty(audioCodecs))
+            StringBuilder codecs = new StringBuilder();
+
+            codecs.Append(videoCodecs)
+                .Append(',')
+                .Append(audioCodecs);
+
+            if (codecs.Length > 1)
             {
-                builder.Append(",CODECS=\"");
-
-                if (!string.IsNullOrEmpty(videoCodecs) && !string.IsNullOrEmpty(audioCodecs))
-                {
-                    builder.Append(videoCodecs)
-                        .Append(',')
-                        .Append(audioCodecs);
-                }
-                else if (!string.IsNullOrEmpty(videoCodecs))
-                {
-                    builder.Append(videoCodecs);
-                }
-                else if (!string.IsNullOrEmpty(audioCodecs))
-                {
-                    builder.Append(audioCodecs);
-                }
-
-                builder.Append('"');
+                builder.Append(",CODECS=\"")
+                    .Append(codecs)
+                    .Append('"');
             }
         }
 
