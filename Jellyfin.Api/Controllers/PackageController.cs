@@ -49,7 +49,7 @@ namespace Jellyfin.Api.Controllers
                 name,
                 string.IsNullOrEmpty(assemblyGuid) ? default : Guid.Parse(assemblyGuid)).FirstOrDefault();
 
-            return Ok(result);
+            return result;
         }
 
         /// <summary>
