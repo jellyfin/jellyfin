@@ -80,7 +80,7 @@ namespace Jellyfin.Server
                 endpoints.MapControllers();
                 if (_serverConfigurationManager.Configuration.EnableMetrics)
                 {
-                    endpoints.MapMetrics();
+                    endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
                 }
             });
 
