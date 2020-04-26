@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller
         /// <param name="cancellationToken">Token to cancel the request if needed.</param>
         /// <param name="forceHttp">Whether to force usage of plain HTTP protocol.</param>
         /// <value>The local API URL.</value>
-        Task<string> GetLocalApiUrl(CancellationToken cancellationToken, bool forceHttp=false);
+        Task<string> GetLocalApiUrl(CancellationToken cancellationToken, bool forceHttp = false);
 
         /// <summary>
         /// Gets the local API URL.
