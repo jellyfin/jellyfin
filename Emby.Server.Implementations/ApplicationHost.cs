@@ -1419,7 +1419,7 @@ namespace Emby.Server.Implementations
 
         public bool SupportsHttps => Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy;
 
-        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken, bool forceHttp=false)
+        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken, bool forceHttp = false)
         {
             try
             {
