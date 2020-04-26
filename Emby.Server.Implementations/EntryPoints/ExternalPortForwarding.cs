@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             yield return CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
 
-            if (_appHost.EnableHttps)
+            if (_appHost.ListenWithHttps)
             {
                 yield return CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
             }
