@@ -70,11 +70,18 @@ namespace Jellyfin.Server
             app.UseJellyfinApiSwagger();
             app.UseRouting();
             app.UseAuthorization();
-            app.UseHttpMetrics(); // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
+            if (_serverConfigurationManager.Configuration.EnableMetrics)
+            {
+                app.UseHttpMetrics(); // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
+            }
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapMetrics();
+                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                {
+                    endpoints.MapMetrics();
+                }
             });
 
             app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);
