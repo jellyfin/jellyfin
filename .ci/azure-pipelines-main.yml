@@ -29,6 +29,7 @@ jobs:
           source: 'specific'
           project: 'jellyfin'
           pipeline: 'Jellyfin Web'
+          runVersion: 'latestFromBranch'
           runBranch: variables['Build.SourceBranch']
 
       - task: DownloadPipelineArtifact@2
@@ -40,6 +41,7 @@ jobs:
           source: 'specific'
           project: 'jellyfin'
           pipeline: 'Jellyfin Web'
+          runVersion: 'latestFromBranch'
           runBranch: variables['System.PullRequest.TargetBranch']
 
       - task: ExtractFiles@1
