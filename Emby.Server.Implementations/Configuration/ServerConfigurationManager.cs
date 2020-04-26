@@ -67,11 +67,15 @@ namespace Emby.Server.Implementations.Configuration
         /// <summary>
         /// Updates the metadata path.
         /// </summary>
+        /// <exception cref="UnauthorizedAccessException">If the directory does not exist, and the caller does not have the required permission to create it.</exception>
+        /// <exception cref="NotSupportedException">If there is a custom path transcoding path specified, but it is invalid.</exception>
+        /// <exception cref="IOException">If the directory does not exist, and it also could not be created.</exception>
         private void UpdateMetadataPath()
         {
             ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrWhiteSpace(Configuration.MetadataPath)
-                ? Path.Combine(ApplicationPaths.ProgramDataPath, "metadata")
+                ? ApplicationPaths.DefaultInternalMetadataPath
                 : Configuration.MetadataPath;
+            Directory.CreateDirectory(ApplicationPaths.InternalMetadataPath);
         }
 
         /// <summary>
