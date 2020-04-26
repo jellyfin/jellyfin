@@ -76,7 +76,7 @@ namespace MediaBrowser.Controller
         /// <param name="hostname">The hostname.</param>
         /// <param name="forceHttp">Whether to force usage of plain HTTP protocol.</param>
         /// <returns>The local API URL.</returns>
-        string GetLocalApiUrl(ReadOnlySpan<char> hostname, bool forceHttp=false);
+        string GetLocalApiUrl(ReadOnlySpan<char> hostname, bool forceHttp = false);
 
         /// <summary>
         /// Gets the local API URL.
