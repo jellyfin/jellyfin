@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller
         /// <param name="address">The IP address.</param>
         /// <param name="forceHttp">Whether to force usage of plain HTTP protocol.</param>
         /// <returns>The local API URL.</returns>
-        string GetLocalApiUrl(IPAddress address, bool forceHttp=false);
+        string GetLocalApiUrl(IPAddress address, bool forceHttp = false);
 
         /// <summary>
         /// Open a URL in an external browser window.
