@@ -42,23 +42,6 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class GetPackages : IReturn<PackageInfo[]>
     {
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        [ApiMember(Name = "PackageType", Description = "Optional package type filter (System/UserInstalled)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string PackageType { get; set; }
-
-        [ApiMember(Name = "TargetSystems", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string TargetSystems { get; set; }
-
-        [ApiMember(Name = "IsPremium", Description = "Optional. Filter by premium status", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? IsPremium { get; set; }
-
-        [ApiMember(Name = "IsAdult", Description = "Optional. Filter by package that contain adult content.", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? IsAdult { get; set; }
-
-        public bool? IsAppStoreEnabled { get; set; }
     }
 
     /// <summary>
@@ -88,13 +71,6 @@ namespace MediaBrowser.Api
         /// <value>The version.</value>
         [ApiMember(Name = "Version", Description = "Optional version. Defaults to latest version.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Version { get; set; }
-
-        /// <summary>
-        /// Gets or sets the update class.
-        /// </summary>
-        /// <value>The update class.</value>
-        [ApiMember(Name = "UpdateClass", Description = "Optional update class (Dev, Beta, Release). Defaults to Release.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public PackageVersionClass UpdateClass { get; set; }
     }
 
     /// <summary>
@@ -154,23 +130,6 @@ namespace MediaBrowser.Api
         {
             IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
 
-            if (!string.IsNullOrEmpty(request.TargetSystems))
-            {
-                var apps = request.TargetSystems.Split(',').Select(i => (PackageTargetSystem)Enum.Parse(typeof(PackageTargetSystem), i, true));
-
-                packages = packages.Where(p => apps.Contains(p.targetSystem));
-            }
-
-            if (request.IsAdult.HasValue)
-            {
-                packages = packages.Where(p => p.adult == request.IsAdult.Value);
-            }
-
-            if (request.IsAppStoreEnabled.HasValue)
-            {
-                packages = packages.Where(p => p.enableInAppStore == request.IsAppStoreEnabled.Value);
-            }
-
             return ToOptimizedResult(packages.ToArray());
         }
 
@@ -186,8 +145,7 @@ namespace MediaBrowser.Api
                     packages,
                     request.Name,
                     string.IsNullOrEmpty(request.AssemblyGuid) ? Guid.Empty : Guid.Parse(request.AssemblyGuid),
-                    string.IsNullOrEmpty(request.Version) ? null : Version.Parse(request.Version),
-                    request.UpdateClass).FirstOrDefault();
+                    string.IsNullOrEmpty(request.Version) ? null : Version.Parse(request.Version)).FirstOrDefault();
 
             if (package == null)
             {

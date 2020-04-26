@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,18 +13,31 @@ using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Activity
 {
+    /// <summary>
+    /// The activity log repository.
+    /// </summary>
     public class ActivityRepository : BaseSqliteRepository, IActivityRepository
     {
-        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
+        private const string BaseActivitySelectText = "select Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity from ActivityLog";
+
         private readonly IFileSystem _fileSystem;
 
-        public ActivityRepository(ILoggerFactory loggerFactory, IServerApplicationPaths appPaths, IFileSystem fileSystem)
-            : base(loggerFactory.CreateLogger(nameof(ActivityRepository)))
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ActivityRepository"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="appPaths">The server application paths.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        public ActivityRepository(ILogger<ActivityRepository> logger, IServerApplicationPaths appPaths, IFileSystem fileSystem)
+            : base(logger)
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "activitylog.db");
             _fileSystem = fileSystem;
         }
 
+        /// <summary>
+        /// Initializes the <see cref="ActivityRepository"/>.
+        /// </summary>
         public void Initialize()
         {
             try
@@ -45,16 +56,14 @@ namespace Emby.Server.Implementations.Activity
 
         private void InitializeInternal()
         {
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunQueries(new[]
             {
-                connection.RunQueries(new[]
-                {
-                    "create table if not exists ActivityLog (Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",
-                    "drop index if exists idx_ActivityLogEntries"
-                });
+                "create table if not exists ActivityLog (Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Overview TEXT, ShortOverview TEXT, Type TEXT NOT NULL, ItemId TEXT, UserId TEXT, DateCreated DATETIME NOT NULL, LogSeverity TEXT NOT NULL)",
+                "drop index if exists idx_ActivityLogEntries"
+            });
 
-                TryMigrate(connection);
-            }
+            TryMigrate(connection);
         }
 
         private void TryMigrate(ManagedConnection connection)
@@ -76,8 +85,7 @@ namespace Emby.Server.Implementations.Activity
             }
         }
 
-        private const string BaseActivitySelectText = "select Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity from ActivityLog";
-
+        /// <inheritdoc />
         public void Create(ActivityLogEntry entry)
         {
             if (entry == null)
@@ -85,37 +93,38 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(db =>
             {
-                connection.RunInTransaction(db =>
+                using var statement = db.PrepareStatement("insert into ActivityLog (Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)");
+                statement.TryBind("@Name", entry.Name);
+
+                statement.TryBind("@Overview", entry.Overview);
+                statement.TryBind("@ShortOverview", entry.ShortOverview);
+                statement.TryBind("@Type", entry.Type);
+                statement.TryBind("@ItemId", entry.ItemId);
+
+                if (entry.UserId.Equals(Guid.Empty))
                 {
-                    using (var statement = db.PrepareStatement("insert into ActivityLog (Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
-                    {
-                        statement.TryBind("@Name", entry.Name);
+                    statement.TryBindNull("@UserId");
+                }
+                else
+                {
+                    statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
+                }
 
-                        statement.TryBind("@Overview", entry.Overview);
-                        statement.TryBind("@ShortOverview", entry.ShortOverview);
-                        statement.TryBind("@Type", entry.Type);
-                        statement.TryBind("@ItemId", entry.ItemId);
+                statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                statement.TryBind("@LogSeverity", entry.Severity.ToString());
 
-                        if (entry.UserId.Equals(Guid.Empty))
-                        {
-                            statement.TryBindNull("@UserId");
-                        }
-                        else
-                        {
-                            statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
-                        }
-
-                        statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
-                        statement.TryBind("@LogSeverity", entry.Severity.ToString());
-
-                        statement.MoveNext();
-                    }
-                }, TransactionMode);
-            }
+                statement.MoveNext();
+            }, TransactionMode);
         }
 
+        /// <summary>
+        /// Adds the provided <see cref="ActivityLogEntry"/> to this repository.
+        /// </summary>
+        /// <param name="entry">The activity log entry.</param>
+        /// <exception cref="ArgumentNullException">If entry is null.</exception>
         public void Update(ActivityLogEntry entry)
         {
             if (entry == null)
@@ -123,38 +132,35 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException(nameof(entry));
             }
 
-            using (var connection = GetConnection())
+            using var connection = GetConnection();
+            connection.RunInTransaction(db =>
             {
-                connection.RunInTransaction(db =>
+                using var statement = db.PrepareStatement("Update ActivityLog set Name=@Name,Overview=@Overview,ShortOverview=@ShortOverview,Type=@Type,ItemId=@ItemId,UserId=@UserId,DateCreated=@DateCreated,LogSeverity=@LogSeverity where Id=@Id");
+                statement.TryBind("@Id", entry.Id);
+
+                statement.TryBind("@Name", entry.Name);
+                statement.TryBind("@Overview", entry.Overview);
+                statement.TryBind("@ShortOverview", entry.ShortOverview);
+                statement.TryBind("@Type", entry.Type);
+                statement.TryBind("@ItemId", entry.ItemId);
+
+                if (entry.UserId.Equals(Guid.Empty))
                 {
-                    using (var statement = db.PrepareStatement("Update ActivityLog set Name=@Name,Overview=@Overview,ShortOverview=@ShortOverview,Type=@Type,ItemId=@ItemId,UserId=@UserId,DateCreated=@DateCreated,LogSeverity=@LogSeverity where Id=@Id"))
-                    {
-                        statement.TryBind("@Id", entry.Id);
+                    statement.TryBindNull("@UserId");
+                }
+                else
+                {
+                    statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
+                }
 
-                        statement.TryBind("@Name", entry.Name);
-                        statement.TryBind("@Overview", entry.Overview);
-                        statement.TryBind("@ShortOverview", entry.ShortOverview);
-                        statement.TryBind("@Type", entry.Type);
-                        statement.TryBind("@ItemId", entry.ItemId);
+                statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                statement.TryBind("@LogSeverity", entry.Severity.ToString());
 
-                        if (entry.UserId.Equals(Guid.Empty))
-                        {
-                            statement.TryBindNull("@UserId");
-                        }
-                        else
-                        {
-                            statement.TryBind("@UserId", entry.UserId.ToString("N", CultureInfo.InvariantCulture));
-                        }
-
-                        statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
-                        statement.TryBind("@LogSeverity", entry.Severity.ToString());
-
-                        statement.MoveNext();
-                    }
-                }, TransactionMode);
-            }
+                statement.MoveNext();
+            }, TransactionMode);
         }
 
+        /// <inheritdoc />
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
             var commandText = BaseActivitySelectText;
@@ -164,16 +170,10 @@ namespace Emby.Server.Implementations.Activity
             {
                 whereClauses.Add("DateCreated>=@DateCreated");
             }
+
             if (hasUserId.HasValue)
             {
-                if (hasUserId.Value)
-                {
-                    whereClauses.Add("UserId not null");
-                }
-                else
-                {
-                    whereClauses.Add("UserId is null");
-                }
+                whereClauses.Add(hasUserId.Value ? "UserId not null" : "UserId is null");
             }
 
             var whereTextWithoutPaging = whereClauses.Count == 0 ?
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.Activity
 
             if (limit.HasValue)
             {
-                commandText += " LIMIT " + limit.Value.ToString(_usCulture);
+                commandText += " LIMIT " + limit.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             var statementTexts = new[]
@@ -216,38 +216,33 @@ namespace Emby.Server.Implementations.Activity
             var list = new List<ActivityLogEntry>();
             var result = new QueryResult<ActivityLogEntry>();
 
-            using (var connection = GetConnection(true))
-            {
-                connection.RunInTransaction(
-                    db =>
+            using var connection = GetConnection(true);
+            connection.RunInTransaction(
+                db =>
+                {
+                    var statements = PrepareAll(db, statementTexts).ToList();
+
+                    using (var statement = statements[0])
                     {
-                        var statements = PrepareAll(db, statementTexts).ToList();
-
-                        using (var statement = statements[0])
+                        if (minDate.HasValue)
                         {
-                            if (minDate.HasValue)
-                            {
-                                statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
-                            }
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(GetEntry(row));
-                            }
+                            statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
                         }
 
-                        using (var statement = statements[1])
-                        {
-                            if (minDate.HasValue)
-                            {
-                                statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
-                            }
+                        list.AddRange(statement.ExecuteQuery().Select(GetEntry));
+                    }
 
-                            result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                    using (var statement = statements[1])
+                    {
+                        if (minDate.HasValue)
+                        {
+                            statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
                         }
-                    },
-                    ReadTransactionMode);
-            }
+
+                        result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                    }
+                },
+                ReadTransactionMode);
 
             result.Items = list;
             return result;
@@ -304,7 +299,7 @@ namespace Emby.Server.Implementations.Activity
             index++;
             if (reader[index].SQLiteType != SQLiteType.Null)
             {
-                info.Severity = (LogLevel)Enum.Parse(typeof(LogLevel), reader[index].ToString(), true);
+                info.Severity = Enum.Parse<LogLevel>(reader[index].ToString(), true);
             }
 
             return info;

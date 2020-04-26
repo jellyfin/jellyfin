@@ -102,5 +102,17 @@
     "TaskRefreshLibrary": "افحص مكتبة الوسائط",
     "TaskRefreshChapterImagesDescription": "إنشاء صور مصغرة لمقاطع الفيديو ذات فصول.",
     "TaskRefreshChapterImages": "استخراج صور الفصل",
-    "TasksApplicationCategory": "تطبيق"
+    "TasksApplicationCategory": "تطبيق",
+    "TaskDownloadMissingSubtitlesDescription": "ابحث في الإنترنت على الترجمات المفقودة إستنادا على الميتاداتا.",
+    "TaskDownloadMissingSubtitles": "تحميل الترجمات المفقودة",
+    "TaskRefreshChannelsDescription": "تحديث معلومات قنوات الإنترنت.",
+    "TaskRefreshChannels": "إعادة تحديث القنوات",
+    "TaskCleanTranscodeDescription": "حذف ملفات الترميز الأقدم من يوم واحد.",
+    "TaskCleanTranscode": "حذف سجلات الترميز",
+    "TaskUpdatePluginsDescription": "تحميل وتثبيت الإضافات التي تم تفعيل التحديث التلقائي لها.",
+    "TaskUpdatePlugins": "تحديث الإضافات",
+    "TaskRefreshPeopleDescription": "تحديث البيانات الوصفية للممثلين والمخرجين في مكتبة الوسائط الخاصة بك.",
+    "TaskRefreshPeople": "إعادة تحميل الأشخاص",
+    "TaskCleanLogsDescription": "حذف السجلات الأقدم من {0} يوم.",
+    "TaskCleanLogs": "حذف دليل السجل"
 }

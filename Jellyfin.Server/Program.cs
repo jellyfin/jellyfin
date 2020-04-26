@@ -184,7 +184,6 @@ namespace Jellyfin.Server
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                GetImageEncoder(appPaths),
                 new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
 
             try
@@ -204,14 +203,13 @@ namespace Jellyfin.Server
                 }
 
                 ServiceCollection serviceCollection = new ServiceCollection();
-                await appHost.InitAsync(serviceCollection, startupConfig).ConfigureAwait(false);
+                appHost.Init(serviceCollection);
 
                 var webHost = CreateWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
                 // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
-                appHost.InitializeServices();
-                appHost.FindParts();
+                await appHost.InitializeServices().ConfigureAwait(false);
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
                 try
@@ -569,25 +567,6 @@ namespace Jellyfin.Server
 
                 Serilog.Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
-        }
-
-        private static IImageEncoder GetImageEncoder(IApplicationPaths appPaths)
-        {
-            try
-            {
-                // Test if the native lib is available
-                SkiaEncoder.TestSkia();
-
-                return new SkiaEncoder(
-                    _loggerFactory.CreateLogger<SkiaEncoder>(),
-                    appPaths);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, $"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
-            }
-
-            return new NullImageEncoder();
         }
 
         private static void StartNewInstance(StartupOptions options)

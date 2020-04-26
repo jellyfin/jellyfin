@@ -243,9 +243,7 @@ namespace MediaBrowser.Api
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = Guid.Parse(GetPathValue(1));
 
-            var plugin = _appHost.Plugins.First(p => p.Id == id) as IHasPluginConfiguration;
-
-            if (plugin == null)
+            if (!(_appHost.Plugins.First(p => p.Id == id) is IHasPluginConfiguration plugin))
             {
                 throw new FileNotFoundException();
             }

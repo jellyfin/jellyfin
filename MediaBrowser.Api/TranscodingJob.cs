@@ -92,10 +92,7 @@ namespace MediaBrowser.Api
         {
             lock (_timerLock)
             {
-                if (KillTimer != null)
-                {
-                    KillTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                }
+                KillTimer?.Change(Timeout.Infinite, Timeout.Infinite);
             }
         }
 

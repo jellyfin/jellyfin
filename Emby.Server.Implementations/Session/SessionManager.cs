@@ -1414,7 +1414,7 @@ namespace Emby.Server.Implementations.Session
             if (user == null)
             {
                 AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
-                throw new SecurityException("Invalid username or password entered.");
+                throw new AuthenticationException("Invalid username or password entered.");
             }
 
             if (!string.IsNullOrEmpty(request.DeviceId)
