@@ -1,3 +1,9 @@
+jellyfin (10.5.5-1) unstable; urgency=medium
+
+  * New upstream version 10.5.5; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.5.5
+
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Sun, 26 Apr 2020 15:25:03 -0400
+
 jellyfin (10.5.4-1) unstable; urgency=medium
 
   * New upstream version 10.5.4; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.5.4
