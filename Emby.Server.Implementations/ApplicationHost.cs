@@ -696,8 +696,8 @@ namespace Emby.Server.Implementations
             var userManager = (UserManager)Resolve<IUserManager>();
             userManager.Initialize();
 
-            var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
-            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, userManager);
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize();
+            ((SqliteUserDataRepository)Resolve<IUserDataRepository>()).Initialize(userManager);
 
             FindParts();
         }

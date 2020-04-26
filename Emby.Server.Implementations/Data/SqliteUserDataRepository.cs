@@ -29,13 +29,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
-        public void Initialize(IUserManager userManager, SemaphoreSlim dbLock, SQLiteDatabaseConnection dbConnection)
+        public void Initialize(IUserManager userManager)
         {
-            WriteLock.Dispose();
-            WriteLock = dbLock;
-            WriteConnection?.Dispose();
-            WriteConnection = dbConnection;
-
             using (var connection = GetConnection())
             {
                 var userDatasTableExists = TableExists(connection, "UserDatas");
