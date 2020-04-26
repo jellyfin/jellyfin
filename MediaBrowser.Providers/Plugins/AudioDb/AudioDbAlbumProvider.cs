@@ -20,6 +20,9 @@ using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
+    /// <summary>
+    /// TheAudioDb album provider.
+    /// </summary>
     public class AudioDbAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
@@ -29,6 +32,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         public static AudioDbAlbumProvider Current;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioDbAlbumProvider"/> class.
+        /// </summary>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> to use.</param>
+        /// <param name="fileSystem">The <see cref="IFileSystem"/> to use.</param>
+        /// <param name="httpClient">The <see cref="IHttpClient"/> to use.</param>
+        /// <param name="json">The <see cref="IJsonSerializer"/> to use.</param>
         public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClient httpClient, IJsonSerializer json)
         {
             _config = config;

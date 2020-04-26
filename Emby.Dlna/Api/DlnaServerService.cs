@@ -14,100 +14,6 @@ using MediaBrowser.Model.Services;
 
 namespace Emby.Dlna.Api
 {
-    [Route("/Dlna/{UuId}/description.xml", "GET", Summary = "Gets dlna server info")]
-    [Route("/Dlna/{UuId}/description", "GET", Summary = "Gets dlna server info")]
-    public class GetDescriptionXml
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/contentdirectory/contentdirectory.xml", "GET", Summary = "Gets dlna content directory xml")]
-    [Route("/Dlna/{UuId}/contentdirectory/contentdirectory", "GET", Summary = "Gets dlna content directory xml")]
-    public class GetContentDirectory
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/connectionmanager/connectionmanager.xml", "GET", Summary = "Gets dlna connection manager xml")]
-    [Route("/Dlna/{UuId}/connectionmanager/connectionmanager", "GET", Summary = "Gets dlna connection manager xml")]
-    public class GetConnnectionManager
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/mediareceiverregistrar/mediareceiverregistrar.xml", "GET", Summary = "Gets dlna mediareceiverregistrar xml")]
-    [Route("/Dlna/{UuId}/mediareceiverregistrar/mediareceiverregistrar", "GET", Summary = "Gets dlna mediareceiverregistrar xml")]
-    public class GetMediaReceiverRegistrar
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/contentdirectory/control", "POST", Summary = "Processes a control request")]
-    public class ProcessContentDirectoryControlRequest : IRequiresRequestStream
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
-
-        public Stream RequestStream { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/connectionmanager/control", "POST", Summary = "Processes a control request")]
-    public class ProcessConnectionManagerControlRequest : IRequiresRequestStream
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
-
-        public Stream RequestStream { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/mediareceiverregistrar/control", "POST", Summary = "Processes a control request")]
-    public class ProcessMediaReceiverRegistrarControlRequest : IRequiresRequestStream
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
-
-        public Stream RequestStream { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/mediareceiverregistrar/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
-    [Route("/Dlna/{UuId}/mediareceiverregistrar/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
-    public class ProcessMediaReceiverRegistrarEventRequest
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
-        public string UuId { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/contentdirectory/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
-    [Route("/Dlna/{UuId}/contentdirectory/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
-    public class ProcessContentDirectoryEventRequest
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
-        public string UuId { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/connectionmanager/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
-    [Route("/Dlna/{UuId}/connectionmanager/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
-    public class ProcessConnectionManagerEventRequest
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
-        public string UuId { get; set; }
-    }
-
-    [Route("/Dlna/{UuId}/icons/{Filename}", "GET", Summary = "Gets a server icon")]
-    [Route("/Dlna/icons/{Filename}", "GET", Summary = "Gets a server icon")]
-    public class GetIcon
-    {
-        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UuId { get; set; }
-
-        [ApiMember(Name = "Filename", Description = "The icon filename", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Filename { get; set; }
-    }
-
     public class DlnaServerService : IService, IRequiresRequest
     {
         private const string XMLContentType = "text/xml; charset=UTF-8";
@@ -379,5 +285,99 @@ namespace Emby.Dlna.Api
         {
             return _resultFactory.GetResult(Request, response.Content, response.ContentType, response.Headers);
         }
+    }
+
+    [Route("/Dlna/{UuId}/description.xml", "GET", Summary = "Gets dlna server info")]
+    [Route("/Dlna/{UuId}/description", "GET", Summary = "Gets dlna server info")]
+    public class GetDescriptionXml
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/contentdirectory/contentdirectory.xml", "GET", Summary = "Gets dlna content directory xml")]
+    [Route("/Dlna/{UuId}/contentdirectory/contentdirectory", "GET", Summary = "Gets dlna content directory xml")]
+    public class GetContentDirectory
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/connectionmanager/connectionmanager.xml", "GET", Summary = "Gets dlna connection manager xml")]
+    [Route("/Dlna/{UuId}/connectionmanager/connectionmanager", "GET", Summary = "Gets dlna connection manager xml")]
+    public class GetConnnectionManager
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/mediareceiverregistrar/mediareceiverregistrar.xml", "GET", Summary = "Gets dlna mediareceiverregistrar xml")]
+    [Route("/Dlna/{UuId}/mediareceiverregistrar/mediareceiverregistrar", "GET", Summary = "Gets dlna mediareceiverregistrar xml")]
+    public class GetMediaReceiverRegistrar
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/contentdirectory/control", "POST", Summary = "Processes a control request")]
+    public class ProcessContentDirectoryControlRequest : IRequiresRequestStream
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+
+        public Stream RequestStream { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/connectionmanager/control", "POST", Summary = "Processes a control request")]
+    public class ProcessConnectionManagerControlRequest : IRequiresRequestStream
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+
+        public Stream RequestStream { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/mediareceiverregistrar/control", "POST", Summary = "Processes a control request")]
+    public class ProcessMediaReceiverRegistrarControlRequest : IRequiresRequestStream
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string UuId { get; set; }
+
+        public Stream RequestStream { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/mediareceiverregistrar/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/mediareceiverregistrar/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
+    public class ProcessMediaReceiverRegistrarEventRequest
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
+        public string UuId { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/contentdirectory/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/contentdirectory/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
+    public class ProcessContentDirectoryEventRequest
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
+        public string UuId { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/connectionmanager/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
+    [Route("/Dlna/{UuId}/connectionmanager/events", "UNSUBSCRIBE", Summary = "Processes an event subscription request")]
+    public class ProcessConnectionManagerEventRequest
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
+        public string UuId { get; set; }
+    }
+
+    [Route("/Dlna/{UuId}/icons/{Filename}", "GET", Summary = "Gets a server icon")]
+    [Route("/Dlna/icons/{Filename}", "GET", Summary = "Gets a server icon")]
+    public class GetIcon
+    {
+        [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UuId { get; set; }
+
+        [ApiMember(Name = "Filename", Description = "The icon filename", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Filename { get; set; }
     }
 }

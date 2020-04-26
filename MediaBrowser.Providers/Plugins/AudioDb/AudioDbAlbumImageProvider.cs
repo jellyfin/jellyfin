@@ -12,12 +12,21 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
+    /// <summary>
+    /// AudioDB Album Image Provider.
+    /// </summary>
     public class AudioDbAlbumImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _json;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioDbAlbumImageProvider"/> class.
+        /// </summary>
+        /// <param name="config">The <see cref="IServerConfigurationManager"/> to use.</param>
+        /// <param name="httpClient">The <see cref="IHttpClient"/> to use.</param>
+        /// <param name="json">The <see cref="IJsonSerializer"/> to use.</param>
         public AudioDbAlbumImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IJsonSerializer json)
         {
             _config = config;

@@ -1,4 +1,4 @@
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
@@ -29,20 +29,5 @@ namespace MediaBrowser.Providers.Movies
 
             return item is Movie || item is MusicVideo || item is Series || item is Episode || item is Trailer;
         }
-    }
-
-    public class ImdbPersonExternalId : IExternalId
-    {
-        /// <inheritdoc />
-        public string Name => "IMDb";
-
-        /// <inheritdoc />
-        public string Key => MetadataProviders.Imdb.ToString();
-
-        /// <inheritdoc />
-        public string UrlFormatString => "https://www.imdb.com/name/{0}";
-
-        /// <inheritdoc />
-        public bool Supports(IHasProviderIds item) => item is Person;
     }
 }
