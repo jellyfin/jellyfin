@@ -1187,13 +1187,12 @@ namespace Emby.Server.Implementations
             {
                 // Return the first matched address, if found, or the first known local address
                 var addresses = await GetLocalIpAddressesInternal(false, 1, cancellationToken).ConfigureAwait(false);
-
-                foreach (var address in addresses)
+                if (addresses.Count == 0)
                 {
-                    return GetLocalApiUrl(address);
+                    return null;
                 }
 
-                return null;
+                return GetLocalApiUrl(addresses.First());
             }
             catch (Exception ex)
             {
