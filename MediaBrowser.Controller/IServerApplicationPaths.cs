@@ -71,7 +71,12 @@ namespace MediaBrowser.Controller
         string UserConfigurationDirectoryPath { get; }
 
         /// <summary>
-        /// Gets the internal metadata path.
+        /// Gets the default internal metadata path.
+        /// </summary>
+        string DefaultInternalMetadataPath { get; }
+
+        /// <summary>
+        /// Gets the internal metadata path, either a custom path or the default.
         /// </summary>
         /// <value>The internal metadata path.</value>
         string InternalMetadataPath { get; }
