@@ -1475,7 +1475,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public string GetLocalApiUrl(ReadOnlySpan<char> host, bool forceHttp=false)
+        public string GetLocalApiUrl(ReadOnlySpan<char> host, bool forceHttp = false)
         {
             var url = new StringBuilder(64);
             bool useHttps = EnableHttps && !forceHttp;
