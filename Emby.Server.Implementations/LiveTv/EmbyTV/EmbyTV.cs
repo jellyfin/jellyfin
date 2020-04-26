@@ -1063,7 +1063,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var stream = new MediaSourceInfo
             {
-                EncoderPath = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveRecordings/" + info.Id + "/stream",
+                EncoderPath = _appHost.GetLocalApiUrl("127.0.0.1", true) + "/LiveTv/LiveRecordings/" + info.Id + "/stream",
                 EncoderProtocol = MediaProtocol.Http,
                 Path = info.Path,
                 Protocol = MediaProtocol.File,

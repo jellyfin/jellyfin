@@ -242,9 +242,15 @@ namespace Jellyfin.Server
                         .LocalNetworkAddresses
                         .Select(appHost.NormalizeConfiguredLocalAddress)
                         .Where(i => i != null)
-                        .ToList();
-                    if (addresses.Any())
+                        .ToHashSet();
+                    if (addresses.Any() && !addresses.Contains(IPAddress.Any))
                     {
+                        if (!addresses.Contains(IPAddress.Loopback))
+                        {
+                            // we must listen on loopback for LiveTV to function regardless of the settings
+                            addresses.Add(IPAddress.Loopback);
+                        }
+
                         foreach (var address in addresses)
                         {
                             _logger.LogInformation("Kestrel listening on {IpAddress}", address);
