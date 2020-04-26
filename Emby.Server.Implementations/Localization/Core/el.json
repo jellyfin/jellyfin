@@ -92,5 +92,18 @@
     "UserStoppedPlayingItemWithValues": "{0} τελείωσε να παίζει {1} σε {2}",
     "ValueHasBeenAddedToLibrary": "{0} προστέθηκαν στη βιβλιοθήκη πολυμέσων σας",
     "ValueSpecialEpisodeName": "Σπέσιαλ - {0}",
-    "VersionNumber": "Έκδοση {0}"
+    "VersionNumber": "Έκδοση {0}",
+    "TaskRefreshPeople": "Ανανέωση Ατόμων",
+    "TaskCleanLogsDescription": "Διαγράφει τα αρχεία καταγραφής που είναι άνω των {0} ημερών.",
+    "TaskCleanLogs": "Καθαρισμός Καταλόγου Καταγραφής",
+    "TaskRefreshLibraryDescription": "Σαρώνει την βιβλιοθήκη πολυμέσων σας για νέα αρχεία και αναζωογονεί τα μεταδεδομένα.",
+    "TaskRefreshLibrary": "Βιβλιοθήκη Σάρωσης Πολυμέσων",
+    "TaskRefreshChapterImagesDescription": "Δημιουργεί μικρογραφίες για βίντεο με κεφάλαια.",
+    "TaskRefreshChapterImages": "Εξαγωγή Εικόνων Κεφαλαίου",
+    "TaskCleanCacheDescription": "Τα διαγραμμένα αρχεία προσωρινής μνήμης που δεν χρειάζονται πλέον από το σύστημα.",
+    "TaskCleanCache": "Καθαρισμός Καταλόγου Προσωρινής Μνήμης",
+    "TasksChannelsCategory": "Κανάλια Διαδικτύου",
+    "TasksApplicationCategory": "Εφαρμογή",
+    "TasksLibraryCategory": "Βιβλιοθήκη",
+    "TasksMaintenanceCategory": "Συντήρηση"
 }
