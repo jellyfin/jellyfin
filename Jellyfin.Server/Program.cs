@@ -272,23 +272,27 @@ namespace Jellyfin.Server
                         {
                             _logger.LogInformation("Kestrel listening on {IpAddress}", address);
                             options.Listen(address, appHost.HttpPort);
-                            if (appHost.EnableHttps)
+                            if (appHost.EnableHttps && appHost.Certificate != null)
                             {
-                                if (appHost.Certificate != null)
+                                options.Listen(address, appHost.HttpsPort, listenOptions =>
                                 {
-                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
-                                    {
-                                        listenOptions.UseHttps(appHost.Certificate);
-                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                    });
-                                }
-                                else if (builderContext.HostingEnvironment.IsDevelopment())
+                                    listenOptions.UseHttps(appHost.Certificate);
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                });
+                            }
+                            else if (builderContext.HostingEnvironment.IsDevelopment())
+                            {
+                                try
                                 {
                                     options.Listen(address, appHost.HttpsPort, listenOptions =>
                                     {
                                         listenOptions.UseHttps();
                                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                                     });
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "Error whilst listing to https - Is a development certificate installed?");
                                 }
                             }
                         }
@@ -298,23 +302,27 @@ namespace Jellyfin.Server
                         _logger.LogInformation("Kestrel listening on all interfaces");
                         options.ListenAnyIP(appHost.HttpPort);
 
-                        if (appHost.EnableHttps)
+                        if (appHost.EnableHttps && appHost.Certificate != null)
                         {
-                            if (appHost.Certificate != null)
+                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
                             {
-                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps(appHost.Certificate);
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
-                            }
-                            else if (builderContext.HostingEnvironment.IsDevelopment())
+                                listenOptions.UseHttps(appHost.Certificate);
+                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                            });
+                        }
+                        else if (builderContext.HostingEnvironment.IsDevelopment())
+                        {
+                            try
                             {
                                 options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
                                 {
                                     listenOptions.UseHttps();
                                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                                 });
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error whilst listing to https - Is a development certificate installed?");
                             }
                         }
                     }
