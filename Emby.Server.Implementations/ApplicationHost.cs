@@ -94,7 +94,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
@@ -1143,9 +1142,6 @@ namespace Emby.Server.Implementations
                 ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
-                HttpServerPortNumber = HttpPort,
-                SupportsHttps = ListenWithHttps || ServerConfigurationManager.Configuration.IsBehindProxy,
-                HttpsPortNumber = HttpsPort,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 OperatingSystemDisplayName = OperatingSystem.Name,
                 CanSelfRestart = CanSelfRestart,

@@ -116,24 +116,6 @@ namespace MediaBrowser.Model.System
         public string TranscodingTempPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the HTTP server port number.
-        /// </summary>
-        /// <value>The HTTP server port number.</value>
-        public int HttpServerPortNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether a client can connect to the server over HTTPS, either directly or
-        /// via a reverse proxy.
-        /// </summary>
-        public bool SupportsHttps { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HTTPS server port number.
-        /// </summary>
-        /// <value>The HTTPS server port number.</value>
-        public int HttpsPortNumber { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance has update available.
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>

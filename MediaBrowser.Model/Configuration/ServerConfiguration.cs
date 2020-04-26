@@ -234,11 +234,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool RequireHttps { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the server is behind a reverse proxy.
-        /// </summary>
-        public bool IsBehindProxy { get; set; }
-
         public bool EnableNewOmdbSupport { get; set; }
 
         public string[] RemoteIPFilter { get; set; }
