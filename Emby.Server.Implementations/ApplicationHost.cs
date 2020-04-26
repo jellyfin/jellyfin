@@ -1185,7 +1185,7 @@ namespace Emby.Server.Implementations
 
         public bool SupportsHttps => Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy;
 
-        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
+        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken, bool forceHttp = false)
         {
             try
             {
@@ -1194,7 +1194,7 @@ namespace Emby.Server.Implementations
 
                 foreach (var address in addresses)
                 {
-                    return GetLocalApiUrl(address);
+                    return GetLocalApiUrl(address, forceHttp);
                 }
 
                 return null;
@@ -1224,7 +1224,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public string GetLocalApiUrl(IPAddress ipAddress)
+        public string GetLocalApiUrl(IPAddress ipAddress, bool forceHttp = false)
         {
             if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
@@ -1234,20 +1234,21 @@ namespace Emby.Server.Implementations
                 str.CopyTo(span.Slice(1));
                 span[^1] = ']';
 
-                return GetLocalApiUrl(span);
+                return GetLocalApiUrl(span, forceHttp);
             }
 
-            return GetLocalApiUrl(ipAddress.ToString());
+            return GetLocalApiUrl(ipAddress.ToString(), forceHttp);
         }
 
         /// <inheritdoc />
-        public string GetLocalApiUrl(ReadOnlySpan<char> host)
+        public string GetLocalApiUrl(ReadOnlySpan<char> host, bool forceHttp = false)
         {
             var url = new StringBuilder(64);
-            url.Append(EnableHttps ? "https://" : "http://")
+            bool useHttps = EnableHttps && !forceHttp;
+            url.Append(useHttps ? "https://" : "http://")
                 .Append(host)
                 .Append(':')
-                .Append(EnableHttps ? HttpsPort : HttpPort);
+                .Append(useHttps ? HttpsPort : HttpPort);
 
             string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
             if (baseUrl.Length != 0)
