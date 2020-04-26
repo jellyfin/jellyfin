@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Prometheus;
 
 namespace Jellyfin.Server
 {
@@ -69,9 +70,11 @@ namespace Jellyfin.Server
             app.UseJellyfinApiSwagger();
             app.UseRouting();
             app.UseAuthorization();
+            app.UseHttpMetrics(); // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapMetrics();
             });
 
             app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);

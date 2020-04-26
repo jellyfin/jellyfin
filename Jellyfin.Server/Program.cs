@@ -28,6 +28,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Prometheus.DotNetRuntime;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
@@ -160,6 +161,9 @@ namespace Jellyfin.Server
                 Assembly.GetEntryAssembly()!.GetName().Version!.ToString(3));
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
+
+            // Initialize runtime stat collection
+            IDisposable collector = DotNetRuntimeStatsBuilder.Default().StartCollecting();
 
             // Make sure we have all the code pages we can get
             // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
