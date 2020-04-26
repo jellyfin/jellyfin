@@ -1458,7 +1458,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public string GetLocalApiUrl(IPAddress ipAddress, bool forceHttp=false)
+        public string GetLocalApiUrl(IPAddress ipAddress, bool forceHttp = false)
         {
             if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
