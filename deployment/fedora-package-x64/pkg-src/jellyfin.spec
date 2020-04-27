@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.5.4
+Version:        10.5.5
 Release:        1%{?dist}
 Summary:        The Free Software Media Browser
 License:        GPLv2
