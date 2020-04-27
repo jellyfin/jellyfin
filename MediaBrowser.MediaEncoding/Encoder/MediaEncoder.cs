@@ -113,7 +113,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableEncoders(validator.GetEncoders());
             }
 
-            _logger.LogInformation("FFmpeg: {0}: {1}", EncoderLocation, _ffmpegPath ?? string.Empty);
+            _logger.LogInformation("FFmpeg: {EncoderLocation}: {FfmpegPath}", EncoderLocation, _ffmpegPath ?? string.Empty);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             string newPath;
 
-            _logger.LogInformation("Attempting to update encoder path to {0}. pathType: {1}", path ?? string.Empty, pathType ?? string.Empty);
+            _logger.LogInformation("Attempting to update encoder path to {Path}. pathType: {PathType}", path ?? string.Empty, pathType ?? string.Empty);
 
             if (!string.Equals(pathType, "custom", StringComparison.OrdinalIgnoreCase))
             {
@@ -180,7 +180,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     if (!rc)
                     {
-                        _logger.LogWarning("FFmpeg: {0}: Failed version check: {1}", location, path);
+                        _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
                     }
 
                     // ToDo - Enable the ffmpeg validator.  At the moment any version can be used.
@@ -191,18 +191,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 else
                 {
-                    _logger.LogWarning("FFmpeg: {0}: File not found: {1}", location, path);
+                    _logger.LogWarning("FFmpeg: {Location}: File not found: {Path}", location, path);
                 }
             }
 
             return rc;
         }
 
-        private string GetEncoderPathFromDirectory(string path, string filename)
+        private string GetEncoderPathFromDirectory(string path, string filename, bool recursive = false)
         {
             try
             {
-                var files = _fileSystem.GetFilePaths(path);
+                var files = _fileSystem.GetFilePaths(path, recursive);
 
                 var excludeExtensions = new[] { ".c" };
 
@@ -223,7 +223,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns></returns>
         private string ExistsOnSystemPath(string fileName)
         {
-            string inJellyfinPath = GetEncoderPathFromDirectory(System.AppContext.BaseDirectory, fileName);
+            var inJellyfinPath = GetEncoderPathFromDirectory(AppContext.BaseDirectory, fileName, recursive: true);
             if (!string.IsNullOrEmpty(inJellyfinPath))
             {
                 return inJellyfinPath;
@@ -892,7 +892,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     return minSizeVobs.Count == 0 ? vobs.Select(i => i.FullName) : minSizeVobs.Select(i => i.FullName);
                 }
 
-                _logger.LogWarning("Could not determine vob file list for {0} using DvdLib. Will scan using file sizes.", path);
+                _logger.LogWarning("Could not determine vob file list for {Path} using DvdLib. Will scan using file sizes.", path);
             }
 
             var files = allVobs
