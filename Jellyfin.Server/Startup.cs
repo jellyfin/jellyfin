@@ -72,7 +72,8 @@ namespace Jellyfin.Server
             app.UseAuthorization();
             if (_serverConfigurationManager.Configuration.EnableMetrics)
             {
-                app.UseHttpMetrics(); // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
+                // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
+                app.UseHttpMetrics();
             }
 
             app.UseEndpoints(endpoints =>

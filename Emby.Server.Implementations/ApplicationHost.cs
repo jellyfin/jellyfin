@@ -263,7 +263,7 @@ namespace Emby.Server.Implementations
             // Initialize runtime stat collection
             if (ServerConfigurationManager.Configuration.EnableMetrics)
             {
-                IDisposable collector = DotNetRuntimeStatsBuilder.Default().StartCollecting();
+                DotNetRuntimeStatsBuilder.Default().StartCollecting();
             }
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
