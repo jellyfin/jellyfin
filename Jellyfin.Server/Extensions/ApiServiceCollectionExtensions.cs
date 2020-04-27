@@ -105,6 +105,10 @@ namespace Jellyfin.Server.Extensions
                 {
                     c.IncludeXmlComments(xmlFile);
                 }
+
+                // Order actions by route path, then by http method.
+                c.OrderActionsBy(description =>
+                    $"{description.ActionDescriptor.RouteValues["controller"]}_{description.HttpMethod}");
             });
         }
     }
