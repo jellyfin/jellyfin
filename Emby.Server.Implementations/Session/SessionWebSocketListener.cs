@@ -1,6 +1,5 @@
-using System.Collections.Generic;
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
@@ -26,9 +25,9 @@ namespace Emby.Server.Implementations.Session
         public readonly int WebSocketLostTimeout = 60;
 
         /// <summary>
-        /// The keep-alive timer factor; controls how often the timer will check on the status of the WebSockets.
+        /// The keep-alive interval factor; controls how often the watcher will check on the status of the WebSockets.
         /// </summary>
-        public readonly double TimerFactor = 0.2;
+        public readonly double IntervalFactor = 0.2;
 
         /// <summary>
         /// The ForceKeepAlive factor; controls when a ForceKeepAlive is sent.
@@ -53,14 +52,24 @@ namespace Emby.Server.Implementations.Session
         private readonly IHttpServer _httpServer;
 
         /// <summary>
-        /// The KeepAlive timer.
+        /// The KeepAlive cancellation token.
         /// </summary>
-        private Timer _keepAliveTimer;
+        private CancellationTokenSource _keepAliveCancellationToken;
+
+        /// <summary>
+        /// Lock used for accesing the KeepAlive cancellation token.
+        /// </summary>
+        private readonly object _keepAliveLock = new object();
 
         /// <summary>
         /// The WebSocket watchlist.
         /// </summary>
-        private readonly ConcurrentDictionary<IWebSocketConnection, byte> _webSockets = new ConcurrentDictionary<IWebSocketConnection, byte>();
+        private readonly HashSet<IWebSocketConnection> _webSockets = new HashSet<IWebSocketConnection>();
+
+        /// <summary>
+        /// Lock used for accesing the WebSockets watchlist.
+        /// </summary>
+        private readonly object _webSocketsLock = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
@@ -113,7 +122,7 @@ namespace Emby.Server.Implementations.Session
         public void Dispose()
         {
             _httpServer.WebSocketConnected -= _serverManager_WebSocketConnected;
-            StopKeepAliveTimer();
+            StopKeepAlive();
         }
 
         /// <summary>
@@ -140,6 +149,7 @@ namespace Emby.Server.Implementations.Session
         private void OnWebSocketClosed(object sender, EventArgs e)
         {
             var webSocket = (IWebSocketConnection) sender;
+            _logger.LogDebug("WebSockets {0} closed.", webSocket);
             RemoveWebSocket(webSocket);
         }
 
@@ -147,15 +157,20 @@ namespace Emby.Server.Implementations.Session
         /// Adds a WebSocket to the KeepAlive watchlist.
         /// </summary>
         /// <param name="webSocket">The WebSocket to monitor.</param>
-        private async void KeepAliveWebSocket(IWebSocketConnection webSocket)
+        private async Task KeepAliveWebSocket(IWebSocketConnection webSocket)
         {
-            if (!_webSockets.TryAdd(webSocket, 0))
+            lock (_webSocketsLock)
             {
-                _logger.LogWarning("Multiple attempts to keep alive single WebSocket {0}", webSocket);
-                return;
+                if (!_webSockets.Add(webSocket))
+                {
+                    _logger.LogWarning("Multiple attempts to keep alive single WebSocket {0}", webSocket);
+                    return;
+                }
+                webSocket.Closed += OnWebSocketClosed;
+                webSocket.LastKeepAliveDate = DateTime.UtcNow;
+
+                StartKeepAlive();
             }
-            webSocket.Closed += OnWebSocketClosed;
-            webSocket.LastKeepAliveDate = DateTime.UtcNow;
 
             // Notify WebSocket about timeout
             try
@@ -164,10 +179,8 @@ namespace Emby.Server.Implementations.Session
             }
             catch (WebSocketException exception)
             {
-                _logger.LogWarning(exception, "Error sending ForceKeepAlive message to WebSocket.");
+                _logger.LogWarning(exception, "Error sending ForceKeepAlive message to WebSocket {0}.", webSocket);
             }
-
-            StartKeepAliveTimer();
         }
 
         /// <summary>
@@ -176,87 +189,130 @@ namespace Emby.Server.Implementations.Session
         /// <param name="webSocket">The WebSocket to remove.</param>
         private void RemoveWebSocket(IWebSocketConnection webSocket)
         {
-            webSocket.Closed -= OnWebSocketClosed;
-            _webSockets.TryRemove(webSocket, out _);
-        }
-
-        /// <summary>
-        /// Starts the KeepAlive timer.
-        /// </summary>
-        private void StartKeepAliveTimer()
-        {
-            if (_keepAliveTimer == null)
+            lock (_webSocketsLock)
             {
-                _keepAliveTimer = new Timer(
-                    KeepAliveSockets,
-                    null,
-                    TimeSpan.FromSeconds(WebSocketLostTimeout * TimerFactor),
-                    TimeSpan.FromSeconds(WebSocketLostTimeout * TimerFactor)
-                );
+                if (!_webSockets.Remove(webSocket))
+                {
+                    _logger.LogWarning("WebSocket {0} not on watchlist.", webSocket);
+                }
+                else
+                {
+                    webSocket.Closed -= OnWebSocketClosed;
+                }
             }
         }
 
         /// <summary>
-        /// Stops the KeepAlive timer.
+        /// Starts the KeepAlive watcher.
         /// </summary>
-        private void StopKeepAliveTimer()
+        private void StartKeepAlive()
         {
-            if (_keepAliveTimer != null)
+            lock (_keepAliveLock)
             {
-                _keepAliveTimer.Dispose();
-                _keepAliveTimer = null;
-            }
-
-            foreach (var pair in _webSockets)
-            {
-                pair.Key.Closed -= OnWebSocketClosed;
+                if (_keepAliveCancellationToken == null)
+                {
+                    _keepAliveCancellationToken = new CancellationTokenSource();
+                    // Start KeepAlive watcher
+                    KeepAliveSockets(
+                        TimeSpan.FromSeconds(WebSocketLostTimeout * IntervalFactor),
+                        _keepAliveCancellationToken.Token);
+                }
             }
         }
 
         /// <summary>
-        /// Checks status of KeepAlive of WebSockets.
+        /// Stops the KeepAlive watcher.
         /// </summary>
-        /// <param name="state">The state.</param>
-        private async void KeepAliveSockets(object state)
+        private void StopKeepAlive()
         {
-            var inactive = _webSockets.Keys.Where(i =>
+            lock (_keepAliveLock)
             {
-                var elapsed = (DateTime.UtcNow - i.LastKeepAliveDate).TotalSeconds;
-                return (elapsed > WebSocketLostTimeout * ForceKeepAliveFactor) && (elapsed < WebSocketLostTimeout);
-            });
-            var lost = _webSockets.Keys.Where(i => (DateTime.UtcNow - i.LastKeepAliveDate).TotalSeconds >= WebSocketLostTimeout);
-
-            if (inactive.Any())
-            {
-                _logger.LogDebug("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count());
+                if (_keepAliveCancellationToken != null)
+                {
+                    _keepAliveCancellationToken.Cancel();
+                    _keepAliveCancellationToken = null;
+                }
             }
 
-            foreach (var webSocket in inactive)
+            lock (_webSocketsLock)
             {
+                foreach (var webSocket in _webSockets)
+                {
+                    webSocket.Closed -= OnWebSocketClosed;
+                }
+                _webSockets.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Checks status of KeepAlive of WebSockets once every the specified interval time.
+        /// </summary>
+        /// <param name="interval">The interval.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private async Task KeepAliveSockets(TimeSpan interval, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                _logger.LogDebug("Watching {0} WebSockets.", _webSockets.Count());
+
+                IEnumerable<IWebSocketConnection> inactive;
+                IEnumerable<IWebSocketConnection> lost;
+                lock (_webSocketsLock)
+                {
+                    inactive = _webSockets.Where(i =>
+                    {
+                        var elapsed = (DateTime.UtcNow - i.LastKeepAliveDate).TotalSeconds;
+                        return (elapsed > WebSocketLostTimeout * ForceKeepAliveFactor) && (elapsed < WebSocketLostTimeout);
+                    });
+                    lost = _webSockets.Where(i => (DateTime.UtcNow - i.LastKeepAliveDate).TotalSeconds >= WebSocketLostTimeout);
+                }
+
+                if (inactive.Any())
+                {
+                    _logger.LogInformation("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count());
+                }
+
+                foreach (var webSocket in inactive)
+                {
+                    try
+                    {
+                        await SendForceKeepAlive(webSocket);
+                    }
+                    catch (WebSocketException exception)
+                    {
+                        _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
+                        lost = lost.Append(webSocket);
+                    }
+                }
+
+                lock (_webSocketsLock)
+                {
+                    if (lost.Any())
+                    {
+                        _logger.LogInformation("Lost {0} WebSockets.", lost.Count());
+                        foreach (var webSocket in lost.ToList())
+                        {
+                            // TODO: handle session relative to the lost webSocket
+                            RemoveWebSocket(webSocket);
+                        }
+                    }
+
+                    if (!_webSockets.Any())
+                    {
+                        StopKeepAlive();
+                    }
+                }
+
+                // Wait for next interval
+                Task task = Task.Delay(interval, cancellationToken);
                 try
                 {
-                    await SendForceKeepAlive(webSocket);
+                    await task;
                 }
-                catch (WebSocketException exception)
+                catch (TaskCanceledException)
                 {
-                    _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
-                    lost.Append(webSocket);
+                    return;
                 }
-            }
-
-            if (lost.Any())
-            {
-                _logger.LogInformation("Lost {0} WebSockets.", lost.Count());
-                foreach (var webSocket in lost)
-                {
-                    // TODO: handle session relative to the lost webSocket
-                    RemoveWebSocket(webSocket);
-                }
-            }
-
-            if (!_webSockets.Any())
-            {
-                StopKeepAliveTimer();
             }
         }
 

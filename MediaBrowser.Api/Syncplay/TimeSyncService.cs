@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Syncplay
 {
     [Route("/GetUtcTime", "GET", Summary = "Get UtcTime")]
-    [Authenticated]
     public class GetUtcTime : IReturnVoid
     {
         // Nothing
@@ -33,13 +32,10 @@ namespace MediaBrowser.Api.Syncplay
         public TimeSyncService(
             ILogger<TimeSyncService> logger,
             IServerConfigurationManager serverConfigurationManager,
-            IHttpResultFactory httpResultFactory,
-            ISessionManager sessionManager,
-            ISessionContext sessionContext)
+            IHttpResultFactory httpResultFactory)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _sessionManager = sessionManager;
-            _sessionContext = sessionContext;
+            // Do nothing
         }
 
         /// <summary>
