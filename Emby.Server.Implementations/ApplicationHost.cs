@@ -1274,7 +1274,7 @@ namespace Emby.Server.Implementations
 
             if (addresses.Count == 0)
             {
-                addresses.AddRange(_networkManager.GetLocalIpAddresses());
+                addresses.AddRange(_networkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
             }
 
             var resultList = new List<IPAddress>();

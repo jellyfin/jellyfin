@@ -56,13 +56,13 @@ namespace Emby.Server.Implementations.Networking
             NetworkChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public IPAddress[] GetLocalIpAddresses()
+        public IPAddress[] GetLocalIpAddresses(bool ignoreVirtualInterface = true)
         {
             lock (_localIpAddressSyncLock)
             {
                 if (_localIpAddresses == null)
                 {
-                    var addresses = GetLocalIpAddressesInternal().ToArray();
+                    var addresses = GetLocalIpAddressesInternal(ignoreVirtualInterface).ToArray();
 
                     _localIpAddresses = addresses;
                 }
@@ -71,37 +71,35 @@ namespace Emby.Server.Implementations.Networking
             }
         }
 
-        private List<IPAddress> GetLocalIpAddressesInternal()
+        private List<IPAddress> GetLocalIpAddressesInternal(bool ignoreVirtualInterface)
         {
-            var list = GetIPsDefault().ToList();
+            var list = GetIPsDefault(ignoreVirtualInterface).ToList();
 
             if (list.Count == 0)
             {
                 list = GetLocalIpAddressesFallback().GetAwaiter().GetResult().ToList();
             }
 
-            var listClone = new List<IPAddress>();
+            var listClone = list.ToList();
 
-            var subnets = LocalSubnetsFn();
-
-            foreach (var i in list)
-            {
-                if (i.IsIPv6LinkLocal || i.ToString().StartsWith("169.254.", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-                if (Array.IndexOf(subnets, "[" + i.ToString() + "]") == -1)
-                {
-                    listClone.Add(i);
-                }
-            }
-
-            return listClone
+            return list
                 .OrderBy(i => i.AddressFamily == AddressFamily.InterNetwork ? 0 : 1)
-                // .ThenBy(i => listClone.IndexOf(i))
+                .ThenBy(i => listClone.IndexOf(i))
+                .Where(FilterIpAddress)
                 .GroupBy(i => i.ToString())
                 .Select(x => x.First())
                 .ToList();
+        }
+
+        private static bool FilterIpAddress(IPAddress address)
+        {
+            if (address.IsIPv6LinkLocal
+                || address.ToString().StartsWith("169.", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public bool IsInPrivateAddressSpace(string endpoint)
@@ -109,7 +107,6 @@ namespace Emby.Server.Implementations.Networking
             return IsInPrivateAddressSpace(endpoint, true);
         }
 
-        // checks if the address in endpoint is an RFC1918, RFC1122, or RFC3927 address
         private bool IsInPrivateAddressSpace(string endpoint, bool checkSubnets)
         {
             if (string.Equals(endpoint, "::1", StringComparison.OrdinalIgnoreCase))
@@ -131,28 +128,23 @@ namespace Emby.Server.Implementations.Networking
             }
 
             // Private address space:
+            // http://en.wikipedia.org/wiki/Private_network
 
-            if (endpoint.ToLower() == "localhost")
+            if (endpoint.StartsWith("172.", StringComparison.OrdinalIgnoreCase))
+            {
+                return Is172AddressPrivate(endpoint);
+            }
+
+            if (endpoint.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("127.", StringComparison.OrdinalIgnoreCase) ||
+                endpoint.StartsWith("169.", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            try
+            if (checkSubnets && endpoint.StartsWith("192.168", StringComparison.OrdinalIgnoreCase))
             {
-                byte[] octet = IPAddress.Parse(endpoint).GetAddressBytes();
-
-                if ((octet[0] == 10) ||
-                    (octet[0] == 172 && (octet[1] >= 16 && octet[1] <= 31)) || // RFC1918
-                    (octet[0] == 192 && octet[1] == 168) || // RFC1918
-                    (octet[0] == 127) || // RFC1122
-                    (octet[0] == 169 && octet[1] == 254)) // RFC3927
-                {
-                    return false;
-                }
-            }
-            catch
-            {
-                // return false;
+                return true;
             }
 
             if (checkSubnets && IsInPrivateAddressSpaceAndLocalSubnet(endpoint))
@@ -185,7 +177,6 @@ namespace Emby.Server.Implementations.Networking
             return false;
         }
 
-        // Gives a list of possible subnets from the system whose interface ip starts with endpointFirstPart 
         private List<string> GetSubnets(string endpointFirstPart)
         {
             lock (_subnetLookupLock)
@@ -231,6 +222,19 @@ namespace Emby.Server.Implementations.Networking
             }
         }
 
+        private static bool Is172AddressPrivate(string endpoint)
+        {
+            for (var i = 16; i <= 31; i++)
+            {
+                if (endpoint.StartsWith("172." + i.ToString(CultureInfo.InvariantCulture) + ".", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public bool IsInLocalNetwork(string endpoint)
         {
             return IsInLocalNetworkInternal(endpoint, true);
@@ -241,57 +245,23 @@ namespace Emby.Server.Implementations.Networking
             return IsAddressInSubnets(IPAddress.Parse(addressString), addressString, subnets);
         }
 
-        // returns true if address is in the LAN list in the config file
-        // always returns false if address has been excluded from the LAN if excludeInterfaces is true
-        // and excludes RFC addresses if excludeRFC is true
-        public bool IsAddressInSubnets(IPAddress address, bool excludeInterfaces, bool excludeRFC)
-        {
-            byte[] octet = address.GetAddressBytes();
-
-            if ((octet[0] == 127) || // RFC1122
-                (octet[0] == 169 && octet[1] == 254)) // RFC3927
-            {
-                // don't use on loopback or 169 interfaces
-                return false;
-            }
-
-            string addressString = address.ToString();
-            string excludeAddress = "[" + addressString + "]";
-            var subnets = LocalSubnetsFn();
-
-            // Exclude any addresses if they appear in the LAN list in [ ]
-            if (Array.IndexOf(subnets, excludeAddress) != -1)
-            {
-                return false;
-            }
-            return IsAddressInSubnets(address, addressString, subnets);
-        }       
-
-        // Checks to see if address/addressString (same but different type) falls within subnets[]
         private static bool IsAddressInSubnets(IPAddress address, string addressString, string[] subnets)
         {
             foreach (var subnet in subnets)
             {
                 var normalizedSubnet = subnet.Trim();
-                // is the subnet a host address and does it match the address being passes?
+
                 if (string.Equals(normalizedSubnet, addressString, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
-                // parse CIDR subnets and see if address falls within it.
+
                 if (normalizedSubnet.Contains('/', StringComparison.Ordinal))
                 {
-                    try
+                    var ipNetwork = IPNetwork.Parse(normalizedSubnet);
+                    if (ipNetwork.Contains(address))
                     {
-                        var ipNetwork = IPNetwork.Parse(normalizedSubnet);
-                        if (ipNetwork.Contains(address))
-                        {
-                            return true;
-                        }
-                    }
-                    catch
-                    {
-                        // Ignoring - invalid subnet passed encountered.
+                        return true;
                     }
                 }
             }
@@ -389,8 +359,8 @@ namespace Emby.Server.Implementations.Networking
         {
             return Dns.GetHostAddressesAsync(hostName);
         }
-        
-        private IEnumerable<IPAddress> GetIPsDefault()
+
+        private IEnumerable<IPAddress> GetIPsDefault(bool ignoreVirtualInterface)
         {
             IEnumerable<NetworkInterface> interfaces;
 
@@ -410,7 +380,15 @@ namespace Emby.Server.Implementations.Networking
             {
                 var ipProperties = network.GetIPProperties();
 
-                // Exclude any addresses if they appear in the LAN list in [ ]
+                // Try to exclude virtual adapters
+                // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
+                var addr = ipProperties.GatewayAddresses.FirstOrDefault();
+                if (addr == null
+                    || (ignoreVirtualInterface
+                        && (addr.Address.Equals(IPAddress.Any) || addr.Address.Equals(IPAddress.IPv6Any))))
+                {
+                    return Enumerable.Empty<IPAddress>();
+                }
 
                 return ipProperties.UnicastAddresses
                     .Select(i => i.Address)
@@ -516,12 +494,15 @@ namespace Emby.Server.Implementations.Networking
 
             foreach (NetworkInterface ni in interfaces)
             {
-                foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
+                if (ni.GetIPProperties().GatewayAddresses.FirstOrDefault() != null)
                 {
-                    if (ip.Address.Equals(address) && ip.IPv4Mask != null)
+                    foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
                     {
-                        return ip.IPv4Mask;
-                    }                    
+                        if (ip.Address.Equals(address) && ip.IPv4Mask != null)
+                        {
+                            return ip.IPv4Mask;
+                        }
+                    }
                 }
             }
 
