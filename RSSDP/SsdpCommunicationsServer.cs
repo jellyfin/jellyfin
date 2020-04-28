@@ -370,13 +370,13 @@ namespace Rssdp.Infrastructure
 
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetLocalIpAddresses(_config.Configuration.IgnoreVirtualInterfaces))
+                foreach (var address in _networkManager.GetLocalIpAddresses())
                 {
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
                         // Not support IPv6 right now
                         continue;
-                    }
+                    }                  
 
                     try
                     {

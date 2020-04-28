@@ -357,7 +357,7 @@ namespace Rssdp.Infrastructure
         private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress localIpAddress)
         {
             if (!message.IsSuccessStatusCode) return;
-
+            
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)
             {
