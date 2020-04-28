@@ -35,13 +35,14 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for getting a user's notifications.
+        /// Gets a user's notifications.
         /// </summary>
         /// <param name="userId">The user's ID.</param>
         /// <param name="isRead">An optional filter by notification read state.</param>
         /// <param name="startIndex">The optional index to start at. All notifications with a lower index will be omitted from the results.</param>
         /// <param name="limit">An optional limit on the number of notifications returned.</param>
-        /// <returns>A read-only list of all of the user's notifications.</returns>
+        /// <response code="200">Notifications returned.</response>
+        /// <returns>An <see cref="OkResult"/> containing a list of notifications.</returns>
         [HttpGet("{UserID}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<NotificationResultDto> GetNotifications(
@@ -54,10 +55,11 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for getting a user's notification summary.
+        /// Gets a user's notification summary.
         /// </summary>
         /// <param name="userId">The user's ID.</param>
-        /// <returns>Notifications summary for the user.</returns>
+        /// <response code="200">Summary of user's notifications returned.</response>
+        /// <returns>An <cref see="OkResult"/> containing a summary of the users notifications.</returns>
         [HttpGet("{UserID}/Summary")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<NotificationsSummaryDto> GetNotificationsSummary(
@@ -67,9 +69,10 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for getting notification types.
+        /// Gets notification types.
         /// </summary>
-        /// <returns>All notification types.</returns>
+        /// <response code="200">All notification types returned.</response>
+        /// <returns>An <cref see="OkResult"/> containing a list of all notification types.</returns>
         [HttpGet("Types")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<NotificationTypeInfo>> GetNotificationTypes()
@@ -78,9 +81,10 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for getting notification services.
+        /// Gets notification services.
         /// </summary>
-        /// <returns>All notification services.</returns>
+        /// <response>All notification services returned.</response>
+        /// <returns>An <cref see="OkResult"/> containing a list of all notification services.</returns>
         [HttpGet("Services")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<NameIdPair>> GetNotificationServices()
@@ -89,13 +93,14 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint to send a notification to all admins.
+        /// Sends a notification to all admins.
         /// </summary>
         /// <param name="name">The name of the notification.</param>
         /// <param name="description">The description of the notification.</param>
         /// <param name="url">The URL of the notification.</param>
         /// <param name="level">The level of the notification.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Notification sent.</response>
+        /// <returns>An <cref see="OkResult"/>.</returns>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult CreateAdminNotification(
@@ -120,11 +125,12 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint to set notifications as read.
+        /// Sets notifications as read.
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Notifications set as read.</response>
+        /// <returns>An <cref see="OkResult"/>.</returns>
         [HttpPost("{UserID}/Read")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult SetRead(
@@ -135,11 +141,12 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint to set notifications as unread.
+        /// Sets notifications as unread.
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Notifications set as unread.</response>
+        /// <returns>An <cref see="OkResult"/>.</returns>
         [HttpPost("{UserID}/Unread")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult SetUnread(
