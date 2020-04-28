@@ -46,8 +46,7 @@ namespace Rssdp.Infrastructure
         private HttpResponseParser _ResponseParser;
         private readonly ILogger _logger;
         private ISocketFactory _SocketFactory;
-        private readonly INetworkManager _networkManager;
-        private readonly IServerConfigurationManager _config;
+        private readonly INetworkManager _networkManager;        
 
         private int _LocalPort;
         private int _MulticastTtl;
@@ -77,11 +76,11 @@ namespace Rssdp.Infrastructure
         /// Minimum constructor.
         /// </summary>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        public SsdpCommunicationsServer(IServerConfigurationManager config, ISocketFactory socketFactory,
+        public SsdpCommunicationsServer(ISocketFactory socketFactory,
             INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
-            _config = config;
+            
         }
 
         /// <summary>
@@ -370,13 +369,13 @@ namespace Rssdp.Infrastructure
 
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetLocalIpAddresses(_config.Configuration.IgnoreVirtualInterfaces))
+                foreach (var address in _networkManager.GetLocalIpAddresses())
                 {
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
                         // Not support IPv6 right now
                         continue;
-                    }
+                    }                  
 
                     try
                     {

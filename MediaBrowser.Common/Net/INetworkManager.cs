@@ -41,9 +41,11 @@ namespace MediaBrowser.Common.Net
         /// <returns><c>true</c> if [is in local network] [the specified endpoint]; otherwise, <c>false</c>.</returns>
         bool IsInLocalNetwork(string endpoint);
 
-        IPAddress[] GetLocalIpAddresses(bool ignoreVirtualInterface);
+        IPAddress[] GetLocalIpAddresses();
 
         bool IsAddressInSubnets(string addressString, string[] subnets);
+
+        bool IsAddressInSubnets(IPAddress address, bool excludeInterfaces, bool excludeRFC);
 
         bool IsInSameSubnet(IPAddress address1, IPAddress address2, IPAddress subnetMask);
 
