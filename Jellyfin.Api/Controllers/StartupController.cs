@@ -33,6 +33,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Api endpoint for completing the startup wizard.
         /// </summary>
+        /// <response code="200">Startup wizard completed.</response>
         /// <returns>Status.</returns>
         [HttpPost("Complete")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -47,6 +48,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Endpoint for getting the initial startup wizard configuration.
         /// </summary>
+        /// <response code="200">Initial startup wizard configuration retrieved.</response>
         /// <returns>The initial startup wizard configuration.</returns>
         [HttpGet("Configuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -68,6 +70,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="uiCulture">The UI language culture.</param>
         /// <param name="metadataCountryCode">The metadata country code.</param>
         /// <param name="preferredMetadataLanguage">The preferred language for metadata.</param>
+        /// <response code="200">Configuration saved.</response>
         /// <returns>Status.</returns>
         [HttpPost("Configuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -88,6 +91,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="enableRemoteAccess">Enable remote access.</param>
         /// <param name="enableAutomaticPortMapping">Enable UPnP.</param>
+        /// <response code="200">Configuration saved.</response>
         /// <returns>Status.</returns>
         [HttpPost("RemoteAccess")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -102,6 +106,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Endpoint for returning the first user.
         /// </summary>
+        /// <response code="200">Initial user retrieved.</response>
         /// <returns>The first user.</returns>
         [HttpGet("User")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -115,6 +120,7 @@ namespace Jellyfin.Api.Controllers
         /// Endpoint for updating the user name and password.
         /// </summary>
         /// <param name="startupUserDto">The DTO containing username and password.</param>
+        /// <response code="200">Updated user name and password.</response>
         /// <returns>The async task.</returns>
         [HttpPost("User")]
         [ProducesResponseType(StatusCodes.Status200OK)]
