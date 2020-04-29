@@ -321,7 +321,7 @@ namespace MediaBrowser.Api.Playback
             var encodingOptions = ServerConfigurationManager.GetEncodingOptions();
 
             // enable throttling when NOT using hardware acceleration
-            if (encodingOptions.HardwareAccelerationType == string.Empty)
+            if (string.IsNullOrEmpty(encodingOptions.HardwareAccelerationType))
             {
                 return state.InputProtocol == MediaProtocol.File &&
                        state.RunTimeTicks.HasValue &&
@@ -330,6 +330,7 @@ namespace MediaBrowser.Api.Playback
                        state.VideoType == VideoType.VideoFile &&
                        !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
             }
+
             return false;
         }
 
