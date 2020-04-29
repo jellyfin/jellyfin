@@ -75,7 +75,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <cref see="OkResult"/> containing a list of all notification types.</returns>
         [HttpGet("Types")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<NotificationTypeInfo>> GetNotificationTypes()
+        public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
         {
             return _notificationManager.GetNotificationTypes();
         }
@@ -87,9 +87,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <cref see="OkResult"/> containing a list of all notification services.</returns>
         [HttpGet("Services")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<NameIdPair>> GetNotificationServices()
+        public IEnumerable<NameIdPair> GetNotificationServices()
         {
-            return _notificationManager.GetNotificationServices().ToList();
+            return _notificationManager.GetNotificationServices();
         }
 
         /// <summary>
