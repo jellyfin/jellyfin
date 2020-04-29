@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file was created by NSISDialogDesigner 1.4.4.0
+http://coolsoft.altervista.org/nsisdialogdesigner
+Do not edit manually!
+-->
+<Dialog Name="service_config" Title="CoOnfigure the service" Subtitle="This controls what type of access the server gets to this system." GenerateShowFunction="False">
+  <CheckBox Name="StartServiceAfterInstall" Location="12, 192" Size="426, 24" Text="Start Service after Install" Checked="True" TabIndex="0" />
+  <Label Name="LocalSystemAccountLabel" Location="12, 115" Size="426, 46" Text="The Local System account has full access to every resource and file on the system. This can have very real security implications, do not use unless absolutely neseccary." TabIndex="1" />
+  <Label Name="NetworkServiceAccountLabel" Location="12, 39" Size="426, 46" Text="The NetworkService account is a predefined local account used by the service control manager. It is the recommended way to install the Jellyfin Server service." TabIndex="2" />
+  <RadioButton Name="UseLocalSystemAccount" Location="12, 88" Size="426, 24" Text="Use Local System account" TabIndex="3" />
+  <RadioButton Name="UseNetworkServiceAccount" Location="12, 12" Size="426, 24" Text="Use Network Service account (Recommended)" Font="Microsoft Sans Serif, 8.25pt, style=Bold" Checked="True" TabIndex="4" />
+</Dialog>
