@@ -106,6 +106,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
+using Prometheus.DotNetRuntime;
 
 namespace Emby.Server.Implementations
 {
@@ -258,6 +259,12 @@ namespace Emby.Server.Implementations
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
             _startupOptions = options;
+
+            // Initialize runtime stat collection
+            if (ServerConfigurationManager.Configuration.EnableMetrics)
+            {
+                DotNetRuntimeStatsBuilder.Default().StartCollecting();
+            }
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
