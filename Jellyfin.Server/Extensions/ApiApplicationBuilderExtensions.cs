@@ -1,4 +1,5 @@
 using MediaBrowser.Controller.Configuration;
+using Jellyfin.Server.Middleware;
 using Microsoft.AspNetCore.Builder;
 
 namespace Jellyfin.Server.Extensions

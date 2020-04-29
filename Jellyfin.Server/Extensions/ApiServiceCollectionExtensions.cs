@@ -9,6 +9,7 @@ using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Formatters;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,6 +72,8 @@ namespace Jellyfin.Server.Extensions
             return serviceCollection.AddMvc(opts =>
                 {
                     opts.UseGeneralRoutePrefix(baseUrl);
+                    opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
+                    opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up

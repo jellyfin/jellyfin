@@ -1,4 +1,5 @@
 using Jellyfin.Server.Extensions;
+using Jellyfin.Server.Middleware;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -57,6 +58,8 @@ namespace Jellyfin.Server
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseWebSockets();
 
