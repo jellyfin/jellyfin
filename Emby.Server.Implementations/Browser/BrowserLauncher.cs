@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Browser
         /// <param name="appHost">The app host.</param>
         public static void OpenSwaggerPage(IServerApplicationHost appHost)
         {
-            TryOpenUrl(appHost, "/api-docs/v1/swagger");
+            TryOpenUrl(appHost, "/api-docs/swagger");
         }
 
         /// <summary>

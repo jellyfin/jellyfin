@@ -1,5 +1,4 @@
 using MediaBrowser.Controller.Configuration;
-using Jellyfin.Server.Middleware;
 using Microsoft.AspNetCore.Builder;
 
 namespace Jellyfin.Server.Extensions
@@ -31,19 +30,20 @@ namespace Jellyfin.Server.Extensions
             return applicationBuilder
                 .UseSwagger(c =>
                 {
-                    c.RouteTemplate = $"/{baseUrl}api-docs/{{documentName}}/openapi.json";
+                    // Custom path requires {documentName}, SwaggerDoc documentName is 'api-docs'
+                    c.RouteTemplate = $"/{baseUrl}{{documentName}}/openapi.json";
                 })
                 .UseSwaggerUI(c =>
                 {
-                    c.DocumentTitle = "Jellyfin API v1";
-                    c.SwaggerEndpoint($"/{baseUrl}api-docs/v1/openapi.json", "Jellyfin API v1");
-                    c.RoutePrefix = $"{baseUrl}api-docs/v1/swagger";
+                    c.DocumentTitle = "Jellyfin API";
+                    c.SwaggerEndpoint($"/{baseUrl}api-docs/openapi.json", "Jellyfin API");
+                    c.RoutePrefix = $"{baseUrl}api-docs/swagger";
                 })
                 .UseReDoc(c =>
                 {
-                    c.DocumentTitle = "Jellyfin API v1";
-                    c.SpecUrl($"/{baseUrl}api-docs/v1/openapi.json");
-                    c.RoutePrefix = $"{baseUrl}api-docs/v1/redoc";
+                    c.DocumentTitle = "Jellyfin API";
+                    c.SpecUrl($"/{baseUrl}api-docs/openapi.json");
+                    c.RoutePrefix = $"{baseUrl}api-docs/redoc";
                 });
         }
     }

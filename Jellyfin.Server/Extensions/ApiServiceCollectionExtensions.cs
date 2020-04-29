@@ -96,7 +96,7 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API" });
 
                 // Add all xml doc files to swagger generator.
                 var xmlFiles = Directory.GetFiles(
