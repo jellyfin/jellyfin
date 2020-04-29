@@ -31,7 +31,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Api endpoint for completing the startup wizard.
+        /// Completes the startup wizard.
         /// </summary>
         /// <response code="200">Startup wizard completed.</response>
         /// <returns>Status.</returns>
@@ -46,7 +46,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for getting the initial startup wizard configuration.
+        /// Gets the initial startup wizard configuration.
         /// </summary>
         /// <response code="200">Initial startup wizard configuration retrieved.</response>
         /// <returns>The initial startup wizard configuration.</returns>
@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for updating the initial startup wizard configuration.
+        /// Sets the initial startup wizard configuration.
         /// </summary>
         /// <param name="uiCulture">The UI language culture.</param>
         /// <param name="metadataCountryCode">The metadata country code.</param>
@@ -87,7 +87,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for (dis)allowing remote access and UPnP.
+        /// Sets remote access and UPnP.
         /// </summary>
         /// <param name="enableRemoteAccess">Enable remote access.</param>
         /// <param name="enableAutomaticPortMapping">Enable UPnP.</param>
@@ -104,7 +104,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for returning the first user.
+        /// Gets the first user.
         /// </summary>
         /// <response code="200">Initial user retrieved.</response>
         /// <returns>The first user.</returns>
@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Endpoint for updating the user name and password.
+        /// Sets the user name and password.
         /// </summary>
         /// <param name="startupUserDto">The DTO containing username and password.</param>
         /// <response code="200">Updated user name and password.</response>
