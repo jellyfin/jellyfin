@@ -189,7 +189,7 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
 	EndGlobalSection
-    GlobalSection(AutomaticVersions) = postSolution
+	GlobalSection(AutomaticVersions) = postSolution
 		UpdateAssemblyVersion = True
 		UpdateAssemblyFileVersion = True
 		UpdateAssemblyInfoVersion = True
