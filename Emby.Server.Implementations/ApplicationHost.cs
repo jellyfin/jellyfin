@@ -504,7 +504,7 @@ namespace Emby.Server.Implementations
         }
 
         public Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
-            => HttpServer.RequestHandler(context);
+            => _httpServer.RequestHandler(context);
 
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
@@ -597,7 +597,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
             serviceCollection.AddSingleton<ServiceController>();
-            serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
             serviceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
             serviceCollection.AddSingleton<IImageProcessor, ImageProcessor>();

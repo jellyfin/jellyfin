@@ -53,7 +53,6 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly string _baseUrlPrefix;
 
         private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
-        private readonly List<IWebSocketConnection> _webSocketConnections = new List<IWebSocketConnection>();
         private readonly IHostEnvironment _hostEnvironment;
 
         private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
@@ -67,10 +66,10 @@ namespace Emby.Server.Implementations.HttpServer
             INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
-            IHttpListener socketListener,
             ILocalizationManager localizationManager,
             ServiceController serviceController,
-            IHostEnvironment hostEnvironment)
+            IHostEnvironment hostEnvironment,
+            ILoggerFactory loggerFactory)
         {
             _appHost = applicationHost;
             _logger = logger;
@@ -80,11 +79,9 @@ namespace Emby.Server.Implementations.HttpServer
             _networkManager = networkManager;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
-            _socketListener = socketListener;
             ServiceController = serviceController;
-
-            _socketListener.WebSocketConnected = OnWebSocketConnected;
             _hostEnvironment = hostEnvironment;
+            _loggerFactory = loggerFactory;
 
             _funcParseFn = t => s => JsvReader.GetParseFn(t)(s);
 
