@@ -59,9 +59,27 @@ namespace Emby.Server.Implementations.SocketSharp
                     Endpoint = endpoint
                 });
 
-                WebSocketReceiveResult result;
-                var message = new List<byte>();
+                await ProcessIncomingFrames(webSocketContext, socket);
 
+                socket.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AcceptWebSocketAsync error");
+                if (!ctx.Response.HasStarted)
+                {
+                    ctx.Response.StatusCode = 500;
+                }
+            }
+        }
+
+        private async Task ProcessIncomingFrames(WebSocket webSocketContext, SharpWebSocket socket)
+        {
+            WebSocketReceiveResult result;
+            var message = new List<byte>();
+
+            try
+            {
                 do
                 {
                     var buffer = WebSocket.CreateServerBuffer(4096);
@@ -75,7 +93,6 @@ namespace Emby.Server.Implementations.SocketSharp
                     }
                 } while (socket.State == WebSocketState.Open && result.MessageType != WebSocketMessageType.Close);
 
-
                 if (webSocketContext.State == WebSocketState.Open)
                 {
                     await webSocketContext.CloseAsync(
@@ -83,15 +100,17 @@ namespace Emby.Server.Implementations.SocketSharp
                         result.CloseStatusDescription,
                         _disposeCancellationToken).ConfigureAwait(false);
                 }
-
-                socket.Dispose();
             }
-            catch (Exception ex)
+            catch (WebSocketException ex)
             {
-                _logger.LogError(ex, "AcceptWebSocketAsync error");
-                if (!ctx.Response.HasStarted)
+                switch (ex.WebSocketErrorCode)
                 {
-                    ctx.Response.StatusCode = 500;
+                    case WebSocketError.ConnectionClosedPrematurely:
+                        _logger.LogWarning("ProcessIncomingFrames: socket closed connection prematurely.");
+                        break;
+                    default:
+                        _logger.LogError(ex, "ProcessIncomingFrames error");
+                        break;
                 }
             }
         }
