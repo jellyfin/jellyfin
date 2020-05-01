@@ -32,11 +32,11 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a package, by name or assembly guid.
+        /// Gets a package by name or assembly guid.
         /// </summary>
         /// <param name="name">The name of the package.</param>
         /// <param name="assemblyGuid">The guid of the associated assembly.</param>
-        /// <returns>Package info.</returns>
+        /// <returns>A <see cref="PackageInfo"/> containing package information.</returns>
         [HttpGet("/{Name}")]
         [ProducesResponseType(typeof(PackageInfo), StatusCodes.Status200OK)]
         public async Task<ActionResult<PackageInfo>> GetPackageInfo(
@@ -55,7 +55,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets available packages.
         /// </summary>
-        /// <returns>Packages information.</returns>
+        /// <returns>An <see cref="PackageInfo"/> containing available packages information.</returns>
         [HttpGet]
         [ProducesResponseType(typeof(PackageInfo[]), StatusCodes.Status200OK)]
         public async Task<IEnumerable<PackageInfo>> GetPackages()
@@ -71,7 +71,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="name">Package name.</param>
         /// <param name="assemblyGuid">Guid of the associated assembly.</param>
         /// <param name="version">Optional version. Defaults to latest version.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Package found.</response>
+        /// <response code="404">Package not found.</response>
+        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the package could not be found.</returns>
         [HttpPost("/Installed/{Name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -102,7 +104,8 @@ namespace Jellyfin.Api.Controllers
         /// Cancels a package installation.
         /// </summary>
         /// <param name="id">Installation Id.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Installation cancelled.</response>
+        /// <returns>An <see cref="OkResult"/> on successfully cancelling a package installation.</returns>
         [HttpDelete("/Installing/{id}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         public IActionResult CancelPackageInstallation(
