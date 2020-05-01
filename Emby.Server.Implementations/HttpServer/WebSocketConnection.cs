@@ -36,8 +36,6 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private readonly WebSocket _socket;
 
-        private bool _disposed = false;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
@@ -221,12 +219,6 @@ namespace Emby.Server.Implementations.HttpServer
             };
 
             await OnReceive(info).ConfigureAwait(false);
-
-            // Stop reading if there's no more data coming
-            if (result.IsCompleted)
-            {
-                return;
-            }
         }
     }
 }

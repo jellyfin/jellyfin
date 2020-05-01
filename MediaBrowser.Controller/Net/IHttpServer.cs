@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
 {
     /// <summary>
-    /// Interface IHttpServer
+    /// Interface IHttpServer.
     /// </summary>
-    public interface IHttpServer : IDisposable
+    public interface IHttpServer
     {
         /// <summary>
         /// Gets the URL prefix.

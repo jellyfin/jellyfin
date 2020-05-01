@@ -28,12 +28,11 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using ServiceStack.Text.Jsv;
 
 namespace Emby.Server.Implementations.HttpServer
 {
-    public class HttpListenerHost : IHttpServer, IDisposable
+    public class HttpListenerHost : IHttpServer
     {
         /// <summary>
         /// The key for a setting that specifies the default redirect path
@@ -697,28 +696,6 @@ namespace Emby.Server.Implementations.HttpServer
         {
             _logger.LogDebug("Normalizing custom route {0}", path);
             return _baseUrlPrefix + NormalizeUrlPath(path);
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                // TODO:
-            }
-
-            _disposed = true;
         }
 
         /// <summary>

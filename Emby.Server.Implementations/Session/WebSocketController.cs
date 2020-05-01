@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Session
         private readonly ISessionManager _sessionManager;
         private readonly SessionInfo _session;
 
-        private List<IWebSocketConnection> _sockets;
+        private readonly List<IWebSocketConnection> _sockets;
         private bool _disposed = false;
 
         public WebSocketController(
