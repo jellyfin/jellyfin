@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -12,8 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
@@ -72,7 +71,7 @@ namespace Emby.Server.Implementations.HttpServer
                 SetRangeValues();
             }
 
-            FileShare = FileShareMode.Read;
+            FileShare = FileShare.Read;
             Cookies = new List<Cookie>();
         }
 
@@ -94,7 +93,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public List<Cookie> Cookies { get; private set; }
 
-        public FileShareMode FileShare { get; set; }
+        public FileShare FileShare { get; set; }
 
         /// <summary>
         /// Gets the options.
@@ -222,17 +221,17 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        public async Task TransmitFile(Stream stream, string path, long offset, long count, FileShareMode fileShareMode, CancellationToken cancellationToken)
+        public async Task TransmitFile(Stream stream, string path, long offset, long count, FileShare fileShare, CancellationToken cancellationToken)
         {
-            var fileOpenOptions = FileOpenOptions.SequentialScan;
+            var fileOptions = FileOptions.SequentialScan;
 
             // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                fileOpenOptions |= FileOpenOptions.Asynchronous;
+                fileOptions |= FileOptions.Asynchronous;
             }
 
-            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShareMode, fileOpenOptions))
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, fileShare, IODefaults.FileStreamBufferSize, fileOptions))
             {
                 if (offset > 0)
                 {
@@ -245,7 +244,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    await fs.CopyToAsync(stream, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                    await fs.CopyToAsync(stream, IODefaults.CopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
             }
         }

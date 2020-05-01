@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Runtime.InteropServices;
 using MediaBrowser.Model.Updates;
@@ -24,8 +26,6 @@ namespace MediaBrowser.Model.System
     /// </summary>
     public class SystemInfo : PublicSystemInfo
     {
-        public PackageVersionClass SystemUpdateLevel { get; set; }
-
         /// <summary>
         /// Gets or sets the display name of the operating system.
         /// </summary>

@@ -140,7 +140,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (isLive)
             {
-                job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
+                job ??= ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
 
                 if (job != null)
                 {
@@ -156,7 +156,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, baselineStreamBitrate);
 
-            job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
+            job ??= ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
 
             if (job != null)
             {
@@ -168,22 +168,19 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private string GetLivePlaylistText(string path, int segmentLength)
         {
-            using (var stream = FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite))
-            {
-                using (var reader = new StreamReader(stream))
-                {
-                    var text = reader.ReadToEnd();
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var reader = new StreamReader(stream);
 
-                    text = text.Replace("#EXTM3U", "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:EVENT");
+            var text = reader.ReadToEnd();
 
-                    var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(CultureInfo.InvariantCulture);
+            text = text.Replace("#EXTM3U", "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:EVENT");
 
-                    text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
-                    //text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+            var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(CultureInfo.InvariantCulture);
 
-                    return text;
-                }
-            }
+            text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+            //text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+
+            return text;
         }
 
         private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, int baselineStreamBitrate)
@@ -211,30 +208,26 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 try
                 {
-                    // Need to use FileShareMode.ReadWrite because we're reading the file at the same time it's being written
-                    using (var fileStream = GetPlaylistFileStream(playlist))
+                    // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
+                    using var fileStream = GetPlaylistFileStream(playlist);
+                    using var reader = new StreamReader(fileStream);
+                    var count = 0;
+
+                    while (!reader.EndOfStream)
                     {
-                        using (var reader = new StreamReader(fileStream))
+                        var line = reader.ReadLine();
+
+                        if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                         {
-                            var count = 0;
-
-                            while (!reader.EndOfStream)
+                            count++;
+                            if (count >= segmentCount)
                             {
-                                var line = reader.ReadLine();
-
-                                if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
-                                {
-                                    count++;
-                                    if (count >= segmentCount)
-                                    {
-                                        Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
-                                        return;
-                                    }
-                                }
+                                Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                return;
                             }
-                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                         }
                     }
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
                 catch (IOException)
                 {
@@ -247,17 +240,13 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected Stream GetPlaylistFileStream(string path)
         {
-            var tmpPath = path + ".tmp";
-            tmpPath = path;
-
-            try
-            {
-                return FileSystem.GetFileStream(tmpPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.SequentialScan);
-            }
-            catch (IOException)
-            {
-                return FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, FileOpenOptions.SequentialScan);
-            }
+            return new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite,
+                IODefaults.FileStreamBufferSize,
+                FileOptions.SequentialScan);
         }
 
         protected override string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding)

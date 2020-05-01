@@ -1,9 +1,12 @@
+
+#pragma warning disable CS1591
+
 using System;
 
 namespace MediaBrowser.Model.Net
 {
     /// <summary>
-    /// Class WebSocketMessage
+    /// Class WebSocketMessage.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class WebSocketMessage<T>

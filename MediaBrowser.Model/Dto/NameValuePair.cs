@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Dto
 {
     public class NameValuePair
@@ -18,6 +20,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the value.
         /// </summary>

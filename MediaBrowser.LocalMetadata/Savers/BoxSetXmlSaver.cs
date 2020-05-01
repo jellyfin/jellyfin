@@ -30,7 +30,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             return Path.Combine(item.Path, "collection.xml");
         }
 
-        public BoxSetXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        public BoxSetXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<BoxSetXmlSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }

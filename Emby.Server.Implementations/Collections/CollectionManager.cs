@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-#pragma warning disable SA1600
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -24,6 +21,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Collections
 {
+    /// <summary>
+    /// The collection manager.
+    /// </summary>
     public class CollectionManager : ICollectionManager
     {
         private readonly ILibraryManager _libraryManager;
@@ -34,6 +34,16 @@ namespace Emby.Server.Implementations.Collections
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CollectionManager"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="localizationManager">The localization manager.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="iLibraryMonitor">The library monitor.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="providerManager">The provider manager.</param>
         public CollectionManager(
             ILibraryManager libraryManager,
             IApplicationPaths appPaths,
@@ -52,8 +62,13 @@ namespace Emby.Server.Implementations.Collections
             _appPaths = appPaths;
         }
 
+        /// <inheritdoc />
         public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+
+        /// <inheritdoc />
         public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+
+        /// <inheritdoc />
         public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
 
         private IEnumerable<Folder> FindFolders(string path)
@@ -110,11 +125,12 @@ namespace Emby.Server.Implementations.Collections
         {
             var folder = GetCollectionsFolder(false).Result;
 
-            return folder == null ?
-                new List<BoxSet>() :
-                folder.GetChildren(user, true).OfType<BoxSet>();
+            return folder == null
+                ? Enumerable.Empty<BoxSet>()
+                : folder.GetChildren(user, true).OfType<BoxSet>();
         }
 
+        /// <inheritdoc />
         public BoxSet CreateCollection(CollectionCreationOptions options)
         {
             var name = options.Name;
@@ -179,11 +195,13 @@ namespace Emby.Server.Implementations.Collections
             }
         }
 
+        /// <inheritdoc />
         public void AddToCollection(Guid collectionId, IEnumerable<string> ids)
         {
             AddToCollection(collectionId, ids, true, new MetadataRefreshOptions(new DirectoryService(_fileSystem)));
         }
 
+        /// <inheritdoc />
         public void AddToCollection(Guid collectionId, IEnumerable<Guid> ids)
         {
             AddToCollection(collectionId, ids.Select(i => i.ToString("N", CultureInfo.InvariantCulture)), true, new MetadataRefreshOptions(new DirectoryService(_fileSystem)));
@@ -192,7 +210,6 @@ namespace Emby.Server.Implementations.Collections
         private void AddToCollection(Guid collectionId, IEnumerable<string> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
-
             if (collection == null)
             {
                 throw new ArgumentException("No collection exists with the supplied Id");
@@ -247,11 +264,13 @@ namespace Emby.Server.Implementations.Collections
             }
         }
 
+        /// <inheritdoc />
         public void RemoveFromCollection(Guid collectionId, IEnumerable<string> itemIds)
         {
             RemoveFromCollection(collectionId, itemIds.Select(i => new Guid(i)));
         }
 
+        /// <inheritdoc />
         public void RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds)
         {
             var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
@@ -290,10 +309,13 @@ namespace Emby.Server.Implementations.Collections
             }
 
             collection.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
-            _providerManager.QueueRefresh(collection.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem))
-            {
-                ForceSave = true
-            }, RefreshPriority.High);
+            _providerManager.QueueRefresh(
+                collection.Id,
+                new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                {
+                    ForceSave = true
+                },
+                RefreshPriority.High);
 
             ItemsRemovedFromCollection?.Invoke(this, new CollectionModifiedEventArgs
             {
@@ -302,6 +324,7 @@ namespace Emby.Server.Implementations.Collections
             });
         }
 
+        /// <inheritdoc />
         public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)
         {
             var results = new Dictionary<Guid, BaseItem>();
@@ -310,9 +333,7 @@ namespace Emby.Server.Implementations.Collections
 
             foreach (var item in items)
             {
-                var grouping = item as ISupportsBoxSetGrouping;
-
-                if (grouping == null)
+                if (!(item is ISupportsBoxSetGrouping))
                 {
                     results[item.Id] = item;
                 }
@@ -342,13 +363,25 @@ namespace Emby.Server.Implementations.Collections
         }
     }
 
+    /// <summary>
+    /// The collection manager entry point.
+    /// </summary>
     public sealed class CollectionManagerEntryPoint : IServerEntryPoint
     {
         private readonly CollectionManager _collectionManager;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
 
-        public CollectionManagerEntryPoint(ICollectionManager collectionManager, IServerConfigurationManager config, ILogger logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CollectionManagerEntryPoint"/> class.
+        /// </summary>
+        /// <param name="collectionManager">The collection manager.</param>
+        /// <param name="config">The server configuration manager.</param>
+        /// <param name="logger">The logger.</param>
+        public CollectionManagerEntryPoint(
+            ICollectionManager collectionManager,
+            IServerConfigurationManager config,
+            ILogger<CollectionManagerEntryPoint> logger)
         {
             _collectionManager = (CollectionManager)collectionManager;
             _config = config;

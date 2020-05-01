@@ -15,7 +15,7 @@ namespace MediaBrowser.Providers.Music
     {
         public ArtistMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<ArtistMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)
@@ -31,10 +31,10 @@ namespace MediaBrowser.Providers.Music
         {
             return item.IsAccessedByName
                 ? item.GetTaggedItems(new InternalItemsQuery
-                    {
-                        Recursive = true,
-                        IsFolder = false
-                    })
+                {
+                    Recursive = true,
+                    IsFolder = false
+                })
                 : item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder);
         }
 

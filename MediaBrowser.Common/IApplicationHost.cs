@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
@@ -46,12 +45,6 @@ namespace MediaBrowser.Common
         /// </summary>
         /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
         bool CanSelfRestart { get; }
-
-        /// <summary>
-        /// Gets the version class of the system.
-        /// </summary>
-        /// <value><see cref="PackageVersionClass.Release" /> or <see cref="PackageVersionClass.Beta" />.</value>
-        PackageVersionClass SystemUpdateLevel { get; }
 
         /// <summary>
         /// Gets the application version.
@@ -121,11 +114,10 @@ namespace MediaBrowser.Common
         void RemovePlugin(IPlugin plugin);
 
         /// <summary>
-        /// Inits this instance.
+        /// Initializes this instance.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
-        /// <returns>A task.</returns>
-        Task InitAsync(IServiceCollection serviceCollection);
+        void Init(IServiceCollection serviceCollection);
 
         /// <summary>
         /// Creates the instance.

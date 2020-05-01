@@ -1,7 +1,10 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Entities
 {
     public enum ExtraType
     {
+        Unknown = 0,
         Clip = 1,
         Trailer = 2,
         BehindTheScenes = 3,

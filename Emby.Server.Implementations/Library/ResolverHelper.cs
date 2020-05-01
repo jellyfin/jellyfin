@@ -9,7 +9,7 @@ using MediaBrowser.Model.IO;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Class ResolverHelper
+    /// Class ResolverHelper.
     /// </summary>
     public static class ResolverHelper
     {
@@ -118,10 +118,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(fileSystem));
             }
+
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
+
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));

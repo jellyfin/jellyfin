@@ -10,14 +10,14 @@ namespace MediaBrowser.Controller.Providers
         public Guid ItemId { get; set; }
 
         /// <summary>
-        /// If set will only search within the given provider
+        /// Will only search within the given provider when set.
         /// </summary>
         public string SearchProviderName { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [include disabled providers].
+        /// Gets or sets a value indicating whether disabled providers should be included.
         /// </summary>
-        /// <value><c>true</c> if [include disabled providers]; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if disabled providers should be included.</value>
         public bool IncludeDisabledProviders { get; set; }
     }
 }

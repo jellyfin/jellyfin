@@ -6,52 +6,45 @@ namespace Jellyfin.Naming.Tests.Music
 {
     public class MultiDiscAlbumTests
     {
-        [Fact]
-        public void TestMultiDiscAlbums()
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
+        [Theory]
+        [InlineData("", false)]
+        [InlineData("C:/", false)]
+        [InlineData("/home/", false)]
+        [InlineData(@"blah blah", false)]
+        [InlineData(@"D:/music/weezer/03 Pinkerton", false)]
+        [InlineData(@"D:/music/michael jackson/Bad (2012 Remaster)", false)]
+        [InlineData(@"cd1", true)]
+        [InlineData(@"disc18", true)]
+        [InlineData(@"disk10", true)]
+        [InlineData(@"vol7", true)]
+        [InlineData(@"volume1", true)]
+        [InlineData(@"cd 1", true)]
+        [InlineData(@"disc 1", true)]
+        [InlineData(@"disk 1", true)]
+        [InlineData(@"disk", false)]
+        [InlineData(@"disk ·", false)]
+        [InlineData(@"disk a", false)]
+        [InlineData(@"disk volume", false)]
+        [InlineData(@"disc disc", false)]
+        [InlineData(@"disk disc 6", false)]
+        [InlineData(@"cd  - 1", true)]
+        [InlineData(@"disc- 1", true)]
+        [InlineData(@"disk - 1", true)]
+        [InlineData(@"Disc 01 (Hugo Wolf · 24 Lieder)", true)]
+        [InlineData(@"Disc 04 (Encores and Folk Songs)", true)]
+        [InlineData(@"Disc04 (Encores and Folk Songs)", true)]
+        [InlineData(@"Disc 04(Encores and Folk Songs)", true)]
+        [InlineData(@"Disc04(Encores and Folk Songs)", true)]
+        [InlineData(@"D:/Video/MBTestLibrary/VideoTest/music/.38 special/anth/Disc 2", true)]
+        [InlineData(@"[1985] Opportunities (Let's make lots of money) (1985)", false)]
+        [InlineData(@"Blah 04(Encores and Folk Songs)", false)]
+        public void AlbumParser_MultidiscPath_Identifies(string path, bool result)
         {
-            Assert.False(IsMultiDiscAlbumFolder(@"blah blah"));
-            Assert.False(IsMultiDiscAlbumFolder(@"d:/music\weezer/03 Pinkerton"));
-            Assert.False(IsMultiDiscAlbumFolder(@"d:/music/michael jackson/Bad (2012 Remaster)"));
+            var parser = new AlbumParser(_namingOptions);
 
-            Assert.True(IsMultiDiscAlbumFolder(@"cd1"));
-            Assert.True(IsMultiDiscAlbumFolder(@"disc1"));
-            Assert.True(IsMultiDiscAlbumFolder(@"disk1"));
-
-            // Add a space
-            Assert.True(IsMultiDiscAlbumFolder(@"cd 1"));
-            Assert.True(IsMultiDiscAlbumFolder(@"disc 1"));
-            Assert.True(IsMultiDiscAlbumFolder(@"disk 1"));
-
-            Assert.True(IsMultiDiscAlbumFolder(@"cd  - 1"));
-            Assert.True(IsMultiDiscAlbumFolder(@"disc- 1"));
-            Assert.True(IsMultiDiscAlbumFolder(@"disk - 1"));
-
-            Assert.True(IsMultiDiscAlbumFolder(@"Disc 01 (Hugo Wolf · 24 Lieder)"));
-            Assert.True(IsMultiDiscAlbumFolder(@"Disc 04 (Encores and Folk Songs)"));
-            Assert.True(IsMultiDiscAlbumFolder(@"Disc04 (Encores and Folk Songs)"));
-            Assert.True(IsMultiDiscAlbumFolder(@"Disc 04(Encores and Folk Songs)"));
-            Assert.True(IsMultiDiscAlbumFolder(@"Disc04(Encores and Folk Songs)"));
-
-            Assert.True(IsMultiDiscAlbumFolder(@"D:/Video/MBTestLibrary/VideoTest/music/.38 special/anth/Disc 2"));
-        }
-
-        [Fact]
-        public void TestMultiDiscAlbums1()
-        {
-            Assert.False(IsMultiDiscAlbumFolder(@"[1985] Oppurtunities (Let's make lots of money) (1985)"));
-        }
-
-        [Fact]
-        public void TestMultiDiscAlbums2()
-        {
-            Assert.False(IsMultiDiscAlbumFolder(@"Blah 04(Encores and Folk Songs)"));
-        }
-
-        private bool IsMultiDiscAlbumFolder(string path)
-        {
-            var parser = new AlbumParser(new NamingOptions());
-
-            return parser.ParseMultiPart(path).IsMultiPart;
+            Assert.Equal(result, parser.IsMultiPart(path));
         }
     }
 }

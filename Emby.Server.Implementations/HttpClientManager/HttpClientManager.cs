@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -24,7 +25,7 @@ namespace Emby.Server.Implementations.HttpClientManager
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
-        private readonly Func<string> _defaultUserAgentFn;
+        private readonly IApplicationHost _appHost;
 
         /// <summary>
         /// Holds a dictionary of http clients by host.  Use GetHttpClient(host) to retrieve or create a client for web requests.
@@ -40,12 +41,12 @@ namespace Emby.Server.Implementations.HttpClientManager
             IApplicationPaths appPaths,
             ILogger<HttpClientManager> logger,
             IFileSystem fileSystem,
-            Func<string> defaultUserAgentFn)
+            IApplicationHost appHost)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _fileSystem = fileSystem;
             _appPaths = appPaths ?? throw new ArgumentNullException(nameof(appPaths));
-            _defaultUserAgentFn = defaultUserAgentFn;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (!string.IsNullOrWhiteSpace(userInfo))
             {
                 _logger.LogWarning("Found userInfo in url: {0} ... url: {1}", userInfo, url);
-                url = url.Replace(userInfo + '@', string.Empty);
+                url = url.Replace(userInfo + '@', string.Empty, StringComparison.Ordinal);
             }
 
             var request = new HttpRequestMessage(method, url);
@@ -91,18 +92,18 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (options.EnableDefaultUserAgent
                 && !request.Headers.TryGetValues(HeaderNames.UserAgent, out _))
             {
-                request.Headers.Add(HeaderNames.UserAgent, _defaultUserAgentFn());
+                request.Headers.Add(HeaderNames.UserAgent, _appHost.ApplicationUserAgent);
             }
 
             switch (options.DecompressionMethod)
             {
-                case CompressionMethod.Deflate | CompressionMethod.Gzip:
+                case CompressionMethods.Deflate | CompressionMethods.Gzip:
                     request.Headers.Add(HeaderNames.AcceptEncoding, new[] { "gzip", "deflate" });
                     break;
-                case CompressionMethod.Deflate:
+                case CompressionMethods.Deflate:
                     request.Headers.Add(HeaderNames.AcceptEncoding, "deflate");
                     break;
-                case CompressionMethod.Gzip:
+                case CompressionMethods.Gzip:
                     request.Headers.Add(HeaderNames.AcceptEncoding, "gzip");
                     break;
                 default:
@@ -197,7 +198,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (File.Exists(responseCachePath)
                 && _fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
             {
-                var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true);
+                var stream = new FileStream(responseCachePath, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
                 return new HttpResponseInfo
                 {
@@ -220,7 +221,7 @@ namespace Emby.Server.Implementations.HttpClientManager
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
-                StreamDefaults.DefaultFileStreamBufferSize,
+                IODefaults.FileStreamBufferSize,
                 true))
             {
                 await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
@@ -239,15 +240,10 @@ namespace Emby.Server.Implementations.HttpClientManager
 
             var httpWebRequest = GetRequestMessage(options, httpMethod);
 
-            if (options.RequestContentBytes != null
-                || !string.IsNullOrEmpty(options.RequestContent)
+            if (!string.IsNullOrEmpty(options.RequestContent)
                 || httpMethod == HttpMethod.Post)
             {
-                if (options.RequestContentBytes != null)
-                {
-                    httpWebRequest.Content = new ByteArrayContent(options.RequestContentBytes);
-                }
-                else if (options.RequestContent != null)
+                if (options.RequestContent != null)
                 {
                     httpWebRequest.Content = new StringContent(
                         options.RequestContent,

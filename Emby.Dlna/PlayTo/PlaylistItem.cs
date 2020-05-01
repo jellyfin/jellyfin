@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.PlayTo

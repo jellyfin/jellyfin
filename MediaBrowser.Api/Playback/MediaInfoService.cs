@@ -1,14 +1,12 @@
 #pragma warning disable CS1591
 #pragma warning disable SA1402
-#pragma warning disable SA1600
 #pragma warning disable SA1649
 
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text.Json;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -23,7 +21,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -237,7 +234,7 @@ namespace MediaBrowser.Api.Playback
                         OpenToken = mediaSource.OpenToken
                     }).ConfigureAwait(false);
 
-                    info.MediaSources = new MediaSourceInfo[] { openStreamResult.MediaSource };
+                    info.MediaSources = new[] { openStreamResult.MediaSource };
                 }
             }
 
@@ -264,41 +261,26 @@ namespace MediaBrowser.Api.Playback
             return ToOptimizedResult(result);
         }
 
-        private T Clone<T>(T obj)
-        {
-            // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
-            // Should we move this directly into MediaSourceManager?
-            var json = JsonSerializer.SerializeToUtf8Bytes(obj);
-            return JsonSerializer.Deserialize<T>(json);
-        }
-
         private async Task<PlaybackInfoResponse> GetPlaybackInfo(Guid id, Guid userId, string[] supportedLiveMediaTypes, string mediaSourceId = null, string liveStreamId = null)
         {
             var user = _userManager.GetUserById(userId);
             var item = _libraryManager.GetItemById(id);
             var result = new PlaybackInfoResponse();
 
+            MediaSourceInfo[] mediaSources;
             if (string.IsNullOrWhiteSpace(liveStreamId))
             {
-                IEnumerable<MediaSourceInfo> mediaSources;
-                try
-                {
-                    // TODO handle supportedLiveMediaTypes ?
-                    mediaSources = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, false, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    mediaSources = new List<MediaSourceInfo>();
-                    Logger.LogError(ex, "Could not find media sources for item id {id}", id);
-                    // TODO PlaybackException ??
-                    //result.ErrorCode = ex.ErrorCode;
-                }
 
-                result.MediaSources = mediaSources.ToArray();
+                // TODO handle supportedLiveMediaTypes?
+                var mediaSourcesList = await _mediaSourceManager.GetPlaybackMediaSources(item, user, true, true, CancellationToken.None).ConfigureAwait(false);
 
-                if (!string.IsNullOrWhiteSpace(mediaSourceId))
+                if (string.IsNullOrWhiteSpace(mediaSourceId))
                 {
-                    result.MediaSources = result.MediaSources
+                    mediaSources = mediaSourcesList.ToArray();
+                }
+                else
+                {
+                    mediaSources = mediaSourcesList
                         .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                 }
@@ -307,11 +289,13 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-                result.MediaSources = new MediaSourceInfo[] { mediaSource };
+                mediaSources = new[] { mediaSource };
             }
 
-            if (result.MediaSources.Count == 0)
+            if (mediaSources.Length == 0)
             {
+                result.MediaSources = Array.Empty<MediaSourceInfo>();
+
                 if (!result.ErrorCode.HasValue)
                 {
                     result.ErrorCode = PlaybackErrorCode.NoCompatibleStream;
@@ -319,7 +303,9 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                result.MediaSources = Clone(result.MediaSources);
+                // Since we're going to be setting properties on MediaSourceInfos that come out of _mediaSourceManager, we should clone it
+                // Should we move this directly into MediaSourceManager?
+                result.MediaSources = JsonSerializer.Deserialize<MediaSourceInfo[]>(JsonSerializer.SerializeToUtf8Bytes(mediaSources));
 
                 result.PlaySessionId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             }
@@ -380,7 +366,7 @@ namespace MediaBrowser.Api.Playback
 
             var options = new VideoOptions
             {
-                MediaSources = new MediaSourceInfo[] { mediaSource },
+                MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
                 DeviceId = auth.DeviceId,
                 ItemId = item.Id,
@@ -425,10 +411,12 @@ namespace MediaBrowser.Api.Playback
                     user.Policy.EnableAudioPlaybackTranscoding);
             }
 
+            // Beginning of Playback Determination: Attempt DirectPlay first
             if (mediaSource.SupportsDirectPlay)
             {
-                if (mediaSource.IsRemote && forceDirectPlayRemoteMediaSource)
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
                 {
+                    mediaSource.SupportsDirectPlay = false;
                 }
                 else
                 {
@@ -475,36 +463,43 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
-                options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
-
-                if (item is Audio)
-                {
-                    if (!user.Policy.EnableAudioPlaybackTranscoding)
-                    {
-                        options.ForceDirectStream = true;
-                    }
-                }
-                else if (item is Video)
-                {
-                    if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
-                    {
-                        options.ForceDirectStream = true;
-                    }
-                }
-
-                // The MediaSource supports direct stream, now test to see if the client supports it
-                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
-                    ? streamBuilder.BuildAudioItem(options)
-                    : streamBuilder.BuildVideoItem(options);
-
-                if (streamInfo == null || !streamInfo.IsDirectStream)
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
                 {
                     mediaSource.SupportsDirectStream = false;
                 }
-
-                if (streamInfo != null)
+                else
                 {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    options.MaxBitrate = GetMaxBitrate(maxBitrate, user);
+
+                    if (item is Audio)
+                    {
+                        if (!user.Policy.EnableAudioPlaybackTranscoding)
+                        {
+                            options.ForceDirectStream = true;
+                        }
+                    }
+                    else if (item is Video)
+                    {
+                        if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                        {
+                            options.ForceDirectStream = true;
+                        }
+                    }
+
+                    // The MediaSource supports direct stream, now test to see if the client supports it
+                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase)
+                        ? streamBuilder.BuildAudioItem(options)
+                        : streamBuilder.BuildVideoItem(options);
+
+                    if (streamInfo == null || !streamInfo.IsDirectStream)
+                    {
+                        mediaSource.SupportsDirectStream = false;
+                    }
+
+                    if (streamInfo != null)
+                    {
+                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    }
                 }
             }
 
@@ -517,18 +512,43 @@ namespace MediaBrowser.Api.Playback
                     ? streamBuilder.BuildAudioItem(options)
                     : streamBuilder.BuildVideoItem(options);
 
-                if (streamInfo != null)
+                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
                 {
-                    streamInfo.PlaySessionId = playSessionId;
-
-                    if (streamInfo.PlayMethod == PlayMethod.Transcode)
+                    if (streamInfo != null)
                     {
+                        streamInfo.PlaySessionId = playSessionId;
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+                        mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                        mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        mediaSource.TranscodingContainer = streamInfo.Container;
+                        mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
 
-                        if (!allowVideoStreamCopy)
+                        // Do this after the above so that StartPositionTicks is set
+                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    }
+                }
+                else
+                {
+                    if (streamInfo != null)
+                    {
+                        streamInfo.PlaySessionId = playSessionId;
+
+                        if (streamInfo.PlayMethod == PlayMethod.Transcode)
                         {
-                            mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                            streamInfo.StartPositionTicks = startTimeTicks;
+                            mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+
+                            if (!allowVideoStreamCopy)
+                            {
+                                mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
+                            }
+                            if (!allowAudioStreamCopy)
+                            {
+                                mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                            }
+                            mediaSource.TranscodingContainer = streamInfo.Container;
+                            mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         }
 
                         if (!allowAudioStreamCopy)
@@ -538,10 +558,10 @@ namespace MediaBrowser.Api.Playback
 
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-                    }
 
-                    // Do this after the above so that StartPositionTicks is set
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        // Do this after the above so that StartPositionTicks is set
+                        SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    }
                 }
             }
 
@@ -559,7 +579,7 @@ namespace MediaBrowser.Api.Playback
         private long? GetMaxBitrate(long? clientMaxBitrate, User user)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = user == null ? 0 : user.Policy.RemoteClientBitrateLimit;
+            var remoteClientMaxBitrate = user?.Policy.RemoteClientBitrateLimit ?? 0;
 
             if (remoteClientMaxBitrate <= 0)
             {
@@ -638,17 +658,9 @@ namespace MediaBrowser.Api.Playback
                 };
             }).ThenBy(i =>
             {
-                if (maxBitrate.HasValue)
+                if (maxBitrate.HasValue && i.Bitrate.HasValue)
                 {
-                    if (i.Bitrate.HasValue)
-                    {
-                        if (i.Bitrate.Value <= maxBitrate.Value)
-                        {
-                            return 0;
-                        }
-
-                        return 2;
-                    }
+                    return i.Bitrate.Value <= maxBitrate.Value ? 0 : 2;
                 }
 
                 return 1;

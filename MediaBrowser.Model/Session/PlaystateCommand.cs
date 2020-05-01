@@ -1,40 +1,49 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
-    /// Enum PlaystateCommand
+    /// Enum PlaystateCommand.
     /// </summary>
     public enum PlaystateCommand
     {
         /// <summary>
-        /// The stop
+        /// The stop.
         /// </summary>
         Stop,
+
         /// <summary>
-        /// The pause
+        /// The pause.
         /// </summary>
         Pause,
+
         /// <summary>
-        /// The unpause
+        /// The unpause.
         /// </summary>
         Unpause,
+
         /// <summary>
-        /// The next track
+        /// The next track.
         /// </summary>
         NextTrack,
+
         /// <summary>
-        /// The previous track
+        /// The previous track.
         /// </summary>
         PreviousTrack,
+
         /// <summary>
-        /// The seek
+        /// The seek.
         /// </summary>
         Seek,
+
         /// <summary>
-        /// The rewind
+        /// The rewind.
         /// </summary>
         Rewind,
+
         /// <summary>
-        /// The fast forward
+        /// The fast forward.
         /// </summary>
         FastForward,
         PlayPause

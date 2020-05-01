@@ -1,10 +1,9 @@
+#nullable enable
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Common;
 
@@ -19,15 +18,12 @@ namespace Emby.Naming.Audio
             _options = options;
         }
 
-        public MultiPartResult ParseMultiPart(string path)
+        public bool IsMultiPart(string path)
         {
-            var result = new MultiPartResult();
-
             var filename = Path.GetFileName(path);
-
-            if (string.IsNullOrEmpty(filename))
+            if (filename.Length == 0)
             {
-                return result;
+                return false;
             }
 
             // TODO: Move this logic into options object
@@ -42,27 +38,30 @@ namespace Emby.Naming.Audio
             filename = filename.Replace(')', ' ');
             filename = Regex.Replace(filename, @"\s+", " ");
 
-            filename = filename.TrimStart();
+            ReadOnlySpan<char> trimmedFilename = filename.TrimStart();
 
             foreach (var prefix in _options.AlbumStackingPrefixes)
             {
-                if (filename.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) != 0)
+                if (!trimmedFilename.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                var tmp = filename.Substring(prefix.Length);
+                var tmp = trimmedFilename.Slice(prefix.Length).Trim();
 
-                tmp = tmp.Trim().Split(' ').FirstOrDefault() ?? string.Empty;
+                int index = tmp.IndexOf(' ');
+                if (index != -1)
+                {
+                    tmp = tmp.Slice(0, index);
+                }
 
                 if (int.TryParse(tmp, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
                 {
-                    result.IsMultiPart = true;
-                    break;
+                    return true;
                 }
             }
 
-            return result;
+            return false;
         }
     }
 }

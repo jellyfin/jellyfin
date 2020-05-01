@@ -1,0 +1,93 @@
+parameters:
+  LinuxImage: "ubuntu-latest"
+  RestoreBuildProjects: "Jellyfin.Server/Jellyfin.Server.csproj"
+  DotNetSdkVersion: 3.1.100
+
+jobs:
+  - job: Build
+    displayName: Build
+    strategy:
+      matrix:
+        Release:
+          BuildConfiguration: Release
+        Debug:
+          BuildConfiguration: Debug
+    pool:
+      vmImage: "${{ parameters.LinuxImage }}"
+    steps:
+      - checkout: self
+        clean: true
+        submodules: true
+        persistCredentials: true
+
+      - task: DownloadPipelineArtifact@2
+        displayName: "Download Web Branch"
+        condition: in(variables['Build.Reason'], 'IndividualCI', 'BatchedCI', 'BuildCompletion')
+        inputs:
+          path: '$(Agent.TempDirectory)'
+          artifact: 'jellyfin-web-production'
+          source: 'specific'
+          project: 'jellyfin'
+          pipeline: 'Jellyfin Web'
+          runBranch: variables['Build.SourceBranch']
+
+      - task: DownloadPipelineArtifact@2
+        displayName: "Download Web Target"
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        inputs:
+          path: '$(Agent.TempDirectory)'
+          artifact: 'jellyfin-web-production'
+          source: 'specific'
+          project: 'jellyfin'
+          pipeline: 'Jellyfin Web'
+          runBranch: variables['System.PullRequest.TargetBranch']
+
+      - task: ExtractFiles@1
+        displayName: "Extract Web Client"
+        inputs:
+          archiveFilePatterns: '$(Agent.TempDirectory)/*.zip'
+          destinationFolder: '$(Build.SourcesDirectory)/MediaBrowser.WebDashboard'
+          cleanDestinationFolder: false
+
+      - task: UseDotNet@2
+        displayName: "Update DotNet"
+        inputs:
+          packageType: sdk
+          version: ${{ parameters.DotNetSdkVersion }}
+
+      - task: DotNetCoreCLI@2
+        displayName: "Publish Server"
+        inputs:
+          command: publish
+          publishWebProjects: false
+          projects: "${{ parameters.RestoreBuildProjects }}"
+          arguments: "--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)"
+          zipAfterPublish: false
+
+      - task: PublishPipelineArtifact@0
+        displayName: "Publish Artifact Naming"
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: "$(build.ArtifactStagingDirectory)/Jellyfin.Server/Emby.Naming.dll"
+          artifactName: "Jellyfin.Naming"
+
+      - task: PublishPipelineArtifact@0
+        displayName: "Publish Artifact Controller"
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: "$(build.ArtifactStagingDirectory)/Jellyfin.Server/MediaBrowser.Controller.dll"
+          artifactName: "Jellyfin.Controller"
+
+      - task: PublishPipelineArtifact@0
+        displayName: "Publish Artifact Model"
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: "$(build.ArtifactStagingDirectory)/Jellyfin.Server/MediaBrowser.Model.dll"
+          artifactName: "Jellyfin.Model"
+
+      - task: PublishPipelineArtifact@0
+        displayName: "Publish Artifact Common"
+        condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+        inputs:
+          targetPath: "$(build.ArtifactStagingDirectory)/Jellyfin.Server/MediaBrowser.Common.dll"
+          artifactName: "Jellyfin.Common"

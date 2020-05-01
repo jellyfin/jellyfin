@@ -1,4 +1,3 @@
-#pragma warning disable SA1600
 #pragma warning disable CS1591
 
 using System;
@@ -42,33 +41,32 @@ namespace Emby.Server.Implementations.LiveTv
     /// </summary>
     public class LiveTvManager : ILiveTvManager, IDisposable
     {
+        private const string ExternalServiceTag = "ExternalServiceId";
+
+        private const string EtagKey = "ProgramEtag";
+
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
+        private readonly IDtoService _dtoService;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ITaskManager _taskManager;
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly Func<IChannelManager> _channelManager;
-
-        private readonly IDtoService _dtoService;
         private readonly ILocalizationManager _localization;
-
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IFileSystem _fileSystem;
+        private readonly IChannelManager _channelManager;
         private readonly LiveTvDtoService _tvDtoService;
 
         private ILiveTvService[] _services = Array.Empty<ILiveTvService>();
-
         private ITunerHost[] _tunerHosts = Array.Empty<ITunerHost>();
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
-        private readonly IFileSystem _fileSystem;
 
         public LiveTvManager(
-            IServerApplicationHost appHost,
             IServerConfigurationManager config,
-            ILoggerFactory loggerFactory,
+            ILogger<LiveTvManager> logger,
             IItemRepository itemRepo,
-            IImageProcessor imageProcessor,
             IUserDataManager userDataManager,
             IDtoService dtoService,
             IUserManager userManager,
@@ -77,10 +75,11 @@ namespace Emby.Server.Implementations.LiveTv
             ILocalizationManager localization,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
-            Func<IChannelManager> channelManager)
+            IChannelManager channelManager,
+            LiveTvDtoService liveTvDtoService)
         {
             _config = config;
-            _logger = loggerFactory.CreateLogger(nameof(LiveTvManager));
+            _logger = logger;
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -91,8 +90,7 @@ namespace Emby.Server.Implementations.LiveTv
             _dtoService = dtoService;
             _userDataManager = userDataManager;
             _channelManager = channelManager;
-
-            _tvDtoService = new LiveTvDtoService(dtoService, imageProcessor, loggerFactory, appHost, _libraryManager);
+            _tvDtoService = liveTvDtoService;
         }
 
         public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
@@ -179,7 +177,6 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 Name = i.Name,
                 Id = i.Type
-
             }).ToList();
         }
 
@@ -262,6 +259,7 @@ namespace Emby.Server.Implementations.LiveTv
                 var endTime = DateTime.UtcNow;
                 _logger.LogInformation("Live stream opened after {0}ms", (endTime - startTime).TotalMilliseconds);
             }
+
             info.RequiresClosing = true;
 
             var idPrefix = service.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture) + "_";
@@ -363,30 +361,37 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     stream.BitRate = null;
                 }
+
                 if (stream.Channels.HasValue && stream.Channels <= 0)
                 {
                     stream.Channels = null;
                 }
+
                 if (stream.AverageFrameRate.HasValue && stream.AverageFrameRate <= 0)
                 {
                     stream.AverageFrameRate = null;
                 }
+
                 if (stream.RealFrameRate.HasValue && stream.RealFrameRate <= 0)
                 {
                     stream.RealFrameRate = null;
                 }
+
                 if (stream.Width.HasValue && stream.Width <= 0)
                 {
                     stream.Width = null;
                 }
+
                 if (stream.Height.HasValue && stream.Height <= 0)
                 {
                     stream.Height = null;
                 }
+
                 if (stream.SampleRate.HasValue && stream.SampleRate <= 0)
                 {
                     stream.SampleRate = null;
                 }
+
                 if (stream.Level.HasValue && stream.Level <= 0)
                 {
                     stream.Level = null;
@@ -428,7 +433,6 @@ namespace Emby.Server.Implementations.LiveTv
             }
         }
 
-        private const string ExternalServiceTag = "ExternalServiceId";
         private LiveTvChannel GetChannel(ChannelInfo channelInfo, string serviceName, BaseItem parentFolder, CancellationToken cancellationToken)
         {
             var parentFolderId = parentFolder.Id;
@@ -457,6 +461,7 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     isNew = true;
                 }
+
                 item.Tags = channelInfo.Tags;
             }
 
@@ -464,6 +469,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 isNew = true;
             }
+
             item.ParentId = parentFolderId;
 
             item.ChannelType = channelInfo.ChannelType;
@@ -473,24 +479,28 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.SetProviderId(ExternalServiceTag, serviceName);
 
             if (!string.Equals(channelInfo.Id, item.ExternalId, StringComparison.Ordinal))
             {
                 forceUpdate = true;
             }
+
             item.ExternalId = channelInfo.Id;
 
             if (!string.Equals(channelInfo.Number, item.Number, StringComparison.Ordinal))
             {
                 forceUpdate = true;
             }
+
             item.Number = channelInfo.Number;
 
             if (!string.Equals(channelInfo.Name, item.Name, StringComparison.Ordinal))
             {
                 forceUpdate = true;
             }
+
             item.Name = channelInfo.Name;
 
             if (!item.HasImage(ImageType.Primary))
@@ -518,8 +528,6 @@ namespace Emby.Server.Implementations.LiveTv
 
             return item;
         }
-
-        private const string EtagKey = "ProgramEtag";
 
         private Tuple<LiveTvProgram, bool, bool> GetProgram(ProgramInfo info, Dictionary<Guid, LiveTvProgram> allExistingPrograms, LiveTvChannel channel, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
         {
@@ -2483,7 +2491,7 @@ namespace Emby.Server.Implementations.LiveTv
                 .OrderBy(i => i.SortName)
                 .ToList();
 
-            folders.AddRange(_channelManager().GetChannelsInternal(new MediaBrowser.Model.Channels.ChannelQuery
+            folders.AddRange(_channelManager.GetChannelsInternal(new MediaBrowser.Model.Channels.ChannelQuery
             {
                 UserId = user.Id,
                 IsRecordingsFolder = true,

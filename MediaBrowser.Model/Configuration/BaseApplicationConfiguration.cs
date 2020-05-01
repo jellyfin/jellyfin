@@ -1,3 +1,6 @@
+using System;
+using System.Xml.Serialization;
+
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
@@ -24,6 +27,24 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The cache path.</value>
         public string CachePath { get; set; }
+
+        /// <summary>
+        /// Last known version that was ran using the configuration.
+        /// </summary>
+        /// <value>The version from previous run.</value>
+        [XmlIgnore]
+        public Version PreviousVersion { get; set; }
+
+        /// <summary>
+        /// Stringified PreviousVersion to be stored/loaded,
+        /// because System.Version itself isn't xml-serializable
+        /// </summary>
+        /// <value>String value of PreviousVersion</value>
+        public string PreviousVersionStr
+        {
+            get => PreviousVersion?.ToString();
+            set => PreviousVersion = Version.Parse(value);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationConfiguration" /> class.

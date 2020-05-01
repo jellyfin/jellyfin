@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -39,10 +38,11 @@ namespace Emby.Server.Implementations.Devices
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
-
         private readonly IAuthenticationRepository _authRepo;
+        private readonly Dictionary<string, ClientCapabilities> _capabilitiesCache;
 
         public event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
+
         public event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
 
         private readonly object _cameraUploadSyncLock = new object();
@@ -66,10 +66,9 @@ namespace Emby.Server.Implementations.Devices
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
             _authRepo = authRepo;
+            _capabilitiesCache = new Dictionary<string, ClientCapabilities>(StringComparer.OrdinalIgnoreCase);
         }
 
-
-        private Dictionary<string, ClientCapabilities> _capabilitiesCache = new Dictionary<string, ClientCapabilities>(StringComparer.OrdinalIgnoreCase);
         public void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
         {
             var path = Path.Combine(GetDevicePath(deviceId), "capabilities.json");
@@ -142,11 +141,10 @@ namespace Emby.Server.Implementations.Devices
 
         public QueryResult<DeviceInfo> GetDevices(DeviceQuery query)
         {
-            var sessions = _authRepo.Get(new AuthenticationInfoQuery
+            IEnumerable<AuthenticationInfo> sessions = _authRepo.Get(new AuthenticationInfoQuery
             {
                 //UserId = query.UserId
                 HasUser = true
-
             }).Items;
 
             // TODO: DeviceQuery doesn't seem to be used from client. Not even Swagger.
@@ -154,23 +152,19 @@ namespace Emby.Server.Implementations.Devices
             {
                 var val = query.SupportsSync.Value;
 
-                sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == val).ToArray();
+                sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == val);
             }
 
             if (!query.UserId.Equals(Guid.Empty))
             {
                 var user = _userManager.GetUserById(query.UserId);
 
-                sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId)).ToArray();
+                sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
             }
 
             var array = sessions.Select(ToDeviceInfo).ToArray();
 
-            return new QueryResult<DeviceInfo>
-            {
-                Items = array,
-                TotalRecordCount = array.Length
-            };
+            return new QueryResult<DeviceInfo>(array);
         }
 
         private DeviceInfo ToDeviceInfo(AuthenticationInfo authInfo)
@@ -186,7 +180,7 @@ namespace Emby.Server.Implementations.Devices
                 LastUserName = authInfo.UserName,
                 Name = authInfo.DeviceName,
                 DateLastActivity = authInfo.DateLastActivity,
-                IconUrl = caps == null ? null : caps.IconUrl
+                IconUrl = caps?.IconUrl
             };
         }
 
@@ -243,7 +237,7 @@ namespace Emby.Server.Implementations.Devices
 
             try
             {
-                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
                 }
@@ -412,7 +406,10 @@ namespace Emby.Server.Implementations.Devices
         private readonly IServerConfigurationManager _config;
         private ILogger _logger;
 
-        public DeviceManagerEntryPoint(IDeviceManager deviceManager, IServerConfigurationManager config, ILogger logger)
+        public DeviceManagerEntryPoint(
+            IDeviceManager deviceManager,
+            IServerConfigurationManager config,
+            ILogger<DeviceManagerEntryPoint> logger)
         {
             _deviceManager = (DeviceManager)deviceManager;
             _config = config;

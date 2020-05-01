@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class ItemIndex
+    /// Class ItemIndex.
     /// </summary>
     public class ItemIndex
     {

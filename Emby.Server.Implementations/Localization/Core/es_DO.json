@@ -1,0 +1,21 @@
+{
+    "Channels": "Canales",
+    "Books": "Libros",
+    "Albums": "Álbumes",
+    "Collections": "Colecciones",
+    "Artists": "Artistas",
+    "DeviceOnlineWithName": "{0} está conectado",
+    "DeviceOfflineWithName": "{0} se ha desconectado",
+    "ChapterNameValue": "Capítulo {0}",
+    "CameraImageUploadedFrom": "Se ha subido una nueva imagen de cámara desde {0}",
+    "AuthenticationSucceededWithUserName": "{0} autenticado con éxito",
+    "Application": "Aplicación",
+    "AppDeviceValues": "App: {0}, Dispositivo: {1}",
+    "HeaderContinueWatching": "Continuar Viendo",
+    "HeaderCameraUploads": "Subidas de Cámara",
+    "HeaderAlbumArtists": "Artistas del Álbum",
+    "Genres": "Géneros",
+    "Folders": "Carpetas",
+    "Favorites": "Favoritos",
+    "FailedLoginAttemptWithUserName": "Intento de inicio de sesión fallido de {0}"
+}

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -18,16 +17,15 @@ namespace Emby.Server.Implementations.Library
 {
     public class SearchEngine : ISearchEngine
     {
+        private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly ILogger _logger;
 
-        public SearchEngine(ILoggerFactory loggerFactory, ILibraryManager libraryManager, IUserManager userManager)
+        public SearchEngine(ILogger<SearchEngine> logger, ILibraryManager libraryManager, IUserManager userManager)
         {
+            _logger = logger;
             _libraryManager = libraryManager;
             _userManager = userManager;
-
-            _logger = loggerFactory.CreateLogger("SearchEngine");
         }
 
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)

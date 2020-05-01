@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Class ProviderIdsExtensions
+    /// Class ProviderIdsExtensions.
     /// </summary>
     public static class ProviderIdsExtensions
     {
@@ -20,7 +20,7 @@ namespace MediaBrowser.Model.Entities
         }
 
         /// <summary>
-        /// Gets a provider id
+        /// Gets a provider id.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="provider">The provider.</param>
@@ -31,7 +31,7 @@ namespace MediaBrowser.Model.Entities
         }
 
         /// <summary>
-        /// Gets a provider id
+        /// Gets a provider id.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="name">The name.</param>
@@ -53,7 +53,7 @@ namespace MediaBrowser.Model.Entities
         }
 
         /// <summary>
-        /// Sets a provider id
+        /// Sets a provider id.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="name">The name.</param>
@@ -89,7 +89,7 @@ namespace MediaBrowser.Model.Entities
         }
 
         /// <summary>
-        /// Sets a provider id
+        /// Sets a provider id.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="provider">The provider.</param>

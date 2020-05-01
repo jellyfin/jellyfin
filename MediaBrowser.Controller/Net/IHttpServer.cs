@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        void Init(IEnumerable<IService> services, IEnumerable<IWebSocketListener> listener, IEnumerable<string> urlPrefixes);
+        void Init(IEnumerable<Type> serviceTypes, IEnumerable<IWebSocketListener> listener, IEnumerable<string> urlPrefixes);
 
         /// <summary>
         /// If set, all requests will respond with this message

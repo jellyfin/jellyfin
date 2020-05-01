@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using Emby.Naming.Common;
+﻿using Emby.Naming.Common;
 using Emby.Naming.Video;
 using Xunit;
 
@@ -38,17 +36,17 @@ namespace Jellyfin.Naming.Tests.Video
         {
             var options = new NamingOptions();
 
-            var resultStubType = StubResolver.ResolveFile(path, options);
+            var isStubResult = StubResolver.TryResolveFile(path, options, out var stubTypeResult);
 
-            Assert.Equal(isStub, resultStubType.IsStub);
+            Assert.Equal(isStub, isStubResult);
 
-            if (stubType == null)
+            if (isStub)
             {
-                Assert.Null(resultStubType.StubType);
+                Assert.Equal(stubType, stubTypeResult);
             }
             else
             {
-                Assert.Equal(stubType, resultStubType.StubType, true);
+                Assert.Null(stubTypeResult);
             }
         }
     }

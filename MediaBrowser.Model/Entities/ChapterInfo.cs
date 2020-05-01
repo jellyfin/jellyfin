@@ -1,9 +1,11 @@
+#pragma warning disable CS1591
+
 using System;
 
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Class ChapterInfo
+    /// Class ChapterInfo.
     /// </summary>
     public class ChapterInfo
     {
@@ -24,6 +26,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
+
         public DateTime ImageDateModified { get; set; }
 
         public string ImageTag { get; set; }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Users;
@@ -79,7 +81,7 @@ namespace MediaBrowser.Model.Notifications
         {
             foreach (NotificationOption i in Options)
             {
-                if (StringHelper.EqualsIgnoreCase(type, i.Type)) return i;
+                if (string.Equals(type, i.Type, StringComparison.OrdinalIgnoreCase)) return i;
             }
             return null;
         }

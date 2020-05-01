@@ -15,7 +15,7 @@ namespace MediaBrowser.Providers.Playlists
     {
         public PlaylistMetadataService(
             IServerConfigurationManager serverConfigurationManager,
-            ILogger logger,
+            ILogger<PlaylistMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)

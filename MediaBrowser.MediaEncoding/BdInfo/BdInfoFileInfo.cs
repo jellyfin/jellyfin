@@ -1,11 +1,10 @@
+using System.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
     class BdInfoFileInfo : BDInfo.IO.IFileInfo
     {
-        IFileSystem _fileSystem = null;
-
         FileSystemMetadata _impl = null;
 
         public string Name => _impl.Name;
@@ -18,18 +17,17 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
         public bool IsDir => _impl.IsDirectory;
 
-        public BdInfoFileInfo(IFileSystem fileSystem, FileSystemMetadata impl)
+        public BdInfoFileInfo(FileSystemMetadata impl)
         {
-            _fileSystem = fileSystem;
             _impl = impl;
         }
 
         public System.IO.Stream OpenRead()
         {
-            return _fileSystem.GetFileStream(FullName,
-                FileOpenMode.Open,
-                FileAccessMode.Read,
-                FileShareMode.Read);
+            return new FileStream(FullName,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read);
         }
 
         public System.IO.StreamReader OpenText()

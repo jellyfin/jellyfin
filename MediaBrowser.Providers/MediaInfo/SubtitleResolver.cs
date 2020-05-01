@@ -5,7 +5,6 @@ using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 
@@ -14,7 +13,6 @@ namespace MediaBrowser.Providers.MediaInfo
     public class SubtitleResolver
     {
         private readonly ILocalizationManager _localization;
-        private readonly IFileSystem _fileSystem;
 
         private static readonly HashSet<string> SubtitleExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -27,16 +25,16 @@ namespace MediaBrowser.Providers.MediaInfo
             ".vtt"
         };
 
-        public SubtitleResolver(ILocalizationManager localization, IFileSystem fileSystem)
+        public SubtitleResolver(ILocalizationManager localization)
         {
             _localization = localization;
-            _fileSystem = fileSystem;
         }
 
-        public List<MediaStream> GetExternalSubtitleStreams(Video video,
-          int startIndex,
-          IDirectoryService directoryService,
-          bool clearCache)
+        public List<MediaStream> GetExternalSubtitleStreams(
+            Video video,
+            int startIndex,
+            IDirectoryService directoryService,
+            bool clearCache)
         {
             var streams = new List<MediaStream>();
 

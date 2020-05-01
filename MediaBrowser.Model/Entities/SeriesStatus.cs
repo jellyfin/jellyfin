@@ -1,16 +1,17 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Enum SeriesStatus
+    /// Enum SeriesStatus.
     /// </summary>
     public enum SeriesStatus
     {
         /// <summary>
-        /// The continuing
+        /// The continuing.
         /// </summary>
         Continuing,
+
         /// <summary>
-        /// The ended
+        /// The ended.
         /// </summary>
         Ended
     }

@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System.Collections.Generic;
 using System.Linq;
@@ -30,40 +29,19 @@ namespace Emby.Naming.AudioBook
             // Filter out all extras, otherwise they could cause stacks to not be resolved
             // See the unit test TestStackedWithTrailer
             var metadata = audiobookFileInfos
-                .Select(i => new FileSystemMetadata
-                {
-                    FullName = i.Path,
-                    IsDirectory = i.IsDirectory
-                });
+                .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = i.IsDirectory });
 
             var stackResult = new StackResolver(_options)
                 .ResolveAudioBooks(metadata);
 
-            var list = new List<AudioBookInfo>();
-
-            foreach (var stack in stackResult.Stacks)
+            foreach (var stack in stackResult)
             {
                 var stackFiles = stack.Files.Select(i => audioBookResolver.Resolve(i, stack.IsDirectoryStack)).ToList();
                 stackFiles.Sort();
-                var info = new AudioBookInfo
-                {
-                    Files = stackFiles,
-                    Name = stack.Name
-                };
-                list.Add(info);
+                var info = new AudioBookInfo { Files = stackFiles, Name = stack.Name };
+
+                yield return info;
             }
-
-            // Whatever files are left, just add them
-            /*list.AddRange(remainingFiles.Select(i => new AudioBookInfo
-            {
-                Files = new List<AudioBookFileInfo> { i },
-                Name = i.,
-                Year = i.Year
-            }));*/
-
-            var orderedList = list.OrderBy(i => i.Name);
-
-            return orderedList;
         }
     }
 }

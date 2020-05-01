@@ -12,9 +12,27 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
+    /// <summary>
+    /// Nfo saver for artsist.
+    /// </summary>
     public class ArtistNfoSaver : BaseNfoSaver
     {
-        public ArtistNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArtistNfoSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="logger">The logger.</param>
+        public ArtistNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger<ArtistNfoSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
@@ -40,7 +58,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var formatString = ConfigurationManager.GetNfoConfiguration().ReleaseDateFormat;
 
-                writer.WriteElementString("disbanded", artist.EndDate.Value.ToLocalTime().ToString(formatString));
+                writer.WriteElementString("disbanded", artist.EndDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
             }
 
             var albums = artist

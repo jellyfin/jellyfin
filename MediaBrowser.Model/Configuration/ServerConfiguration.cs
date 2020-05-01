@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Model.Dto;
 
@@ -13,10 +15,14 @@ namespace MediaBrowser.Model.Configuration
         private string _baseUrl;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable u pn p].
+        /// Gets or sets a value indicating whether to enable automatic port forwarding.
         /// </summary>
-        /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
         public bool EnableUPnP { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
+        /// </summary>
+        public bool EnableMetrics { get; set; }
 
         /// <summary>
         /// Gets or sets the public mapped port.
@@ -146,9 +152,9 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDashboardResponseCaching { get; set; }
 
         /// <summary>
-        /// Allows the dashboard to be served from a custom path.
+        /// Gets or sets a custom path to serve the dashboard from.
         /// </summary>
-        /// <value>The dashboard source path.</value>
+        /// <value>The dashboard source path, or null if the default path should be used.</value>
         public string DashboardSourcePath { get; set; }
 
         /// <summary>
@@ -159,10 +165,10 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions[] MetadataOptions { get; set; }
 
-        public bool EnableAutomaticRestart { get; set; }
         public bool SkipDeserializationForBasicTypes { get; set; }
 
         public string ServerName { get; set; }
+
         public string BaseUrl
         {
             get => _baseUrl;
@@ -235,7 +241,7 @@ namespace MediaBrowser.Model.Configuration
             CodecsUsed = Array.Empty<string>();
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
-            EnableSimpleArtistDetection = true;
+            EnableSimpleArtistDetection = false;
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
@@ -245,15 +251,15 @@ namespace MediaBrowser.Model.Configuration
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;
             HttpsPortNumber = DefaultHttpsPort;
-            EnableHttps = true;
+            EnableMetrics = false;
+            EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
 
-            EnableAutomaticRestart = true;
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 
-            EnableUPnP = true;
+            EnableUPnP = false;
             MinResumePct = 5;
             MaxResumePct = 90;
 

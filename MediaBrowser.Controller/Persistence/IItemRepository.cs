@@ -24,8 +24,7 @@ namespace MediaBrowser.Controller.Persistence
         /// Deletes the item.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void DeleteItem(Guid id, CancellationToken cancellationToken);
+        void DeleteItem(Guid id);
 
         /// <summary>
         /// Saves the items.
@@ -61,7 +60,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Saves the chapters.
         /// </summary>
-        void SaveChapters(Guid id, List<ChapterInfo> chapters);
+        void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters);
 
         /// <summary>
         /// Gets the media streams.
@@ -169,4 +168,3 @@ namespace MediaBrowser.Controller.Persistence
         List<string> GetAllArtistNames();
     }
 }
-

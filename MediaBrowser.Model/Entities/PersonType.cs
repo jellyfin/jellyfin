@@ -1,40 +1,47 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Struct PersonType
+    /// Struct PersonType.
     /// </summary>
     public class PersonType
     {
         /// <summary>
-        /// The actor
+        /// The actor.
         /// </summary>
         public const string Actor = "Actor";
+
         /// <summary>
-        /// The director
+        /// The director.
         /// </summary>
         public const string Director = "Director";
+
         /// <summary>
-        /// The composer
+        /// The composer.
         /// </summary>
         public const string Composer = "Composer";
+
         /// <summary>
-        /// The writer
+        /// The writer.
         /// </summary>
         public const string Writer = "Writer";
+
         /// <summary>
-        /// The guest star
+        /// The guest star.
         /// </summary>
         public const string GuestStar = "GuestStar";
+
         /// <summary>
-        /// The producer
+        /// The producer.
         /// </summary>
         public const string Producer = "Producer";
+
         /// <summary>
-        /// The conductor
+        /// The conductor.
         /// </summary>
         public const string Conductor = "Conductor";
+
         /// <summary>
-        /// The lyricist
+        /// The lyricist.
         /// </summary>
         public const string Lyricist = "Lyricist";
     }

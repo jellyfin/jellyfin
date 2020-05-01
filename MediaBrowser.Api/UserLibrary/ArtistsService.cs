@@ -126,12 +126,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         protected override QueryResult<(BaseItem, ItemCounts)> GetItems(GetItemsByName request, InternalItemsQuery query)
         {
-            if (request is GetAlbumArtists)
-            {
-                return LibraryManager.GetAlbumArtists(query);
-            }
-
-            return LibraryManager.GetArtists(query);
+            return request is GetAlbumArtists ? LibraryManager.GetAlbumArtists(query) : LibraryManager.GetArtists(query);
         }
 
         /// <summary>

@@ -19,28 +19,28 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
-using static MediaBrowser.Model.IO.StreamDefaults;
+using static MediaBrowser.Model.IO.IODefaults;
 
 namespace MediaBrowser.Providers.Subtitles
 {
     public class SubtitleManager : ISubtitleManager
     {
-        private ISubtitleProvider[] _subtitleProviders;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _monitor;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly ILocalizationManager _localization;
 
-        private ILocalizationManager _localization;
+        private ISubtitleProvider[] _subtitleProviders;
 
         public SubtitleManager(
-            ILoggerFactory loggerFactory,
+            ILogger<SubtitleManager> logger,
             IFileSystem fileSystem,
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
             ILocalizationManager localizationManager)
         {
-            _logger = loggerFactory.CreateLogger(nameof(SubtitleManager));
+            _logger = logger;
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
@@ -210,7 +210,7 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
-                    using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, DefaultFileStreamBufferSize, true))
+                    using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, FileStreamBufferSize, true))
                     {
                         await stream.CopyToAsync(fs).ConfigureAwait(false);
                     }

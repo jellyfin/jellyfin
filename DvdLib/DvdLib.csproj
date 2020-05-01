@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{713F42B5-878E-499D-A878-E4C652B1D5E8}</ProjectGuid>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

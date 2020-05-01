@@ -123,9 +123,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 {
                     var isHidden = false;
 
-                    var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
-
-                    if (configurableTask != null)
+                    if (i.ScheduledTask is IConfigurableScheduledTask configurableTask)
                     {
                         isHidden = configurableTask.IsHidden;
                     }
@@ -142,9 +140,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 {
                     var isEnabled = true;
 
-                    var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
-
-                    if (configurableTask != null)
+                    if (i.ScheduledTask is IConfigurableScheduledTask configurableTask)
                     {
                         isEnabled = configurableTask.IsEnabled;
                     }

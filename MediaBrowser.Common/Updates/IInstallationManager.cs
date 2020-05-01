@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -29,12 +28,12 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// Occurs when a plugin is updated.
         /// </summary>
-        event EventHandler<GenericEventArgs<(IPlugin, PackageVersionInfo)>> PluginUpdated;
+        event EventHandler<GenericEventArgs<(IPlugin, VersionInfo)>> PluginUpdated;
 
         /// <summary>
         /// Occurs when a plugin is installed.
         /// </summary>
-        event EventHandler<GenericEventArgs<PackageVersionInfo>> PluginInstalled;
+        event EventHandler<GenericEventArgs<VersionInfo>> PluginInstalled;
 
         /// <summary>
         /// Gets the completed installations.
@@ -65,12 +64,10 @@ namespace MediaBrowser.Common.Updates
         /// </summary>
         /// <param name="availableVersions">The available version of the plugin.</param>
         /// <param name="minVersion">The minimum required version of the plugin.</param>
-        /// <param name="classification">The classification of updates.</param>
         /// <returns>All compatible versions ordered from newest to oldest.</returns>
-        IEnumerable<PackageVersionInfo> GetCompatibleVersions(
-            IEnumerable<PackageVersionInfo> availableVersions,
-            Version minVersion = null,
-            PackageVersionClass classification = PackageVersionClass.Release);
+        IEnumerable<VersionInfo> GetCompatibleVersions(
+            IEnumerable<VersionInfo> availableVersions,
+            Version minVersion = null);
 
         /// <summary>
         /// Returns all compatible versions ordered from newest to oldest.
@@ -79,21 +76,19 @@ namespace MediaBrowser.Common.Updates
         /// <param name="name">The name.</param>
         /// <param name="guid">The guid of the plugin.</param>
         /// <param name="minVersion">The minimum required version of the plugin.</param>
-        /// <param name="classification">The classification.</param>
         /// <returns>All compatible versions ordered from newest to oldest.</returns>
-        IEnumerable<PackageVersionInfo> GetCompatibleVersions(
+        IEnumerable<VersionInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
-            Version minVersion = null,
-            PackageVersionClass classification = PackageVersionClass.Release);
+            Version minVersion = null);
 
         /// <summary>
         /// Returns the available plugin updates.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The available plugin updates.</returns>
-        IAsyncEnumerable<PackageVersionInfo> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
+        Task<IEnumerable<VersionInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Installs the package.
@@ -101,7 +96,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="package">The package.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><see cref="Task" />.</returns>
-        Task InstallPackage(PackageVersionInfo package, CancellationToken cancellationToken = default);
+        Task InstallPackage(VersionInfo package, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Uninstalls a plugin.

@@ -6,7 +6,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
@@ -178,7 +177,7 @@ namespace MediaBrowser.Api
         }
 
         public object Get(GetDefaultDirectoryBrowser request) =>
-            ToOptimizedResult(new DefaultDirectoryBrowserInfo {Path = null});
+            ToOptimizedResult(new DefaultDirectoryBrowserInfo { Path = null });
 
         /// <summary>
         /// Gets the specified request.
@@ -259,12 +258,7 @@ namespace MediaBrowser.Api
                     return false;
                 }
 
-                if (!request.IncludeDirectories && isDirectory)
-                {
-                    return false;
-                }
-
-                return true;
+                return request.IncludeDirectories || !isDirectory;
             });
 
             return entries.Select(f => new FileSystemEntryInfo

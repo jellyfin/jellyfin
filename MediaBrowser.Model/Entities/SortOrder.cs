@@ -1,16 +1,17 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Enum SortOrder
+    /// Enum SortOrder.
     /// </summary>
     public enum SortOrder
     {
         /// <summary>
-        /// The ascending
+        /// The ascending.
         /// </summary>
         Ascending,
+
         /// <summary>
-        /// The descending
+        /// The descending.
         /// </summary>
         Descending
     }

@@ -244,9 +244,9 @@ namespace MediaBrowser.Providers.Manager
 
                 _fileSystem.SetAttributes(path, false, false);
 
-                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, FileOpenOptions.Asynchronous))
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
                 {
-                    await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                    await source.CopyToAsync(fs, IODefaults.CopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (_config.Configuration.SaveMetadataHidden)

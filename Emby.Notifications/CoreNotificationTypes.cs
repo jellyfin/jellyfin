@@ -1,7 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;

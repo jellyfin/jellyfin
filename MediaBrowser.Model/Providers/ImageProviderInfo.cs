@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+
+using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Providers
@@ -17,7 +20,7 @@ namespace MediaBrowser.Model.Providers
 
         public ImageProviderInfo()
         {
-            SupportedImages = new ImageType[] { };
+            SupportedImages = Array.Empty<ImageType>();
         }
     }
 }

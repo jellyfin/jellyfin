@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Concurrent;
@@ -29,25 +28,24 @@ namespace Emby.Server.Implementations.Library
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
+        private readonly IUserManager _userManager;
+        private readonly IUserDataRepository _repository;
 
-        private Func<IUserManager> _userManager;
-
-        public UserDataManager(ILoggerFactory loggerFactory, IServerConfigurationManager config, Func<IUserManager> userManager)
+        public UserDataManager(
+            ILogger<UserDataManager> logger,
+            IServerConfigurationManager config,
+            IUserManager userManager,
+            IUserDataRepository repository)
         {
+            _logger = logger;
             _config = config;
-            _logger = loggerFactory.CreateLogger(GetType().Name);
             _userManager = userManager;
+            _repository = repository;
         }
-
-        /// <summary>
-        /// Gets or sets the repository.
-        /// </summary>
-        /// <value>The repository.</value>
-        public IUserDataRepository Repository { get; set; }
 
         public void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
-            var user = _userManager().GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
             SaveUserData(user, item, userData, reason, cancellationToken);
         }
@@ -72,7 +70,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var key in keys)
             {
-                Repository.SaveUserData(userId, key, userData, cancellationToken);
+                _repository.SaveUserData(userId, key, userData, cancellationToken);
             }
 
             var cacheKey = GetCacheKey(userId, item.Id);
@@ -97,9 +95,9 @@ namespace Emby.Server.Implementations.Library
         /// <returns></returns>
         public void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
-            var user = _userManager().GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
-            Repository.SaveAllUserData(user.InternalId, userData, cancellationToken);
+            _repository.SaveAllUserData(user.InternalId, userData, cancellationToken);
         }
 
         /// <summary>
@@ -109,14 +107,14 @@ namespace Emby.Server.Implementations.Library
         /// <returns></returns>
         public List<UserItemData> GetAllUserData(Guid userId)
         {
-            var user = _userManager().GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
-            return Repository.GetAllUserData(user.InternalId);
+            return _repository.GetAllUserData(user.InternalId);
         }
 
         public UserItemData GetUserData(Guid userId, Guid itemId, List<string> keys)
         {
-            var user = _userManager().GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
             return GetUserData(user, itemId, keys);
         }
@@ -132,7 +130,7 @@ namespace Emby.Server.Implementations.Library
 
         private UserItemData GetUserDataInternal(long internalUserId, List<string> keys)
         {
-            var userData = Repository.GetUserData(internalUserId, keys);
+            var userData = _repository.GetUserData(internalUserId, keys);
 
             if (userData != null)
             {

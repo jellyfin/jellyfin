@@ -1,6 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
-using System.Net.Sockets;
 using System.Globalization;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
@@ -24,7 +26,7 @@ using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
-using OperatingSystem =  MediaBrowser.Common.System.OperatingSystem;
+using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
@@ -56,7 +58,9 @@ namespace Emby.Dlna.Main
         private ISsdpCommunicationsServer _communicationsServer;
 
         internal IContentDirectory ContentDirectory { get; private set; }
+
         internal IConnectionManager ConnectionManager { get; private set; }
+
         internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
         public static DlnaEntryPoint Current;
@@ -104,7 +108,7 @@ namespace Emby.Dlna.Main
                 libraryManager,
                 config,
                 userManager,
-                _logger,
+                loggerFactory.CreateLogger<ContentDirectory.ContentDirectory>(),
                 httpClient,
                 localizationManager,
                 mediaSourceManager,
@@ -112,9 +116,16 @@ namespace Emby.Dlna.Main
                 mediaEncoder,
                 tvSeriesManager);
 
-            ConnectionManager = new ConnectionManager.ConnectionManager(dlnaManager, config, _logger, httpClient);
+            ConnectionManager = new ConnectionManager.ConnectionManager(
+                dlnaManager,
+                config,
+                loggerFactory.CreateLogger<ConnectionManager.ConnectionManager>(),
+                httpClient);
 
-            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(_logger, httpClient, config);
+            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
+                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
+                httpClient,
+                config);
             Current = this;
         }
 
@@ -251,8 +262,8 @@ namespace Emby.Dlna.Main
             {
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                   // Not support IPv6 right now
-                   continue;
+                    // Not supporting IPv6 right now
+                    continue;
                 }
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";

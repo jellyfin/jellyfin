@@ -12,15 +12,27 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
+    /// <summary>
+    /// Nfo saver for series.
+    /// </summary>
     public class SeriesNfoSaver : BaseNfoSaver
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeriesNfoSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="logger">The logger.</param>
         public SeriesNfoSaver(
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
-            ILogger logger)
+            ILogger<SeriesNfoSaver> logger)
             : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
         {
         }
@@ -56,7 +68,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     : language;
 
                 writer.WriteStartElement("url");
-                writer.WriteAttributeString("cache", string.Format("{0}.xml", tvdb));
+                writer.WriteAttributeString("cache", tvdb + ".xml");
                 writer.WriteString(
                     string.Format(
                         CultureInfo.InvariantCulture,

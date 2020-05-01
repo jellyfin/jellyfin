@@ -9,13 +9,27 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
+    /// <summary>
+    /// Nfo provider for seasons.
+    /// </summary>
     public class SeasonNfoProvider : BaseNfoProvider<Season>
     {
         private readonly ILogger _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
 
-        public SeasonNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeasonNfoProvider"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="config">the configuration manager.</param>
+        /// <param name="providerManager">The provider manager.</param>
+        public SeasonNfoProvider(
+            ILogger<SeasonNfoProvider> logger,
+            IFileSystem fileSystem,
+            IConfigurationManager config,
+            IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;
@@ -34,4 +48,3 @@ namespace MediaBrowser.XbmcMetadata.Providers
             => directoryService.GetFile(Path.Combine(info.Path, "season.nfo"));
     }
 }
-

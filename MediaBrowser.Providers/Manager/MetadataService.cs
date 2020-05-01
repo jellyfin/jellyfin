@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
+            var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
             var localImagesFailed = false;
 
             var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
@@ -606,7 +606,6 @@ namespace MediaBrowser.Providers.Manager
 
                         // Run custom refresh providers if they report a change or any remote providers change
                         return anyRemoteProvidersChanged || providersWithChanges.Contains(i);
-
                     }).ToList();
                 }
             }

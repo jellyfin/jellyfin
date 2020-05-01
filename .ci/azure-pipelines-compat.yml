@@ -1,0 +1,96 @@
+parameters:
+- name: Packages
+  type: object
+  default: {}
+- name: LinuxImage
+  type: string
+  default: "ubuntu-latest"
+- name: DotNetSdkVersion
+  type: string
+  default: 3.1.100
+
+jobs:
+  - job: CompatibilityCheck
+    displayName: Compatibility Check
+    pool:
+      vmImage: "${{ parameters.LinuxImage }}"
+    # only execute for pull requests
+    condition: and(succeeded(), variables['System.PullRequest.PullRequestNumber'])
+    strategy:
+      matrix:
+        ${{ each Package in parameters.Packages }}:
+          ${{ Package.key }}:
+            NugetPackageName: ${{ Package.value.NugetPackageName }}
+            AssemblyFileName: ${{ Package.value.AssemblyFileName }}
+      maxParallel: 2
+    dependsOn: Build
+    steps:
+      - checkout: none
+
+      - task: UseDotNet@2
+        displayName: "Update DotNet"
+        inputs:
+          packageType: sdk
+          version: ${{ parameters.DotNetSdkVersion }}
+
+      - task: DownloadPipelineArtifact@2
+        displayName: "Download New Assembly Build Artifact"
+        inputs:
+          source: "current"
+          artifact: "$(NugetPackageName)"
+          path: "$(System.ArtifactsDirectory)/new-artifacts"
+          runVersion: "latest"
+
+      - task: CopyFiles@2
+        displayName: "Copy New Assembly Build Artifact"
+        inputs:
+          sourceFolder: $(System.ArtifactsDirectory)/new-artifacts
+          contents: "**/*.dll"
+          targetFolder: $(System.ArtifactsDirectory)/new-release
+          cleanTargetFolder: true
+          overWrite: true
+          flattenFolders: true
+
+      - task: DownloadPipelineArtifact@2
+        displayName: "Download Reference Assembly Build Artifact"
+        inputs:
+          source: "specific"
+          artifact: "$(NugetPackageName)"
+          path: "$(System.ArtifactsDirectory)/current-artifacts"
+          project: "$(System.TeamProjectId)"
+          pipeline: "$(System.DefinitionId)"
+          runVersion: "latestFromBranch"
+          runBranch: "refs/heads/$(System.PullRequest.TargetBranch)"
+
+      - task: CopyFiles@2
+        displayName: "Copy Reference Assembly Build Artifact"
+        inputs:
+          sourceFolder: $(System.ArtifactsDirectory)/current-artifacts
+          contents: "**/*.dll"
+          targetFolder: $(System.ArtifactsDirectory)/current-release
+          cleanTargetFolder: true
+          overWrite: true
+          flattenFolders: true
+
+      - task: DownloadGitHubRelease@0
+        displayName: "Download ABI Compatibility Check Tool"
+        inputs:
+          connection: Jellyfin Release Download
+          userRepository: EraYaN/dotnet-compatibility
+          defaultVersionType: "latest"
+          itemPattern: "**-ci.zip"
+          downloadPath: "$(System.ArtifactsDirectory)"
+
+      - task: ExtractFiles@1
+        displayName: "Extract ABI Compatibility Check Tool"
+        inputs:
+          archiveFilePatterns: "$(System.ArtifactsDirectory)/*-ci.zip"
+          destinationFolder: $(System.ArtifactsDirectory)/tools
+          cleanDestinationFolder: true
+
+      # The `--warnings-only` switch will swallow the return code and not emit any errors.
+      - task: CmdLine@2
+        displayName: "Execute ABI Compatibility Check Tool"
+        inputs:
+          script: "dotnet tools/CompatibilityCheckerCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines --warnings-only"
+          workingDirectory: $(System.ArtifactsDirectory)

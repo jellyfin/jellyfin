@@ -46,7 +46,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
         private readonly IEncodingManager _encodingManager;
-        private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
@@ -121,7 +120,23 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         private SubtitleResolver _subtitleResolver;
-        public FFProbeProvider(ILogger logger, IMediaSourceManager mediaSourceManager, IChannelManager channelManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager, ILibraryManager libraryManager)
+
+        public FFProbeProvider(
+            ILogger<FFProbeProvider> logger,
+            IMediaSourceManager mediaSourceManager,
+            IChannelManager channelManager,
+            IIsoManager isoManager,
+            IMediaEncoder mediaEncoder,
+            IItemRepository itemRepo,
+            IBlurayExaminer blurayExaminer,
+            ILocalizationManager localization,
+            IApplicationPaths appPaths,
+            IJsonSerializer json,
+            IEncodingManager encodingManager,
+            IServerConfigurationManager config,
+            ISubtitleManager subtitleManager,
+            IChapterManager chapterManager,
+            ILibraryManager libraryManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -132,7 +147,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _appPaths = appPaths;
             _json = json;
             _encodingManager = encodingManager;
-            _fileSystem = fileSystem;
             _config = config;
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
@@ -140,7 +154,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _channelManager = channelManager;
             _mediaSourceManager = mediaSourceManager;
 
-            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager, fileSystem);
+            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
         }
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -177,7 +191,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
             }
 
-            var prober = new FFProbeVideoInfo(_logger, _mediaSourceManager, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager, _chapterManager, _libraryManager);
+            var prober = new FFProbeVideoInfo(
+                _logger,
+                _mediaSourceManager,
+                _mediaEncoder,
+                _itemRepo,
+                _blurayExaminer,
+                _localization,
+                _encodingManager,
+                _config,
+                _subtitleManager,
+                _chapterManager,
+                _libraryManager);
 
             return prober.ProbeVideo(item, options, cancellationToken);
         }

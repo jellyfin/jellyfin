@@ -42,6 +42,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libvpx",
             "libvpx-vp9",
             "aac",
+            "libfdk_aac",
             "libmp3lame",
             "libopus",
             "libvorbis",
@@ -55,7 +56,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_vaapi",
             "hevc_vaapi",
             "h264_v4l2m2m",
-            "ac3"
+            "ac3",
+            "h264_amf",
+            "hevc_amf"
         };
 
         // Try and use the individual library versions to determine a FFmpeg version

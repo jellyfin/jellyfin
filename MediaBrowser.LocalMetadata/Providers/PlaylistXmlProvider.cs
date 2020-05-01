@@ -13,7 +13,10 @@ namespace MediaBrowser.LocalMetadata.Providers
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
 
-        public PlaylistXmlProvider(IFileSystem fileSystem, ILogger logger, IProviderManager providerManager)
+        public PlaylistXmlProvider(
+            IFileSystem fileSystem,
+            ILogger<PlaylistXmlProvider> logger,
+            IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;

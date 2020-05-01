@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}</ProjectGuid>
+  </PropertyGroup>
+
+    <PropertyGroup>
+      <TargetFramework>netcoreapp3.1</TargetFramework>
+      <IsPackable>false</IsPackable>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+      <Nullable>enable</Nullable>
+      <RootNamespace>Jellyfin.Server.Implementations.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoFixture" Version="4.11.0" />
+      <PackageReference Include="AutoFixture.AutoMoq" Version="4.11.0" />
+      <PackageReference Include="Moq" Version="4.13.1" />
+      <PackageReference Include="xunit" Version="2.4.1" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+      <PackageReference Include="coverlet.collector" Version="1.2.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
+    </ItemGroup>
+
+</Project>

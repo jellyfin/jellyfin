@@ -5,11 +5,9 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public abstract class BaseVideoTest
     {
-        protected VideoResolver GetParser()
-        {
-            var options = new NamingOptions();
+        private readonly NamingOptions _namingOptions = new NamingOptions();
 
-            return new VideoResolver(options);
-        }
+        protected VideoResolver GetParser()
+            => new VideoResolver(_namingOptions);
     }
 }

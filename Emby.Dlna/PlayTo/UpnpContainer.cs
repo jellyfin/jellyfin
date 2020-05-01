@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Xml.Linq;
 using Emby.Dlna.Ssdp;
