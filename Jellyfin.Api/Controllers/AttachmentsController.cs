@@ -41,7 +41,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="videoId">Video ID.</param>
         /// <param name="mediaSourceId">Media Source ID.</param>
         /// <param name="index">Attachment Index.</param>
-        /// <returns>Attachment.</returns>
+        /// <response code="200">Attachment retrieved.</response>
+        /// <response code="404">Video or attachment not found.</response>
+        /// <returns>An <see cref="FileStreamResult"/> containing the attachment stream on success, or a <see cref="NotFoundResult"/> if the attachment could not be found.</returns>
         [HttpGet("{VideoID}/{MediaSourceID}/Attachments/{Index}")]
         [Produces("application/octet-stream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
