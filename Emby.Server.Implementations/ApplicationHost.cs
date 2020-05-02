@@ -22,7 +22,6 @@ using Emby.Dlna.Ssdp;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
-using Emby.Server.Implementations.Activity;
 using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
@@ -47,6 +46,8 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
+using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Activity;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -94,7 +95,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
@@ -103,6 +103,7 @@ using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
@@ -553,6 +554,13 @@ namespace Emby.Server.Implementations
                 return Logger;
             });
 
+            // TODO: properly set up scoping and switch to AddDbContextPool
+            serviceCollection.AddDbContext<JellyfinDb>(
+                options => options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
+                ServiceLifetime.Transient);
+
+            serviceCollection.AddSingleton<JellyfinDbProvider>();
+
             serviceCollection.AddSingleton(_fileSystemManager);
             serviceCollection.AddSingleton<TvdbClientManager>();
 
@@ -663,7 +671,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
-            serviceCollection.AddSingleton<IActivityRepository, ActivityRepository>();
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
 
             serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
@@ -696,7 +703,6 @@ namespace Emby.Server.Implementations
             ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
             ((SqliteUserRepository)Resolve<IUserRepository>()).Initialize();
-            ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
 
             SetStaticProperties();
 
