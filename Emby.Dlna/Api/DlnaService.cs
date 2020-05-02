@@ -1,4 +1,6 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1402
+#pragma warning disable SA1649
 
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -9,6 +11,40 @@ using MediaBrowser.Model.Services;
 
 namespace Emby.Dlna.Api
 {
+    [Route("/Dlna/ProfileInfos", "GET", Summary = "Gets a list of profiles")]
+    public class GetProfileInfos : IReturn<DeviceProfileInfo[]>
+    {
+    }
+
+    [Route("/Dlna/Profiles/{Id}", "DELETE", Summary = "Deletes a profile")]
+    public class DeleteProfile : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Dlna/Profiles/Default", "GET", Summary = "Gets the default profile")]
+    public class GetDefaultProfile : IReturn<DeviceProfile>
+    {
+    }
+
+    [Route("/Dlna/Profiles/{Id}", "GET", Summary = "Gets a single profile")]
+    public class GetProfile : IReturn<DeviceProfile>
+    {
+        [ApiMember(Name = "Id", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
+    [Route("/Dlna/Profiles/{Id}", "POST", Summary = "Updates a profile")]
+    public class UpdateProfile : DeviceProfile, IReturnVoid
+    {
+    }
+
+    [Route("/Dlna/Profiles", "POST", Summary = "Creates a profile")]
+    public class CreateProfile : DeviceProfile, IReturnVoid
+    {
+    }
+
     [Authenticated(Roles = "Admin")]
     public class DlnaService : IService
     {
@@ -50,39 +86,5 @@ namespace Emby.Dlna.Api
         {
             _dlnaManager.CreateProfile(request);
         }
-    }
-
-    [Route("/Dlna/ProfileInfos", "GET", Summary = "Gets a list of profiles")]
-    public class GetProfileInfos : IReturn<DeviceProfileInfo[]>
-    {
-    }
-
-    [Route("/Dlna/Profiles/{Id}", "DELETE", Summary = "Deletes a profile")]
-    public class DeleteProfile : IReturnVoid
-    {
-        [ApiMember(Name = "Id", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
-    }
-
-    [Route("/Dlna/Profiles/Default", "GET", Summary = "Gets the default profile")]
-    public class GetDefaultProfile : IReturn<DeviceProfile>
-    {
-    }
-
-    [Route("/Dlna/Profiles/{Id}", "GET", Summary = "Gets a single profile")]
-    public class GetProfile : IReturn<DeviceProfile>
-    {
-        [ApiMember(Name = "Id", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
-    [Route("/Dlna/Profiles/{Id}", "POST", Summary = "Updates a profile")]
-    public class UpdateProfile : DeviceProfile, IReturnVoid
-    {
-    }
-
-    [Route("/Dlna/Profiles", "POST", Summary = "Creates a profile")]
-    public class CreateProfile : DeviceProfile, IReturnVoid
-    {
     }
 }
