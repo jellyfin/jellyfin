@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,11 +47,12 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="supportsSync">/// Gets or sets a value indicating whether [supports synchronize].</param>
         /// <param name="userId">/// Gets or sets the user identifier.</param>
-        /// <returns>Device Infos.</returns>
+        /// <response code="200">Devices retrieved.</response>
+        /// <returns>An <see cref="OkResult"/> containing the list of devices.</returns>
         [HttpGet]
         [Authenticated(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<DeviceInfo[]> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
+        public ActionResult<IEnumerable<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
             var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
             var devices = _deviceManager.GetDevices(deviceQuery);
@@ -61,7 +63,9 @@ namespace Jellyfin.Api.Controllers
         /// Get info for a device.
         /// </summary>
         /// <param name="id">Device Id.</param>
-        /// <returns>Device Info.</returns>
+        /// <response code="200">Device info retrieved.</response>
+        /// <response code="404">Device not found.</response>
+        /// <returns>An <see cref="OkResult"/> containing the device info on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpGet("Info")]
         [Authenticated(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -81,7 +85,9 @@ namespace Jellyfin.Api.Controllers
         /// Get options for a device.
         /// </summary>
         /// <param name="id">Device Id.</param>
-        /// <returns>Device Info.</returns>
+        /// <response code="200">Device options retrieved.</response>
+        /// <response code="404">Device not found.</response>
+        /// <returns>An <see cref="OkResult"/> containing the device info on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpGet("Options")]
         [Authenticated(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -102,7 +108,9 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="id">Device Id.</param>
         /// <param name="deviceOptions">Device Options.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Device options updated.</response>
+        /// <response code="404">Device not found.</response>
+        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpPost("Options")]
         [Authenticated(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -125,11 +133,19 @@ namespace Jellyfin.Api.Controllers
         /// Deletes a device.
         /// </summary>
         /// <param name="id">Device Id.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Device deleted.</response>
+        /// <response code="404">Device not found.</response>
+        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult DeleteDevice([FromQuery, BindRequired] string id)
         {
+            var existingDevice = _deviceManager.GetDevice(id);
+            if (existingDevice == null)
+            {
+                return NotFound();
+            }
+
             var sessions = _authenticationRepository.Get(new AuthenticationInfoQuery { DeviceId = id }).Items;
 
             foreach (var session in sessions)
@@ -144,11 +160,19 @@ namespace Jellyfin.Api.Controllers
         /// Gets camera upload history for a device.
         /// </summary>
         /// <param name="id">Device Id.</param>
-        /// <returns>Content Upload History.</returns>
+        /// <response code="200">Device upload history retrieved.</response>
+        /// <response code="404">Device not found.</response>
+        /// <returns>An <see cref="OkResult"/> containing the device upload history on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpGet("CameraUploads")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<ContentUploadHistory> GetCameraUploads([FromQuery, BindRequired] string id)
         {
+            var existingDevice = _deviceManager.GetDevice(id);
+            if (existingDevice == null)
+            {
+                return NotFound();
+            }
+
             var uploadHistory = _deviceManager.GetCameraUploadHistory(id);
             return uploadHistory;
         }
@@ -160,7 +184,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="album">Album.</param>
         /// <param name="name">Name.</param>
         /// <param name="id">Id.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Contents uploaded.</response>
+        /// <response code="400">No uploaded contents.</response>
+        /// <response code="404">Device not found.</response>
+        /// <returns>
+        /// An <see cref="OkResult"/> on success,
+        /// or a <see cref="NotFoundResult"/> if the device could not be found
+        /// or a <see cref="BadRequestResult"/> if the upload contains no files.
+        /// </returns>
         [HttpPost("CameraUploads")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -170,6 +201,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, BindRequired] string name,
             [FromQuery, BindRequired] string id)
         {
+            var existingDevice = _deviceManager.GetDevice(id);
+            if (existingDevice == null)
+            {
+                return NotFound();
+            }
+
             Stream fileStream;
             string contentType;
 
