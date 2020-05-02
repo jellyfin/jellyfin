@@ -46,9 +46,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageRefreshMode">Specifies the image refresh mode.</param>
         /// <param name="replaceAllMetadata">Determines if metadata should be replaced. Only applicable if mode is FullRefresh.</param>
         /// <param name="replaceAllImages">Determines if images should be replaced. Only applicable if mode is FullRefresh.</param>
-        /// <returns>Endpoint status.</returns>
+        /// <response code="200">Item metadata refresh queued.</response>
+        /// <response code="404">Item to refresh not found.</response>
+        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
         [HttpPost("{Id}/Refresh")]
-        [Description("Refreshes matadata for an item.")]
+        [Description("Refreshes metadata for an item.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Post(
