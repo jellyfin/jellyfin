@@ -627,7 +627,6 @@ namespace Emby.Server.Implementations.Library
                 !string.IsNullOrEmpty(remoteEndPoint) &&
                 _networkManager.IsInLocalNetwork(remoteEndPoint) ? hasConfiguredEasyPassword : hasConfiguredPassword;
 
-
             PublicUserDto dto = new PublicUserDto
             {
                 Name = user.Name,
