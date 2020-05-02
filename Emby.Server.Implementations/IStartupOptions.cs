@@ -36,5 +36,10 @@ namespace Emby.Server.Implementations
         /// Gets the value of the --plugin-manifest-url command line option.
         /// </summary>
         string PluginManifestUrl { get; }
+
+        /// <summary>
+        /// Gets the value of the --auto-discover-publish-url command line option.
+        /// </summary>
+        string AutoDiscoverPublishUrl { get; }
     }
 }

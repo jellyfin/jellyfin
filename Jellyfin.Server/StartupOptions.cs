@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using CommandLine;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.EntryPoints;
+using Emby.Server.Implementations.Udp;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Controller.Extensions;
 
@@ -80,6 +82,10 @@ namespace Jellyfin.Server
         [Option("plugin-manifest-url", Required = false, HelpText = "A custom URL for the plugin repository JSON manifest")]
         public string? PluginManifestUrl { get; set; }
 
+        /// <inheritdoc />
+        [Option("auto-discover-publish-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
+        public string? AutoDiscoverPublishUrl { get; set; }
+
         /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
@@ -96,6 +102,11 @@ namespace Jellyfin.Server
             if (NoWebClient)
             {
                 config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
+            }
+
+            if (AutoDiscoverPublishUrl != null)
+            {
+                config.Add(UdpServer.AddressOverrideConfigKey, AutoDiscoverPublishUrl);
             }
 
             return config;
