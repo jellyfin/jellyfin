@@ -82,6 +82,10 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 return null;
             }
+            else if (inString.Length == 0)
+            {
+                return inString;
+            }
 
             var newString = new StringBuilder(inString.Length);
 
