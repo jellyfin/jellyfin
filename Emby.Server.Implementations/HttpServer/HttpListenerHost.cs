@@ -542,6 +542,11 @@ namespace Emby.Server.Implementations.HttpServer
                     var requestInnerEx = GetActualException(requestEx);
                     var statusCode = GetStatusCode(requestInnerEx);
 
+                    if (!httpRes.Headers.ContainsKey("Access-Control-Allow-Origin"))
+                    {
+                        httpRes.Headers.Add("Access-Control-Allow-Origin", "*");
+                    }
+
                     // Do not handle 500 server exceptions manually when in development mode
                     // The framework-defined development exception page will be returned instead
                     if (statusCode == 500 && _hostEnvironment.IsDevelopment())
