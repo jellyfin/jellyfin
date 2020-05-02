@@ -33,7 +33,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="isHidden">Optional filter tasks that are hidden, or not.</param>
         /// <param name="isEnabled">Optional filter tasks that are enabled, or not.</param>
-        /// <returns>Task list.</returns>
+        /// <response code="200">Scheduled tasks retrieved.</response>
+        /// <returns>The list of scheduled tasks.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<IScheduledTaskWorker> GetTasks(
@@ -65,7 +66,9 @@ namespace Jellyfin.Api.Controllers
         /// Get task by id.
         /// </summary>
         /// <param name="taskId">Task Id.</param>
-        /// <returns>Task Info.</returns>
+        /// <response code="200">Task retrieved.</response>
+        /// <response code="404">Task not found.</response>
+        /// <returns>An <see cref="OkResult"/> containing the task on success, or a <see cref="NotFoundResult"/> if the task could not be found.</returns>
         [HttpGet("{TaskID}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -87,7 +90,9 @@ namespace Jellyfin.Api.Controllers
         /// Start specified task.
         /// </summary>
         /// <param name="taskId">Task Id.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Task started.</response>
+        /// <response code="404">Task not found.</response>
+        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpPost("Running/{TaskID}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -109,7 +114,9 @@ namespace Jellyfin.Api.Controllers
         /// Stop specified task.
         /// </summary>
         /// <param name="taskId">Task Id.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Task stopped.</response>
+        /// <response code="404">Task not found.</response>
+        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpDelete("Running/{TaskID}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -132,7 +139,9 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="taskId">Task Id.</param>
         /// <param name="triggerInfos">Triggers.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Task triggers updated.</response>
+        /// <response code="404">Task not found.</response>
+        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpPost("{TaskID}/Triggers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
