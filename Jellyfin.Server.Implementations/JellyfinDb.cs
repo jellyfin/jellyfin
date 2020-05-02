@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Implementations
     public partial class JellyfinDb : DbContext
     {
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
-        public virtual DbSet<Artwork> Artwork { get; set; }
+        /*public virtual DbSet<Artwork> Artwork { get; set; }
         public virtual DbSet<Book> Books { get; set; }
         public virtual DbSet<BookMetadata> BookMetadata { get; set; }
         public virtual DbSet<Chapter> Chapters { get; set; }
@@ -63,7 +63,7 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<SeriesMetadata> SeriesMetadata { get; set; }
         public virtual DbSet<Track> Tracks { get; set; }
         public virtual DbSet<TrackMetadata> TrackMetadata { get; set; }
-        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<User> Users { get; set; } */
 
         /// <summary>
         /// Gets or sets the default connection string.
@@ -94,13 +94,13 @@ namespace Jellyfin.Server.Implementations
 
             modelBuilder.HasDefaultSchema("jellyfin");
 
-            modelBuilder.Entity<Artwork>().HasIndex(t => t.Kind);
+            /*modelBuilder.Entity<Artwork>().HasIndex(t => t.Kind);
 
             modelBuilder.Entity<Genre>().HasIndex(t => t.Name)
                         .IsUnique();
 
             modelBuilder.Entity<LibraryItem>().HasIndex(t => t.UrlId)
-                        .IsUnique();
+                        .IsUnique();*/
 
             OnModelCreatedImpl(modelBuilder);
         }

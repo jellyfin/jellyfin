@@ -1,3 +1,6 @@
+#pragma warning disable CS1591
+#pragma warning disable SA1601
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
