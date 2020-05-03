@@ -40,7 +40,6 @@ CorePlugins*/
 ProgramData-Server*/
 ProgramData-UI*/
 MediaBrowser.WebDashboard/jellyfin-web/**
-tests/**/launchSettings.json
 
 #################
 ## Visual Studio
