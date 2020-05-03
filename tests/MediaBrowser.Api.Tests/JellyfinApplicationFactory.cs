@@ -26,7 +26,7 @@ namespace MediaBrowser.Api.Tests
         private static readonly ConcurrentBag<IDisposable> _disposableComponents = new ConcurrentBag<IDisposable>();
 
         /// <summary>
-        /// Initializes a new instance of <see cref="JellyfinApplicationFactory"/>.
+        /// Initializes a new instance of the <see cref="JellyfinApplicationFactory"/> class.
         /// </summary>
         public JellyfinApplicationFactory()
         {

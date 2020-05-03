@@ -20,4 +20,14 @@
     <ProjectReference Include="..\..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
   </ItemGroup>
 
+  <!-- Code Analyzers-->
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <CodeAnalysisRuleSet>MediaBrowser.Api.Tests.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
 </Project>
