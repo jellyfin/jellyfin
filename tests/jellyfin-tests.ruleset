@@ -2,7 +2,7 @@
 <RuleSet Name="Rules for MediaBrowser.Api.Tests" Description="Code analysis rules for MediaBrowser.Api.Tests.csproj" ToolsVersion="14.0">
 
   <!-- Include the solution default RuleSet. The rules in this file will override the defaults. -->
-  <Include Path="../../jellyfin.ruleset" Action="Default" />
+  <Include Path="../jellyfin.ruleset" Action="Default" />
 
   <!-- StyleCop Analyzer Rules -->
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
