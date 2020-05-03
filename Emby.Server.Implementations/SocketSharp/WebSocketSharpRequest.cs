@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Mime;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -222,14 +223,14 @@ namespace Emby.Server.Implementations.SocketSharp
                     pi = pi.Slice(1);
                 }
 
-                format = LeftPart(pi, '/');
+                format = pi.LeftPart('/');
                 if (format.Length > FormatMaxLength)
                 {
                     return null;
                 }
             }
 
-            format = LeftPart(format, '.');
+            format = format.LeftPart('.');
             if (format.Contains("json", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/json";
@@ -240,17 +241,6 @@ namespace Emby.Server.Implementations.SocketSharp
             }
 
             return null;
-        }
-
-        public static ReadOnlySpan<char> LeftPart(ReadOnlySpan<char> strVal, char needle)
-        {
-            if (strVal == null)
-            {
-                return null;
-            }
-
-            var pos = strVal.IndexOf(needle);
-            return pos == -1 ? strVal : strVal.Slice(0, pos);
         }
     }
 }

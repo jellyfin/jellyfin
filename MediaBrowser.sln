@@ -62,6 +62,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Implementat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Controller.Tests", "tests\Jellyfin.Controller.Tests\Jellyfin.Controller.Tests.csproj", "{462584F7-5023-4019-9EAC-B98CA458C0A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Data", "Jellyfin.Data\Jellyfin.Data.csproj", "{F03299F2-469F-40EF-A655-3766F97A5702}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Api.Tests", "tests\MediaBrowser.Api.Tests\MediaBrowser.Api.Tests.csproj", "{7C93C84F-105C-48E5-A878-406FA0A5B296}"
 EndProject
 Global
@@ -174,6 +176,10 @@ Global
 		{462584F7-5023-4019-9EAC-B98CA458C0A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{462584F7-5023-4019-9EAC-B98CA458C0A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{462584F7-5023-4019-9EAC-B98CA458C0A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F03299F2-469F-40EF-A655-3766F97A5702}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F03299F2-469F-40EF-A655-3766F97A5702}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F03299F2-469F-40EF-A655-3766F97A5702}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F03299F2-469F-40EF-A655-3766F97A5702}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7C93C84F-105C-48E5-A878-406FA0A5B296}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7C93C84F-105C-48E5-A878-406FA0A5B296}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C93C84F-105C-48E5-A878-406FA0A5B296}.Release|Any CPU.ActiveCfg = Release|Any CPU

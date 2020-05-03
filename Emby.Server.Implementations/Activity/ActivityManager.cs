@@ -1,25 +1,31 @@
-#pragma warning disable CS1591
-
 using System;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Activity
 {
+    /// <summary>
+    /// The activity log manager.
+    /// </summary>
     public class ActivityManager : IActivityManager
     {
         private readonly IActivityRepository _repo;
         private readonly IUserManager _userManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ActivityManager"/> class.
+        /// </summary>
+        /// <param name="repo">The activity repository.</param>
+        /// <param name="userManager">The user manager.</param>
         public ActivityManager(IActivityRepository repo, IUserManager userManager)
         {
             _repo = repo;
             _userManager = userManager;
         }
 
+        /// <inheritdoc />
         public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
         public void Create(ActivityLogEntry entry)
@@ -31,6 +37,7 @@ namespace Emby.Server.Implementations.Activity
             EntryCreated?.Invoke(this, new GenericEventArgs<ActivityLogEntry>(entry));
         }
 
+        /// <inheritdoc />
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? startIndex, int? limit)
         {
             var result = _repo.GetActivityLogEntries(minDate, hasUserId, startIndex, limit);
@@ -54,6 +61,7 @@ namespace Emby.Server.Implementations.Activity
             return result;
         }
 
+        /// <inheritdoc />
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
         {
             return GetActivityLogEntries(minDate, null, startIndex, limit);

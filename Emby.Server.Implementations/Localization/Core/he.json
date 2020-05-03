@@ -1,7 +1,7 @@
 {
     "Albums": "אלבומים",
     "AppDeviceValues": "יישום: {0}, מכשיר: {1}",
-    "Application": "אפליקציה",
+    "Application": "יישום",
     "Artists": "אומנים",
     "AuthenticationSucceededWithUserName": "{0} אומת בהצלחה",
     "Books": "ספרים",
@@ -62,7 +62,7 @@
     "NotificationOptionVideoPlayback": "Video playback started",
     "NotificationOptionVideoPlaybackStopped": "Video playback stopped",
     "Photos": "תמונות",
-    "Playlists": "רשימות ניגון",
+    "Playlists": "רשימות הפעלה",
     "Plugin": "Plugin",
     "PluginInstalledWithName": "{0} was installed",
     "PluginUninstalledWithName": "{0} was uninstalled",
@@ -92,5 +92,12 @@
     "UserStoppedPlayingItemWithValues": "{0} סיים לנגן את {1} על {2}",
     "ValueHasBeenAddedToLibrary": "{0} has been added to your media library",
     "ValueSpecialEpisodeName": "מיוחד- {0}",
-    "VersionNumber": "Version {0}"
+    "VersionNumber": "Version {0}",
+    "TaskRefreshLibrary": "סרוק ספריית מדיה",
+    "TaskRefreshChapterImages": "חלץ תמונות פרקים",
+    "TaskCleanCacheDescription": "מחק קבצי מטמון שלא בשימוש המערכת.",
+    "TaskCleanCache": "נקה תיקיית מטמון",
+    "TasksApplicationCategory": "יישום",
+    "TasksLibraryCategory": "ספרייה",
+    "TasksMaintenanceCategory": "תחזוקה"
 }

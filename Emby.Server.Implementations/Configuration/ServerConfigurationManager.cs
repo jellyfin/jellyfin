@@ -67,23 +67,22 @@ namespace Emby.Server.Implementations.Configuration
         /// <summary>
         /// Updates the metadata path.
         /// </summary>
+        /// <exception cref="UnauthorizedAccessException">If the directory does not exist, and the caller does not have the required permission to create it.</exception>
+        /// <exception cref="NotSupportedException">If there is a custom path transcoding path specified, but it is invalid.</exception>
+        /// <exception cref="IOException">If the directory does not exist, and it also could not be created.</exception>
         private void UpdateMetadataPath()
         {
-            if (string.IsNullOrWhiteSpace(Configuration.MetadataPath))
-            {
-                ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = Path.Combine(ApplicationPaths.ProgramDataPath, "metadata");
-            }
-            else
-            {
-                ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = Configuration.MetadataPath;
-            }
+            ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrWhiteSpace(Configuration.MetadataPath)
+                ? ApplicationPaths.DefaultInternalMetadataPath
+                : Configuration.MetadataPath;
+            Directory.CreateDirectory(ApplicationPaths.InternalMetadataPath);
         }
 
         /// <summary>
         /// Replaces the configuration.
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
-        /// <exception cref="DirectoryNotFoundException"></exception>
+        /// <exception cref="DirectoryNotFoundException">If the configuration path doesn't exist.</exception>
         public override void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration)
         {
             var newConfig = (ServerConfiguration)newConfiguration;

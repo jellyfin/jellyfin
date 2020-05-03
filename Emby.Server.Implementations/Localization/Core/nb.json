@@ -96,5 +96,6 @@
     "TasksChannelsCategory": "Internett kanaler",
     "TasksApplicationCategory": "Applikasjon",
     "TasksLibraryCategory": "Bibliotek",
-    "TasksMaintenanceCategory": "Vedlikehold"
+    "TasksMaintenanceCategory": "Vedlikehold",
+    "TaskCleanCache": "Tøm buffer katalog"
 }
