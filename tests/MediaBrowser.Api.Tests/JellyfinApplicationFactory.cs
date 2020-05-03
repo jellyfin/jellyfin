@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.IO;
 using Emby.Server.Implementations;
@@ -22,7 +23,7 @@ namespace MediaBrowser.Api.Tests
     public class JellyfinApplicationFactory : WebApplicationFactory<Startup>
     {
         private static readonly string _testPathRoot = Path.Combine(Path.GetTempPath(), "jellyfin-test-data");
-        private static readonly ConcurrentBag<ApplicationHost> _appHosts = new ConcurrentBag<ApplicationHost>();
+        private static readonly ConcurrentBag<IDisposable> _disposableComponents = new ConcurrentBag<IDisposable>();
 
         /// <summary>
         /// Initializes a new instance of <see cref="JellyfinApplicationFactory"/>.
@@ -70,15 +71,17 @@ namespace MediaBrowser.Api.Tests
             // Create a copy of the application configuration to use for startup
             var startupConfig = Program.CreateAppConfiguration(commandLineOpts, appPaths);
 
-            // Create the app host and initialize it
             ILoggerFactory loggerFactory = new SerilogLoggerFactory();
+            _disposableComponents.Add(loggerFactory);
+
+            // Create the app host and initialize it
             var appHost = new CoreAppHost(
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
                 new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 new NetworkManager(loggerFactory.CreateLogger<NetworkManager>()));
-            _appHosts.Add(appHost);
+            _disposableComponents.Add(appHost);
             var serviceCollection = new ServiceCollection();
             appHost.Init(serviceCollection);
 
@@ -104,12 +107,12 @@ namespace MediaBrowser.Api.Tests
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
-            foreach (var host in _appHosts)
+            foreach (var disposable in _disposableComponents)
             {
-                host.Dispose();
+                disposable.Dispose();
             }
 
-            _appHosts.Clear();
+            _disposableComponents.Clear();
 
             base.Dispose(disposing);
         }
