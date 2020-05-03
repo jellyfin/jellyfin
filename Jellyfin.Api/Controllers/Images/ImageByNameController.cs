@@ -42,10 +42,11 @@ namespace Jellyfin.Api.Controllers.Images
         /// <summary>
         ///     Get all general images.
         /// </summary>
-        /// <returns>General images.</returns>
+        /// <response code="200">Retrieved list of images.</response>
+        /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("General")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<ImageByNameInfo[]> GetGeneralImages()
+        public ActionResult<IEnumerable<ImageByNameInfo>> GetGeneralImages()
         {
             return Ok(GetImageList(_applicationPaths.GeneralPath, false));
         }
@@ -55,7 +56,9 @@ namespace Jellyfin.Api.Controllers.Images
         /// </summary>
         /// <param name="name">The name of the image.</param>
         /// <param name="type">Image Type (primary, backdrop, logo, etc).</param>
-        /// <returns>Image Stream.</returns>
+        /// <response code="200">Image stream retrieved.</response>
+        /// <response code="404">Image not found.</response>
+        /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("General/{Name}/{Type}")]
         [Produces("application/octet-stream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -82,10 +85,11 @@ namespace Jellyfin.Api.Controllers.Images
         /// <summary>
         ///     Get all general images.
         /// </summary>
-        /// <returns>General images.</returns>
+        /// <response code="200">Retrieved list of images.</response>
+        /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("Ratings")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<ImageByNameInfo[]> GetRatingImages()
+        public ActionResult<IEnumerable<ImageByNameInfo>> GetRatingImages()
         {
             return Ok(GetImageList(_applicationPaths.RatingsPath, false));
         }
@@ -95,7 +99,9 @@ namespace Jellyfin.Api.Controllers.Images
         /// </summary>
         /// <param name="theme">The theme to get the image from.</param>
         /// <param name="name">The name of the image.</param>
-        /// <returns>Image Stream.</returns>
+        /// <response code="200">Image stream retrieved.</response>
+        /// <response code="404">Image not found.</response>
+        /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("Ratings/{Theme}/{Name}")]
         [Produces("application/octet-stream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -110,7 +116,8 @@ namespace Jellyfin.Api.Controllers.Images
         /// <summary>
         ///     Get all media info images.
         /// </summary>
-        /// <returns>Media Info images.</returns>
+        /// <response code="200">Image list retrieved.</response>
+        /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("MediaInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<ImageByNameInfo[]> GetMediaInfoImages()
@@ -123,7 +130,9 @@ namespace Jellyfin.Api.Controllers.Images
         /// </summary>
         /// <param name="theme">The theme to get the image from.</param>
         /// <param name="name">The name of the image.</param>
-        /// <returns>Image Stream.</returns>
+        /// <response code="200">Image stream retrieved.</response>
+        /// <response code="404">Image not found.</response>
+        /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("MediaInfo/{Theme}/{Name}")]
         [Produces("application/octet-stream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -141,7 +150,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="basePath">Path to begin search.</param>
         /// <param name="theme">Theme to search.</param>
         /// <param name="name">File name to search for.</param>
-        /// <returns>Image Stream.</returns>
+        /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         private ActionResult<FileStreamResult> GetImageFile(string basePath, string theme, string name)
         {
             var themeFolder = Path.Combine(basePath, theme);
