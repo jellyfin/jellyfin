@@ -1,4 +1,4 @@
-using Jellyfin.Server.Middleware;
+using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 
 namespace Jellyfin.Server.Extensions
@@ -12,17 +12,39 @@ namespace Jellyfin.Server.Extensions
         /// Adds swagger and swagger UI to the application pipeline.
         /// </summary>
         /// <param name="applicationBuilder">The application builder.</param>
+        /// <param name="serverConfigurationManager">The server configuration.</param>
         /// <returns>The updated application builder.</returns>
-        public static IApplicationBuilder UseJellyfinApiSwagger(this IApplicationBuilder applicationBuilder)
+        public static IApplicationBuilder UseJellyfinApiSwagger(
+            this IApplicationBuilder applicationBuilder,
+            IServerConfigurationManager serverConfigurationManager)
         {
-            applicationBuilder.UseSwagger();
-
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
-            return applicationBuilder.UseSwaggerUI(c =>
+
+            var baseUrl = serverConfigurationManager.Configuration.BaseUrl.Trim('/');
+            if (!string.IsNullOrEmpty(baseUrl))
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Jellyfin API V1");
-            });
+                baseUrl += '/';
+            }
+
+            return applicationBuilder
+                .UseSwagger(c =>
+                {
+                    // Custom path requires {documentName}, SwaggerDoc documentName is 'api-docs'
+                    c.RouteTemplate = $"/{baseUrl}{{documentName}}/openapi.json";
+                })
+                .UseSwaggerUI(c =>
+                {
+                    c.DocumentTitle = "Jellyfin API";
+                    c.SwaggerEndpoint($"/{baseUrl}api-docs/openapi.json", "Jellyfin API");
+                    c.RoutePrefix = $"{baseUrl}api-docs/swagger";
+                })
+                .UseReDoc(c =>
+                {
+                    c.DocumentTitle = "Jellyfin API";
+                    c.SpecUrl($"/{baseUrl}api-docs/openapi.json");
+                    c.RoutePrefix = $"{baseUrl}api-docs/redoc";
+                });
         }
     }
 }

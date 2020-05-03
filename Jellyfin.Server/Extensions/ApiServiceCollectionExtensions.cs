@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json.Serialization;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
@@ -91,7 +96,22 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API" });
+
+                // Add all xml doc files to swagger generator.
+                var xmlFiles = Directory.GetFiles(
+                    AppContext.BaseDirectory,
+                    "*.xml",
+                    SearchOption.TopDirectoryOnly);
+
+                foreach (var xmlFile in xmlFiles)
+                {
+                    c.IncludeXmlComments(xmlFile);
+                }
+
+                // Order actions by route path, then by http method.
+                c.OrderActionsBy(description =>
+                    $"{description.ActionDescriptor.RouteValues["controller"]}_{description.HttpMethod}");
             });
         }
     }
