@@ -83,7 +83,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets notification services.
         /// </summary>
-        /// <response>All notification services returned.</response>
+        /// <response code="200">All notification services returned.</response>
         /// <returns>An <cref see="OkResult"/> containing a list of all notification services.</returns>
         [HttpGet("Services")]
         [ProducesResponseType(StatusCodes.Status200OK)]
