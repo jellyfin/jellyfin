@@ -120,7 +120,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("MediaInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<ImageByNameInfo[]> GetMediaInfoImages()
+        public ActionResult<IEnumerable<ImageByNameInfo>> GetMediaInfoImages()
         {
             return Ok(GetImageList(_applicationPaths.MediaInfoImagesPath, false));
         }
