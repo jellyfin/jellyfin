@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Providers.Tmdb.Movies
+namespace MediaBrowser.Providers.Tmdb.Movies
 {
     internal class TmdbSettingsResult
     {
