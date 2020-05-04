@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Entities;
 using Xunit;
 
 namespace Jellyfin.Naming.Tests.Video
@@ -269,6 +269,21 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
             Assert.Equal("7 Psychos", result.Name);
+            Assert.Null(result.ExtraType);
+        }
+
+        [Fact]
+        public void TestFileWithLotsOfTags()
+        {
+            var parser = GetParser();
+
+            var result =
+                parser.ResolveFile(@"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem.mp4");
+
+            Assert.Equal(1988, result.Year);
+            Assert.False(result.IsStub);
+            Assert.False(result.Is3D);
+            Assert.Equal("Rain Man", result.Name);
             Assert.Null(result.ExtraType);
         }
     }

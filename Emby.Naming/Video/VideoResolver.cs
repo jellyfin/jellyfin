@@ -89,9 +89,10 @@ namespace Emby.Naming.Video
             if (parseName)
             {
                 var cleanDateTimeResult = CleanDateTime(name);
+                name = cleanDateTimeResult.Name;
 
                 if (extraResult.ExtraType == null
-                    && TryCleanString(cleanDateTimeResult.Name, out ReadOnlySpan<char> newName))
+                    && TryCleanString(name, out ReadOnlySpan<char> newName))
                 {
                     name = newName.ToString();
                 }
