@@ -23,6 +23,8 @@
     <Compile Include="..\SharedVersion.cs" />
     <Compile Remove="Migrations\20200430214405_InitialSchema.cs" />
     <Compile Remove="Migrations\20200430214405_InitialSchema.Designer.cs" />
+    <Compile Remove="Migrations\20200504195424_UserSchema.cs" />
+    <Compile Remove="Migrations\20200504195424_UserSchema.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

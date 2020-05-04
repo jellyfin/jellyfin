@@ -16,6 +16,11 @@ namespace Jellyfin.Server.Implementations
     public partial class JellyfinDb : DbContext
     {
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
+        public virtual DbSet<Group> Groups { get; set; }
+        public virtual DbSet<Permission> Permissions { get; set; }
+        public virtual DbSet<Preference> Preferences { get; set; }
+        public virtual DbSet<ProviderMapping> ProviderMappings { get; set; }
+        public virtual DbSet<User> Users { get; set; }
         /*public virtual DbSet<Artwork> Artwork { get; set; }
         public virtual DbSet<Book> Books { get; set; }
         public virtual DbSet<BookMetadata> BookMetadata { get; set; }
@@ -29,7 +34,6 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<Episode> Episodes { get; set; }
         public virtual DbSet<EpisodeMetadata> EpisodeMetadata { get; set; }
         public virtual DbSet<Genre> Genres { get; set; }
-        public virtual DbSet<Group> Groups { get; set; }
         public virtual DbSet<Library> Libraries { get; set; }
         public virtual DbSet<LibraryItem> LibraryItems { get; set; }
         public virtual DbSet<LibraryRoot> LibraryRoot { get; set; }
@@ -42,13 +46,10 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<MovieMetadata> MovieMetadata { get; set; }
         public virtual DbSet<MusicAlbum> MusicAlbums { get; set; }
         public virtual DbSet<MusicAlbumMetadata> MusicAlbumMetadata { get; set; }
-        public virtual DbSet<Permission> Permissions { get; set; }
         public virtual DbSet<Person> People { get; set; }
         public virtual DbSet<PersonRole> PersonRoles { get; set; }
         public virtual DbSet<Photo> Photo { get; set; }
         public virtual DbSet<PhotoMetadata> PhotoMetadata { get; set; }
-        public virtual DbSet<Preference> Preferences { get; set; }
-        public virtual DbSet<ProviderMapping> ProviderMappings { get; set; }
         public virtual DbSet<Rating> Ratings { get; set; }
 
         /// <summary>
@@ -62,8 +63,7 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<Series> Series { get; set; }
         public virtual DbSet<SeriesMetadata> SeriesMetadata { get; set; }
         public virtual DbSet<Track> Tracks { get; set; }
-        public virtual DbSet<TrackMetadata> TrackMetadata { get; set; }
-        public virtual DbSet<User> Users { get; set; } */
+        public virtual DbSet<TrackMetadata> TrackMetadata { get; set; } */
 
         /// <summary>
         /// Gets or sets the default connection string.
