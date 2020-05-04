@@ -53,7 +53,7 @@ namespace MediaBrowser.Api.System
                 (DateTime?)null :
                 DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
 
-            var result = _activityManager.GetActivityLogEntries(minDate, request.HasUserId, request.StartIndex, request.Limit);
+            var result = _activityManager.GetPagedResult(request.StartIndex, request.Limit);
 
             return ToOptimizedResult(result);
         }
