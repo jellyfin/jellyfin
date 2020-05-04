@@ -1,7 +1,6 @@
 using System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Syncplay;
 using Microsoft.Extensions.Logging;
@@ -19,16 +18,6 @@ namespace MediaBrowser.Api.Syncplay
     /// </summary>
     public class TimeSyncService : BaseApiService
     {
-        /// <summary>
-        /// The session manager.
-        /// </summary>
-        private readonly ISessionManager _sessionManager;
-
-        /// <summary>
-        /// The session context.
-        /// </summary>
-        private readonly ISessionContext _sessionContext;
-
         public TimeSyncService(
             ILogger<TimeSyncService> logger,
             IServerConfigurationManager serverConfigurationManager,
@@ -55,7 +44,7 @@ namespace MediaBrowser.Api.Syncplay
             var responseTransmissionTime = DateTime.UtcNow.ToUniversalTime().ToString("o");
             response.ResponseTransmissionTime = responseTransmissionTime;
 
-            // Implementing NTP on such a high level results in this useless 
+            // Implementing NTP on such a high level results in this useless
             // information being sent. On the other hand it enables future additions.
             return response;
         }

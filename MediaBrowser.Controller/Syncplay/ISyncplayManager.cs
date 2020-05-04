@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Syncplay;
 
@@ -14,7 +15,8 @@ namespace MediaBrowser.Controller.Syncplay
         /// Creates a new group.
         /// </summary>
         /// <param name="session">The session that's creating the group.</param>
-        void NewGroup(SessionInfo session);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void NewGroup(SessionInfo session, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the session to a group.
@@ -22,27 +24,31 @@ namespace MediaBrowser.Controller.Syncplay
         /// <param name="session">The session.</param>
         /// <param name="groupId">The group id.</param>
         /// <param name="request">The request.</param>
-        void JoinGroup(SessionInfo session, string groupId, JoinGroupRequest request);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void JoinGroup(SessionInfo session, string groupId, JoinGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the session from a group.
         /// </summary>
         /// <param name="session">The session.</param>
-        void LeaveGroup(SessionInfo session);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void LeaveGroup(SessionInfo session, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets list of available groups for a session.
         /// </summary>
         /// <param name="session">The session.</param>
+        /// <param name="filterItemId">The item id to filter by.</param>
         /// <value>The list of available groups.</value>
-        List<GroupInfoView> ListGroups(SessionInfo session);
+        List<GroupInfoView> ListGroups(SessionInfo session, Guid filterItemId);
 
         /// <summary>
         /// Handle a request by a session in a group.
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="request">The request.</param>
-        void HandleRequest(SessionInfo session, PlaybackRequest request);
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void HandleRequest(SessionInfo session, PlaybackRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Maps a session to a group.

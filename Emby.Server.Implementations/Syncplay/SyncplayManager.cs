@@ -114,14 +114,14 @@ namespace Emby.Server.Implementations.Syncplay
         {
             var session = e.SessionInfo;
             if (!IsSessionInGroup(session)) return;
-            LeaveGroup(session);
+            LeaveGroup(session, CancellationToken.None);
         }
 
         private void OnSessionManagerPlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
             var session = e.Session;
             if (!IsSessionInGroup(session)) return;
-            LeaveGroup(session);
+            LeaveGroup(session, CancellationToken.None);
         }
 
         private bool IsSessionInGroup(SessionInfo session)
@@ -132,7 +132,13 @@ namespace Emby.Server.Implementations.Syncplay
         private bool HasAccessToItem(User user, Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            var hasParentalRatingAccess = user.Policy.MaxParentalRating.HasValue ? item.InheritedParentalRatingValue <= user.Policy.MaxParentalRating : true;
+
+            // Check ParentalRating access
+            var hasParentalRatingAccess = true;
+            if (user.Policy.MaxParentalRating.HasValue)
+            {
+                hasParentalRatingAccess = item.InheritedParentalRatingValue <= user.Policy.MaxParentalRating;
+            }
 
             if (!user.Policy.EnableAllFolders && hasParentalRatingAccess)
             {
@@ -140,7 +146,7 @@ namespace Emby.Server.Implementations.Syncplay
                     folder => folder.Id.ToString("N", CultureInfo.InvariantCulture)
                 );
                 var intersect = collections.Intersect(user.Policy.EnabledFolders);
-                return intersect.Count() > 0;
+                return intersect.Any();
             }
             else
             {
@@ -163,13 +169,13 @@ namespace Emby.Server.Implementations.Syncplay
         }
 
         /// <inheritdoc />
-        public void NewGroup(SessionInfo session)
+        public void NewGroup(SessionInfo session, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(session.UserId);
 
             if (user.Policy.SyncplayAccess != SyncplayAccess.CreateAndJoinGroups)
             {
-                _logger.LogWarning("Syncplaymanager NewGroup: {0} does not have permission to create groups.", session.Id);
+                _logger.LogWarning("NewGroup: {0} does not have permission to create groups.", session.Id);
 
                 var error = new GroupUpdate<string>()
                 {
@@ -183,24 +189,24 @@ namespace Emby.Server.Implementations.Syncplay
             {
                 if (IsSessionInGroup(session))
                 {
-                    LeaveGroup(session);
+                    LeaveGroup(session, cancellationToken);
                 }
 
-                var group = new SyncplayController(_logger, _sessionManager, this);
+                var group = new SyncplayController(_sessionManager, this);
                 _groups[group.GetGroupId().ToString()] = group;
 
-                group.InitGroup(session);
+                group.InitGroup(session, cancellationToken);
             }
         }
 
         /// <inheritdoc />
-        public void JoinGroup(SessionInfo session, string groupId, JoinGroupRequest request)
+        public void JoinGroup(SessionInfo session, string groupId, JoinGroupRequest request, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(session.UserId);
 
             if (user.Policy.SyncplayAccess == SyncplayAccess.None)
             {
-                _logger.LogWarning("Syncplaymanager JoinGroup: {0} does not have access to Syncplay.", session.Id);
+                _logger.LogWarning("JoinGroup: {0} does not have access to Syncplay.", session.Id);
 
                 var error = new GroupUpdate<string>()
                 {
@@ -217,11 +223,11 @@ namespace Emby.Server.Implementations.Syncplay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("Syncplaymanager JoinGroup: {0} tried to join group {0} that does not exist.", session.Id, groupId);
+                    _logger.LogWarning("JoinGroup: {0} tried to join group {0} that does not exist.", session.Id, groupId);
 
                     var error = new GroupUpdate<string>()
                     {
-                        Type = GroupUpdateType.GroupNotJoined
+                        Type = GroupUpdateType.GroupDoesNotExist
                     };
                     _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
                     return;
@@ -229,7 +235,7 @@ namespace Emby.Server.Implementations.Syncplay
 
                 if (!HasAccessToItem(user, group.GetPlayingItemId()))
                 {
-                    _logger.LogWarning("Syncplaymanager JoinGroup: {0} does not have access to {1}.", session.Id, group.GetPlayingItemId());
+                    _logger.LogWarning("JoinGroup: {0} does not have access to {1}.", session.Id, group.GetPlayingItemId());
 
                     var error = new GroupUpdate<string>()
                     {
@@ -243,15 +249,15 @@ namespace Emby.Server.Implementations.Syncplay
                 if (IsSessionInGroup(session))
                 {
                     if (GetSessionGroup(session).Equals(groupId)) return;
-                    LeaveGroup(session);
+                    LeaveGroup(session, cancellationToken);
                 }
 
-                group.SessionJoin(session, request);
+                group.SessionJoin(session, request, cancellationToken);
             }
         }
 
         /// <inheritdoc />
-        public void LeaveGroup(SessionInfo session)
+        public void LeaveGroup(SessionInfo session, CancellationToken cancellationToken)
         {
             // TODO: determine what happens to users that are in a group and get their permissions revoked
             lock (_groupsLock)
@@ -261,7 +267,7 @@ namespace Emby.Server.Implementations.Syncplay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("Syncplaymanager LeaveGroup: {0} does not belong to any group.", session.Id);
+                    _logger.LogWarning("LeaveGroup: {0} does not belong to any group.", session.Id);
 
                     var error = new GroupUpdate<string>()
                     {
@@ -271,17 +277,18 @@ namespace Emby.Server.Implementations.Syncplay
                     return;
                 }
 
-                group.SessionLeave(session);
+                group.SessionLeave(session, cancellationToken);
 
                 if (group.IsGroupEmpty())
                 {
+                    _logger.LogInformation("LeaveGroup: removing empty group {0}.", group.GetGroupId());
                     _groups.Remove(group.GetGroupId().ToString(), out _);
                 }
             }
         }
 
         /// <inheritdoc />
-        public List<GroupInfoView> ListGroups(SessionInfo session)
+        public List<GroupInfoView> ListGroups(SessionInfo session, Guid filterItemId)
         {
             var user = _userManager.GetUserById(session.UserId);
 
@@ -290,11 +297,11 @@ namespace Emby.Server.Implementations.Syncplay
                 return new List<GroupInfoView>();
             }
 
-            // Filter by playing item if the user is viewing something already
-            if (session.NowPlayingItem != null)
+            // Filter by item if requested
+            if (!filterItemId.Equals(Guid.Empty))
             {
                 return _groups.Values.Where(
-                    group => group.GetPlayingItemId().Equals(session.FullNowPlayingItem.Id) && HasAccessToItem(user, group.GetPlayingItemId())
+                    group => group.GetPlayingItemId().Equals(filterItemId) && HasAccessToItem(user, group.GetPlayingItemId())
                 ).Select(
                     group => group.GetInfo()
                 ).ToList();
@@ -311,13 +318,13 @@ namespace Emby.Server.Implementations.Syncplay
         }
 
         /// <inheritdoc />
-        public void HandleRequest(SessionInfo session, PlaybackRequest request)
+        public void HandleRequest(SessionInfo session, PlaybackRequest request, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(session.UserId);
 
             if (user.Policy.SyncplayAccess == SyncplayAccess.None)
             {
-                _logger.LogWarning("Syncplaymanager HandleRequest: {0} does not have access to Syncplay.", session.Id);
+                _logger.LogWarning("HandleRequest: {0} does not have access to Syncplay.", session.Id);
 
                 var error = new GroupUpdate<string>()
                 {
@@ -334,7 +341,7 @@ namespace Emby.Server.Implementations.Syncplay
 
                 if (group == null)
                 {
-                    _logger.LogWarning("Syncplaymanager HandleRequest: {0} does not belong to any group.", session.Id);
+                    _logger.LogWarning("HandleRequest: {0} does not belong to any group.", session.Id);
 
                     var error = new GroupUpdate<string>()
                     {
@@ -344,7 +351,7 @@ namespace Emby.Server.Implementations.Syncplay
                     return;
                 }
 
-                group.HandleRequest(session, request);
+                group.HandleRequest(session, request, cancellationToken);
             }
         }
 

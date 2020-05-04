@@ -238,10 +238,10 @@ namespace Emby.Server.Implementations.HttpServer
             return _socket.SendAsync(text, true, cancellationToken);
         }
 
-        private Task SendKeepAliveResponse()
+        private void SendKeepAliveResponse()
         {
             LastKeepAliveDate = DateTime.UtcNow;
-            return SendAsync(new WebSocketMessage<string>
+            SendAsync(new WebSocketMessage<string>
             {
                 MessageType = "KeepAlive"
             }, CancellationToken.None);

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Session;
@@ -9,6 +8,9 @@ namespace MediaBrowser.Controller.Syncplay
     /// <summary>
     /// Class GroupInfo.
     /// </summary>
+    /// <remarks>
+    /// Class is not thread-safe, external locking is required when accessing methods.
+    /// </remarks>
     public class GroupInfo
     {
         /// <summary>
@@ -49,8 +51,8 @@ namespace MediaBrowser.Controller.Syncplay
         /// Gets the participants.
         /// </summary>
         /// <value>The participants, or members of the group.</value>
-        public readonly ConcurrentDictionary<string, GroupMember> Participants =
-            new ConcurrentDictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
+        public readonly Dictionary<string, GroupMember> Participants =
+            new Dictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Checks if a session is in this group.

@@ -11,7 +11,7 @@ namespace MediaBrowser.Model.Syncplay
         /// Gets or sets the request type.
         /// </summary>
         /// <value>The request type.</value>
-        public PlaybackRequestType Type;
+        public PlaybackRequestType Type { get; set; }
 
         /// <summary>
         /// Gets or sets when the request has been made by the client.

@@ -30,13 +30,13 @@ namespace MediaBrowser.Model.Syncplay
         /// </summary>
         PrepareSession,
         /// <summary>
-        /// The not-in-group error. Tells a user that it doesn't belong to a group.
+        /// The not-in-group error. Tells a user that they don't belong to a group.
         /// </summary>
         NotInGroup,
         /// <summary>
-        /// The group-not-joined error. Sent when a request to join a group fails.
+        /// The group-does-not-exist error. Sent when trying to join a non-existing group.
         /// </summary>
-        GroupNotJoined,
+        GroupDoesNotExist,
         /// <summary>
         /// The create-group-denied error. Sent when a user tries to create a group without required permissions.
         /// </summary>

@@ -1,3 +1,4 @@
+using System.Threading;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
@@ -48,12 +49,19 @@ namespace MediaBrowser.Api.Syncplay
         public string SessionId { get; set; }
     }
 
-    [Route("/Syncplay/{SessionId}/ListGroups", "POST", Summary = "List Syncplay groups playing same item")]
+    [Route("/Syncplay/{SessionId}/ListGroups", "POST", Summary = "List Syncplay groups")]
     [Authenticated]
     public class SyncplayListGroups : IReturnVoid
     {
         [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string SessionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the filter item id.
+        /// </summary>
+        /// <value>The filter item id.</value>
+        [ApiMember(Name = "FilterItemId", Description = "Filter by item id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string FilterItemId { get; set; }
     }
 
     [Route("/Syncplay/{SessionId}/PlayRequest", "POST", Summary = "Request play in Syncplay group")]
@@ -104,8 +112,8 @@ namespace MediaBrowser.Api.Syncplay
         /// Gets or sets whether this is a buffering or a buffering-done request.
         /// </summary>
         /// <value><c>true</c> if buffering is complete; <c>false</c> otherwise.</value>
-        [ApiMember(Name = "Resume", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool Resume { get; set; }
+        [ApiMember(Name = "BufferingDone", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
+        public bool BufferingDone { get; set; }
     }
 
     [Route("/Syncplay/{SessionId}/UpdatePing", "POST", Summary = "Update session ping")]
@@ -125,11 +133,6 @@ namespace MediaBrowser.Api.Syncplay
     public class SyncplayService : BaseApiService
     {
         /// <summary>
-        /// The session manager.
-        /// </summary>
-        private readonly ISessionManager _sessionManager;
-
-        /// <summary>
         /// The session context.
         /// </summary>
         private readonly ISessionContext _sessionContext;
@@ -143,12 +146,10 @@ namespace MediaBrowser.Api.Syncplay
             ILogger<SyncplayService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
-            ISessionManager sessionManager,
             ISessionContext sessionContext,
             ISyncplayManager syncplayManager)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _sessionManager = sessionManager;
             _sessionContext = sessionContext;
             _syncplayManager = syncplayManager;
         }
@@ -160,7 +161,7 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayNewGroup request)
         {
             var currentSession = GetSession(_sessionContext);
-            _syncplayManager.NewGroup(currentSession);
+            _syncplayManager.NewGroup(currentSession, CancellationToken.None);
         }
 
         /// <summary>
@@ -174,19 +175,27 @@ namespace MediaBrowser.Api.Syncplay
             {
                 GroupId = Guid.Parse(request.GroupId)
             };
-            try
+
+            // Both null and empty strings mean that client isn't playing anything
+            if (!String.IsNullOrEmpty(request.PlayingItemId))
             {
-                joinRequest.PlayingItemId = Guid.Parse(request.PlayingItemId);
+                try
+                {
+                    joinRequest.PlayingItemId = Guid.Parse(request.PlayingItemId);
+                }
+                catch (ArgumentNullException)
+                {
+                    // Should never happen, but just in case
+                    Logger.LogError("JoinGroup: null value for PlayingItemId. Ignoring request.");
+                    return;
+                }
+                catch (FormatException)
+                {
+                    Logger.LogError("JoinGroup: {0} is not a valid format for PlayingItemId. Ignoring request.", request.PlayingItemId);
+                    return;
+                }
             }
-            catch (ArgumentNullException)
-            {
-                // Do nothing
-            }
-            catch (FormatException)
-            {
-                // Do nothing
-            }
-            _syncplayManager.JoinGroup(currentSession, request.GroupId, joinRequest);
+            _syncplayManager.JoinGroup(currentSession, request.GroupId, joinRequest, CancellationToken.None);
         }
 
         /// <summary>
@@ -196,7 +205,7 @@ namespace MediaBrowser.Api.Syncplay
         public void Post(SyncplayLeaveGroup request)
         {
             var currentSession = GetSession(_sessionContext);
-            _syncplayManager.LeaveGroup(currentSession);
+            _syncplayManager.LeaveGroup(currentSession, CancellationToken.None);
         }
 
         /// <summary>
@@ -207,7 +216,23 @@ namespace MediaBrowser.Api.Syncplay
         public List<GroupInfoView> Post(SyncplayListGroups request)
         {
             var currentSession = GetSession(_sessionContext);
-            return _syncplayManager.ListGroups(currentSession);
+            var filterItemId = Guid.Empty;
+            if (!String.IsNullOrEmpty(request.FilterItemId))
+            {
+                try
+                {
+                    filterItemId = Guid.Parse(request.FilterItemId);
+                }
+                catch (ArgumentNullException)
+                {
+                    Logger.LogWarning("ListGroups: null value for FilterItemId. Ignoring filter.");
+                }
+                catch (FormatException)
+                {
+                    Logger.LogWarning("ListGroups: {0} is not a valid format for FilterItemId. Ignoring filter.", request.FilterItemId);
+                }
+            }
+            return _syncplayManager.ListGroups(currentSession, filterItemId);
         }
 
         /// <summary>
@@ -221,7 +246,7 @@ namespace MediaBrowser.Api.Syncplay
             {
                 Type = PlaybackRequestType.Play
             };
-            _syncplayManager.HandleRequest(currentSession, syncplayRequest);
+            _syncplayManager.HandleRequest(currentSession, syncplayRequest, CancellationToken.None);
         }
 
         /// <summary>
@@ -235,7 +260,7 @@ namespace MediaBrowser.Api.Syncplay
             {
                 Type = PlaybackRequestType.Pause
             };
-            _syncplayManager.HandleRequest(currentSession, syncplayRequest);
+            _syncplayManager.HandleRequest(currentSession, syncplayRequest, CancellationToken.None);
         }
 
         /// <summary>
@@ -250,7 +275,7 @@ namespace MediaBrowser.Api.Syncplay
                 Type = PlaybackRequestType.Seek,
                 PositionTicks = request.PositionTicks
             };
-            _syncplayManager.HandleRequest(currentSession, syncplayRequest);
+            _syncplayManager.HandleRequest(currentSession, syncplayRequest, CancellationToken.None);
         }
 
         /// <summary>
@@ -262,11 +287,11 @@ namespace MediaBrowser.Api.Syncplay
             var currentSession = GetSession(_sessionContext);
             var syncplayRequest = new PlaybackRequest()
             {
-                Type = request.Resume ? PlaybackRequestType.BufferingDone : PlaybackRequestType.Buffering,
+                Type = request.BufferingDone ? PlaybackRequestType.BufferingDone : PlaybackRequestType.Buffering,
                 When = DateTime.Parse(request.When),
                 PositionTicks = request.PositionTicks
             };
-            _syncplayManager.HandleRequest(currentSession, syncplayRequest);
+            _syncplayManager.HandleRequest(currentSession, syncplayRequest, CancellationToken.None);
         }
 
         /// <summary>
@@ -281,7 +306,7 @@ namespace MediaBrowser.Api.Syncplay
                 Type = PlaybackRequestType.UpdatePing,
                 Ping = Convert.ToInt64(request.Ping)
             };
-            _syncplayManager.HandleRequest(currentSession, syncplayRequest);
+            _syncplayManager.HandleRequest(currentSession, syncplayRequest, CancellationToken.None);
         }
     }
 }
