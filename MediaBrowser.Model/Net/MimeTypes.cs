@@ -176,7 +176,6 @@ namespace MediaBrowser.Model.Net
             }
 
             var ext = Path.GetExtension(path);
-            var beg = Path.GetFullPath(path);
 
             if (_mimeTypeLookup.TryGetValue(ext, out string result))
             {
@@ -204,7 +203,6 @@ namespace MediaBrowser.Model.Net
 
             // Misc
             if (string.Equals(ext, ".dll", StringComparison.OrdinalIgnoreCase))
-                || string.Equals(beg, "._*", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/octet-stream";
             }
