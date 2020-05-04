@@ -1,4 +1,4 @@
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using Xunit;
 
 namespace Jellyfin.Naming.Tests.Video
@@ -217,7 +217,7 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
             Assert.Null(result.Format3D);
-            Assert.Equal("American.Psycho", result.Name);
+            Assert.Equal("American Psycho", result.Name);
             Assert.Null(result.ExtraType);
         }
 
@@ -284,6 +284,21 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.False(result.IsStub);
             Assert.False(result.Is3D);
             Assert.Equal("Rain Man", result.Name);
+            Assert.Null(result.ExtraType);
+        }
+
+        [Fact]
+        public void TestFileWithPrefixTag()
+        {
+            var parser = GetParser();
+
+            var result =
+                parser.ResolveFile(@"/server/Movies/[ www.example.com ] - Heartbreak Ridge 1986 720p BRRip x264-PLAYNOW.mp4");
+
+            Assert.Equal(1986, result.Year);
+            Assert.False(result.IsStub);
+            Assert.False(result.Is3D);
+            Assert.Equal("Heartbreak Ridge", result.Name);
             Assert.Null(result.ExtraType);
         }
     }

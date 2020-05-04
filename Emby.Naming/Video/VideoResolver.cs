@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
@@ -96,6 +97,17 @@ namespace Emby.Naming.Video
                 {
                     name = newName.ToString();
                 }
+
+                // Remove things enclosed in []{}() etc
+                Regex rgx = new Regex(@"\p{Ps}.*\p{Pe}");
+                name = rgx.Replace(name, string.Empty);
+
+                // Replace sequences of non-word characters with space
+                Regex rgx2 = new Regex(@"\W+");
+                name = rgx2.Replace(name, " ");
+
+                // Trim whitespace
+                name = name.Trim();
 
                 year = cleanDateTimeResult.Year;
             }
