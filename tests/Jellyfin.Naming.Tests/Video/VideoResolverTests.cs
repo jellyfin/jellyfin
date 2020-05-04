@@ -174,6 +174,16 @@ namespace Jellyfin.Naming.Tests.Video
                     Year = 2006,
                 }
             };
+            yield return new object[]
+            {
+                new VideoFileInfo()
+                {
+                    Path = @"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem.mp4",
+                    Container = "mp4",
+                    Name = "Rain Man",
+                    Year = 1988,
+                }
+            };
         }
 
         [Theory]
