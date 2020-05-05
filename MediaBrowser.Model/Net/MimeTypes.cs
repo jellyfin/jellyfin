@@ -58,6 +58,7 @@ namespace MediaBrowser.Model.Net
             // Type application
             { ".7z", "application/x-7z-compressed" },
             { ".azw", "application/vnd.amazon.ebook" },
+            { ".azw3", "application/vnd.amazon.ebook" },
             { ".cbz", "application/x-cbz" },
             { ".cbr", "application/epub+zip" },
             { ".eot", "application/vnd.ms-fontobject" },
