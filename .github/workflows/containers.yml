@@ -1,0 +1,72 @@
+name: Container images
+
+on:
+  push:
+    branches:
+      - master
+      - container # TODO remove before merging
+    tags:
+      - v*
+  schedule:
+    - cron: '0 0 * * *'
+
+env:
+  REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+  DOCKER_CLI_EXPERIMENTAL: enabled
+
+jobs:
+  container-images:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Prepare
+      id: prepare
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          echo ::set-output name=version::${GITHUB_REF#refs/tags/v}
+        elif [[ $GITHUB_REF == refs/heads/master ]]; then
+          echo ::set-output name=version::latest
+        elif [[ $GITHUB_REF == refs/heads/* ]]; then
+          echo ::set-output name=version::${GITHUB_REF#refs/heads/}
+        else
+          echo ::set-output name=version::snapshot
+        fi
+
+    - name: Environment
+      run: |
+        echo home=$HOME
+        echo git_ref=$GITHUB_REF
+        echo git_sha=$GITHUB_SHA
+        echo version=${{ steps.prepare.outputs.version }}
+
+    - name: Login
+      env:
+        REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+      run: echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+
+    - uses: actions/checkout@v1
+
+    - name: Setup QEMU
+      run: docker run --rm --privileged multiarch/qemu-user-static:register --reset
+
+    - name: Build AMD64
+      run: |
+        docker build -t $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-amd64 -f Dockerfile .
+        docker push $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-amd64
+
+    - name: Build ARM
+      run: |
+        docker build -t $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-arm -f Dockerfile.arm .
+        docker push $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-arm
+
+    - name: Build ARM64
+      run: |
+        docker build -t $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-arm64 -f Dockerfile.arm64 .
+        docker push $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-arm64
+
+    - name: Create manifest
+      run: docker manifest create $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }} $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-amd64 $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-arm $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}-arm64
+
+    - name: Push manifest
+      run: docker manifest push $REGISTRY_USER/jellyfin:${{ steps.prepare.outputs.version }}
