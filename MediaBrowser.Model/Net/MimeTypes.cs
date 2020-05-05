@@ -40,7 +40,7 @@ namespace MediaBrowser.Model.Net
             ".ogg",
             ".ogm",
             ".ogv",
-            ".rec"
+            ".rec",
             ".ts",
             ".rmvb",
             ".webm",
