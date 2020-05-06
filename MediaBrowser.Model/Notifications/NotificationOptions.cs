@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Extensions;
+using System.Linq;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Notifications
@@ -81,8 +81,12 @@ namespace MediaBrowser.Model.Notifications
         {
             foreach (NotificationOption i in Options)
             {
-                if (string.Equals(type, i.Type, StringComparison.OrdinalIgnoreCase)) return i;
+                if (string.Equals(type, i.Type, StringComparison.OrdinalIgnoreCase))
+                {
+                    return i;
+                }
             }
+
             return null;
         }
 
@@ -98,7 +102,7 @@ namespace MediaBrowser.Model.Notifications
             NotificationOption opt = GetOptions(notificationType);
 
             return opt == null ||
-                   !ListHelper.ContainsIgnoreCase(opt.DisabledServices, service);
+                   !opt.DisabledServices.Contains(service, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool IsEnabledToMonitorUser(string type, Guid userId)
@@ -106,7 +110,7 @@ namespace MediaBrowser.Model.Notifications
             NotificationOption opt = GetOptions(type);
 
             return opt != null && opt.Enabled &&
-                   !ListHelper.ContainsIgnoreCase(opt.DisabledMonitorUsers, userId.ToString(""));
+                   !opt.DisabledMonitorUsers.Contains(userId.ToString(""), StringComparer.OrdinalIgnoreCase);
         }
 
         public bool IsEnabledToSendToUser(string type, string userId, UserPolicy userPolicy)
@@ -125,7 +129,7 @@ namespace MediaBrowser.Model.Notifications
                     return true;
                 }
 
-                return ListHelper.ContainsIgnoreCase(opt.SendToUsers, userId);
+                return opt.SendToUsers.Contains(userId, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;
