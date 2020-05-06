@@ -620,8 +620,9 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(user));
             }
 
-            bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user);
-            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
+            IAuthenticationProvider authenticationProvider = GetAuthenticationProvider(user);
+            bool hasConfiguredPassword = authenticationProvider.HasPassword(user);
+            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(authenticationProvider.GetEasyPasswordHash(user));
 
             bool hasPassword = user.Configuration.EnableLocalPassword &&
                 !string.IsNullOrEmpty(remoteEndPoint) &&
