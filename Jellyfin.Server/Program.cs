@@ -290,9 +290,9 @@ namespace Jellyfin.Server
                                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                                     });
                                 }
-                                catch (Exception ex)
+                                catch (InvalidOperationException ex)
                                 {
-                                    _logger.LogError(ex, "Error whilst listing to https - Is a development certificate installed?");
+                                    _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
                                 }
                             }
                         }
@@ -320,9 +320,9 @@ namespace Jellyfin.Server
                                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                                 });
                             }
-                            catch (Exception ex)
+                            catch (InvalidOperationException ex)
                             {
-                                _logger.LogError(ex, "Error whilst listing to https - Is a development certificate installed?");
+                                _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
                             }
                         }
                     }
