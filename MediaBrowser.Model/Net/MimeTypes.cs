@@ -46,7 +46,6 @@ namespace MediaBrowser.Model.Net
             ".webm",
             ".wmv",
             ".wtv",
-
         };
 
         // http://en.wikipedia.org/wiki/Internet_media_type
