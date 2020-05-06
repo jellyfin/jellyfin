@@ -4,19 +4,19 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Controller.Syncplay;
+using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Syncplay;
+using MediaBrowser.Model.SyncPlay;
 
-namespace Emby.Server.Implementations.Syncplay
+namespace Emby.Server.Implementations.SyncPlay
 {
     /// <summary>
-    /// Class SyncplayController.
+    /// Class SyncPlayController.
     /// </summary>
     /// <remarks>
     /// Class is not thread-safe, external locking is required when accessing methods.
     /// </remarks>
-    public class SyncplayController : ISyncplayController, IDisposable
+    public class SyncPlayController : ISyncPlayController, IDisposable
     {
         /// <summary>
         /// Used to filter the sessions of a group.
@@ -47,9 +47,9 @@ namespace Emby.Server.Implementations.Syncplay
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
-        /// The syncplay manager.
+        /// The SyncPlay manager.
         /// </summary>
-        private readonly ISyncplayManager _syncplayManager;
+        private readonly ISyncPlayManager _syncPlayManager;
 
         /// <summary>
         /// The group to manage.
@@ -67,12 +67,12 @@ namespace Emby.Server.Implementations.Syncplay
 
         private bool _disposed = false;
 
-        public SyncplayController(
+        public SyncPlayController(
             ISessionManager sessionManager,
-            ISyncplayManager syncplayManager)
+            ISyncPlayManager syncPlayManager)
         {
             _sessionManager = sessionManager;
-            _syncplayManager = syncplayManager;
+            _syncPlayManager = syncPlayManager;
         }
 
         /// <inheritdoc />
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.Syncplay
                 SessionInfo[] sessions = FilterSessions(from, type);
                 foreach (var session in sessions)
                 {
-                    yield return _sessionManager.SendSyncplayGroupUpdate(session.Id.ToString(), message, cancellationToken);
+                    yield return _sessionManager.SendSyncPlayGroupUpdate(session.Id.ToString(), message, cancellationToken);
                 }
             }
 
@@ -185,7 +185,7 @@ namespace Emby.Server.Implementations.Syncplay
                 SessionInfo[] sessions = FilterSessions(from, type);
                 foreach (var session in sessions)
                 {
-                    yield return _sessionManager.SendSyncplayCommand(session.Id.ToString(), message, cancellationToken);
+                    yield return _sessionManager.SendSyncPlayCommand(session.Id.ToString(), message, cancellationToken);
                 }
             }
 
@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.Syncplay
         /// </summary>
         /// <param name="type">The command type.</param>
         /// <value>The SendCommand.</value>
-        private SendCommand NewSyncplayCommand(SendCommandType type)
+        private SendCommand NewSyncPlayCommand(SendCommandType type)
         {
             return new SendCommand()
             {
@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.Syncplay
         /// <param name="type">The update type.</param>
         /// <param name="data">The data to send.</param>
         /// <value>The GroupUpdate.</value>
-        private GroupUpdate<T> NewSyncplayGroupUpdate<T>(GroupUpdateType type, T data)
+        private GroupUpdate<T> NewSyncPlayGroupUpdate<T>(GroupUpdateType type, T data)
         {
             return new GroupUpdate<T>()
             {
@@ -229,16 +229,16 @@ namespace Emby.Server.Implementations.Syncplay
         public void InitGroup(SessionInfo session, CancellationToken cancellationToken)
         {
             _group.AddSession(session);
-            _syncplayManager.AddSessionToGroup(session, this);
+            _syncPlayManager.AddSessionToGroup(session, this);
 
             _group.PlayingItem = session.FullNowPlayingItem;
             _group.IsPaused = true;
             _group.PositionTicks = session.PlayState.PositionTicks ?? 0;
             _group.LastActivity = DateTime.UtcNow;
 
-            var updateSession = NewSyncplayGroupUpdate(GroupUpdateType.GroupJoined, DateToUTCString(DateTime.UtcNow));
+            var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, DateToUTCString(DateTime.UtcNow));
             SendGroupUpdate(session, BroadcastType.CurrentSession, updateSession, cancellationToken);
-            var pauseCommand = NewSyncplayCommand(SendCommandType.Pause);
+            var pauseCommand = NewSyncPlayCommand(SendCommandType.Pause);
             SendCommand(session, BroadcastType.CurrentSession, pauseCommand, cancellationToken);
         }
 
@@ -248,23 +248,23 @@ namespace Emby.Server.Implementations.Syncplay
             if (session.NowPlayingItem?.Id == _group.PlayingItem.Id && request.PlayingItemId == _group.PlayingItem.Id)
             {
                 _group.AddSession(session);
-                _syncplayManager.AddSessionToGroup(session, this);
+                _syncPlayManager.AddSessionToGroup(session, this);
 
-                var updateSession = NewSyncplayGroupUpdate(GroupUpdateType.GroupJoined, DateToUTCString(DateTime.UtcNow));
+                var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, DateToUTCString(DateTime.UtcNow));
                 SendGroupUpdate(session, BroadcastType.CurrentSession, updateSession, cancellationToken);
 
-                var updateOthers = NewSyncplayGroupUpdate(GroupUpdateType.UserJoined, session.UserName);
+                var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserJoined, session.UserName);
                 SendGroupUpdate(session, BroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
                 // Client join and play, syncing will happen client side
                 if (!_group.IsPaused)
                 {
-                    var playCommand = NewSyncplayCommand(SendCommandType.Play);
+                    var playCommand = NewSyncPlayCommand(SendCommandType.Play);
                     SendCommand(session, BroadcastType.CurrentSession, playCommand, cancellationToken);
                 }
                 else
                 {
-                    var pauseCommand = NewSyncplayCommand(SendCommandType.Pause);
+                    var pauseCommand = NewSyncPlayCommand(SendCommandType.Pause);
                     SendCommand(session, BroadcastType.CurrentSession, pauseCommand, cancellationToken);
                 }
             }
@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations.Syncplay
                 var playRequest = new PlayRequest();
                 playRequest.ItemIds = new Guid[] { _group.PlayingItem.Id };
                 playRequest.StartPositionTicks = _group.PositionTicks;
-                var update = NewSyncplayGroupUpdate(GroupUpdateType.PrepareSession, playRequest);
+                var update = NewSyncPlayGroupUpdate(GroupUpdateType.PrepareSession, playRequest);
                 SendGroupUpdate(session, BroadcastType.CurrentSession, update, cancellationToken);
             }
         }
@@ -282,12 +282,12 @@ namespace Emby.Server.Implementations.Syncplay
         public void SessionLeave(SessionInfo session, CancellationToken cancellationToken)
         {
             _group.RemoveSession(session);
-            _syncplayManager.RemoveSessionFromGroup(session, this);
+            _syncPlayManager.RemoveSessionFromGroup(session, this);
 
-            var updateSession = NewSyncplayGroupUpdate(GroupUpdateType.GroupLeft, _group.PositionTicks);
+            var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupLeft, _group.PositionTicks);
             SendGroupUpdate(session, BroadcastType.CurrentSession, updateSession, cancellationToken);
 
-            var updateOthers = NewSyncplayGroupUpdate(GroupUpdateType.UserLeft, session.UserName);
+            var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserLeft, session.UserName);
             SendGroupUpdate(session, BroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
         }
 
@@ -344,13 +344,13 @@ namespace Emby.Server.Implementations.Syncplay
                     delay
                 );
 
-                var command = NewSyncplayCommand(SendCommandType.Play);
+                var command = NewSyncPlayCommand(SendCommandType.Play);
                 SendCommand(session, BroadcastType.AllGroup, command, cancellationToken);
             }
             else
             {
                 // Client got lost, sending current state
-                var command = NewSyncplayCommand(SendCommandType.Play);
+                var command = NewSyncPlayCommand(SendCommandType.Play);
                 SendCommand(session, BroadcastType.CurrentSession, command, cancellationToken);
             }
         }
@@ -374,13 +374,13 @@ namespace Emby.Server.Implementations.Syncplay
                 // (a pause request may be issued during the delay added to account for latency)
                 _group.PositionTicks += elapsedTime.Ticks > 0 ? elapsedTime.Ticks : 0;
 
-                var command = NewSyncplayCommand(SendCommandType.Pause);
+                var command = NewSyncPlayCommand(SendCommandType.Pause);
                 SendCommand(session, BroadcastType.AllGroup, command, cancellationToken);
             }
             else
             {
                 // Client got lost, sending current state
-                var command = NewSyncplayCommand(SendCommandType.Pause);
+                var command = NewSyncPlayCommand(SendCommandType.Pause);
                 SendCommand(session, BroadcastType.CurrentSession, command, cancellationToken);
             }
         }
@@ -401,7 +401,7 @@ namespace Emby.Server.Implementations.Syncplay
             _group.PositionTicks = ticks;
             _group.LastActivity = DateTime.UtcNow;
 
-            var command = NewSyncplayCommand(SendCommandType.Seek);
+            var command = NewSyncPlayCommand(SendCommandType.Seek);
             SendCommand(session, BroadcastType.AllGroup, command, cancellationToken);
         }
 
@@ -425,16 +425,16 @@ namespace Emby.Server.Implementations.Syncplay
                 _group.SetBuffering(session, true);
 
                 // Send pause command to all non-buffering sessions
-                var command = NewSyncplayCommand(SendCommandType.Pause);
+                var command = NewSyncPlayCommand(SendCommandType.Pause);
                 SendCommand(session, BroadcastType.AllReady, command, cancellationToken);
 
-                var updateOthers = NewSyncplayGroupUpdate(GroupUpdateType.GroupWait, session.UserName);
+                var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.GroupWait, session.UserName);
                 SendGroupUpdate(session, BroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
             }
             else
             {
                 // Client got lost, sending current state
-                var command = NewSyncplayCommand(SendCommandType.Pause);
+                var command = NewSyncPlayCommand(SendCommandType.Pause);
                 SendCommand(session, BroadcastType.CurrentSession, command, cancellationToken);
             }
         }
@@ -462,7 +462,7 @@ namespace Emby.Server.Implementations.Syncplay
                 if (_group.IsBuffering())
                 {
                     // Others are still buffering, tell this client to pause when ready
-                    var command = NewSyncplayCommand(SendCommandType.Pause);
+                    var command = NewSyncPlayCommand(SendCommandType.Pause);
                     var pauseAtTime = currentTime.AddMilliseconds(delay);
                     command.When = DateToUTCString(pauseAtTime);
                     SendCommand(session, BroadcastType.CurrentSession, command, cancellationToken);
@@ -478,7 +478,7 @@ namespace Emby.Server.Implementations.Syncplay
                         _group.LastActivity = currentTime.AddMilliseconds(
                             delay
                         );
-                        var command = NewSyncplayCommand(SendCommandType.Play);
+                        var command = NewSyncPlayCommand(SendCommandType.Play);
                         SendCommand(session, BroadcastType.AllExceptCurrentSession, command, cancellationToken);
                     }
                     else
@@ -491,7 +491,7 @@ namespace Emby.Server.Implementations.Syncplay
                             delay
                         );
 
-                        var command = NewSyncplayCommand(SendCommandType.Play);
+                        var command = NewSyncPlayCommand(SendCommandType.Play);
                         SendCommand(session, BroadcastType.AllGroup, command, cancellationToken);
                     }
                 }
@@ -499,7 +499,7 @@ namespace Emby.Server.Implementations.Syncplay
             else
             {
                 // Group was not waiting, make sure client has latest state
-                var command = NewSyncplayCommand(SendCommandType.Play);
+                var command = NewSyncPlayCommand(SendCommandType.Play);
                 SendCommand(session, BroadcastType.CurrentSession, command, cancellationToken);
             }
         }

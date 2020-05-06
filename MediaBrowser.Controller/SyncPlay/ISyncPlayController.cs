@@ -1,14 +1,14 @@
 using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Syncplay;
+using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.Syncplay
+namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Interface ISyncplayController.
+    /// Interface ISyncPlayController.
     /// </summary>
-    public interface ISyncplayController
+    public interface ISyncPlayController
     {
         /// <summary>
         /// Gets the group id.

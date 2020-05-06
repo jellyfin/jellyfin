@@ -2,10 +2,10 @@ using System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Syncplay;
+using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Api.Syncplay
+namespace MediaBrowser.Api.SyncPlay
 {
     [Route("/GetUtcTime", "GET", Summary = "Get UtcTime")]
     public class GetUtcTime : IReturnVoid

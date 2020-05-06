@@ -1,6 +1,6 @@
 using System;
 
-namespace MediaBrowser.Model.Syncplay
+namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
     /// Class JoinGroupRequest.

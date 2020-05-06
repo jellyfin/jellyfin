@@ -81,10 +81,10 @@ namespace MediaBrowser.Model.Users
         public string PasswordResetProviderId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating what Syncplay features the user can access.
+        /// Gets or sets a value indicating what SyncPlay features the user can access.
         /// </summary>
-        /// <value>Access level to Syncplay features.</value>
-        public SyncplayAccess SyncplayAccess { get; set; }
+        /// <value>Access level to SyncPlay features.</value>
+        public SyncPlayAccess SyncPlayAccess { get; set; }
 
         public UserPolicy()
         {
@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Users
             EnableContentDownloading = true;
             EnablePublicSharing = true;
             EnableRemoteAccess = true;
-            SyncplayAccess = SyncplayAccess.CreateAndJoinGroups;
+            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
         }
     }
 }

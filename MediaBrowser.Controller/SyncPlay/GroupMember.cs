@@ -1,6 +1,6 @@
 using MediaBrowser.Controller.Session;
 
-namespace MediaBrowser.Controller.Syncplay
+namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
     /// Class GroupMember.

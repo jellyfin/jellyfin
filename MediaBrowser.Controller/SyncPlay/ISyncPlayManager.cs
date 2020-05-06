@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Syncplay;
+using MediaBrowser.Model.SyncPlay;
 
-namespace MediaBrowser.Controller.Syncplay
+namespace MediaBrowser.Controller.SyncPlay
 {
     /// <summary>
-    /// Interface ISyncplayManager.
+    /// Interface ISyncPlayManager.
     /// </summary>
-    public interface ISyncplayManager
+    public interface ISyncPlayManager
     {
         /// <summary>
         /// Creates a new group.
@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.Syncplay
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void AddSessionToGroup(SessionInfo session, ISyncplayController group);
+        void AddSessionToGroup(SessionInfo session, ISyncPlayController group);
 
         /// <summary>
         /// Unmaps a session from a group.
@@ -64,6 +64,6 @@ namespace MediaBrowser.Controller.Syncplay
         /// <param name="session">The session.</param>
         /// <param name="group">The group.</param>
         /// <exception cref="InvalidOperationException"></exception>
-        void RemoveSessionFromGroup(SessionInfo session, ISyncplayController group);
+        void RemoveSessionFromGroup(SessionInfo session, ISyncPlayController group);
     }
 }

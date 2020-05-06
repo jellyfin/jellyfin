@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
-    /// Enum SyncplayAccess.
+    /// Enum SyncPlayAccess.
     /// </summary>
-    public enum SyncplayAccess
+    public enum SyncPlayAccess
     {
         /// <summary>
         /// User can create groups and join them.
@@ -16,7 +16,7 @@ namespace MediaBrowser.Model.Configuration
         JoinGroups,
 
         /// <summary>
-        /// Syncplay is disabled for the user.
+        /// SyncPlay is disabled for the user.
         /// </summary>
         None
     }
