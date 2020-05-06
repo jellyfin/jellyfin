@@ -134,7 +134,9 @@ namespace MediaBrowser.Model.Net
             { ".m4b", "audio/m4b" },
             { ".mid", "audio/midi" },
             { ".midi", "audio/midi" },
-            // There's also audio/x-midi
+           // There's also audio/x-midi, but no testing has been done to associate an extension with two seperate mime types.
+           // { ".mid", "audio/x-midi" },
+           // { ".midi", "audio/x-midi" },
             { ".mp3", "audio/mpeg" },
             { ".oga", "audio/ogg" },
             { ".ogg", "audio/ogg" },
