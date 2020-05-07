@@ -608,6 +608,31 @@ namespace Emby.Server.Implementations.Library
             return dto;
         }
 
+        public PublicUserDto GetPublicUserDto(User user, string remoteEndPoint = null)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            IAuthenticationProvider authenticationProvider = GetAuthenticationProvider(user);
+            bool hasConfiguredPassword = authenticationProvider.HasPassword(user);
+            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(authenticationProvider.GetEasyPasswordHash(user));
+
+            bool hasPassword = user.Configuration.EnableLocalPassword &&
+                !string.IsNullOrEmpty(remoteEndPoint) &&
+                _networkManager.IsInLocalNetwork(remoteEndPoint) ? hasConfiguredEasyPassword : hasConfiguredPassword;
+
+            PublicUserDto dto = new PublicUserDto
+            {
+                Name = user.Name,
+                HasPassword = hasPassword,
+                HasConfiguredPassword = hasConfiguredPassword,
+            };
+
+            return dto;
+        }
+
         public UserDto GetOfflineUserDto(User user)
         {
             var dto = GetUserDto(user);
