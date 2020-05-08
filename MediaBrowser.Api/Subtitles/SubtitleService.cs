@@ -37,6 +37,31 @@ namespace MediaBrowser.Api.Subtitles
         public int Index { get; set; }
     }
 
+    [Route("/Videos/{Id}/Subtitles", "POST", Summary = "Upload an external subtitle file")]
+    [Authenticated(Roles = "admin")]
+    public class PostSubtitle : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the id.
+        /// </summary>
+        /// <value>The id.</value>
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Language", Description = "Language", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Language { get; set; }
+
+        [ApiMember(Name = "Format", Description = "Format", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Format { get; set; }
+
+        [ApiMember(Name = "IsForced", Description = "IsForced", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string IsForced { get; set; }
+
+        [ApiMember(Name = "Data", Description = "Data", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string Data { get; set; }
+
+    }
+
     [Route("/Items/{Id}/RemoteSearch/Subtitles/{Language}", "GET")]
     [Authenticated]
     public class SearchRemoteSubtitles : IReturn<RemoteSubtitleInfo[]>
@@ -268,6 +293,36 @@ namespace MediaBrowser.Api.Subtitles
         {
             var item = _libraryManager.GetItemById(request.Id);
             return _subtitleManager.DeleteSubtitles(item, request.Index);
+        }
+
+        public void Post(PostSubtitle request)
+        {
+            var video = (Video)_libraryManager.GetItemById(request.Id);
+
+            var bytes = Convert.FromBase64String(request.Data);
+            var memoryStream = new MemoryStream(bytes)
+            {
+                Position = 0
+            };
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _subtitleManager.UploadSubtitle(video, new SubtitleResponse {
+                        Format = request.Format,
+                        Language = request.Language,
+                        IsForced = Convert.ToBoolean(request.IsForced),
+                        Stream = memoryStream
+                    }).ConfigureAwait(false);
+
+                    _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error uploading subtitle");
+                }
+            });
         }
 
         public async Task<object> Get(GetRemoteSubtitles request)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -49,6 +50,11 @@ namespace MediaBrowser.Controller.Subtitles
         /// Downloads the subtitles.
         /// </summary>
         Task DownloadSubtitles(Video video, LibraryOptions libraryOptions, string subtitleId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Upload new subtitle.
+        /// </summary>
+        Task UploadSubtitle(Video video, SubtitleResponse response);
 
         /// <summary>
         /// Gets the remote subtitles.
