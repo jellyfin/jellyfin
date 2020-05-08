@@ -118,6 +118,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             //OpenedMediaSource.SupportsDirectStream = true;
             //OpenedMediaSource.SupportsTranscoding = true;
             await taskCompletionSource.Task.ConfigureAwait(false);
+            if (taskCompletionSource.Task.Exception != null)
+            {
+                // Error happened during opening the stream, re-raise the exception to inform the caller
+                throw taskCompletionSource.Task.Exception;
+            }
         }
 
         private Task StartStreaming(HttpResponseInfo response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -139,12 +144,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                             cancellationToken).ConfigureAwait(false);
                     }
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException ex)
                 {
+                    Logger.LogWarning(ex, "Copying of {0} to {1} was canceled", GetType().Name, TempFilePath);
+                    openTaskCompletionSource.TrySetException(ex);
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error copying live stream.");
+                    Logger.LogError(ex, "Error copying live stream {0} to {1}.", GetType().Name, TempFilePath);
+                    openTaskCompletionSource.TrySetException(ex);
                 }
 
                 EnableStreamSharing = false;
