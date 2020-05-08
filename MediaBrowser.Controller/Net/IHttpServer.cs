@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
@@ -38,5 +39,12 @@ namespace MediaBrowser.Controller.Net
         /// <param name="context"></param>
         /// <returns></returns>
         Task RequestHandler(HttpContext context);
+
+        /// <summary>
+        /// Get the default CORS headers
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        IDictionary<string, string> GetCorsHeaders(IRequest req);
     }
 }

@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using ServiceStack.Text.Jsv;
 
 namespace Emby.Server.Implementations.HttpServer
@@ -454,9 +455,10 @@ namespace Emby.Server.Implementations.HttpServer
                 if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.StatusCode = 200;
-                    httpRes.Headers.Add("Access-Control-Allow-Origin", "*");
-                    httpRes.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-                    httpRes.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization");
+                    foreach(KeyValuePair<string, string> header in GetCorsHeaders(httpReq))
+                    {
+                        httpRes.Headers.Add(header.Key, header.Value);
+                    }
                     httpRes.ContentType = "text/plain";
                     await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
                     return;
@@ -576,6 +578,31 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        /// <summary>
+        /// Get the default CORS headers
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        public IDictionary<string, string> GetCorsHeaders(IRequest req)
+        {
+            var origin = req.Headers["Origin"];
+            if (origin == StringValues.Empty)
+            {
+                origin = req.Headers["Host"];
+                if (origin == StringValues.Empty)
+                {
+                    origin = "*";
+                }
+            }
+
+            var headers = new Dictionary<string, string>();
+            headers.Add("Access-Control-Allow-Origin", origin);
+            headers.Add("Access-Control-Allow-Credentials", "true");
+            headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+            headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization, Cookie");
+            return headers;
+        }
+
         // Entry point for HttpListener
         public ServiceHandler GetServiceHandler(IHttpRequest httpReq)
         {
@@ -622,7 +649,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             ResponseFilters = new Action<IRequest, HttpResponse, object>[]
             {
-                new ResponseFilter(_logger).FilterResponse
+                new ResponseFilter(this, _logger).FilterResponse
             };
         }
 
