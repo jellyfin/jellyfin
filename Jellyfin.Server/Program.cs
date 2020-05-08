@@ -297,7 +297,6 @@ namespace Jellyfin.Server
                         {
                             _logger.LogInformation("Kestrel listening on {IpAddress}", address);
                             options.Listen(address, appHost.HttpPort);
-
                             if (appHost.EnableHttps && appHost.Certificate != null)
                             {
                                 options.Listen(address, appHost.HttpsPort, listenOptions =>
@@ -308,11 +307,18 @@ namespace Jellyfin.Server
                             }
                             else if (builderContext.HostingEnvironment.IsDevelopment())
                             {
-                                options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                try
                                 {
-                                    listenOptions.UseHttps();
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
+                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                    {
+                                        listenOptions.UseHttps();
+                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                    });
+                                }
+                                catch (InvalidOperationException ex)
+                                {
+                                    _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                }
                             }
                         }
                     }
@@ -331,11 +337,18 @@ namespace Jellyfin.Server
                         }
                         else if (builderContext.HostingEnvironment.IsDevelopment())
                         {
-                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                            try
                             {
-                                listenOptions.UseHttps();
-                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                            });
+                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                                {
+                                    listenOptions.UseHttps();
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                });
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                            }
                         }
                     }
                 })
