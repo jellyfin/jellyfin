@@ -56,7 +56,8 @@ namespace Emby.Server.Implementations.IO
             "eaDir",
             "#recycle",
             ".wd_tv",
-            ".actors"
+            ".actors",
+            "._" // https://apple.stackexchange.com/questions/14980/why-are-dot-underscore-files-created-and-how-can-i-avoid-them
         };
 
         private static readonly HashSet<string> _alwaysIgnoreExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
