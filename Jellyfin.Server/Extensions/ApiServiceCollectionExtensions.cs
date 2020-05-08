@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json.Serialization;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -112,6 +114,10 @@ namespace Jellyfin.Server.Extensions
                 // Order actions by route path, then by http method.
                 c.OrderActionsBy(description =>
                     $"{description.ActionDescriptor.RouteValues["controller"]}_{description.HttpMethod}");
+
+                // Use method name as operationId
+                c.CustomOperationIds(description =>
+                    description.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null);
             });
         }
     }
