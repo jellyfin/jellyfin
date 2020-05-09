@@ -1,6 +1,6 @@
 {
     "Albums": "專輯",
-    "AppDeviceValues": "軟體: {0}, 設備: {1}",
+    "AppDeviceValues": "軟件: {0}, 設備: {1}",
     "Application": "應用程式",
     "Artists": "藝人",
     "AuthenticationSucceededWithUserName": "{0} 授權成功",
@@ -92,5 +92,8 @@
     "UserStoppedPlayingItemWithValues": "{0} 已在 {2} 上停止播放 {1}",
     "ValueHasBeenAddedToLibrary": "{0} 已添加到你的媒體庫",
     "ValueSpecialEpisodeName": "特典 - {0}",
-    "VersionNumber": "版本{0}"
+    "VersionNumber": "版本{0}",
+    "TaskDownloadMissingSubtitles": "下載遺失的字幕",
+    "TaskUpdatePlugins": "更新插件",
+    "TasksApplicationCategory": "應用程式"
 }
