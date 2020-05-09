@@ -144,7 +144,7 @@ namespace Emby.Server.Implementations.SyncPlay
                         session => session.Session
                     ).ToArray();
                 default:
-                    return new SessionInfo[] { };
+                    return Array.Empty<SessionInfo>();
             }
         }
 
@@ -541,7 +541,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 PlayingItemName = _group.PlayingItem.Name,
                 PlayingItemId = _group.PlayingItem.Id.ToString(),
                 PositionTicks = _group.PositionTicks,
-                Participants = _group.Participants.Values.Select(session => session.Session.UserName).Distinct().ToArray()
+                Participants = _group.Participants.Values.Select(session => session.Session.UserName).Distinct().ToList().AsReadOnly()
             };
         }
     }

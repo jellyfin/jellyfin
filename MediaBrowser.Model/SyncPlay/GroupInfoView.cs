@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
@@ -33,6 +35,6 @@ namespace MediaBrowser.Model.SyncPlay
         /// Gets or sets the participants.
         /// </summary>
         /// <value>The participants.</value>
-        public string[] Participants { get; set; }
+        public IReadOnlyList<string> Participants { get; set; }
     }
 }

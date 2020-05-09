@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the date of last Keeplive received.
         /// </summary>
         /// <value>The date of last Keeplive received.</value>
-        public DateTime LastKeepAliveDate { get; set; }
+        DateTime LastKeepAliveDate { get; set; }
 
         /// <summary>
         /// Gets or sets the URL.

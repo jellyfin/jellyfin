@@ -47,8 +47,8 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// The groups.
         /// </summary>
-        private readonly Dictionary<string, ISyncPlayController> _groups =
-            new Dictionary<string, ISyncPlayController>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<Guid, ISyncPlayController> _groups =
+            new Dictionary<Guid, ISyncPlayController>();
 
         /// <summary>
         /// Lock used for accesing any group.
@@ -113,14 +113,22 @@ namespace Emby.Server.Implementations.SyncPlay
         private void OnSessionManagerSessionEnded(object sender, SessionEventArgs e)
         {
             var session = e.SessionInfo;
-            if (!IsSessionInGroup(session)) return;
+            if (!IsSessionInGroup(session))
+            {
+                return;
+            }
+
             LeaveGroup(session, CancellationToken.None);
         }
 
         private void OnSessionManagerPlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
             var session = e.Session;
-            if (!IsSessionInGroup(session)) return;
+            if (!IsSessionInGroup(session))
+            {
+                return;
+            }
+
             LeaveGroup(session, CancellationToken.None);
         }
 
@@ -193,14 +201,14 @@ namespace Emby.Server.Implementations.SyncPlay
                 }
 
                 var group = new SyncPlayController(_sessionManager, this);
-                _groups[group.GetGroupId().ToString()] = group;
+                _groups[group.GetGroupId()] = group;
 
                 group.InitGroup(session, cancellationToken);
             }
         }
 
         /// <inheritdoc />
-        public void JoinGroup(SessionInfo session, string groupId, JoinGroupRequest request, CancellationToken cancellationToken)
+        public void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequest request, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(session.UserId);
 
@@ -248,7 +256,11 @@ namespace Emby.Server.Implementations.SyncPlay
 
                 if (IsSessionInGroup(session))
                 {
-                    if (GetSessionGroup(session).Equals(groupId)) return;
+                    if (GetSessionGroup(session).Equals(groupId))
+                    {
+                        return;
+                    }
+
                     LeaveGroup(session, cancellationToken);
                 }
 
@@ -282,7 +294,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 if (group.IsGroupEmpty())
                 {
                     _logger.LogInformation("LeaveGroup: removing empty group {0}.", group.GetGroupId());
-                    _groups.Remove(group.GetGroupId().ToString(), out _);
+                    _groups.Remove(group.GetGroupId(), out _);
                 }
             }
         }

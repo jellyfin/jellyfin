@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="groupId">The group id.</param>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void JoinGroup(SessionInfo session, string groupId, JoinGroupRequest request, CancellationToken cancellationToken);
+        void JoinGroup(SessionInfo session, Guid groupId, JoinGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the session from a group.

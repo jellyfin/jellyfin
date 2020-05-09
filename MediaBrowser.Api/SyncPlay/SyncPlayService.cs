@@ -171,31 +171,35 @@ namespace MediaBrowser.Api.SyncPlay
         public void Post(SyncPlayJoinGroup request)
         {
             var currentSession = GetSession(_sessionContext);
-            var joinRequest = new JoinGroupRequest()
+
+            Guid groupId;
+            Guid playingItemId = Guid.Empty;
+
+            var valid = Guid.TryParse(request.GroupId, out groupId);
+            if (!valid)
             {
-                GroupId = Guid.Parse(request.GroupId)
-            };
+                Logger.LogError("JoinGroup: {0} is not a valid format for GroupId. Ignoring request.", request.GroupId);
+                return;
+            }
 
             // Both null and empty strings mean that client isn't playing anything
             if (!String.IsNullOrEmpty(request.PlayingItemId))
             {
-                try
-                {
-                    joinRequest.PlayingItemId = Guid.Parse(request.PlayingItemId);
-                }
-                catch (ArgumentNullException)
-                {
-                    // Should never happen, but just in case
-                    Logger.LogError("JoinGroup: null value for PlayingItemId. Ignoring request.");
-                    return;
-                }
-                catch (FormatException)
+                valid = Guid.TryParse(request.PlayingItemId, out playingItemId);
+                if (!valid)
                 {
                     Logger.LogError("JoinGroup: {0} is not a valid format for PlayingItemId. Ignoring request.", request.PlayingItemId);
                     return;
                 }
             }
-            _syncPlayManager.JoinGroup(currentSession, request.GroupId, joinRequest, CancellationToken.None);
+
+            var joinRequest = new JoinGroupRequest()
+            {
+                GroupId = groupId,
+                PlayingItemId = playingItemId
+            };
+
+            _syncPlayManager.JoinGroup(currentSession, groupId, joinRequest, CancellationToken.None);
         }
 
         /// <summary>
@@ -217,21 +221,16 @@ namespace MediaBrowser.Api.SyncPlay
         {
             var currentSession = GetSession(_sessionContext);
             var filterItemId = Guid.Empty;
+
             if (!String.IsNullOrEmpty(request.FilterItemId))
             {
-                try
-                {
-                    filterItemId = Guid.Parse(request.FilterItemId);
-                }
-                catch (ArgumentNullException)
-                {
-                    Logger.LogWarning("ListGroups: null value for FilterItemId. Ignoring filter.");
-                }
-                catch (FormatException)
+                var valid = Guid.TryParse(request.FilterItemId, out filterItemId);
+                if (!valid)
                 {
                     Logger.LogWarning("ListGroups: {0} is not a valid format for FilterItemId. Ignoring filter.", request.FilterItemId);
                 }
             }
+
             return _syncPlayManager.ListGroups(currentSession, filterItemId);
         }
 

@@ -22,17 +22,17 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The timeout in seconds after which a WebSocket is considered to be lost.
         /// </summary>
-        public readonly int WebSocketLostTimeout = 60;
+        public const int WebSocketLostTimeout = 60;
 
         /// <summary>
         /// The keep-alive interval factor; controls how often the watcher will check on the status of the WebSockets.
         /// </summary>
-        public readonly double IntervalFactor = 0.2;
+        public const float IntervalFactor = 0.2f;
 
         /// <summary>
         /// The ForceKeepAlive factor; controls when a ForceKeepAlive is sent.
         /// </summary>
-        public readonly double ForceKeepAliveFactor = 0.75;
+        public const float ForceKeepAliveFactor = 0.75f;
 
         /// <summary>
         /// The _session manager
@@ -213,7 +213,7 @@ namespace Emby.Server.Implementations.Session
                 {
                     _keepAliveCancellationToken = new CancellationTokenSource();
                     // Start KeepAlive watcher
-                    var task = RepeatAsyncCallbackEvery(
+                    _ = RepeatAsyncCallbackEvery(
                         KeepAliveSockets,
                         TimeSpan.FromSeconds(WebSocketLostTimeout * IntervalFactor),
                         _keepAliveCancellationToken.Token);
@@ -241,6 +241,7 @@ namespace Emby.Server.Implementations.Session
                 {
                     webSocket.Closed -= OnWebSocketClosed;
                 }
+
                 _webSockets.Clear();
             }
         }
@@ -250,8 +251,8 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         private async Task KeepAliveSockets()
         {
-            IEnumerable<IWebSocketConnection> inactive;
-            IEnumerable<IWebSocketConnection> lost;
+            List<IWebSocketConnection> inactive;
+            List<IWebSocketConnection> lost;
 
             lock (_webSocketsLock)
             {
@@ -261,8 +262,8 @@ namespace Emby.Server.Implementations.Session
                 {
                     var elapsed = (DateTime.UtcNow - i.LastKeepAliveDate).TotalSeconds;
                     return (elapsed > WebSocketLostTimeout * ForceKeepAliveFactor) && (elapsed < WebSocketLostTimeout);
-                });
-                lost = _webSockets.Where(i => (DateTime.UtcNow - i.LastKeepAliveDate).TotalSeconds >= WebSocketLostTimeout);
+                }).ToList();
+                lost = _webSockets.Where(i => (DateTime.UtcNow - i.LastKeepAliveDate).TotalSeconds >= WebSocketLostTimeout).ToList();
             }
 
             if (inactive.Any())
@@ -279,7 +280,7 @@ namespace Emby.Server.Implementations.Session
                 catch (WebSocketException exception)
                 {
                     _logger.LogInformation(exception, "Error sending ForceKeepAlive message to WebSocket.");
-                    lost = lost.Append(webSocket);
+                    lost.Add(webSocket);
                 }
             }
 
@@ -288,7 +289,7 @@ namespace Emby.Server.Implementations.Session
                 if (lost.Any())
                 {
                     _logger.LogInformation("Lost {0} WebSockets.", lost.Count());
-                    foreach (var webSocket in lost.ToList())
+                    foreach (var webSocket in lost)
                     {
                         // TODO: handle session relative to the lost webSocket
                         RemoveWebSocket(webSocket);

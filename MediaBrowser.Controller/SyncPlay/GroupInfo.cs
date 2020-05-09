@@ -69,7 +69,11 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         public void AddSession(SessionInfo session)
         {
-            if (ContainsSession(session.Id.ToString())) return;
+            if (ContainsSession(session.Id.ToString()))
+            {
+                return;
+            }
+
             var member = new GroupMember();
             member.Session = session;
             member.Ping = DefaulPing;
@@ -84,9 +88,12 @@ namespace MediaBrowser.Controller.SyncPlay
 
         public void RemoveSession(SessionInfo session)
         {
-            if (!ContainsSession(session.Id.ToString())) return;
-            GroupMember member;
-            Participants.Remove(session.Id.ToString(), out member);
+            if (!ContainsSession(session.Id.ToString()))
+            {
+                return;
+            }
+
+            Participants.Remove(session.Id.ToString(), out _);
         }
 
         /// <summary>
@@ -96,7 +103,11 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="ping">The ping.</param>
         public void UpdatePing(SessionInfo session, long ping)
         {
-            if (!ContainsSession(session.Id.ToString())) return;
+            if (!ContainsSession(session.Id.ToString()))
+            {
+                return;
+            }
+
             Participants[session.Id.ToString()].Ping = ping;
         }
 
@@ -121,7 +132,11 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="isBuffering">The state.</param>
         public void SetBuffering(SessionInfo session, bool isBuffering)
         {
-            if (!ContainsSession(session.Id.ToString())) return;
+            if (!ContainsSession(session.Id.ToString()))
+            {
+                return;
+            }
+
             Participants[session.Id.ToString()].IsBuffering = isBuffering;
         }
 
@@ -133,7 +148,10 @@ namespace MediaBrowser.Controller.SyncPlay
         {
             foreach (var session in Participants.Values)
             {
-                if (session.IsBuffering) return true;
+                if (session.IsBuffering)
+                {
+                    return true;
+                }
             }
             return false;
         }
