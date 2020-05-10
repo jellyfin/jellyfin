@@ -11,7 +11,7 @@
     "Collections": "Colecciones",
     "DeviceOfflineWithName": "{0} se ha desconectado",
     "DeviceOnlineWithName": "{0} está conectado",
-    "FailedLoginAttemptWithUserName": "Intento fallido de inicio de sesión de {0}",
+    "FailedLoginAttemptWithUserName": "Intento fallido de inicio de sesión desde {0}",
     "Favorites": "Favoritos",
     "Folders": "Carpetas",
     "Genres": "Géneros",

@@ -20,6 +20,11 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableUPnP { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
+        /// </summary>
+        public bool EnableMetrics { get; set; }
+
+        /// <summary>
         /// Gets or sets the public mapped port.
         /// </summary>
         /// <value>The public mapped port.</value>
@@ -268,6 +273,7 @@ namespace MediaBrowser.Model.Configuration
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;
             HttpsPortNumber = DefaultHttpsPort;
+            EnableMetrics = false;
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;

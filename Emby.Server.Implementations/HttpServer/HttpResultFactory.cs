@@ -426,7 +426,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (!noCache)
             {
-                if (!DateTime.TryParseExact(requestContext.Headers[HeaderNames.IfModifiedSince], HttpDateFormat, _enUSculture, DateTimeStyles.AssumeUniversal, out var ifModifiedSinceHeader))
+                if (!DateTime.TryParseExact(requestContext.Headers[HeaderNames.IfModifiedSince], HttpDateFormat, _enUSculture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var ifModifiedSinceHeader))
                 {
                     _logger.LogDebug("Failed to parse If-Modified-Since header date: {0}", requestContext.Headers[HeaderNames.IfModifiedSince]);
                     return null;
