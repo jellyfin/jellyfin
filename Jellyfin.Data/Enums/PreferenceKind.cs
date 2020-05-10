@@ -1,8 +1,6 @@
-using System;
-
 namespace Jellyfin.Data.Enums
 {
-    public enum PreferenceKind : Int32
+    public enum PreferenceKind
     {
         MaxParentalRating,
         BlockedTags,
