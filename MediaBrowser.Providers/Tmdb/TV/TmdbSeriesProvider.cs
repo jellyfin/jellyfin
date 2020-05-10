@@ -313,7 +313,13 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 {
                     foreach (var actor in seriesInfo.Credits.Cast.OrderBy(a => a.Order))
                     {
-                        var personInfo = new PersonInfo {Name = actor.Name.Trim(), Role = actor.Character, Type = PersonType.Actor, SortOrder = actor.Order};
+                        var personInfo = new PersonInfo
+                        {
+                            Name = actor.Name.Trim(),
+                            Role = actor.Character,
+                            Type = PersonType.Actor,
+                            SortOrder = actor.Order
+                        };
 
                         if (!string.IsNullOrWhiteSpace(actor.Profile_Path))
                         {
