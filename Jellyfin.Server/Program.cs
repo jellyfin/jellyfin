@@ -294,7 +294,7 @@ namespace Jellyfin.Server
                         {
                             _logger.LogInformation("Kestrel listening on {IpAddress}", address);
                             options.Listen(address, appHost.HttpPort);
-                            if (appHost.ListenWithHttps && appHost.Certificate != null)
+                            if (appHost.ListenWithHttps)
                             {
                                 options.Listen(address, appHost.HttpsPort, listenOptions =>
                                 {
