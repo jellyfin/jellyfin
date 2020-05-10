@@ -65,25 +65,40 @@ namespace MediaBrowser.Controller
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured
-        /// IP address that can be found via <see cref="GetLocalIpAddresses"/>.
+        /// IP address that can be found via <see cref="GetLocalIpAddresses"/>. HTTPS will be preferred when available.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
         /// <returns>The server URL.</returns>
         Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets a local (LAN) URL that can be used to access the API.
+        /// Gets a local (LAN) URL that can be used to access the API using the loop-back IP address (127.0.0.1)
+        /// over HTTP (not HTTPS).
         /// </summary>
-        /// <param name="hostname">The hostname to use in the URL.</param>
         /// <returns>The API URL.</returns>
-        string GetLocalApiUrl(ReadOnlySpan<char> hostname);
+        public Uri GetLoopbackHttpApiUrl();
 
         /// <summary>
-        /// Gets a local (LAN) URL that can be used to access the API.
+        /// Gets a local (LAN) URL that can be used to access the API. HTTPS will be preferred when available.
         /// </summary>
         /// <param name="address">The IP address to use as the hostname in the URL.</param>
         /// <returns>The API URL.</returns>
         string GetLocalApiUrl(IPAddress address);
+
+        /// <summary>
+        /// Gets a local (LAN) URL that can be used to access the API.
+        /// </summary>
+        /// <param name="hostname">The hostname to use in the URL.</param>
+        /// <param name="scheme">
+        /// The scheme to use for the URL. If null, the scheme will be selected automatically,
+        /// preferring HTTPS, if available.
+        /// </param>
+        /// <param name="port">
+        /// The port to use for the URL. If null, the port will be selected automatically,
+        /// preferring the HTTPS port, if available.
+        /// </param>
+        /// <returns>The API URL.</returns>
+        Uri GetLocalApiUrl(ReadOnlySpan<char> hostname, string scheme = null, int? port = null);
 
         /// <summary>
         /// Open a URL in an external browser window.

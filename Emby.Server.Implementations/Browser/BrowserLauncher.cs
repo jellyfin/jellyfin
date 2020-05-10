@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Browser
         {
             try
             {
-                string baseUrl = appHost.GetLocalApiUrl("localhost");
+                Uri baseUrl = appHost.GetLocalApiUrl("localhost");
                 appHost.LaunchUrl(baseUrl + url);
             }
             catch (Exception ex)

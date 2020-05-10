@@ -1229,28 +1229,28 @@ namespace Emby.Server.Implementations
                 str.CopyTo(span.Slice(1));
                 span[^1] = ']';
 
-                return GetLocalApiUrl(span);
+                return GetLocalApiUrl(span).ToString();
             }
 
-            return GetLocalApiUrl(ipAddress.ToString());
+            return GetLocalApiUrl(ipAddress.ToString()).ToString();
         }
 
         /// <inheritdoc/>
-        public string GetLocalApiUrl(ReadOnlySpan<char> host)
+        public Uri GetLoopbackHttpApiUrl()
         {
-            var url = new StringBuilder(64);
-            url.Append(ListenWithHttps ? "https://" : "http://")
-                .Append(host)
-                .Append(':')
-                .Append(ListenWithHttps ? HttpsPort : HttpPort);
+            return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
+        }
 
-            string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
-            if (baseUrl.Length != 0)
+        /// <inheritdoc/>
+        public Uri GetLocalApiUrl(ReadOnlySpan<char> host, string scheme = null, int? port = null)
+        {
+            return new UriBuilder
             {
-                url.Append(baseUrl);
-            }
-
-            return url.ToString();
+                Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
+                Host = host.ToString(),
+                Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
+                Path = ServerConfigurationManager.Configuration.BaseUrl
+            }.Uri;
         }
 
         public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
