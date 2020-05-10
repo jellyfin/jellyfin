@@ -1236,28 +1236,30 @@ namespace Emby.Server.Implementations
                 str.CopyTo(span.Slice(1));
                 span[^1] = ']';
 
-                return GetLocalApiUrl(span).ToString();
+                return GetLocalApiUrl(span);
             }
 
-            return GetLocalApiUrl(ipAddress.ToString()).ToString();
+            return GetLocalApiUrl(ipAddress.ToString());
         }
 
         /// <inheritdoc/>
-        public Uri GetLoopbackHttpApiUrl()
+        public string GetLoopbackHttpApiUrl()
         {
             return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
         }
 
         /// <inheritdoc/>
-        public Uri GetLocalApiUrl(ReadOnlySpan<char> host, string scheme = null, int? port = null)
+        public string GetLocalApiUrl(ReadOnlySpan<char> host, string scheme = null, int? port = null)
         {
+            // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
+            // not. For consistency, always trim the trailing slash.
             return new UriBuilder
             {
                 Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
                 Host = host.ToString(),
                 Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
                 Path = ServerConfigurationManager.Configuration.BaseUrl
-            }.Uri;
+            }.ToString().TrimEnd('/');
         }
 
         public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
@@ -1333,8 +1335,7 @@ namespace Emby.Server.Implementations
                 return true;
             }
 
-            var apiUrl = GetLocalApiUrl(address);
-            apiUrl += "/system/ping";
+            var apiUrl = GetLocalApiUrl(address) + "/system/ping";
 
             if (_validAddressResults.TryGetValue(apiUrl, out var cachedResult))
             {
