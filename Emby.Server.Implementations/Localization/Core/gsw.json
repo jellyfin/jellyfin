@@ -103,5 +103,16 @@
     "TasksChannelsCategory": "Internet Kanäle",
     "TasksApplicationCategory": "Applikation",
     "TasksLibraryCategory": "Bibliothek",
-    "TasksMaintenanceCategory": "Verwaltung"
+    "TasksMaintenanceCategory": "Verwaltung",
+    "TaskDownloadMissingSubtitlesDescription": "Durchsucht das Internet nach fehlenden Untertiteln, basierend auf den Metadaten Einstellungen.",
+    "TaskDownloadMissingSubtitles": "Lade fehlende Untertitel herunter",
+    "TaskRefreshChannelsDescription": "Aktualisiert Internet Kanal Informationen.",
+    "TaskRefreshChannels": "Aktualisiere Kanäle",
+    "TaskCleanTranscodeDescription": "Löscht Transkodierdateien welche älter als ein Tag sind.",
+    "TaskCleanTranscode": "Räume Transcodier Verzeichnis auf",
+    "TaskUpdatePluginsDescription": "Lädt Aktualisierungen für Erweiterungen herunter und installiert diese, für welche automatische Aktualisierungen konfiguriert sind.",
+    "TaskUpdatePlugins": "Aktualisiere Erweiterungen",
+    "TaskRefreshPeopleDescription": "Aktualisiert Metadaten für Schausteller und Regisseure in deiner Bibliothek.",
+    "TaskRefreshPeople": "Aktualisiere Schauspieler",
+    "TaskCleanLogsDescription": "Löscht Log Dateien die älter als {0} Tage sind."
 }
