@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="filterItemId">The item id to filter by.</param>
         /// <value>The list of available groups.</value>
-        List<GroupInfoView> ListGroups(SessionInfo session, Guid filterItemId);
+        List<GroupInfoDto> ListGroups(SessionInfo session, Guid filterItemId);
 
         /// <summary>
         /// Handle a request by a session in a group.

@@ -62,6 +62,6 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Gets the info about the group for the clients.
         /// </summary>
         /// <value>The group info for the clients.</value>
-        GroupInfoView GetInfo();
+        GroupInfoDto GetInfo();
     }
 }

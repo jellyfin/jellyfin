@@ -286,13 +286,13 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public List<GroupInfoView> ListGroups(SessionInfo session, Guid filterItemId)
+        public List<GroupInfoDto> ListGroups(SessionInfo session, Guid filterItemId)
         {
             var user = _userManager.GetUserById(session.UserId);
 
             if (user.SyncPlayAccess == SyncPlayAccess.None)
             {
-                return new List<GroupInfoView>();
+                return new List<GroupInfoDto>();
             }
 
             // Filter by item if requested

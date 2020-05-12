@@ -499,9 +499,9 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public GroupInfoView GetInfo()
+        public GroupInfoDto GetInfo()
         {
-            return new GroupInfoView()
+            return new GroupInfoDto()
             {
                 GroupId = GetGroupId().ToString(),
                 PlayingItemName = _group.PlayingItem.Name,

@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.SyncPlay
     /// <summary>
     /// Class GroupInfoView.
     /// </summary>
-    public class GroupInfoView
+    public class GroupInfoDto
     {
         /// <summary>
         /// Gets or sets the group identifier.
