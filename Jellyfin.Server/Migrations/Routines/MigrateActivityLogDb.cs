@@ -5,8 +5,8 @@ using System.IO;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Server.Implementations;
+using MediaBrowser.Controller;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -16,20 +16,31 @@ namespace Jellyfin.Server.Migrations.Routines
     {
         private const string DbFilename = "activitylog.db";
 
+        private readonly ILogger<MigrateActivityLogDb> _logger;
+        private readonly JellyfinDbProvider _provider;
+        private readonly IServerApplicationPaths _paths;
+
+        public MigrateActivityLogDb(ILogger<MigrateActivityLogDb> logger, IServerApplicationPaths paths, JellyfinDbProvider provider)
+        {
+            _logger = logger;
+            _provider = provider;
+            _paths = paths;
+        }
+
         public Guid Id => Guid.Parse("3793eb59-bc8c-456c-8b9f-bd5a62a42978");
 
         public string Name => "MigrateActivityLogDatabase";
 
-        public void Perform(CoreAppHost host, ILogger logger)
+        public void Perform()
         {
-            var dataPath = host.ServerConfigurationManager.ApplicationPaths.DataPath;
+            var dataPath = _paths.DataPath;
             using (var connection = SQLite3.Open(
                 Path.Combine(dataPath, DbFilename),
                 ConnectionFlags.ReadOnly,
                 null))
             {
-                logger.LogInformation("Migrating the database may take a while, do not stop Jellyfin.");
-                using var dbContext = host.ServiceProvider.GetService<JellyfinDb>();
+                _logger.LogInformation("Migrating the database may take a while, do not stop Jellyfin.");
+                using var dbContext = _provider.CreateContext();
 
                 var queryResult = connection.Query("SELECT * FROM ActivityLog ORDER BY Id ASC");
 
@@ -75,7 +86,7 @@ namespace Jellyfin.Server.Migrations.Routines
             }
             catch (IOException e)
             {
-                logger.LogError(e, "Error renaming legacy activity log database to 'activitylog.db.old'");
+                _logger.LogError(e, "Error renaming legacy activity log database to 'activitylog.db.old'");
             }
         }
 
