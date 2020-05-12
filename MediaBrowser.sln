@@ -2,6 +2,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server", "Jellyfin.Server\Jellyfin.Server.csproj", "{07E39F42-A2C6-4B32-AF8C-725F957A73FF}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Controller", "MediaBrowser.Controller\MediaBrowser.Controller.csproj", "{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Api", "MediaBrowser.Api\MediaBrowser.Api.csproj", "{4FD51AC5-2C16-4308-A993-C3A84F3B4582}"
@@ -36,11 +38,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Naming", "Emby.Naming\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.MediaEncoding", "MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj", "{960295EE-4AF4-4440-A525-B4C295B01A61}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server", "Jellyfin.Server\Jellyfin.Server.csproj", "{07E39F42-A2C6-4B32-AF8C-725F957A73FF}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{41093F42-C7CC-4D07-956B-6182CBEDE2EC}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		jellyfin.ruleset = jellyfin.ruleset
 		SharedVersion.cs = SharedVersion.cs
 	EndProjectSection
 EndProject
@@ -49,6 +50,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Api", "Jellyfin.Api\Jellyfin.Api.csproj", "{DFBEFB4C-DA19-4143-98B7-27320C7F7163}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}"
+	ProjectSection(SolutionItems) = preProject
+		tests\jellyfin-tests.ruleset = tests\jellyfin-tests.ruleset
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Common.Tests", "tests\Jellyfin.Common.Tests\Jellyfin.Common.Tests.csproj", "{DF194677-DFD3-42AF-9F75-D44D5A416478}"
 EndProject
@@ -65,6 +69,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Data", "Jellyfin.Data\Jellyfin.Data.csproj", "{F03299F2-469F-40EF-A655-3766F97A5702}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Implementations", "Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj", "{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Api.Tests", "tests\MediaBrowser.Api.Tests\MediaBrowser.Api.Tests.csproj", "{7C93C84F-105C-48E5-A878-406FA0A5B296}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -184,17 +190,13 @@ Global
 		{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAE48069-6D86-4BA6-B148-D1D49B6DDA52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C93C84F-105C-48E5-A878-406FA0A5B296}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C93C84F-105C-48E5-A878-406FA0A5B296}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C93C84F-105C-48E5-A878-406FA0A5B296}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C93C84F-105C-48E5-A878-406FA0A5B296}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{DF194677-DFD3-42AF-9F75-D44D5A416478} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
-		{28464062-0939-4AA7-9F7B-24DDDA61A7C0} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
-		{3998657B-1CCC-49DD-A19F-275DC8495F57} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
-		{A2FD0A10-8F62-4F9D-B171-FFDF9F0AFA9D} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
-		{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
-		{462584F7-5023-4019-9EAC-B98CA458C0A0} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
@@ -216,5 +218,14 @@ Global
 		$1.IncludeInNewFiles = False
 		$0.DotNetNamingPolicy = $2
 		$2.DirectoryNamespaceAssociation = PrefixedHierarchical
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DF194677-DFD3-42AF-9F75-D44D5A416478} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{28464062-0939-4AA7-9F7B-24DDDA61A7C0} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{3998657B-1CCC-49DD-A19F-275DC8495F57} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{A2FD0A10-8F62-4F9D-B171-FFDF9F0AFA9D} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{462584F7-5023-4019-9EAC-B98CA458C0A0} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{7C93C84F-105C-48E5-A878-406FA0A5B296} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 	EndGlobalSection
 EndGlobal
