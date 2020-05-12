@@ -26,6 +26,8 @@ namespace MediaBrowser.Providers.Tmdb.TV
 {
     public class TmdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
+        private const string GetTvInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
+
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
@@ -35,7 +37,6 @@ namespace MediaBrowser.Providers.Tmdb.TV
         private readonly ILibraryManager _libraryManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private const string GetTvInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/tv/{0}?api_key={1}&append_to_response=credits,images,keywords,external_ids,videos,content_ratings";
 
         internal static TmdbSeriesProvider Current { get; private set; }
 
@@ -355,7 +356,12 @@ namespace MediaBrowser.Providers.Tmdb.TV
                             continue;
                         }
 
-                        seriesResult.AddPerson(new PersonInfo { Name = person.Name.Trim(), Role = person.Job, Type = type });
+                        seriesResult.AddPerson(new PersonInfo
+                        {
+                            Name = person.Name.Trim(),
+                            Role = person.Job,
+                            Type = type
+                        });
                     }
                 }
             }
