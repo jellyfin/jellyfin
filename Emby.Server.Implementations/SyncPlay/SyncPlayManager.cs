@@ -186,7 +186,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     LeaveGroup(session, cancellationToken);
                 }
 
-                var group = new SyncPlayController(_sessionManager, this);
+                var group = new SyncPlayController(_sessionManager, this, _logger);
                 _groups[group.GetGroupId()] = group;
 
                 group.CreateGroup(session, cancellationToken);
@@ -312,7 +312,7 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void HandleRequest(SessionInfo session, PlaybackRequest request, CancellationToken cancellationToken)
+        public void HandleRequest(SessionInfo session, IPlaybackGroupRequest request, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(session.UserId);
 

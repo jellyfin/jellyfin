@@ -31,12 +31,6 @@ namespace MediaBrowser.Controller.SyncPlay
         public BaseItem PlayingItem { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether playback is paused.
-        /// </summary>
-        /// <value>Playback is paused.</value>
-        public bool IsPaused { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether there are position ticks.
         /// </summary>
         /// <value>The position ticks.</value>

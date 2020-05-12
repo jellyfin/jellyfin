@@ -172,7 +172,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// </summary>
         /// <param name="request">The request.</param>
         /// <value>The requested list of groups.</value>
-        public List<GroupInfoDto> Get(SyncPlayListGroups request)
+        public List<GroupInfoDto> Get(SyncPlayList request)
         {
             var currentSession = GetSession(_sessionContext);
             var filterItemId = Guid.Empty;
@@ -192,10 +192,7 @@ namespace MediaBrowser.Api.SyncPlay
         public void Post(SyncPlayPlay request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncPlayRequest = new PlaybackRequest()
-            {
-                Type = PlaybackRequestType.Play
-            };
+            var syncPlayRequest = new PlayGroupRequest();
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         }
 
@@ -206,10 +203,7 @@ namespace MediaBrowser.Api.SyncPlay
         public void Post(SyncPlayPause request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncPlayRequest = new PlaybackRequest()
-            {
-                Type = PlaybackRequestType.Pause
-            };
+            var syncPlayRequest = new PauseGroupRequest();
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         }
 
@@ -220,9 +214,8 @@ namespace MediaBrowser.Api.SyncPlay
         public void Post(SyncPlaySeek request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncPlayRequest = new PlaybackRequest()
+            var syncPlayRequest = new SeekGroupRequest()
             {
-                Type = PlaybackRequestType.Seek,
                 PositionTicks = request.PositionTicks
             };
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
@@ -235,12 +228,25 @@ namespace MediaBrowser.Api.SyncPlay
         public void Post(SyncPlayBuffering request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncPlayRequest = new PlaybackRequest()
+
+            IPlaybackGroupRequest syncPlayRequest;
+            if (!request.BufferingDone)
             {
-                Type = request.BufferingDone ? PlaybackRequestType.Ready : PlaybackRequestType.Buffer,
-                When = DateTime.Parse(request.When),
-                PositionTicks = request.PositionTicks
-            };
+                syncPlayRequest = new BufferGroupRequest()
+                {
+                    When = DateTime.Parse(request.When),
+                    PositionTicks = request.PositionTicks
+                };
+            }
+            else
+            {
+                syncPlayRequest = new ReadyGroupRequest()
+                {
+                    When = DateTime.Parse(request.When),
+                    PositionTicks = request.PositionTicks
+                };
+            }
+
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
         }
 
@@ -251,9 +257,8 @@ namespace MediaBrowser.Api.SyncPlay
         public void Post(SyncPlayPing request)
         {
             var currentSession = GetSession(_sessionContext);
-            var syncPlayRequest = new PlaybackRequest()
+            var syncPlayRequest = new PingGroupRequest()
             {
-                Type = PlaybackRequestType.Ping,
                 Ping = Convert.ToInt64(request.Ping)
             };
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);

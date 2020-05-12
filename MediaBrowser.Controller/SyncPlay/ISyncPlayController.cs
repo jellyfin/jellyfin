@@ -56,7 +56,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         /// <param name="request">The requested action.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        void HandleRequest(SessionInfo session, PlaybackRequest request, CancellationToken cancellationToken);
+        void HandleRequest(SessionInfo session, IPlaybackGroupRequest request, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the info about the group for the clients.
