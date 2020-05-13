@@ -20,7 +20,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
@@ -220,41 +219,6 @@ namespace Emby.Server.Implementations.Devices
             return _libraryManager.AddVirtualFolder(name, CollectionType.HomeVideos, libraryOptions, true);
         }
 
-        private Tuple<string, string, string> GetUploadPath(DeviceInfo device)
-        {
-            var config = _config.GetUploadOptions();
-            var path = config.CameraUploadPath;
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                path = DefaultCameraUploadsPath;
-            }
-
-            var topLibraryPath = path;
-
-            if (config.EnableCameraUploadSubfolders)
-            {
-                path = Path.Combine(path, _fileSystem.GetValidFilename(device.Name));
-            }
-
-            return new Tuple<string, string, string>(path, topLibraryPath, null);
-        }
-
-        internal string GetUploadsPath()
-        {
-            var config = _config.GetUploadOptions();
-            var path = config.CameraUploadPath;
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                path = DefaultCameraUploadsPath;
-            }
-
-            return path;
-        }
-
-        private string DefaultCameraUploadsPath => Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads");
-
         public bool CanAccessDevice(User user, string deviceId)
         {
             if (user == null)
@@ -311,27 +275,9 @@ namespace Emby.Server.Implementations.Devices
             _logger = logger;
         }
 
-        public async Task RunAsync()
+        public Task RunAsync()
         {
-            if (!_config.Configuration.CameraUploadUpgraded && _config.Configuration.IsStartupWizardCompleted)
-            {
-                var path = _deviceManager.GetUploadsPath();
-
-                if (Directory.Exists(path))
-                {
-                    try
-                    {
-                        await _deviceManager.EnsureLibraryFolder(path, null).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error creating camera uploads library");
-                    }
-
-                    _config.Configuration.CameraUploadUpgraded = true;
-                    _config.SaveConfiguration();
-                }
-            }
+            return Task.CompletedTask;
         }
 
         #region IDisposable Support
