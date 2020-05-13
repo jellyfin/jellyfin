@@ -1,8 +1,6 @@
-using System;
-
 namespace Jellyfin.Data.Enums
 {
-    public enum PersonRoleType : Int32
+    public enum PersonRoleType
     {
         Other,
         Director,

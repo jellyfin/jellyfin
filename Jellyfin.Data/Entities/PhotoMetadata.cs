@@ -1,15 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Jellyfin.Data.Entities
 {
-    [Table("PhotoMetadata")]
     public partial class PhotoMetadata : Metadata
     {
         partial void Init();
@@ -17,7 +10,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Default constructor. Protected due to required properties, but present because EF needs it.
         /// </summary>
-        protected PhotoMetadata() : base()
+        protected PhotoMetadata()
         {
             Init();
         }

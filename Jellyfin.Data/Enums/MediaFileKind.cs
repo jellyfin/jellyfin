@@ -1,8 +1,6 @@
-using System;
-
 namespace Jellyfin.Data.Enums
 {
-    public enum MediaFileKind : Int32
+    public enum MediaFileKind
     {
         Main,
         Sidecar,

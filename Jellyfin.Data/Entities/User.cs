@@ -8,13 +8,14 @@ using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
 {
-    [Table("User")]
-    public class User
+    public partial class User
     {
         /// <summary>
         /// The values being delimited here are Guids, so commas work as they do not appear in Guids.
         /// </summary>
         private const char Delimiter = ',';
+
+        partial void Init();
 
         /// <summary>
         /// Default constructor. Protected due to required properties, but present because EF needs it.
@@ -26,6 +27,8 @@ namespace Jellyfin.Data.Entities
             ProviderMappings = new HashSet<ProviderMapping>();
             Preferences = new HashSet<Preference>();
             AccessSchedules = new HashSet<AccessSchedule>();
+
+            Init();
         }
 
         /// <summary>
@@ -77,6 +80,8 @@ namespace Jellyfin.Data.Entities
             RememberSubtitleSelections = true;
             EnableNextEpisodeAutoPlay = true;
             EnableAutoLogin = false;
+
+            Init();
         }
 
         /// <summary>
