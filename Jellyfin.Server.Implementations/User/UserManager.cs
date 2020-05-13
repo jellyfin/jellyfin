@@ -306,6 +306,28 @@ namespace Jellyfin.Server.Implementations.User
             };
         }
 
+        public PublicUserDto GetPublicUserDto(Data.Entities.User user, string remoteEndPoint = null)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user);
+            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
+
+            bool hasPassword = user.EnableLocalPassword &&
+                               !string.IsNullOrEmpty(remoteEndPoint) &&
+                               _networkManager.IsInLocalNetwork(remoteEndPoint) ? hasConfiguredEasyPassword : hasConfiguredPassword;
+
+            return new PublicUserDto
+            {
+                Name = user.Username,
+                HasPassword = hasPassword,
+                HasConfiguredPassword = hasConfiguredPassword
+            };
+        }
+
         public async Task<Data.Entities.User> AuthenticateUser(
             string username,
             string password,

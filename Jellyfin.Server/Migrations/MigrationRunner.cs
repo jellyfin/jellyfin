@@ -17,7 +17,9 @@ namespace Jellyfin.Server.Migrations
         private static readonly Type[] _migrationTypes =
         {
             typeof(Routines.DisableTranscodingThrottling),
-            typeof(Routines.CreateUserLoggingConfigFile)
+            typeof(Routines.CreateUserLoggingConfigFile),
+            typeof(Routines.MigrateActivityLogDb),
+            typeof(Routines.MigrateUserDb)
         };
 
         /// <summary>

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
@@ -121,7 +122,8 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [Key]
         [Required]
-        public Guid Id { get; protected set; }
+        [JsonIgnore]
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Required, Max length = 255
@@ -129,6 +131,7 @@ namespace Jellyfin.Data.Entities
         [Required]
         [MaxLength(255)]
         [StringLength(255)]
+        [JsonPropertyName("Name")]
         public string Username { get; set; }
 
         /// <summary>

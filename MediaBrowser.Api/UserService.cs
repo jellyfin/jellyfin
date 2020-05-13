@@ -276,12 +276,12 @@ namespace MediaBrowser.Api
         {
             var result = _userManager
                 .Users
-                .Where(item => !item.Policy.IsDisabled);
+                .Where(item => !item.HasPermission(PermissionKind.IsDisabled));
 
             if (ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
                 var deviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
-                result = result.Where(item => !item.Policy.IsHidden);
+                result = result.Where(item => !item.HasPermission(PermissionKind.IsHidden));
 
                 if (!string.IsNullOrWhiteSpace(deviceId))
                 {
@@ -290,12 +290,12 @@ namespace MediaBrowser.Api
 
                 if (!_networkManager.IsInLocalNetwork(Request.RemoteIp))
                 {
-                    result = result.Where(i => i.Policy.EnableRemoteAccess);
+                    result = result.Where(i => i.HasPermission(PermissionKind.EnableRemoteAccess));
                 }
             }
 
             return ToOptimizedResult(result
-                    .OrderBy(u => u.Name)
+                    .OrderBy(u => u.Username)
                     .Select(i => _userManager.GetPublicUserDto(i, Request.RemoteIp))
                     .ToArray()
                 );

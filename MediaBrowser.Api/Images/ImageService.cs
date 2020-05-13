@@ -884,9 +884,10 @@ namespace MediaBrowser.Api.Images
 
             // Handle image/png; charset=utf-8
             mimeType = mimeType.Split(';').FirstOrDefault();
+            var userDataPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
 
             await _providerManager
-                .SaveImage(user, memoryStream, mimeType, Path.Combine(ServerConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, _imageProcessor.GetImageCacheTag(user)))
+                .SaveImage(user, memoryStream, mimeType, Path.Combine(userDataPath, _imageProcessor.GetImageCacheTag(user)))
                 .ConfigureAwait(false);
             await _userManager.UpdateUserAsync(user);
         }

@@ -144,7 +144,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the user public dto.
         /// </summary>
-        /// <param name="user">Ther user.</param>\
+        /// <param name="user">The user.</param>\
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <returns>A public UserDto, aka a UserDto stripped of personal data.</returns>
         PublicUserDto GetPublicUserDto(User user, string remoteEndPoint = null);
