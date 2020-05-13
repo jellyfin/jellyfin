@@ -455,9 +455,9 @@ namespace Emby.Server.Implementations.HttpServer
                 if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.StatusCode = 200;
-                    foreach(KeyValuePair<string, string> header in GetCorsHeaders(httpReq))
+                    foreach(var (key, value) in GetCorsHeaders(httpReq))
                     {
-                        httpRes.Headers.Add(header.Key, header.Value);
+                        httpRes.Headers.Add(key, value);
                     }
                     httpRes.ContentType = "text/plain";
                     await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
