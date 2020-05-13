@@ -5,26 +5,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Devices;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Users;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Devices
 {
@@ -32,10 +24,7 @@ namespace Emby.Server.Implementations.Devices
     {
         private readonly IJsonSerializer _json;
         private readonly IUserManager _userManager;
-        private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
-        private readonly ILibraryManager _libraryManager;
-        private readonly ILocalizationManager _localizationManager;
         private readonly IAuthenticationRepository _authRepo;
         private readonly Dictionary<string, ClientCapabilities> _capabilitiesCache;
 
@@ -46,18 +35,12 @@ namespace Emby.Server.Implementations.Devices
         public DeviceManager(
             IAuthenticationRepository authRepo,
             IJsonSerializer json,
-            ILibraryManager libraryManager,
-            ILocalizationManager localizationManager,
             IUserManager userManager,
-            IFileSystem fileSystem,
             IServerConfigurationManager config)
         {
             _json = json;
             _userManager = userManager;
-            _fileSystem = fileSystem;
             _config = config;
-            _libraryManager = libraryManager;
-            _localizationManager = localizationManager;
             _authRepo = authRepo;
             _capabilitiesCache = new Dictionary<string, ClientCapabilities>(StringComparer.OrdinalIgnoreCase);
         }
@@ -187,38 +170,6 @@ namespace Emby.Server.Implementations.Devices
             return Path.Combine(GetDevicesPath(), id.GetMD5().ToString("N", CultureInfo.InvariantCulture));
         }
 
-        internal Task EnsureLibraryFolder(string path, string name)
-        {
-            var existingFolders = _libraryManager
-                .RootFolder
-                .Children
-                .OfType<Folder>()
-                .Where(i => _fileSystem.AreEqual(path, i.Path) || _fileSystem.ContainsSubPath(i.Path, path))
-                .ToList();
-
-            if (existingFolders.Count > 0)
-            {
-                return Task.CompletedTask;
-            }
-
-            Directory.CreateDirectory(path);
-
-            var libraryOptions = new LibraryOptions
-            {
-                PathInfos = new[] { new MediaPathInfo { Path = path } },
-                EnablePhotos = true,
-                EnableRealtimeMonitor = false,
-                SaveLocalMetadata = true
-            };
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                name = _localizationManager.GetLocalizedString("HeaderCameraUploads");
-            }
-
-            return _libraryManager.AddVirtualFolder(name, CollectionType.HomeVideos, libraryOptions, true);
-        }
-
         public bool CanAccessDevice(User user, string deviceId)
         {
             if (user == null)
@@ -256,86 +207,6 @@ namespace Emby.Server.Implementations.Devices
             }
 
             return policy.EnabledDevices.Contains(id, StringComparer.OrdinalIgnoreCase);
-        }
-    }
-
-    public class DeviceManagerEntryPoint : IServerEntryPoint
-    {
-        private readonly DeviceManager _deviceManager;
-        private readonly IServerConfigurationManager _config;
-        private ILogger _logger;
-
-        public DeviceManagerEntryPoint(
-            IDeviceManager deviceManager,
-            IServerConfigurationManager config,
-            ILogger<DeviceManagerEntryPoint> logger)
-        {
-            _deviceManager = (DeviceManager)deviceManager;
-            _config = config;
-            _logger = logger;
-        }
-
-        public Task RunAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
-            }
-        }
-
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~DeviceManagerEntryPoint() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
-    }
-
-    public class DevicesConfigStore : IConfigurationFactory
-    {
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new ConfigurationStore[]
-            {
-                new ConfigurationStore
-                {
-                     Key = "devices",
-                     ConfigurationType = typeof(DevicesOptions)
-                }
-            };
-        }
-    }
-
-    public static class UploadConfigExtension
-    {
-        public static DevicesOptions GetUploadOptions(this IConfigurationManager config)
-        {
-            return config.GetConfiguration<DevicesOptions>("devices");
         }
     }
 }

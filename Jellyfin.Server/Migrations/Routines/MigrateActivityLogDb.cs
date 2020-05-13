@@ -77,13 +77,18 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 foreach (var entry in queryResult)
                 {
+                    if (!logLevelDictionary.TryGetValue(entry[8].ToString(), out var severity))
+                    {
+                        severity = LogLevel.Trace;
+                    }
+
                     var newEntry = new ActivityLog(
                         entry[1].ToString(),
                         entry[4].ToString(),
                         entry[6].SQLiteType == SQLiteType.Null ? Guid.Empty : Guid.Parse(entry[6].ToString()))
                     {
                         DateCreated = entry[7].ReadDateTime(),
-                        LogSeverity = logLevelDictionary[entry[8].ToString()]
+                        LogSeverity = severity
                     };
 
                     if (entry[2].SQLiteType != SQLiteType.Null)
@@ -102,7 +107,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
 
                     // Since code references the Id of the entries, this needs to be inserted in order.
-                    // In order to do that, this is needed because EF Core doesn't provide a way to guarantee ordering for bulk inserts.
+                    // In order to do that, we insert one by one because EF Core doesn't provide a way to guarantee ordering for bulk inserts.
                     dbContext.ActivityLogs.Add(newEntry);
                     dbContext.SaveChanges();
                 }
