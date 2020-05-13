@@ -175,7 +175,7 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, string playlistMediaType, User user, DtoOptions options)
+        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, string playlistMediaType, Jellyfin.Data.Entities.User user, DtoOptions options)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
 
@@ -192,7 +192,7 @@ namespace Emby.Server.Implementations.Playlists
             });
         }
 
-        private void AddToPlaylistInternal(string playlistId, ICollection<Guid> newItemIds, User user, DtoOptions options)
+        private void AddToPlaylistInternal(string playlistId, ICollection<Guid> newItemIds, Jellyfin.Data.Entities.User user, DtoOptions options)
         {
             // Retrieve the existing playlist
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist

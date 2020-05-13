@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.Collections
             return EnsureLibraryFolder(GetCollectionsFolderPath(), createIfNeeded);
         }
 
-        private IEnumerable<BoxSet> GetCollections(User user)
+        private IEnumerable<BoxSet> GetCollections(Jellyfin.Data.Entities.User user)
         {
             var folder = GetCollectionsFolder(false).Result;
 
@@ -325,7 +325,7 @@ namespace Emby.Server.Implementations.Collections
         }
 
         /// <inheritdoc />
-        public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)
+        public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, Jellyfin.Data.Entities.User user)
         {
             var results = new Dictionary<Guid, BaseItem>();
 

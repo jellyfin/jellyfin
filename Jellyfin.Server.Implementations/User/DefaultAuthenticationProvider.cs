@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Cryptography;
 
-namespace Emby.Server.Implementations.Library
+namespace Jellyfin.Server.Implementations.User
 {
     /// <summary>
     /// The default authentication provider.
@@ -43,17 +42,17 @@ namespace Emby.Server.Implementations.Library
 
         /// <inheritdoc />
         // This is the version that we need to use for local users. Because reasons.
-        public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
+        public Task<ProviderAuthenticationResult> Authenticate(string username, string password, Data.Entities.User resolvedUser)
         {
             if (resolvedUser == null)
             {
-                throw new AuthenticationException($"Specified user does not exist.");
+                throw new AuthenticationException("Specified user does not exist.");
             }
 
             bool success = false;
 
             // As long as jellyfin supports passwordless users, we need this little block here to accommodate
-            if (!HasPassword(resolvedUser) && string.IsNullOrEmpty(password))
+            if (!HasPassword(resolvedUser))
             {
                 return Task.FromResult(new ProviderAuthenticationResult
                 {
@@ -61,7 +60,7 @@ namespace Emby.Server.Implementations.Library
                 });
             }
 
-            byte[] passwordbytes = Encoding.UTF8.GetBytes(password);
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
 
             PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
             if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id)
@@ -69,7 +68,7 @@ namespace Emby.Server.Implementations.Library
             {
                 byte[] calculatedHash = _cryptographyProvider.ComputeHash(
                     readyHash.Id,
-                    passwordbytes,
+                    passwordBytes,
                     readyHash.Salt.ToArray());
 
                 if (readyHash.Hash.SequenceEqual(calculatedHash))
@@ -94,11 +93,11 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public bool HasPassword(User user)
+        public bool HasPassword(Data.Entities.User user)
             => !string.IsNullOrEmpty(user.Password);
 
         /// <inheritdoc />
-        public Task ChangePassword(User user, string newPassword)
+        public Task ChangePassword(Data.Entities.User user, string newPassword)
         {
             if (string.IsNullOrEmpty(newPassword))
             {
@@ -113,7 +112,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
+        public void ChangeEasyPassword(Data.Entities.User user, string newPassword, string newPasswordHash)
         {
             if (newPassword != null)
             {
@@ -129,7 +128,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public string GetEasyPasswordHash(User user)
+        public string GetEasyPasswordHash(Data.Entities.User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
@@ -137,9 +136,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets the hashed string.
+        /// Hashes the provided string.
         /// </summary>
-        public string GetHashedString(User user, string str)
+        /// <param name="user">The user.</param>
+        /// <param name="str">The string to hash.</param>
+        /// <returns>The hashed string.</returns>
+        public string GetHashedString(Data.Entities.User user, string str)
         {
             if (string.IsNullOrEmpty(user.Password))
             {
@@ -159,7 +161,13 @@ namespace Emby.Server.Implementations.Library
                 passwordHash.Parameters.ToDictionary(x => x.Key, y => y.Value)).ToString();
         }
 
-        public ReadOnlySpan<byte> GetHashed(User user, string str)
+        /// <summary>
+        /// Hashes the provided string.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="str">The string to hash.</param>
+        /// <returns>The hashed string.</returns>
+        public ReadOnlySpan<byte> GetHashed(Data.Entities.User user, string str)
         {
             if (string.IsNullOrEmpty(user.Password))
             {

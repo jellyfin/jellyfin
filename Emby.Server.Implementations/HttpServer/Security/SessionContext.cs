@@ -42,14 +42,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return GetSession((IRequest)requestContext);
         }
 
-        public User GetUser(IRequest requestContext)
+        public Jellyfin.Data.Entities.User GetUser(IRequest requestContext)
         {
             var session = GetSession(requestContext);
 
             return session == null || session.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(session.UserId);
         }
 
-        public User GetUser(object requestContext)
+        public Jellyfin.Data.Entities.User GetUser(object requestContext)
         {
             return GetUser((IRequest)requestContext);
         }

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Configuration;
+using Jellyfin.Data.Enums;
 
-namespace MediaBrowser.Controller.Entities
+namespace Jellyfin.Data
 {
     public static class DayOfWeekHelper
     {
@@ -40,8 +40,7 @@ namespace MediaBrowser.Controller.Entities
                 days.Contains(DynamicDayOfWeek.Weekday) ||
                 days.Contains(DynamicDayOfWeek.Everyday))
             {
-                list.Add(DayOfWeek.Tuesday
-                    );
+                list.Add(DayOfWeek.Tuesday);
             }
 
             if (days.Contains(DynamicDayOfWeek.Wednesday) ||

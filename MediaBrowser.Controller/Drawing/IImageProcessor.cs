@@ -47,7 +47,10 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
         string GetImageCacheTag(BaseItem item, ItemImageInfo image);
+
         string GetImageCacheTag(BaseItem item, ChapterInfo info);
+
+        string GetImageCacheTag(Jellyfin.Data.Entities.User user);
 
         /// <summary>
         /// Processes the image.

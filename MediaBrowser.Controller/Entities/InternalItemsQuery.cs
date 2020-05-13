@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -15,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int? Limit { get; set; }
 
-        public User User { get; set; }
+        public Jellyfin.Data.Entities.User User { get; set; }
 
         public BaseItem SimilarTo { get; set; }
 
@@ -213,25 +214,26 @@ namespace MediaBrowser.Controller.Entities
             Years = Array.Empty<int>();
         }
 
-        public InternalItemsQuery(User user)
+        public InternalItemsQuery(Jellyfin.Data.Entities.User user)
             : this()
         {
             SetUser(user);
         }
 
-        public void SetUser(User user)
+        public void SetUser(Jellyfin.Data.Entities.User user)
         {
             if (user != null)
             {
-                var policy = user.Policy;
-                MaxParentalRating = policy.MaxParentalRating;
+                MaxParentalRating = user.MaxParentalAgeRating;
 
-                if (policy.MaxParentalRating.HasValue)
+                if (MaxParentalRating.HasValue)
                 {
-                    BlockUnratedItems = policy.BlockUnratedItems.Where(i => i != UnratedItem.Other).ToArray();
+                    BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
+                        .Where(i => i != UnratedItem.Other.ToString())
+                        .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
                 }
 
-                ExcludeInheritedTags = policy.BlockedTags;
+                ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
 
                 User = user;
             }

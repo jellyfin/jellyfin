@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -479,14 +480,14 @@ namespace MediaBrowser.Controller.Entities
             return IsFileProtocol;
         }
 
-        public virtual bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
+        public virtual bool IsAuthorizedToDelete(Jellyfin.Data.Entities.User user, List<Folder> allCollectionFolders)
         {
-            if (user.Policy.EnableContentDeletion)
+            if (user.HasPermission(PermissionKind.EnableContentDeletion))
             {
                 return true;
             }
 
-            var allowed = user.Policy.EnableContentDeletionFromFolders;
+            var allowed = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders);
 
             if (SourceType == SourceType.Channel)
             {
@@ -508,12 +509,12 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        public bool CanDelete(User user, List<Folder> allCollectionFolders)
+        public bool CanDelete(Jellyfin.Data.Entities.User user, List<Folder> allCollectionFolders)
         {
             return CanDelete() && IsAuthorizedToDelete(user, allCollectionFolders);
         }
 
-        public bool CanDelete(User user)
+        public bool CanDelete(Jellyfin.Data.Entities.User user)
         {
             var allCollectionFolders = LibraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
 
@@ -525,12 +526,12 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        public virtual bool IsAuthorizedToDownload(User user)
+        public virtual bool IsAuthorizedToDownload(Jellyfin.Data.Entities.User user)
         {
-            return user.Policy.EnableContentDownloading;
+            return user.HasPermission(PermissionKind.EnableContentDownloading);
         }
 
-        public bool CanDownload(User user)
+        public bool CanDownload(Jellyfin.Data.Entities.User user)
         {
             return CanDownload() && IsAuthorizedToDownload(user);
         }
@@ -1002,9 +1003,9 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>PlayAccess.</returns>
-        public PlayAccess GetPlayAccess(User user)
+        public PlayAccess GetPlayAccess(Jellyfin.Data.Entities.User user)
         {
-            if (!user.Policy.EnableMediaPlayback)
+            if (!user.HasPermission(PermissionKind.EnableMediaPlayback))
             {
                 return PlayAccess.None;
             }
@@ -1760,7 +1761,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if [is parental allowed] [the specified user]; otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException">user</exception>
-        public bool IsParentalAllowed(User user)
+        public bool IsParentalAllowed(Jellyfin.Data.Entities.User user)
         {
             if (user == null)
             {
@@ -1772,7 +1773,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            var maxAllowedRating = user.Policy.MaxParentalRating;
+            var maxAllowedRating = user.MaxParentalAgeRating;
 
             if (maxAllowedRating == null)
             {
@@ -1788,7 +1789,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (string.IsNullOrEmpty(rating))
             {
-                return !GetBlockUnratedValue(user.Policy);
+                return !GetBlockUnratedValue(user);
             }
 
             var value = LocalizationManager.GetRatingLevel(rating);
@@ -1796,7 +1797,7 @@ namespace MediaBrowser.Controller.Entities
             // Could not determine the integer value
             if (!value.HasValue)
             {
-                var isAllowed = !GetBlockUnratedValue(user.Policy);
+                var isAllowed = !GetBlockUnratedValue(user);
 
                 if (!isAllowed)
                 {
@@ -1856,10 +1857,9 @@ namespace MediaBrowser.Controller.Entities
             return list.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
-        private bool IsVisibleViaTags(User user)
+        private bool IsVisibleViaTags(Jellyfin.Data.Entities.User user)
         {
-            var policy = user.Policy;
-            if (policy.BlockedTags.Any(i => Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
+            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1885,22 +1885,18 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets the block unrated value.
         /// </summary>
-        /// <param name="config">The configuration.</param>
+        /// <param name="user">The configuration.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        protected virtual bool GetBlockUnratedValue(UserPolicy config)
+        protected virtual bool GetBlockUnratedValue(Jellyfin.Data.Entities.User user)
         {
             // Don't block plain folders that are unrated. Let the media underneath get blocked
             // Special folders like series and albums will override this method.
-            if (IsFolder)
-            {
-                return false;
-            }
-            if (this is IItemByName)
+            if (IsFolder || this is IItemByName)
             {
                 return false;
             }
 
-            return config.BlockUnratedItems.Contains(GetBlockUnratedType());
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(GetBlockUnratedType().ToString());
         }
 
         /// <summary>
@@ -1910,7 +1906,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if the specified user is visible; otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException">user</exception>
-        public virtual bool IsVisible(User user)
+        public virtual bool IsVisible(Jellyfin.Data.Entities.User user)
         {
             if (user == null)
             {
@@ -1920,7 +1916,7 @@ namespace MediaBrowser.Controller.Entities
             return IsParentalAllowed(user);
         }
 
-        public virtual bool IsVisibleStandalone(User user)
+        public virtual bool IsVisibleStandalone(Jellyfin.Data.Entities.User user)
         {
             if (SourceType == SourceType.Channel)
             {
@@ -1933,7 +1929,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual bool SupportsInheritedParentImages => false;
 
-        protected bool IsVisibleStandaloneInternal(User user, bool checkFolders)
+        protected bool IsVisibleStandaloneInternal(Jellyfin.Data.Entities.User user, bool checkFolders)
         {
             if (!IsVisible(user))
             {
@@ -2130,7 +2126,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public virtual void MarkPlayed(User user,
+        public virtual void MarkPlayed(
+            Jellyfin.Data.Entities.User user,
             DateTime? datePlayed,
             bool resetPosition)
         {
@@ -2167,7 +2164,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public virtual void MarkUnplayed(User user)
+        public virtual void MarkUnplayed(Jellyfin.Data.Entities.User user)
         {
             if (user == null)
             {
@@ -2543,21 +2540,21 @@ namespace MediaBrowser.Controller.Entities
             UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
-        public virtual bool IsPlayed(User user)
+        public virtual bool IsPlayed(Jellyfin.Data.Entities.User user)
         {
             var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata != null && userdata.Played;
         }
 
-        public bool IsFavoriteOrLiked(User user)
+        public bool IsFavoriteOrLiked(Jellyfin.Data.Entities.User user)
         {
             var userdata = UserDataManager.GetUserData(user, this);
 
             return userdata != null && (userdata.IsFavorite || (userdata.Likes ?? false));
         }
 
-        public virtual bool IsUnplayed(User user)
+        public virtual bool IsUnplayed(Jellyfin.Data.Entities.User user)
         {
             if (user == null)
             {
@@ -2623,7 +2620,7 @@ namespace MediaBrowser.Controller.Entities
             return path;
         }
 
-        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
+        public virtual void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, Jellyfin.Data.Entities.User user, DtoOptions fields)
         {
             if (RunTimeTicks.HasValue)
             {
@@ -2736,14 +2733,14 @@ namespace MediaBrowser.Controller.Entities
             return RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken);
         }
 
-        public string GetEtag(User user)
+        public string GetEtag(Jellyfin.Data.Entities.User user)
         {
             var list = GetEtagValues(user);
 
             return string.Join("|", list).GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
-        protected virtual List<string> GetEtagValues(User user)
+        protected virtual List<string> GetEtagValues(Jellyfin.Data.Entities.User user)
         {
             return new List<string>
             {

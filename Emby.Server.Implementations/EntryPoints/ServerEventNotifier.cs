@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -67,10 +67,8 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _userManager.UserDeleted += OnUserDeleted;
-            _userManager.UserUpdated += OnUserUpdated;
-            _userManager.UserPolicyUpdated += OnUserPolicyUpdated;
-            _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
+            _userManager.OnUserDeleted += OnUserDeleted;
+            _userManager.OnUserUpdated += OnUserUpdated;
 
             _appHost.HasPendingRestartChanged += OnHasPendingRestartChanged;
 
@@ -152,20 +150,6 @@ namespace Emby.Server.Implementations.EntryPoints
             SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N", CultureInfo.InvariantCulture));
         }
 
-        private void OnUserPolicyUpdated(object sender, GenericEventArgs<User> e)
-        {
-            var dto = _userManager.GetUserDto(e.Argument);
-
-            SendMessageToUserSession(e.Argument, "UserPolicyUpdated", dto);
-        }
-
-        private void OnUserConfigurationUpdated(object sender, GenericEventArgs<User> e)
-        {
-            var dto = _userManager.GetUserDto(e.Argument);
-
-            SendMessageToUserSession(e.Argument, "UserConfigurationUpdated", dto);
-        }
-
         private async void SendMessageToAdminSessions<T>(string name, T data)
         {
             try
@@ -209,10 +193,9 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             if (dispose)
             {
-                _userManager.UserDeleted -= OnUserDeleted;
-                _userManager.UserUpdated -= OnUserUpdated;
-                _userManager.UserPolicyUpdated -= OnUserPolicyUpdated;
-                _userManager.UserConfigurationUpdated -= OnUserConfigurationUpdated;
+                _userManager.OnUserDeleted -= OnUserDeleted;
+                _userManager.OnUserUpdated -= OnUserUpdated;
+
 
                 _installationManager.PluginUninstalled -= OnPluginUninstalled;
                 _installationManager.PackageInstalling -= OnPackageInstalling;

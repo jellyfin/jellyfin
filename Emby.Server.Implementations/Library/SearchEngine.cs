@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library
 
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
         {
-            User user = null;
+            Jellyfin.Data.Entities.User user = null;
 
             if (query.UserId.Equals(Guid.Empty))
             {
@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
         /// <exception cref="ArgumentNullException">searchTerm</exception>
-        private List<SearchHintInfo> GetSearchHints(SearchQuery query, User user)
+        private List<SearchHintInfo> GetSearchHints(SearchQuery query, Jellyfin.Data.Entities.User user)
         {
             var searchTerm = query.SearchTerm;
 

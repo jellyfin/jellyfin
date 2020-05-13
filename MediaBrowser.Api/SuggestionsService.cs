@@ -78,7 +78,7 @@ namespace MediaBrowser.Api
             };
         }
 
-        private QueryResult<BaseItem> GetItems(GetSuggestedItems request, User user, DtoOptions dtoOptions)
+        private QueryResult<BaseItem> GetItems(GetSuggestedItems request, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {

@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
-        BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, User user = null, BaseItem owner = null);
+        BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, Jellyfin.Data.Entities.User user = null, BaseItem owner = null);
 
         /// <summary>
         /// Gets the base item dto.
@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
         /// <returns>BaseItemDto.</returns>
-        BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null);
+        BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, Jellyfin.Data.Entities.User user = null, BaseItem owner = null);
 
         /// <summary>
         /// Gets the base item dtos.
@@ -57,11 +57,11 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
-        IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null);
+        IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, Jellyfin.Data.Entities.User user = null, BaseItem owner = null);
 
         /// <summary>
         /// Gets the item by name dto.
         /// </summary>
-        BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null);
+        BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Jellyfin.Data.Entities.User user = null);
     }
 }

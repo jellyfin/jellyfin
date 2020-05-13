@@ -141,7 +141,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        Task<IEnumerable<Video>> GetIntros(BaseItem item, User user);
+        Task<IEnumerable<Video>> GetIntros(BaseItem item, Jellyfin.Data.Entities.User user);
 
         /// <summary>
         /// Gets all intro files.
@@ -172,8 +172,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="sortBy">The sort by.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder);
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderBy);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, Jellyfin.Data.Entities.User user, IEnumerable<string> sortBy, SortOrder sortOrder);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, Jellyfin.Data.Entities.User user, IEnumerable<ValueTuple<string, SortOrder>> orderBy);
 
         /// <summary>
         /// Gets the user root folder.
@@ -284,7 +284,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parentId">The parent identifier.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetNamedView(User user,
+        UserView GetNamedView(
+            Jellyfin.Data.Entities.User user,
             string name,
             Guid parentId,
             string viewType,
@@ -297,7 +298,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetNamedView(User user,
+        UserView GetNamedView(
+            Jellyfin.Data.Entities.User user,
             string name,
             string viewType,
             string sortName);

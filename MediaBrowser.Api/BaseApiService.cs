@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -94,8 +95,8 @@ namespace MediaBrowser.Api
             var authenticatedUser = auth.User;
 
             // If they're going to update the record of another user, they must be an administrator
-            if ((!userId.Equals(auth.UserId) && !authenticatedUser.Policy.IsAdministrator)
-                || (restrictUserPreferences && !authenticatedUser.Policy.EnableUserPreferenceAccess))
+            if ((!userId.Equals(auth.UserId) && !authenticatedUser.HasPermission(PermissionKind.IsAdministrator))
+                || (restrictUserPreferences && !authenticatedUser.EnableUserPreferenceAccess))
             {
                 throw new SecurityException("Unauthorized access.");
             }

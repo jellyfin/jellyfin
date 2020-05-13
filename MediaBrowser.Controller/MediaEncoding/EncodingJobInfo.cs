@@ -18,23 +18,38 @@ namespace MediaBrowser.Controller.MediaEncoding
     public class EncodingJobInfo
     {
         public MediaStream VideoStream { get; set; }
+
         public VideoType VideoType { get; set; }
+
         public Dictionary<string, string> RemoteHttpHeaders { get; set; }
+
         public string OutputVideoCodec { get; set; }
+
         public MediaProtocol InputProtocol { get; set; }
+
         public string MediaPath { get; set; }
+
         public bool IsInputVideo { get; set; }
+
         public IIsoMount IsoMount { get; set; }
+
         public string[] PlayableStreamFileNames { get; set; }
+
         public string OutputAudioCodec { get; set; }
+
         public int? OutputVideoBitrate { get; set; }
+
         public MediaStream SubtitleStream { get; set; }
+
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+
         public string[] SupportedSubtitleCodecs { get; set; }
 
         public int InternalSubtitleStreamOffset { get; set; }
+
         public MediaSourceInfo MediaSource { get; set; }
-        public User User { get; set; }
+
+        public Jellyfin.Data.Entities.User User { get; set; }
 
         public long? RunTimeTicks { get; set; }
 

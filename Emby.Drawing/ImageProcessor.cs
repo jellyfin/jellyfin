@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -14,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Drawing
 {
@@ -326,6 +328,13 @@ namespace Emby.Drawing
                 Type = ImageType.Chapter,
                 DateModified = chapter.ImageDateModified
             });
+        }
+
+        /// <inheritdoc />
+        public string GetImageCacheTag(User user)
+        {
+            return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
+                .ToString("N", CultureInfo.InvariantCulture);
         }
 
         private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)

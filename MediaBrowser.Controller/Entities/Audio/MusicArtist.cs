@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -74,7 +75,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
-        public override int GetChildCount(User user)
+        public override int GetChildCount(Jellyfin.Data.Entities.User user)
         {
             if (IsAccessedByName)
             {
@@ -142,9 +143,10 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
         }
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+
+        protected override bool GetBlockUnratedValue(Jellyfin.Data.Entities.User user)
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Music);
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
         }
 
         public override UnratedItem GetBlockUnratedType()

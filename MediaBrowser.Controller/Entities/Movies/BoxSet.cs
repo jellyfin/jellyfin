@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
@@ -45,9 +44,9 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <value>The display order.</value>
         public string DisplayOrder { get; set; }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        protected override bool GetBlockUnratedValue(Jellyfin.Data.Entities.User user)
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Movie);
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Movie.ToString());
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -101,7 +100,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         [JsonIgnore]
         public override bool IsPreSorted => true;
 
-        public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
+        public override bool IsAuthorizedToDelete(Jellyfin.Data.Entities.User user, List<Folder> allCollectionFolders)
         {
             return true;
         }
@@ -111,7 +110,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return true;
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override List<BaseItem> GetChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             var children = base.GetChildren(user, includeLinkedChildren, query);
 
@@ -131,7 +130,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return LibraryManager.Sort(children, user, new[] { ItemSortBy.ProductionYear, ItemSortBy.PremiereDate, ItemSortBy.SortName }, SortOrder.Ascending).ToList();
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IEnumerable<BaseItem> GetRecursiveChildren(Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             var children = base.GetRecursiveChildren(user, query);
 
@@ -149,7 +148,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return GetItemLookupInfo<BoxSetInfo>();
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(Jellyfin.Data.Entities.User user)
         {
             if (IsLegacyBoxSet)
             {
@@ -177,7 +176,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return false;
         }
 
-        public override bool IsVisibleStandalone(User user)
+        public override bool IsVisibleStandalone(Jellyfin.Data.Entities.User user)
         {
             if (IsLegacyBoxSet)
             {
@@ -189,7 +188,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public Guid[] LibraryFolderIds { get; set; }
 
-        private Guid[] GetLibraryFolderIds(User user)
+        private Guid[] GetLibraryFolderIds(Jellyfin.Data.Entities.User user)
         {
             return LibraryManager.GetUserRootFolder().GetChildren(user, true)
                 .Select(i => i.Id)

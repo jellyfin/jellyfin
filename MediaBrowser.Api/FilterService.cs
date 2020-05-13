@@ -220,7 +220,7 @@ namespace MediaBrowser.Api
             return result;
         }
 
-        private InternalItemsQuery GetItemsQuery(GetQueryFiltersLegacy request, User user)
+        private InternalItemsQuery GetItemsQuery(GetQueryFiltersLegacy request, Jellyfin.Data.Entities.User user)
         {
             var query = new InternalItemsQuery
             {

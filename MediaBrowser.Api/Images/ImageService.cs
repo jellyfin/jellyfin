@@ -20,6 +20,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using User = Jellyfin.Data.Entities.User;
 
 namespace MediaBrowser.Api.Images
 {
@@ -399,14 +400,14 @@ namespace MediaBrowser.Api.Images
         {
             var item = _userManager.GetUserById(request.Id);
 
-            return GetImage(request, Guid.Empty, item, false);
+            return GetImage(request, item, false);
         }
 
         public object Head(GetUserImage request)
         {
             var item = _userManager.GetUserById(request.Id);
 
-            return GetImage(request, Guid.Empty, item, true);
+            return GetImage(request, item, true);
         }
 
         public object Get(GetItemByNameImage request)
@@ -439,9 +440,9 @@ namespace MediaBrowser.Api.Images
 
             request.Type = Enum.Parse<ImageType>(GetPathValue(3).ToString(), true);
 
-            var item = _userManager.GetUserById(id);
+            var user = _userManager.GetUserById(id);
 
-            return PostImage(item, request.RequestStream, request.Type, Request.ContentType);
+            return PostImage(user, request.RequestStream, Request.ContentType);
         }
 
         /// <summary>
@@ -468,9 +469,9 @@ namespace MediaBrowser.Api.Images
             var userId = request.Id;
             AssertCanUpdateUser(_authContext, _userManager, userId, true);
 
-            var item = _userManager.GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
-            item.DeleteImage(request.Type, request.Index ?? 0);
+            user.ProfileImage = null;
         }
 
         /// <summary>
@@ -555,18 +556,17 @@ namespace MediaBrowser.Api.Images
             var imageInfo = GetImageInfo(request, item);
             if (imageInfo == null)
             {
-                var displayText = item == null ? itemId.ToString() : item.Name;
-                throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", displayText, request.Type));
+                throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
             }
 
-            bool cropwhitespace;
+            bool cropWhitespace;
             if (request.CropWhitespace.HasValue)
             {
-                cropwhitespace = request.CropWhitespace.Value;
+                cropWhitespace = request.CropWhitespace.Value;
             }
             else
             {
-                cropwhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
+                cropWhitespace = request.Type == ImageType.Logo || request.Type == ImageType.Art;
             }
 
             var outputFormats = GetOutputFormats(request);
@@ -589,11 +589,92 @@ namespace MediaBrowser.Api.Images
                 itemId,
                 request,
                 imageInfo,
-                cropwhitespace,
+                cropWhitespace,
                 outputFormats,
                 cacheDuration,
                 responseHeaders,
                 isHeadRequest);
+        }
+
+        public Task<object> GetImage(ImageRequest request, User user, bool isHeadRequest)
+        {
+            var imageInfo = GetImageInfo(request, user);
+
+            TimeSpan? cacheDuration = null;
+
+            if (!string.IsNullOrEmpty(request.Tag))
+            {
+                cacheDuration = TimeSpan.FromDays(365);
+            }
+
+            var responseHeaders = new Dictionary<string, string>
+            {
+                {"transferMode.dlna.org", "Interactive"},
+                {"realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*"}
+            };
+
+            var outputFormats = GetOutputFormats(request);
+
+            return GetImageResult(
+                user,
+                user.Id,
+                request,
+                imageInfo,
+                false,
+                outputFormats,
+                cacheDuration,
+                responseHeaders,
+                isHeadRequest);
+        }
+
+        private async Task<object> GetImageResult(
+            User user,
+            Guid itemId,
+            ImageRequest request,
+            ItemImageInfo info,
+            bool cropWhitespace,
+            IReadOnlyCollection<ImageFormat> supportedFormats,
+            TimeSpan? cacheDuration,
+            IDictionary<string, string> headers,
+            bool isHeadRequest)
+        {
+            var options = new ImageProcessingOptions
+            {
+                CropWhiteSpace = true,
+                Height = request.Height,
+                ImageIndex = request.Index ?? 0,
+                Image = info,
+                Item = null, // Hack alert
+                ItemId = itemId,
+                MaxHeight = request.MaxHeight,
+                MaxWidth = request.MaxWidth,
+                Quality = request.Quality ?? 100,
+                Width = request.Width,
+                AddPlayedIndicator = request.AddPlayedIndicator,
+                PercentPlayed = 0,
+                UnplayedCount = request.UnplayedCount,
+                Blur = request.Blur,
+                BackgroundColor = request.BackgroundColor,
+                ForegroundLayer = request.ForegroundLayer,
+                SupportedOutputFormats = supportedFormats
+            };
+
+            var imageResult = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
+
+            headers[HeaderNames.Vary] = HeaderNames.Accept;
+
+            return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            {
+                CacheDuration = cacheDuration,
+                ResponseHeaders = headers,
+                ContentType = imageResult.Item2,
+                DateLastModified = imageResult.Item3,
+                IsHeadRequest = isHeadRequest,
+                Path = imageResult.Item1,
+
+                FileShare = FileShare.Read
+
+            }).ConfigureAwait(false);
         }
 
         private async Task<object> GetImageResult(
@@ -740,6 +821,28 @@ namespace MediaBrowser.Api.Images
             return item.GetImageInfo(request.Type, index);
         }
 
+        private ItemImageInfo GetImageInfo(ImageRequest request, User user)
+        {
+            var info = new ItemImageInfo
+            {
+                Path = user.ProfileImage.Path,
+                Type = ImageType.Primary,
+                DateModified = user.ProfileImage.LastModified,
+            };
+
+            if (request.Width.HasValue)
+            {
+                info.Width = request.Width.Value;
+            }
+
+            if (request.Height.HasValue)
+            {
+                info.Height = request.Height.Value;
+            }
+
+            return info;
+        }
+
         /// <summary>
         /// Posts the image.
         /// </summary>
@@ -766,6 +869,26 @@ namespace MediaBrowser.Api.Images
             await _providerManager.SaveImage(entity, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
 
             entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+        }
+
+        public async Task PostImage(User user, Stream inputStream, string mimeType)
+        {
+            using var reader = new StreamReader(inputStream);
+            var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+            var bytes = Convert.FromBase64String(text);
+            var memoryStream = new MemoryStream(bytes)
+            {
+                Position = 0
+            };
+
+            // Handle image/png; charset=utf-8
+            mimeType = mimeType.Split(';').FirstOrDefault();
+
+            await _providerManager
+                .SaveImage(user, memoryStream, mimeType, Path.Combine(ServerConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, _imageProcessor.GetImageCacheTag(user)))
+                .ConfigureAwait(false);
+            await _userManager.UpdateUserAsync(user);
         }
     }
 }

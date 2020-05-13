@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using Emby.Dlna.Configuration;
 using Emby.Dlna.ContentDirectory;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -39,7 +38,7 @@ namespace Emby.Dlna.Didl
         private readonly IImageProcessor _imageProcessor;
         private readonly string _serverAddress;
         private readonly string _accessToken;
-        private readonly User _user;
+        private readonly Jellyfin.Data.Entities.User _user;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -49,7 +48,7 @@ namespace Emby.Dlna.Didl
 
         public DidlBuilder(
             DeviceProfile profile,
-            User user,
+            Jellyfin.Data.Entities.User user,
             IImageProcessor imageProcessor,
             string serverAddress,
             string accessToken,
@@ -78,7 +77,7 @@ namespace Emby.Dlna.Didl
             return url + "&dlnaheaders=true";
         }
 
-        public string GetItemDidl(BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
+        public string GetItemDidl(BaseItem item, Jellyfin.Data.Entities.User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var settings = new XmlWriterSettings
             {
@@ -132,7 +131,7 @@ namespace Emby.Dlna.Didl
         public void WriteItemElement(
             XmlWriter writer,
             BaseItem item,
-            User user,
+            Jellyfin.Data.Entities.User user,
             BaseItem context,
             StubType? contextStubType,
             string deviceId,
@@ -663,7 +662,7 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
         }
 
-        private void AddSamsungBookmarkInfo(BaseItem item, User user, XmlWriter writer, StreamInfo streamInfo)
+        private void AddSamsungBookmarkInfo(BaseItem item, Jellyfin.Data.Entities.User user, XmlWriter writer, StreamInfo streamInfo)
         {
             if (!item.SupportsPositionTicksResume || item is Folder)
             {

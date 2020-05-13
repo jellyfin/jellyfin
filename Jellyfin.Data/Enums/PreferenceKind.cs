@@ -2,14 +2,19 @@ using System;
 
 namespace Jellyfin.Data.Enums
 {
-    public enum PreferenceKind : Int32
+    public enum PreferenceKind
     {
-        MaxParentalRating,
         BlockedTags,
-        RemoteClientBitrateLimit,
+        BlockedChannels,
+        BlockedMediaFolders,
         EnabledDevices,
         EnabledChannels,
         EnabledFolders,
-        EnableContentDeletionFromFolders
+        EnableContentDeletionFromFolders,
+        LatestItemExcludes,
+        MyMediaExcludes,
+        GroupedFolders,
+        BlockUnratedItems,
+        OrderedViews
     }
 }

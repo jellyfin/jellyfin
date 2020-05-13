@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -74,7 +75,8 @@ namespace Emby.Server.Implementations.TV
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                    .Where(i => i is Folder)
-                   .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
+                   .Where(i => !user.GetPreference(PreferenceKind.LatestItemExcludes)
+                       .Contains(i.Id.ToString("N", CultureInfo.InvariantCulture)))
                    .ToArray();
             }
 
@@ -137,7 +139,7 @@ namespace Emby.Server.Implementations.TV
             return GetResult(episodes, request);
         }
 
-        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<string> seriesKeys, DtoOptions dtoOptions)
+        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, Jellyfin.Data.Entities.User user, IEnumerable<string> seriesKeys, DtoOptions dtoOptions)
         {
             // Avoid implicitly captured closure
             var currentUser = user;
@@ -186,13 +188,13 @@ namespace Emby.Server.Implementations.TV
         /// Gets the next up.
         /// </summary>
         /// <returns>Task{Episode}.</returns>
-        private Tuple<DateTime, Func<Episode>> GetNextUp(string seriesKey, User user, DtoOptions dtoOptions)
+        private Tuple<DateTime, Func<Episode>> GetNextUp(string seriesKey, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] { typeof(Episode).Name },
+                IncludeItemTypes = new[] { nameof(Episode) },
                 OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Descending) },
                 IsPlayed = true,
                 Limit = 1,
@@ -205,7 +207,6 @@ namespace Emby.Server.Implementations.TV
                     },
                     EnableImages = false
                 }
-
             }).FirstOrDefault();
 
             Func<Episode> getEpisode = () =>
@@ -220,7 +221,7 @@ namespace Emby.Server.Implementations.TV
                     IsPlayed = false,
                     IsVirtualItem = false,
                     ParentIndexNumberNotEquals = 0,
-                    MinSortName = lastWatchedEpisode == null ? null : lastWatchedEpisode.SortName,
+                    MinSortName = lastWatchedEpisode?.SortName,
                     DtoOptions = dtoOptions
 
                 }).Cast<Episode>().FirstOrDefault();

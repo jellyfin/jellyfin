@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets or sets the user.
         /// </summary>
         /// <value>The user.</value>
-        public User User { get; set; }
+        public Jellyfin.Data.Entities.User User { get; set; }
 
         /// <summary>
         /// Compares the specified x.

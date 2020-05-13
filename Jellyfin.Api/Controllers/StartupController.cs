@@ -98,7 +98,7 @@ namespace Jellyfin.Api.Controllers
             var user = _userManager.Users.First();
             return new StartupUserDto
             {
-                Name = user.Name,
+                Name = user.Username,
                 Password = user.Password
             };
         }
@@ -113,7 +113,7 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.Users.First();
 
-            user.Name = startupUserDto.Name;
+            user.Username = startupUserDto.Name;
 
             _userManager.UpdateUser(user);
 

@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Notifications;
@@ -164,7 +165,10 @@ namespace Emby.Notifications.Api
                 Level = request.Level,
                 Name = request.Name,
                 Url = request.Url,
-                UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray()
+                UserIds = _userManager.Users
+                    .Where(p => p.Permissions.Select(x => x.Kind).Contains(PermissionKind.IsAdministrator))
+                    .Select(p => p.Id)
+                    .ToArray()
             };
 
             return _notificationManager.SendNotification(notification, CancellationToken.None);

@@ -55,12 +55,12 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the playack media sources.
         /// </summary>
-        Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken);
+        Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, Jellyfin.Data.Entities.User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the static media sources.
         /// </summary>
-        List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null);
+        List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, Jellyfin.Data.Entities.User user = null);
 
         /// <summary>
         /// Gets the static media source.
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Library
 
         MediaProtocol GetPathProtocol(string path);
 
-        void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user);
+        void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, Jellyfin.Data.Entities.User user);
 
         Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, string cacheKey, bool addProbeDelay, bool isLiveStream, CancellationToken cancellationToken);
 

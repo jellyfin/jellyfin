@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.Library
             _libraryManager = libraryManager;
         }
 
-        public List<BaseItem> GetInstantMixFromSong(Audio item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromSong(Audio item, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             var list = new List<Audio>
             {
@@ -32,17 +32,17 @@ namespace Emby.Server.Implementations.Library
             return list.Concat(GetInstantMixFromGenres(item.Genres, user, dtoOptions)).ToList();
         }
 
-        public List<BaseItem> GetInstantMixFromArtist(MusicArtist item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromArtist(MusicArtist item, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromAlbum(MusicAlbum item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromAlbum(MusicAlbum item, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromFolder(Folder item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromFolder(Folder item, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             var genres = item
                .GetRecursiveChildren(user, new InternalItemsQuery(user)
@@ -58,12 +58,12 @@ namespace Emby.Server.Implementations.Library
             return GetInstantMixFromGenres(genres, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromPlaylist(Playlist item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromPlaylist(Playlist item, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromGenres(IEnumerable<string> genres, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             var genreIds = genres.DistinctNames().Select(i =>
             {
@@ -75,13 +75,12 @@ namespace Emby.Server.Implementations.Library
                 {
                     return Guid.Empty;
                 }
-
             }).Where(i => !i.Equals(Guid.Empty)).ToArray();
 
             return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
         }
 
-        public List<BaseItem> GetInstantMixFromGenreIds(Guid[] genreIds, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromGenreIds(Guid[] genreIds, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -97,7 +96,7 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        public List<BaseItem> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions)
+        public List<BaseItem> GetInstantMixFromItem(BaseItem item, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
         {
             var genre = item as MusicGenre;
             if (genre != null)
@@ -105,32 +104,27 @@ namespace Emby.Server.Implementations.Library
                 return GetInstantMixFromGenreIds(new[] { item.Id }, user, dtoOptions);
             }
 
-            var playlist = item as Playlist;
-            if (playlist != null)
+            if (item is Playlist playlist)
             {
                 return GetInstantMixFromPlaylist(playlist, user, dtoOptions);
             }
 
-            var album = item as MusicAlbum;
-            if (album != null)
+            if (item is MusicAlbum album)
             {
                 return GetInstantMixFromAlbum(album, user, dtoOptions);
             }
 
-            var artist = item as MusicArtist;
-            if (artist != null)
+            if (item is MusicArtist artist)
             {
                 return GetInstantMixFromArtist(artist, user, dtoOptions);
             }
 
-            var song = item as Audio;
-            if (song != null)
+            if (item is Audio song)
             {
                 return GetInstantMixFromSong(song, user, dtoOptions);
             }
 
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 return GetInstantMixFromFolder(folder, user, dtoOptions);
             }

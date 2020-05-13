@@ -437,7 +437,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="wasPlayed">if set to <c>true</c> [was played].</param>
         /// <param name="datePlayed">The date played.</param>
         /// <returns>Task.</returns>
-        private UserItemDataDto UpdatePlayedStatus(User user, string itemId, bool wasPlayed, DateTime? datePlayed)
+        private UserItemDataDto UpdatePlayedStatus(Jellyfin.Data.Entities.User user, string itemId, bool wasPlayed, DateTime? datePlayed)
         {
             var item = _libraryManager.GetItemById(itemId);
 

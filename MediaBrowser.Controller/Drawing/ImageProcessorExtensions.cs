@@ -1,5 +1,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
+using User = Jellyfin.Data.Entities.User;
 
 namespace MediaBrowser.Controller.Drawing
 {

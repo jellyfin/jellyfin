@@ -27,18 +27,18 @@ namespace MediaBrowser.Controller.Library
         /// <param name="reason">The reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
-        void SaveUserData(User userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
+        void SaveUserData(Jellyfin.Data.Entities.User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
-        UserItemData GetUserData(User user, BaseItem item);
+        UserItemData GetUserData(Jellyfin.Data.Entities.User user, BaseItem item);
 
         UserItemData GetUserData(Guid userId, BaseItem item);
 
         /// <summary>
         /// Gets the user data dto.
         /// </summary>
-        UserItemDataDto GetUserDataDto(BaseItem item, User user);
+        UserItemDataDto GetUserDataDto(BaseItem item, Jellyfin.Data.Entities.User user);
 
-        UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions dto_options);
+        UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, Jellyfin.Data.Entities.User user, DtoOptions dto_options);
 
         /// <summary>
         /// Get all user data for the given user

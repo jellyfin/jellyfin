@@ -25,6 +25,6 @@ namespace MediaBrowser.Controller.Notifications
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if [is enabled for user] [the specified user identifier]; otherwise, <c>false</c>.</returns>
-        bool IsEnabledForUser(User user);
+        bool IsEnabledForUser(Jellyfin.Data.Entities.User user);
     }
 }

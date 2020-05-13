@@ -1,14 +1,11 @@
-using System;
-
 namespace Jellyfin.Data.Enums
 {
-    public enum PermissionKind : Int32
+    public enum PermissionKind
     {
         IsAdministrator,
         IsHidden,
         IsDisabled,
-        BlockUnrateditems,
-        EnbleSharedDeviceControl,
+        EnableSharedDeviceControl,
         EnableRemoteAccess,
         EnableLiveTvManagement,
         EnableLiveTvAccess,
@@ -23,6 +20,8 @@ namespace Jellyfin.Data.Enums
         EnableAllChannels,
         EnableAllFolders,
         EnablePublicSharing,
-        AccessSchedules
+        EnableRemoteControlOfOtherUsers,
+        EnablePlaybackRemuxing,
+        ForceRemoteSourceTranscoding
     }
 }

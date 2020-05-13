@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Users;
 
@@ -109,7 +110,7 @@ namespace MediaBrowser.Model.Notifications
                    !ListHelper.ContainsIgnoreCase(opt.DisabledMonitorUsers, userId.ToString(""));
         }
 
-        public bool IsEnabledToSendToUser(string type, string userId, UserPolicy userPolicy)
+        public bool IsEnabledToSendToUser(string type, string userId, Jellyfin.Data.Entities.User user)
         {
             NotificationOption opt = GetOptions(type);
 
@@ -120,7 +121,7 @@ namespace MediaBrowser.Model.Notifications
                     return true;
                 }
 
-                if (opt.SendToUserMode == SendToUserType.Admins && userPolicy.IsAdministrator)
+                if (opt.SendToUserMode == SendToUserType.Admins && user.HasPermission(PermissionKind.IsAdministrator))
                 {
                     return true;
                 }

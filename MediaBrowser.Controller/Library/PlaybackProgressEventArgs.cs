@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Library
     /// </summary>
     public class PlaybackProgressEventArgs : EventArgs
     {
-        public List<User> Users { get; set; }
+        public List<Jellyfin.Data.Entities.User> Users { get; set; }
         public long? PlaybackPositionTicks { get; set; }
         public BaseItem Item { get; set; }
         public BaseItemDto MediaInfo { get; set; }
@@ -28,7 +28,7 @@ namespace MediaBrowser.Controller.Library
 
         public PlaybackProgressEventArgs()
         {
-            Users = new List<User>();
+            Users = new List<Jellyfin.Data.Entities.User>();
         }
     }
 }

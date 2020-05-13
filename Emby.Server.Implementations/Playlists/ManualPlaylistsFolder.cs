@@ -14,12 +14,12 @@ namespace Emby.Server.Implementations.Playlists
             Name = "Playlists";
         }
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(Jellyfin.Data.Entities.User user)
         {
             return base.IsVisible(user) && GetChildren(user, true).Any();
         }
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(Jellyfin.Data.Entities.User user)
         {
             return base.GetEligibleChildrenForRecursiveChildren(user).OfType<Playlist>();
         }
@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Playlists
             }
 
             query.Recursive = true;
-            query.IncludeItemTypes = new string[] { "Playlist" };
+            query.IncludeItemTypes = new[] { "Playlist" };
             query.Parent = null;
             return LibraryManager.GetItemsResult(query);
         }

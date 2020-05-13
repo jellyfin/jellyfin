@@ -1,8 +1,10 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -104,7 +106,7 @@ namespace Emby.Dlna.ContentDirectory
                 .ProcessControlRequestAsync(request);
         }
 
-        private User GetUser(DeviceProfile profile)
+        private Jellyfin.Data.Entities.User GetUser(DeviceProfile profile)
         {
             if (!string.IsNullOrEmpty(profile.UserId))
             {
@@ -130,18 +132,13 @@ namespace Emby.Dlna.ContentDirectory
 
             foreach (var user in _userManager.Users)
             {
-                if (user.Policy.IsAdministrator)
+                if (user.HasPermission(PermissionKind.IsAdministrator))
                 {
                     return user;
                 }
             }
 
-            foreach (var user in _userManager.Users)
-            {
-                return user;
-            }
-
-            return null;
+            return _userManager.Users.FirstOrDefault();
         }
     }
 }

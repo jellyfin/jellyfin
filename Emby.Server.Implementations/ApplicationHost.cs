@@ -48,6 +48,7 @@ using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.User;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -595,16 +596,11 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
-            serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
-
-            serviceCollection.AddSingleton<IDisplayPreferencesRepository, SqliteDisplayPreferencesRepository>();
 
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
             serviceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
-
-            serviceCollection.AddSingleton<IUserRepository, SqliteUserRepository>();
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
@@ -700,17 +696,11 @@ namespace Emby.Server.Implementations
             _httpServer = Resolve<IHttpServer>();
             _httpClient = Resolve<IHttpClient>();
 
-            ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
-            ((SqliteUserRepository)Resolve<IUserRepository>()).Initialize();
 
             SetStaticProperties();
 
-            var userManager = (UserManager)Resolve<IUserManager>();
-            userManager.Initialize();
-
-            var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
-            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, userManager);
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize();
 
             FindParts();
         }
@@ -793,7 +783,6 @@ namespace Emby.Server.Implementations
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
-            User.UserManager = Resolve<IUserManager>();
             BaseItem.FileSystem = _fileSystemManager;
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();

@@ -441,7 +441,13 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
+        private PlaylistItem CreatePlaylistItem(
+            BaseItem item,
+            Jellyfin.Data.Entities.User user,
+            long startPostionTicks,
+            string mediaSourceId,
+            int? audioStreamIndex,
+            int? subtitleStreamIndex)
         {
             var deviceInfo = _device.Properties;
 

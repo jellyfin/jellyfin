@@ -1,7 +1,8 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Configuration;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Users
 {
@@ -33,7 +34,7 @@ namespace MediaBrowser.Model.Users
 
         public string[] BlockedTags { get; set; }
         public bool EnableUserPreferenceAccess { get; set; }
-        public AccessSchedule[] AccessSchedules { get; set; }
+        public Jellyfin.Data.Entities.AccessSchedule[] AccessSchedules { get; set; }
         public UnratedItem[] BlockUnratedItems { get; set; }
         public bool EnableRemoteControlOfOtherUsers { get; set; }
         public bool EnableSharedDeviceControl { get; set; }
@@ -77,7 +78,7 @@ namespace MediaBrowser.Model.Users
         public string[] BlockedChannels { get; set; }
 
         public int RemoteClientBitrateLimit { get; set; }
-        public string AuthenticationProviderId { get; set; }
+        public string AuthenticatioIsnProviderId { get; set; }
         public string PasswordResetProviderId { get; set; }
 
         public UserPolicy()

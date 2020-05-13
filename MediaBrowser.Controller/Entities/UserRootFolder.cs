@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Entities
             return UserViewBuilder.SortAndPage(result, null, query, LibraryManager, true);
         }
 
-        public override int GetChildCount(User user)
+        public override int GetChildCount(Jellyfin.Data.Entities.User user)
         {
             return GetChildren(user, true).Count;
         }
@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool IsPreSorted => true;
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(Jellyfin.Data.Entities.User user)
         {
             var list = base.GetEligibleChildrenForRecursiveChildren(user).ToList();
             list.AddRange(LibraryManager.RootFolder.VirtualChildren);

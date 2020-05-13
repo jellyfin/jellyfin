@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.Channels
             new ConcurrentDictionary<string, Tuple<DateTime, List<MediaSourceInfo>>>();
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
         /// </summary>
@@ -791,8 +791,9 @@ namespace Emby.Server.Implementations.Channels
             return result;
         }
 
-        private async Task<ChannelItemResult> GetChannelItems(IChannel channel,
-            User user,
+        private async Task<ChannelItemResult> GetChannelItems(
+            IChannel channel,
+            Jellyfin.Data.Entities.User user,
             string externalFolderId,
             ChannelItemSortField? sortField,
             bool sortDescending,

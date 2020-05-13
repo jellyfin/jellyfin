@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -360,7 +361,7 @@ namespace Emby.Server.Implementations.Devices
 
         private string DefaultCameraUploadsPath => Path.Combine(_config.CommonApplicationPaths.DataPath, "camerauploads");
 
-        public bool CanAccessDevice(User user, string deviceId)
+        public bool CanAccessDevice(Jellyfin.Data.Entities.User user, string deviceId)
         {
             if (user == null)
             {
@@ -371,7 +372,13 @@ namespace Emby.Server.Implementations.Devices
                 throw new ArgumentNullException(nameof(deviceId));
             }
 
-            if (!CanAccessDevice(user.Policy, deviceId))
+            if (user.HasPermission(PermissionKind.EnableAllDevices)
+            || user.HasPermission(PermissionKind.IsAdministrator))
+            {
+                return true;
+            }
+
+            if (!user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparer.OrdinalIgnoreCase))
             {
                 var capabilities = GetCapabilities(deviceId);
 
@@ -382,21 +389,6 @@ namespace Emby.Server.Implementations.Devices
             }
 
             return true;
-        }
-
-        private static bool CanAccessDevice(UserPolicy policy, string id)
-        {
-            if (policy.EnableAllDevices)
-            {
-                return true;
-            }
-
-            if (policy.IsAdministrator)
-            {
-                return true;
-            }
-
-            return policy.EnabledDevices.Contains(id, StringComparer.OrdinalIgnoreCase);
         }
     }
 

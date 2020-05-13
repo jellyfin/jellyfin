@@ -9,6 +9,6 @@ namespace MediaBrowser.Controller.Net
     public interface IAuthService
     {
         void Authenticate(IRequest request, IAuthenticationAttributes authAttribtues);
-        User? Authenticate(HttpRequest request, IAuthenticationAttributes authAttribtues);
+        Jellyfin.Data.Entities.User? Authenticate(HttpRequest request, IAuthenticationAttributes authAttribtues);
     }
 }

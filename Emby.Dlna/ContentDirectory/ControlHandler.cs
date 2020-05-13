@@ -36,7 +36,7 @@ namespace Emby.Dlna.ContentDirectory
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataManager;
         private readonly IServerConfigurationManager _config;
-        private readonly User _user;
+        private readonly Jellyfin.Data.Entities.User _user;
         private readonly IUserViewManager _userViewManager;
         private readonly ITVSeriesManager _tvSeriesManager;
 
@@ -59,7 +59,7 @@ namespace Emby.Dlna.ContentDirectory
             string accessToken,
             IImageProcessor imageProcessor,
             IUserDataManager userDataManager,
-            User user,
+            Jellyfin.Data.Entities.User user,
             int systemUpdateId,
             IServerConfigurationManager config,
             ILocalizationManager localization,
@@ -432,7 +432,7 @@ namespace Emby.Dlna.ContentDirectory
             xmlWriter.WriteElementString("UpdateID", _systemUpdateId.ToString(CultureInfo.InvariantCulture));
         }
 
-        private QueryResult<BaseItem> GetChildrenSorted(BaseItem item, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<BaseItem> GetChildrenSorted(BaseItem item, Jellyfin.Data.Entities.User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
         {
             var folder = (Folder)item;
 
@@ -489,7 +489,7 @@ namespace Emby.Dlna.ContentDirectory
             return new DtoOptions(true);
         }
 
-        private QueryResult<ServerItem> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetUserItems(BaseItem item, StubType? stubType, Jellyfin.Data.Entities.User user, SortCriteria sort, int? startIndex, int? limit)
         {
             if (item is MusicGenre)
             {
@@ -558,7 +558,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(queryResult);
         }
 
-        private QueryResult<ServerItem> GetLiveTvChannels(User user, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetLiveTvChannels(Jellyfin.Data.Entities.User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -574,7 +574,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetMusicFolders(BaseItem item, Jellyfin.Data.Entities.User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -692,7 +692,7 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
-        private QueryResult<ServerItem> GetMovieFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetMovieFolders(BaseItem item, Jellyfin.Data.Entities.User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -731,7 +731,7 @@ namespace Emby.Dlna.ContentDirectory
                 return GetGenres(item, user, query);
             }
 
-            var array = new ServerItem[]
+            var array = new[]
             {
                 new ServerItem(item)
                 {
@@ -766,7 +766,7 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
-        private QueryResult<ServerItem> GetFolders(User user, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetFolders(Jellyfin.Data.Entities.User user, int? startIndex, int? limit)
         {
             var folders = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                 .OrderBy(i => i.SortName)
@@ -783,7 +783,7 @@ namespace Emby.Dlna.ContentDirectory
             }, startIndex, limit);
         }
 
-        private QueryResult<ServerItem> GetTvFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetTvFolders(BaseItem item, Jellyfin.Data.Entities.User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -871,7 +871,7 @@ namespace Emby.Dlna.ContentDirectory
             };
         }
 
-        private QueryResult<ServerItem> GetMovieContinueWatching(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMovieContinueWatching(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -891,7 +891,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetSeries(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetSeries(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -904,7 +904,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMovieMovies(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMovieMovies(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -917,7 +917,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMovieCollections(User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMovieCollections(Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             //query.Parent = parent;
@@ -930,7 +930,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicAlbums(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicAlbums(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -943,7 +943,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicSongs(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicSongs(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -956,7 +956,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetFavoriteSongs(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetFavoriteSongs(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -969,7 +969,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetFavoriteSeries(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetFavoriteSeries(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -982,7 +982,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetFavoriteEpisodes(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetFavoriteEpisodes(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -995,7 +995,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMovieFavorites(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMovieFavorites(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -1008,7 +1008,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetFavoriteAlbums(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetFavoriteAlbums(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -1021,7 +1021,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetGenres(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetGenres(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             var genresResult = _libraryManager.GetGenres(new InternalItemsQuery(user)
             {
@@ -1039,7 +1039,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicGenres(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicGenres(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             var genresResult = _libraryManager.GetMusicGenres(new InternalItemsQuery(user)
             {
@@ -1057,7 +1057,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicAlbumArtists(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicAlbumArtists(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             var artists = _libraryManager.GetAlbumArtists(new InternalItemsQuery(user)
             {
@@ -1075,7 +1075,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicArtists(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicArtists(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             var artists = _libraryManager.GetArtists(new InternalItemsQuery(user)
             {
@@ -1093,7 +1093,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetFavoriteArtists(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetFavoriteArtists(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             var artists = _libraryManager.GetArtists(new InternalItemsQuery(user)
             {
@@ -1112,10 +1112,10 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicPlaylists(User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicPlaylists(Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.Parent = null;
-            query.IncludeItemTypes = new[] { typeof(Playlist).Name };
+            query.IncludeItemTypes = new[] { nameof(Playlist) };
             query.SetUser(user);
             query.Recursive = true;
 
@@ -1124,7 +1124,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicLatest(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicLatest(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
@@ -1132,10 +1132,9 @@ namespace Emby.Dlna.ContentDirectory
             {
                 UserId = user.Id,
                 Limit = 50,
-                IncludeItemTypes = new[] { typeof(Audio).Name },
-                ParentId = parent == null ? Guid.Empty : parent.Id,
+                IncludeItemTypes = new[] { nameof(Audio) },
+                ParentId = parent?.Id ?? Guid.Empty,
                 GroupItems = true
-
             }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
@@ -1150,13 +1149,12 @@ namespace Emby.Dlna.ContentDirectory
                 Limit = query.Limit,
                 StartIndex = query.StartIndex,
                 UserId = query.User.Id
-
             }, new[] { parent }, query.DtoOptions);
 
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetTvLatest(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetTvLatest(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
@@ -1167,30 +1165,29 @@ namespace Emby.Dlna.ContentDirectory
                 IncludeItemTypes = new[] { typeof(Episode).Name },
                 ParentId = parent == null ? Guid.Empty : parent.Id,
                 GroupItems = false
-
             }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
 
-        private QueryResult<ServerItem> GetMovieLatest(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMovieLatest(BaseItem parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
-            var items = _userViewManager.GetLatestItems(new LatestItemsQuery
+            var items = _userViewManager.GetLatestItems(
+                new LatestItemsQuery
             {
                 UserId = user.Id,
                 Limit = 50,
-                IncludeItemTypes = new[] { typeof(Movie).Name },
-                ParentId = parent == null ? Guid.Empty : parent.Id,
+                IncludeItemTypes = new[] { nameof(Movie) },
+                ParentId = parent?.Id ?? Guid.Empty,
                 GroupItems = true
-
             }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
 
-        private QueryResult<ServerItem> GetMusicArtistItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetMusicArtistItems(BaseItem item, Guid parentId, Jellyfin.Data.Entities.User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -1210,14 +1207,18 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetGenreItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetGenreItems(BaseItem item, Guid parentId, Jellyfin.Data.Entities.User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
                 Recursive = true,
                 ParentId = parentId,
                 GenreIds = new[] { item.Id },
-                IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name },
+                IncludeItemTypes = new[]
+                {
+                    nameof(Movie),
+                    nameof(Series)
+                },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions()
@@ -1230,7 +1231,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicGenreItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetMusicGenreItems(BaseItem item, Guid parentId, Jellyfin.Data.Entities.User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {

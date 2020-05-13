@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Library
             SaveUserData(user, item, userData, reason, cancellationToken);
         }
 
-        public void SaveUserData(User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
+        public void SaveUserData(Jellyfin.Data.Entities.User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.Library
             return GetUserData(user, itemId, keys);
         }
 
-        public UserItemData GetUserData(User user, Guid itemId, List<string> keys)
+        public UserItemData GetUserData(Jellyfin.Data.Entities.User user, Guid itemId, List<string> keys)
         {
             var userId = user.InternalId;
 
@@ -157,7 +157,7 @@ namespace Emby.Server.Implementations.Library
             return internalUserId.ToString(CultureInfo.InvariantCulture) + "-" + itemId.ToString("N", CultureInfo.InvariantCulture);
         }
 
-        public UserItemData GetUserData(User user, BaseItem item)
+        public UserItemData GetUserData(Jellyfin.Data.Entities.User user, BaseItem item)
         {
             return GetUserData(user, item.Id, item.GetUserDataKeys());
         }
@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.Library
             return GetUserData(userId, item.Id, item.GetUserDataKeys());
         }
 
-        public UserItemDataDto GetUserDataDto(BaseItem item, User user)
+        public UserItemDataDto GetUserDataDto(BaseItem item, Jellyfin.Data.Entities.User user)
         {
             var userData = GetUserData(user, item);
             var dto = GetUserItemDataDto(userData);
@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.Library
             return dto;
         }
 
-        public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options)
+        public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, Jellyfin.Data.Entities.User user, DtoOptions options)
         {
             var userData = GetUserData(user, item);
             var dto = GetUserItemDataDto(userData);

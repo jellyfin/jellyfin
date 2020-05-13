@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Security.Authentication;
 using Emby.Server.Implementations.SocketSharp;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -43,14 +44,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             ValidateUser(request, authAttribtues);
         }
 
-        public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
+        public Jellyfin.Data.Entities.User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
         {
             var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
             var user = ValidateUser(req, authAttributes);
             return user;
         }
 
-        private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
+        private Jellyfin.Data.Entities.User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
         {
             // This code is executed before the service
             var auth = _authorizationContext.GetAuthorizationInfo(request);
@@ -90,7 +91,8 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 !string.IsNullOrEmpty(auth.Client) &&
                 !string.IsNullOrEmpty(auth.Device))
             {
-                _sessionManager.LogSessionActivity(auth.Client,
+                _sessionManager.LogSessionActivity(
+                    auth.Client,
                     auth.Version,
                     auth.DeviceId,
                     auth.Device,
@@ -102,22 +104,22 @@ namespace Emby.Server.Implementations.HttpServer.Security
         }
 
         private void ValidateUserAccess(
-            User user,
+            Jellyfin.Data.Entities.User user,
             IRequest request,
             IAuthenticationAttributes authAttribtues,
             AuthorizationInfo auth)
         {
-            if (user.Policy.IsDisabled)
+            if (user.HasPermission(PermissionKind.IsDisabled))
             {
                 throw new SecurityException("User account has been disabled.");
             }
 
-            if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(request.RemoteIp))
+            if (!user.HasPermission(PermissionKind.EnableRemoteAccess) && !_networkManager.IsInLocalNetwork(request.RemoteIp))
             {
                 throw new SecurityException("User account has been disabled.");
             }
 
-            if (!user.Policy.IsAdministrator
+            if (!user.HasPermission(PermissionKind.IsAdministrator)
                 && !authAttribtues.EscapeParentalControl
                 && !user.IsParentalScheduleAllowed())
             {
@@ -176,11 +178,11 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return false;
         }
 
-        private static void ValidateRoles(string[] roles, User user)
+        private static void ValidateRoles(string[] roles, Jellyfin.Data.Entities.User user)
         {
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
             {
-                if (user == null || !user.Policy.IsAdministrator)
+                if (user == null || !user.HasPermission(PermissionKind.IsAdministrator))
                 {
                     throw new SecurityException("User does not have admin access.");
                 }
@@ -188,7 +190,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (roles.Contains("delete", StringComparer.OrdinalIgnoreCase))
             {
-                if (user == null || !user.Policy.EnableContentDeletion)
+                if (user == null || !user.HasPermission(PermissionKind.EnableContentDeletion))
                 {
                     throw new SecurityException("User does not have delete access.");
                 }
@@ -196,7 +198,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (roles.Contains("download", StringComparer.OrdinalIgnoreCase))
             {
-                if (user == null || !user.Policy.EnableContentDownloading)
+                if (user == null || !user.HasPermission(PermissionKind.EnableContentDownloading))
                 {
                     throw new SecurityException("User does not have download access.");
                 }

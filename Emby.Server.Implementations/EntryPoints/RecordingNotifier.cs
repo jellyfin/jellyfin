@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Plugins;
@@ -64,7 +65,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private async void SendMessage(string name, TimerEventInfo info)
         {
-            var users = _userManager.Users.Where(i => i.Policy.EnableLiveTvAccess).Select(i => i.Id).ToList();
+            var users = _userManager.Users.Where(i => i.HasPermission(PermissionKind.EnableLiveTvAccess)).Select(i => i.Id).ToList();
 
             try
             {

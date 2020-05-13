@@ -148,7 +148,12 @@ namespace MediaBrowser.Api.Movies
             return result;
         }
 
-        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, string parentId, int categoryLimit, int itemLimit, DtoOptions dtoOptions)
+        private IEnumerable<RecommendationDto> GetRecommendationCategories(
+            Jellyfin.Data.Entities.User user,
+            string parentId,
+            int categoryLimit,
+            int itemLimit,
+            DtoOptions dtoOptions)
         {
             var categories = new List<RecommendationDto>();
 
@@ -251,7 +256,12 @@ namespace MediaBrowser.Api.Movies
             return categories.OrderBy(i => i.RecommendationType);
         }
 
-        private IEnumerable<RecommendationDto> GetWithDirector(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithDirector(
+            Jellyfin.Data.Entities.User user,
+            IEnumerable<string> names,
+            int itemLimit,
+            DtoOptions dtoOptions,
+            RecommendationType type)
         {
             var itemTypes = new List<string> { typeof(Movie).Name };
             if (ServerConfigurationManager.Configuration.EnableExternalContentInSuggestions)
@@ -293,7 +303,12 @@ namespace MediaBrowser.Api.Movies
             }
         }
 
-        private IEnumerable<RecommendationDto> GetWithActor(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithActor(
+            Jellyfin.Data.Entities.User user,
+            IEnumerable<string> names,
+            int itemLimit,
+            DtoOptions dtoOptions,
+            RecommendationType type)
         {
             var itemTypes = new List<string> { typeof(Movie).Name };
             if (ServerConfigurationManager.Configuration.EnableExternalContentInSuggestions)
@@ -334,7 +349,12 @@ namespace MediaBrowser.Api.Movies
             }
         }
 
-        private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetSimilarTo(
+            Jellyfin.Data.Entities.User user,
+            List<BaseItem> baselineItems,
+            int itemLimit,
+            DtoOptions dtoOptions,
+            RecommendationType type)
         {
             var itemTypes = new List<string> { typeof(Movie).Name };
             if (ServerConfigurationManager.Configuration.EnableExternalContentInSuggestions)

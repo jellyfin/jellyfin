@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
@@ -11,18 +12,20 @@ namespace MediaBrowser.Controller.Channels
 {
     public class Channel : Folder
     {
-        public override bool IsVisible(User user)
+        public override bool IsVisible(Jellyfin.Data.Entities.User user)
         {
-            if (user.Policy.BlockedChannels != null)
+            if (user.GetPreference(PreferenceKind.BlockedChannels) != null)
             {
-                if (user.Policy.BlockedChannels.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                if (user.GetPreference(PreferenceKind.BlockedChannels).Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
             }
             else
             {
-                if (!user.Policy.EnableAllChannels && !user.Policy.EnabledChannels.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                if (!user.HasPermission(PermissionKind.EnableAllChannels)
+                    && !user.GetPreference(PreferenceKind.EnabledChannels)
+                        .Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -74,7 +77,7 @@ namespace MediaBrowser.Controller.Channels
             return false;
         }
 
-        internal static bool IsChannelVisible(BaseItem channelItem, User user)
+        internal static bool IsChannelVisible(BaseItem channelItem, Jellyfin.Data.Entities.User user)
         {
             var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(""));
 

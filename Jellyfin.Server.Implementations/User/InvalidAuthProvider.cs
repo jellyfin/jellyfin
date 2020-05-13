@@ -1,8 +1,7 @@
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Entities;
 
-namespace Emby.Server.Implementations.Library
+namespace Jellyfin.Server.Implementations.User
 {
     /// <summary>
     /// An invalid authentication provider.
@@ -22,31 +21,25 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public bool HasPassword(User user)
+        public bool HasPassword(Data.Entities.User user)
         {
             return true;
         }
 
         /// <inheritdoc />
-        public Task ChangePassword(User user, string newPassword)
+        public Task ChangePassword(Data.Entities.User user, string newPassword)
         {
             return Task.CompletedTask;
         }
 
         /// <inheritdoc />
-        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
+        public void ChangeEasyPassword(Data.Entities.User user, string newPassword, string newPasswordHash)
         {
             // Nothing here
         }
 
         /// <inheritdoc />
-        public string GetPasswordHash(User user)
-        {
-            return string.Empty;
-        }
-
-        /// <inheritdoc />
-        public string GetEasyPasswordHash(User user)
+        public string GetEasyPasswordHash(Data.Entities.User user)
         {
             return string.Empty;
         }

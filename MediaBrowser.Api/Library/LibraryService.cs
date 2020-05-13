@@ -755,12 +755,12 @@ namespace MediaBrowser.Api.Library
             });
         }
 
-        private void LogDownload(BaseItem item, User user, AuthorizationInfo auth)
+        private void LogDownload(BaseItem item, Jellyfin.Data.Entities.User user, AuthorizationInfo auth)
         {
             try
             {
                 _activityManager.Create(new Jellyfin.Data.Entities.ActivityLog(
-                    string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
+                    string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
                     "UserDownloadingContent",
                     auth.UserId,
                     DateTime.UtcNow,
@@ -840,7 +840,7 @@ namespace MediaBrowser.Api.Library
             return baseItemDtos;
         }
 
-        private BaseItem TranslateParentItem(BaseItem item, User user)
+        private BaseItem TranslateParentItem(BaseItem item, Jellyfin.Data.Entities.User user)
         {
             return item.GetParent() is AggregateFolder
                 ? _libraryManager.GetUserRootFolder().GetChildren(user, true)
@@ -882,7 +882,7 @@ namespace MediaBrowser.Api.Library
             return ToOptimizedResult(counts);
         }
 
-        private int GetCount(Type type, User user, GetItemCounts request)
+        private int GetCount(Type type, Jellyfin.Data.Entities.User user, GetItemCounts request)
         {
             var query = new InternalItemsQuery(user)
             {

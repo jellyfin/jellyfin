@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
-        public override int GetChildCount(User user)
+        public override int GetChildCount(Jellyfin.Data.Entities.User user)
         {
             return GetChildren(user, true).Count;
         }
@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.Entities
                 .GetUserItems(parent, this, CollectionType, query);
         }
 
-        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override List<BaseItem> GetChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             if (query == null)
             {
@@ -93,7 +93,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public override IEnumerable<BaseItem> GetRecursiveChildren(Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             query.SetUser(user);
             query.Recursive = true;
@@ -103,7 +103,7 @@ namespace MediaBrowser.Controller.Entities
             return GetItemList(query);
         }
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(Jellyfin.Data.Entities.User user)
         {
             return GetChildren(user, false);
         }

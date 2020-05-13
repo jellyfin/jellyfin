@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -86,7 +87,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var ancestorIds = Array.Empty<Guid>();
 
-            var excludeFolderIds = user.Configuration.LatestItemsExcludes;
+            var excludeFolderIds = user.GetPreference(PreferenceKind.LatestItemExcludes);
             if (parentIdGuid.Equals(Guid.Empty) && excludeFolderIds.Length > 0)
             {
                 ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
@@ -179,7 +180,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Gets the items to serialize.
         /// </summary>
-        private QueryResult<BaseItem> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
+        private QueryResult<BaseItem> GetQueryResult(GetItems request, DtoOptions dtoOptions, Jellyfin.Data.Entities.User user)
         {
             if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
@@ -211,14 +212,14 @@ namespace MediaBrowser.Api.UserLibrary
                 request.IncludeItemTypes = "Playlist";
             }
 
-            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id)
+            bool isInEnabledFolder = user.GetPreference(PreferenceKind.EnabledFolders).Any(i => new Guid(i) == item.Id)
                     // Assume all folders inside an EnabledChannel are enabled
-                    || user.Policy.EnabledChannels.Any(i => new Guid(i) == item.Id);
+                    || user.GetPreference(PreferenceKind.EnabledChannels).Any(i => new Guid(i) == item.Id);
 
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
             {
-                if (user.Policy.EnabledFolders.Contains(
+                if (user.GetPreference(PreferenceKind.EnabledFolders).Contains(
                     collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
                     StringComparer.OrdinalIgnoreCase))
                 {
@@ -226,9 +227,12 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
-            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder && !user.Policy.EnableAllChannels)
+            if (!(item is UserRootFolder)
+                && !isInEnabledFolder
+                && !user.HasPermission(PermissionKind.EnableAllFolders)
+                && !user.HasPermission(PermissionKind.EnableAllChannels))
             {
-                Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name, item.Name);
+                Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
                 return new QueryResult<BaseItem>
                 {
                     Items = Array.Empty<BaseItem>(),
@@ -251,7 +255,7 @@ namespace MediaBrowser.Api.UserLibrary
             };
         }
 
-        private InternalItemsQuery GetItemsQuery(GetItems request, DtoOptions dtoOptions, User user)
+        private InternalItemsQuery GetItemsQuery(GetItems request, DtoOptions dtoOptions, Jellyfin.Data.Entities.User user)
         {
             var query = new InternalItemsQuery(user)
             {

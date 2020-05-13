@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -173,23 +174,25 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public IEnumerable<BaseItem> RecursiveChildren => GetRecursiveChildren();
 
-        public override bool IsVisible(User user)
+        public override bool IsVisible(Jellyfin.Data.Entities.User user)
         {
             if (this is ICollectionFolder && !(this is BasePluginFolder))
             {
-                if (user.Policy.BlockedMediaFolders != null)
+                if (user.GetPreference(PreferenceKind.BlockedMediaFolders) != null)
                 {
-                    if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
+                    if (user.GetPreference(PreferenceKind.BlockedMediaFolders).Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
 
                         // Backwards compatibility
-                        user.Policy.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                        user.GetPreference(PreferenceKind.BlockedMediaFolders).Contains(Name, StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
                 }
                 else
                 {
-                    if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                    if (!user.HasPermission(PermissionKind.EnableAllFolders)
+                        && !user.GetPreference(PreferenceKind.EnabledFolders)
+                            .Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -583,7 +586,7 @@ namespace MediaBrowser.Controller.Entities
             });
         }
 
-        public virtual int GetChildCount(User user)
+        public virtual int GetChildCount(Jellyfin.Data.Entities.User user)
         {
             if (LinkedChildren.Length > 0)
             {
@@ -608,7 +611,7 @@ namespace MediaBrowser.Controller.Entities
             return result.TotalRecordCount;
         }
 
-        public virtual int GetRecursiveChildCount(User user)
+        public virtual int GetRecursiveChildCount(Jellyfin.Data.Entities.User user)
         {
             return GetItems(new InternalItemsQuery(user)
             {
@@ -877,7 +880,7 @@ namespace MediaBrowser.Controller.Entities
                 try
                 {
                     query.Parent = this;
-                    query.ChannelIds = new Guid[] { ChannelId };
+                    query.ChannelIds = new[] { ChannelId };
 
                     // Don't blow up here because it could cause parent screens with other content to fail
                     return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).Result;
@@ -947,11 +950,13 @@ namespace MediaBrowser.Controller.Entities
             return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
         }
 
-        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(IEnumerable<BaseItem> items,
+        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(
+            IEnumerable<BaseItem> items,
             InternalItemsQuery query,
             BaseItem queryParent,
-            User user,
-            IServerConfigurationManager configurationManager, ICollectionManager collectionManager)
+            Jellyfin.Data.Entities.User user,
+            IServerConfigurationManager configurationManager,
+            ICollectionManager collectionManager)
         {
             if (items == null)
             {
@@ -968,7 +973,7 @@ namespace MediaBrowser.Controller.Entities
 
         private static bool CollapseBoxSetItems(InternalItemsQuery query,
             BaseItem queryParent,
-            User user,
+            Jellyfin.Data.Entities.User user,
             IServerConfigurationManager configurationManager)
         {
             // Could end up stuck in a loop like this
@@ -1191,7 +1196,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
+        public List<BaseItem> GetChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren)
         {
             if (user == null)
             {
@@ -1201,7 +1206,7 @@ namespace MediaBrowser.Controller.Entities
             return GetChildren(user, includeLinkedChildren, null);
         }
 
-        public virtual List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public virtual List<BaseItem> GetChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             if (user == null)
             {
@@ -1221,7 +1226,7 @@ namespace MediaBrowser.Controller.Entities
             return result.Values.ToList();
         }
 
-        protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
+        protected virtual IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(Jellyfin.Data.Entities.User user)
         {
             return Children;
         }
@@ -1230,7 +1235,7 @@ namespace MediaBrowser.Controller.Entities
         /// Adds the children to list.
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
-        private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query)
+        private void AddChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query)
         {
             foreach (var child in GetEligibleChildrenForRecursiveChildren(user))
             {
@@ -1279,12 +1284,12 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
+        public IEnumerable<BaseItem> GetRecursiveChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren = true)
         {
             return GetRecursiveChildren(user, null);
         }
 
-        public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
+        public virtual IEnumerable<BaseItem> GetRecursiveChildren(Jellyfin.Data.Entities.User user, InternalItemsQuery query)
         {
             if (user == null)
             {
@@ -1403,7 +1408,7 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-        public List<BaseItem> GetLinkedChildren(User user)
+        public List<BaseItem> GetLinkedChildren(Jellyfin.Data.Entities.User user)
         {
             if (!FilterLinkedChildrenPerUser || user == null)
             {
@@ -1565,7 +1570,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
         /// <returns>Task.</returns>
-        public override void MarkPlayed(User user,
+        public override void MarkPlayed(Jellyfin.Data.Entities.User user,
             DateTime? datePlayed,
             bool resetPosition)
         {
@@ -1577,7 +1582,7 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false
             };
 
-            if (!user.Configuration.DisplayMissingEpisodes)
+            if (!user.DisplayMissingEpisodes)
             {
                 query.IsVirtualItem = false;
             }
@@ -1606,7 +1611,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        public override void MarkUnplayed(User user)
+        public override void MarkUnplayed(Jellyfin.Data.Entities.User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery
             {
@@ -1624,7 +1629,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override bool IsPlayed(User user)
+        public override bool IsPlayed(Jellyfin.Data.Entities.User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery(user)
             {
@@ -1639,7 +1644,7 @@ namespace MediaBrowser.Controller.Entities
                 .All(i => i.IsPlayed(user));
         }
 
-        public override bool IsUnplayed(User user)
+        public override bool IsUnplayed(Jellyfin.Data.Entities.User user)
         {
             return !IsPlayed(user);
         }
@@ -1684,7 +1689,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
+        public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, Jellyfin.Data.Entities.User user, DtoOptions fields)
         {
             if (!SupportsUserDataFromChildren)
             {

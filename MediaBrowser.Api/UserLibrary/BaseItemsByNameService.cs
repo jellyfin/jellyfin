@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
-            User user = null;
+            Jellyfin.Data.Entities.User user = null;
             BaseItem parentItem;
 
             if (!request.UserId.Equals(Guid.Empty))
@@ -246,7 +246,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
-            User user = null;
+            Jellyfin.Data.Entities.User user = null;
             BaseItem parentItem;
 
             if (!request.UserId.Equals(Guid.Empty))

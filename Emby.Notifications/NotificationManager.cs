@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -81,7 +82,7 @@ namespace Emby.Notifications
         private Task SendNotification(
             NotificationRequest request,
             INotificationService service,
-            IEnumerable<User> users,
+            IEnumerable<Jellyfin.Data.Entities.User> users,
             string title,
             string description,
             CancellationToken cancellationToken)
@@ -101,7 +102,7 @@ namespace Emby.Notifications
                 switch (request.SendToUserMode.Value)
                 {
                     case SendToUserType.Admins:
-                        return _userManager.Users.Where(i => i.Policy.IsAdministrator)
+                        return _userManager.Users.Where(i => i.HasPermission(PermissionKind.IsAdministrator))
                                 .Select(i => i.Id);
                     case SendToUserType.All:
                         return _userManager.UsersIds;
@@ -117,7 +118,7 @@ namespace Emby.Notifications
                 var config = GetConfiguration();
 
                 return _userManager.Users
-                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N", CultureInfo.InvariantCulture), i.Policy))
+                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N", CultureInfo.InvariantCulture), i))
                     .Select(i => i.Id);
             }
 
@@ -129,7 +130,7 @@ namespace Emby.Notifications
             INotificationService service,
             string title,
             string description,
-            User user,
+            Jellyfin.Data.Entities.User user,
             CancellationToken cancellationToken)
         {
             var notification = new UserNotification
@@ -142,7 +143,7 @@ namespace Emby.Notifications
                 User = user
             };
 
-            _logger.LogDebug("Sending notification via {0} to user {1}", service.Name, user.Name);
+            _logger.LogDebug("Sending notification via {0} to user {1}", service.Name, user.Username);
 
             try
             {
@@ -154,7 +155,7 @@ namespace Emby.Notifications
             }
         }
 
-        private bool IsEnabledForUser(INotificationService service, User user)
+        private bool IsEnabledForUser(INotificationService service, Jellyfin.Data.Entities.User user)
         {
             try
             {
