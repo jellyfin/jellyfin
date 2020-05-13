@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
@@ -49,10 +47,6 @@ namespace MediaBrowser.Api.System
 
         public object Get(GetActivityLogs request)
         {
-            DateTime? minDate = string.IsNullOrWhiteSpace(request.MinDate) ?
-                (DateTime?)null :
-                DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-
             var result = _activityManager.GetPagedResult(request.StartIndex, request.Limit);
 
             return ToOptimizedResult(result);

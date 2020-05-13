@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Data.Entities
 {
-    [Table("ActivityLog")]
     public partial class ActivityLog
     {
         partial void Init();
@@ -35,23 +30,26 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="name"></param>
         /// <param name="type"></param>
-        /// <param name="userid"></param>
+        /// <param name="userId"></param>
         /// <param name="datecreated"></param>
-        /// <param name="logseverity"></param>
-        public ActivityLog(string name, string type, Guid userid, DateTime datecreated, Microsoft.Extensions.Logging.LogLevel logseverity)
+        /// <param name="logSeverity"></param>
+        public ActivityLog(string name, string type, Guid userId)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (string.IsNullOrEmpty(type))
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             this.Name = name;
-
-            if (string.IsNullOrEmpty(type)) throw new ArgumentNullException(nameof(type));
             this.Type = type;
-
-            this.UserId = userid;
-
-            this.DateCreated = datecreated;
-
-            this.LogSeverity = logseverity;
-
+            this.UserId = userId;
+            this.DateCreated = DateTime.UtcNow;
+            this.LogSeverity = LogLevel.Trace;
 
             Init();
         }
@@ -61,12 +59,12 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="name"></param>
         /// <param name="type"></param>
-        /// <param name="userid"></param>
+        /// <param name="userId"></param>
         /// <param name="datecreated"></param>
         /// <param name="logseverity"></param>
-        public static ActivityLog Create(string name, string type, Guid userid, DateTime datecreated, Microsoft.Extensions.Logging.LogLevel logseverity)
+        public static ActivityLog Create(string name, string type, Guid userId)
         {
-            return new ActivityLog(name, type, userid, datecreated, logseverity);
+            return new ActivityLog(name, type, userId);
         }
 
         /*************************************************************************
@@ -134,10 +132,10 @@ namespace Jellyfin.Data.Entities
         /// Required
         /// </summary>
         [Required]
-        public Microsoft.Extensions.Logging.LogLevel LogSeverity { get; set; }
+        public LogLevel LogSeverity { get; set; }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrencyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -147,7 +145,6 @@ namespace Jellyfin.Data.Entities
         {
             RowVersion++;
         }
-
     }
 }
 

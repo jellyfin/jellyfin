@@ -762,9 +762,7 @@ namespace MediaBrowser.Api.Library
                 _activityManager.Create(new Jellyfin.Data.Entities.ActivityLog(
                     string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
                     "UserDownloadingContent",
-                    auth.UserId,
-                    DateTime.UtcNow,
-                    LogLevel.Trace)
+                    auth.UserId)
                 {
                     ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), auth.Client, auth.Device),
                 });

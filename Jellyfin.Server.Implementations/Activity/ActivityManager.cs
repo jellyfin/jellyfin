@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Activity
     /// </summary>
     public class ActivityManager : IActivityManager
     {
-        private JellyfinDbProvider _provider;
+        private readonly JellyfinDbProvider _provider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityManager"/> class.

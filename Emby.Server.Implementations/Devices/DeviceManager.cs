@@ -34,7 +34,6 @@ namespace Emby.Server.Implementations.Devices
         private readonly IJsonSerializer _json;
         private readonly IUserManager _userManager;
         private readonly IFileSystem _fileSystem;
-        private readonly ILibraryMonitor _libraryMonitor;
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
@@ -43,9 +42,6 @@ namespace Emby.Server.Implementations.Devices
 
         public event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
 
-        public event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
-
-        private readonly object _cameraUploadSyncLock = new object();
         private readonly object _capabilitiesSyncLock = new object();
 
         public DeviceManager(
@@ -55,13 +51,11 @@ namespace Emby.Server.Implementations.Devices
             ILocalizationManager localizationManager,
             IUserManager userManager,
             IFileSystem fileSystem,
-            ILibraryMonitor libraryMonitor,
             IServerConfigurationManager config)
         {
             _json = json;
             _userManager = userManager;
             _fileSystem = fileSystem;
-            _libraryMonitor = libraryMonitor;
             _config = config;
             _libraryManager = libraryManager;
             _localizationManager = localizationManager;
@@ -192,105 +186,6 @@ namespace Emby.Server.Implementations.Devices
         private string GetDevicePath(string id)
         {
             return Path.Combine(GetDevicesPath(), id.GetMD5().ToString("N", CultureInfo.InvariantCulture));
-        }
-
-        public ContentUploadHistory GetCameraUploadHistory(string deviceId)
-        {
-            var path = Path.Combine(GetDevicePath(deviceId), "camerauploads.json");
-
-            lock (_cameraUploadSyncLock)
-            {
-                try
-                {
-                    return _json.DeserializeFromFile<ContentUploadHistory>(path);
-                }
-                catch (IOException)
-                {
-                    return new ContentUploadHistory
-                    {
-                        DeviceId = deviceId
-                    };
-                }
-            }
-        }
-
-        public async Task AcceptCameraUpload(string deviceId, Stream stream, LocalFileInfo file)
-        {
-            var device = GetDevice(deviceId, false);
-            var uploadPathInfo = GetUploadPath(device);
-
-            var path = uploadPathInfo.Item1;
-
-            if (!string.IsNullOrWhiteSpace(file.Album))
-            {
-                path = Path.Combine(path, _fileSystem.GetValidFilename(file.Album));
-            }
-
-            path = Path.Combine(path, file.Name);
-            path = Path.ChangeExtension(path, MimeTypes.ToExtension(file.MimeType) ?? "jpg");
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            await EnsureLibraryFolder(uploadPathInfo.Item2, uploadPathInfo.Item3).ConfigureAwait(false);
-
-            _libraryMonitor.ReportFileSystemChangeBeginning(path);
-
-            try
-            {
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
-                {
-                    await stream.CopyToAsync(fs).ConfigureAwait(false);
-                }
-
-                AddCameraUpload(deviceId, file);
-            }
-            finally
-            {
-                _libraryMonitor.ReportFileSystemChangeComplete(path, true);
-            }
-
-            if (CameraImageUploaded != null)
-            {
-                CameraImageUploaded?.Invoke(this, new GenericEventArgs<CameraImageUploadInfo>
-                {
-                    Argument = new CameraImageUploadInfo
-                    {
-                        Device = device,
-                        FileInfo = file
-                    }
-                });
-            }
-        }
-
-        private void AddCameraUpload(string deviceId, LocalFileInfo file)
-        {
-            var path = Path.Combine(GetDevicePath(deviceId), "camerauploads.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            lock (_cameraUploadSyncLock)
-            {
-                ContentUploadHistory history;
-
-                try
-                {
-                    history = _json.DeserializeFromFile<ContentUploadHistory>(path);
-                }
-                catch (IOException)
-                {
-                    history = new ContentUploadHistory
-                    {
-                        DeviceId = deviceId
-                    };
-                }
-
-                history.DeviceId = deviceId;
-
-                var list = history.FilesUploaded.ToList();
-                list.Add(file);
-                history.FilesUploaded = list.ToArray();
-
-                _json.SerializeToFile(history, path);
-            }
         }
 
         internal Task EnsureLibraryFolder(string path, string name)
