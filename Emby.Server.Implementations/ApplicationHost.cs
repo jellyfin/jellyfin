@@ -94,7 +94,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
@@ -1143,9 +1142,6 @@ namespace Emby.Server.Implementations
                 ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
-                HttpServerPortNumber = HttpPort,
-                SupportsHttps = SupportsHttps,
-                HttpsPortNumber = HttpsPort,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 OperatingSystemDisplayName = OperatingSystem.Name,
                 CanSelfRestart = CanSelfRestart,
@@ -1181,23 +1177,22 @@ namespace Emby.Server.Implementations
             };
         }
 
-        public bool EnableHttps => SupportsHttps && ServerConfigurationManager.Configuration.EnableHttps;
+        /// <inheritdoc/>
+        public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
 
-        public bool SupportsHttps => Certificate != null || ServerConfigurationManager.Configuration.IsBehindProxy;
-
-        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken, bool forceHttp = false)
+        /// <inheritdoc/>
+        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
         {
             try
             {
                 // Return the first matched address, if found, or the first known local address
                 var addresses = await GetLocalIpAddressesInternal(false, 1, cancellationToken).ConfigureAwait(false);
-
-                foreach (var address in addresses)
+                if (addresses.Count == 0)
                 {
-                    return GetLocalApiUrl(address, forceHttp);
+                    return null;
                 }
 
-                return null;
+                return GetLocalApiUrl(addresses.First());
             }
             catch (Exception ex)
             {
@@ -1224,7 +1219,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public string GetLocalApiUrl(IPAddress ipAddress, bool forceHttp = false)
+        public string GetLocalApiUrl(IPAddress ipAddress)
         {
             if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
             {
@@ -1234,29 +1229,30 @@ namespace Emby.Server.Implementations
                 str.CopyTo(span.Slice(1));
                 span[^1] = ']';
 
-                return GetLocalApiUrl(span, forceHttp);
+                return GetLocalApiUrl(span);
             }
 
-            return GetLocalApiUrl(ipAddress.ToString(), forceHttp);
+            return GetLocalApiUrl(ipAddress.ToString());
         }
 
-        /// <inheritdoc />
-        public string GetLocalApiUrl(ReadOnlySpan<char> host, bool forceHttp = false)
+        /// <inheritdoc/>
+        public string GetLoopbackHttpApiUrl()
         {
-            var url = new StringBuilder(64);
-            bool useHttps = EnableHttps && !forceHttp;
-            url.Append(useHttps ? "https://" : "http://")
-                .Append(host)
-                .Append(':')
-                .Append(useHttps ? HttpsPort : HttpPort);
+            return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
+        }
 
-            string baseUrl = ServerConfigurationManager.Configuration.BaseUrl;
-            if (baseUrl.Length != 0)
+        /// <inheritdoc/>
+        public string GetLocalApiUrl(ReadOnlySpan<char> host, string scheme = null, int? port = null)
+        {
+            // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
+            // not. For consistency, always trim the trailing slash.
+            return new UriBuilder
             {
-                url.Append(baseUrl);
-            }
-
-            return url.ToString();
+                Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
+                Host = host.ToString(),
+                Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
+                Path = ServerConfigurationManager.Configuration.BaseUrl
+            }.ToString().TrimEnd('/');
         }
 
         public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
@@ -1290,7 +1286,7 @@ namespace Emby.Server.Implementations
                     }
                 }
 
-                var valid = await IsIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
+                var valid = await IsLocalIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
                 if (valid)
                 {
                     resultList.Add(address);
@@ -1324,7 +1320,7 @@ namespace Emby.Server.Implementations
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
-        private async Task<bool> IsIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
+        private async Task<bool> IsLocalIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
         {
             if (address.Equals(IPAddress.Loopback)
                 || address.Equals(IPAddress.IPv6Loopback))
@@ -1332,8 +1328,7 @@ namespace Emby.Server.Implementations
                 return true;
             }
 
-            var apiUrl = GetLocalApiUrl(address);
-            apiUrl += "/system/ping";
+            var apiUrl = GetLocalApiUrl(address) + "/system/ping";
 
             if (_validAddressResults.TryGetValue(apiUrl, out var cachedResult))
             {
