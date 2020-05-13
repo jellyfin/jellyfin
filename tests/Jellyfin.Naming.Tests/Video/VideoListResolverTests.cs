@@ -11,7 +11,7 @@ namespace Jellyfin.Naming.Tests.Video
         private readonly NamingOptions _namingOptions = new NamingOptions();
         // FIXME
         // [Fact]
-        public void TestStackAndExtras()
+        private void TestStackAndExtras()
         {
             // No stacking here because there is no part/disc/etc
             var files = new[]
