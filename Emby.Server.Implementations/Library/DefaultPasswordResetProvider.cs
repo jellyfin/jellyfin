@@ -1,12 +1,14 @@
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
@@ -21,6 +23,8 @@ namespace Emby.Server.Implementations.Library
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IUserManager _userManager;
+        private readonly IActivityManager _activityManager;
+        private readonly ILocalizationManager _localization;
 
         private readonly string _passwordResetFileBase;
         private readonly string _passwordResetFileBaseDir;
@@ -31,15 +35,21 @@ namespace Emby.Server.Implementations.Library
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="jsonSerializer">The JSON serializer.</param>
         /// <param name="userManager">The user manager.</param>
+        /// <param name="activityManager">The activity manager.</param>
+        /// <param name="localization">The localization manager.</param>
         public DefaultPasswordResetProvider(
             IServerConfigurationManager configurationManager,
             IJsonSerializer jsonSerializer,
-            IUserManager userManager)
+            IUserManager userManager,
+            IActivityManager activityManager,
+            ILocalizationManager localization)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
             _jsonSerializer = jsonSerializer;
             _userManager = userManager;
+            _activityManager = activityManager;
+            _localization = localization;
         }
 
         /// <inheritdoc />
@@ -49,92 +59,97 @@ namespace Emby.Server.Implementations.Library
         public bool IsEnabled => true;
 
         /// <inheritdoc />
-        public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
+        public async Task<CodeRedeemResult> RedeemPasswordResetPin(string code, string password)
         {
-            SerializablePasswordReset spr;
-            List<string> usersreset = new List<string>();
-            foreach (var resetfile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
+            SerializablePasswordReset passwordReset;
+            foreach (var file in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
-                using (var str = File.OpenRead(resetfile))
+                using (var stream = File.OpenRead(file))
                 {
-                    spr = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
+                    passwordReset = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(stream).ConfigureAwait(false);
                 }
 
-                if (spr.ExpirationDate < DateTime.Now)
+                if (passwordReset.ExpirationDate < DateTime.Now)
                 {
-                    File.Delete(resetfile);
+                    File.Delete(file);
                 }
-                else if (string.Equals(
-                    spr.Pin.Replace("-", string.Empty, StringComparison.Ordinal),
-                    pin.Replace("-", string.Empty, StringComparison.Ordinal),
-                    StringComparison.InvariantCultureIgnoreCase))
+                else if (string.Equals(passwordReset.Code, code, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var resetUser = _userManager.GetUserByName(spr.UserName);
+                    var resetUser = _userManager.GetUserByName(passwordReset.Username);
                     if (resetUser == null)
                     {
-                        throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
+                        File.Delete(file);
+                        continue;
                     }
 
-                    await _userManager.ChangePassword(resetUser, pin).ConfigureAwait(false);
-                    usersreset.Add(resetUser.Name);
-                    File.Delete(resetfile);
+                    await _userManager.ChangePassword(resetUser, password).ConfigureAwait(false);
+                    File.Delete(file);
+
+                    return new CodeRedeemResult
+                    {
+                        Success = true
+                    };
                 }
             }
 
-            if (usersreset.Count < 1)
+            return new CodeRedeemResult
             {
-                throw new ResourceNotFoundException($"No Users found with a password reset request matching pin {pin}");
-            }
-            else
-            {
-                return new PinRedeemResult
-                {
-                    Success = true,
-                    UsersReset = usersreset.ToArray()
-                };
-            }
+                Success = false
+            };
         }
 
         /// <inheritdoc />
-        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(MediaBrowser.Controller.Entities.User user, bool isInNetwork)
+        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User user)
         {
-            string pin = string.Empty;
+            string code = string.Empty;
             using (var cryptoRandom = RandomNumberGenerator.Create())
             {
-                byte[] bytes = new byte[4];
+                byte[] bytes = new byte[10];
                 cryptoRandom.GetBytes(bytes);
-                pin = BitConverter.ToString(bytes);
+                code = BitConverter.ToString(bytes);
             }
 
             DateTime expireTime = DateTime.Now.AddMinutes(30);
             string filePath = _passwordResetFileBase + user.InternalId + ".json";
-            SerializablePasswordReset spr = new SerializablePasswordReset
+
+            SerializablePasswordReset passwordReset = new SerializablePasswordReset
             {
                 ExpirationDate = expireTime,
-                Pin = pin,
-                PinFile = filePath,
-                UserName = user.Name
+                Code = code,
+                File = filePath,
+                Username = user.Name
             };
 
             using (FileStream fileStream = File.OpenWrite(filePath))
             {
-                _jsonSerializer.SerializeToStream(spr, fileStream);
+                _jsonSerializer.SerializeToStream(passwordReset, fileStream);
                 await fileStream.FlushAsync().ConfigureAwait(false);
             }
 
-            return new ForgotPasswordResult
+            var response = new ForgotPasswordResult
             {
                 Action = ForgotPasswordAction.PinCode,
-                PinExpirationDate = expireTime,
-                PinFile = filePath
+                ExpirationDate = expireTime
             };
+
+            _activityManager.Create(new ActivityLogEntry
+            {
+                Name = string.Format(
+                    CultureInfo.InvariantCulture,
+                    _localization.GetLocalizedString("UserPasswordReset"),
+                    user.Name,
+                    code),
+                Type = "UserPolicyUpdated",
+                UserId = user.Id
+            });
+            return response;
         }
 
-        private class SerializablePasswordReset : PasswordPinCreationResult
+        private class SerializablePasswordReset : PasswordResetResult
         {
-            public string Pin { get; set; }
+            public string Code { get; set; }
 
-            public string UserName { get; set; }
+            public string Username { get; set; }
         }
     }
 }

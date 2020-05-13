@@ -101,9 +101,6 @@ namespace Emby.Server.Implementations.Library
 
         public event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
 
-        /// <summary>
-        /// Occurs when [user updated].
-        /// </summary>
         public event EventHandler<GenericEventArgs<User>> UserUpdated;
 
         public event EventHandler<GenericEventArgs<User>> UserPolicyUpdated;
@@ -885,44 +882,42 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
+        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string username)
         {
-            var user = string.IsNullOrWhiteSpace(enteredUsername) ?
-                null :
-                GetUserByName(enteredUsername);
+            var user = string.IsNullOrWhiteSpace(username)
+                ? null
+                : GetUserByName(username);
 
-            var action = ForgotPasswordAction.InNetworkRequired;
-
-            if (user != null && isInNetwork)
+            if (user != null)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
-                return await passwordResetProvider.StartForgotPasswordProcess(user, isInNetwork).ConfigureAwait(false);
+                var result = await passwordResetProvider.StartForgotPasswordProcess(user).ConfigureAwait(false);
+
+                return result;
             }
-            else
+
+            // TODO expose password reset as user policy setting
+            return new ForgotPasswordResult
             {
-                return new ForgotPasswordResult
-                {
-                    Action = action,
-                    PinFile = string.Empty
-                };
-            }
+                Action = ForgotPasswordAction.PinCode
+            };
         }
 
-        public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
+        public async Task<CodeRedeemResult> RedeemPasswordResetPin(string code, string password)
         {
             foreach (var provider in _passwordResetProviders)
             {
-                var result = await provider.RedeemPasswordResetPin(pin).ConfigureAwait(false);
+                var result = await provider.RedeemPasswordResetPin(code, password).ConfigureAwait(false);
+
                 if (result.Success)
                 {
                     return result;
                 }
             }
 
-            return new PinRedeemResult
+            return new CodeRedeemResult
             {
-                Success = false,
-                UsersReset = Array.Empty<string>()
+                Success = false
             };
         }
 
