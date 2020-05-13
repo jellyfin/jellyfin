@@ -31,18 +31,18 @@ namespace Emby.Server.Implementations.Browser
         /// Opens the specified URL in an external browser window. Any exceptions will be logged, but ignored.
         /// </summary>
         /// <param name="appHost">The application host.</param>
-        /// <param name="url">The URL.</param>
-        private static void TryOpenUrl(IServerApplicationHost appHost, string url)
+        /// <param name="relativeUrl">The URL to open, relative to the server base URL.</param>
+        private static void TryOpenUrl(IServerApplicationHost appHost, string relativeUrl)
         {
             try
             {
                 string baseUrl = appHost.GetLocalApiUrl("localhost");
-                appHost.LaunchUrl(baseUrl + url);
+                appHost.LaunchUrl(baseUrl + relativeUrl);
             }
             catch (Exception ex)
             {
                 var logger = appHost.Resolve<ILogger>();
-                logger?.LogError(ex, "Failed to open browser window with URL {URL}", url);
+                logger?.LogError(ex, "Failed to open browser window with URL {URL}", relativeUrl);
             }
         }
     }
