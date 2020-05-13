@@ -350,8 +350,8 @@ namespace MediaBrowser.Providers.Tmdb.TV
                         // Normalize this
                         var type = TmdbUtils.MapCrewToPersonType(person);
 
-                        if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase) &&
-                            !keepTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                        if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase)
+                            && !keepTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                         {
                             continue;
                         }
