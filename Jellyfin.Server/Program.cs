@@ -10,14 +10,11 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Emby.Drawing;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
-using Jellyfin.Drawing.Skia;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.WebDashboard.Api;
 using Microsoft.AspNetCore.Hosting;
@@ -297,7 +294,7 @@ namespace Jellyfin.Server
                         {
                             _logger.LogInformation("Kestrel listening on {IpAddress}", address);
                             options.Listen(address, appHost.HttpPort);
-                            if (appHost.EnableHttps && appHost.Certificate != null)
+                            if (appHost.ListenWithHttps)
                             {
                                 options.Listen(address, appHost.HttpsPort, listenOptions =>
                                 {
@@ -327,7 +324,7 @@ namespace Jellyfin.Server
                         _logger.LogInformation("Kestrel listening on all interfaces");
                         options.ListenAnyIP(appHost.HttpPort);
 
-                        if (appHost.EnableHttps && appHost.Certificate != null)
+                        if (appHost.ListenWithHttps)
                         {
                             options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
                             {
