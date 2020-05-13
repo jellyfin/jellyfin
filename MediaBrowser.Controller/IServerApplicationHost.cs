@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller
         Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets a local (LAN) URL that can be used to access the API using the loop-back IP address (127.0.0.1)
+        /// Gets a localhost URL that can be used to access the API using the loop-back IP address (127.0.0.1)
         /// over HTTP (not HTTPS).
         /// </summary>
         /// <returns>The API URL.</returns>
@@ -87,6 +87,7 @@ namespace MediaBrowser.Controller
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.
+        /// Note: if passing non-null scheme or port it is up to the caller to ensure they form the correct pair.
         /// </summary>
         /// <param name="hostname">The hostname to use in the URL.</param>
         /// <param name="scheme">
