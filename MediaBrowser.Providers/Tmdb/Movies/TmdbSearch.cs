@@ -76,7 +76,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
             var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
-            // Does this mean we are reparsing already parsed ItemLookupInfo?
+            // TODO: Investigate: Does this mean we are reparsing already parsed ItemLookupInfo?
             var parsedName = _libraryManager.ParseName(name);
             var yearInName = parsedName.Year;
             name = parsedName.Name;
@@ -105,30 +105,30 @@ namespace MediaBrowser.Providers.Tmdb.Movies
             // providers
             if (results.Count == 0)
             {
-                name = parsedName.Name;
+                var name2 = parsedName.Name;
 
                 // Remove things enclosed in []{}() etc
-                name = _cleanEnclosed.Replace(name, string.Empty);
+                name2 = _cleanEnclosed.Replace(name2, string.Empty);
 
                 // Replace sequences of non-word characters with space
-                name = _cleanNonWord.Replace(name, " ");
+                name2 = _cleanNonWord.Replace(name2, " ");
 
                 // Clean based on common stop words / tokens
-                name = _cleanStopWords.Replace(name, string.Empty);
+                name2 = _cleanStopWords.Replace(name2, string.Empty);
 
                 // Trim whitespace
-                name = name.Trim();
+                name2 = name2.Trim();
 
                 // Search again if the new name is different
-                if (!string.Equals(name, parsedName.Name) && !string.IsNullOrWhiteSpace(name))
+                if (!string.Equals(name2, name) && !string.IsNullOrWhiteSpace(name2))
                 {
-                    _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name, year);
-                    results = await GetSearchResults(name, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name2, year);
+                    results = await GetSearchResults(name2, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
 
                     if (results.Count == 0 && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                     {
                         //one more time, in english
-                        results = await GetSearchResults(name, searchType, year, "en", tmdbImageUrl, cancellationToken).ConfigureAwait(false);
+                        results = await GetSearchResults(name2, searchType, year, "en", tmdbImageUrl, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
