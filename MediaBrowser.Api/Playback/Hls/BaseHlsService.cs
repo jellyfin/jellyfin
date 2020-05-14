@@ -276,7 +276,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     "hls/" + Path.GetFileNameWithoutExtension(outputPath));
             }
             
-            var ReplayGain = user.Policy.ReplayGain
+            var ReplayGain = user.Policy.ReplayGain;
 
             var useGenericSegmenter = true;
             if (useGenericSegmenter)
