@@ -80,7 +80,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
             var parsedName = _libraryManager.ParseName(name);
             var yearInName = parsedName.Year;
             name = parsedName.Name;
-            year = year ?? yearInName;
+            year ??= yearInName;
 
             _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name, year);
             var language = idInfo.MetadataLanguage.ToLowerInvariant();
