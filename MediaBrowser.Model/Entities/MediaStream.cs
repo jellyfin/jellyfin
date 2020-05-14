@@ -197,7 +197,7 @@ namespace MediaBrowser.Model.Entities
                 {
                     if (i.IsInterlaced)
                     {
-                        return "1440I";
+                        return "1440i";
                     }
                     return "1440p";
                 }
@@ -213,7 +213,7 @@ namespace MediaBrowser.Model.Entities
                 {
                     if (i.IsInterlaced)
                     {
-                        return "720I";
+                        return "720i";
                     }
                     return "720p";
                 }
@@ -222,7 +222,7 @@ namespace MediaBrowser.Model.Entities
 
                     if (i.IsInterlaced)
                     {
-                        return "480I";
+                        return "480i";
                     }
                     return "480p";
                 }
