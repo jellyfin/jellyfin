@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 #pragma warning disable SA1601
 
 using System;
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jellyfin.Server.Implementations.Migrations
 {
-    public partial class InitialSchema : Migration
+    public partial class AddActivityLog : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 name: "jellyfin");
 
             migrationBuilder.CreateTable(
-                name: "ActivityLog",
+                name: "ActivityLogs",
                 schema: "jellyfin",
                 columns: table => new
                 {
@@ -32,14 +32,14 @@ namespace Jellyfin.Server.Implementations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ActivityLog", x => x.Id);
+                    table.PrimaryKey("PK_ActivityLogs", x => x.Id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ActivityLog",
+                name: "ActivityLogs",
                 schema: "jellyfin");
         }
     }

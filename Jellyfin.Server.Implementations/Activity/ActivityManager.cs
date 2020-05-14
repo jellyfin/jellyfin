@@ -50,31 +50,31 @@ namespace Jellyfin.Server.Implementations.Activity
 
         /// <inheritdoc/>
         public QueryResult<ActivityLogEntry> GetPagedResult(
-            Func<IQueryable<ActivityLog>, IEnumerable<ActivityLog>> func,
+            Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>> func,
             int? startIndex,
             int? limit)
         {
             using var dbContext = _provider.CreateContext();
 
-            var result = func.Invoke(dbContext.ActivityLogs).AsQueryable();
+            var query = func(dbContext.ActivityLogs).OrderByDescending(entry => entry.DateCreated).AsQueryable();
 
             if (startIndex.HasValue)
             {
-                result = result.Where(entry => entry.Id >= startIndex.Value);
+                query = query.Skip(startIndex.Value);
             }
 
             if (limit.HasValue)
             {
-                result = result.OrderByDescending(entry => entry.DateCreated).Take(limit.Value);
+                query = query.Take(limit.Value);
             }
 
             // This converts the objects from the new database model to the old for compatibility with the existing API.
-            var list = result.Select(entry => ConvertToOldModel(entry)).ToList();
+            var list = query.AsEnumerable().Select(ConvertToOldModel).ToList();
 
-            return new QueryResult<ActivityLogEntry>()
+            return new QueryResult<ActivityLogEntry>
             {
                 Items = list,
-                TotalRecordCount = list.Count
+                TotalRecordCount = dbContext.ActivityLogs.Count()
             };
         }
 

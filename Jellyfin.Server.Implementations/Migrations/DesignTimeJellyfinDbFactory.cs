@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-#pragma warning disable SA1601
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -15,7 +12,9 @@ namespace Jellyfin.Server.Implementations.Migrations
         public JellyfinDb CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<JellyfinDb>();
-            optionsBuilder.UseSqlite("Data Source=jellyfin.db");
+            optionsBuilder.UseSqlite(
+                "Data Source=jellyfin.db",
+                opt => opt.MigrationsAssembly("Jellyfin.Migrations"));
 
             return new JellyfinDb(optionsBuilder.Options);
         }

@@ -46,8 +46,6 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
-using Jellyfin.Server.Implementations;
-using Jellyfin.Server.Implementations.Activity;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -547,13 +545,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IJsonSerializer, JsonSerializer>();
 
-            // TODO: properly set up scoping and switch to AddDbContextPool
-            serviceCollection.AddDbContext<JellyfinDb>(
-                options => options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
-                ServiceLifetime.Transient);
-
-            serviceCollection.AddSingleton<JellyfinDbProvider>();
-
             serviceCollection.AddSingleton(_fileSystemManager);
             serviceCollection.AddSingleton<TvdbClientManager>();
 
@@ -663,8 +654,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
-
-            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
 
             serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
             serviceCollection.AddSingleton<ISessionContext, SessionContext>();
