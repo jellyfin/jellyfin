@@ -37,9 +37,9 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="dto">The dto.</param>
         public void FilterResponse(IRequest req, HttpResponse res, object dto)
         {
-            foreach(KeyValuePair<string, string> header in _server.GetCorsHeaders(req))
+            foreach(var (key, value) in _server.GetCorsHeaders(req))
             {
-                res.Headers.Add(header.Key, header.Value);
+                res.Headers.Add(key, value);
             }
             // Try to prevent compatibility view
             res.Headers["Access-Control-Allow-Headers"] = ("Accept, Accept-Language, Authorization, Cache-Control, " +
