@@ -199,7 +199,7 @@ namespace MediaBrowser.Model.Entities
                     {
                         return "1440I";
                     }
-                    return "1440P";
+                    return "1440p";
                 }
                 if (width >= 1900 || height >= 1000)
                 {
@@ -207,7 +207,7 @@ namespace MediaBrowser.Model.Entities
                     {
                         return "1080I";
                     }
-                    return "1080P";
+                    return "1080p";
                 }
                 if (width >= 1260 || height >= 700)
                 {
@@ -215,7 +215,7 @@ namespace MediaBrowser.Model.Entities
                     {
                         return "720I";
                     }
-                    return "720P";
+                    return "720p";
                 }
                 if (width >= 700 || height >= 440)
                 {
@@ -224,7 +224,7 @@ namespace MediaBrowser.Model.Entities
                     {
                         return "480I";
                     }
-                    return "480P";
+                    return "480p";
                 }
 
                 return "SD";
