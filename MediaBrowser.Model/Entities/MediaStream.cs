@@ -34,8 +34,22 @@ namespace MediaBrowser.Model.Entities
         /// <value>The language.</value>
         public string Language { get; set; }
 
+        /// <summary>
+        /// Gets or sets the color transfer.
+        /// </summary>
+        /// <value>The color transfer.</value>
         public string ColorTransfer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color primaries.
+        /// </summary>
+        /// <value>The color primaries.</value>
         public string ColorPrimaries { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color space.
+        /// </summary>
+        /// <value>The color space.</value>
         public string ColorSpace { get; set; }
 
         /// <summary>
@@ -44,11 +58,28 @@ namespace MediaBrowser.Model.Entities
         /// <value>The comment.</value>
         public string Comment { get; set; }
 
+        /// <summary>
+        /// Gets or sets the time base.
+        /// </summary>
+        /// <value>The time base.</value>
         public string TimeBase { get; set; }
+
+        /// <summary>
+        /// Gets or sets the codec time base.
+        /// </summary>
+        /// <value>The codec time base.</value>
         public string CodecTimeBase { get; set; }
 
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>The title.</value>
         public string Title { get; set; }
 
+        /// <summary>
+        /// Gets or sets the video range.
+        /// </summary>
+        /// <value>The video range.</value>
         public string VideoRange
         {
             get
@@ -60,7 +91,8 @@ namespace MediaBrowser.Model.Entities
 
                 var colorTransfer = ColorTransfer;
 
-                if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
                 {
                     return "HDR";
                 }
@@ -70,7 +102,9 @@ namespace MediaBrowser.Model.Entities
         }
 
         public string localizedUndefined { get; set; }
+
         public string localizedDefault { get; set; }
+
         public string localizedForced { get; set; }
 
         public string DisplayTitle
