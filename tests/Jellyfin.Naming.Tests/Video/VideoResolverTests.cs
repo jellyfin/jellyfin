@@ -176,7 +176,6 @@ namespace Jellyfin.Naming.Tests.Video
             };
         }
 
-
         [Theory]
         [MemberData(nameof(GetResolveFileTestData))]
         public void ResolveFile_ValidFileName_Success(VideoFileInfo expectedResult)

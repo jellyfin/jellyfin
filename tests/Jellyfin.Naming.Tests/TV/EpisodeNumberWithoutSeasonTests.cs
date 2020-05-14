@@ -6,7 +6,6 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class EpisodeNumberWithoutSeasonTests
     {
-
         [Theory]
         [InlineData(8, @"The Simpsons/The Simpsons.S25E08.Steal this episode.mp4")]
         [InlineData(2, @"The Simpsons/The Simpsons - 02 - Ep Name.avi")]

@@ -6,8 +6,6 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class DailyEpisodeTests
     {
-
-
         [Theory]
         [InlineData(@"/server/anything_1996.11.14.mp4", "anything", 1996, 11, 14)]
         [InlineData(@"/server/anything_1996-11-14.mp4", "anything", 1996, 11, 14)]

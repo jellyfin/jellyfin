@@ -28,7 +28,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -53,7 +52,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -76,7 +74,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -104,7 +101,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(7, result.Count);
@@ -134,7 +130,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -165,7 +160,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(9, result.Count);
@@ -192,7 +186,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(5, result.Count);
@@ -221,7 +214,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(5, result.Count);
@@ -251,7 +243,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -284,7 +275,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -311,7 +301,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(2, result.Count);
@@ -340,7 +329,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -372,7 +360,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(5, result.Count);
@@ -396,7 +383,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -422,7 +408,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
