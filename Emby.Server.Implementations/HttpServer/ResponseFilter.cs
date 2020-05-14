@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="dto">The dto.</param>
         public void FilterResponse(IRequest req, HttpResponse res, object dto)
         {
-            foreach(var (key, value) in _server.GetCorsHeaders(req))
+            foreach(var (key, value) in _server.GetDefaultCorsHeaders(req))
             {
                 res.Headers.Add(key, value);
             }

@@ -455,7 +455,7 @@ namespace Emby.Server.Implementations.HttpServer
                 if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.StatusCode = 200;
-                    foreach(var (key, value) in GetCorsHeaders(httpReq))
+                    foreach(var (key, value) in GetDefaultCorsHeaders(httpReq))
                     {
                         httpRes.Headers.Add(key, value);
                     }
@@ -583,7 +583,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <param name="req"></param>
         /// <returns></returns>
-        public IDictionary<string, string> GetCorsHeaders(IRequest req)
+        public IDictionary<string, string> GetDefaultCorsHeaders(IRequest req)
         {
             var origin = req.Headers["Origin"];
             if (origin == StringValues.Empty)

@@ -45,6 +45,6 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <param name="req"></param>
         /// <returns></returns>
-        IDictionary<string, string> GetCorsHeaders(IRequest req);
+        IDictionary<string, string> GetDefaultCorsHeaders(IRequest req);
     }
 }
