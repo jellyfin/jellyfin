@@ -291,7 +291,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 baseUrlParam = string.Format("\"{0}/\"", "hls/" + Path.GetFileNameWithoutExtension(outputPath));
 
-                return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format {11} -segment_list_entry_prefix {12} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+                return string.Format("{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} {13} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {10} -individual_header_trailer 0 -segment_format {11} -segment_list_entry_prefix {12} -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                     inputModifier,
                     EncodingHelper.GetInputArgument(state, encodingOptions),
                     threads,
@@ -304,14 +304,15 @@ namespace MediaBrowser.Api.Playback.Hls
                     outputTsArg,
                     timeDeltaParam,
                     segmentFormat,
-                    baseUrlParam
+                    baseUrlParam,
+                    ReplayGain
                 ).Trim();
             }
 
             // add when stream copying?
             // -avoid_negative_ts make_zero -fflags +genpts
 
-            var args = string.Format("{0} {1} {2} -map_metadata -1 -map_chapters -1 -threads {3} {4} {5} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero {6} -hls_time {7} -individual_header_trailer 0 -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
+            var args = string.Format("{0} {1} {2} -map_metadata -1 -map_chapters -1 -threads {3} {4} {5} {13} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero {6} -hls_time {7} -individual_header_trailer 0 -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
                 itsOffset,
                 inputModifier,
                 EncodingHelper.GetInputArgument(state, encodingOptions),
@@ -323,7 +324,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 startNumberParam,
                 state.HlsListSize.ToString(CultureInfo.InvariantCulture),
                 baseUrlParam,
-                outputPath
+                outputPath,
+                ReplayGain
                 ).Trim();
 
             return args;
