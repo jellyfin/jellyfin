@@ -275,6 +275,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 baseUrlParam = string.Format(" -hls_base_url \"{0}/\"",
                     "hls/" + Path.GetFileNameWithoutExtension(outputPath));
             }
+            
+            var ReplayGain = user.Policy.ReplayGain
 
             var useGenericSegmenter = true;
             if (useGenericSegmenter)
