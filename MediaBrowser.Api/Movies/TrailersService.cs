@@ -33,13 +33,18 @@ namespace MediaBrowser.Api.Movies
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// The logger for the created <see cref="ItemsService"/> instances.
+        /// </summary>
+        private readonly ILogger<ItemsService> _logger;
+
         private readonly IDtoService _dtoService;
         private readonly ILocalizationManager _localizationManager;
         private readonly IJsonSerializer _json;
         private readonly IAuthorizationContext _authContext;
 
         public TrailersService(
-            ILogger<TrailersService> logger,
+            ILoggerFactory loggerFactory,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -48,7 +53,7 @@ namespace MediaBrowser.Api.Movies
             ILocalizationManager localizationManager,
             IJsonSerializer json,
             IAuthorizationContext authContext)
-            : base(logger, serverConfigurationManager, httpResultFactory)
+            : base(loggerFactory.CreateLogger<TrailersService>(), serverConfigurationManager, httpResultFactory)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -56,6 +61,7 @@ namespace MediaBrowser.Api.Movies
             _localizationManager = localizationManager;
             _json = json;
             _authContext = authContext;
+            _logger = loggerFactory.CreateLogger<ItemsService>();
         }
 
         public object Get(Getrailers request)
@@ -66,7 +72,7 @@ namespace MediaBrowser.Api.Movies
             getItems.IncludeItemTypes = "Trailer";
 
             return new ItemsService(
-                Logger,
+                _logger,
                 ServerConfigurationManager,
                 ResultFactory,
                 _userManager,

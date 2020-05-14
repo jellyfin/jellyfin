@@ -209,24 +209,28 @@ namespace MediaBrowser.Api.Playback.Hls
                 try
                 {
                     // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-                    using var fileStream = GetPlaylistFileStream(playlist);
-                    using var reader = new StreamReader(fileStream);
-                    var count = 0;
-
-                    while (!reader.EndOfStream)
+                    var fileStream = GetPlaylistFileStream(playlist);
+                    await using (fileStream.ConfigureAwait(false))
                     {
-                        var line = reader.ReadLine();
+                        using var reader = new StreamReader(fileStream);
+                        var count = 0;
 
-                        if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
+                        while (!reader.EndOfStream)
                         {
-                            count++;
-                            if (count >= segmentCount)
+                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                            if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                             {
-                                Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
-                                return;
+                                count++;
+                                if (count >= segmentCount)
+                                {
+                                    Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                    return;
+                                }
                             }
                         }
                     }
+
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
                 catch (IOException)

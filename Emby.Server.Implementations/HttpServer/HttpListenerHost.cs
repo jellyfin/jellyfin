@@ -366,11 +366,14 @@ namespace Emby.Server.Implementations.HttpServer
             return true;
         }
 
+        /// <summary>
+        /// Validate a connection from a remote IP address to a URL to see if a redirection to HTTPS is required.
+        /// </summary>
+        /// <returns>True if the request is valid, or false if the request is not valid and an HTTPS redirect is required.</returns>
         private bool ValidateSsl(string remoteIp, string urlString)
         {
             if (_config.Configuration.RequireHttps
-                && _appHost.EnableHttps
-                && !_config.Configuration.IsBehindProxy
+                && _appHost.ListenWithHttps
                 && !urlString.Contains("https://", StringComparison.OrdinalIgnoreCase))
             {
                 // These are hacks, but if these ever occur on ipv6 in the local network they could be incorrectly redirected

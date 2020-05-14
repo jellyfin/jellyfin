@@ -63,6 +63,9 @@ namespace Emby.Server.Implementations.SocketSharp
                     if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XRealIP), out ip))
                     {
                         ip = Request.HttpContext.Connection.RemoteIpAddress;
+
+                        // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
+                        ip ??= IPAddress.Loopback;
                     }
                 }
 
@@ -90,7 +93,10 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public IQueryCollection QueryString => Request.Query;
 
-        public bool IsLocal => Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress);
+        public bool IsLocal =>
+            (Request.HttpContext.Connection.LocalIpAddress == null
+            && Request.HttpContext.Connection.RemoteIpAddress == null)
+            || Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress);
 
         public string HttpMethod => Request.Method;
 
