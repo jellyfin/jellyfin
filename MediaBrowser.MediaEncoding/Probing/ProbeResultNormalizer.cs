@@ -700,6 +700,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     stream.ColorTransfer = streamInfo.ColorTransfer;
                 }
+
+                if (!string.IsNullOrEmpty(streamInfo.ColorPrimaries))
+                {
+                    stream.ColorPrimaries = streamInfo.ColorPrimaries;
+                }
             }
             else
             {

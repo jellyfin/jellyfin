@@ -285,5 +285,12 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <value>The color transfer.</value>
         [JsonPropertyName("color_transfer")]
         public string ColorTransfer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color transfer.
+        /// </summary>
+        /// <value>The color transfer.</value>
+        [JsonPropertyName("color_primaries")]
+        public string ColorPrimaries { get; set; }
     }
 }
