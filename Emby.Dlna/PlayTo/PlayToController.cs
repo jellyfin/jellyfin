@@ -908,7 +908,8 @@ namespace Emby.Dlna.PlayTo
             return 0;
         }
 
-        public Task SendMessage<T>(string name, string messageId, T data, ISessionController[] allControllers, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -924,10 +925,12 @@ namespace Emby.Dlna.PlayTo
             {
                 return SendPlayCommand(data as PlayRequest, cancellationToken);
             }
+
             if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
             {
                 return SendPlaystateCommand(data as PlaystateRequest, cancellationToken);
             }
+
             if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
             {
                 return SendGeneralCommand(data as GeneralCommand, cancellationToken);

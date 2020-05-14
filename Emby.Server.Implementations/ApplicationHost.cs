@@ -44,7 +44,6 @@ using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.SocketSharp;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Api;
@@ -101,11 +100,10 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using Prometheus.DotNetRuntime;
+using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations
 {
@@ -502,32 +500,8 @@ namespace Emby.Server.Implementations
             RegisterServices(serviceCollection);
         }
 
-        public async Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next)
-        {
-            if (!context.WebSockets.IsWebSocketRequest)
-            {
-                await next().ConfigureAwait(false);
-                return;
-            }
-
-            await _httpServer.ProcessWebSocketRequest(context).ConfigureAwait(false);
-        }
-
-        public async Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
-        {
-            if (context.WebSockets.IsWebSocketRequest)
-            {
-                await next().ConfigureAwait(false);
-                return;
-            }
-
-            var request = context.Request;
-            var response = context.Response;
-            var localPath = context.Request.Path.ToString();
-
-            var req = new WebSocketSharpRequest(request, response, request.Path, LoggerFactory.CreateLogger<WebSocketSharpRequest>());
-            await _httpServer.RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted).ConfigureAwait(false);
-        }
+        public Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next)
+            => _httpServer.RequestHandler(context);
 
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
@@ -613,7 +587,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
             serviceCollection.AddSingleton<ServiceController>();
-            serviceCollection.AddSingleton<IHttpListener, WebSocketSharpListener>();
             serviceCollection.AddSingleton<IHttpServer, HttpListenerHost>();
 
             serviceCollection.AddSingleton<IImageProcessor, ImageProcessor>();

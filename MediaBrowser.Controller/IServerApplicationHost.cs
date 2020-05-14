@@ -116,7 +116,5 @@ namespace MediaBrowser.Controller
         string ReverseVirtualPath(string path);
 
         Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);
-
-        Task ExecuteWebsocketHandlerAsync(HttpContext context, Func<Task> next);
     }
 }
