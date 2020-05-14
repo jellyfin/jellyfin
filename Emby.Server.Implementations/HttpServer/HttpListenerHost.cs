@@ -14,6 +14,7 @@ using Emby.Server.Implementations.Services;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
@@ -230,7 +231,8 @@ namespace Emby.Server.Implementations.HttpServer
             switch (ex)
             {
                 case ArgumentException _: return 400;
-                case SecurityException _: return 401;
+                case AuthenticationException _: return 401;
+                case SecurityException _: return 403;
                 case DirectoryNotFoundException _:
                 case FileNotFoundException _:
                 case ResourceNotFoundException _: return 404;
@@ -239,55 +241,52 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, bool logExceptionStackTrace, string urlToLog)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, int statusCode, string urlToLog)
         {
-            try
+            bool ignoreStackTrace =
+                ex is SocketException
+                || ex is IOException
+                || ex is OperationCanceledException
+                || ex is SecurityException
+                || ex is AuthenticationException
+                || ex is FileNotFoundException;
+
+            if (ignoreStackTrace)
             {
-                ex = GetActualException(ex);
-
-                if (logExceptionStackTrace)
-                {
-                    _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
-                }
-                else
-                {
-                    _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
-                }
-
-                var httpRes = httpReq.Response;
-
-                if (httpRes.HasStarted)
-                {
-                    return;
-                }
-
-                var statusCode = GetStatusCode(ex);
-                httpRes.StatusCode = statusCode;
-
-                var errContent = NormalizeExceptionMessage(ex.Message);
-                httpRes.ContentType = "text/plain";
-                httpRes.ContentLength = errContent.Length;
-                await httpRes.WriteAsync(errContent).ConfigureAwait(false);
+                _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
             }
-            catch (Exception errorEx)
+            else
             {
-                _logger.LogError(errorEx, "Error this.ProcessRequest(context)(Exception while writing error to the response). URL: {Url}", urlToLog);
+                _logger.LogError(ex, "Error processing request. URL: {Url}", urlToLog);
             }
+
+            var httpRes = httpReq.Response;
+
+            if (httpRes.HasStarted)
+            {
+                return;
+            }
+
+            httpRes.StatusCode = statusCode;
+
+            var errContent = NormalizeExceptionMessage(ex) ?? string.Empty;
+            httpRes.ContentType = "text/plain";
+            httpRes.ContentLength = errContent.Length;
+            await httpRes.WriteAsync(errContent).ConfigureAwait(false);
         }
 
-        private string NormalizeExceptionMessage(string msg)
+        private string NormalizeExceptionMessage(Exception ex)
         {
-            if (msg == null)
+            // Do not expose the exception message for AuthenticationException
+            if (ex is AuthenticationException)
             {
-                return string.Empty;
+                return null;
             }
 
             // Strip any information we don't want to reveal
-
-            msg = msg.Replace(_config.ApplicationPaths.ProgramSystemPath, string.Empty, StringComparison.OrdinalIgnoreCase);
-            msg = msg.Replace(_config.ApplicationPaths.ProgramDataPath, string.Empty, StringComparison.OrdinalIgnoreCase);
-
-            return msg;
+            return ex.Message
+                ?.Replace(_config.ApplicationPaths.ProgramSystemPath, string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Replace(_config.ApplicationPaths.ProgramDataPath, string.Empty, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -425,9 +424,13 @@ namespace Emby.Server.Implementations.HttpServer
             return true;
         }
 
+        /// <summary>
+        /// Validate a connection from a remote IP address to a URL to see if a redirection to HTTPS is required.
+        /// </summary>
+        /// <returns>True if the request is valid, or false if the request is not valid and an HTTPS redirect is required.</returns>
         private bool ValidateSsl(string remoteIp, string urlString)
         {
-            if (_config.Configuration.RequireHttps && _appHost.EnableHttps && !_config.Configuration.IsBehindProxy)
+            if (_config.Configuration.RequireHttps && _appHost.ListenWithHttps)
             {
                 if (urlString.IndexOf("https://", StringComparison.OrdinalIgnoreCase) == -1)
                 {
@@ -536,22 +539,32 @@ namespace Emby.Server.Implementations.HttpServer
                     throw new FileNotFoundException();
                 }
             }
-            catch (Exception ex)
+            catch (Exception requestEx)
             {
-                // Do not handle exceptions manually when in development mode
-                // The framework-defined development exception page will be returned instead
-                if (_hostEnvironment.IsDevelopment())
+                try
                 {
-                    throw;
-                }
+                    var requestInnerEx = GetActualException(requestEx);
+                    var statusCode = GetStatusCode(requestInnerEx);
 
-                bool ignoreStackTrace =
-                    ex is SocketException
-                    || ex is IOException
-                    || ex is OperationCanceledException
-                    || ex is SecurityException
-                    || ex is FileNotFoundException;
-                await ErrorHandler(ex, httpReq, !ignoreStackTrace, urlToLog).ConfigureAwait(false);
+                    // Do not handle 500 server exceptions manually when in development mode
+                    // The framework-defined development exception page will be returned instead
+                    if (statusCode == 500 && _hostEnvironment.IsDevelopment())
+                    {
+                        throw;
+                    }
+
+                    await ErrorHandler(requestInnerEx, httpReq, statusCode, urlToLog).ConfigureAwait(false);
+                }
+                catch (Exception handlerException)
+                {
+                    var aggregateEx = new AggregateException("Error while handling request exception", requestEx, handlerException);
+                    _logger.LogError(aggregateEx, "Error while handling exception in response to {Url}", urlToLog);
+
+                    if (_hostEnvironment.IsDevelopment())
+                    {
+                        throw aggregateEx;
+                    }
+                }
             }
             finally
             {

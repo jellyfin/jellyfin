@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Prometheus;
 
 namespace Jellyfin.Server
 {
@@ -69,9 +70,19 @@ namespace Jellyfin.Server
             app.UseJellyfinApiSwagger();
             app.UseRouting();
             app.UseAuthorization();
+            if (_serverConfigurationManager.Configuration.EnableMetrics)
+            {
+                // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
+                app.UseHttpMetrics();
+            }
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                {
+                    endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
+                }
             });
 
             app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);

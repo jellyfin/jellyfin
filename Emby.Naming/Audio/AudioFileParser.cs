@@ -1,3 +1,4 @@
+#nullable enable
 #pragma warning disable CS1591
 
 using System;
@@ -11,7 +12,7 @@ namespace Emby.Naming.Audio
     {
         public static bool IsAudioFile(string path, NamingOptions options)
         {
-            var extension = Path.GetExtension(path) ?? string.Empty;
+            var extension = Path.GetExtension(path);
             return options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
     }

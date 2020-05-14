@@ -20,6 +20,11 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableUPnP { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
+        /// </summary>
+        public bool EnableMetrics { get; set; }
+
+        /// <summary>
         /// Gets or sets the public mapped port.
         /// </summary>
         /// <value>The public mapped port.</value>
@@ -44,19 +49,24 @@ namespace MediaBrowser.Model.Configuration
         public int HttpsPortNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [use HTTPS].
+        /// Gets or sets a value indicating whether to use HTTPS.
         /// </summary>
-        /// <value><c>true</c> if [use HTTPS]; otherwise, <c>false</c>.</value>
+        /// <remarks>
+        /// In order for HTTPS to be used, in addition to setting this to true, valid values must also be
+        /// provided for <see cref="CertificatePath"/> and <see cref="CertificatePassword"/>.
+        /// </remarks>
         public bool EnableHttps { get; set; }
 
         public bool EnableNormalizedItemByNameIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the value pointing to the file system where the ssl certificate is located..
+        /// Gets or sets the filesystem path of an X.509 certificate to use for SSL.
         /// </summary>
-        /// <value>The value pointing to the file system where the ssl certificate is located..</value>
         public string CertificatePath { get; set; }
 
+        /// <summary>
+        /// Gets or sets the password required to access the X.509 certificate data in the file specified by <see cref="CertificatePath"/>.
+        /// </summary>
         public string CertificatePassword { get; set; }
 
         /// <summary>
@@ -224,9 +234,10 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableExternalContentInSuggestions { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the server should force connections over HTTPS.
+        /// </summary>
         public bool RequireHttps { get; set; }
-
-        public bool IsBehindProxy { get; set; }
 
         public bool EnableNewOmdbSupport { get; set; }
 
@@ -264,6 +275,7 @@ namespace MediaBrowser.Model.Configuration
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;
             HttpsPortNumber = DefaultHttpsPort;
+            EnableMetrics = false;
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
