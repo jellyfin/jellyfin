@@ -100,7 +100,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                 }
             }
 
-            // Ideally retrying alternatives should be done outside the search
+            // TODO: retrying alternatives should be done outside the search
             // provider so that the retry logic can be common for all search
             // providers
             if (results.Count == 0)
