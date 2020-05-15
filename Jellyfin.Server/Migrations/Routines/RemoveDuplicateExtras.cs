@@ -39,32 +39,40 @@ namespace Jellyfin.Server.Migrations.Routines
                 ConnectionFlags.ReadWrite,
                 null))
             {
+                // Query the database for the ids of duplicate extras
                 var queryResult = connection.Query("SELECT t1.Path FROM TypedBaseItems AS t1, TypedBaseItems AS t2 WHERE t1.Path=t2.Path AND t1.Type!=t2.Type AND t1.Type='MediaBrowser.Controller.Entities.Video'");
                 var bads = string.Join(", ", queryResult.SelectScalarString());
-                if (bads.Length != 0)
+
+                // Do nothing if no duplicate extras were detected
+                if (bads.Length == 0)
                 {
-                    _logger.LogInformation("Found duplicate extras, making {Library} backup", DbFilename);
-                    for (int i = 1; ; i++)
+                    _logger.LogInformation("No duplicate extras detected, skipping migration.");
+                    return;
+                }
+
+                // Back up the database before deleting any entries
+                for (int i = 1; ; i++)
+                {
+                    var bakPath = string.Format(CultureInfo.InvariantCulture, "{0}.bak{1}", dbPath, i);
+                    if (!File.Exists(bakPath))
                     {
-                        var bakPath = string.Format(CultureInfo.InvariantCulture, "{0}.bak{1}", dbPath, i);
-                        if (!File.Exists(bakPath))
+                        try
                         {
-                            try
-                            {
-                                File.Copy(dbPath, bakPath);
-                                break;
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Cannot make a backup of {Library}", DbFilename);
-                                throw;
-                            }
+                            File.Copy(dbPath, bakPath);
+                            _logger.LogInformation("Library database backed up to {BackupPath}", bakPath);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Cannot make a backup of {Library} at path {BackupPath}", DbFilename, bakPath);
+                            throw;
                         }
                     }
-
-                    _logger.LogInformation("Removing found duplicated extras for the following items: {DuplicateExtras}", bads);
-                    connection.Execute("DELETE FROM TypedBaseItems WHERE rowid IN (SELECT t1.rowid FROM TypedBaseItems AS t1, TypedBaseItems AS t2 WHERE t1.Path=t2.Path AND t1.Type!=t2.Type AND t1.Type='MediaBrowser.Controller.Entities.Video')");
                 }
+
+                // Delete all duplicate extras
+                _logger.LogInformation("Removing found duplicated extras for the following items: {DuplicateExtras}", bads);
+                connection.Execute("DELETE FROM TypedBaseItems WHERE rowid IN (SELECT t1.rowid FROM TypedBaseItems AS t1, TypedBaseItems AS t2 WHERE t1.Path=t2.Path AND t1.Type!=t2.Type AND t1.Type='MediaBrowser.Controller.Entities.Video')");
             }
         }
     }
