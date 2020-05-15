@@ -175,8 +175,7 @@ namespace MediaBrowser.Api.SyncPlay
             Guid groupId;
             Guid playingItemId = Guid.Empty;
 
-            var valid = Guid.TryParse(request.GroupId, out groupId);
-            if (!valid)
+            if (!Guid.TryParse(request.GroupId, out groupId))
             {
                 Logger.LogError("JoinGroup: {0} is not a valid format for GroupId. Ignoring request.", request.GroupId);
                 return;
@@ -185,8 +184,7 @@ namespace MediaBrowser.Api.SyncPlay
             // Both null and empty strings mean that client isn't playing anything
             if (!String.IsNullOrEmpty(request.PlayingItemId))
             {
-                valid = Guid.TryParse(request.PlayingItemId, out playingItemId);
-                if (!valid)
+                if (!Guid.TryParse(request.PlayingItemId, out playingItemId))
                 {
                     Logger.LogError("JoinGroup: {0} is not a valid format for PlayingItemId. Ignoring request.", request.PlayingItemId);
                     return;
@@ -224,8 +222,7 @@ namespace MediaBrowser.Api.SyncPlay
 
             if (!String.IsNullOrEmpty(request.FilterItemId))
             {
-                var valid = Guid.TryParse(request.FilterItemId, out filterItemId);
-                if (!valid)
+                if (!Guid.TryParse(request.FilterItemId, out filterItemId))
                 {
                     Logger.LogWarning("ListGroups: {0} is not a valid format for FilterItemId. Ignoring filter.", request.FilterItemId);
                 }
