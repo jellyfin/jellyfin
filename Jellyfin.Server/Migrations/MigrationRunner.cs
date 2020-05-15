@@ -18,7 +18,7 @@ namespace Jellyfin.Server.Migrations
         {
             typeof(Routines.DisableTranscodingThrottling),
             typeof(Routines.CreateUserLoggingConfigFile),
-            typeof(Routines.RemoveBuggedExtras)
+            typeof(Routines.RemoveDuplicateExtras)
         };
 
         /// <summary>
