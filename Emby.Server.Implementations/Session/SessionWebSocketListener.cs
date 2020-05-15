@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.Session
 
             if (inactive.Any())
             {
-                _logger.LogInformation("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count());
+                _logger.LogInformation("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count);
             }
 
             foreach (var webSocket in inactive)
@@ -289,7 +289,7 @@ namespace Emby.Server.Implementations.Session
             {
                 if (lost.Any())
                 {
-                    _logger.LogInformation("Lost {0} WebSockets.", lost.Count());
+                    _logger.LogInformation("Lost {0} WebSockets.", lost.Count);
                     foreach (var webSocket in lost)
                     {
                         // TODO: handle session relative to the lost webSocket
