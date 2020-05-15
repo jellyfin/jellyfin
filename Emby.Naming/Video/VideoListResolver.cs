@@ -227,7 +227,7 @@ namespace Emby.Naming.Video
             }
 
             return remainingFiles
-                .Where(i => i.ExtraType == null)
+                .Where(i => i.ExtraType != null)
                 .Where(i => baseNames.Any(b =>
                     i.FileNameWithoutExtension.StartsWith(b, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
