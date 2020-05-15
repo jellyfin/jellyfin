@@ -15,6 +15,7 @@ namespace Jellyfin.Server.Implementations
     /// <inheritdoc/>
     public partial class JellyfinDb : DbContext
     {
+        public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
         /*public virtual DbSet<Artwork> Artwork { get; set; }
         public virtual DbSet<Book> Books { get; set; }
         public virtual DbSet<BookMetadata> BookMetadata { get; set; }
@@ -49,6 +50,7 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<Preference> Preferences { get; set; }
         public virtual DbSet<ProviderMapping> ProviderMappings { get; set; }
         public virtual DbSet<Rating> Ratings { get; set; }
+
         /// <summary>
         /// Repository for global::Jellyfin.Data.Entities.RatingSource - This is the entity to
         /// store review ratings, not age ratings
@@ -93,8 +95,10 @@ namespace Jellyfin.Server.Implementations
             modelBuilder.HasDefaultSchema("jellyfin");
 
             /*modelBuilder.Entity<Artwork>().HasIndex(t => t.Kind);
+
             modelBuilder.Entity<Genre>().HasIndex(t => t.Name)
                         .IsUnique();
+
             modelBuilder.Entity<LibraryItem>().HasIndex(t => t.UrlId)
                         .IsUnique();*/
 
@@ -103,9 +107,10 @@ namespace Jellyfin.Server.Implementations
 
         public override int SaveChanges()
         {
-            foreach (var entity in ChangeTracker.Entries().Where(e => e.State == EntityState.Modified))
+            foreach (var saveEntity in ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Modified)
+                .OfType<ISavingChanges>())
             {
-                var saveEntity = entity.Entity as ISavingChanges;
                 saveEntity.OnSavingChanges();
             }
 
