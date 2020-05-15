@@ -80,7 +80,7 @@ namespace MediaBrowser.Api.Playback
         private readonly IAuthorizationContext _authContext;
 
         public MediaInfoService(
-            ILogger logger,
+            ILogger<MediaInfoService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IMediaSourceManager mediaSourceManager,

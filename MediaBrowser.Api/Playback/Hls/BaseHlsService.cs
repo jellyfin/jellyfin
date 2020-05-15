@@ -25,7 +25,7 @@ namespace MediaBrowser.Api.Playback.Hls
     public abstract class BaseHlsService : BaseStreamingService
     {
         public BaseHlsService(
-            ILogger logger,
+            ILogger<BaseHlsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,

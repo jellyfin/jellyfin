@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Implementations
         /// <returns>The newly created context.</returns>
         public JellyfinDb CreateContext()
         {
-            return _serviceProvider.GetService<JellyfinDb>();
+            return _serviceProvider.GetRequiredService<JellyfinDb>();
         }
     }
 }

@@ -82,7 +82,7 @@ namespace MediaBrowser.Api.Playback
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
         protected BaseStreamingService(
-            ILogger logger,
+            ILogger<BaseStreamingService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,

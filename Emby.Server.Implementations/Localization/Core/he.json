@@ -99,5 +99,13 @@
     "TaskCleanCache": "נקה תיקיית מטמון",
     "TasksApplicationCategory": "יישום",
     "TasksLibraryCategory": "ספרייה",
-    "TasksMaintenanceCategory": "תחזוקה"
+    "TasksMaintenanceCategory": "תחזוקה",
+    "TaskUpdatePlugins": "עדכן תוספים",
+    "TaskRefreshPeopleDescription": "מעדכן מטא נתונים עבור שחקנים ובמאים בספריית המדיה שלך.",
+    "TaskRefreshPeople": "רענן אנשים",
+    "TaskCleanLogsDescription": "מוחק קבצי יומן בני יותר מ- {0} ימים.",
+    "TaskCleanLogs": "נקה תיקיית יומן",
+    "TaskRefreshLibraryDescription": "סורק את ספריית המדיה שלך אחר קבצים חדשים ומרענן מטא נתונים.",
+    "TaskRefreshChapterImagesDescription": "יוצר תמונות ממוזערות לסרטונים שיש להם פרקים.",
+    "TasksChannelsCategory": "ערוצי אינטרנט"
 }

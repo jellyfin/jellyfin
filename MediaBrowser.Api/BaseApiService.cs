@@ -22,7 +22,7 @@ namespace MediaBrowser.Api
     public abstract class BaseApiService : IService, IRequiresRequest
     {
         public BaseApiService(
-            ILogger logger,
+            ILogger<BaseApiService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory)
         {
@@ -35,7 +35,7 @@ namespace MediaBrowser.Api
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; }
+        protected ILogger<BaseApiService> Logger { get; }
 
         /// <summary>
         /// Gets or sets the server configuration manager.

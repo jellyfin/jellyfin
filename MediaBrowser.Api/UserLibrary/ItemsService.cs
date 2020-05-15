@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="localization">The localization.</param>
         /// <param name="dtoService">The dto service.</param>
         public ItemsService(
-            ILogger logger,
+            ILogger<ItemsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
