@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities;
 using Jellyfin.Server.Implementations;
@@ -75,7 +76,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 dbContext.Database.ExecuteSqlRaw("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'ActivityLog';");
                 dbContext.SaveChanges();
 
-                foreach (var entry in queryResult)
+                var newEntries = queryResult.Select(entry =>
                 {
                     if (!logLevelDictionary.TryGetValue(entry[8].ToString(), out var severity))
                     {
@@ -93,28 +94,35 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     if (entry[2].SQLiteType != SQLiteType.Null)
                     {
-                        newEntry.Overview = entry[2].ToString();
+                                        newEntry.Overview = entry[2].ToString();
                     }
 
                     if (entry[3].SQLiteType != SQLiteType.Null)
                     {
-                        newEntry.ShortOverview = entry[3].ToString();
+                                        newEntry.ShortOverview = entry[3].ToString();
                     }
 
                     if (entry[5].SQLiteType != SQLiteType.Null)
                     {
-                        newEntry.ItemId = entry[5].ToString();
+                                        newEntry.ItemId = entry[5].ToString();
                     }
 
-                    dbContext.ActivityLogs.Add(newEntry);
-                }
+                    return newEntry;
+                });
 
+                dbContext.ActivityLogs.AddRange(newEntries);
                 dbContext.SaveChanges();
             }
 
             try
             {
                 File.Move(Path.Combine(dataPath, DbFilename), Path.Combine(dataPath, DbFilename + ".old"));
+
+                var journalPath = Path.Combine(dataPath, DbFilename + "-journal");
+                if (File.Exists(journalPath))
+                {
+                    File.Move(journalPath, Path.Combine(dataPath, DbFilename + ".old-journal"));
+                }
             }
             catch (IOException e)
             {
