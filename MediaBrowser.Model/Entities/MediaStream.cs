@@ -205,7 +205,7 @@ namespace MediaBrowser.Model.Entities
                 {
                     if (i.IsInterlaced)
                     {
-                        return "1080I";
+                        return "1080i";
                     }
                     return "1080p";
                 }
