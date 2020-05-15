@@ -94,17 +94,17 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     if (entry[2].SQLiteType != SQLiteType.Null)
                     {
-                                        newEntry.Overview = entry[2].ToString();
+                        newEntry.Overview = entry[2].ToString();
                     }
 
                     if (entry[3].SQLiteType != SQLiteType.Null)
                     {
-                                        newEntry.ShortOverview = entry[3].ToString();
+                        newEntry.ShortOverview = entry[3].ToString();
                     }
 
                     if (entry[5].SQLiteType != SQLiteType.Null)
                     {
-                                        newEntry.ItemId = entry[5].ToString();
+                        newEntry.ItemId = entry[5].ToString();
                     }
 
                     return newEntry;
