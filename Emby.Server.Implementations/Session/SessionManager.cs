@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
@@ -14,7 +15,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -27,6 +27,7 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
 {
@@ -254,7 +255,7 @@ namespace Emby.Server.Implementations.Session
             string deviceId,
             string deviceName,
             string remoteEndPoint,
-            Jellyfin.Data.Entities.User user)
+            User user)
         {
             CheckDisposed();
 
@@ -438,7 +439,7 @@ namespace Emby.Server.Implementations.Session
             string deviceId,
             string deviceName,
             string remoteEndPoint,
-            Jellyfin.Data.Entities.User user)
+            User user)
         {
             CheckDisposed();
 
@@ -457,7 +458,7 @@ namespace Emby.Server.Implementations.Session
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
             sessionInfo.UserName = user?.Username;
-            sessionInfo.UserPrimaryImageTag = user == null ? null : GetImageCacheTag(user);
+            sessionInfo.UserPrimaryImageTag = user?.ProfileImage == null ? null : GetImageCacheTag(user);
             sessionInfo.RemoteEndPoint = remoteEndPoint;
             sessionInfo.Client = appName;
 
@@ -483,7 +484,7 @@ namespace Emby.Server.Implementations.Session
             string deviceId,
             string deviceName,
             string remoteEndPoint,
-            Jellyfin.Data.Entities.User user)
+            User user)
         {
             var sessionInfo = new SessionInfo(this, _logger)
             {
@@ -497,7 +498,7 @@ namespace Emby.Server.Implementations.Session
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
             sessionInfo.UserName = username;
-            sessionInfo.UserPrimaryImageTag = user == null ? null : GetImageCacheTag(user);
+            sessionInfo.UserPrimaryImageTag = user?.ProfileImage == null ? null : GetImageCacheTag(user);
             sessionInfo.RemoteEndPoint = remoteEndPoint;
 
             if (string.IsNullOrEmpty(deviceName))
@@ -520,9 +521,9 @@ namespace Emby.Server.Implementations.Session
             return sessionInfo;
         }
 
-        private List<Jellyfin.Data.Entities.User> GetUsers(SessionInfo session)
+        private List<User> GetUsers(SessionInfo session)
         {
-            var users = new List<Jellyfin.Data.Entities.User>();
+            var users = new List<User>();
 
             if (session.UserId != Guid.Empty)
             {
@@ -680,7 +681,7 @@ namespace Emby.Server.Implementations.Session
         /// </summary>
         /// <param name="user">The user object.</param>
         /// <param name="item">The item.</param>
-        private void OnPlaybackStart(Jellyfin.Data.Entities.User user, BaseItem item)
+        private void OnPlaybackStart(User user, BaseItem item)
         {
             var data = _userDataManager.GetUserData(user, item);
 
@@ -763,7 +764,7 @@ namespace Emby.Server.Implementations.Session
             StartIdleCheckTimer();
         }
 
-        private void OnPlaybackProgress(Jellyfin.Data.Entities.User user, BaseItem item, PlaybackProgressInfo info)
+        private void OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
         {
             var data = _userDataManager.GetUserData(user, item);
 
@@ -789,7 +790,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private static bool UpdatePlaybackSettings(Jellyfin.Data.Entities.User user, PlaybackProgressInfo info, UserItemData data)
+        private static bool UpdatePlaybackSettings(User user, PlaybackProgressInfo info, UserItemData data)
         {
             var changed = false;
 
@@ -949,7 +950,7 @@ namespace Emby.Server.Implementations.Session
                 _logger);
         }
 
-        private bool OnPlaybackStopped(Jellyfin.Data.Entities.User user, BaseItem item, long? positionTicks, bool playbackFailed)
+        private bool OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)
         {
             bool playedToCompletion = false;
 
@@ -1163,7 +1164,7 @@ namespace Emby.Server.Implementations.Session
             await SendMessageToSession(session, "Play", command, cancellationToken).ConfigureAwait(false);
         }
 
-        private IEnumerable<BaseItem> TranslateItemForPlayback(Guid id, Jellyfin.Data.Entities.User user)
+        private IEnumerable<BaseItem> TranslateItemForPlayback(Guid id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -1216,7 +1217,7 @@ namespace Emby.Server.Implementations.Session
             return new[] { item };
         }
 
-        private IEnumerable<BaseItem> TranslateItemForInstantMix(Guid id, Jellyfin.Data.Entities.User user)
+        private IEnumerable<BaseItem> TranslateItemForInstantMix(Guid id, User user)
         {
             var item = _libraryManager.GetItemById(id);
 
@@ -1399,7 +1400,7 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            Jellyfin.Data.Entities.User user = null;
+            User user = null;
             if (request.UserId != Guid.Empty)
             {
                 user = _userManager.GetUserById(request.UserId);
@@ -1455,7 +1456,7 @@ namespace Emby.Server.Implementations.Session
             return returnResult;
         }
 
-        private string GetAuthorizationToken(Jellyfin.Data.Entities.User user, string deviceId, string app, string appVersion, string deviceName)
+        private string GetAuthorizationToken(User user, string deviceId, string app, string appVersion, string deviceName)
         {
             var existing = _authRepo.Get(
                 new AuthenticationInfoQuery
@@ -1701,7 +1702,7 @@ namespace Emby.Server.Implementations.Session
             return info;
         }
 
-        private string GetImageCacheTag(Jellyfin.Data.Entities.User user)
+        private string GetImageCacheTag(User user)
         {
             try
             {

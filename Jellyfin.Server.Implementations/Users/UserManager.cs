@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0067
+﻿#pragma warning disable CA1307
 #pragma warning disable CS1591
 
 using System;
@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Net;
@@ -20,7 +22,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Server.Implementations.User
+namespace Jellyfin.Server.Implementations.Users
 {
     public class UserManager : IUserManager
     {
@@ -47,24 +49,24 @@ namespace Jellyfin.Server.Implementations.User
             _logger = logger;
         }
 
-        public event EventHandler<GenericEventArgs<Data.Entities.User>> OnUserPasswordChanged;
+        public event EventHandler<GenericEventArgs<User>> OnUserPasswordChanged;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<Data.Entities.User>> OnUserUpdated;
+        public event EventHandler<GenericEventArgs<User>> OnUserUpdated;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<Data.Entities.User>> OnUserCreated;
+        public event EventHandler<GenericEventArgs<User>> OnUserCreated;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<Data.Entities.User>> OnUserDeleted;
+        public event EventHandler<GenericEventArgs<User>> OnUserDeleted;
 
-        public event EventHandler<GenericEventArgs<Data.Entities.User>> OnUserLockedOut;
+        public event EventHandler<GenericEventArgs<User>> OnUserLockedOut;
 
-        public IEnumerable<Data.Entities.User> Users
+        public IEnumerable<User> Users
         {
             get
             {
-                using var dbContext = _dbProvider.CreateContext();
+                var dbContext = _dbProvider.CreateContext();
                 return dbContext.Users;
             }
         }
@@ -73,37 +75,38 @@ namespace Jellyfin.Server.Implementations.User
         {
             get
             {
-                using var dbContext = _dbProvider.CreateContext();
+                var dbContext = _dbProvider.CreateContext();
                 return dbContext.Users.Select(u => u.Id);
             }
         }
 
-        public Data.Entities.User GetUserById(Guid id)
+        public User GetUserById(Guid id)
         {
             if (id == Guid.Empty)
             {
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
+            var dbContext = _dbProvider.CreateContext();
 
             return dbContext.Users.Find(id);
         }
 
-        public Data.Entities.User GetUserByName(string name)
+        public User GetUserByName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
+            var dbContext = _dbProvider.CreateContext();
 
-            return dbContext.Users.FirstOrDefault(u =>
-                string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
+            // This can't use an overload with StringComparer because that would cause the query to
+            // have to be evaluated client-side.
+            return dbContext.Users.FirstOrDefault(u => string.Equals(u.Username, name));
         }
 
-        public async Task RenameUser(Data.Entities.User user, string newName)
+        public async Task RenameUser(User user, string newName)
         {
             if (user == null)
             {
@@ -132,43 +135,50 @@ namespace Jellyfin.Server.Implementations.User
             user.Username = newName;
             await UpdateUserAsync(user).ConfigureAwait(false);
 
-            OnUserUpdated?.Invoke(this, new GenericEventArgs<Data.Entities.User>(user));
+            OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
-        public void UpdateUser(Data.Entities.User user)
+        public void UpdateUser(User user)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            var dbContext = _dbProvider.CreateContext();
             dbContext.Users.Update(user);
             dbContext.SaveChanges();
         }
 
-        public async Task UpdateUserAsync(Data.Entities.User user)
+        public async Task UpdateUserAsync(User user)
         {
-            await using var dbContext = _dbProvider.CreateContext();
+            var dbContext = _dbProvider.CreateContext();
             dbContext.Users.Update(user);
 
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public Data.Entities.User CreateUser(string name)
+        public User CreateUser(string name)
         {
-            using var dbContext = _dbProvider.CreateContext();
+            if (!IsValidUsername(name))
+            {
+                throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
+            }
 
-            var newUser = CreateUserObject(name);
+            var dbContext = _dbProvider.CreateContext();
+
+            var newUser = new User(name, _defaultAuthenticationProvider.GetType().FullName);
             dbContext.Users.Add(newUser);
             dbContext.SaveChanges();
+
+            OnUserCreated?.Invoke(this, new GenericEventArgs<User>(newUser));
 
             return newUser;
         }
 
-        public void DeleteUser(Data.Entities.User user)
+        public void DeleteUser(User user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
+            var dbContext = _dbProvider.CreateContext();
 
             if (!dbContext.Users.Contains(user))
             {
@@ -200,19 +210,20 @@ namespace Jellyfin.Server.Implementations.User
 
             dbContext.Users.Remove(user);
             dbContext.SaveChanges();
+            OnUserDeleted?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
-        public Task ResetPassword(Data.Entities.User user)
+        public Task ResetPassword(User user)
         {
             return ChangePassword(user, string.Empty);
         }
 
-        public void ResetEasyPassword(Data.Entities.User user)
+        public void ResetEasyPassword(User user)
         {
             ChangeEasyPassword(user, string.Empty, null);
         }
 
-        public async Task ChangePassword(Data.Entities.User user, string newPassword)
+        public async Task ChangePassword(User user, string newPassword)
         {
             if (user == null)
             {
@@ -222,24 +233,18 @@ namespace Jellyfin.Server.Implementations.User
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
 
-            OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<Data.Entities.User>(user));
+            OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
-        public void ChangeEasyPassword(Data.Entities.User user, string newPassword, string newPasswordSha1)
+        public void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
             GetAuthenticationProvider(user).ChangeEasyPassword(user, newPassword, newPasswordSha1);
-
             UpdateUser(user);
 
-            OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<Data.Entities.User>(user));
+            OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
-        public UserDto GetUserDto(Data.Entities.User user, string remoteEndPoint = null)
+        public UserDto GetUserDto(User user, string remoteEndPoint = null)
         {
             return new UserDto
             {
@@ -271,7 +276,7 @@ namespace Jellyfin.Server.Implementations.User
                     MaxParentalRating = user.MaxParentalAgeRating,
                     EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
                     RemoteClientBitrateLimit = user.RemoteClientBitrateLimit.GetValueOrDefault(),
-                    AuthenticatioIsnProviderId = user.AuthenticationProviderId,
+                    AuthenticationProviderId = user.AuthenticationProviderId,
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
                     LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout.GetValueOrDefault(),
@@ -306,7 +311,7 @@ namespace Jellyfin.Server.Implementations.User
             };
         }
 
-        public PublicUserDto GetPublicUserDto(Data.Entities.User user, string remoteEndPoint = null)
+        public PublicUserDto GetPublicUserDto(User user, string remoteEndPoint = null)
         {
             if (user == null)
             {
@@ -328,7 +333,7 @@ namespace Jellyfin.Server.Implementations.User
             };
         }
 
-        public async Task<Data.Entities.User> AuthenticateUser(
+        public async Task<User> AuthenticateUser(
             string username,
             string password,
             string passwordSha1,
@@ -341,7 +346,7 @@ namespace Jellyfin.Server.Implementations.User
                 throw new ArgumentNullException(nameof(username));
             }
 
-            var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+            var user = Users.ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
             bool success;
             IAuthenticationProvider authenticationProvider;
 
@@ -370,7 +375,7 @@ namespace Jellyfin.Server.Implementations.User
                     // Search the database for the user again
                     // the authentication provider might have created it
                     user = Users
-                        .FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+                        .ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
                     if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
                     {
@@ -436,10 +441,10 @@ namespace Jellyfin.Server.Implementations.User
                 if (isUserSession)
                 {
                     user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
-                    UpdateUser(user);
+                    await UpdateUserAsync(user).ConfigureAwait(false);
                 }
 
-                ResetInvalidLoginAttemptCount(user);
+                user.InvalidLoginAttemptCount = 0;
                 _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Username);
             }
             else
@@ -495,14 +500,11 @@ namespace Jellyfin.Server.Implementations.User
         public void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders, IEnumerable<IPasswordResetProvider> passwordResetProviders)
         {
             _authenticationProviders = authenticationProviders.ToArray();
-
-            _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
-
-            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
-
             _passwordResetProviders = passwordResetProviders.ToArray();
 
-            _defaultPasswordResetProvider = passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
+            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
+            _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
+            _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
         public NameIdPair[] GetAuthenticationProviders()
@@ -563,7 +565,7 @@ namespace Jellyfin.Server.Implementations.User
             user.MaxParentalAgeRating = policy.MaxParentalRating;
             user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
             user.RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit;
-            user.AuthenticationProviderId = policy.AuthenticatioIsnProviderId;
+            user.AuthenticationProviderId = policy.AuthenticationProviderId;
             user.PasswordResetProviderId = policy.PasswordResetProviderId;
             user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
             user.LoginAttemptsBeforeLockout = policy.LoginAttemptsBeforeLockout == -1
@@ -604,28 +606,25 @@ namespace Jellyfin.Server.Implementations.User
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
         }
 
-        private Data.Entities.User CreateUserObject(string name)
+        private bool IsValidUsername(string name)
         {
-            return new Data.Entities.User(
-                username: name,
-                mustUpdatePassword: false,
-                authenticationProviderId: _defaultAuthenticationProvider.GetType().FullName,
-                invalidLoginAttemptCount: -1,
-                subtitleMode: SubtitlePlaybackMode.Default,
-                playDefaultAudioTrack: true);
+            // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
+            // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
+            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), and periods (.)
+            return Regex.IsMatch(name, @"^[\w\-'._@]*$");
         }
 
-        private IAuthenticationProvider GetAuthenticationProvider(Data.Entities.User user)
+        private IAuthenticationProvider GetAuthenticationProvider(User user)
         {
             return GetAuthenticationProviders(user)[0];
         }
 
-        private IPasswordResetProvider GetPasswordResetProvider(Data.Entities.User user)
+        private IPasswordResetProvider GetPasswordResetProvider(User user)
         {
             return GetPasswordResetProviders(user)[0];
         }
 
-        private IList<IAuthenticationProvider> GetAuthenticationProviders(Data.Entities.User user)
+        private IList<IAuthenticationProvider> GetAuthenticationProviders(User user)
         {
             var authenticationProviderId = user?.AuthenticationProviderId;
 
@@ -640,7 +639,7 @@ namespace Jellyfin.Server.Implementations.User
             {
                 // Assign the user to the InvalidAuthProvider since no configured auth provider was valid/found
                 _logger.LogWarning(
-                    "User {UserName} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected",
+                    "User {Username} was found with invalid/missing Authentication Provider {AuthenticationProviderId}. Assigning user to InvalidAuthProvider until this is corrected",
                     user?.Username,
                     user?.AuthenticationProviderId);
                 providers = new List<IAuthenticationProvider>
@@ -652,7 +651,7 @@ namespace Jellyfin.Server.Implementations.User
             return providers;
         }
 
-        private IList<IPasswordResetProvider> GetPasswordResetProviders(Data.Entities.User user)
+        private IList<IPasswordResetProvider> GetPasswordResetProviders(User user)
         {
             var passwordResetProviderId = user?.PasswordResetProviderId;
             var providers = _passwordResetProviders.Where(i => i.IsEnabled).ToArray();
@@ -675,11 +674,10 @@ namespace Jellyfin.Server.Implementations.User
             return providers;
         }
 
-        private async Task<(IAuthenticationProvider authenticationProvider, string username, bool success)>
-            AuthenticateLocalUser(
+        private async Task<(IAuthenticationProvider authenticationProvider, string username, bool success)> AuthenticateLocalUser(
                 string username,
                 string password,
-                Jellyfin.Data.Entities.User user,
+                User user,
                 string remoteEndPoint)
         {
             bool success = false;
@@ -721,7 +719,7 @@ namespace Jellyfin.Server.Implementations.User
             IAuthenticationProvider provider,
             string username,
             string password,
-            Data.Entities.User resolvedUser)
+            User resolvedUser)
         {
             try
             {
@@ -745,27 +743,21 @@ namespace Jellyfin.Server.Implementations.User
             }
         }
 
-        private void IncrementInvalidLoginAttemptCount(Data.Entities.User user)
+        private void IncrementInvalidLoginAttemptCount(User user)
         {
             int invalidLogins = user.InvalidLoginAttemptCount;
             int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
-            if (maxInvalidLogins.HasValue
-                && invalidLogins >= maxInvalidLogins)
+            if (maxInvalidLogins.HasValue && invalidLogins >= maxInvalidLogins)
             {
                 user.SetPermission(PermissionKind.IsDisabled, true);
-                OnUserLockedOut?.Invoke(this, new GenericEventArgs<Data.Entities.User>(user));
+                OnUserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
                 _logger.LogWarning(
-                    "Disabling user {UserName} due to {Attempts} unsuccessful login attempts.",
+                    "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
                     user.Username,
                     invalidLogins);
             }
 
             UpdateUser(user);
-        }
-
-        private void ResetInvalidLoginAttemptCount(Data.Entities.User user)
-        {
-            user.InvalidLoginAttemptCount = 0;
         }
     }
 }

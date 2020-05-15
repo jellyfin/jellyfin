@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities
 {
-    public partial class Group
+    public partial class Group : IHasPermissions, ISavingChanges
     {
         partial void Init();
 
@@ -14,7 +14,7 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         protected Group()
         {
-            GroupPermissions = new HashSet<Permission>();
+            Permissions = new HashSet<Permission>();
             ProviderMappings = new HashSet<ProviderMapping>();
             Preferences = new HashSet<Preference>();
 
@@ -22,27 +22,21 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
-        /// </summary>
-        public static Group CreateGroupUnsafe()
-        {
-            return new Group();
-        }
-
-        /// <summary>
         /// Public constructor with required data
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="_user0"></param>
-        public Group(string name, User _user0)
+        /// <param name="user"></param>
+        public Group(string name, User user)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             this.Name = name;
+            user.Groups.Add(this);
 
-            if (_user0 == null) throw new ArgumentNullException(nameof(_user0));
-            _user0.Groups.Add(this);
-
-            this.GroupPermissions = new HashSet<Permission>();
+            this.Permissions = new HashSet<Permission>();
             this.ProviderMappings = new HashSet<ProviderMapping>();
             this.Preferences = new HashSet<Preference>();
 
@@ -54,9 +48,9 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="name"></param>
         /// <param name="_user0"></param>
-        public static Group Create(string name, User _user0)
+        public static Group Create(string name, User user)
         {
-            return new Group(name, _user0);
+            return new Group(name, user);
         }
 
         /*************************************************************************
@@ -68,8 +62,7 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [Key]
         [Required]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public Guid Id { get; protected set; }
 
         /// <summary>
         /// Required, Max length = 255
@@ -96,13 +89,13 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         [ForeignKey("Permission_GroupPermissions_Id")]
-        public virtual ICollection<Permission> GroupPermissions { get; protected set; }
+        public ICollection<Permission> Permissions { get; protected set; }
 
         [ForeignKey("ProviderMapping_ProviderMappings_Id")]
-        public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
+        public ICollection<ProviderMapping> ProviderMappings { get; protected set; }
 
         [ForeignKey("Preference_Preferences_Id")]
-        public virtual ICollection<Preference> Preferences { get; protected set; }
+        public ICollection<Preference> Preferences { get; protected set; }
 
     }
 }

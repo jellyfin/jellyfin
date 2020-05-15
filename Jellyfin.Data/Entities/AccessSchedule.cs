@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
@@ -20,8 +22,9 @@ namespace Jellyfin.Data.Entities
         /// <param name="dayOfWeek">The day of the week.</param>
         /// <param name="startHour">The start hour.</param>
         /// <param name="endHour">The end hour.</param>
-        public AccessSchedule(DynamicDayOfWeek dayOfWeek, double startHour, double endHour)
+        public AccessSchedule(DynamicDayOfWeek dayOfWeek, double startHour, double endHour, Guid userId)
         {
+            UserId = userId;
             DayOfWeek = dayOfWeek;
             StartHour = startHour;
             EndHour = endHour;
@@ -34,15 +37,20 @@ namespace Jellyfin.Data.Entities
         /// <param name="startHour">The start hour.</param>
         /// <param name="endHour">The end hour.</param>
         /// <returns>The newly created instance.</returns>
-        public static AccessSchedule CreateInstance(DynamicDayOfWeek dayOfWeek, double startHour, double endHour)
+        public static AccessSchedule CreateInstance(DynamicDayOfWeek dayOfWeek, double startHour, double endHour, Guid userId)
         {
-            return new AccessSchedule(dayOfWeek, startHour, endHour);
+            return new AccessSchedule(dayOfWeek, startHour, endHour, userId);
         }
 
+        [JsonIgnore]
         [Key]
         [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; set; }
+
+        [Required]
+        [ForeignKey("Id")]
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the day of week.

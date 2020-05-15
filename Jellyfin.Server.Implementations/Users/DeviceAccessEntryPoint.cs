@@ -1,6 +1,7 @@
 ﻿#pragma warning disable CS1591
 
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -9,7 +10,7 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 
-namespace Jellyfin.Server.Implementations.User
+namespace Jellyfin.Server.Implementations.Users
 {
     public sealed class DeviceAccessEntryPoint : IServerEntryPoint
     {
@@ -33,7 +34,11 @@ namespace Jellyfin.Server.Implementations.User
             return Task.CompletedTask;
         }
 
-        private void OnUserUpdated(object sender, GenericEventArgs<Data.Entities.User> e)
+        public void Dispose()
+        {
+        }
+
+        private void OnUserUpdated(object sender, GenericEventArgs<User> e)
         {
             var user = e.Argument;
             if (!user.HasPermission(PermissionKind.EnableAllDevices))
@@ -42,11 +47,7 @@ namespace Jellyfin.Server.Implementations.User
             }
         }
 
-        public void Dispose()
-        {
-        }
-
-        private void UpdateDeviceAccess(Data.Entities.User user)
+        private void UpdateDeviceAccess(User user)
         {
             var existing = _authRepo.Get(new AuthenticationInfoQuery
             {

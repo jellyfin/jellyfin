@@ -7,7 +7,7 @@ using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Cryptography;
 
-namespace Jellyfin.Server.Implementations.User
+namespace Jellyfin.Server.Implementations.Users
 {
     /// <summary>
     /// The default authentication provider.

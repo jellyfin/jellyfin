@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
@@ -10,7 +11,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
-namespace Jellyfin.Server.Implementations.User
+namespace Jellyfin.Server.Implementations.Users
 {
     /// <summary>
     /// The default password reset provider.
@@ -94,7 +95,7 @@ namespace Jellyfin.Server.Implementations.User
         }
 
         /// <inheritdoc />
-        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(Jellyfin.Data.Entities.User user, bool isInNetwork)
+        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User user, bool isInNetwork)
         {
             string pin;
             using (var cryptoRandom = RandomNumberGenerator.Create())

@@ -562,7 +562,6 @@ namespace Emby.Server.Implementations
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
-            serviceCollection.AddSingleton<IUserManager, UserManager>();
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             // TODO: Add StartupOptions.FFmpegPath to IConfiguration and remove this custom activation

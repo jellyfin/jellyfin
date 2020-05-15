@@ -7,8 +7,10 @@ using Emby.Server.Implementations;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
@@ -69,6 +71,7 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<JellyfinDbProvider>();
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
+            serviceCollection.AddSingleton<IUserManager, UserManager>();
 
             base.RegisterServices(serviceCollection);
         }
@@ -80,6 +83,9 @@ namespace Jellyfin.Server
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
         {
             yield return typeof(CoreAppHost).Assembly;
+            yield return typeof(DefaultAuthenticationProvider).Assembly;
+            yield return typeof(DefaultPasswordResetProvider).Assembly;
+            yield return typeof(InvalidAuthProvider).Assembly;
         }
 
         /// <inheritdoc />

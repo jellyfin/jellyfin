@@ -1,6 +1,8 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 
@@ -34,7 +36,7 @@ namespace MediaBrowser.Model.Users
 
         public string[] BlockedTags { get; set; }
         public bool EnableUserPreferenceAccess { get; set; }
-        public Jellyfin.Data.Entities.AccessSchedule[] AccessSchedules { get; set; }
+        public AccessSchedule[] AccessSchedules { get; set; }
         public UnratedItem[] BlockUnratedItems { get; set; }
         public bool EnableRemoteControlOfOtherUsers { get; set; }
         public bool EnableSharedDeviceControl { get; set; }
@@ -78,7 +80,9 @@ namespace MediaBrowser.Model.Users
         public string[] BlockedChannels { get; set; }
 
         public int RemoteClientBitrateLimit { get; set; }
-        public string AuthenticatioIsnProviderId { get; set; }
+
+        [XmlElement(ElementName = "AuthenticationProviderId")]
+        public string AuthenticationProviderId { get; set; }
         public string PasswordResetProviderId { get; set; }
 
         public UserPolicy()

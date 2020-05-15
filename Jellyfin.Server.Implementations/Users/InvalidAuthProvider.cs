@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
 
-namespace Jellyfin.Server.Implementations.User
+namespace Jellyfin.Server.Implementations.Users
 {
     /// <summary>
     /// An invalid authentication provider.

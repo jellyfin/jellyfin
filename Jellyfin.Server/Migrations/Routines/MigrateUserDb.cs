@@ -1,33 +1,45 @@
-﻿#pragma warning disable CS1591
-
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Users;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SQLitePCL.pretty;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Jellyfin.Server.Migrations.Routines
 {
+    /// <summary>
+    /// The migration routine for migrating the user database to EF Core.
+    /// </summary>
     public class MigrateUserDb : IMigrationRoutine
     {
+        private const string DbFilename = "users.db";
+
         private readonly ILogger<MigrateUserDb> _logger;
-
         private readonly IServerApplicationPaths _paths;
-
         private readonly JellyfinDbProvider _provider;
-
         private readonly MyXmlSerializer _xmlSerializer;
 
-        public MigrateUserDb(ILogger<MigrateUserDb> logger, IServerApplicationPaths paths, JellyfinDbProvider provider, MyXmlSerializer xmlSerializer)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MigrateUserDb"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="paths">The server application paths.</param>
+        /// <param name="provider">The database provider.</param>
+        /// <param name="xmlSerializer">The xml serializer.</param>
+        public MigrateUserDb(
+            ILogger<MigrateUserDb> logger,
+            IServerApplicationPaths paths,
+            JellyfinDbProvider provider,
+            MyXmlSerializer xmlSerializer)
         {
             _logger = logger;
             _paths = paths;
@@ -35,18 +47,21 @@ namespace Jellyfin.Server.Migrations.Routines
             _xmlSerializer = xmlSerializer;
         }
 
+        /// <inheritdoc/>
         public Guid Id => Guid.Parse("5C4B82A2-F053-4009-BD05-B6FCAD82F14C");
 
-        public string Name => "MigrateUserDb";
+        /// <inheritdoc/>
+        public string Name => "MigrateUserDatabase";
 
+        /// <inheritdoc/>
         public void Perform()
         {
             var dataPath = _paths.DataPath;
             _logger.LogInformation("Migrating the user database may take a while, do not stop Jellyfin.");
 
-            using (var connection = SQLite3.Open(Path.Combine(dataPath, "users.db"), ConnectionFlags.ReadOnly, null))
+            using (var connection = SQLite3.Open(Path.Combine(dataPath, DbFilename), ConnectionFlags.ReadOnly, null))
             {
-                using var dbContext = _provider.CreateContext();
+                var dbContext = _provider.CreateContext();
 
                 var queryResult = connection.Query("SELECT * FROM LocalUsersv2");
 
@@ -55,26 +70,30 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 foreach (var entry in queryResult)
                 {
-                    var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(entry[2].ToString());
-                    var userDataDir = Path.Combine(_paths.UserConfigurationDirectoryPath, json["Name"]);
+                    UserMockup mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob());
+                    var userDataDir = Path.Combine(_paths.UserConfigurationDirectoryPath, mockup.Name);
 
-                    var config = (UserConfiguration)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), Path.Combine(userDataDir, "config.xml"));
-                    var policy = (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), Path.Combine(userDataDir, "policy.xml"));
+                    var config = File.Exists(Path.Combine(userDataDir, "config.xml"))
+                        ? (UserConfiguration)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), Path.Combine(userDataDir, "config.xml"))
+                        : new UserConfiguration();
+                    var policy = File.Exists(Path.Combine(userDataDir, "policy.xml"))
+                        ? (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), Path.Combine(userDataDir, "policy.xml"))
+                        : new UserPolicy();
+                    policy.AuthenticationProviderId = policy.AuthenticationProviderId?.Replace(
+                        "Emby.Server.Implementations.Library",
+                        "Jellyfin.Server.Implementations.Users",
+                        StringComparison.Ordinal)
+                        ?? typeof(DefaultAuthenticationProvider).FullName;
 
-                    var user = new User(
-                        json["Name"],
-                        false,
-                        policy.AuthenticatioIsnProviderId,
-                        policy.InvalidLoginAttemptCount,
-                        config.SubtitleMode,
-                        config.PlayDefaultAudioTrack)
+                    policy.PasswordResetProviderId ??= typeof(DefaultPasswordResetProvider).FullName;
+
+                    var user = new User(mockup.Name, policy.AuthenticationProviderId)
                     {
                         Id = entry[1].ReadGuidFromBlob(),
                         InternalId = entry[0].ToInt64(),
                         MaxParentalAgeRating = policy.MaxParentalRating,
                         EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess,
                         RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit,
-                        AuthenticationProviderId = policy.AuthenticatioIsnProviderId,
                         PasswordResetProviderId = policy.PasswordResetProviderId,
                         InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount,
                         LoginAttemptsBeforeLockout = policy.LoginAttemptsBeforeLockout == -1 ? null : new int?(policy.LoginAttemptsBeforeLockout),
@@ -89,6 +108,10 @@ namespace Jellyfin.Server.Migrations.Routines
                         EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay,
                         RememberSubtitleSelections = config.RememberSubtitleSelections,
                         SubtitleLanguagePreference = config.SubtitleLanguagePreference,
+                        Password = mockup.Password,
+                        EasyPassword = mockup.EasyPassword,
+                        LastLoginDate = mockup.LastLoginDate ?? DateTime.MinValue,
+                        LastActivityDate = mockup.LastActivityDate ?? DateTime.MinValue
                     };
 
                     user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
@@ -112,6 +135,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     user.SetPermission(PermissionKind.EnablePlaybackRemuxing, policy.EnablePlaybackRemuxing);
                     user.SetPermission(PermissionKind.ForceRemoteSourceTranscoding, policy.ForceRemoteSourceTranscoding);
                     user.SetPermission(PermissionKind.EnablePublicSharing, policy.EnablePublicSharing);
+
                     foreach (var policyAccessSchedule in policy.AccessSchedules)
                     {
                         user.AccessSchedules.Add(policyAccessSchedule);
@@ -126,6 +150,8 @@ namespace Jellyfin.Server.Migrations.Routines
                     user.SetPreference(PreferenceKind.GroupedFolders, config.GroupedFolders);
                     user.SetPreference(PreferenceKind.MyMediaExcludes, config.MyMediaExcludes);
                     user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
+
+                    dbContext.Users.Add(user);
                 }
 
                 dbContext.SaveChanges();
@@ -133,12 +159,32 @@ namespace Jellyfin.Server.Migrations.Routines
 
             try
             {
-                File.Move(Path.Combine(dataPath, "users.db"), Path.Combine(dataPath, "users.db" + ".old"));
+                File.Move(Path.Combine(dataPath, DbFilename), Path.Combine(dataPath, DbFilename + ".old"));
+
+                var journalPath = Path.Combine(dataPath, DbFilename + "-journal");
+                if (File.Exists(journalPath))
+                {
+                    File.Move(journalPath, Path.Combine(dataPath, DbFilename + ".old-journal"));
+                }
             }
             catch (IOException e)
             {
                 _logger.LogError(e, "Error renaming legacy user database to 'users.db.old'");
             }
+        }
+
+#nullable disable
+        internal class UserMockup
+        {
+            public string Password { get; set; }
+
+            public string EasyPassword { get; set; }
+
+            public DateTime? LastLoginDate { get; set; }
+
+            public DateTime? LastActivityDate { get; set; }
+
+            public string Name { get; set; }
         }
     }
 }

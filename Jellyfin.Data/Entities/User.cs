@@ -9,45 +9,23 @@ using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
 {
-    public partial class User
+    /// <summary>
+    /// An entity representing a user.
+    /// </summary>
+    public partial class User : IHasPermissions, ISavingChanges
     {
         /// <summary>
         /// The values being delimited here are Guids, so commas work as they do not appear in Guids.
         /// </summary>
         private const char Delimiter = ',';
 
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="User"/> class.
+        /// Public constructor with required data.
         /// </summary>
-        protected User()
-        {
-            Groups = new HashSet<Group>();
-            Permissions = new HashSet<Permission>();
-            ProviderMappings = new HashSet<ProviderMapping>();
-            Preferences = new HashSet<Preference>();
-            AccessSchedules = new HashSet<AccessSchedule>();
-
-            Init();
-        }
-
-        /// <summary>
-        /// Public constructor with required data
-        /// </summary>
-        /// <param name="username"></param>
-        /// <param name="mustUpdatePassword"></param>
-        /// <param name="authenticationProviderId"></param>
-        /// <param name="invalidLoginAttemptCount"></param>
-        /// <param name="subtitleMode"></param>
-        /// <param name="playDefaultAudioTrack"></param>
-        public User(
-            string username,
-            bool mustUpdatePassword,
-            string authenticationProviderId,
-            int invalidLoginAttemptCount,
-            SubtitlePlaybackMode subtitleMode,
-            bool playDefaultAudioTrack)
+        /// <param name="username">The username for the new user.</param>
+        /// <param name="authenticationProviderId">The authentication provider's Id</param>
+        public User(string username, string authenticationProviderId)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -60,11 +38,7 @@ namespace Jellyfin.Data.Entities
             }
 
             Username = username;
-            MustUpdatePassword = mustUpdatePassword;
             AuthenticationProviderId = authenticationProviderId;
-            InvalidLoginAttemptCount = invalidLoginAttemptCount;
-            SubtitleMode = subtitleMode;
-            PlayDefaultAudioTrack = playDefaultAudioTrack;
 
             Groups = new HashSet<Group>();
             Permissions = new HashSet<Permission>();
@@ -74,6 +48,8 @@ namespace Jellyfin.Data.Entities
 
             // Set default values
             Id = Guid.NewGuid();
+            InvalidLoginAttemptCount = 0;
+            MustUpdatePassword = false;
             DisplayMissingEpisodes = false;
             DisplayCollectionsView = false;
             HidePlayedInLatest = true;
@@ -81,36 +57,40 @@ namespace Jellyfin.Data.Entities
             RememberSubtitleSelections = true;
             EnableNextEpisodeAutoPlay = true;
             EnableAutoLogin = false;
+            PlayDefaultAudioTrack = true;
+            SubtitleMode = SubtitlePlaybackMode.Default;
 
+            AddDefaultPermissions();
+            AddDefaultPreferences();
             Init();
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Initializes a new instance of the <see cref="User"/> class.
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
         /// </summary>
-        public static User CreateUserUnsafe()
+        protected User()
         {
-            return new User();
+            Groups = new HashSet<Group>();
+            Permissions = new HashSet<Permission>();
+            ProviderMappings = new HashSet<ProviderMapping>();
+            Preferences = new HashSet<Preference>();
+            AccessSchedules = new HashSet<AccessSchedule>();
+
+            AddDefaultPermissions();
+            AddDefaultPreferences();
+            Init();
         }
 
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="username"></param>
-        /// <param name="mustUpdatePassword"></param>
-        /// <param name="authenticationProviderId"></param>
-        /// <param name="invalidLoginAttemptCount"></param>
-        /// <param name="subtitleMode"></param>
-        /// <param name="playDefaultAudioTrack"></param>
-        public static User Create(
-            string username,
-            bool mustUpdatePassword,
-            string authenticationProviderId,
-            int invalidLoginAttemptCount,
-            SubtitlePlaybackMode subtitleMode,
-            bool playDefaultAudioTrack)
+        /// <param name="username">The username for the created user.</param>
+        /// <param name="authenticationProviderId">The Id of the user's authentication provider.</param>
+        /// <returns>The created instance.</returns>
+        public static User Create(string username, string authenticationProviderId)
         {
-            return new User(username, mustUpdatePassword, authenticationProviderId, invalidLoginAttemptCount, subtitleMode, playDefaultAudioTrack);
+            return new User(username, authenticationProviderId);
         }
 
         /*************************************************************************
@@ -131,7 +111,6 @@ namespace Jellyfin.Data.Entities
         [Required]
         [MaxLength(255)]
         [StringLength(255)]
-        [JsonPropertyName("Name")]
         public string Username { get; set; }
 
         /// <summary>
@@ -199,6 +178,7 @@ namespace Jellyfin.Data.Entities
         public bool PlayDefaultAudioTrack { get; set; }
 
         /// <summary>
+        /// Gets or sets the subtitle language preference.
         /// Max length = 255
         /// </summary>
         [MaxLength(255)]
@@ -237,6 +217,7 @@ namespace Jellyfin.Data.Entities
         public int? RemoteClientBitrateLimit { get; set; }
 
         /// <summary>
+        /// Gets or sets the internal id.
         /// This is a temporary stopgap for until the library db is migrated.
         /// This corresponds to the value of the index of this user in the library db.
         /// </summary>
@@ -246,7 +227,8 @@ namespace Jellyfin.Data.Entities
         public ImageInfo ProfileImage { get; set; }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Gets or sets the row version.
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -260,23 +242,25 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-        [ForeignKey("Group_Groups_Id")]
+        [ForeignKey("Group_Groups_Guid")]
         public ICollection<Group> Groups { get; protected set; }
 
-        [ForeignKey("Permission_Permissions_Id")]
+        [ForeignKey("Permission_Permissions_Guid")]
         public ICollection<Permission> Permissions { get; protected set; }
 
         [ForeignKey("ProviderMapping_ProviderMappings_Id")]
         public ICollection<ProviderMapping> ProviderMappings { get; protected set; }
 
-        [ForeignKey("Preference_Preferences_Id")]
+        [ForeignKey("Preference_Preferences_Guid")]
         public ICollection<Preference> Preferences { get; protected set; }
 
         public ICollection<AccessSchedule> AccessSchedules { get; protected set; }
 
+        partial void Init();
+
         public bool HasPermission(PermissionKind permission)
         {
-            return Permissions.Select(p => p.Kind).Contains(permission);
+            return Permissions.First(p => p.Kind == permission).Value;
         }
 
         public void SetPermission(PermissionKind kind, bool value)
@@ -287,11 +271,12 @@ namespace Jellyfin.Data.Entities
 
         public string[] GetPreference(PreferenceKind preference)
         {
-            return Preferences
+            var val = Preferences
                 .Where(p => p.Kind == preference)
                 .Select(p => p.Value)
-                .First()
-                .Split(Delimiter);
+                .First();
+
+            return Equals(val, string.Empty) ? Array.Empty<string>() : val.Split(Delimiter);
         }
 
         public void SetPreference(PreferenceKind preference, string[] values)
@@ -331,6 +316,40 @@ namespace Jellyfin.Data.Entities
             var hour = localTime.TimeOfDay.TotalHours;
 
             return hour >= schedule.StartHour && hour <= schedule.EndHour;
+        }
+
+        // TODO: make these user configurable?
+        private void AddDefaultPermissions()
+        {
+            Permissions.Add(new Permission(PermissionKind.IsAdministrator, false));
+            Permissions.Add(new Permission(PermissionKind.IsDisabled, false));
+            Permissions.Add(new Permission(PermissionKind.IsHidden, false));
+            Permissions.Add(new Permission(PermissionKind.EnableAllChannels, false));
+            Permissions.Add(new Permission(PermissionKind.EnableAllDevices, true));
+            Permissions.Add(new Permission(PermissionKind.EnableAllFolders, false));
+            Permissions.Add(new Permission(PermissionKind.EnableContentDeletion, false));
+            Permissions.Add(new Permission(PermissionKind.EnableContentDownloading, true));
+            Permissions.Add(new Permission(PermissionKind.EnableMediaConversion, true));
+            Permissions.Add(new Permission(PermissionKind.EnableMediaPlayback, true));
+            Permissions.Add(new Permission(PermissionKind.EnablePlaybackRemuxing, true));
+            Permissions.Add(new Permission(PermissionKind.EnablePublicSharing, true));
+            Permissions.Add(new Permission(PermissionKind.EnableRemoteAccess, true));
+            Permissions.Add(new Permission(PermissionKind.EnableSyncTranscoding, true));
+            Permissions.Add(new Permission(PermissionKind.EnableAudioPlaybackTranscoding, true));
+            Permissions.Add(new Permission(PermissionKind.EnableLiveTvAccess, true));
+            Permissions.Add(new Permission(PermissionKind.EnableLiveTvManagement, true));
+            Permissions.Add(new Permission(PermissionKind.EnableSharedDeviceControl, true));
+            Permissions.Add(new Permission(PermissionKind.EnableVideoPlaybackTranscoding, true));
+            Permissions.Add(new Permission(PermissionKind.ForceRemoteSourceTranscoding, false));
+            Permissions.Add(new Permission(PermissionKind.EnableRemoteControlOfOtherUsers, false));
+        }
+
+        private void AddDefaultPreferences()
+        {
+            foreach (var val in Enum.GetValues(typeof(PreferenceKind)).Cast<PreferenceKind>())
+            {
+                Preferences.Add(new Preference(val, string.Empty));
+            }
         }
     }
 }
