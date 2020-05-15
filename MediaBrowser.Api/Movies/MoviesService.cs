@@ -82,7 +82,7 @@ namespace MediaBrowser.Api.Movies
         /// Initializes a new instance of the <see cref="MoviesService" /> class.
         /// </summary>
         public MoviesService(
-            ILogger logger,
+            ILogger<MoviesService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,

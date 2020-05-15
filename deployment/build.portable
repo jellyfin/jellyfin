@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#= Portable .NET DLL .tar.gz
+
+set -o errexit
+set -o xtrace
+
+# Move to source directory
+pushd ${SOURCE_DIR}
+
+# Get version
+version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
+
+# Build archives
+dotnet publish Jellyfin.Server --configuration Release --output dist/jellyfin-server_${version}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"
+tar -czf jellyfin-server_${version}_portable.tar.gz -C dist jellyfin-server_${version}
+rm -rf dist/jellyfin-server_${version}
+
+# Move the artifacts out
+mkdir -p ${ARTIFACT_DIR}/
+mv jellyfin[-_]*.tar.gz ${ARTIFACT_DIR}/
+
+if [[ ${IS_DOCKER} == YES ]]; then
+    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+fi
+
+popd

@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +16,7 @@ namespace Emby.Server.Implementations.Session
     /// <summary>
     /// Class SessionWebSocketListener
     /// </summary>
-    public class SessionWebSocketListener : IWebSocketListener, IDisposable
+    public sealed class SessionWebSocketListener : IWebSocketListener, IDisposable
     {
         /// <summary>
         /// The timeout in seconds after which a WebSocket is considered to be lost.
@@ -43,11 +42,7 @@ namespace Emby.Server.Implementations.Session
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// The _dto service
-        /// </summary>
-        private readonly IJsonSerializer _json;
+        private readonly ILoggerFactory _loggerFactory;
 
         private readonly IHttpServer _httpServer;
 
@@ -74,23 +69,27 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="loggerFactory">The logger factory.</param>
-        /// <param name="json">The json.</param>
         /// <param name="httpServer">The HTTP server.</param>
-        public SessionWebSocketListener(ISessionManager sessionManager, ILoggerFactory loggerFactory, IJsonSerializer json, IHttpServer httpServer)
+        public SessionWebSocketListener(
+            ILogger<SessionWebSocketListener> logger,
+            ISessionManager sessionManager,
+            ILoggerFactory loggerFactory,
+            IHttpServer httpServer)
         {
+            _logger = logger;
             _sessionManager = sessionManager;
-            _logger = loggerFactory.CreateLogger(GetType().Name);
-            _json = json;
+            _loggerFactory = loggerFactory;
             _httpServer = httpServer;
+
             httpServer.WebSocketConnected += OnServerManagerWebSocketConnected;
         }
 
-        void OnServerManagerWebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
+        private void OnServerManagerWebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
         {
-            var session = GetSession(e.Argument.QueryString, e.Argument.RemoteEndPoint);
-
+            var session = GetSession(e.Argument.QueryString, e.Argument.RemoteEndPoint.ToString());
             if (session != null)
             {
                 EnsureController(session, e.Argument);
@@ -98,7 +97,7 @@ namespace Emby.Server.Implementations.Session
             }
             else
             {
-                _logger.LogWarning("Unable to determine session based on url: {0}", e.Argument.Url);
+                _logger.LogWarning("Unable to determine session based on query string: {0}", e.Argument.QueryString);
             }
         }
 
@@ -119,6 +118,7 @@ namespace Emby.Server.Implementations.Session
             return _sessionManager.GetSessionByAuthenticationToken(token, deviceId, remoteEndpoint);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _httpServer.WebSocketConnected -= OnServerManagerWebSocketConnected;
@@ -135,7 +135,8 @@ namespace Emby.Server.Implementations.Session
 
         private void EnsureController(SessionInfo session, IWebSocketConnection connection)
         {
-            var controllerInfo = session.EnsureController<WebSocketController>(s => new WebSocketController(s, _logger, _sessionManager));
+            var controllerInfo = session.EnsureController<WebSocketController>(
+                s => new WebSocketController(_loggerFactory.CreateLogger<WebSocketController>(), s, _sessionManager));
 
             var controller = (WebSocketController)controllerInfo.Item1;
             controller.AddWebSocket(connection);

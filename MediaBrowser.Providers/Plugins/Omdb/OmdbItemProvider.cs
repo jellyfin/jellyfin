@@ -17,7 +17,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
@@ -26,22 +25,27 @@ namespace MediaBrowser.Providers.Plugins.Omdb
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IApplicationHost _appHost;
 
-        public OmdbItemProvider(IJsonSerializer jsonSerializer, IApplicationHost appHost, IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbItemProvider(
+            IJsonSerializer jsonSerializer,
+            IApplicationHost appHost,
+            IHttpClient httpClient,
+            ILibraryManager libraryManager,
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
-            _logger = logger;
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _appHost = appHost;
         }
+
         // After primary option
         public int Order => 2;
 
@@ -80,7 +84,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var parsedName = _libraryManager.ParseName(name);
                 var yearInName = parsedName.Year;
                 name = parsedName.Name;
-                year = year ?? yearInName;
+                year ??= yearInName;
             }
 
             if (string.IsNullOrWhiteSpace(imdbId))
@@ -312,6 +316,5 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             /// <value>The results.</value>
             public List<SearchResult> Search { get; set; }
         }
-
     }
 }

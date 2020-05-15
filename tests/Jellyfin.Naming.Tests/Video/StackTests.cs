@@ -6,8 +6,10 @@ using Xunit;
 
 namespace Jellyfin.Naming.Tests.Video
 {
-    public class StackTests : BaseVideoTest
+    public class StackTests
     {
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
         [Fact]
         public void TestSimpleStack()
         {
@@ -446,7 +448,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         private StackResolver GetResolver()
         {
-            return new StackResolver(new NamingOptions());
+            return new StackResolver(_namingOptions);
         }
     }
 }

@@ -97,5 +97,9 @@
     "TasksApplicationCategory": "Applikasjon",
     "TasksLibraryCategory": "Bibliotek",
     "TasksMaintenanceCategory": "Vedlikehold",
-    "TaskCleanCache": "Tøm buffer katalog"
+    "TaskCleanCache": "Tøm buffer katalog",
+    "TaskRefreshLibrary": "Skann mediebibliotek",
+    "TaskRefreshChapterImagesDescription": "Lager forhåndsvisningsbilder for videoer som har kapitler.",
+    "TaskRefreshChapterImages": "Trekk ut Kapittelbilder",
+    "TaskCleanCacheDescription": "Sletter mellomlagrede filer som ikke lengre trengs av systemet."
 }

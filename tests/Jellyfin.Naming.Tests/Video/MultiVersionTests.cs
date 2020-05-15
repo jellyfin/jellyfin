@@ -8,6 +8,8 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public class MultiVersionTests
     {
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
         // FIXME
         // [Fact]
         public void TestMultiEdition1()
@@ -430,8 +432,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         private VideoListResolver GetResolver()
         {
-            var options = new NamingOptions();
-            return new VideoListResolver(options);
+            return new VideoListResolver(_namingOptions);
         }
     }
 }
