@@ -67,7 +67,7 @@ namespace MediaBrowser.Model.Net
             { ".m3u8", "application/x-mpegURL" },
             { ".map", "application/x-javascript" },
             { ".mobi", "application/x-mobipocket-ebook" },
-            { ".odf", "application/oebps-package+xml" },
+            { ".opf", "application/oebps-package+xml" },
             { ".pdf", "application/pdf" },
             { ".rar", "application/vnd.rar" },
             { ".srt", "application/x-subrip" },
