@@ -107,10 +107,11 @@ namespace Jellyfin.Server.Implementations
 
         public override int SaveChanges()
         {
-            foreach (var entity in ChangeTracker.Entries().Where(e => e.State == EntityState.Modified))
+            foreach (var saveEntity in ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Modified)
+                .OfType<ISavingChanges>())
             {
-                var saveEntity = entity.Entity as ISavingChanges;
-                saveEntity?.OnSavingChanges();
+                saveEntity.OnSavingChanges();
             }
 
             return base.SaveChanges();

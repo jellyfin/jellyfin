@@ -106,11 +106,10 @@ namespace Jellyfin.Server.Migrations.Routines
                         newEntry.ItemId = entry[5].ToString();
                     }
 
-                    // Since code references the Id of the entries, this needs to be inserted in order.
-                    // In order to do that, we insert one by one because EF Core doesn't provide a way to guarantee ordering for bulk inserts.
                     dbContext.ActivityLogs.Add(newEntry);
-                    dbContext.SaveChanges();
                 }
+
+                dbContext.SaveChanges();
             }
 
             try

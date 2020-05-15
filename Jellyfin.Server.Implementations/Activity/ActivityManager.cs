@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -56,7 +55,7 @@ namespace Jellyfin.Server.Implementations.Activity
         {
             using var dbContext = _provider.CreateContext();
 
-            var query = func(dbContext.ActivityLogs).OrderByDescending(entry => entry.DateCreated).AsQueryable();
+            var query = func(dbContext.ActivityLogs.OrderByDescending(entry => entry.DateCreated));
 
             if (startIndex.HasValue)
             {
@@ -69,12 +68,12 @@ namespace Jellyfin.Server.Implementations.Activity
             }
 
             // This converts the objects from the new database model to the old for compatibility with the existing API.
-            var list = query.AsEnumerable().Select(ConvertToOldModel).ToList();
+            var list = query.Select(ConvertToOldModel).ToList();
 
             return new QueryResult<ActivityLogEntry>
             {
                 Items = list,
-                TotalRecordCount = dbContext.ActivityLogs.Count()
+                TotalRecordCount = func(dbContext.ActivityLogs).Count()
             };
         }
 

@@ -53,6 +53,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="name">The name.</param>
         /// <param name="type">The type.</param>
         /// <param name="userId">The user's id.</param>
+        /// <returns>The new <see cref="ActivityLog"/> instance.</returns>
         public static ActivityLog Create(string name, string type, Guid userId)
         {
             return new ActivityLog(name, type, userId);
@@ -63,7 +64,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Gets the identity of this instance.
+        /// Gets or sets the identity of this instance.
         /// This is the key in the backing database.
         /// </summary>
         [Key]
