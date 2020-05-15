@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.Playback.Hls
     public class DynamicHlsService : BaseHlsService
     {
         public DynamicHlsService(
-            ILogger logger,
+            ILogger<DynamicHlsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
