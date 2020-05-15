@@ -193,12 +193,6 @@ namespace Emby.Server.Implementations.Configuration
                 changed = true;
             }
 
-            if (!config.CameraUploadUpgraded)
-            {
-                config.CameraUploadUpgraded = true;
-                changed = true;
-            }
-
             if (!config.CollectionsUpgraded)
             {
                 config.CollectionsUpgraded = true;
