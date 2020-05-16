@@ -477,8 +477,7 @@ namespace Emby.Server.Implementations.Session
                 Client = appName,
                 DeviceId = deviceId,
                 ApplicationVersion = appVersion,
-                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture),
-                ServerId = _appHost.SystemId
+                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             var username = user?.Name;
@@ -1042,12 +1041,12 @@ namespace Emby.Server.Implementations.Session
 
         private static async Task SendMessageToSession<T>(SessionInfo session, string name, T data, CancellationToken cancellationToken)
         {
-            var controllers = session.SessionControllers.ToArray();
-            var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            var controllers = session.SessionControllers;
+            var messageId = Guid.NewGuid();
 
             foreach (var controller in controllers)
             {
-                await controller.SendMessage(name, messageId, data, controllers, cancellationToken).ConfigureAwait(false);
+                await controller.SendMessage(name, messageId, data, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1055,13 +1054,13 @@ namespace Emby.Server.Implementations.Session
         {
             IEnumerable<Task> GetTasks()
             {
-                var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+                var messageId = Guid.NewGuid();
                 foreach (var session in sessions)
                 {
                     var controllers = session.SessionControllers;
                     foreach (var controller in controllers)
                     {
-                        yield return controller.SendMessage(name, messageId, data, controllers, cancellationToken);
+                        yield return controller.SendMessage(name, messageId, data, cancellationToken);
                     }
                 }
             }
@@ -1762,7 +1761,7 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentNullException(nameof(info));
             }
 
-            var user = info.UserId.Equals(Guid.Empty)
+            var user = info.UserId == Guid.Empty
                 ? null
                 : _userManager.GetUserById(info.UserId);
 

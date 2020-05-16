@@ -59,6 +59,7 @@ namespace MediaBrowser.Model.Activity
         /// Gets or sets the user primary image tag.
         /// </summary>
         /// <value>The user primary image tag.</value>
+        [Obsolete("UserPrimaryImageTag is not used.")]
         public string UserPrimaryImageTag { get; set; }
 
         /// <summary>

@@ -368,11 +368,11 @@ namespace Jellyfin.Naming.Tests.Video
         {
             var files = new[]
             {
-                new FileSystemMetadata{FullName = "Bad Boys (2006) part1.mkv", IsDirectory = false},
-                new FileSystemMetadata{FullName = "Bad Boys (2006) part2.mkv", IsDirectory = false},
-                new FileSystemMetadata{FullName = "300 (2006) part2", IsDirectory = true},
-                new FileSystemMetadata{FullName = "300 (2006) part3", IsDirectory = true},
-                new FileSystemMetadata{FullName = "300 (2006) part1", IsDirectory = true}
+                new FileSystemMetadata { FullName = "Bad Boys (2006) part1.mkv", IsDirectory = false },
+                new FileSystemMetadata { FullName = "Bad Boys (2006) part2.mkv", IsDirectory = false },
+                new FileSystemMetadata { FullName = "300 (2006) part2", IsDirectory = true },
+                new FileSystemMetadata { FullName = "300 (2006) part3", IsDirectory = true },
+                new FileSystemMetadata { FullName = "300 (2006) part1", IsDirectory = true }
             };
 
             var resolver = GetResolver();

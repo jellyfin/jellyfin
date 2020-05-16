@@ -79,8 +79,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableRemoteAccess { get; set; }
 
-        public bool CameraUploadUpgraded { get; set; }
-
         public bool CollectionsUpgraded { get; set; }
 
         /// <summary>
