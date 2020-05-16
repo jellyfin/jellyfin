@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 .Append(config.PublicHttpsPort).Append(Separator)
                 .Append(_appHost.HttpPort).Append(Separator)
                 .Append(_appHost.HttpsPort).Append(Separator)
-                .Append(_appHost.EnableHttps).Append(Separator)
+                .Append(_appHost.ListenWithHttps).Append(Separator)
                 .Append(config.EnableRemoteAccess).Append(Separator)
                 .ToString();
         }
@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             yield return CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
 
-            if (_appHost.EnableHttps)
+            if (_appHost.ListenWithHttps)
             {
                 yield return CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
             }
