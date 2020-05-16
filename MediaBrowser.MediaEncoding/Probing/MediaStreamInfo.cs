@@ -287,9 +287,9 @@ namespace MediaBrowser.MediaEncoding.Probing
         public string ColorTransfer { get; set; }
 
         /// <summary>
-        /// Gets or sets the color transfer.
+        /// Gets or sets the color primaries.
         /// </summary>
-        /// <value>The color transfer.</value>
+        /// <value>The color primaries.</value>
         [JsonPropertyName("color_primaries")]
         public string ColorPrimaries { get; set; }
     }

@@ -92,7 +92,7 @@ namespace MediaBrowser.Model.Entities
                 var colorTransfer = ColorTransfer;
 
                 if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
+                    || string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
                 {
                     return "HDR";
                 }
