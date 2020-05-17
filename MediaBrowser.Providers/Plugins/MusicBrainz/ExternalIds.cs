@@ -1,6 +1,7 @@
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Plugins.MusicBrainz;
 
 namespace MediaBrowser.Providers.Music

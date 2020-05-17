@@ -1,4 +1,4 @@
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.Model.Providers
 {
     /// <summary>
     /// The specific media type of an <see cref="IExternalId"/>.
