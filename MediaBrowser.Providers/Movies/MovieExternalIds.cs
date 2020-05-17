@@ -16,7 +16,7 @@ namespace MediaBrowser.Providers.Movies
         public string Key => MetadataProviders.Imdb.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.None;
+        public ExternalIdMediaType Type => ExternalIdMediaType.General;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.imdb.com/title/{0}";

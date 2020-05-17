@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Key => MetadataProviders.AudioDbAlbum.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.None;
+        public ExternalIdMediaType Type => ExternalIdMediaType.General;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/album/{0}";

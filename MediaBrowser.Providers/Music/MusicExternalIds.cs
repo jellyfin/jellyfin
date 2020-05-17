@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Music
         public string Key => "IMVDb";
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.None;
+        public ExternalIdMediaType Type => ExternalIdMediaType.General;
 
         /// <inheritdoc />
         public string UrlFormatString => null;

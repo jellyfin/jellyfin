@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Providers
         /// There is no specific media type associated with the external id, or the external provider only has one
         /// id type so there is no need to be specific.
         /// </summary>
-        None,
+        General,
 
         /// <summary>
         /// A music album.

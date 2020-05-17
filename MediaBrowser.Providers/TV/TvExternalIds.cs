@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.TV
         public string Key => MetadataProviders.Zap2It.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.None;
+        public ExternalIdMediaType Type => ExternalIdMediaType.General;
 
         /// <inheritdoc />
         public string UrlFormatString => "http://tvlistings.zap2it.com/overview.html?programSeriesId={0}";
@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.TV
         public string Key => MetadataProviders.Tvdb.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.None;
+        public ExternalIdMediaType Type => ExternalIdMediaType.General;
 
         /// <inheritdoc />
         public string UrlFormatString => TvdbUtils.TvdbBaseUrl + "?tab=series&id={0}";
