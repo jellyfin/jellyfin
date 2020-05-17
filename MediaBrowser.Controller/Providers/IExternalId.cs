@@ -3,7 +3,9 @@ using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
 {
-    /// <summary>Represents and identifier for an external provider.</summary>
+    /// <summary>
+    /// Represents an identifier for an external provider.
+    /// </summary>
     public interface IExternalId
     {
         /// <summary>
@@ -14,11 +16,12 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Gets the unique key to distinguish this provider/type pair. This should be unique across providers.
         /// </summary>
-        // TODO: This property is not actually unique at the moment. It should be updated to be unique.
+        // TODO: This property is not actually unique across the concrete types at the moment. It should be updated to be unique.
         string Key { get; }
 
         /// <summary>
-        /// Gets the specific media type for this id.
+        /// Gets the specific media type for this id. This is used to distinguish between the different
+        /// external id types for providers with multiple ids.
         /// </summary>
         /// <remarks>
         /// This can be used along with the <see cref="Name"/> to localize the external id on the client.

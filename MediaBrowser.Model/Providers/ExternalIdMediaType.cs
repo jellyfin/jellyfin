@@ -1,16 +1,16 @@
 namespace MediaBrowser.Model.Providers
 {
     /// <summary>
-    /// The specific media type of an <see cref="IExternalId"/>.
+    /// The specific media type of an <see cref="ExternalIdInfo"/>.
     /// </summary>
     /// <remarks>
-    /// This is used as a translation key for clients.
+    /// Client applications may use this as a translation key.
     /// </remarks>
     public enum ExternalIdMediaType
     {
         /// <summary>
-        /// There is no specific media type associated with the external id, or the external provider only has one
-        /// id type so there is no need to be specific.
+        /// There is no specific media type associated with the external id, or this is the default id for the external
+        /// provider so there is no need to specify a type.
         /// </summary>
         General,
 

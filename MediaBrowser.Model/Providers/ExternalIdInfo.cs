@@ -13,10 +13,12 @@ namespace MediaBrowser.Model.Providers
         /// <summary>
         /// Gets or sets the unique key for this id. This key should be unique across all providers.
         /// </summary>
+        // TODO: This property is not actually unique across the concrete types at the moment. It should be updated to be unique.
         public string Key { get; set; }
 
         /// <summary>
-        /// Gets or sets the specific media type for this id.
+        /// Gets or sets the specific media type for this id. This is used to distinguish between the different
+        /// external id types for providers with multiple ids.
         /// </summary>
         /// <remarks>
         /// This can be used along with the <see cref="Name"/> to localize the external id on the client.
