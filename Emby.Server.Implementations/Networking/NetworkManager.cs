@@ -200,7 +200,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <summary>
-        /// Checks if the give address false within the ranges givin in [subnets]. The addresses in subnets can be hosts or subnets in the CIDR format.
+        /// Checks if the give address falls within the ranges given in [subnets]. The addresses in subnets can be hosts or subnets in the CIDR format.
         /// </summary>
         /// <param name="address">IPAddress version of the address.</param>
         /// <param name="addressString">The address to check.</param>
