@@ -278,5 +278,19 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <value>The disposition.</value>
         [JsonPropertyName("disposition")]
         public IReadOnlyDictionary<string, int> Disposition { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color transfer.
+        /// </summary>
+        /// <value>The color transfer.</value>
+        [JsonPropertyName("color_transfer")]
+        public string ColorTransfer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color primaries.
+        /// </summary>
+        /// <value>The color primaries.</value>
+        [JsonPropertyName("color_primaries")]
+        public string ColorPrimaries { get; set; }
     }
 }
