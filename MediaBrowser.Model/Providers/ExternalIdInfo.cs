@@ -16,11 +16,12 @@ namespace MediaBrowser.Model.Providers
         public string Key { get; set; }
 
         /// <summary>
-        /// Gets or sets the media type (Album, Artist, etc).
-        /// This can be null if there is no specific type.
-        /// This string is also used to localize the media type on the client.
+        /// Gets or sets the specific media type for this id.
         /// </summary>
-        public string Type { get; set; }
+        /// <remarks>
+        /// This can be used along with the <see cref="Name"/> to localize the external id on the client.
+        /// </remarks>
+        public ExternalIdMediaType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the URL format string.

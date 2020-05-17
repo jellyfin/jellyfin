@@ -20,6 +20,9 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Gets the specific media type for this id.
         /// </summary>
+        /// <remarks>
+        /// This can be used along with the <see cref="Name"/> to localize the external id on the client.
+        /// </remarks>
         ExternalIdMediaType Type { get; }
 
         /// <summary>

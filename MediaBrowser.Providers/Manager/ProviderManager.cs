@@ -908,7 +908,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     Name = i.Name,
                     Key = i.Key,
-                    Type = i.Type == ExternalIdMediaType.General ? null : i.Type.ToString(),
+                    Type = i.Type,
                     UrlFormatString = i.UrlFormatString
                 });
         }
