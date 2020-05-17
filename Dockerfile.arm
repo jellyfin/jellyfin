@@ -52,20 +52,26 @@ RUN apt-get update \
  libraspberrypi0 \
  vainfo \
  libva2 \
+ locales \
  && apt-get remove curl gnupg -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
- && chmod 777 /cache /config /media
+ && chmod 777 /cache /config /media \
+ && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
+
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
 
 EXPOSE 8096
 VOLUME /cache /config /media
 ENTRYPOINT ["./jellyfin/jellyfin", \
     "--datadir", "/config", \
     "--cachedir", "/cache", \
-    "--ffmpeg", "/usr/lib/jellyfin-ffmpeg"]
+    "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]

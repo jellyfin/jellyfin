@@ -75,9 +75,11 @@ namespace MediaBrowser.Api.Playback
     public class UniversalAudioService : BaseApiService
     {
         private readonly EncodingHelper _encodingHelper;
+        private readonly ILoggerFactory _loggerFactory;
 
         public UniversalAudioService(
             ILogger<UniversalAudioService> logger,
+            ILoggerFactory loggerFactory,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IHttpClient httpClient,
@@ -108,6 +110,7 @@ namespace MediaBrowser.Api.Playback
             AuthorizationContext = authorizationContext;
             NetworkManager = networkManager;
             _encodingHelper = encodingHelper;
+            _loggerFactory = loggerFactory;
         }
 
         protected IHttpClient HttpClient { get; private set; }
@@ -167,7 +170,7 @@ namespace MediaBrowser.Api.Playback
                     AudioCodec = request.AudioCodec,
                     Protocol = request.TranscodingProtocol,
                     BreakOnNonKeyFrames = request.BreakOnNonKeyFrames,
-                    MaxAudioChannels = request.TranscodingAudioChannels.HasValue ? request.TranscodingAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : null
+                    MaxAudioChannels = request.TranscodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
                 }
             };
 
@@ -233,7 +236,7 @@ namespace MediaBrowser.Api.Playback
             AuthorizationContext.GetAuthorizationInfo(Request).DeviceId = request.DeviceId;
 
             var mediaInfoService = new MediaInfoService(
-                Logger,
+                _loggerFactory.CreateLogger<MediaInfoService>(),
                 ServerConfigurationManager,
                 ResultFactory,
                 MediaSourceManager,
@@ -277,7 +280,7 @@ namespace MediaBrowser.Api.Playback
             if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
                 var service = new DynamicHlsService(
-                    Logger,
+                    _loggerFactory.CreateLogger<DynamicHlsService>(),
                     ServerConfigurationManager,
                     ResultFactory,
                     UserManager,
@@ -300,7 +303,7 @@ namespace MediaBrowser.Api.Playback
 
                 // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
                 // TODO: remove this when we switch back to the segment muxer
-                var supportedHLSContainers = new string[] { "mpegts", "fmp4" };
+                var supportedHLSContainers = new[] { "mpegts", "fmp4" };
 
                 var newRequest = new GetMasterHlsAudioPlaylist
                 {
@@ -331,7 +334,7 @@ namespace MediaBrowser.Api.Playback
             else
             {
                 var service = new AudioService(
-                    Logger,
+                    _loggerFactory.CreateLogger<AudioService>(),
                     ServerConfigurationManager,
                     ResultFactory,
                     HttpClient,

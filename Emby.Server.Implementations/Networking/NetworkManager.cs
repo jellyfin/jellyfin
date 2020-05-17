@@ -500,7 +500,7 @@ namespace Emby.Server.Implementations.Networking
                     {
                         if (ip.Address.Equals(address) && ip.IPv4Mask != null)
                         {
-                           return ip.IPv4Mask;
+                            return ip.IPv4Mask;
                         }
                     }
                 }

@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Api.UserLibrary;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -116,12 +116,9 @@ namespace MediaBrowser.Api
         {
             var val = Filters;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+            return string.IsNullOrEmpty(val)
+                ? Array.Empty<ItemFilter>()
+                : val.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
         }
 
         /// <summary>
@@ -173,14 +170,9 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{ItemFilter}.</returns>
         public IEnumerable<ItemFilter> GetFilters()
         {
-            var val = Filters;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+            return string.IsNullOrEmpty(Filters)
+                ? Array.Empty<ItemFilter>()
+                : Filters.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
         }
     }
 
@@ -241,7 +233,7 @@ namespace MediaBrowser.Api
             {
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
-                ChannelIds = new Guid[] { new Guid(request.Id) },
+                ChannelIds = new[] { new Guid(request.Id) },
                 ParentId = string.IsNullOrWhiteSpace(request.FolderId) ? Guid.Empty : new Guid(request.FolderId),
                 OrderBy = request.GetOrderBy(),
                 DtoOptions = new Controller.Dto.DtoOptions

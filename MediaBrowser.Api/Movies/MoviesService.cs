@@ -82,7 +82,7 @@ namespace MediaBrowser.Api.Movies
         /// Initializes a new instance of the <see cref="MoviesService" /> class.
         /// </summary>
         public MoviesService(
-            ILogger logger,
+            ILogger<MoviesService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -394,7 +394,7 @@ namespace MediaBrowser.Api.Movies
         {
             var people = _libraryManager.GetPeople(new InternalPeopleQuery
             {
-                PersonTypes = new string[]
+                PersonTypes = new[]
                 {
                     PersonType.Director
                 }

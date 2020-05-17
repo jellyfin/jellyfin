@@ -28,7 +28,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="dtoService">The dto service.</param>
         protected BaseItemsByNameService(
-            ILogger logger,
+            ILogger<BaseItemsByNameService<TItemType>> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -82,8 +82,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var parent = GetParentItem(request);
 
-            var collectionFolder = parent as IHasCollectionType;
-            if (collectionFolder != null)
+            if (parent is IHasCollectionType collectionFolder)
             {
                 return collectionFolder.CollectionType;
             }
@@ -274,7 +273,7 @@ namespace MediaBrowser.Api.UserLibrary
                 DtoOptions = dtoOptions
             };
 
-            Func<BaseItem, bool> filter = i => FilterItem(request, i, excludeItemTypes, includeItemTypes, mediaTypes);
+            bool Filter(BaseItem i) => FilterItem(request, i, excludeItemTypes, includeItemTypes, mediaTypes);
 
             if (parentItem.IsFolder)
             {
@@ -284,18 +283,18 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     items = request.Recursive ?
                         folder.GetRecursiveChildren(user, query).ToList() :
-                        folder.GetChildren(user, true).Where(filter).ToList();
+                        folder.GetChildren(user, true).Where(Filter).ToList();
                 }
                 else
                 {
                     items = request.Recursive ?
-                        folder.GetRecursiveChildren(filter) :
-                        folder.Children.Where(filter).ToList();
+                        folder.GetRecursiveChildren(Filter) :
+                        folder.Children.Where(Filter).ToList();
                 }
             }
             else
             {
-                items = new[] { parentItem }.Where(filter).ToList();
+                items = new[] { parentItem }.Where(Filter).ToList();
             }
 
             var extractedItems = GetAllItems(request, items);
@@ -346,30 +345,21 @@ namespace MediaBrowser.Api.UserLibrary
         private bool FilterItem(GetItemsByName request, BaseItem f, string[] excludeItemTypes, string[] includeItemTypes, string[] mediaTypes)
         {
             // Exclude item types
-            if (excludeItemTypes.Length > 0)
+            if (excludeItemTypes.Length > 0 && excludeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
             {
-                if (excludeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
+                return false;
             }
 
             // Include item types
-            if (includeItemTypes.Length > 0)
+            if (includeItemTypes.Length > 0 && !includeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
             {
-                if (!includeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
+                return false;
             }
 
             // Include MediaTypes
-            if (mediaTypes.Length > 0)
+            if (mediaTypes.Length > 0 && !mediaTypes.Contains(f.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
-                if (!mediaTypes.Contains(f.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;

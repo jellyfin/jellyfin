@@ -86,11 +86,17 @@
     "TvShows": "ТВ Серии",
     "System": "Систем",
     "Sync": "Синхронизација",
-    "SubtitlesDownloadedForItem": "Спуштање превод за {0}",
     "SubtitleDownloadFailureFromForItem": "Преводот неуспешно се спушти од {0} за {1}",
     "StartupEmbyServerIsLoading": "Jellyfin Server се пушта. Ве молиме причекајте.",
     "Songs": "Песни",
     "Shows": "Серии",
     "ServerNameNeedsToBeRestarted": "{0} треба да се рестартира",
-    "ScheduledTaskStartedWithName": "{0} започна"
+    "ScheduledTaskStartedWithName": "{0} започна",
+    "TaskRefreshChapterImages": "Извези Слики од Поглавје",
+    "TaskCleanCacheDescription": "Ги брише кешираните фајлови што не се повеќе потребни од системот.",
+    "TaskCleanCache": "Исчисти Го Кешот",
+    "TasksChannelsCategory": "Интернет Канали",
+    "TasksApplicationCategory": "Апликација",
+    "TasksLibraryCategory": "Библиотека",
+    "TasksMaintenanceCategory": "Одржување"
 }

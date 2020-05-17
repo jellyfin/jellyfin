@@ -1,10 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{154872D9-6C12-4007-96E3-8F70A58386CE}</ProjectGuid>
+  </PropertyGroup>
+
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="1.68.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="1.68.1" />
-    <PackageReference Include="Jellyfin.SkiaSharp.NativeAssets.LinuxArm" Version="1.68.0" />
+    <PackageReference Include="Jellyfin.SkiaSharp.NativeAssets.LinuxArm" Version="1.68.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -59,7 +59,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="localization">The localization.</param>
         /// <param name="dtoService">The dto service.</param>
         public ItemsService(
-            ILogger logger,
+            ILogger<ItemsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -199,21 +199,22 @@ namespace MediaBrowser.Api.UserLibrary
                 item = _libraryManager.GetUserRootFolder();
             }
 
-            Folder folder = item as Folder;
-            if (folder == null)
+            if (!(item is Folder folder))
             {
                 folder = _libraryManager.GetUserRootFolder();
             }
 
-            var hasCollectionType = folder as IHasCollectionType;
-            if (hasCollectionType != null
+            if (folder is IHasCollectionType hasCollectionType
                 && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 request.Recursive = true;
                 request.IncludeItemTypes = "Playlist";
             }
 
-            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id);
+            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id)
+                    // Assume all folders inside an EnabledChannel are enabled
+                    || user.Policy.EnabledChannels.Any(i => new Guid(i) == item.Id);
+
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
             {
@@ -225,7 +226,7 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
-            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder)
+            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder && !user.Policy.EnableAllChannels)
             {
                 Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name, item.Name);
                 return new QueryResult<BaseItem>
@@ -241,11 +242,11 @@ namespace MediaBrowser.Api.UserLibrary
                 return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
-            var itemsArray = folder.GetChildren(user, true).ToArray();
+            var itemsArray = folder.GetChildren(user, true);
             return new QueryResult<BaseItem>
             {
                 Items = itemsArray,
-                TotalRecordCount = itemsArray.Length,
+                TotalRecordCount = itemsArray.Count,
                 StartIndex = 0
             };
         }

@@ -10,10 +10,6 @@ usage() {
     echo -e ""
     echo -e "Usage:"
     echo -e " $ bump_version <new_version>"
-    echo -e ""
-    echo -e "The web_branch defaults to the same branch name as the current main branch."
-    echo -e "This helps facilitate releases where both branches would be called release-X.Y.Z"
-    echo -e "and would already be created before running this script."
 }
 
 if [[ -z $1 ]]; then
@@ -54,37 +50,26 @@ else
     new_version_deb="${new_version}-1"
 fi
 
-# Set the Dockerfile web version to the specified new_version
-old_version="$(
-    grep "JELLYFIN_WEB_VERSION=" Dockerfile \
-        | sed -E 's/ARG JELLYFIN_WEB_VERSION=v([0-9\.]+[-a-z0-9]*)/\1/'
-)"
-echo $old_version
-
-old_version_sed="$( sed 's/\./\\./g' <<<"${old_version}" )" # Escape the '.' chars
-sed -i "s/${old_version_sed}/${new_version}/g" Dockerfile*
+# Update the metapackage equivs file
+debian_equivs_file="debian/metapackage/jellyfin"
+sed -i "s/${old_version_sed}/${new_version}/g" ${debian_equivs_file}
 
 # Write out a temporary Debian changelog with our new stuff appended and some templated formatting
-debian_changelog_file="deployment/debian-package-x64/pkg-src/changelog"
+debian_changelog_file="debian/changelog"
 debian_changelog_temp="$( mktemp )"
 # Create new temp file with our changelog
-echo -e "### DEBIAN PACKAGE CHANGELOG: Verify this file looks correct or edit accordingly, then delete this line, write, and exit.
-jellyfin (${new_version_deb}) unstable; urgency=medium
+echo -e "jellyfin (${new_version_deb}) unstable; urgency=medium
 
   * New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}
 
  -- Jellyfin Packaging Team <packaging@jellyfin.org>  $( date --rfc-2822 )
 " >> ${debian_changelog_temp}
 cat ${debian_changelog_file} >> ${debian_changelog_temp}
-# Edit the file to verify
-$EDITOR ${debian_changelog_temp}
 # Move into place
 mv ${debian_changelog_temp} ${debian_changelog_file}
-# Clean up
-rm -f ${debian_changelog_temp}
 
 # Write out a temporary Yum changelog with our new stuff prepended and some templated formatting
-fedora_spec_file="deployment/fedora-package-x64/pkg-src/jellyfin.spec"
+fedora_spec_file="fedora/jellyfin.spec"
 fedora_changelog_temp="$( mktemp )"
 fedora_spec_temp_dir="$( mktemp -d )"
 fedora_spec_temp="${fedora_spec_temp_dir}/jellyfin.spec.tmp"
@@ -98,21 +83,18 @@ sed -i "s/${old_version_sed}/${new_version_sed}/g" xx00
 # Remove the header from xx01
 sed -i '/^%changelog/d' xx01
 # Create new temp file with our changelog
-echo -e "### YUM SPEC CHANGELOG: Verify this file looks correct or edit accordingly, then delete this line, write, and exit.
-%changelog
+echo -e "%changelog
 * $( LANG=C date '+%a %b %d %Y' ) Jellyfin Packaging Team <packaging@jellyfin.org>
 - New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}" >> ${fedora_changelog_temp}
 cat xx01 >> ${fedora_changelog_temp}
-# Edit the file to verify
-$EDITOR ${fedora_changelog_temp}
 # Reassembble
 cat xx00 ${fedora_changelog_temp} > ${fedora_spec_temp}
 popd
 # Move into place
 mv ${fedora_spec_temp} ${fedora_spec_file}
 # Clean up
-rm -rf ${fedora_changelog_temp} ${fedora_spec_temp_dir}
+rm -rf ${fedora_spec_temp_dir}
 
 # Stage the changed files for commit
-git add ${shared_version_file} ${build_file} ${debian_changelog_file} ${fedora_spec_file} Dockerfile*
+git add ${shared_version_file} ${build_file} ${debian_equivs_file} ${debian_changelog_file} ${fedora_spec_file}
 git status

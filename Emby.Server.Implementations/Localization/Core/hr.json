@@ -30,7 +30,7 @@
     "Inherit": "Naslijedi",
     "ItemAddedWithName": "{0} je dodano u biblioteku",
     "ItemRemovedWithName": "{0} je uklonjen iz biblioteke",
-    "LabelIpAddressValue": "Ip adresa: {0}",
+    "LabelIpAddressValue": "IP adresa: {0}",
     "LabelRunningTimeValue": "Vrijeme rada: {0}",
     "Latest": "Najnovije",
     "MessageApplicationUpdated": "Jellyfin Server je ažuriran",
@@ -76,7 +76,6 @@
     "StartupEmbyServerIsLoading": "Jellyfin Server se učitava. Pokušajte ponovo kasnije.",
     "SubtitleDownloadFailureForItem": "Titlovi prijevoda nisu preuzeti za {0}",
     "SubtitleDownloadFailureFromForItem": "Subtitles failed to download from {0} for {1}",
-    "SubtitlesDownloadedForItem": "Titlovi prijevoda preuzeti za {0}",
     "Sync": "Sink.",
     "System": "Sistem",
     "TvShows": "TV Shows",
@@ -93,5 +92,13 @@
     "UserStoppedPlayingItemWithValues": "{0} je zaustavio {1}",
     "ValueHasBeenAddedToLibrary": "{0} has been added to your media library",
     "ValueSpecialEpisodeName": "Specijal - {0}",
-    "VersionNumber": "Verzija {0}"
+    "VersionNumber": "Verzija {0}",
+    "TaskRefreshLibraryDescription": "Skenira vašu medijsku knjižnicu sa novim datotekama i osvježuje metapodatke.",
+    "TaskRefreshLibrary": "Skeniraj medijsku knjižnicu",
+    "TaskRefreshChapterImagesDescription": "Stvara sličice za videozapise koji imaju poglavlja.",
+    "TaskRefreshChapterImages": "Raspakiraj slike poglavlja",
+    "TaskCleanCacheDescription": "Briše priručne datoteke nepotrebne za sistem.",
+    "TaskCleanCache": "Očisti priručnu memoriju",
+    "TasksApplicationCategory": "Aplikacija",
+    "TasksMaintenanceCategory": "Održavanje"
 }

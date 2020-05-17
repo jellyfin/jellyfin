@@ -1,12 +1,12 @@
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
-  - name: TestProjects
-    value: "tests/**/*Tests.csproj"
-  - name: RestoreBuildProjects
-    value: "Jellyfin.Server/Jellyfin.Server.csproj"
-  - name: DotNetSdkVersion
-    value: 3.1.100
+- name: TestProjects
+  value: "tests/**/*Tests.csproj"
+- name: RestoreBuildProjects
+  value: "Jellyfin.Server/Jellyfin.Server.csproj"
+- name: DotNetSdkVersion
+  value: 3.1.100
 
 pr:
   autoCancel: true
@@ -26,11 +26,6 @@ jobs:
         Linux: "ubuntu-latest"
         Windows: "windows-latest"
         macOS: "macos-latest"
-
-  - template: azure-pipelines-windows.yml
-    parameters:
-      WindowsImage: "windows-latest"
-      TestProjects: $(TestProjects)
 
   - template: azure-pipelines-compat.yml
     parameters:

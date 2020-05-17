@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{07E39F42-A2C6-4B32-AF8C-725F957A73FF}</ProjectGuid>
+  </PropertyGroup>
+
   <PropertyGroup>
     <AssemblyName>jellyfin</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -36,8 +41,10 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.7.82" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.3" />
+    <PackageReference Include="prometheus-net" Version="3.5.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="3.5.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
@@ -53,6 +60,7 @@
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
     <ProjectReference Include="..\Jellyfin.Drawing.Skia\Jellyfin.Drawing.Skia.csproj" />
+    <ProjectReference Include="..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
   </ItemGroup>
 
 </Project>

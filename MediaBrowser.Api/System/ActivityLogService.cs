@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
@@ -53,7 +55,10 @@ namespace MediaBrowser.Api.System
                 (DateTime?)null :
                 DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
 
-            var result = _activityManager.GetActivityLogEntries(minDate, request.HasUserId, request.StartIndex, request.Limit);
+            var filterFunc = new Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>>(
+                entries => entries.Where(entry => entry.DateCreated >= minDate));
+
+            var result = _activityManager.GetPagedResult(filterFunc, request.StartIndex, request.Limit);
 
             return ToOptimizedResult(result);
         }

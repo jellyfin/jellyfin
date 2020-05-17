@@ -299,15 +299,26 @@ namespace MediaBrowser.Api
         {
             var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
 
-            var ext = result.ContentType.Split('/').Last();
+            var ext = result.ContentType.Split('/')[^1];
 
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-            using (var stream = result.Content)
-            using (var filestream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true))
+            var stream = result.Content;
+
+            await using (stream.ConfigureAwait(false))
             {
-                await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                var fileStream = new FileStream(
+                    fullCachePath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.Read,
+                    IODefaults.FileStreamBufferSize,
+                    true);
+                await using (fileStream.ConfigureAwait(false))
+                {
+                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                }
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));

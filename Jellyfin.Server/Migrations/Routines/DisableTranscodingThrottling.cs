@@ -1,8 +1,6 @@
 using System;
-using System.IO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations.Routines
@@ -12,6 +10,15 @@ namespace Jellyfin.Server.Migrations.Routines
     /// </summary>
     internal class DisableTranscodingThrottling : IMigrationRoutine
     {
+        private readonly ILogger _logger;
+        private readonly IConfigurationManager _configManager;
+
+        public DisableTranscodingThrottling(ILogger<DisableTranscodingThrottling> logger, IConfigurationManager configManager)
+        {
+            _logger = logger;
+            _configManager = configManager;
+        }
+
         /// <inheritdoc/>
         public Guid Id => Guid.Parse("{4124C2CD-E939-4FFB-9BE9-9B311C413638}");
 
@@ -19,16 +26,16 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "DisableTranscodingThrottling";
 
         /// <inheritdoc/>
-        public void Perform(CoreAppHost host, ILogger logger)
+        public void Perform()
         {
             // Set EnableThrottling to false since it wasn't used before and may introduce issues
-            var encoding = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<EncodingOptions>("encoding");
+            var encoding = _configManager.GetConfiguration<EncodingOptions>("encoding");
             if (encoding.EnableThrottling)
             {
-                logger.LogInformation("Disabling transcoding throttling during migration");
+                _logger.LogInformation("Disabling transcoding throttling during migration");
                 encoding.EnableThrottling = false;
 
-                host.ServerConfigurationManager.SaveConfiguration("encoding", encoding);
+                _configManager.SaveConfiguration("encoding", encoding);
             }
         }
     }

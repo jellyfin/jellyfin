@@ -78,7 +78,18 @@ namespace Emby.Dlna.ContentDirectory
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, mediaEncoder);
+            _didlBuilder = new DidlBuilder(
+                profile,
+                user,
+                imageProcessor,
+                serverAddress,
+                accessToken,
+                userDataManager,
+                localization,
+                mediaSourceManager,
+                Logger,
+                mediaEncoder,
+                libraryManager);
         }
 
         /// <inheritdoc />
@@ -153,7 +164,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             var id = sparams["ObjectID"];
 
-            var serverItem = GetItemFromObjectId(id, _user);
+            var serverItem = GetItemFromObjectId(id);
 
             var item = serverItem.Item;
 
@@ -276,7 +287,7 @@ namespace Emby.Dlna.ContentDirectory
 
                     DidlBuilder.WriteXmlRootAttributes(_profile, writer);
 
-                    var serverItem = GetItemFromObjectId(id, _user);
+                    var serverItem = GetItemFromObjectId(id);
                     var item = serverItem.Item;
 
 
@@ -293,7 +304,7 @@ namespace Emby.Dlna.ContentDirectory
                         else
                         {
                             var dlnaOptions = _config.GetDlnaConfiguration();
-                            _didlBuilder.WriteItemElement(dlnaOptions, writer, item, _user, null, null, deviceId, filter);
+                            _didlBuilder.WriteItemElement(writer, item, _user, null, null, deviceId, filter);
                         }
 
                         provided++;
@@ -320,7 +331,7 @@ namespace Emby.Dlna.ContentDirectory
                             }
                             else
                             {
-                                _didlBuilder.WriteItemElement(dlnaOptions, writer, childItem, _user, item, serverItem.StubType, deviceId, filter);
+                                _didlBuilder.WriteItemElement(writer, childItem, _user, item, serverItem.StubType, deviceId, filter);
                             }
                         }
                     }
@@ -387,7 +398,7 @@ namespace Emby.Dlna.ContentDirectory
 
                     DidlBuilder.WriteXmlRootAttributes(_profile, writer);
 
-                    var serverItem = GetItemFromObjectId(sparams["ContainerID"], _user);
+                    var serverItem = GetItemFromObjectId(sparams["ContainerID"]);
 
                     var item = serverItem.Item;
 
@@ -406,7 +417,7 @@ namespace Emby.Dlna.ContentDirectory
                         }
                         else
                         {
-                            _didlBuilder.WriteItemElement(dlnaOptions, writer, i, _user, item, serverItem.StubType, deviceId, filter);
+                            _didlBuilder.WriteItemElement(writer, i, _user, item, serverItem.StubType, deviceId, filter);
                         }
                     }
 
@@ -512,11 +523,11 @@ namespace Emby.Dlna.ContentDirectory
                 }
                 else if (string.Equals(CollectionType.Folders, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetFolders(item, user, stubType, sort, startIndex, limit);
+                    return GetFolders(user, startIndex, limit);
                 }
                 else if (string.Equals(CollectionType.LiveTv, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetLiveTvChannels(item, user, stubType, sort, startIndex, limit);
+                    return GetLiveTvChannels(user, sort, startIndex, limit);
                 }
             }
 
@@ -547,7 +558,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(queryResult);
         }
 
-        private QueryResult<ServerItem> GetLiveTvChannels(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetLiveTvChannels(User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -579,7 +590,7 @@ namespace Emby.Dlna.ContentDirectory
 
             if (stubType.HasValue && stubType.Value == StubType.Playlists)
             {
-                return GetMusicPlaylists(item, user, query);
+                return GetMusicPlaylists(user, query);
             }
 
             if (stubType.HasValue && stubType.Value == StubType.Albums)
@@ -707,7 +718,7 @@ namespace Emby.Dlna.ContentDirectory
 
             if (stubType.HasValue && stubType.Value == StubType.Collections)
             {
-                return GetMovieCollections(item, user, query);
+                return GetMovieCollections(user, query);
             }
 
             if (stubType.HasValue && stubType.Value == StubType.Favorites)
@@ -720,46 +731,42 @@ namespace Emby.Dlna.ContentDirectory
                 return GetGenres(item, user, query);
             }
 
-            var list = new List<ServerItem>();
-
-            list.Add(new ServerItem(item)
+            var array = new ServerItem[]
             {
-                StubType = StubType.ContinueWatching
-            });
-
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Latest
-            });
-
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Movies
-            });
-
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Collections
-            });
-
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Favorites
-            });
-
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Genres
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.ContinueWatching
+                },
+                new ServerItem(item)
+                {
+                    StubType = StubType.Latest
+                },
+                new ServerItem(item)
+                {
+                    StubType = StubType.Movies
+                },
+                new ServerItem(item)
+                {
+                    StubType = StubType.Collections
+                },
+                new ServerItem(item)
+                {
+                    StubType = StubType.Favorites
+                },
+                new ServerItem(item)
+                {
+                    StubType = StubType.Genres
+                }
+            };
 
             return new QueryResult<ServerItem>
             {
-                Items = list,
-                TotalRecordCount = list.Count
+                Items = array,
+                TotalRecordCount = array.Length
             };
         }
 
-        private QueryResult<ServerItem> GetFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetFolders(User user, int? startIndex, int? limit)
         {
             var folders = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                 .OrderBy(i => i.SortName)
@@ -792,7 +799,7 @@ namespace Emby.Dlna.ContentDirectory
 
             if (stubType.HasValue && stubType.Value == StubType.NextUp)
             {
-                return GetNextUp(item, user, query);
+                return GetNextUp(item, query);
             }
 
             if (stubType.HasValue && stubType.Value == StubType.Latest)
@@ -910,7 +917,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMovieCollections(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMovieCollections(User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             //query.Parent = parent;
@@ -1105,7 +1112,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(result);
         }
 
-        private QueryResult<ServerItem> GetMusicPlaylists(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicPlaylists(User user, InternalItemsQuery query)
         {
             query.Parent = null;
             query.IncludeItemTypes = new[] { typeof(Playlist).Name };
@@ -1134,7 +1141,7 @@ namespace Emby.Dlna.ContentDirectory
             return ToResult(items);
         }
 
-        private QueryResult<ServerItem> GetNextUp(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetNextUp(BaseItem parent, InternalItemsQuery query)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
@@ -1289,15 +1296,15 @@ namespace Emby.Dlna.ContentDirectory
             return result;
         }
 
-        private ServerItem GetItemFromObjectId(string id, User user)
+        private ServerItem GetItemFromObjectId(string id)
         {
             return DidlBuilder.IsIdRoot(id)
 
                  ? new ServerItem(_libraryManager.GetUserRootFolder())
-                 : ParseItemId(id, user);
+                 : ParseItemId(id);
         }
 
-        private ServerItem ParseItemId(string id, User user)
+        private ServerItem ParseItemId(string id)
         {
             StubType? stubType = null;
 

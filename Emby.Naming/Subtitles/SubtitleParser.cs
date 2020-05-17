@@ -1,3 +1,4 @@
+#nullable enable
 #pragma warning disable CS1591
 
 using System;
@@ -16,11 +17,11 @@ namespace Emby.Naming.Subtitles
             _options = options;
         }
 
-        public SubtitleInfo ParseFile(string path)
+        public SubtitleInfo? ParseFile(string path)
         {
-            if (string.IsNullOrEmpty(path))
+            if (path.Length == 0)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentException("File path can't be empty.", nameof(path));
             }
 
             var extension = Path.GetExtension(path);
@@ -37,7 +38,8 @@ namespace Emby.Naming.Subtitles
                 IsForced = _options.SubtitleForcedFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase))
             };
 
-            var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparer.OrdinalIgnoreCase) && !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))
+            var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparer.OrdinalIgnoreCase)
+                && !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
             // Should have a name, language and file extension
@@ -51,11 +53,6 @@ namespace Emby.Naming.Subtitles
 
         private string[] GetFlags(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
             // Note: the tags need be be surrounded be either a space ( ), hyphen -, dot . or underscore _.
 
             var file = Path.GetFileName(path);

@@ -1,5 +1,4 @@
 using System.IO;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
@@ -116,11 +115,6 @@ namespace MediaBrowser.Api.Devices
             return _deviceManager.GetDeviceOptions(request.Id);
         }
 
-        public object Get(GetCameraUploads request)
-        {
-            return ToOptimizedResult(_deviceManager.GetCameraUploadHistory(request.DeviceId));
-        }
-
         public void Delete(DeleteDevice request)
         {
             var sessions = _authRepo.Get(new AuthenticationInfoQuery
@@ -132,38 +126,6 @@ namespace MediaBrowser.Api.Devices
             foreach (var session in sessions)
             {
                 _sessionManager.Logout(session);
-            }
-        }
-
-        public Task Post(PostCameraUpload request)
-        {
-            var deviceId = Request.QueryString["DeviceId"];
-            var album = Request.QueryString["Album"];
-            var id = Request.QueryString["Id"];
-            var name = Request.QueryString["Name"];
-            var req = Request.Response.HttpContext.Request;
-
-            if (req.HasFormContentType)
-            {
-                var file = req.Form.Files.Count == 0 ? null : req.Form.Files[0];
-
-                return _deviceManager.AcceptCameraUpload(deviceId, file.OpenReadStream(), new LocalFileInfo
-                {
-                    MimeType = file.ContentType,
-                    Album = album,
-                    Name = name,
-                    Id = id
-                });
-            }
-            else
-            {
-                return _deviceManager.AcceptCameraUpload(deviceId, request.RequestStream, new LocalFileInfo
-                {
-                    MimeType = Request.ContentType,
-                    Album = album,
-                    Name = name,
-                    Id = id
-                });
             }
         }
     }

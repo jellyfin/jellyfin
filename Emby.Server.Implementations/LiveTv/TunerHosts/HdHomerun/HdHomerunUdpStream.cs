@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -8,8 +7,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -122,7 +121,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             //OpenedMediaSource.Path = tempFile;
             //OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             //OpenedMediaSource.SupportsDirectPlay = false;
             //OpenedMediaSource.SupportsDirectStream = true;

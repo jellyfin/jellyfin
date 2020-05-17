@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -11,22 +10,22 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
-using Emby.Drawing;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
-using Jellyfin.Drawing.Skia;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Globalization;
+using MediaBrowser.Controller.Extensions;
+using MediaBrowser.WebDashboard.Api;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
-using Serilog.Events;
 using Serilog.Extensions.Logging;
 using SQLitePCL;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -112,9 +111,10 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
-            // Create an instance of the application configuration to use for application startup
             await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
-            IConfiguration startupConfig = CreateAppConfiguration(appPaths);
+
+            // Create an instance of the application configuration to use for application startup
+            IConfiguration startupConfig = CreateAppConfiguration(options, appPaths);
 
             // Initialize logging framework
             InitializeLoggingFramework(startupConfig, appPaths);
@@ -158,41 +158,39 @@ namespace Jellyfin.Server
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
-            // Make sure we have all the code pages we can get
-            // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            // Increase the max http request limit
-            // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
-            ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
-
-            // Disable the "Expect: 100-Continue" header by default
-            // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
-            ServicePointManager.Expect100Continue = false;
-
-            Batteries_V2.Init();
-            if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
-            {
-                _logger.LogWarning("Failed to enable shared cache for SQLite");
-            }
+            PerformStaticInitialization();
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                GetImageEncoder(appPaths),
                 new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
+
             try
             {
+                // If hosting the web client, validate the client content path
+                if (startupConfig.HostWebClient())
+                {
+                    string webContentPath = DashboardService.GetDashboardUIPath(startupConfig, appHost.ServerConfigurationManager);
+                    if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
+                    {
+                        throw new InvalidOperationException(
+                            "The server is expected to host the web client, but the provided content directory is either " +
+                            $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
+                            "server, you may set the '--nowebclient' command line flag, or set" +
+                            $"'{MediaBrowser.Controller.Extensions.ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
+                    }
+                }
+
                 ServiceCollection serviceCollection = new ServiceCollection();
-                await appHost.InitAsync(serviceCollection, startupConfig).ConfigureAwait(false);
+                appHost.Init(serviceCollection);
 
-                var webHost = CreateWebHostBuilder(appHost, serviceCollection, appPaths).Build();
+                var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
-                // A bit hacky to re-use service provider since ASP.NET doesn't allow a custom service collection.
+                // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
-                appHost.FindParts();
+                await appHost.InitializeServices().ConfigureAwait(false);
                 Migrations.MigrationRunner.Run(appHost, _loggerFactory);
 
                 try
@@ -233,30 +231,91 @@ namespace Jellyfin.Server
             }
         }
 
-        private static IWebHostBuilder CreateWebHostBuilder(ApplicationHost appHost, IServiceCollection serviceCollection, IApplicationPaths appPaths)
+        /// <summary>
+        /// Call static initialization methods for the application.
+        /// </summary>
+        public static void PerformStaticInitialization()
         {
-            return new WebHostBuilder()
-                .UseKestrel(options =>
+            // Make sure we have all the code pages we can get
+            // Ref: https://docs.microsoft.com/en-us/dotnet/api/system.text.codepagesencodingprovider.instance?view=netcore-3.0#remarks
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            // Increase the max http request limit
+            // The default connection limit is 10 for ASP.NET hosted applications and 2 for all others.
+            ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
+
+            // Disable the "Expect: 100-Continue" header by default
+            // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
+            ServicePointManager.Expect100Continue = false;
+
+            Batteries_V2.Init();
+            if (raw.sqlite3_enable_shared_cache(1) != raw.SQLITE_OK)
+            {
+                _logger.LogWarning("Failed to enable shared cache for SQLite");
+            }
+        }
+
+        /// <summary>
+        /// Configure the web host builder.
+        /// </summary>
+        /// <param name="builder">The builder to configure.</param>
+        /// <param name="appHost">The application host.</param>
+        /// <param name="serviceCollection">The application service collection.</param>
+        /// <param name="commandLineOpts">The command line options passed to the application.</param>
+        /// <param name="startupConfig">The application configuration.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <returns>The configured web host builder.</returns>
+        public static IWebHostBuilder ConfigureWebHostBuilder(
+            this IWebHostBuilder builder,
+            ApplicationHost appHost,
+            IServiceCollection serviceCollection,
+            StartupOptions commandLineOpts,
+            IConfiguration startupConfig,
+            IApplicationPaths appPaths)
+        {
+            return builder
+                .UseKestrel((builderContext, options) =>
                 {
                     var addresses = appHost.ServerConfigurationManager
                         .Configuration
                         .LocalNetworkAddresses
                         .Select(appHost.NormalizeConfiguredLocalAddress)
                         .Where(i => i != null)
-                        .ToList();
-                    if (addresses.Any())
+                        .ToHashSet();
+                    if (addresses.Any() && !addresses.Contains(IPAddress.Any))
                     {
+                        if (!addresses.Contains(IPAddress.Loopback))
+                        {
+                            // we must listen on loopback for LiveTV to function regardless of the settings
+                            addresses.Add(IPAddress.Loopback);
+                        }
+
                         foreach (var address in addresses)
                         {
                             _logger.LogInformation("Kestrel listening on {IpAddress}", address);
                             options.Listen(address, appHost.HttpPort);
-
-                            if (appHost.EnableHttps && appHost.Certificate != null)
+                            if (appHost.ListenWithHttps)
                             {
-                                options.Listen(
-                                    address,
-                                    appHost.HttpsPort,
-                                    listenOptions => listenOptions.UseHttps(appHost.Certificate));
+                                options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                {
+                                    listenOptions.UseHttps(appHost.Certificate);
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                });
+                            }
+                            else if (builderContext.HostingEnvironment.IsDevelopment())
+                            {
+                                try
+                                {
+                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                    {
+                                        listenOptions.UseHttps();
+                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                    });
+                                }
+                                catch (InvalidOperationException ex)
+                                {
+                                    _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                }
                             }
                         }
                     }
@@ -265,17 +324,33 @@ namespace Jellyfin.Server
                         _logger.LogInformation("Kestrel listening on all interfaces");
                         options.ListenAnyIP(appHost.HttpPort);
 
-                        if (appHost.EnableHttps && appHost.Certificate != null)
+                        if (appHost.ListenWithHttps)
                         {
-                            options.ListenAnyIP(
-                                appHost.HttpsPort,
-                                listenOptions => listenOptions.UseHttps(appHost.Certificate));
+                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                            {
+                                listenOptions.UseHttps(appHost.Certificate);
+                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                            });
+                        }
+                        else if (builderContext.HostingEnvironment.IsDevelopment())
+                        {
+                            try
+                            {
+                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
+                                {
+                                    listenOptions.UseHttps();
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                                });
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                            }
                         }
                     }
                 })
-                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(appPaths))
+                .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
                 .UseSerilog()
-                .UseContentRoot(appHost.ContentRoot)
                 .ConfigureServices(services =>
                 {
                     // Merge the external ServiceCollection into ASP.NET DI
@@ -398,9 +473,8 @@ namespace Jellyfin.Server
             // webDir
             // IF      --webdir
             // ELSE IF $JELLYFIN_WEB_DIR
-            // ELSE    use <bindir>/jellyfin-web
+            // ELSE    <bindir>/jellyfin-web
             var webDir = options.WebDir;
-
             if (string.IsNullOrEmpty(webDir))
             {
                 webDir = Environment.GetEnvironmentVariable("JELLYFIN_WEB_DIR");
@@ -451,7 +525,9 @@ namespace Jellyfin.Server
         /// Initialize the logging configuration file using the bundled resource file as a default if it doesn't exist
         /// already.
         /// </summary>
-        private static async Task InitLoggingConfigFile(IApplicationPaths appPaths)
+        /// <param name="appPaths">The application paths.</param>
+        /// <returns>A task representing the creation of the configuration file, or a completed task if the file already exists.</returns>
+        public static async Task InitLoggingConfigFile(IApplicationPaths appPaths)
         {
             // Do nothing if the config file already exists
             string configPath = Path.Combine(appPaths.ConfigurationDirectoryPath, LoggingConfigFileDefault);
@@ -471,21 +547,39 @@ namespace Jellyfin.Server
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 
-        private static IConfiguration CreateAppConfiguration(IApplicationPaths appPaths)
+        /// <summary>
+        /// Create the application configuration.
+        /// </summary>
+        /// <param name="commandLineOpts">The command line options passed to the program.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <returns>The application configuration.</returns>
+        public static IConfiguration CreateAppConfiguration(StartupOptions commandLineOpts, IApplicationPaths appPaths)
         {
             return new ConfigurationBuilder()
-                .ConfigureAppConfiguration(appPaths)
+                .ConfigureAppConfiguration(commandLineOpts, appPaths)
                 .Build();
         }
 
-        private static IConfigurationBuilder ConfigureAppConfiguration(this IConfigurationBuilder config, IApplicationPaths appPaths)
+        private static IConfigurationBuilder ConfigureAppConfiguration(
+            this IConfigurationBuilder config,
+            StartupOptions commandLineOpts,
+            IApplicationPaths appPaths,
+            IConfiguration? startupConfig = null)
         {
+            // Use the swagger API page as the default redirect path if not hosting the web client
+            var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
+            if (startupConfig != null && !startupConfig.HostWebClient())
+            {
+                inMemoryDefaultConfig[HttpListenerHost.DefaultRedirectKey] = "swagger/index.html";
+            }
+
             return config
                 .SetBasePath(appPaths.ConfigurationDirectoryPath)
-                .AddInMemoryCollection(ConfigurationOptions.Configuration)
+                .AddInMemoryCollection(inMemoryDefaultConfig)
                 .AddJsonFile(LoggingConfigFileDefault, optional: false, reloadOnChange: true)
                 .AddJsonFile(LoggingConfigFileSystem, optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables("JELLYFIN_");
+                .AddEnvironmentVariables("JELLYFIN_")
+                .AddInMemoryCollection(commandLineOpts.ConvertToConfig());
         }
 
         /// <summary>
@@ -516,25 +610,6 @@ namespace Jellyfin.Server
 
                 Serilog.Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
-        }
-
-        private static IImageEncoder GetImageEncoder(IApplicationPaths appPaths)
-        {
-            try
-            {
-                // Test if the native lib is available
-                SkiaEncoder.TestSkia();
-
-                return new SkiaEncoder(
-                    _loggerFactory.CreateLogger<SkiaEncoder>(),
-                    appPaths);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Skia not available. Will fallback to NullIMageEncoder.");
-            }
-
-            return new NullImageEncoder();
         }
 
         private static void StartNewInstance(StartupOptions options)

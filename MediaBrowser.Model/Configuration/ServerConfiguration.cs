@@ -15,10 +15,14 @@ namespace MediaBrowser.Model.Configuration
         private string _baseUrl;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable u pn p].
+        /// Gets or sets a value indicating whether to enable automatic port forwarding.
         /// </summary>
-        /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
         public bool EnableUPnP { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
+        /// </summary>
+        public bool EnableMetrics { get; set; }
 
         /// <summary>
         /// Gets or sets the public mapped port.
@@ -45,17 +49,24 @@ namespace MediaBrowser.Model.Configuration
         public int HttpsPortNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [use HTTPS].
+        /// Gets or sets a value indicating whether to use HTTPS.
         /// </summary>
-        /// <value><c>true</c> if [use HTTPS]; otherwise, <c>false</c>.</value>
+        /// <remarks>
+        /// In order for HTTPS to be used, in addition to setting this to true, valid values must also be
+        /// provided for <see cref="CertificatePath"/> and <see cref="CertificatePassword"/>.
+        /// </remarks>
         public bool EnableHttps { get; set; }
+
         public bool EnableNormalizedItemByNameIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the value pointing to the file system where the ssl certificate is located..
+        /// Gets or sets the filesystem path of an X.509 certificate to use for SSL.
         /// </summary>
-        /// <value>The value pointing to the file system where the ssl certificate is located..</value>
         public string CertificatePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the password required to access the X.509 certificate data in the file specified by <see cref="CertificatePath"/>.
+        /// </summary>
         public string CertificatePassword { get; set; }
 
         /// <summary>
@@ -65,8 +76,9 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         public bool AutoRunWebApp { get; set; }
+
         public bool EnableRemoteAccess { get; set; }
-        public bool CameraUploadUpgraded { get; set; }
+
         public bool CollectionsUpgraded { get; set; }
 
         /// <summary>
@@ -82,6 +94,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The metadata path.</value>
         public string MetadataPath { get; set; }
+
         public string MetadataNetworkPath { get; set; }
 
         /// <summary>
@@ -148,9 +161,9 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDashboardResponseCaching { get; set; }
 
         /// <summary>
-        /// Allows the dashboard to be served from a custom path.
+        /// Gets or sets a custom path to serve the dashboard from.
         /// </summary>
-        /// <value>The dashboard source path.</value>
+        /// <value>The dashboard source path, or null if the default path should be used.</value>
         public string DashboardSourcePath { get; set; }
 
         /// <summary>
@@ -204,15 +217,26 @@ namespace MediaBrowser.Model.Configuration
         public int RemoteClientBitrateLimit { get; set; }
 
         public bool EnableFolderView { get; set; }
+
         public bool EnableGroupingIntoCollections { get; set; }
+
         public bool DisplaySpecialsWithinSeasons { get; set; }
+
         public string[] LocalNetworkSubnets { get; set; }
+
         public string[] LocalNetworkAddresses { get; set; }
+
         public string[] CodecsUsed { get; set; }
+
         public bool IgnoreVirtualInterfaces { get; set; }
+
         public bool EnableExternalContentInSuggestions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the server should force connections over HTTPS.
+        /// </summary>
         public bool RequireHttps { get; set; }
-        public bool IsBehindProxy { get; set; }
+
         public bool EnableNewOmdbSupport { get; set; }
 
         public string[] RemoteIPFilter { get; set; }
@@ -247,6 +271,7 @@ namespace MediaBrowser.Model.Configuration
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;
             HttpsPortNumber = DefaultHttpsPort;
+            EnableMetrics = false;
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
@@ -254,7 +279,7 @@ namespace MediaBrowser.Model.Configuration
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 
-            EnableUPnP = true;
+            EnableUPnP = false;
             MinResumePct = 5;
             MaxResumePct = 90;
 

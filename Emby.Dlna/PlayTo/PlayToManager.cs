@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class PlayToManager : IDisposable
+    public sealed class PlayToManager : IDisposable
     {
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
@@ -231,6 +231,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
@@ -243,6 +244,9 @@ namespace Emby.Dlna.PlayTo
             {
 
             }
+
+            _sessionLock.Dispose();
+            _disposeCancellationTokenSource.Dispose();
 
             _disposed = true;
         }

@@ -26,8 +26,6 @@ namespace MediaBrowser.Model.System
     /// </summary>
     public class SystemInfo : PublicSystemInfo
     {
-        public PackageVersionClass SystemUpdateLevel { get; set; }
-
         /// <summary>
         /// Gets or sets the display name of the operating system.
         /// </summary>
@@ -116,24 +114,6 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The transcode path.</value>
         public string TranscodingTempPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HTTP server port number.
-        /// </summary>
-        /// <value>The HTTP server port number.</value>
-        public int HttpServerPortNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [enable HTTPS].
-        /// </summary>
-        /// <value><c>true</c> if [enable HTTPS]; otherwise, <c>false</c>.</value>
-        public bool SupportsHttps { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HTTPS server port number.
-        /// </summary>
-        /// <value>The HTTPS server port number.</value>
-        public int HttpsPortNumber { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has update available.

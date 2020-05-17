@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     continue;
                 }
 
-                var roles = new List<string> {currentActor.Substring(roleStartIndex + 1)};
+                var roles = new List<string> { currentActor.Substring(roleStartIndex + 1) };
 
                 // Fetch all roles
                 for (var j = i + 1; j < episode.GuestStars.Length; ++j)

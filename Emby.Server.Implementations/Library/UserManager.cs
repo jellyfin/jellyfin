@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
@@ -44,22 +45,14 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly object _policySyncLock = new object();
         private readonly object _configSyncLock = new object();
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        private readonly ILogger _logger;
 
-        /// <summary>
-        /// Gets the active user repository.
-        /// </summary>
-        /// <value>The user repository.</value>
+        private readonly ILogger _logger;
         private readonly IUserRepository _userRepository;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly INetworkManager _networkManager;
-
-        private readonly Func<IImageProcessor> _imageProcessorFactory;
-        private readonly Func<IDtoService> _dtoServiceFactory;
+        private readonly IImageProcessor _imageProcessor;
+        private readonly Lazy<IDtoService> _dtoServiceFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
         private readonly ICryptoProvider _cryptoProvider;
@@ -74,13 +67,15 @@ namespace Emby.Server.Implementations.Library
         private IPasswordResetProvider[] _passwordResetProviders;
         private DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
+        private IDtoService DtoService => _dtoServiceFactory.Value;
+
         public UserManager(
             ILogger<UserManager> logger,
             IUserRepository userRepository,
             IXmlSerializer xmlSerializer,
             INetworkManager networkManager,
-            Func<IImageProcessor> imageProcessorFactory,
-            Func<IDtoService> dtoServiceFactory,
+            IImageProcessor imageProcessor,
+            Lazy<IDtoService> dtoServiceFactory,
             IServerApplicationHost appHost,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
@@ -90,7 +85,7 @@ namespace Emby.Server.Implementations.Library
             _userRepository = userRepository;
             _xmlSerializer = xmlSerializer;
             _networkManager = networkManager;
-            _imageProcessorFactory = imageProcessorFactory;
+            _imageProcessor = imageProcessor;
             _dtoServiceFactory = dtoServiceFactory;
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
@@ -264,6 +259,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (string.IsNullOrWhiteSpace(username))
             {
+                _logger.LogInformation("Authentication request without username has been denied (IP: {IP}).", remoteEndPoint);
                 throw new ArgumentNullException(nameof(username));
             }
 
@@ -319,26 +315,26 @@ namespace Emby.Server.Implementations.Library
 
             if (user == null)
             {
+                _logger.LogInformation("Authentication request for {UserName} has been denied (IP: {IP}).", username, remoteEndPoint);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
             if (user.Policy.IsDisabled)
             {
-                throw new AuthenticationException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The {0} account is currently disabled. Please consult with your administrator.",
-                        user.Name));
+                _logger.LogInformation("Authentication request for {UserName} has been denied because this account is currently disabled (IP: {IP}).", username, remoteEndPoint);
+                throw new SecurityException($"The {user.Name} account is currently disabled. Please consult with your administrator.");
             }
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(remoteEndPoint))
             {
-                throw new AuthenticationException("Forbidden.");
+                _logger.LogInformation("Authentication request for {UserName} forbidden: remote access disabled and user not in local network (IP: {IP}).", username, remoteEndPoint);
+                throw new SecurityException("Forbidden.");
             }
 
             if (!user.IsParentalScheduleAllowed())
             {
-                throw new AuthenticationException("User is not allowed access at this time.");
+                _logger.LogInformation("Authentication request for {UserName} is not allowed at this time due parental restrictions (IP: {IP}).", username, remoteEndPoint);
+                throw new SecurityException("User is not allowed access at this time.");
             }
 
             // Update LastActivityDate and LastLoginDate, then save
@@ -351,13 +347,13 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 ResetInvalidLoginAttemptCount(user);
+                _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Name);
             }
             else
             {
                 IncrementInvalidLoginAttemptCount(user);
+                _logger.LogInformation("Authentication request for {UserName} has been denied (IP: {IP}).", user.Name, remoteEndPoint);
             }
-
-            _logger.LogInformation("Authentication request for {0} {1}.", user.Name, success ? "has succeeded" : "has been denied");
 
             return success ? user : null;
         }
@@ -600,7 +596,7 @@ namespace Emby.Server.Implementations.Library
 
                 try
                 {
-                    _dtoServiceFactory().AttachPrimaryImageAspectRatio(dto, user);
+                    DtoService.AttachPrimaryImageAspectRatio(dto, user);
                 }
                 catch (Exception ex)
                 {
@@ -608,6 +604,31 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {User}", user.Name);
                 }
             }
+
+            return dto;
+        }
+
+        public PublicUserDto GetPublicUserDto(User user, string remoteEndPoint = null)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            IAuthenticationProvider authenticationProvider = GetAuthenticationProvider(user);
+            bool hasConfiguredPassword = authenticationProvider.HasPassword(user);
+            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(authenticationProvider.GetEasyPasswordHash(user));
+
+            bool hasPassword = user.Configuration.EnableLocalPassword &&
+                !string.IsNullOrEmpty(remoteEndPoint) &&
+                _networkManager.IsInLocalNetwork(remoteEndPoint) ? hasConfiguredEasyPassword : hasConfiguredPassword;
+
+            PublicUserDto dto = new PublicUserDto
+            {
+                Name = user.Name,
+                HasPassword = hasPassword,
+                HasConfiguredPassword = hasConfiguredPassword,
+            };
 
             return dto;
         }
@@ -625,7 +646,7 @@ namespace Emby.Server.Implementations.Library
         {
             try
             {
-                return _imageProcessorFactory().GetImageCacheTag(item, image);
+                return _imageProcessor.GetImageCacheTag(item, image);
             }
             catch (Exception ex)
             {
@@ -805,17 +826,17 @@ namespace Emby.Server.Implementations.Library
 
             // Delete user config dir
             lock (_configSyncLock)
-            lock (_policySyncLock)
-            {
-                try
+                lock (_policySyncLock)
                 {
-                    Directory.Delete(user.ConfigurationDirectoryPath, true);
+                    try
+                    {
+                        Directory.Delete(user.ConfigurationDirectoryPath, true);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogError(ex, "Error deleting user config dir: {Path}", user.ConfigurationDirectoryPath);
+                    }
                 }
-                catch (IOException ex)
-                {
-                    _logger.LogError(ex, "Error deleting user config dir: {Path}", user.ConfigurationDirectoryPath);
-                }
-            }
 
             _users.TryRemove(user.Id, out _);
 

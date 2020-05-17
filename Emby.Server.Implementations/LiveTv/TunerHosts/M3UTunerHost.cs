@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1600
 
 using System;
 using System.Collections.Generic;
@@ -36,7 +35,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         public M3UTunerHost(
             IServerConfigurationManager config,
             IMediaSourceManager mediaSourceManager,
-            ILogger logger,
+            ILogger<M3UTunerHost> logger,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IHttpClient httpClient,
@@ -84,7 +83,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(list);
         }
 
-        private static readonly string[] _disallowedSharedStreamExtensions = new string[]
+        private static readonly string[] _disallowedSharedStreamExtensions =
         {
             ".mkv",
             ".mp4",
