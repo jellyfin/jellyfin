@@ -210,16 +210,8 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, int statusCode, string urlToLog)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, int statusCode, string urlToLog, bool ignoreStackTrace)
         {
-            bool ignoreStackTrace =
-                ex is SocketException
-                || ex is IOException
-                || ex is OperationCanceledException
-                || ex is SecurityException
-                || ex is AuthenticationException
-                || ex is FileNotFoundException;
-
             if (ignoreStackTrace)
             {
                 _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
@@ -504,15 +496,24 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     var requestInnerEx = GetActualException(requestEx);
                     var statusCode = GetStatusCode(requestInnerEx);
+                    bool ignoreStackTrace =
+                        requestInnerEx is SocketException
+                        || requestInnerEx is IOException
+                        || requestInnerEx is OperationCanceledException
+                        || requestInnerEx is SecurityException
+                        || requestInnerEx is AuthenticationException
+                        || requestInnerEx is FileNotFoundException;
 
-                    // Do not handle 500 server exceptions manually when in development mode
-                    // The framework-defined development exception page will be returned instead
-                    if (statusCode == 500 && _hostEnvironment.IsDevelopment())
+                    // Do not handle 500 server exceptions manually when in development mode.
+                    // Instead, re-throw the exception so it can be handled by the DeveloperExceptionPageMiddleware.
+                    // However, do not use the DeveloperExceptionPageMiddleware when the stack trace should be ignored,
+                    // because it will log the stack trace when it handles the exception.
+                    if (statusCode == 500 && !ignoreStackTrace && _hostEnvironment.IsDevelopment() )
                     {
                         throw;
                     }
 
-                    await ErrorHandler(requestInnerEx, httpReq, statusCode, urlToLog).ConfigureAwait(false);
+                    await ErrorHandler(requestInnerEx, httpReq, statusCode, urlToLog, ignoreStackTrace).ConfigureAwait(false);
                 }
                 catch (Exception handlerException)
                 {
