@@ -1,45 +1,77 @@
 namespace MediaBrowser.Controller.Providers
 {
-    /// <summary>The specific media type of an <see cref="IExternalId"/>.</summary>
+    /// <summary>
+    /// The specific media type of an <see cref="IExternalId"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is used as a translation key for clients.
+    /// </remarks>
     public enum ExternalIdMediaType
     {
-        /// <summary>There is no specific media type</summary>
+        /// <summary>
+        /// There is no specific media type associated with the external id, or the external provider only has one
+        /// id type so there is no need to be specific.
+        /// </summary>
         None,
 
-        /// <summary>A music album</summary>
+        /// <summary>
+        /// A music album.
+        /// </summary>
         Album,
 
-        /// <summary>The artist of a music album</summary>
+        /// <summary>
+        /// The artist of a music album.
+        /// </summary>
         AlbumArtist,
 
-        /// <summary>The artist of a media item</summary>
+        /// <summary>
+        /// The artist of a media item.
+        /// </summary>
         Artist,
 
-        /// <summary>A boxed set of media</summary>
+        /// <summary>
+        /// A boxed set of media.
+        /// </summary>
         BoxSet,
 
-        /// <summary>A series episode</summary>
+        /// <summary>
+        /// A series episode.
+        /// </summary>
         Episode,
 
-        /// <summary>A movie</summary>
+        /// <summary>
+        /// A movie.
+        /// </summary>
         Movie,
 
-        /// <summary>An alternative artist apart from the main artist</summary>
+        /// <summary>
+        /// An alternative artist apart from the main artist.
+        /// </summary>
         OtherArtist,
 
-        /// <summary>A person</summary>
+        /// <summary>
+        /// A person.
+        /// </summary>
         Person,
 
-        /// <summary>A release group</summary>
+        /// <summary>
+        /// A release group.
+        /// </summary>
         ReleaseGroup,
 
-        /// <summary>A single season of a series</summary>
+        /// <summary>
+        /// A single season of a series.
+        /// </summary>
         Season,
 
-        /// <summary>A series</summary>
+        /// <summary>
+        /// A series.
+        /// </summary>
         Series,
 
-        /// <summary>A music track</summary>
+        /// <summary>
+        /// A music track.
+        /// </summary>
         Track
     }
 }

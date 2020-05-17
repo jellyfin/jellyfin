@@ -6,7 +6,7 @@ namespace MediaBrowser.Model.Providers
     public class ExternalIdInfo
     {
         /// <summary>
-        /// Gets or sets the name of the external id provider (IE: IMDB, MusicBrainz, etc).
+        /// Gets or sets the display name of the external id provider (IE: IMDB, MusicBrainz, etc).
         /// </summary>
         public string Name { get; set; }
 
