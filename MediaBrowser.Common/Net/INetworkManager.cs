@@ -66,7 +66,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="addressString">The address to check</param>
         /// <param name="subnets">If true, check against addresses in the LAN settings surrounded by brackets ([])</param>
-        /// <returns><c>false</c>if the address isn't in the subnets, <c>true</c> otherwise</returns>
+        /// <returns><c>true</c>if the address is in at least one of the given subnets, <c>false</c> otherwise.</returns>
         bool IsAddressInSubnets(string addressString, string[] subnets);
 
         /// <summary>
