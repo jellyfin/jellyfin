@@ -65,7 +65,7 @@ namespace MediaBrowser.Common.Net
         /// Checks if the given address falls within the ranges given in [subnets]. The addresses in subnets can be hosts or subnets in the CIDR format.
         /// </summary>
         /// <param name="addressString">The address to check</param>
-        /// <param name="subnets">If true, check against addresses in the LAN settings which have [] arroud and return true if it matches the address give in address</param>
+        /// <param name="subnets">If true, check against addresses in the LAN settings surrounded by brackets ([])</param>
         /// <returns><c>false</c>if the address isn't in the subnets, <c>true</c> otherwise</returns>
         bool IsAddressInSubnets(string addressString, string[] subnets);
 
