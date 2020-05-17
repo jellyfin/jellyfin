@@ -8,7 +8,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     public class AudioDbAlbumExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheAudioDb";
+        public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.AudioDbAlbum.ToString();
@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     public class AudioDbOtherAlbumExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheAudioDb";
+        public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.AudioDbAlbum.ToString();
@@ -44,7 +44,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     public class AudioDbArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheAudioDb";
+        public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.AudioDbArtist.ToString();
@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     public class AudioDbOtherArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheAudioDb";
+        public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.AudioDbArtist.ToString();

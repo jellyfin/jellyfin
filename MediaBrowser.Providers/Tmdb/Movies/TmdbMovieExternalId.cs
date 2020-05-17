@@ -10,7 +10,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
     public class TmdbMovieExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => TmdbUtils.ProviderName;
+        public string ProviderName => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Tmdb.ToString();

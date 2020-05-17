@@ -9,7 +9,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
     public class TmdbBoxSetExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => TmdbUtils.ProviderName;
+        public string ProviderName => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
         public string Key => MetadataProviders.TmdbCollection.ToString();

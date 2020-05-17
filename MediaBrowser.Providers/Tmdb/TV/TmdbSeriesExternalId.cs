@@ -8,7 +8,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
     public class TmdbSeriesExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => TmdbUtils.ProviderName;
+        public string ProviderName => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Tmdb.ToString();

@@ -8,7 +8,7 @@ namespace MediaBrowser.Providers.Music
     public class ImvdbId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "IMVDb";
+        public string ProviderName => "IMVDb";
 
         /// <inheritdoc />
         public string Key => "IMVDb";

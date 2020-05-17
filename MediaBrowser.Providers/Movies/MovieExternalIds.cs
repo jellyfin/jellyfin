@@ -11,7 +11,7 @@ namespace MediaBrowser.Providers.Movies
     public class ImdbExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "IMDb";
+        public string ProviderName => "IMDb";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Imdb.ToString();
@@ -38,7 +38,7 @@ namespace MediaBrowser.Providers.Movies
     public class ImdbPersonExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "IMDb";
+        public string ProviderName => "IMDb";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Imdb.ToString();

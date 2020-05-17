@@ -9,7 +9,7 @@ namespace MediaBrowser.Providers.TV
     public class Zap2ItExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "Zap2It";
+        public string ProviderName => "Zap2It";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Zap2It.ToString();
@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.TV
     public class TvdbExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheTVDB";
+        public string ProviderName => "TheTVDB";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Tvdb.ToString();
@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.TV
     public class TvdbSeasonExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheTVDB";
+        public string ProviderName => "TheTVDB";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Tvdb.ToString();
@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.TV
     public class TvdbEpisodeExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheTVDB";
+        public string ProviderName => "TheTVDB";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.Tvdb.ToString();

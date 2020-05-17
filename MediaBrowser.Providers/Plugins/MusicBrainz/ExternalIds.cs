@@ -9,7 +9,7 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzReleaseGroupExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz";
+        public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzReleaseGroup.ToString();
@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzAlbumArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz";
+        public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzAlbumArtist.ToString();
@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzAlbumExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz";
+        public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzAlbum.ToString();
@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz";
+        public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzArtist.ToString();
@@ -81,7 +81,7 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzOtherArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz";
+        public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
 
@@ -100,7 +100,7 @@ namespace MediaBrowser.Providers.Music
     public class MusicBrainzTrackId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "MusicBrainz";
+        public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
         public string Key => MetadataProviders.MusicBrainzTrack.ToString();

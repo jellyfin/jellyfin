@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Gets the display name of the provider associated with this ID type.
         /// </summary>
-        string Name { get; }
+        string ProviderName { get; }
 
         /// <summary>
         /// Gets the unique key to distinguish this provider/type pair. This should be unique across providers.
@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Providers
         /// external id types for providers with multiple ids.
         /// </summary>
         /// <remarks>
-        /// This can be used along with the <see cref="Name"/> to localize the external id on the client.
+        /// This can be used along with the <see cref="ProviderName"/> to localize the external id on the client.
         /// </remarks>
         ExternalIdMediaType Type { get; }
 
