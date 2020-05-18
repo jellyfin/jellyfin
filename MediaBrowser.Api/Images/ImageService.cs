@@ -336,7 +336,7 @@ namespace MediaBrowser.Api.Images
                     blurhash = _imageProcessor.GetImageHash(info.Path);
                     info.Hash = blurhash; // TODO: this doesn't seem like the right thing to do
 
-                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info, true);
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info);
                     _libraryManager.UpdateImages(item);
                     width = size.Width;
                     height = size.Height;

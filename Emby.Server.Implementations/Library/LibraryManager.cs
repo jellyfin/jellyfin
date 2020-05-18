@@ -1837,7 +1837,7 @@ namespace Emby.Server.Implementations.Library
                 .ForEach(x =>
                 {
                     string blurhash = ImageProcessor.GetImageHash(x.Path);
-                    ImageDimensions size = ImageProcessor.GetImageDimensions(item, x, true);
+                    ImageDimensions size = ImageProcessor.GetImageDimensions(item, x);
                     x.Width = size.Width;
                     x.Height = size.Height;
                     x.Hash = blurhash;
