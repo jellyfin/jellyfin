@@ -34,7 +34,7 @@ namespace Jellyfin.Api.Controllers
         /// Completes the startup wizard.
         /// </summary>
         /// <response code="200">Startup wizard completed.</response>
-        /// <returns>Status.</returns>
+        /// <returns>An <see cref="OkResult"/> indicating success.</returns>
         [HttpPost("Complete")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult CompleteWizard()
@@ -49,7 +49,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets the initial startup wizard configuration.
         /// </summary>
         /// <response code="200">Initial startup wizard configuration retrieved.</response>
-        /// <returns>The initial startup wizard configuration.</returns>
+        /// <returns>An <see cref="OkResult"/> containing the initial startup wizard configuration.</returns>
         [HttpGet("Configuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<StartupConfigurationDto> GetStartupConfiguration()
@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="metadataCountryCode">The metadata country code.</param>
         /// <param name="preferredMetadataLanguage">The preferred language for metadata.</param>
         /// <response code="200">Configuration saved.</response>
-        /// <returns>Status.</returns>
+        /// <returns>An <see cref="OkResult"/> indicating success.</returns>
         [HttpPost("Configuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult UpdateInitialConfiguration(
@@ -92,7 +92,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableRemoteAccess">Enable remote access.</param>
         /// <param name="enableAutomaticPortMapping">Enable UPnP.</param>
         /// <response code="200">Configuration saved.</response>
-        /// <returns>Status.</returns>
+        /// <returns>An <see cref="OkResult"/> indicating success.</returns>
         [HttpPost("RemoteAccess")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult SetRemoteAccess([FromForm] bool enableRemoteAccess, [FromForm] bool enableAutomaticPortMapping)
@@ -121,7 +121,10 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="startupUserDto">The DTO containing username and password.</param>
         /// <response code="200">Updated user name and password.</response>
-        /// <returns>The async task.</returns>
+        /// <returns>
+        /// A <see cref="Task" /> that represents the asynchronous update operation.
+        /// The task result contains an <see cref="OkResult"/> indicating success.
+        /// </returns>
         [HttpPost("User")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> UpdateUser([FromForm] StartupUserDto startupUserDto)
