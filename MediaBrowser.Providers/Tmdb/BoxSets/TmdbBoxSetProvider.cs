@@ -60,7 +60,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = searchInfo.GetProviderId(MetadataProvider.Tmdb);
 
             if (!string.IsNullOrEmpty(tmdbId))
             {
@@ -84,7 +84,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
                     ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].File_Path)
                 };
 
-                result.SetProviderId(MetadataProviders.Tmdb, info.Id.ToString(_usCulture));
+                result.SetProviderId(MetadataProvider.Tmdb, info.Id.ToString(_usCulture));
 
                 return new[] { result };
             }
@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
 
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo id, CancellationToken cancellationToken)
         {
-            var tmdbId = id.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = id.GetProviderId(MetadataProvider.Tmdb);
 
             // We don't already have an Id, need to fetch it
             if (string.IsNullOrEmpty(tmdbId))
@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
 
                 if (searchResult != null)
                 {
-                    tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
+                    tmdbId = searchResult.GetProviderId(MetadataProvider.Tmdb);
                 }
             }
 
@@ -152,7 +152,7 @@ namespace MediaBrowser.Providers.Tmdb.BoxSets
                 Overview = obj.Overview
             };
 
-            item.SetProviderId(MetadataProviders.Tmdb, obj.Id.ToString(_usCulture));
+            item.SetProviderId(MetadataProvider.Tmdb, obj.Id.ToString(_usCulture));
 
             return item;
         }

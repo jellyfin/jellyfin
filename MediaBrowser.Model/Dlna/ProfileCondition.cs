@@ -6,6 +6,24 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ProfileCondition
     {
+        public ProfileCondition()
+        {
+            IsRequired = true;
+        }
+
+        public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value)
+            : this(condition, property, value, false)
+        {
+        }
+
+        public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value, bool isRequired)
+        {
+            Condition = condition;
+            Property = property;
+            Value = value;
+            IsRequired = isRequired;
+        }
+
         [XmlAttribute("condition")]
         public ProfileConditionType Condition { get; set; }
 
@@ -17,24 +35,5 @@ namespace MediaBrowser.Model.Dlna
 
         [XmlAttribute("isRequired")]
         public bool IsRequired { get; set; }
-
-        public ProfileCondition()
-        {
-            IsRequired = true;
-        }
-
-        public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value)
-            : this(condition, property, value, false)
-        {
-
-        }
-
-        public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value, bool isRequired)
-        {
-            Condition = condition;
-            Property = property;
-            Value = value;
-            IsRequired = isRequired;
-        }
     }
 }

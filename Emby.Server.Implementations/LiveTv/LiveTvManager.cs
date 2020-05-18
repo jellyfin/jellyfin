@@ -1108,7 +1108,7 @@ namespace Emby.Server.Implementations.LiveTv
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();
             var fields = dtoOptions.Fields.ToList();
-            fields.Remove(ItemFields.BasicSyncInfo);
+            fields.Remove(ItemField.BasicSyncInfo);
             dtoOptions.Fields = fields.ToArray();
 
             progress.Report(100);
@@ -1398,7 +1398,7 @@ namespace Emby.Server.Implementations.LiveTv
                 //    TotalRecordCount = items.Length
                 //};
 
-                dtoOptions.Fields = dtoOptions.Fields.Concat(new[] { ItemFields.Tags }).Distinct().ToArray();
+                dtoOptions.Fields = dtoOptions.Fields.Concat(new[] { ItemField.Tags }).Distinct().ToArray();
             }
 
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
@@ -1433,11 +1433,11 @@ namespace Emby.Server.Implementations.LiveTv
             return result;
         }
 
-        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, ItemFields[] fields, User user = null)
+        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, ItemField[] fields, User user = null)
         {
             var programTuples = new List<Tuple<BaseItemDto, string, string>>();
-            var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
-            var hasChannelInfo = fields.Contains(ItemFields.ChannelInfo);
+            var hasChannelImage = fields.Contains(ItemField.ChannelImage);
+            var hasChannelInfo = fields.Contains(ItemField.ChannelInfo);
 
             foreach (var tuple in tuples)
             {
@@ -2252,10 +2252,10 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var fields = options.Fields.ToList();
 
-            fields.Remove(ItemFields.CanDelete);
-            fields.Remove(ItemFields.CanDownload);
-            fields.Remove(ItemFields.DisplayPreferencesId);
-            fields.Remove(ItemFields.Etag);
+            fields.Remove(ItemField.CanDelete);
+            fields.Remove(ItemField.CanDownload);
+            fields.Remove(ItemField.DisplayPreferencesId);
+            fields.Remove(ItemField.Etag);
             options.Fields = fields.ToArray();
         }
 

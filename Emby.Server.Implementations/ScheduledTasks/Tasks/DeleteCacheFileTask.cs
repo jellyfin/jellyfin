@@ -62,13 +62,13 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task Execute(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var minDateModified = DateTime.UtcNow.AddDays(-30);
 
             try
             {
-                DeleteCacheFilesFromDirectory(cancellationToken, ApplicationPaths.CachePath, minDateModified, progress);
+                DeleteCacheFilesFromDirectory(ApplicationPaths.CachePath, minDateModified, progress, cancellationToken);
             }
             catch (DirectoryNotFoundException)
             {
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             try
             {
-                DeleteCacheFilesFromDirectory(cancellationToken, ApplicationPaths.TempDirectory, minDateModified, progress);
+                DeleteCacheFilesFromDirectory(ApplicationPaths.TempDirectory, minDateModified, progress, cancellationToken);
             }
             catch (DirectoryNotFoundException)
             {
@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <param name="directory">The directory.</param>
         /// <param name="minDateModified">The min date modified.</param>
         /// <param name="progress">The progress.</param>
-        private void DeleteCacheFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<double> progress)
+        private void DeleteCacheFilesFromDirectory(string directory, DateTime minDateModified, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var filesToDelete = _fileSystem.GetFiles(directory, true)
                 .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)

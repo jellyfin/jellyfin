@@ -1,6 +1,8 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
+
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Providers
@@ -10,6 +12,11 @@ namespace MediaBrowser.Model.Providers
     /// </summary>
     public class ImageProviderInfo
     {
+        public ImageProviderInfo()
+        {
+            SupportedImages = Array.Empty<ImageType>();
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -17,10 +24,5 @@ namespace MediaBrowser.Model.Providers
         public string Name { get; set; }
 
         public ImageType[] SupportedImages { get; set; }
-
-        public ImageProviderInfo()
-        {
-            SupportedImages = Array.Empty<ImageType>();
-        }
     }
 }

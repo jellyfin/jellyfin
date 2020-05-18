@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns><see cref="Task" />.</returns>
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(IProgress<double> progress, CancellationToken cancellationToken)
         {
             progress.Report(0);
 
@@ -80,11 +80,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (HttpException ex)
                 {
-                    _logger.LogError(ex, "Error downloading {0}", package.name);
+                    _logger.LogError(ex, "Error downloading {0}", package.Name);
                 }
                 catch (IOException ex)
                 {
-                    _logger.LogError(ex, "Error updating {0}", package.name);
+                    _logger.LogError(ex, "Error updating {0}", package.Name);
                 }
 
                 // Update progress

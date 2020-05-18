@@ -1,3 +1,5 @@
+#pragma warning disable CA2227 // Collection properties should be read only
+
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Entities

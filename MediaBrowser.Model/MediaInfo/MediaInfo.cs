@@ -1,4 +1,7 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1724
+#pragma warning disable CA1819 // Properties should not return arrays
+#pragma warning disable CA2227 // Collection properties should be read only
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +12,17 @@ namespace MediaBrowser.Model.MediaInfo
 {
     public class MediaInfo : MediaSourceInfo, IHasProviderIds
     {
+        public MediaInfo()
+        {
+            Chapters = Array.Empty<ChapterInfo>();
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
+            Studios = Array.Empty<string>();
+            Genres = Array.Empty<string>();
+            People = Array.Empty<BaseItemPerson>();
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         public ChapterInfo[] Chapters { get; set; }
 
         /// <summary>
@@ -34,13 +48,21 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The studios.</value>
         public string[] Studios { get; set; }
+
         public string[] Genres { get; set; }
+
         public string ShowName { get; set; }
+
         public int? IndexNumber { get; set; }
+
         public int? ParentIndexNumber { get; set; }
+
         public int? ProductionYear { get; set; }
+
         public DateTime? PremiereDate { get; set; }
+
         public BaseItemPerson[] People { get; set; }
+
         public Dictionary<string, string> ProviderIds { get; set; }
 
         /// <summary>
@@ -60,16 +82,5 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
-
-        public MediaInfo()
-        {
-            Chapters = Array.Empty<ChapterInfo>();
-            Artists = Array.Empty<string>();
-            AlbumArtists = Array.Empty<string>();
-            Studios = Array.Empty<string>();
-            Genres = Array.Empty<string>();
-            People = Array.Empty<BaseItemPerson>();
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
     }
 }

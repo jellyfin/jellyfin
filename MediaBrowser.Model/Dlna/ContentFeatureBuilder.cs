@@ -32,9 +32,13 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}", DlnaMaps.FlagsToString(flagValue));
+            string dlnaflags = string.Format(
+                CultureInfo.InvariantCulture,
+                ";DLNA.ORG_FLAGS={0}",
+                DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetImageMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetImageMediaProfile(
+                container,
                 width,
                 height);
 
@@ -75,14 +79,14 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            //if (isDirectStream)
-            //{
-            //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
-            //}
-            //else if (runtimeTicks.HasValue)
-            //{
-            //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
-            //}
+            // if (isDirectStream)
+            // {
+            //     flagValue = flagValue | DlnaFlags.ByteBasedSeek;
+            // }
+            // else if (runtimeTicks.HasValue)
+            // {
+            //     flagValue = flagValue | DlnaFlags.TimeBasedSeek;
+            // }
 
             string dlnaflags = string.Format(
                 CultureInfo.InvariantCulture,
@@ -144,19 +148,22 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            //if (isDirectStream)
-            //{
-            //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
-            //}
-            //else if (runtimeTicks.HasValue)
-            //{
-            //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
-            //}
+            // if (isDirectStream)
+            // {
+            //     flagValue = flagValue | DlnaFlags.ByteBasedSeek;
+            // }
+            // else if (runtimeTicks.HasValue)
+            // {
+            //     flagValue = flagValue | DlnaFlags.TimeBasedSeek;
+            // }
 
-            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}",
-             DlnaMaps.FlagsToString(flagValue));
+            string dlnaflags = string.Format(
+                CultureInfo.InvariantCulture,
+                ";DLNA.ORG_FLAGS={0}",
+                DlnaMaps.FlagsToString(flagValue));
 
-            ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(container,
+            ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(
+                container,
                 audioCodec,
                 videoCodec,
                 width,
@@ -217,9 +224,10 @@ namespace MediaBrowser.Model.Dlna
         private static string GetImageOrgPnValue(string container, int? width, int? height)
         {
             MediaFormatProfile? format = new MediaFormatProfileResolver()
-                .ResolveImageFormat(container,
-                width,
-                height);
+                .ResolveImageFormat(
+                    container,
+                    width,
+                    height);
 
             return format.HasValue ? format.Value.ToString() : null;
         }
@@ -227,10 +235,11 @@ namespace MediaBrowser.Model.Dlna
         private static string GetAudioOrgPnValue(string container, int? audioBitrate, int? audioSampleRate, int? audioChannels)
         {
             MediaFormatProfile? format = new MediaFormatProfileResolver()
-                .ResolveAudioFormat(container,
-                audioBitrate,
-                audioSampleRate,
-                audioChannels);
+                .ResolveAudioFormat(
+                    container,
+                    audioBitrate,
+                    audioSampleRate,
+                    audioChannels);
 
             return format.HasValue ? format.Value.ToString() : null;
         }

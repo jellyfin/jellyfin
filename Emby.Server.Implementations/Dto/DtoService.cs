@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="owner">The owner.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="ArgumentNullException">item</exception>
-        public BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, User user = null, BaseItem owner = null)
+        public BaseItemDto GetBaseItemDto(BaseItem item, ItemField[] fields, User user = null, BaseItem owner = null)
         {
             var options = new DtoOptions
             {
@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (item is IItemByName byName)
                 {
-                    if (options.ContainsField(ItemFields.ItemCounts))
+                    if (options.ContainsField(ItemField.ItemCounts))
                     {
                         var libraryItems = byName.GetTaggedItems(new InternalItemsQuery(user)
                         {
@@ -154,7 +154,7 @@ namespace Emby.Server.Implementations.Dto
             }
 
             if (item is IItemByName itemByName
-                && options.ContainsField(ItemFields.ItemCounts))
+                && options.ContainsField(ItemField.ItemCounts))
             {
                 SetItemByNameInfo(
                     item,
@@ -194,12 +194,12 @@ namespace Emby.Server.Implementations.Dto
                 dto.SourceType = item.SourceType.ToString();
             }
 
-            if (options.ContainsField(ItemFields.People))
+            if (options.ContainsField(ItemField.People))
             {
                 AttachPeople(dto, item);
             }
 
-            if (options.ContainsField(ItemFields.PrimaryImageAspectRatio))
+            if (options.ContainsField(ItemField.PrimaryImageAspectRatio))
             {
                 try
                 {
@@ -212,7 +212,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (options.ContainsField(ItemFields.DisplayPreferencesId))
+            if (options.ContainsField(ItemField.DisplayPreferencesId))
             {
                 dto.DisplayPreferencesId = item.DisplayPreferencesId.ToString("N", CultureInfo.InvariantCulture);
             }
@@ -223,35 +223,35 @@ namespace Emby.Server.Implementations.Dto
             }
 
             if (item is IHasMediaSources
-                && options.ContainsField(ItemFields.MediaSources))
+                && options.ContainsField(ItemField.MediaSources))
             {
                 dto.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, true, user).ToArray();
 
                 NormalizeMediaSourceContainers(dto);
             }
 
-            if (options.ContainsField(ItemFields.Studios))
+            if (options.ContainsField(ItemField.Studios))
             {
                 AttachStudios(dto, item);
             }
 
             AttachBasicFields(dto, item, owner, options);
 
-            if (options.ContainsField(ItemFields.CanDelete))
+            if (options.ContainsField(ItemField.CanDelete))
             {
                 dto.CanDelete = user == null
                     ? item.CanDelete()
                     : item.CanDelete(user);
             }
 
-            if (options.ContainsField(ItemFields.CanDownload))
+            if (options.ContainsField(ItemField.CanDownload))
             {
                 dto.CanDownload = user == null
                     ? item.CanDownload()
                     : item.CanDownload(user);
             }
 
-            if (options.ContainsField(ItemFields.Etag))
+            if (options.ContainsField(ItemField.Etag))
             {
                 dto.Etag = item.GetEtag(user);
             }
@@ -319,7 +319,7 @@ namespace Emby.Server.Implementations.Dto
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            if (taggedItems != null && options.ContainsField(ItemFields.ItemCounts))
+            if (taggedItems != null && options.ContainsField(ItemField.ItemCounts))
             {
                 SetItemByNameInfo(item, dto, taggedItems, user);
             }
@@ -382,18 +382,18 @@ namespace Emby.Server.Implementations.Dto
                         dto.ChildCount = dto.RecursiveItemCount;
                     }
 
-                    if (options.ContainsField(ItemFields.ChildCount))
+                    if (options.ContainsField(ItemField.ChildCount))
                     {
                         dto.ChildCount = dto.ChildCount ?? GetChildCount(folder, user);
                     }
                 }
 
-                if (options.ContainsField(ItemFields.CumulativeRunTimeTicks))
+                if (options.ContainsField(ItemField.CumulativeRunTimeTicks))
                 {
                     dto.CumulativeRunTimeTicks = item.RunTimeTicks;
                 }
 
-                if (options.ContainsField(ItemFields.DateLastMediaAdded))
+                if (options.ContainsField(ItemField.DateLastMediaAdded))
                 {
                     dto.DateLastMediaAdded = folder.DateLastMediaAdded;
                 }
@@ -407,12 +407,12 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (options.ContainsField(ItemFields.PlayAccess))
+            if (options.ContainsField(ItemField.PlayAccess))
             {
                 dto.PlayAccess = item.GetPlayAccess(user);
             }
 
-            if (options.ContainsField(ItemFields.BasicSyncInfo))
+            if (options.ContainsField(ItemField.BasicSyncInfo))
             {
                 var userCanSync = user != null && user.Policy.EnableContentDownloading;
                 if (userCanSync && item.SupportsExternalTransfer)
@@ -663,12 +663,12 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="options">The options.</param>
         private void AttachBasicFields(BaseItemDto dto, BaseItem item, BaseItem owner, DtoOptions options)
         {
-            if (options.ContainsField(ItemFields.DateCreated))
+            if (options.ContainsField(ItemField.DateCreated))
             {
                 dto.DateCreated = item.DateCreated;
             }
 
-            if (options.ContainsField(ItemFields.Settings))
+            if (options.ContainsField(ItemField.Settings))
             {
                 dto.LockedFields = item.LockedFields;
                 dto.LockData = item.IsLocked;
@@ -678,12 +678,12 @@ namespace Emby.Server.Implementations.Dto
 
             dto.EndDate = item.EndDate;
 
-            if (options.ContainsField(ItemFields.ExternalUrls))
+            if (options.ContainsField(ItemField.ExternalUrls))
             {
                 dto.ExternalUrls = _providerManager.GetExternalUrls(item).ToArray();
             }
 
-            if (options.ContainsField(ItemFields.Tags))
+            if (options.ContainsField(ItemField.Tags))
             {
                 dto.Tags = item.Tags;
             }
@@ -700,7 +700,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.BackdropImageTags = GetImageTags(item, item.GetImages(ImageType.Backdrop).Take(backdropLimit).ToList());
             }
 
-            if (options.ContainsField(ItemFields.ScreenshotImageTags))
+            if (options.ContainsField(ItemField.ScreenshotImageTags))
             {
                 var screenshotLimit = options.GetImageLimit(ImageType.Screenshot);
                 if (screenshotLimit > 0)
@@ -709,7 +709,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (options.ContainsField(ItemFields.Genres))
+            if (options.ContainsField(ItemField.Genres))
             {
                 dto.Genres = item.Genres;
                 AttachGenreItems(dto, item);
@@ -758,7 +758,7 @@ namespace Emby.Server.Implementations.Dto
 
             dto.Audio = item.Audio;
 
-            if (options.ContainsField(ItemFields.Settings))
+            if (options.ContainsField(ItemField.Settings))
             {
                 dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
                 dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
@@ -776,7 +776,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.CollectionType = hasCollectionType.CollectionType;
             }
 
-            if (options.ContainsField(ItemFields.RemoteTrailers))
+            if (options.ContainsField(ItemField.RemoteTrailers))
             {
                 dto.RemoteTrailers = item.RemoteTrailers;
             }
@@ -784,29 +784,29 @@ namespace Emby.Server.Implementations.Dto
             dto.Name = item.Name;
             dto.OfficialRating = item.OfficialRating;
 
-            if (options.ContainsField(ItemFields.Overview))
+            if (options.ContainsField(ItemField.Overview))
             {
                 dto.Overview = item.Overview;
             }
 
-            if (options.ContainsField(ItemFields.OriginalTitle))
+            if (options.ContainsField(ItemField.OriginalTitle))
             {
                 dto.OriginalTitle = item.OriginalTitle;
             }
 
-            if (options.ContainsField(ItemFields.ParentId))
+            if (options.ContainsField(ItemField.ParentId))
             {
                 dto.ParentId = item.DisplayParentId;
             }
 
             AddInheritedImages(dto, item, options, owner);
 
-            if (options.ContainsField(ItemFields.Path))
+            if (options.ContainsField(ItemField.Path))
             {
                 dto.Path = GetMappedPath(item, owner);
             }
 
-            if (options.ContainsField(ItemFields.EnableMediaSourceDisplay))
+            if (options.ContainsField(ItemField.EnableMediaSourceDisplay))
             {
                 dto.EnableMediaSourceDisplay = item.EnableMediaSourceDisplay;
             }
@@ -814,24 +814,24 @@ namespace Emby.Server.Implementations.Dto
             dto.PremiereDate = item.PremiereDate;
             dto.ProductionYear = item.ProductionYear;
 
-            if (options.ContainsField(ItemFields.ProviderIds))
+            if (options.ContainsField(ItemField.ProviderIds))
             {
                 dto.ProviderIds = item.ProviderIds;
             }
 
             dto.RunTimeTicks = item.RunTimeTicks;
 
-            if (options.ContainsField(ItemFields.SortName))
+            if (options.ContainsField(ItemField.SortName))
             {
                 dto.SortName = item.SortName;
             }
 
-            if (options.ContainsField(ItemFields.CustomRating))
+            if (options.ContainsField(ItemField.CustomRating))
             {
                 dto.CustomRating = item.CustomRating;
             }
 
-            if (options.ContainsField(ItemFields.Taglines))
+            if (options.ContainsField(ItemField.Taglines))
             {
                 if (!string.IsNullOrEmpty(item.Tagline))
                 {
@@ -875,7 +875,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.AlbumPrimaryImageTag = GetImageCacheTag(albumParent, ImageType.Primary);
                 }
 
-                //if (options.ContainsField(ItemFields.MediaSourceCount))
+                //if (options.ContainsField(ItemField.MediaSourceCount))
                 //{
                 // Songs always have one
                 //}
@@ -1002,7 +1002,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.PartCount = video.AdditionalParts.Length + 1;
                 }
 
-                if (options.ContainsField(ItemFields.MediaSourceCount))
+                if (options.ContainsField(ItemField.MediaSourceCount))
                 {
                     var mediaSourceCount = video.MediaSourceCount;
                     if (mediaSourceCount != 1)
@@ -1011,7 +1011,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (options.ContainsField(ItemFields.Chapters))
+                if (options.ContainsField(ItemField.Chapters))
                 {
                     dto.Chapters = _itemRepo.GetChapters(item);
                 }
@@ -1022,7 +1022,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (options.ContainsField(ItemFields.MediaStreams))
+            if (options.ContainsField(ItemField.MediaStreams))
             {
                 // Add VideoInfo
                 var iHasMediaSources = item as IHasMediaSources;
@@ -1056,13 +1056,13 @@ namespace Emby.Server.Implementations.Dto
 
             BaseItem[] allExtras = null;
 
-            if (options.ContainsField(ItemFields.SpecialFeatureCount))
+            if (options.ContainsField(ItemField.SpecialFeatureCount))
             {
                 allExtras = item.GetExtras().ToArray();
                 dto.SpecialFeatureCount = allExtras.Count(i => i.ExtraType.HasValue && BaseItem.DisplayExtraTypes.Contains(i.ExtraType.Value));
             }
 
-            if (options.ContainsField(ItemFields.LocalTrailerCount))
+            if (options.ContainsField(ItemField.LocalTrailerCount))
             {
                 allExtras ??= item.GetExtras().ToArray();
                 dto.LocalTrailerCount = allExtras.Count(i => i.ExtraType == ExtraType.Trailer);
@@ -1079,7 +1079,7 @@ namespace Emby.Server.Implementations.Dto
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
                 dto.SeriesName = episode.SeriesName;
 
-                if (options.ContainsField(ItemFields.SpecialEpisodeNumbers))
+                if (options.ContainsField(ItemField.SpecialEpisodeNumbers))
                 {
                     dto.AirsAfterSeasonNumber = episode.AirsAfterSeasonNumber;
                     dto.AirsBeforeEpisodeNumber = episode.AirsBeforeEpisodeNumber;
@@ -1094,7 +1094,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // this block will add the series poster for episodes without a poster
                 // TODO maybe remove the if statement entirely
-                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                //if (options.ContainsField(ItemField.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
                     if (episodeSeries != null)
@@ -1103,7 +1103,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (options.ContainsField(ItemFields.SeriesStudio))
+                if (options.ContainsField(ItemField.SeriesStudio))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
                     if (episodeSeries != null)
@@ -1129,7 +1129,7 @@ namespace Emby.Server.Implementations.Dto
 
                 series = null;
 
-                if (options.ContainsField(ItemFields.SeriesStudio))
+                if (options.ContainsField(ItemField.SeriesStudio))
                 {
                     series = series ?? season.Series;
                     if (series != null)
@@ -1140,7 +1140,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // this block will add the series poster for seasons without a poster
                 // TODO maybe remove the if statement entirely
-                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                //if (options.ContainsField(ItemField.SeriesPrimaryImage))
                 {
                     series = series ?? season.Series;
                     if (series != null)
@@ -1160,7 +1160,7 @@ namespace Emby.Server.Implementations.Dto
                 SetBookProperties(dto, book);
             }
 
-            if (options.ContainsField(ItemFields.ProductionLocations))
+            if (options.ContainsField(ItemField.ProductionLocations))
             {
                 if (item.ProductionLocations.Length > 0 || item is Movie)
                 {
@@ -1168,7 +1168,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (options.ContainsField(ItemFields.Width))
+            if (options.ContainsField(ItemField.Width))
             {
                 var width = item.Width;
                 if (width > 0)
@@ -1177,7 +1177,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (options.ContainsField(ItemFields.Height))
+            if (options.ContainsField(ItemField.Height))
             {
                 var height = item.Height;
                 if (height > 0)
@@ -1186,7 +1186,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            if (options.ContainsField(ItemFields.IsHD))
+            if (options.ContainsField(ItemField.IsHD))
             {
                 // Compatibility
                 if (item.IsHD)

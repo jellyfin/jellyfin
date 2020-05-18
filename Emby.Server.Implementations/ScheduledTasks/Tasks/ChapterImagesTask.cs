@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var videos = _libraryManager.GetItemList(new InternalItemsQuery
             {

@@ -23,7 +23,7 @@ namespace MediaBrowser.Model.System
         public string Version { get; set; }
 
         /// <summary>
-        /// The product name. This is the AssemblyProduct name.
+        /// Gets or sets the product name. This is the AssemblyProduct name.
         /// </summary>
         public string ProductName { get; set; }
 

@@ -4,7 +4,14 @@ namespace MediaBrowser.Model.Dlna
 {
     public enum DeviceProfileType
     {
+        /// <summary>
+        /// System
+        /// </summary>
         System = 0,
+
+        /// <summary>
+        /// User
+        /// </summary>
         User = 1
     }
 }

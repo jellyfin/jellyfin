@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 using System.Collections.Generic;
@@ -9,8 +10,12 @@ namespace MediaBrowser.Model.Tasks
 {
     public interface ITaskManager : IDisposable
     {
+        event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+
+        event EventHandler<TaskCompletionEventArgs> TaskCompleted;
+
         /// <summary>
-        /// Gets the list of Scheduled Tasks
+        /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
         IScheduledTaskWorker[] ScheduledTasks { get; }
@@ -18,7 +23,7 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Cancels if running and queue.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type.</typeparam>
         /// <param name="options">Task options.</param>
         void CancelIfRunningAndQueue<T>(TaskOptions options)
             where T : IScheduledTask;
@@ -26,21 +31,21 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Cancels if running and queue.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type.</typeparam>
         void CancelIfRunningAndQueue<T>()
             where T : IScheduledTask;
 
         /// <summary>
         /// Cancels if running.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type.</typeparam>
         void CancelIfRunning<T>()
             where T : IScheduledTask;
 
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type.</typeparam>
         /// <param name="options">Task options.</param>
         void QueueScheduledTask<T>(TaskOptions options)
             where T : IScheduledTask;
@@ -48,7 +53,7 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type.</typeparam>
         void QueueScheduledTask<T>()
             where T : IScheduledTask;
 
@@ -58,6 +63,8 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
+        /// <param name="task">Task.</param>
+        /// <param name="options">Options.</param>
         void QueueScheduledTask(IScheduledTask task, TaskOptions options);
 
         /// <summary>
@@ -67,12 +74,10 @@ namespace MediaBrowser.Model.Tasks
         void AddTasks(IEnumerable<IScheduledTask> tasks);
 
         void Cancel(IScheduledTaskWorker task);
+
         Task Execute(IScheduledTaskWorker task, TaskOptions options);
 
         void Execute<T>()
             where T : IScheduledTask;
-
-        event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
-        event EventHandler<TaskCompletionEventArgs> TaskCompleted;
     }
 }

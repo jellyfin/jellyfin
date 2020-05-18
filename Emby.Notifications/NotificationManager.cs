@@ -62,7 +62,7 @@ namespace Emby.Notifications
 
             var options = string.IsNullOrEmpty(notificationType) ?
                 null :
-                GetConfiguration().GetOptions(notificationType);
+                GetConfiguration().GetOptionsOfType(notificationType);
 
             var users = GetUserIds(request, options)
                 .Select(i => _userManager.GetUserById(i))

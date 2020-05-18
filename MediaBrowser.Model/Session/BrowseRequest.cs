@@ -6,7 +6,7 @@ namespace MediaBrowser.Model.Session
     public class BrowseRequest
     {
         /// <summary>
-        /// Artist, Genre, Studio, Person, or any kind of BaseItem.
+        /// Gets or sets the Artist, Genre, Studio, Person, or any kind of BaseItem.
         /// </summary>
         /// <value>The type of the item.</value>
         public string ItemType { get; set; }

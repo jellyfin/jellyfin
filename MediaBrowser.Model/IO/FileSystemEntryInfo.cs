@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
-    /// Class FileSystemEntryInfo
+    /// Class FileSystemEntryInfo.
     /// </summary>
     public class FileSystemEntryInfo
     {

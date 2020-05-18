@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 
@@ -6,6 +7,12 @@ namespace MediaBrowser.Model.Notifications
 {
     public class NotificationRequest
     {
+        public NotificationRequest()
+        {
+            UserIds = Array.Empty<Guid>();
+            Date = DateTime.UtcNow;
+        }
+
         public string Name { get; set; }
 
         public string Description { get; set; }
@@ -19,16 +26,10 @@ namespace MediaBrowser.Model.Notifications
         public DateTime Date { get; set; }
 
         /// <summary>
-        /// The corresponding type name used in configuration. Not for display.
+        /// Gets or sets the corresponding type name used in configuration. Not for display.
         /// </summary>
         public string NotificationType { get; set; }
 
         public SendToUserType? SendToUserMode { get; set; }
-
-        public NotificationRequest()
-        {
-            UserIds = Array.Empty<Guid>();
-            Date = DateTime.UtcNow;
-        }
     }
 }

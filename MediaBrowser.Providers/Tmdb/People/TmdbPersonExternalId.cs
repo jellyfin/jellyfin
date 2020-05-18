@@ -10,7 +10,7 @@ namespace MediaBrowser.Providers.Tmdb.People
         public string Name => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Tmdb.ToString();
+        public string Key => MetadataProvider.Tmdb.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "person/{0}";

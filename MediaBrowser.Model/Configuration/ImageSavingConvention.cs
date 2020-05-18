@@ -4,7 +4,14 @@ namespace MediaBrowser.Model.Configuration
 {
     public enum ImageSavingConvention
     {
+        /// <summary>
+        /// Legacy
+        /// </summary>
         Legacy,
+
+        /// <summary>
+        /// Compatible
+        /// </summary>
         Compatible
     }
 }

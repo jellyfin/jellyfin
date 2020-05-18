@@ -10,14 +10,10 @@ namespace MediaBrowser.Model.IO
     public interface IIsoMounter
     {
         /// <summary>
-        /// Mounts the specified iso path.
+        /// Gets the name.
         /// </summary>
-        /// <param name="isoPath">The iso path.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>IsoMount.</returns>
-        /// <exception cref="ArgumentNullException">isoPath</exception>
-        /// <exception cref="IOException">Unable to create mount.</exception>
-        Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken);
+        /// <value>The name.</value>
+        string Name { get; }
 
         /// <summary>
         /// Determines whether this instance can mount the specified path.
@@ -27,9 +23,13 @@ namespace MediaBrowser.Model.IO
         bool CanMount(string path);
 
         /// <summary>
-        /// Gets the name.
+        /// Mounts the specified iso path.
         /// </summary>
-        /// <value>The name.</value>
-        string Name { get; }
+        /// <param name="isoPath">The iso path.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>IsoMount.</returns>
+        /// <exception cref="ArgumentNullException">isoPath.</exception>
+        /// <exception cref="IOException">Unable to create mount.</exception>
+        Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken);
     }
 }

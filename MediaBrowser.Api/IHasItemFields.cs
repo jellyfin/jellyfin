@@ -26,20 +26,20 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>IEnumerable{ItemFields}.</returns>
-        public static ItemFields[] GetItemFields(this IHasItemFields request)
+        public static ItemField[] GetItemFields(this IHasItemFields request)
         {
             var val = request.Fields;
 
             if (string.IsNullOrEmpty(val))
             {
-                return Array.Empty<ItemFields>();
+                return Array.Empty<ItemField>();
             }
 
             return val.Split(',').Select(v =>
             {
-                if (Enum.TryParse(v, true, out ItemFields value))
+                if (Enum.TryParse(v, true, out ItemField value))
                 {
-                    return (ItemFields?)value;
+                    return (ItemField?)value;
                 }
 
                 return null;

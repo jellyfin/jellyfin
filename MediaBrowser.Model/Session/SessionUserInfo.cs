@@ -12,6 +12,7 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The user identifier.</value>
         public Guid UserId { get; set; }
+
         /// <summary>
         /// Gets or sets the name of the user.
         /// </summary>

@@ -769,7 +769,7 @@ namespace MediaBrowser.Api.Playback
             if (string.IsNullOrEmpty(container))
             {
                 container = request.Static ?
-                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio) :
+                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, null, DlnaProfileType.Audio) :
                     GetOutputFileExtension(state);
             }
 

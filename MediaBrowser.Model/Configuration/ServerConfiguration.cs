@@ -1,6 +1,9 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
+using System.Collections.Generic;
+
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Configuration
@@ -13,6 +16,107 @@ namespace MediaBrowser.Model.Configuration
         public const int DefaultHttpPort = 8096;
         public const int DefaultHttpsPort = 8920;
         private string _baseUrl;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
+        /// </summary>
+        public ServerConfiguration()
+        {
+            UninstalledPlugins = Array.Empty<string>();
+            RemoteIPFilter = Array.Empty<string>();
+            LocalNetworkSubnets = Array.Empty<string>();
+            LocalNetworkAddresses = Array.Empty<string>();
+            CodecsUsed = Array.Empty<string>();
+            PathSubstitutions = Array.Empty<PathSubstitution>();
+            IgnoreVirtualInterfaces = false;
+            EnableSimpleArtistDetection = false;
+
+            DisplaySpecialsWithinSeasons = true;
+            EnableExternalContentInSuggestions = true;
+
+            ImageSavingConvention = ImageSavingConvention.Compatible;
+            PublicPort = DefaultHttpPort;
+            PublicHttpsPort = DefaultHttpsPort;
+            HttpServerPortNumber = DefaultHttpPort;
+            HttpsPortNumber = DefaultHttpsPort;
+            EnableMetrics = false;
+            EnableHttps = false;
+            EnableDashboardResponseCaching = true;
+            EnableCaseSensitiveItemIds = true;
+
+            AutoRunWebApp = true;
+            EnableRemoteAccess = true;
+
+            EnableUPnP = false;
+            MinResumePct = 5;
+            MaxResumePct = 90;
+
+            // 5 minutes
+            MinResumeDurationSeconds = 300;
+
+            LibraryMonitorDelay = 60;
+
+            ContentTypes = Array.Empty<NameValuePair>();
+
+            PreferredMetadataLanguage = "en";
+            MetadataCountryCode = "US";
+
+            SortReplaceCharacters = new[] { ".", "+", "%" };
+            SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
+            SortRemoveWords = new[] { "the", "a", "an" };
+
+            BaseUrl = string.Empty;
+            UICulture = "en-US";
+
+            MetadataOptions = new[]
+            {
+                new MetadataOptions()
+                {
+                    ItemType = "Book"
+                },
+                new MetadataOptions()
+                {
+                    ItemType = "Movie"
+                },
+                new MetadataOptions
+                {
+                    ItemType = "MusicVideo",
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database" }
+                },
+                new MetadataOptions
+                {
+                    ItemType = "Series",
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "TheMovieDb" }
+                },
+                new MetadataOptions
+                {
+                    ItemType = "MusicAlbum",
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
+                },
+                new MetadataOptions
+                {
+                    ItemType = "MusicArtist",
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
+                },
+                new MetadataOptions
+                {
+                    ItemType = "BoxSet"
+                },
+                new MetadataOptions
+                {
+                    ItemType = "Season",
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
+                },
+                new MetadataOptions
+                {
+                    ItemType = "Episode",
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database", "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
+                }
+            };
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether to enable automatic port forwarding.
@@ -110,19 +214,19 @@ namespace MediaBrowser.Model.Configuration
         public string MetadataCountryCode { get; set; }
 
         /// <summary>
-        /// Characters to be replaced with a ' ' in strings to create a sort name
+        /// Gets or sets characters to be replaced with a ' ' in strings to create a sort name.
         /// </summary>
         /// <value>The sort replace characters.</value>
         public string[] SortReplaceCharacters { get; set; }
 
         /// <summary>
-        /// Characters to be removed from strings to create a sort name
+        /// Gets or sets characters to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove characters.</value>
         public string[] SortRemoveCharacters { get; set; }
 
         /// <summary>
-        /// Words to be removed from strings to create a sort name
+        /// Gets or sets words to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove words.</value>
         public string[] SortRemoveWords { get; set; }
@@ -146,7 +250,7 @@ namespace MediaBrowser.Model.Configuration
         public int MinResumeDurationSeconds { get; set; }
 
         /// <summary>
-        /// The delay in seconds that we will wait after a file system change to try and discover what has been added/removed
+        /// Gets or sets the delay in seconds that we will wait after a file system change to try and discover what has been added/removed
         /// Some delay is necessary with some items because their creation is not atomic.  It involves the creation of several
         /// different directories and files.
         /// </summary>
@@ -240,120 +344,15 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableNewOmdbSupport { get; set; }
 
         public string[] RemoteIPFilter { get; set; }
+
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; }
+
         public bool EnableSimpleArtistDetection { get; set; }
 
         public string[] UninstalledPlugins { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
-        /// </summary>
-        public ServerConfiguration()
-        {
-            UninstalledPlugins = Array.Empty<string>();
-            RemoteIPFilter = Array.Empty<string>();
-            LocalNetworkSubnets = Array.Empty<string>();
-            LocalNetworkAddresses = Array.Empty<string>();
-            CodecsUsed = Array.Empty<string>();
-            PathSubstitutions = Array.Empty<PathSubstitution>();
-            IgnoreVirtualInterfaces = false;
-            EnableSimpleArtistDetection = false;
-
-            DisplaySpecialsWithinSeasons = true;
-            EnableExternalContentInSuggestions = true;
-
-            ImageSavingConvention = ImageSavingConvention.Compatible;
-            PublicPort = DefaultHttpPort;
-            PublicHttpsPort = DefaultHttpsPort;
-            HttpServerPortNumber = DefaultHttpPort;
-            HttpsPortNumber = DefaultHttpsPort;
-            EnableMetrics = false;
-            EnableHttps = false;
-            EnableDashboardResponseCaching = true;
-            EnableCaseSensitiveItemIds = true;
-
-            AutoRunWebApp = true;
-            EnableRemoteAccess = true;
-
-            EnableUPnP = false;
-            MinResumePct = 5;
-            MaxResumePct = 90;
-
-            // 5 minutes
-            MinResumeDurationSeconds = 300;
-
-            LibraryMonitorDelay = 60;
-
-            ContentTypes = Array.Empty<NameValuePair>();
-
-            PreferredMetadataLanguage = "en";
-            MetadataCountryCode = "US";
-
-            SortReplaceCharacters = new[] { ".", "+", "%" };
-            SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
-            SortRemoveWords = new[] { "the", "a", "an" };
-
-            BaseUrl = string.Empty;
-            UICulture = "en-US";
-
-            MetadataOptions = new[]
-            {
-                new MetadataOptions()
-                {
-                    ItemType = "Book"
-                },
-                new MetadataOptions()
-                {
-                    ItemType = "Movie"
-                },
-                new MetadataOptions
-                {
-                    ItemType = "MusicVideo",
-                    DisabledMetadataFetchers = new [] { "The Open Movie Database" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "Series",
-                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "TheMovieDb" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "MusicAlbum",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "MusicArtist",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
-                },
-                new MetadataOptions
-                {
-                    ItemType = "BoxSet"
-                },
-                new MetadataOptions
-                {
-                    ItemType = "Season",
-                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
-                },
-                new MetadataOptions
-                {
-                    ItemType = "Episode",
-                    DisabledMetadataFetchers = new [] { "The Open Movie Database", "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database", "TheMovieDb" }
-                }
-            };
-        }
-    }
-
-    public class PathSubstitution
-    {
-        public string From { get; set; }
-        public string To { get; set; }
     }
 }

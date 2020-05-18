@@ -635,9 +635,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 stream.Type = MediaStreamType.Subtitle;
                 stream.Codec = NormalizeSubtitleCodec(stream.Codec);
-                stream.localizedUndefined = _localization.GetLocalizedString("Undefined");
-                stream.localizedDefault = _localization.GetLocalizedString("Default");
-                stream.localizedForced = _localization.GetLocalizedString("Forced");
+                stream.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
+                stream.LocalizedDefault = _localization.GetLocalizedString("Default");
+                stream.LocalizedForced = _localization.GetLocalizedString("Forced");
             }
             else if (string.Equals(streamInfo.CodecType, "video", StringComparison.OrdinalIgnoreCase))
             {
@@ -1057,23 +1057,23 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These support mulitple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
 
         private string GetMultipleMusicBrainzId(string value)

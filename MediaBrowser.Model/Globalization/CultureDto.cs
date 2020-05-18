@@ -1,6 +1,8 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
+using System.Linq;
 
 namespace MediaBrowser.Model.Globalization
 {
@@ -9,6 +11,11 @@ namespace MediaBrowser.Model.Globalization
     /// </summary>
     public class CultureDto
     {
+        public CultureDto()
+        {
+            ThreeLetterISOLanguageNames = Array.Empty<string>();
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -28,28 +35,14 @@ namespace MediaBrowser.Model.Globalization
         public string TwoLetterISOLanguageName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the three letter ISO language.
+        /// Gets the name of the three letter ISO language.
         /// </summary>
         /// <value>The name of the three letter ISO language.</value>
         public string ThreeLetterISOLanguageName
         {
-            get
-            {
-                var vals = ThreeLetterISOLanguageNames;
-                if (vals.Length > 0)
-                {
-                    return vals[0];
-                }
-
-                return null;
-            }
+            get => ThreeLetterISOLanguageNames.FirstOrDefault();
         }
 
         public string[] ThreeLetterISOLanguageNames { get; set; }
-
-        public CultureDto()
-        {
-            ThreeLetterISOLanguageNames = Array.Empty<string>();
-        }
     }
 }

@@ -1415,7 +1415,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (HasField(query, ItemFields.CustomRating))
+            if (HasField(query, ItemField.CustomRating))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1430,7 +1430,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (HasField(query, ItemFields.Settings))
+            if (HasField(query, ItemField.Settings))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1451,7 +1451,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.Width))
+            if (HasField(query, ItemField.Width))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1460,7 +1460,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.Height))
+            if (HasField(query, ItemField.Height))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1469,7 +1469,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.DateLastRefreshed))
+            if (HasField(query, ItemField.DateLastRefreshed))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1496,7 +1496,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (HasField(query, ItemFields.Overview))
+            if (HasField(query, ItemField.Overview))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1523,7 +1523,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (HasField(query, ItemFields.SortName))
+            if (HasField(query, ItemField.SortName))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1544,7 +1544,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (HasField(query, ItemFields.DateCreated))
+            if (HasField(query, ItemField.DateCreated))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1562,7 +1562,7 @@ namespace Emby.Server.Implementations.Data
             item.Id = reader.GetGuid(index);
             index++;
 
-            if (HasField(query, ItemFields.Genres))
+            if (HasField(query, ItemField.Genres))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1606,7 +1606,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (HasField(query, ItemFields.DateLastSaved))
+            if (HasField(query, ItemField.DateLastSaved))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1615,15 +1615,15 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.Settings))
+            if (HasField(query, ItemField.Settings))
             {
                 if (!reader.IsDBNull(index))
                 {
-                    IEnumerable<MetadataFields> GetLockedFields(string s)
+                    IEnumerable<MetadataField> GetLockedFields(string s)
                     {
                         foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            if (Enum.TryParse(i, true, out MetadataFields parsedValue))
+                            if (Enum.TryParse(i, true, out MetadataField parsedValue))
                             {
                                 yield return parsedValue;
                             }
@@ -1634,7 +1634,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.Studios))
+            if (HasField(query, ItemField.Studios))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1643,7 +1643,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.Tags))
+            if (HasField(query, ItemField.Tags))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1674,7 +1674,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.OriginalTitle))
+            if (HasField(query, ItemField.OriginalTitle))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1692,7 +1692,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (HasField(query, ItemFields.DateLastMediaAdded))
+            if (HasField(query, ItemField.DateLastMediaAdded))
             {
                 if (item is Folder folder && !reader.IsDBNull(index))
                 {
@@ -1762,7 +1762,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.PresentationUniqueKey))
+            if (HasField(query, ItemField.PresentationUniqueKey))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1771,7 +1771,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.InheritedParentalRatingValue))
+            if (HasField(query, ItemField.InheritedParentalRatingValue))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1780,7 +1780,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.ExternalSeriesId))
+            if (HasField(query, ItemField.ExternalSeriesId))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1789,7 +1789,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.Taglines))
+            if (HasField(query, ItemField.Taglines))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1813,7 +1813,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.ProductionLocations))
+            if (HasField(query, ItemField.ProductionLocations))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1822,7 +1822,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (HasField(query, ItemFields.ExtraIds))
+            if (HasField(query, ItemField.ExtraIds))
             {
                 if (!reader.IsDBNull(index))
                 {
@@ -1867,7 +1867,7 @@ namespace Emby.Server.Implementations.Data
             }
             index++;
 
-            if (HasField(query, ItemFields.SeriesPresentationUniqueKey))
+            if (HasField(query, ItemField.SeriesPresentationUniqueKey))
             {
                 if (hasSeries != null)
                 {
@@ -2111,57 +2111,57 @@ namespace Emby.Server.Implementations.Data
                     || query.IsLiked.HasValue;
         }
 
-        private readonly ItemFields[] _allFields = Enum.GetNames(typeof(ItemFields))
-            .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+        private readonly ItemField[] _allFields = Enum.GetNames(typeof(ItemField))
+            .Select(i => (ItemField)Enum.Parse(typeof(ItemField), i, true))
             .ToArray();
 
-        private string[] GetColumnNamesFromField(ItemFields field)
+        private string[] GetColumnNamesFromField(ItemField field)
         {
             switch (field)
             {
-                case ItemFields.Settings:
+                case ItemField.Settings:
                     return new[] { "IsLocked", "PreferredMetadataCountryCode", "PreferredMetadataLanguage", "LockedFields" };
-                case ItemFields.ServiceName:
+                case ItemField.ServiceName:
                     return new[] { "ExternalServiceId" };
-                case ItemFields.SortName:
+                case ItemField.SortName:
                     return new[] { "ForcedSortName" };
-                case ItemFields.Taglines:
+                case ItemField.Taglines:
                     return new[] { "Tagline" };
-                case ItemFields.Tags:
+                case ItemField.Tags:
                     return new[] { "Tags" };
-                case ItemFields.IsHD:
+                case ItemField.IsHD:
                     return Array.Empty<string>();
                 default:
                     return new[] { field.ToString() };
             }
         }
 
-        private bool HasField(InternalItemsQuery query, ItemFields name)
+        private bool HasField(InternalItemsQuery query, ItemField name)
         {
             switch (name)
             {
-                case ItemFields.Tags:
+                case ItemField.Tags:
                     return query.DtoOptions.ContainsField(name) || HasProgramAttributes(query);
-                case ItemFields.CustomRating:
-                case ItemFields.ProductionLocations:
-                case ItemFields.Settings:
-                case ItemFields.OriginalTitle:
-                case ItemFields.Taglines:
-                case ItemFields.SortName:
-                case ItemFields.Studios:
-                case ItemFields.ExtraIds:
-                case ItemFields.DateCreated:
-                case ItemFields.Overview:
-                case ItemFields.Genres:
-                case ItemFields.DateLastMediaAdded:
-                case ItemFields.PresentationUniqueKey:
-                case ItemFields.InheritedParentalRatingValue:
-                case ItemFields.ExternalSeriesId:
-                case ItemFields.SeriesPresentationUniqueKey:
-                case ItemFields.DateLastRefreshed:
-                case ItemFields.DateLastSaved:
+                case ItemField.CustomRating:
+                case ItemField.ProductionLocations:
+                case ItemField.Settings:
+                case ItemField.OriginalTitle:
+                case ItemField.Taglines:
+                case ItemField.SortName:
+                case ItemField.Studios:
+                case ItemField.ExtraIds:
+                case ItemField.DateCreated:
+                case ItemField.Overview:
+                case ItemField.Genres:
+                case ItemField.DateLastMediaAdded:
+                case ItemField.PresentationUniqueKey:
+                case ItemField.InheritedParentalRatingValue:
+                case ItemField.ExternalSeriesId:
+                case ItemField.SeriesPresentationUniqueKey:
+                case ItemField.DateLastRefreshed:
+                case ItemField.DateLastSaved:
                     return query.DtoOptions.ContainsField(name);
-                case ItemFields.ServiceName:
+                case ItemField.ServiceName:
                     return HasServiceName(query);
                 default:
                     return true;
@@ -2726,7 +2726,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var providerId in newItem.ProviderIds)
                 {
-                    if (providerId.Key == MetadataProviders.TmdbCollection.ToString())
+                    if (providerId.Key == MetadataProvider.TmdbCollection.ToString())
                     {
                         continue;
                     }
@@ -4316,7 +4316,7 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var pair in query.ExcludeProviderIds)
                 {
-                    if (string.Equals(pair.Key, MetadataProviders.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(pair.Key, MetadataProvider.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -4345,7 +4345,7 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var pair in query.HasAnyProviderId)
                 {
-                    if (string.Equals(pair.Key, MetadataProviders.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(pair.Key, MetadataProvider.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -6050,9 +6050,9 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             if (item.Type == MediaStreamType.Subtitle)
             {
-                item.localizedUndefined = _localization.GetLocalizedString("Undefined");
-                item.localizedDefault = _localization.GetLocalizedString("Default");
-                item.localizedForced = _localization.GetLocalizedString("Forced");
+                item.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
+                item.LocalizedDefault = _localization.GetLocalizedString("Default");
+                item.LocalizedForced = _localization.GetLocalizedString("Forced");
             }
 
             return item;

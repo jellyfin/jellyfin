@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.IO
         /// <returns>A <see cref="FileSystemMetadata" /> object.</returns>
         /// <remarks><para>If the specified path points to a directory, the returned <see cref="FileSystemMetadata" /> object's
         /// <see cref="FileSystemMetadata.IsDirectory" /> property and the <see cref="FileSystemMetadata.Exists" /> property will both be set to false.</para>
-        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="M:IFileSystem.GetFileSystemInfo(System.String)" />.</para></remarks>
+        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="GetFileSystemInfo" />.</para></remarks>
         FileSystemMetadata GetFileInfo(string path);
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace MediaBrowser.Model.IO
         /// <returns>A <see cref="FileSystemMetadata" /> object.</returns>
         /// <remarks><para>If the specified path points to a file, the returned <see cref="FileSystemMetadata" /> object's
         /// <see cref="FileSystemMetadata.IsDirectory" /> property will be set to true and the <see cref="FileSystemMetadata.Exists" /> property will be set to false.</para>
-        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="M:IFileSystem.GetFileSystemInfo(System.String)" />.</para></remarks>
+        /// <para>For automatic handling of files <b>and</b> directories, use <see cref="GetFileSystemInfo" />.</para></remarks>
         FileSystemMetadata GetDirectoryInfo(string path);
 
         /// <summary>
@@ -161,6 +161,9 @@ namespace MediaBrowser.Model.IO
         /// <summary>
         /// Gets the files.
         /// </summary>
+        /// <param name="path">Path.</param>
+        /// <param name="recursive">Recursive.</param>
+        /// <returns>IEnumerable of FileSystemMetadata.</returns>
         IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
 
         IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string> extensions, bool enableCaseSensitiveExtensions, bool recursive);
@@ -200,9 +203,13 @@ namespace MediaBrowser.Model.IO
         IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false);
 
         void SetHidden(string path, bool isHidden);
+
         void SetReadOnly(string path, bool readOnly);
+
         void SetAttributes(string path, bool isHidden, bool readOnly);
+
         List<FileSystemMetadata> GetDrives();
+
         void SetExecutable(string path);
     }
 }

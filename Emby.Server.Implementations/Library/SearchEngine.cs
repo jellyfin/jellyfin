@@ -173,12 +173,12 @@ namespace Emby.Server.Implementations.Library
 
                 DtoOptions = new DtoOptions
                 {
-                    Fields = new ItemFields[]
+                    Fields = new ItemField[]
                     {
-                         ItemFields.AirTime,
-                         ItemFields.DateCreated,
-                         ItemFields.ChannelInfo,
-                         ItemFields.ParentId
+                         ItemField.AirTime,
+                         ItemField.DateCreated,
+                         ItemField.ChannelInfo,
+                         ItemField.ParentId
                     }
                 }
             };

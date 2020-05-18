@@ -6,11 +6,13 @@ namespace MediaBrowser.Model.Dlna
 {
     public class SortCriteria
     {
-        public SortOrder SortOrder => SortOrder.Ascending;
+        private string _value;
 
         public SortCriteria(string value)
         {
-
+            _value = value;
         }
+
+        public SortOrder SortOrder => SortOrder.Ascending;
     }
 }

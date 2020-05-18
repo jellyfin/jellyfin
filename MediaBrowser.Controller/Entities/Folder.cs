@@ -1693,7 +1693,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (itemDto != null)
             {
-                if (fields.ContainsField(ItemFields.RecursiveItemCount))
+                if (fields.ContainsField(ItemField.RecursiveItemCount))
                 {
                     itemDto.RecursiveItemCount = GetRecursiveChildCount(user);
                 }

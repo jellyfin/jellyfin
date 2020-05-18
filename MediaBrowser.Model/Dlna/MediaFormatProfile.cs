@@ -1,4 +1,6 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1602 // Enumeration items should be documented
+#pragma warning disable CA1707 // Identifiers should not contain underscores
 
 namespace MediaBrowser.Model.Dlna
 {

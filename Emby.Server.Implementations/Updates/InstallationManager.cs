@@ -171,12 +171,12 @@ namespace Emby.Server.Implementations.Updates
         {
             if (name != null)
             {
-                availablePackages = availablePackages.Where(x => x.name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
             if (guid != Guid.Empty)
             {
-                availablePackages = availablePackages.Where(x => Guid.Parse(x.guid) == guid);
+                availablePackages = availablePackages.Where(x => Guid.Parse(x.AssemblyGuid) == guid);
             }
 
             return availablePackages;
@@ -189,14 +189,14 @@ namespace Emby.Server.Implementations.Updates
         {
             var appVer = _applicationHost.ApplicationVersion;
             availableVersions = availableVersions
-                .Where(x => Version.Parse(x.targetAbi) <= appVer);
+                .Where(x => Version.Parse(x.TargetAbi) <= appVer);
 
             if (minVersion != null)
             {
-                availableVersions = availableVersions.Where(x => x.version >= minVersion);
+                availableVersions = availableVersions.Where(x => x.Version >= minVersion);
             }
 
-            return availableVersions.OrderByDescending(x => x.version);
+            return availableVersions.OrderByDescending(x => x.Version);
         }
 
         /// <inheritdoc />
@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.Updates
             }
 
             return GetCompatibleVersions(
-                package.versions,
+                package.Versions,
                 minVersion);
         }
 
@@ -231,8 +231,8 @@ namespace Emby.Server.Implementations.Updates
             foreach (var plugin in _applicationHost.Plugins)
             {
                 var compatibleversions = GetCompatibleVersions(pluginCatalog, plugin.Name, plugin.Id, plugin.Version);
-                var version = compatibleversions.FirstOrDefault(y => y.version > plugin.Version);
-                if (version != null && !CompletedInstallations.Any(x => string.Equals(x.Guid, version.guid, StringComparison.OrdinalIgnoreCase)))
+                var version = compatibleversions.FirstOrDefault(y => y.Version > plugin.Version);
+                if (version != null && !CompletedInstallations.Any(x => string.Equals(x.Guid, version.Guid, StringComparison.OrdinalIgnoreCase)))
                 {
                     yield return version;
                 }
@@ -249,9 +249,9 @@ namespace Emby.Server.Implementations.Updates
 
             var installationInfo = new InstallationInfo
             {
-                Guid = package.guid,
-                Name = package.name,
-                Version = package.version.ToString()
+                Guid = package.Guid,
+                Name = package.Name,
+                Version = package.Version.ToString()
             };
 
             var innerCancellationTokenSource = new CancellationTokenSource();
@@ -294,7 +294,7 @@ namespace Emby.Server.Implementations.Updates
                     _currentInstallations.Remove(tuple);
                 }
 
-                _logger.LogInformation("Package installation cancelled: {0} {1}", package.name, package.version);
+                _logger.LogInformation("Package installation cancelled: {0} {1}", package.Name, package.Version);
 
                 PackageInstallationCancelled?.Invoke(this, installationEventArgs);
 
@@ -333,8 +333,8 @@ namespace Emby.Server.Implementations.Updates
         private async Task InstallPackageInternal(VersionInfo package, CancellationToken cancellationToken)
         {
             // Set last update time if we were installed before
-            IPlugin plugin = _applicationHost.Plugins.FirstOrDefault(p => string.Equals(p.Id.ToString(), package.guid, StringComparison.OrdinalIgnoreCase))
-                           ?? _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.name, StringComparison.OrdinalIgnoreCase));
+            IPlugin plugin = _applicationHost.Plugins.FirstOrDefault(p => string.Equals(p.Id.ToString(), package.Guid, StringComparison.OrdinalIgnoreCase))
+                           ?? _applicationHost.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase));
 
             // Do the install
             await PerformPackageInstallation(package, cancellationToken).ConfigureAwait(false);
@@ -342,13 +342,13 @@ namespace Emby.Server.Implementations.Updates
             // Do plugin-specific processing
             if (plugin == null)
             {
-                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.name, package.version);
+                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.Name, package.Version);
 
                 PluginInstalled?.Invoke(this, new GenericEventArgs<VersionInfo>(package));
             }
             else
             {
-                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.name, package.version);
+                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.Name, package.Version);
 
                 PluginUpdated?.Invoke(this, new GenericEventArgs<(IPlugin, VersionInfo)>((plugin, package)));
             }
@@ -358,22 +358,22 @@ namespace Emby.Server.Implementations.Updates
 
         private async Task PerformPackageInstallation(VersionInfo package, CancellationToken cancellationToken)
         {
-            var extension = Path.GetExtension(package.filename);
+            var extension = Path.GetExtension(package.Filename);
             if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.LogError("Only zip packages are supported. {Filename} is not a zip archive.", package.filename);
+                _logger.LogError("Only zip packages are supported. {Filename} is not a zip archive.", package.Filename);
                 return;
             }
 
             // Always override the passed-in target (which is a file) and figure it out again
-            string targetDir = Path.Combine(_appPaths.PluginsPath, package.name);
+            string targetDir = Path.Combine(_appPaths.PluginsPath, package.Name);
 
             // CA5351: Do Not Use Broken Cryptographic Algorithms
 #pragma warning disable CA5351
             using (var res = await _httpClient.SendAsync(
                 new HttpRequestOptions
                 {
-                    Url = package.sourceUrl,
+                    Url = package.SourceUrl,
                     CancellationToken = cancellationToken,
                     // We need it to be buffered for setting the position
                     BufferContent = true
@@ -385,12 +385,12 @@ namespace Emby.Server.Implementations.Updates
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var hash = Hex.Encode(md5.ComputeHash(stream));
-                if (!string.Equals(package.checksum, hash, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(package.Checksum, hash, StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogError(
                         "The checksums didn't match while installing {Package}, expected: {Expected}, got: {Received}",
-                        package.name,
-                        package.checksum,
+                        package.Name,
+                        package.Checksum,
                         hash);
                     throw new InvalidDataException("The checksum of the received data doesn't match.");
                 }

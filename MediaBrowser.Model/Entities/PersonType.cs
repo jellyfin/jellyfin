@@ -1,9 +1,9 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Struct PersonType.
+    /// Person type.
     /// </summary>
-    public class PersonType
+    public static class PersonType
     {
         /// <summary>
         /// The actor.

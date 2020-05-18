@@ -273,7 +273,7 @@ namespace MediaBrowser.Api.Movies
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
 
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                }).GroupBy(i => i.GetProviderId(MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
                 .ToList();
@@ -314,7 +314,7 @@ namespace MediaBrowser.Api.Movies
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
 
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                }).GroupBy(i => i.GetProviderId(MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
                 .ToList();

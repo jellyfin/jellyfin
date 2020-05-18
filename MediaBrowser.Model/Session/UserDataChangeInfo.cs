@@ -1,3 +1,5 @@
+#pragma warning disable CA1819 // Properties should not return arrays
+
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Session

@@ -40,6 +40,5 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The program information.</value>
         public BaseItemDto ProgramInfo { get; set; }
-
     }
 }

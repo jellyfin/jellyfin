@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1040 // Avoid empty interfaces
 
 namespace MediaBrowser.Model.Services
 {
@@ -7,7 +8,15 @@ namespace MediaBrowser.Model.Services
     {
     }
 
-    public interface IReturn { }
-    public interface IReturn<T> : IReturn { }
-    public interface IReturnVoid : IReturn { }
+    public interface IReturn
+    {
+    }
+
+    public interface IReturn<T> : IReturn
+    {
+    }
+
+    public interface IReturnVoid : IReturn
+    {
+    }
 }

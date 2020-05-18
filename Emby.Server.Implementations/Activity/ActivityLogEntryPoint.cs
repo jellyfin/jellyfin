@@ -390,8 +390,8 @@ namespace Emby.Server.Implementations.Activity
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.Item2.version),
-                Overview = e.Argument.Item2.changelog
+                    e.Argument.Item2.Version),
+                Overview = e.Argument.Item2.Changelog
             }).ConfigureAwait(false);
         }
 
@@ -413,14 +413,14 @@ namespace Emby.Server.Implementations.Activity
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginInstalledWithName"),
-                    e.Argument.name),
+                    e.Argument.Name),
                 NotificationType.PluginInstalled.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.version)
+                    e.Argument.Version)
             }).ConfigureAwait(false);
         }
 

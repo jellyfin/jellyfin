@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 
@@ -9,17 +10,6 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class MetadataOptions
     {
-        public string ItemType { get; set; }
-
-        public string[] DisabledMetadataSavers { get; set; }
-        public string[] LocalMetadataReaderOrder { get; set; }
-
-        public string[] DisabledMetadataFetchers { get; set; }
-        public string[] MetadataFetcherOrder { get; set; }
-
-        public string[] DisabledImageFetchers { get; set; }
-        public string[] ImageFetcherOrder { get; set; }
-
         public MetadataOptions()
         {
             DisabledMetadataSavers = Array.Empty<string>();
@@ -29,5 +19,19 @@ namespace MediaBrowser.Model.Configuration
             DisabledImageFetchers = Array.Empty<string>();
             ImageFetcherOrder = Array.Empty<string>();
         }
+
+        public string ItemType { get; set; }
+
+        public string[] DisabledMetadataSavers { get; set; }
+
+        public string[] LocalMetadataReaderOrder { get; set; }
+
+        public string[] DisabledMetadataFetchers { get; set; }
+
+        public string[] MetadataFetcherOrder { get; set; }
+
+        public string[] DisabledImageFetchers { get; set; }
+
+        public string[] ImageFetcherOrder { get; set; }
     }
 }

@@ -14,6 +14,9 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Creates a new unicast socket using the specified local port number.
         /// </summary>
+        /// <param name="localIp">The local IP address.</param>
+        /// <param name="localPort">The local port number.</param>
+        /// <returns>The socket.</returns>
         ISocket CreateSsdpUdpSocket(IPAddress localIp, int localPort);
 
         /// <summary>

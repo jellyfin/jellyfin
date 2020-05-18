@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
@@ -25,7 +26,7 @@ namespace Emby.Server.Implementations.LiveTv
 
         public string Category => "Live TV";
 
-        public Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
+        public Task Execute(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var manager = (LiveTvManager)_liveTvManager;
 

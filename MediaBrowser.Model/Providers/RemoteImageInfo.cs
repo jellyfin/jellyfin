@@ -21,7 +21,7 @@ namespace MediaBrowser.Model.Providers
         public string Url { get; set; }
 
         /// <summary>
-        /// Gets a url used for previewing a smaller version.
+        /// Gets or sets a url used for previewing a smaller version.
         /// </summary>
         public string ThumbnailUrl { get; set; }
 
@@ -67,5 +67,4 @@ namespace MediaBrowser.Model.Providers
         /// <value>The type of the rating.</value>
         public RatingType RatingType { get; set; }
     }
-
 }

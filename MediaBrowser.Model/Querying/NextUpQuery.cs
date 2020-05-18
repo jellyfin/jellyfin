@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 using MediaBrowser.Model.Entities;
@@ -7,6 +8,12 @@ namespace MediaBrowser.Model.Querying
 {
     public class NextUpQuery
     {
+        public NextUpQuery()
+        {
+            EnableImageTypes = Array.Empty<ImageType>();
+            EnableTotalRecordCount = true;
+        }
+
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
@@ -26,22 +33,22 @@ namespace MediaBrowser.Model.Querying
         public string SeriesId { get; set; }
 
         /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
+        /// Gets or sets the number of items to skip over within the results. Use for paging.
         /// </summary>
         /// <value>The start index.</value>
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// Gets or sets the maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Gets or sets fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
-        public ItemFields[] Fields { get; set; }
+        public ItemField[] Fields { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable images].
@@ -62,11 +69,5 @@ namespace MediaBrowser.Model.Querying
         public ImageType[] EnableImageTypes { get; set; }
 
         public bool EnableTotalRecordCount { get; set; }
-
-        public NextUpQuery()
-        {
-            EnableImageTypes = Array.Empty<ImageType>();
-            EnableTotalRecordCount = true;
-        }
     }
 }

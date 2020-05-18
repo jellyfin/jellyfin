@@ -1172,9 +1172,9 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new ItemFields[]
+                        Fields = new ItemField[]
                         {
-                            ItemFields.SortName
+                            ItemField.SortName
                         }
                     },
                     IsVirtualItem = false,
@@ -1193,9 +1193,9 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new ItemFields[]
+                        Fields = new ItemField[]
                         {
-                            ItemFields.SortName
+                            ItemField.SortName
                         }
                     },
                     IsVirtualItem = false,
@@ -1649,32 +1649,32 @@ namespace Emby.Server.Implementations.Session
 
                 var fields = dtoOptions.Fields.ToList();
 
-                fields.Remove(ItemFields.BasicSyncInfo);
-                fields.Remove(ItemFields.CanDelete);
-                fields.Remove(ItemFields.CanDownload);
-                fields.Remove(ItemFields.ChildCount);
-                fields.Remove(ItemFields.CustomRating);
-                fields.Remove(ItemFields.DateLastMediaAdded);
-                fields.Remove(ItemFields.DateLastRefreshed);
-                fields.Remove(ItemFields.DateLastSaved);
-                fields.Remove(ItemFields.DisplayPreferencesId);
-                fields.Remove(ItemFields.Etag);
-                fields.Remove(ItemFields.InheritedParentalRatingValue);
-                fields.Remove(ItemFields.ItemCounts);
-                fields.Remove(ItemFields.MediaSourceCount);
-                fields.Remove(ItemFields.MediaStreams);
-                fields.Remove(ItemFields.MediaSources);
-                fields.Remove(ItemFields.People);
-                fields.Remove(ItemFields.PlayAccess);
-                fields.Remove(ItemFields.People);
-                fields.Remove(ItemFields.ProductionLocations);
-                fields.Remove(ItemFields.RecursiveItemCount);
-                fields.Remove(ItemFields.RemoteTrailers);
-                fields.Remove(ItemFields.SeasonUserData);
-                fields.Remove(ItemFields.Settings);
-                fields.Remove(ItemFields.SortName);
-                fields.Remove(ItemFields.Tags);
-                fields.Remove(ItemFields.ExtraIds);
+                fields.Remove(ItemField.BasicSyncInfo);
+                fields.Remove(ItemField.CanDelete);
+                fields.Remove(ItemField.CanDownload);
+                fields.Remove(ItemField.ChildCount);
+                fields.Remove(ItemField.CustomRating);
+                fields.Remove(ItemField.DateLastMediaAdded);
+                fields.Remove(ItemField.DateLastRefreshed);
+                fields.Remove(ItemField.DateLastSaved);
+                fields.Remove(ItemField.DisplayPreferencesId);
+                fields.Remove(ItemField.Etag);
+                fields.Remove(ItemField.InheritedParentalRatingValue);
+                fields.Remove(ItemField.ItemCounts);
+                fields.Remove(ItemField.MediaSourceCount);
+                fields.Remove(ItemField.MediaStreams);
+                fields.Remove(ItemField.MediaSources);
+                fields.Remove(ItemField.People);
+                fields.Remove(ItemField.PlayAccess);
+                fields.Remove(ItemField.People);
+                fields.Remove(ItemField.ProductionLocations);
+                fields.Remove(ItemField.RecursiveItemCount);
+                fields.Remove(ItemField.RemoteTrailers);
+                fields.Remove(ItemField.SeasonUserData);
+                fields.Remove(ItemField.Settings);
+                fields.Remove(ItemField.SortName);
+                fields.Remove(ItemField.Tags);
+                fields.Remove(ItemField.ExtraIds);
 
                 dtoOptions.Fields = fields.ToArray();
 

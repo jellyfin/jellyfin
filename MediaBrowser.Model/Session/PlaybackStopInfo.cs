@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 using MediaBrowser.Model.Dto;
@@ -61,6 +62,7 @@ namespace MediaBrowser.Model.Session
         public string NextMediaType { get; set; }
 
         public string PlaylistItemId { get; set; }
+
         public QueueItem[] NowPlayingQueue { get; set; }
     }
 }

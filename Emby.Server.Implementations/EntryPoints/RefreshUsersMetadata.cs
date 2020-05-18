@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.EntryPoints
         public bool IsLogged => true;
 
         /// <inheritdoc />
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(IProgress<double> progress, CancellationToken cancellationToken)
         {
             foreach (var user in _userManager.Users)
             {

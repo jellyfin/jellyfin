@@ -1,3 +1,5 @@
+#pragma warning disable CA2227 // Collection properties should be read only
+
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Entities
@@ -7,11 +9,6 @@ namespace MediaBrowser.Model.Entities
     /// </summary>
     public class DisplayPreferences
     {
-        /// <summary>
-        /// The image scale.
-        /// </summary>
-        private const double ImageScale = .9;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferences" /> class.
         /// </summary>
@@ -103,7 +100,7 @@ namespace MediaBrowser.Model.Entities
         public bool ShowSidebar { get; set; }
 
         /// <summary>
-        /// Gets or sets the client
+        /// Gets or sets the client.
         /// </summary>
         public string Client { get; set; }
     }

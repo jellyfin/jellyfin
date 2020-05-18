@@ -158,11 +158,11 @@ namespace MediaBrowser.Providers.Tmdb.Movies
         /// <returns>Task{MovieImages}.</returns>
         private async Task<Images> FetchImages(BaseItem item, string language, IJsonSerializer jsonSerializer, CancellationToken cancellationToken)
         {
-            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
 
             if (string.IsNullOrWhiteSpace(tmdbId))
             {
-                var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+                var imdbId = item.GetProviderId(MetadataProvider.Imdb);
                 if (!string.IsNullOrWhiteSpace(imdbId))
                 {
                     var movieInfo = await TmdbMovieProvider.Current.FetchMainResult(imdbId, false, language, cancellationToken).ConfigureAwait(false);

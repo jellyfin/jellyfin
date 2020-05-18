@@ -34,6 +34,7 @@ namespace MediaBrowser.Model.Plugins
         /// </summary>
         /// <value>The unique id.</value>
         public string Id { get; set; }
+
         /// <summary>
         /// Gets or sets the image URL.
         /// </summary>

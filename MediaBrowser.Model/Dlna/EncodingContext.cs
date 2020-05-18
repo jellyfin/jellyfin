@@ -4,7 +4,14 @@ namespace MediaBrowser.Model.Dlna
 {
     public enum EncodingContext
     {
+        /// <summary>
+        /// Streaming
+        /// </summary>
         Streaming = 0,
+
+        /// <summary>
+        /// Static
+        /// </summary>
         Static = 1
     }
 }

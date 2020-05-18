@@ -1,11 +1,12 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1602 // Enumeration items should be documented
 
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>
     /// Used to control the data that gets attached to DtoBaseItems.
     /// </summary>
-    public enum ItemFields
+    public enum ItemField
     {
         /// <summary>
         /// The air time
@@ -32,6 +33,9 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         Chapters,
 
+        /// <summary>
+        /// Child count
+        /// </summary>
         ChildCount,
 
         /// <summary>
@@ -94,6 +98,9 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         MediaSources,
 
+        /// <summary>
+        /// Original title
+        /// </summary>
         OriginalTitle,
 
         /// <summary>
@@ -116,6 +123,9 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         People,
 
+        /// <summary>
+        /// Play access
+        /// </summary>
         PlayAccess,
 
         /// <summary>
@@ -133,6 +143,9 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         PrimaryImageAspectRatio,
 
+        /// <summary>
+        /// Recursive item count
+        /// </summary>
         RecursiveItemCount,
 
         /// <summary>
@@ -145,6 +158,9 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         ScreenshotImageTags,
 
+        /// <summary>
+        /// Series primary image
+        /// </summary>
         SeriesPrimaryImage,
 
         /// <summary>
@@ -167,7 +183,11 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         Studios,
 
+        /// <summary>
+        /// Basic sync info
+        /// </summary>
         BasicSyncInfo,
+
         /// <summary>
         /// The synchronize information
         /// </summary>

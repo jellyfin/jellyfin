@@ -38,8 +38,8 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
         public async Task<MetadataResult<T>> GetMetadata(ItemLookupInfo itemId, CancellationToken cancellationToken)
         {
-            var tmdbId = itemId.GetProviderId(MetadataProviders.Tmdb);
-            var imdbId = itemId.GetProviderId(MetadataProviders.Imdb);
+            var tmdbId = itemId.GetProviderId(MetadataProvider.Tmdb);
+            var imdbId = itemId.GetProviderId(MetadataProvider.Imdb);
 
             // Don't search for music video id's because it is very easy to misidentify.
             if (string.IsNullOrEmpty(tmdbId) && string.IsNullOrEmpty(imdbId) && typeof(T) != typeof(MusicVideo))
@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
                 if (searchResult != null)
                 {
-                    tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
+                    tmdbId = searchResult.GetProviderId(MetadataProvider.Tmdb);
                 }
             }
 
@@ -146,12 +146,12 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                     .ToArray();
             }
 
-            movie.SetProviderId(MetadataProviders.Tmdb, movieData.Id.ToString(_usCulture));
-            movie.SetProviderId(MetadataProviders.Imdb, movieData.Imdb_Id);
+            movie.SetProviderId(MetadataProvider.Tmdb, movieData.Id.ToString(_usCulture));
+            movie.SetProviderId(MetadataProvider.Imdb, movieData.Imdb_Id);
 
             if (movieData.Belongs_To_Collection != null)
             {
-                movie.SetProviderId(MetadataProviders.TmdbCollection,
+                movie.SetProviderId(MetadataProvider.TmdbCollection,
                                     movieData.Belongs_To_Collection.Id.ToString(CultureInfo.InvariantCulture));
 
                 if (movie is Movie movieItem)
@@ -240,7 +240,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
                     if (actor.Id > 0)
                     {
-                        personInfo.SetProviderId(MetadataProviders.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
                     }
 
                     resultItem.AddPerson(personInfo);
@@ -282,7 +282,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
                     if (person.Id > 0)
                     {
-                        personInfo.SetProviderId(MetadataProviders.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
                     }
 
                     resultItem.AddPerson(personInfo);

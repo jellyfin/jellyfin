@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             string language,
             CancellationToken cancellationToken)
         {
-            searchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(),
+            searchInfo.SeriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(),
                 out var seriesTvdbId);
 
             var episodeQuery = new EpisodeQuery();

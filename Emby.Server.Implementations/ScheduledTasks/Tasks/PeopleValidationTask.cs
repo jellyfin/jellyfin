@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
         /// <returns>Task.</returns>
-        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public Task Execute(IProgress<double> progress, CancellationToken cancellationToken)
         {
             return _libraryManager.ValidatePeople(cancellationToken, progress);
         }

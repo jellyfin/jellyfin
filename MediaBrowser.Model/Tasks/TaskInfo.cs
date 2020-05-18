@@ -1,3 +1,5 @@
+#pragma warning disable CA1819 // Properties should not return arrays
+
 using System;
 
 namespace MediaBrowser.Model.Tasks
@@ -7,6 +9,14 @@ namespace MediaBrowser.Model.Tasks
     /// </summary>
     public class TaskInfo
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaskInfo"/> class.
+        /// </summary>
+        public TaskInfo()
+        {
+            Triggers = Array.Empty<TaskTriggerInfo>();
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -66,13 +76,5 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         /// <value>The key.</value>
         public string Key { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TaskInfo"/> class.
-        /// </summary>
-        public TaskInfo()
-        {
-            Triggers = Array.Empty<TaskTriggerInfo>();
-        }
     }
 }

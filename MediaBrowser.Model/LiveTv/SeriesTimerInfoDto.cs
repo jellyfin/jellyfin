@@ -1,11 +1,23 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1602 // Enumeration items should be documented
+#pragma warning disable CA1819 // Properties should not return arrays
+#pragma warning disable CA2227 // Collection properties should be read only
 
 using System;
 using System.Collections.Generic;
+
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.LiveTv
 {
+    public enum KeepUntil
+    {
+        UntilDeleted,
+        UntilSpaceNeeded,
+        UntilWatched,
+        UntilDate
+    }
+
     /// <summary>
     /// Class SeriesTimerInfoDto.
     /// </summary>
@@ -81,13 +93,5 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The parent primary image tag.</value>
         public string ParentPrimaryImageTag { get; set; }
-    }
-
-    public enum KeepUntil
-    {
-        UntilDeleted,
-        UntilSpaceNeeded,
-        UntilWatched,
-        UntilDate
     }
 }

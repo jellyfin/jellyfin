@@ -18,10 +18,4 @@ namespace MediaBrowser.Model.Dto
         /// <value>The identifier.</value>
         public string Id { get; set; }
     }
-
-    public class NameGuidPair
-    {
-        public string Name { get; set; }
-        public Guid Id { get; set; }
-    }
 }

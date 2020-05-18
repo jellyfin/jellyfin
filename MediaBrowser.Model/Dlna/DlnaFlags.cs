@@ -1,4 +1,6 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1028
+#pragma warning disable SA1602
 
 using System;
 

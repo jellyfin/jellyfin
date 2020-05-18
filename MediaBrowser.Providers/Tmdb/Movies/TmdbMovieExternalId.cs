@@ -12,7 +12,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
         public string Name => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Tmdb.ToString();
+        public string Key => MetadataProvider.Tmdb.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "movie/{0}";

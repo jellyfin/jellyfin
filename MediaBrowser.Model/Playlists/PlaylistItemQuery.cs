@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using MediaBrowser.Model.Querying;
 
@@ -34,6 +35,6 @@ namespace MediaBrowser.Model.Playlists
         /// Gets or sets the fields.
         /// </summary>
         /// <value>The fields.</value>
-        public ItemFields[] Fields { get; set; }
+        public ItemField[] Fields { get; set; }
     }
 }

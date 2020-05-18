@@ -37,17 +37,17 @@ namespace MediaBrowser.Model.Services
         public string Description { get; set; }
 
         /// <summary>
-        /// For path, query, and header paramTypes, this field must be a primitive. For body, this can be a complex or container datatype.
+        /// Gets or sets for path, query, and header paramTypes, this field must be a primitive. For body, this can be a complex or container datatype.
         /// </summary>
         public string DataType { get; set; }
 
         /// <summary>
-        /// For path, this is always true. Otherwise, this field tells the client whether or not the field must be supplied.
+        /// Gets or sets a value indicating whether this field must be supplied. For path, this is always true.
         /// </summary>
         public bool IsRequired { get; set; }
 
         /// <summary>
-        /// For query params, this specifies that a comma-separated list of values can be passed to the API. For path and body types, this field cannot be true.
+        /// Gets or sets a value indicating whether a comma-separated list of values can be passed to the API in the query params. For path and body types, this field cannot be true.
         /// </summary>
         public bool AllowMultiple { get; set; }
 
@@ -57,7 +57,7 @@ namespace MediaBrowser.Model.Services
         public string Route { get; set; }
 
         /// <summary>
-        /// Whether to exclude this property from being included in the ModelSchema
+        /// Gets or sets a value indicating whether whether to exclude this property from being included in the ModelSchema.
         /// </summary>
         public bool ExcludeInSchema { get; set; }
     }

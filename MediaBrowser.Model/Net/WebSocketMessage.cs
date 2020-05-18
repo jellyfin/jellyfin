@@ -1,5 +1,5 @@
-
 #pragma warning disable CS1591
+#pragma warning disable SA1602 // Enumeration items should be documented
 
 using System;
 
@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.Net
     /// <summary>
     /// Class WebSocketMessage.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type.</typeparam>
     public class WebSocketMessage<T>
     {
         /// <summary>
@@ -17,8 +17,14 @@ namespace MediaBrowser.Model.Net
         /// <value>The type of the message.</value>
         public string MessageType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the message Id.
+        /// </summary>
         public Guid MessageId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the server Id.
+        /// </summary>
         public string ServerId { get; set; }
 
         /// <summary>

@@ -251,7 +251,7 @@ namespace MediaBrowser.Api.Playback
 
         private void NormalizeMediaSourceContainer(MediaSourceInfo mediaSource, DeviceProfile profile, DlnaProfileType type)
         {
-            mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(mediaSource.Container, mediaSource.Path, profile, type);
+            mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(mediaSource.Container, profile, type);
         }
 
         public async Task<object> Post(GetPostedPlaybackInfo request)

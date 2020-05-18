@@ -71,7 +71,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
                 return result;
             }
 
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out string seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string seriesTmdbId);
 
             if (string.IsNullOrEmpty(seriesTmdbId))
             {
@@ -109,7 +109,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
 
                 if (response.External_Ids.Tvdb_Id > 0)
                 {
-                    item.SetProviderId(MetadataProviders.Tvdb, response.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
+                    item.SetProviderId(MetadataProvider.Tvdb, response.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
                 }
 
                 item.PremiereDate = response.Air_Date;

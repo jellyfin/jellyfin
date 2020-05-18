@@ -51,7 +51,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return _config.GetConfiguration<SubtitleOptions>("subtitles");
         }
 
-        public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var options = GetOptions();
 

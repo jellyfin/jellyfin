@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 using System.Linq;
@@ -8,17 +9,18 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ContainerProfile
     {
-        [XmlAttribute("type")]
-        public DlnaProfileType Type { get; set; }
-        public ProfileCondition[] Conditions { get; set; }
-
-        [XmlAttribute("container")]
-        public string Container { get; set; }
-
         public ContainerProfile()
         {
             Conditions = Array.Empty<ProfileCondition>();
         }
+
+        [XmlAttribute("type")]
+        public DlnaProfileType Type { get; set; }
+
+        public ProfileCondition[] Conditions { get; set; }
+
+        [XmlAttribute("container")]
+        public string Container { get; set; }
 
         public string[] GetContainers()
         {

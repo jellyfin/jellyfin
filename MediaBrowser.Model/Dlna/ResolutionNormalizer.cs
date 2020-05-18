@@ -1,10 +1,11 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1801
 
 using System;
 
 namespace MediaBrowser.Model.Dlna
 {
-    public class ResolutionNormalizer
+    public static class ResolutionNormalizer
     {
         private static readonly ResolutionConfiguration[] Configurations =
             new[]
@@ -17,7 +18,8 @@ namespace MediaBrowser.Model.Dlna
                 new ResolutionConfiguration(3840, 35000000)
             };
 
-        public static ResolutionOptions Normalize(int? inputBitrate,
+        public static ResolutionOptions Normalize(
+            int? inputBitrate,
             int? unused1,
             int? unused2,
             int outputBitrate,
@@ -83,6 +85,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 return .5;
             }
+
             return 1;
         }
 

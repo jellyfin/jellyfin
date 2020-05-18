@@ -118,7 +118,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { },
+                    Fields = new ItemField[] { },
                     EnableImages = false,
                     EnableUserData = false
                 },
@@ -231,7 +231,7 @@ namespace MediaBrowser.Api
                 EnableTotalRecordCount = false,
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new[] { ItemFields.Genres, ItemFields.Tags },
+                    Fields = new[] { ItemField.Genres, ItemField.Tags },
                     EnableImages = false,
                     EnableUserData = false
                 }

@@ -406,7 +406,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     CurrentCancellationTokenSource.CancelAfter(TimeSpan.FromTicks(options.MaxRuntimeTicks.Value));
                 }
 
-                await ScheduledTask.Execute(CurrentCancellationTokenSource.Token, progress).ConfigureAwait(false);
+                await ScheduledTask.Execute(progress, CurrentCancellationTokenSource.Token).ConfigureAwait(false);
 
                 status = TaskCompletionStatus.Completed;
             }

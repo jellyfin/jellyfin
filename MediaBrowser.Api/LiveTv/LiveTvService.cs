@@ -981,10 +981,10 @@ namespace MediaBrowser.Api.LiveTv
         {
             var fields = options.Fields.ToList();
 
-            fields.Remove(ItemFields.CanDelete);
-            fields.Remove(ItemFields.CanDownload);
-            fields.Remove(ItemFields.DisplayPreferencesId);
-            fields.Remove(ItemFields.Etag);
+            fields.Remove(ItemField.CanDelete);
+            fields.Remove(ItemField.CanDownload);
+            fields.Remove(ItemField.DisplayPreferencesId);
+            fields.Remove(ItemField.Etag);
             options.Fields = fields.ToArray();
         }
 

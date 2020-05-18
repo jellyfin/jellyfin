@@ -21,6 +21,10 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Stars waiting for the trigger action.
         /// </summary>
+        /// <param name="lastResult">Last result.</param>
+        /// <param name="logger">logger.</param>
+        /// <param name="taskName">task name.</param>
+        /// <param name="isApplicationStartup">is Application startup.</param>
         void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup);
 
         /// <summary>

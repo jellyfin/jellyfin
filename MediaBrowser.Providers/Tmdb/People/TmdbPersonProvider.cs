@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Tmdb.People
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = searchInfo.GetProviderId(MetadataProvider.Tmdb);
 
             var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
 
@@ -80,8 +80,8 @@ namespace MediaBrowser.Providers.Tmdb.People
                     ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].File_Path)
                 };
 
-                result.SetProviderId(MetadataProviders.Tmdb, info.Id.ToString(_usCulture));
-                result.SetProviderId(MetadataProviders.Imdb, info.Imdb_Id);
+                result.SetProviderId(MetadataProvider.Tmdb, info.Id.ToString(_usCulture));
+                result.SetProviderId(MetadataProvider.Imdb, info.Imdb_Id);
 
                 return new[] { result };
             }
@@ -123,14 +123,14 @@ namespace MediaBrowser.Providers.Tmdb.People
                 ImageUrl = string.IsNullOrEmpty(i.Profile_Path) ? null : baseImageUrl + i.Profile_Path
             };
 
-            result.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(_usCulture));
+            result.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(_usCulture));
 
             return result;
         }
 
         public async Task<MetadataResult<Person>> GetMetadata(PersonLookupInfo id, CancellationToken cancellationToken)
         {
-            var tmdbId = id.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = id.GetProviderId(MetadataProvider.Tmdb);
 
             // We don't already have an Id, need to fetch it
             if (string.IsNullOrEmpty(tmdbId))
@@ -185,11 +185,11 @@ namespace MediaBrowser.Providers.Tmdb.People
                     item.EndDate = date.ToUniversalTime();
                 }
 
-                item.SetProviderId(MetadataProviders.Tmdb, info.Id.ToString(_usCulture));
+                item.SetProviderId(MetadataProvider.Tmdb, info.Id.ToString(_usCulture));
 
                 if (!string.IsNullOrEmpty(info.Imdb_Id))
                 {
-                    item.SetProviderId(MetadataProviders.Imdb, info.Imdb_Id);
+                    item.SetProviderId(MetadataProvider.Imdb, info.Imdb_Id);
                 }
 
                 result.HasMetadata = true;
@@ -211,7 +211,7 @@ namespace MediaBrowser.Providers.Tmdb.People
         {
             var results = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
 
-            return results.Select(i => i.GetProviderId(MetadataProviders.Tmdb)).FirstOrDefault();
+            return results.Select(i => i.GetProviderId(MetadataProvider.Tmdb)).FirstOrDefault();
         }
 
         internal async Task EnsurePersonInfo(string id, CancellationToken cancellationToken)

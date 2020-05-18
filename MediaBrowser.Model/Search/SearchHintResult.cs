@@ -1,3 +1,5 @@
+#pragma warning disable CA1819 // Properties should not return arrays
+
 namespace MediaBrowser.Model.Search
 {
     /// <summary>

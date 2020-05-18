@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
-    /// Interface IScheduledTaskWorker
+    /// Interface IScheduledTaskWorker.
     /// </summary>
     public interface IScheduledTask
     {
         /// <summary>
-        /// Gets the name of the task
+        /// Gets the name of the task.
         /// </summary>
         /// <value>The name.</value>
         string Name { get; }
@@ -33,12 +33,12 @@ namespace MediaBrowser.Model.Tasks
         string Category { get; }
 
         /// <summary>
-        /// Executes the task
+        /// Executes the task.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task Execute(CancellationToken cancellationToken, IProgress<double> progress);
+        Task Execute(IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the default triggers that define when the task will run.

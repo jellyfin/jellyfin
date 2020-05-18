@@ -3,7 +3,7 @@ using System;
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class PublicUserDto. Its goal is to show only public information about a user
+    /// Class PublicUserDto. Its goal is to show only public information about a user.
     /// </summary>
     public class PublicUserDto : IItemDto
     {

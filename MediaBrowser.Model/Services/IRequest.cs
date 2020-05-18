@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 using System.Collections.Generic;
@@ -12,17 +13,17 @@ namespace MediaBrowser.Model.Services
         HttpResponse Response { get; }
 
         /// <summary>
-        /// The name of the service being called (e.g. Request DTO Name)
+        /// Gets or sets the name of the service being called (e.g. Request DTO Name).
         /// </summary>
         string OperationName { get; set; }
 
         /// <summary>
-        /// The Verb / HttpMethod or Action for this request
+        /// Gets the Verb / HttpMethod or Action for this request.
         /// </summary>
         string Verb { get; }
 
         /// <summary>
-        /// The request ContentType
+        /// Gets the request ContentType.
         /// </summary>
         string ContentType { get; }
 
@@ -31,12 +32,12 @@ namespace MediaBrowser.Model.Services
         string UserAgent { get; }
 
         /// <summary>
-        /// The expected Response ContentType for this request
+        /// Gets or sets the expected Response ContentType for this request.
         /// </summary>
         string ResponseContentType { get; set; }
 
         /// <summary>
-        /// Attach any data to this request that all filters and services can access.
+        /// Gets attached items to this request that all filters and services can access.
         /// </summary>
         Dictionary<string, object> Items { get; }
 
@@ -49,12 +50,12 @@ namespace MediaBrowser.Model.Services
         string AbsoluteUri { get; }
 
         /// <summary>
-        /// The Remote Ip as reported by X-Forwarded-For, X-Real-IP or Request.UserHostAddress
+        /// Gets the Remote Ip as reported by X-Forwarded-For, X-Real-IP or Request.UserHostAddress.
         /// </summary>
         string RemoteIp { get; }
 
         /// <summary>
-        /// The value of the Authorization Header used to send the Api Key, null if not available
+        /// Gets the value of the Authorization Header used to send the Api Key, null if not available.
         /// </summary>
         string Authorization { get; }
 
@@ -67,7 +68,7 @@ namespace MediaBrowser.Model.Services
         long ContentLength { get; }
 
         /// <summary>
-        /// The value of the Referrer, null if not available
+        /// Gets the value of the Referrer, null if not available.
         /// </summary>
         Uri UrlReferrer { get; }
     }
@@ -75,9 +76,13 @@ namespace MediaBrowser.Model.Services
     public interface IHttpFile
     {
         string Name { get; }
+
         string FileName { get; }
+
         long ContentLength { get; }
+
         string ContentType { get; }
+
         Stream InputStream { get; }
     }
 

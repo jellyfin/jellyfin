@@ -186,7 +186,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                                 }
                             }
 
-                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(EnUs));
+                            remoteResult.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(EnUs));
 
                             return remoteResult;
 
@@ -239,7 +239,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                                 }
                             }
 
-                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(EnUs));
+                            remoteResult.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(EnUs));
 
                             return remoteResult;
 

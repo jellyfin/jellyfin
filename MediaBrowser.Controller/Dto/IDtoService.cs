@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
         /// <param name="owner">The owner.</param>
-        BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, User user = null, BaseItem owner = null);
+        BaseItemDto GetBaseItemDto(BaseItem item, ItemField[] fields, User user = null, BaseItem owner = null);
 
         /// <summary>
         /// Gets the base item dto.

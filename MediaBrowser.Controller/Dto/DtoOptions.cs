@@ -7,13 +7,13 @@ namespace MediaBrowser.Controller.Dto
 {
     public class DtoOptions
     {
-        private static readonly ItemFields[] DefaultExcludedFields = new[]
+        private static readonly ItemField[] DefaultExcludedFields = new[]
         {
-            ItemFields.SeasonUserData,
-            ItemFields.RefreshState
+            ItemField.SeasonUserData,
+            ItemField.RefreshState
         };
 
-        public ItemFields[] Fields { get; set; }
+        public ItemField[] Fields { get; set; }
         public ImageType[] ImageTypes { get; set; }
         public int ImageTypeLimit { get; set; }
         public bool EnableImages { get; set; }
@@ -30,12 +30,12 @@ namespace MediaBrowser.Controller.Dto
             .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
             .ToArray();
 
-        private static readonly ItemFields[] AllItemFields = Enum.GetNames(typeof(ItemFields))
-            .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
+        private static readonly ItemField[] AllItemField = Enum.GetNames(typeof(ItemField))
+            .Select(i => (ItemField)Enum.Parse(typeof(ItemField), i, true))
             .Except(DefaultExcludedFields)
             .ToArray();
 
-        public bool ContainsField(ItemFields field)
+        public bool ContainsField(ItemField field)
             => Fields.Contains(field);
 
         public DtoOptions(bool allFields)
@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Dto
             EnableUserData = true;
             AddCurrentProgram = true;
 
-            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
+            Fields = allFields ? AllItemField : Array.Empty<ItemField>();
             ImageTypes = AllImageTypes;
         }
 

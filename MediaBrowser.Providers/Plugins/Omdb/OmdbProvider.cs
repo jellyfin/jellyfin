@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             if (!string.IsNullOrWhiteSpace(result.imdbID))
             {
-                item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
+                item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
             }
 
             ParseAdditionalMetadata(itemResult, result);
@@ -195,7 +195,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             if (!string.IsNullOrWhiteSpace(result.imdbID))
             {
-                item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
+                item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
             }
 
             ParseAdditionalMetadata(itemResult, result);
@@ -243,7 +243,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))

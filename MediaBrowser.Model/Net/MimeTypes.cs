@@ -8,12 +8,12 @@ using System.Linq;
 namespace MediaBrowser.Model.Net
 {
     /// <summary>
-    /// Class MimeTypes
+    /// Class MimeTypes.
     /// </summary>
     public static class MimeTypes
     {
         /// <summary>
-        /// Any extension in this list is considered a video file
+        /// Any extension in this list is considered a video file.
         /// </summary>
         private static readonly HashSet<string> _videoFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -91,9 +91,9 @@ namespace MediaBrowser.Model.Net
             { ".webp", "image/webp" },
 
             // Type font
-            { ".ttf" , "font/ttf" },
-            { ".woff" , "font/woff" },
-            { ".woff2" , "font/woff2" },
+            { ".ttf", "font/ttf" },
+            { ".woff", "font/woff" },
+            { ".woff2", "font/woff2" },
 
             // Type text
             { ".ass", "text/x-ssa" },
@@ -167,6 +167,9 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Gets the type of the MIME.
         /// </summary>
+        /// <param name="path">Path.</param>
+        /// <param name="enableStreamDefault">Enable stream default.</param>
+        /// <returns>MIME type.</returns>
         public static string GetMimeType(string path, bool enableStreamDefault)
         {
             if (string.IsNullOrEmpty(path))
