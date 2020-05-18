@@ -121,15 +121,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             await taskCompletionSource.Task.ConfigureAwait(false);
             if (taskCompletionSource.Task.Exception != null)
             {
-                // Error happened during opening the stream, re-raise the exception to inform the caller
+                // Error happened while opening the stream so raise the exception again to inform the caller
                 throw taskCompletionSource.Task.Exception;
             }
+
             if (!taskCompletionSource.Task.Result)
             {
                 Logger.LogWarning("Zero bytes copied from stream {0} to {1} but no exception raised", GetType().Name, TempFilePath);
-                throw new EndOfStreamException(String.Format(CultureInfo.InvariantCulture,
-                                                             "Zero bytes copied from stream {0}",
-                                                             GetType().Name));
+                throw new EndOfStreamException(String.Format(CultureInfo.InvariantCulture, "Zero bytes copied from stream {0}", GetType().Name));
             }
         }
 
@@ -162,6 +161,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     Logger.LogError(ex, "Error copying live stream {0} to {1}.", GetType().Name, TempFilePath);
                     openTaskCompletionSource.TrySetException(ex);
                 }
+
                 openTaskCompletionSource.TrySetResult(false);
 
                 EnableStreamSharing = false;
