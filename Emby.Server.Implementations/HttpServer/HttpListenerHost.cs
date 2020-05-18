@@ -508,7 +508,7 @@ namespace Emby.Server.Implementations.HttpServer
                     // Instead, re-throw the exception so it can be handled by the DeveloperExceptionPageMiddleware.
                     // However, do not use the DeveloperExceptionPageMiddleware when the stack trace should be ignored,
                     // because it will log the stack trace when it handles the exception.
-                    if (statusCode == 500 && !ignoreStackTrace && _hostEnvironment.IsDevelopment() )
+                    if (statusCode == 500 && !ignoreStackTrace && _hostEnvironment.IsDevelopment())
                     {
                         throw;
                     }
