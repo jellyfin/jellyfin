@@ -499,7 +499,10 @@ namespace Emby.Server.Implementations.HttpServer
 
                     foreach (var (key, value) in GetDefaultCorsHeaders(httpReq))
                     {
-                        httpRes.Headers.Add(key, value);
+                        if (!httpRes.Headers.ContainsKey(key))
+                        {
+                            httpRes.Headers.Add(key, value);
+                        }
                     }
 
                     bool ignoreStackTrace =
