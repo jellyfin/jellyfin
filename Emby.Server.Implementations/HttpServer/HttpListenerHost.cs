@@ -497,9 +497,9 @@ namespace Emby.Server.Implementations.HttpServer
                     var requestInnerEx = GetActualException(requestEx);
                     var statusCode = GetStatusCode(requestInnerEx);
 
-                    if (!httpRes.Headers.ContainsKey("Access-Control-Allow-Origin"))
+                    foreach (var (key, value) in GetDefaultCorsHeaders(httpReq))
                     {
-                        httpRes.Headers.Add("Access-Control-Allow-Origin", "*");
+                        httpRes.Headers.Add(key, value);
                     }
 
                     bool ignoreStackTrace =
