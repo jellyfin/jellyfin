@@ -222,7 +222,7 @@ namespace Jellyfin.Data.Entities
         [Required]
         public long InternalId { get; set; }
 
-        public ImageInfo ProfileImage { get; set; }
+        public virtual ImageInfo ProfileImage { get; set; }
 
         /// <summary>
         /// Gets or sets the row version.
@@ -241,24 +241,26 @@ namespace Jellyfin.Data.Entities
          * Navigation properties
          *************************************************************************/
         [ForeignKey("Group_Groups_Guid")]
-        public ICollection<Group> Groups { get; protected set; }
+        public virtual ICollection<Group> Groups { get; protected set; }
 
         [ForeignKey("Permission_Permissions_Guid")]
-        public ICollection<Permission> Permissions { get; protected set; }
+        public virtual ICollection<Permission> Permissions { get; protected set; }
 
         [ForeignKey("ProviderMapping_ProviderMappings_Id")]
-        public ICollection<ProviderMapping> ProviderMappings { get; protected set; }
+        public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
 
         [ForeignKey("Preference_Preferences_Guid")]
-        public ICollection<Preference> Preferences { get; protected set; }
+        public virtual ICollection<Preference> Preferences { get; protected set; }
 
-        public ICollection<AccessSchedule> AccessSchedules { get; protected set; }
+        public virtual ICollection<AccessSchedule> AccessSchedules { get; protected set; }
 
         partial void Init();
 
         public bool HasPermission(PermissionKind permission)
         {
-            return Permissions.First(p => p.Kind == permission).Value;
+            var list = Permissions.Where(p => p.Kind == permission);
+
+            return list.First().Value;
         }
 
         public void SetPermission(PermissionKind kind, bool value)

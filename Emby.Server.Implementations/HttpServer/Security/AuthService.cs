@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Security.Authentication;
 using Emby.Server.Implementations.SocketSharp;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -44,14 +45,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             ValidateUser(request, authAttribtues);
         }
 
-        public Jellyfin.Data.Entities.User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
+        public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
         {
             var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
             var user = ValidateUser(req, authAttributes);
             return user;
         }
 
-        private Jellyfin.Data.Entities.User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
+        private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
         {
             // This code is executed before the service
             var auth = _authorizationContext.GetAuthorizationInfo(request);
@@ -104,9 +105,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
         }
 
         private void ValidateUserAccess(
-            Jellyfin.Data.Entities.User user,
+            User user,
             IRequest request,
-            IAuthenticationAttributes authAttribtues,
+            IAuthenticationAttributes authAttributes,
             AuthorizationInfo auth)
         {
             if (user.HasPermission(PermissionKind.IsDisabled))
@@ -120,7 +121,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
 
             if (!user.HasPermission(PermissionKind.IsAdministrator)
-                && !authAttribtues.EscapeParentalControl
+                && !authAttributes.EscapeParentalControl
                 && !user.IsParentalScheduleAllowed())
             {
                 request.Response.Headers.Add("X-Application-Error-Code", "ParentalControl");
@@ -178,7 +179,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return false;
         }
 
-        private static void ValidateRoles(string[] roles, Jellyfin.Data.Entities.User user)
+        private static void ValidateRoles(string[] roles, User user)
         {
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
             {

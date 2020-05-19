@@ -276,7 +276,8 @@ namespace MediaBrowser.Api
         {
             var result = _userManager
                 .Users
-                .Where(item => !item.HasPermission(PermissionKind.IsDisabled));
+                .Where(user => !user.HasPermission(PermissionKind.IsDisabled))
+                .AsQueryable();
 
             if (ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {

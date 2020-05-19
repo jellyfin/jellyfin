@@ -89,14 +89,13 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         [ForeignKey("Permission_GroupPermissions_Id")]
-        public ICollection<Permission> Permissions { get; protected set; }
+        public virtual ICollection<Permission> Permissions { get; protected set; }
 
         [ForeignKey("ProviderMapping_ProviderMappings_Id")]
-        public ICollection<ProviderMapping> ProviderMappings { get; protected set; }
+        public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
 
         [ForeignKey("Preference_Preferences_Id")]
-        public ICollection<Preference> Preferences { get; protected set; }
-
+        public virtual ICollection<Preference> Preferences { get; protected set; }
     }
 }
 
