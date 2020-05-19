@@ -77,8 +77,6 @@ namespace Jellyfin.Data.Entities
             Preferences = new HashSet<Preference>();
             AccessSchedules = new HashSet<AccessSchedule>();
 
-            AddDefaultPermissions();
-            AddDefaultPreferences();
             Init();
         }
 
