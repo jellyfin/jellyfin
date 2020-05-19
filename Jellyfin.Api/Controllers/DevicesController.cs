@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -16,7 +18,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Devices Controller.
     /// </summary>
-    [Authenticated]
+    [Authorize]
     public class DevicesController : BaseJellyfinApiController
     {
         private readonly IDeviceManager _deviceManager;
@@ -47,7 +49,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Devices retrieved.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of devices.</returns>
         [HttpGet]
-        [Authenticated(Roles = "Admin")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
@@ -64,7 +66,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Device not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the device info on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpGet("Info")]
-        [Authenticated(Roles = "Admin")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, BindRequired] string id)
@@ -86,7 +88,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Device not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the device info on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpGet("Options")]
-        [Authenticated(Roles = "Admin")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, BindRequired] string id)
@@ -109,7 +111,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Device not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpPost("Options")]
-        [Authenticated(Roles = "Admin")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateDeviceOptions(
