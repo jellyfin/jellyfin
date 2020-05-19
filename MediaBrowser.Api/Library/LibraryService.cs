@@ -491,7 +491,7 @@ namespace MediaBrowser.Api.Library
 
             foreach (var type in types)
             {
-                TypeOptions.DefaultImageOptions.TryGetValue(type, out var defaultImageOptions);
+                var defaultImageOptions = TypeOptions.GetDefaultImageOptionsForType(type);
 
                 typeOptions.Add(new LibraryTypeOptions
                 {

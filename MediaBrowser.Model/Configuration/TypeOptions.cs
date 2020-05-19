@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Configuration
 {
     public class TypeOptions
     {
-        public static Dictionary<string, ImageOption[]> DefaultImageOptions = new Dictionary<string, ImageOption[]>
+        private static Dictionary<string, ImageOption[]> DefaultImageOptions = new Dictionary<string, ImageOption[]>
         {
             {
                 "Movie", new[]
@@ -360,6 +360,13 @@ namespace MediaBrowser.Model.Configuration
         public bool IsEnabled(ImageType type)
         {
             return GetLimit(type) > 0;
+        }
+
+        public static ImageOption[] GetDefaultImageOptionsForType(string type)
+        {
+            DefaultImageOptions.TryGetValue(type, out ImageOption[] defaultImageOptions);
+
+            return defaultImageOptions;
         }
     }
 }
