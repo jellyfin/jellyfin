@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -60,7 +61,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("General/{Name}/{Type}")]
-        [Produces("application/octet-stream")]
+        [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<FileStreamResult> GetGeneralImage([FromRoute] string name, [FromRoute] string type)
@@ -103,7 +104,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("Ratings/{Theme}/{Name}")]
-        [Produces("application/octet-stream")]
+        [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<FileStreamResult> GetRatingImage(
@@ -134,7 +135,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("MediaInfo/{Theme}/{Name}")]
-        [Produces("application/octet-stream")]
+        [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<FileStreamResult> GetMediaInfoImage(
