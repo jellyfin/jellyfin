@@ -39,8 +39,8 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<IScheduledTaskWorker> GetTasks(
-            [FromQuery] bool? isHidden = false,
-            [FromQuery] bool? isEnabled = false)
+            [FromQuery] bool? isHidden,
+            [FromQuery] bool? isEnabled)
         {
             IEnumerable<IScheduledTaskWorker> tasks = _taskManager.ScheduledTasks.OrderBy(o => o.Name);
 
