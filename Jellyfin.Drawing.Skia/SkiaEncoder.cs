@@ -5,7 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Blurhash.Core;
+using BlurHashSharp.SkiaSharp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
@@ -19,7 +19,7 @@ namespace Jellyfin.Drawing.Skia
     /// <summary>
     /// Image encoder that uses <see cref="SkiaSharp"/> to manipulate images.
     /// </summary>
-    public class SkiaEncoder : CoreEncoder, IImageEncoder
+    public class SkiaEncoder : IImageEncoder
     {
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
@@ -250,29 +250,7 @@ namespace Jellyfin.Drawing.Skia
                 throw new FileNotFoundException("File not found", path);
             }
 
-            using (var bitmap = GetBitmap(path, false, false, null))
-            {
-                if (bitmap == null)
-                {
-                    throw new ArgumentOutOfRangeException($"Skia unable to read image {path}");
-                }
-
-                var width = bitmap.Width;
-                var height = bitmap.Height;
-                var pixels = new Pixel[width, height];
-                Parallel.ForEach(Enumerable.Range(0, height), y =>
-                {
-                    for (var x = 0; x < width; x++)
-                    {
-                        var color = bitmap.GetPixel(x, y);
-                        pixels[x, y].Red = MathUtils.SRgbToLinear(color.Red);
-                        pixels[x, y].Green = MathUtils.SRgbToLinear(color.Green);
-                        pixels[x, y].Blue = MathUtils.SRgbToLinear(color.Blue);
-                    }
-                });
-
-                return CoreEncode(pixels, 4, 4);
-            }
+            return BlurHashSharp.SkiaSharp.BlurHashEncoder.Encode(4, 4, path);
         }
 
         private static bool HasDiacritics(string text)
