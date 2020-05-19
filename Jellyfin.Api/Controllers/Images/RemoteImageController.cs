@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,12 +10,12 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -25,7 +26,7 @@ namespace Jellyfin.Api.Controllers.Images
     /// Remote Images Controller.
     /// </summary>
     [Route("Images")]
-    [Authenticated]
+    [Authorize]
     public class RemoteImageController : BaseJellyfinApiController
     {
         private readonly IProviderManager _providerManager;
@@ -60,7 +61,9 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="providerName">Optional. The image provider to use.</param>
-        /// <param name="includeAllLanguages">Optinal. Include all languages.</param>
+        /// <param name="includeAllLanguages">Optional. Include all languages.</param>
+        /// <response code="200">Remote Images returned.</response>
+        /// <response code="404">Item not found.</response>
         /// <returns>Remote Image Result.</returns>
         [HttpGet("{Id}/RemoteImages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -116,18 +119,20 @@ namespace Jellyfin.Api.Controllers.Images
             }
 
             result.Images = imageArray;
-            return Ok(result);
+            return result;
         }
 
         /// <summary>
         /// Gets available remote image providers for an item.
         /// </summary>
         /// <param name="id">Item Id.</param>
-        /// <returns>List of providers.</returns>
+        /// <response code="200">Returned remote image providers.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>List of remote image providers.</returns>
         [HttpGet("{Id}/RemoteImages/Providers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<ImageProviderInfo[]> GetRemoteImageProviders([FromRoute] string id)
+        public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute] string id)
         {
             var item = _libraryManager.GetItemById(id);
             if (item == null)
@@ -135,14 +140,15 @@ namespace Jellyfin.Api.Controllers.Images
                 return NotFound();
             }
 
-            var providers = _providerManager.GetRemoteImageProviderInfo(item);
-            return Ok(providers);
+            return Ok(_providerManager.GetRemoteImageProviderInfo(item));
         }
 
         /// <summary>
         /// Gets a remote image.
         /// </summary>
         /// <param name="imageUrl">The image url.</param>
+        /// <response code="200">Remote image returned.</response>
+        /// <response code="404">Remote image not found.</response>
         /// <returns>Image Stream.</returns>
         [HttpGet("Remote")]
         [Produces("application/octet-stream")]
@@ -154,7 +160,7 @@ namespace Jellyfin.Api.Controllers.Images
             var pointerCachePath = GetFullCachePath(urlHash.ToString());
 
             string? contentPath = null;
-            bool hasFile = false;
+            var hasFile = false;
 
             try
             {
@@ -166,11 +172,11 @@ namespace Jellyfin.Api.Controllers.Images
             }
             catch (FileNotFoundException)
             {
-                // Means the file isn't cached yet
+                // The file isn't cached yet
             }
             catch (IOException)
             {
-                // Means the file isn't cached yet
+                // The file isn't cached yet
             }
 
             if (!hasFile)
@@ -194,7 +200,9 @@ namespace Jellyfin.Api.Controllers.Images
         /// <param name="id">Item Id.</param>
         /// <param name="type">The image type.</param>
         /// <param name="imageUrl">The image url.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Remote image downloaded.</response>
+        /// <response code="404">Remote image not found.</response>
+        /// <returns>Download status.</returns>
         [HttpPost("{Id}/RemoteImages/Download")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -245,10 +253,10 @@ namespace Jellyfin.Api.Controllers.Images
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-            using (var stream = result.Content)
+            await using (var stream = result.Content)
             {
-                using var filestream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
-                await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
