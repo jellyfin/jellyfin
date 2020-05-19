@@ -3,8 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Controller.Net;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Model.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -14,7 +15,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Scheduled Tasks Controller.
     /// </summary>
-    // [Authenticated]
+    [Authorize(Policy = Policies.RequiresElevation)]
     public class ScheduledTasksController : BaseJellyfinApiController
     {
         private readonly ITaskManager _taskManager;
@@ -82,8 +83,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var result = ScheduledTaskHelpers.GetTaskInfo(task);
-            return Ok(result);
+            return ScheduledTaskHelpers.GetTaskInfo(task);
         }
 
         /// <summary>
