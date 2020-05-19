@@ -44,6 +44,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets application configuration.
         /// </summary>
+        /// <response code="200">Application configuration returned.</response>
         /// <returns>Application configuration.</returns>
         [HttpGet("Configuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -56,7 +57,8 @@ namespace Jellyfin.Api.Controllers
         /// Updates application configuration.
         /// </summary>
         /// <param name="configuration">Configuration.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Configuration updated.</response>
+        /// <returns>Update status.</returns>
         [HttpPost("Configuration")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -70,6 +72,7 @@ namespace Jellyfin.Api.Controllers
         /// Gets a named configuration.
         /// </summary>
         /// <param name="key">Configuration key.</param>
+        /// <response code="200">Configuration returned.</response>
         /// <returns>Configuration.</returns>
         [HttpGet("Configuration/{Key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -82,7 +85,8 @@ namespace Jellyfin.Api.Controllers
         /// Updates named configuration.
         /// </summary>
         /// <param name="key">Configuration key.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Named configuration updated.</response>
+        /// <returns>Update status.</returns>
         [HttpPost("Configuration/{Key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -103,7 +107,8 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets a default MetadataOptions object.
         /// </summary>
-        /// <returns>MetadataOptions.</returns>
+        /// <response code="200">Metadata options returned.</response>
+        /// <returns>Default MetadataOptions.</returns>
         [HttpGet("Configuration/MetadataOptions/Default")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -116,6 +121,7 @@ namespace Jellyfin.Api.Controllers
         /// Updates the path to the media encoder.
         /// </summary>
         /// <param name="mediaEncoderPath">Media encoder path form body.</param>
+        /// <response code="200">Media encoder path updated.</response>
         /// <returns>Status.</returns>
         [HttpPost("MediaEncoder/Path")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
