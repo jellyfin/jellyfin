@@ -40,7 +40,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="path">The path.</param>
         /// <param name="includeFiles">An optional filter to include or exclude files from the results. true/false.</param>
         /// <param name="includeDirectories">An optional filter to include or exclude folders from the results. true/false.</param>
-        /// <returns>File system entries.</returns>
+        /// <response code="200">Directory contents returned.</response>
+        /// <returns>Directory contents.</returns>
         [HttpGet("DirectoryContents")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<FileSystemEntryInfo> GetDirectoryContents(
@@ -79,7 +80,9 @@ namespace Jellyfin.Api.Controllers
         /// Validates path.
         /// </summary>
         /// <param name="validatePathDto">Validate request object.</param>
-        /// <returns>Status.</returns>
+        /// <response code="200">Path validated.</response>
+        /// <response code="404">Path not found.</response>
+        /// <returns>Validation status.</returns>
         [HttpPost("ValidatePath")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -132,6 +135,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets network paths.
         /// </summary>
+        /// <response code="200">Empty array returned.</response>
         /// <returns>List of entries.</returns>
         [Obsolete("This endpoint is obsolete.")]
         [HttpGet("NetworkShares")]
@@ -144,6 +148,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets available drives from the server's file system.
         /// </summary>
+        /// <response code="200">List of entries returned.</response>
         /// <returns>List of entries.</returns>
         [HttpGet("Drives")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -189,6 +194,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Get Default directory browser.
         /// </summary>
+        /// <response code="200">Default directory browser returned.</response>
         /// <returns>Default directory browser.</returns>
         [HttpGet("DefaultDirectoryBrowser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
