@@ -198,9 +198,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Default directory browser.</returns>
         [HttpGet("DefaultDirectoryBrowser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<DefaultDirectoryBrowserInfo> GetDefaultDirectoryBrowser()
+        public ActionResult<DefaultDirectoryBrowserInfoDto> GetDefaultDirectoryBrowser()
         {
-            return new DefaultDirectoryBrowserInfo();
+            return new DefaultDirectoryBrowserInfoDto();
         }
     }
 }
