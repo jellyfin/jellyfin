@@ -10,9 +10,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
@@ -29,6 +31,8 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly JellyfinDbProvider _dbProvider;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
+        private readonly IApplicationHost _appHost;
+        private readonly IImageProcessor _imageProcessor;
         private readonly ILogger<IUserManager> _logger;
 
         private IAuthenticationProvider[] _authenticationProviders;
@@ -41,11 +45,15 @@ namespace Jellyfin.Server.Implementations.Users
             JellyfinDbProvider dbProvider,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
+            IApplicationHost appHost,
+            IImageProcessor imageProcessor,
             ILogger<IUserManager> logger)
         {
             _dbProvider = dbProvider;
             _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
+            _appHost = appHost;
+            _imageProcessor = imageProcessor;
             _logger = logger;
         }
 
@@ -123,8 +131,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(
-                u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -248,11 +255,14 @@ namespace Jellyfin.Server.Implementations.Users
         {
             return new UserDto
             {
+                Name = user.Username,
                 Id = user.Id,
+                ServerId = _appHost.SystemId,
                 HasPassword = user.Password == null,
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
+                PrimaryImageTag = user.ProfileImage != null ? _imageProcessor.GetImageCacheTag(user) : null,
                 Configuration = new UserConfiguration
                 {
                     SubtitleMode = user.SubtitleMode,
@@ -265,7 +275,7 @@ namespace Jellyfin.Server.Implementations.Users
                     RememberAudioSelections = user.RememberAudioSelections,
                     EnableNextEpisodeAutoPlay = user.EnableNextEpisodeAutoPlay,
                     RememberSubtitleSelections = user.RememberSubtitleSelections,
-                    SubtitleLanguagePreference = user.SubtitleLanguagePreference,
+                    SubtitleLanguagePreference = user.SubtitleLanguagePreference ?? string.Empty,
                     OrderedViews = user.GetPreference(PreferenceKind.OrderedViews),
                     GroupedFolders = user.GetPreference(PreferenceKind.GroupedFolders),
                     MyMediaExcludes = user.GetPreference(PreferenceKind.MyMediaExcludes),

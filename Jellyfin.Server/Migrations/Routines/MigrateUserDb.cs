@@ -9,7 +9,6 @@ using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Users;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 using JsonSerializer = System.Text.Json.JsonSerializer;
