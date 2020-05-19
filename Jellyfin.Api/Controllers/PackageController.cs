@@ -1,4 +1,5 @@
 #nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -32,10 +33,10 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a package by name or assembly guid.
+        /// Gets a package by name or assembly GUID.
         /// </summary>
         /// <param name="name">The name of the package.</param>
-        /// <param name="assemblyGuid">The guid of the associated assembly.</param>
+        /// <param name="assemblyGuid">The GUID of the associated assembly.</param>
         /// <returns>A <see cref="PackageInfo"/> containing package information.</returns>
         [HttpGet("/{Name}")]
         [ProducesResponseType(typeof(PackageInfo), StatusCodes.Status200OK)]
@@ -69,7 +70,7 @@ namespace Jellyfin.Api.Controllers
         /// Installs a package.
         /// </summary>
         /// <param name="name">Package name.</param>
-        /// <param name="assemblyGuid">Guid of the associated assembly.</param>
+        /// <param name="assemblyGuid">GUID of the associated assembly.</param>
         /// <param name="version">Optional version. Defaults to latest version.</param>
         /// <response code="200">Package found.</response>
         /// <response code="404">Package not found.</response>
