@@ -1141,20 +1141,10 @@ namespace Emby.Server.Implementations.Data
 
         public string ToValueString(ItemImageInfo image)
         {
-            var delimeter = "*";
+            const string delimeter = "*";
 
-            var path = image.Path;
-            var hash = image.Hash;
-
-            if (path == null)
-            {
-                path = string.Empty;
-            }
-
-            if (hash == null)
-            {
-                hash = string.Empty;
-            }
+            var path = image.Path ?? string.Empty;
+            var hash = image.Hash ?? string.Empty;
 
             return GetPathToSave(path) +
                    delimeter +

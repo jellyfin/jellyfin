@@ -1825,17 +1825,26 @@ namespace Emby.Server.Implementations.Library
 
         public void UpdateImages(BaseItem item)
         {
-            item.ImageInfos
-                .Where(i => (i.Width == 0 || i.Height == 0))
-                .ToList()
-                .ForEach(x =>
-                {
-                    string blurhash = ImageProcessor.GetImageHash(x.Path);
-                    ImageDimensions size = ImageProcessor.GetImageDimensions(item, x);
-                    x.Width = size.Width;
-                    x.Height = size.Height;
-                    x.Hash = blurhash;
-                });
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            var outdated = item.ImageInfos
+                .Where(i => (i.Width == 0 || i.Height == 0 || string.IsNullOrEmpty(i.Hash)))
+                .ToList();
+            if (outdated.Count == 0)
+            {
+                return;
+            }
+
+            outdated.ForEach(img =>
+            {
+                ImageDimensions size = ImageProcessor.GetImageDimensions(item, img);
+                img.Width = size.Width;
+                img.Height = size.Height;
+                img.Hash = ImageProcessor.GetImageHash(img.Path);
+            });
 
             _itemRepository.SaveImages(item);
 
@@ -1903,34 +1912,6 @@ namespace Emby.Server.Implementations.Library
         public void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
             UpdateItems(new[] { item }, parent, updateReason, cancellationToken);
-        }
-
-        /// <summary>
-        /// Updates everything in the database.
-        /// </summary>
-        public void UpdateAll()
-        {
-            Task.Run(() =>
-            {
-                var items = _itemRepository.GetItemList(new InternalItemsQuery {
-                    Recursive = true
-                });
-                foreach (var item in items)
-                {
-                    _logger.LogDebug("Updating item {Name} ({ItemId})",
-                        item.Name,
-                        item.Id);
-                    try
-                    {
-                        item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Updating item {ItemId} failed", item.Id);
-                    }
-                }
-                _logger.LogDebug("All items have been updated");
-            });
         }
 
         /// <summary>
