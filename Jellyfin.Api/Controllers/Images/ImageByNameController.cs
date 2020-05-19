@@ -7,10 +7,10 @@ using System.Linq;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +20,7 @@ namespace Jellyfin.Api.Controllers.Images
     ///     Images By Name Controller.
     /// </summary>
     [Route("Images")]
-    [Authenticated]
+    [Authorize]
     public class ImageByNameController : BaseJellyfinApiController
     {
         private readonly IServerApplicationPaths _applicationPaths;
