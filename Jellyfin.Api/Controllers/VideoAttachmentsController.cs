@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Controllers
             }
             catch (ResourceNotFoundException e)
             {
-                return StatusCode(StatusCodes.Status404NotFound, e.Message);
+                return NotFound(e.Message);
             }
         }
     }
