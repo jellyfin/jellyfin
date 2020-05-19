@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using BlurHashSharp.SkiaSharp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -237,7 +234,6 @@ namespace Jellyfin.Drawing.Skia
         /// <exception cref="ArgumentNullException">The path is null.</exception>
         /// <exception cref="FileNotFoundException">The path is not valid.</exception>
         /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
-        [SuppressMessage("Microsoft.Performance", "CA1814:PreferJaggedArraysOverMultidimensional")]
         public string GetImageHash(string path)
         {
             if (path == null)
@@ -250,7 +246,7 @@ namespace Jellyfin.Drawing.Skia
                 throw new FileNotFoundException("File not found", path);
             }
 
-            return BlurHashSharp.SkiaSharp.BlurHashEncoder.Encode(4, 4, path);
+            return BlurHashEncoder.Encode(4, 4, path);
         }
 
         private static bool HasDiacritics(string text)

@@ -722,8 +722,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // Prevent implicitly captured closure
                 var currentItem = item;
-                foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type))
-                    .ToList())
+                foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type)))
                 {
                     if (options.GetImageLimit(image.Type) > 0)
                     {
@@ -735,7 +734,7 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         var hash = image.Hash;
-                        if (hash != null && hash.Length > 0)
+                        if (!string.IsNullOrEmpty(hash))
                         {
                             dto.ImageHashes[tag] = image.Hash;
                         }

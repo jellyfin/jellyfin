@@ -1831,10 +1831,11 @@ namespace Emby.Server.Implementations.Library
             }
 
             var outdated = item.ImageInfos
-                .Where(i => (i.Width == 0 || i.Height == 0 || string.IsNullOrEmpty(i.Hash)))
+                .Where(i => (i.IsLocalFile && (i.Width == 0 || i.Height == 0 || string.IsNullOrEmpty(i.Hash))))
                 .ToList();
             if (outdated.Count == 0)
             {
+                RegisterItem(item);
                 return;
             }
 
