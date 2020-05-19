@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -51,11 +52,10 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
+        public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
             var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
-            var devices = _deviceManager.GetDevices(deviceQuery);
-            return Ok(devices);
+            return _deviceManager.GetDevices(deviceQuery);
         }
 
         /// <summary>
