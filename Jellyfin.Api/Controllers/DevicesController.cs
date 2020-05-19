@@ -2,9 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -152,86 +149,6 @@ namespace Jellyfin.Api.Controllers
             {
                 _sessionManager.Logout(session);
             }
-
-            return Ok();
-        }
-
-        /// <summary>
-        /// Gets camera upload history for a device.
-        /// </summary>
-        /// <param name="id">Device Id.</param>
-        /// <response code="200">Device upload history retrieved.</response>
-        /// <response code="404">Device not found.</response>
-        /// <returns>An <see cref="OkResult"/> containing the device upload history on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
-        [HttpGet("CameraUploads")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<ContentUploadHistory> GetCameraUploads([FromQuery, BindRequired] string id)
-        {
-            var existingDevice = _deviceManager.GetDevice(id);
-            if (existingDevice == null)
-            {
-                return NotFound();
-            }
-
-            var uploadHistory = _deviceManager.GetCameraUploadHistory(id);
-            return uploadHistory;
-        }
-
-        /// <summary>
-        /// Uploads content.
-        /// </summary>
-        /// <param name="deviceId">Device Id.</param>
-        /// <param name="album">Album.</param>
-        /// <param name="name">Name.</param>
-        /// <param name="id">Id.</param>
-        /// <response code="200">Contents uploaded.</response>
-        /// <response code="400">No uploaded contents.</response>
-        /// <response code="404">Device not found.</response>
-        /// <returns>
-        /// An <see cref="OkResult"/> on success,
-        /// or a <see cref="NotFoundResult"/> if the device could not be found
-        /// or a <see cref="BadRequestResult"/> if the upload contains no files.
-        /// </returns>
-        [HttpPost("CameraUploads")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> PostCameraUploadAsync(
-            [FromQuery, BindRequired] string deviceId,
-            [FromQuery, BindRequired] string album,
-            [FromQuery, BindRequired] string name,
-            [FromQuery, BindRequired] string id)
-        {
-            var existingDevice = _deviceManager.GetDevice(id);
-            if (existingDevice == null)
-            {
-                return NotFound();
-            }
-
-            Stream fileStream;
-            string contentType;
-
-            if (Request.HasFormContentType)
-            {
-                if (Request.Form.Files.Any())
-                {
-                    fileStream = Request.Form.Files[0].OpenReadStream();
-                    contentType = Request.Form.Files[0].ContentType;
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
-            else
-            {
-                fileStream = Request.Body;
-                contentType = Request.ContentType;
-            }
-
-            await _deviceManager.AcceptCameraUpload(
-                deviceId,
-                fileStream,
-                new LocalFileInfo { MimeType = contentType, Album = album, Name = name, Id = id }).ConfigureAwait(false);
 
             return Ok();
         }
