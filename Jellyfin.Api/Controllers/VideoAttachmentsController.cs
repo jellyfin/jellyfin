@@ -1,11 +1,13 @@
 #nullable enable
 
 using System;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// </summary>
     [Route("Videos")]
     [Authorize]
-    public class VideoAttachmentsController : Controller
+    public class VideoAttachmentsController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IAttachmentExtractor _attachmentExtractor;
@@ -45,7 +47,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Video or attachment not found.</response>
         /// <returns>An <see cref="FileStreamResult"/> containing the attachment stream on success, or a <see cref="NotFoundResult"/> if the attachment could not be found.</returns>
         [HttpGet("{VideoID}/{MediaSourceID}/Attachments/{Index}")]
-        [Produces("application/octet-stream")]
+        [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<FileStreamResult>> GetAttachment(
@@ -68,11 +70,9 @@ namespace Jellyfin.Api.Controllers
                         CancellationToken.None)
                     .ConfigureAwait(false);
 
-                var contentType = "application/octet-stream";
-                if (string.IsNullOrWhiteSpace(attachment.MimeType))
-                {
-                    contentType = attachment.MimeType;
-                }
+                var contentType = string.IsNullOrWhiteSpace(attachment.MimeType)
+                    ? MediaTypeNames.Application.Octet
+                    : attachment.MimeType;
 
                 return new FileStreamResult(stream, contentType);
             }
