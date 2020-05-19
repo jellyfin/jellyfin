@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Channels Controller.
     /// </summary>
+    [Authorize]
     public class ChannelsController : BaseJellyfinApiController
     {
         private readonly IChannelManager _channelManager;
@@ -46,6 +48,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="supportsLatestItems">Optional. Filter by channels that support getting latest items.</param>
         /// <param name="supportsMediaDeletion">Optional. Filter by channels that support media deletion.</param>
         /// <param name="isFavorite">Optional. Filter by channels that are favorite.</param>
+        /// <response code="200">Channels returned.</response>
         /// <returns>Channels.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -71,6 +74,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Get all channel features.
         /// </summary>
+        /// <response code="200">All channel features returned.</response>
         /// <returns>Channel features.</returns>
         [HttpGet("Features")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -83,6 +87,7 @@ namespace Jellyfin.Api.Controllers
         /// Get channel features.
         /// </summary>
         /// <param name="id">Channel id.</param>
+        /// <response code="200">Channel features returned.</response>
         /// <returns>Channel features.</returns>
         [HttpGet("{Id}/Features")]
         public ActionResult<ChannelFeatures> GetChannelFeatures([FromRoute] string id)
@@ -102,6 +107,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
         /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <response code="200">Channel items returned.</response>
         /// <returns>Channel items.</returns>
         [HttpGet("{Id}/Items")]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetChannelItems(
@@ -175,6 +181,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
         /// <param name="channelIds">Optional. Specify one or more channel id's, comma delimited.</param>
+        /// <response code="200">Latest channel items returned.</response>
         /// <returns>Latest channel items.</returns>
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLatestChannelItems(
             [FromQuery] Guid? userId,
