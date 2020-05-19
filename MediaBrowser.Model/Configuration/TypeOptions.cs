@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Configuration
 {
     public class TypeOptions
     {
-        public static readonly Dictionary<string, ImageOption[]> DefaultImageOptions = new Dictionary<string, ImageOption[]>
+        public static Dictionary<string, ImageOption[]> DefaultImageOptions = new Dictionary<string, ImageOption[]>
         {
             {
                 "Movie", new[]
