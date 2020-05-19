@@ -17,17 +17,17 @@ namespace Jellyfin.Api.Controllers
     /// </summary>
     [Route("Videos")]
     [Authorize]
-    public class AttachmentsController : Controller
+    public class VideoAttachmentsController : Controller
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IAttachmentExtractor _attachmentExtractor;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttachmentsController"/> class.
+        /// Initializes a new instance of the <see cref="VideoAttachmentsController"/> class.
         /// </summary>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="attachmentExtractor">Instance of the <see cref="IAttachmentExtractor"/> interface.</param>
-        public AttachmentsController(
+        public VideoAttachmentsController(
             ILibraryManager libraryManager,
             IAttachmentExtractor attachmentExtractor)
         {
