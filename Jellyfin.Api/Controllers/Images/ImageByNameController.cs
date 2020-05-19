@@ -48,7 +48,7 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetGeneralImages()
         {
-            return Ok(GetImageList(_applicationPaths.GeneralPath, false));
+            return GetImageList(_applicationPaths.GeneralPath, false);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetRatingImages()
         {
-            return Ok(GetImageList(_applicationPaths.RatingsPath, false));
+            return GetImageList(_applicationPaths.RatingsPath, false);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Jellyfin.Api.Controllers.Images
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetMediaInfoImages()
         {
-            return Ok(GetImageList(_applicationPaths.MediaInfoImagesPath, false));
+            return GetImageList(_applicationPaths.MediaInfoImagesPath, false);
         }
 
         /// <summary>
