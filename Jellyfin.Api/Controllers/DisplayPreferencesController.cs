@@ -74,14 +74,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, BindRequired] string client,
             [FromBody, BindRequired] DisplayPreferences displayPreferences)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             if (displayPreferencesId == null)
             {
-                // do nothing.
+                // TODO - refactor so parameter doesn't exist or is actually used.
             }
 
             _displayPreferencesRepository.SaveDisplayPreferences(
