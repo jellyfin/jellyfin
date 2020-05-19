@@ -496,6 +496,15 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     var requestInnerEx = GetActualException(requestEx);
                     var statusCode = GetStatusCode(requestInnerEx);
+
+                    foreach (var (key, value) in GetDefaultCorsHeaders(httpReq))
+                    {
+                        if (!httpRes.Headers.ContainsKey(key))
+                        {
+                            httpRes.Headers.Add(key, value);
+                        }
+                    }
+
                     bool ignoreStackTrace =
                         requestInnerEx is SocketException
                         || requestInnerEx is IOException
