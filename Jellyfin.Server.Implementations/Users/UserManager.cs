@@ -1,5 +1,4 @@
 ﻿#pragma warning disable CA1307
-#pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
@@ -26,6 +25,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Users
 {
+    /// <summary>
+    /// Manages the creation and retrieval of <see cref="User"/> instances.
+    /// </summary>
     public class UserManager : IUserManager
     {
         private readonly JellyfinDbProvider _dbProvider;
@@ -41,6 +43,15 @@ namespace Jellyfin.Server.Implementations.Users
         private IPasswordResetProvider[] _passwordResetProviders;
         private DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserManager"/> class.
+        /// </summary>
+        /// <param name="dbProvider">The database provider.</param>
+        /// <param name="cryptoProvider">The cryptography provider.</param>
+        /// <param name="networkManager">The network manager.</param>
+        /// <param name="appHost">The application host.</param>
+        /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="logger">The logger.</param>
         public UserManager(
             JellyfinDbProvider dbProvider,
             ICryptoProvider cryptoProvider,
@@ -57,6 +68,7 @@ namespace Jellyfin.Server.Implementations.Users
             _logger = logger;
         }
 
+        /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>> OnUserPasswordChanged;
 
         /// <inheritdoc/>
@@ -68,8 +80,10 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>> OnUserDeleted;
 
+        /// <inheritdoc/>
         public event EventHandler<GenericEventArgs<User>> OnUserLockedOut;
 
+        /// <inheritdoc/>
         public IEnumerable<User> Users
         {
             get
@@ -79,6 +93,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
+        /// <inheritdoc/>
         public IEnumerable<Guid> UsersIds
         {
             get
@@ -88,6 +103,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
+        /// <inheritdoc/>
         public User GetUserById(Guid id)
         {
             if (id == Guid.Empty)
@@ -100,6 +116,7 @@ namespace Jellyfin.Server.Implementations.Users
             return dbContext.Users.Find(id);
         }
 
+        /// <inheritdoc/>
         public User GetUserByName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -114,6 +131,7 @@ namespace Jellyfin.Server.Implementations.Users
             return dbContext.Users.FirstOrDefault(u => string.Equals(u.Username, name));
         }
 
+        /// <inheritdoc/>
         public async Task RenameUser(User user, string newName)
         {
             if (user == null)
@@ -145,6 +163,7 @@ namespace Jellyfin.Server.Implementations.Users
             OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
+        /// <inheritdoc/>
         public void UpdateUser(User user)
         {
             var dbContext = _dbProvider.CreateContext();
@@ -152,6 +171,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.SaveChanges();
         }
 
+        /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
             var dbContext = _dbProvider.CreateContext();
@@ -160,6 +180,7 @@ namespace Jellyfin.Server.Implementations.Users
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public User CreateUser(string name)
         {
             if (!IsValidUsername(name))
@@ -178,6 +199,7 @@ namespace Jellyfin.Server.Implementations.Users
             return newUser;
         }
 
+        /// <inheritdoc/>
         public void DeleteUser(User user)
         {
             if (user == null)
@@ -220,16 +242,19 @@ namespace Jellyfin.Server.Implementations.Users
             OnUserDeleted?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
+        /// <inheritdoc/>
         public Task ResetPassword(User user)
         {
             return ChangePassword(user, string.Empty);
         }
 
+        /// <inheritdoc/>
         public void ResetEasyPassword(User user)
         {
             ChangeEasyPassword(user, string.Empty, null);
         }
 
+        /// <inheritdoc/>
         public async Task ChangePassword(User user, string newPassword)
         {
             if (user == null)
@@ -243,6 +268,7 @@ namespace Jellyfin.Server.Implementations.Users
             OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
+        /// <inheritdoc/>
         public void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1)
         {
             GetAuthenticationProvider(user).ChangeEasyPassword(user, newPassword, newPasswordSha1);
@@ -251,6 +277,7 @@ namespace Jellyfin.Server.Implementations.Users
             OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
+        /// <inheritdoc/>
         public UserDto GetUserDto(User user, string remoteEndPoint = null)
         {
             return new UserDto
@@ -321,6 +348,7 @@ namespace Jellyfin.Server.Implementations.Users
             };
         }
 
+        /// <inheritdoc/>
         public PublicUserDto GetPublicUserDto(User user, string remoteEndPoint = null)
         {
             if (user == null)
@@ -343,6 +371,7 @@ namespace Jellyfin.Server.Implementations.Users
             };
         }
 
+        /// <inheritdoc/>
         public async Task<User> AuthenticateUser(
             string username,
             string password,
@@ -469,6 +498,7 @@ namespace Jellyfin.Server.Implementations.Users
             return success ? user : null;
         }
 
+        /// <inheritdoc/>
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
@@ -488,6 +518,7 @@ namespace Jellyfin.Server.Implementations.Users
             };
         }
 
+        /// <inheritdoc/>
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
         {
             foreach (var provider in _passwordResetProviders)
@@ -507,6 +538,7 @@ namespace Jellyfin.Server.Implementations.Users
             };
         }
 
+        /// <inheritdoc/>
         public void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders, IEnumerable<IPasswordResetProvider> passwordResetProviders)
         {
             _authenticationProviders = authenticationProviders.ToArray();
@@ -517,6 +549,7 @@ namespace Jellyfin.Server.Implementations.Users
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
+        /// <inheritdoc/>
         public NameIdPair[] GetAuthenticationProviders()
         {
             return _authenticationProviders
@@ -531,6 +564,7 @@ namespace Jellyfin.Server.Implementations.Users
                 .ToArray();
         }
 
+        /// <inheritdoc/>
         public NameIdPair[] GetPasswordResetProviders()
         {
             return _passwordResetProviders
@@ -545,6 +579,7 @@ namespace Jellyfin.Server.Implementations.Users
                 .ToArray();
         }
 
+        /// <inheritdoc/>
         public void UpdateConfiguration(Guid userId, UserConfiguration config)
         {
             var user = GetUserById(userId);
@@ -568,6 +603,7 @@ namespace Jellyfin.Server.Implementations.Users
             UpdateUser(user);
         }
 
+        /// <inheritdoc/>
         public void UpdatePolicy(Guid userId, UserPolicy policy)
         {
             var user = GetUserById(userId);

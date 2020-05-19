@@ -35,30 +35,42 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Gets or sets the id of this preference.
         /// </summary>
+        /// <remarks>
+        /// Identity, Indexed, Required.
+        /// </remarks>
         [Key]
         [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; protected set; }
 
         /// <summary>
-        /// Required
+        /// Gets or sets the type of this preference.
         /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
         [Required]
-        public PreferenceKind Kind { get; set; }
+        public PreferenceKind Kind { get; protected set; }
 
         /// <summary>
-        /// Required, Max length = 65535
+        /// Gets or sets the value of this preference.
         /// </summary>
+        /// <remarks>
+        /// Required, Max length = 65535.
+        /// </remarks>
         [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
         public string Value { get; set; }
 
         /// <summary>
-        /// Required, ConcurrencyToken.
+        /// Gets or sets the row version.
         /// </summary>
+        /// <remarks>
+        /// Required, ConcurrencyToken.
+        /// </remarks>
         [ConcurrencyCheck]
         [Required]
         public uint RowVersion { get; set; }
@@ -81,4 +93,3 @@ namespace Jellyfin.Data.Entities
         }
     }
 }
-
