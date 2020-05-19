@@ -112,12 +112,6 @@ namespace Emby.Server.Implementations.Library
         private IBaseItemComparer[] Comparers { get; set; }
 
         /// <summary>
-        /// Gets or sets the active item repository
-        /// </summary>
-        /// <value>The item repository.</value>
-        public IItemRepository ItemRepository { get; set; }
-
-        /// <summary>
         /// Gets or sets the active image processor
         /// </summary>
         /// <value>The image processor.</value>
@@ -1843,7 +1837,7 @@ namespace Emby.Server.Implementations.Library
                     x.Hash = blurhash;
                 });
 
-            ItemRepository.SaveImages(item);
+            _itemRepository.SaveImages(item);
 
             RegisterItem(item);
         }
@@ -1918,7 +1912,7 @@ namespace Emby.Server.Implementations.Library
         {
             Task.Run(() =>
             {
-                var items = ItemRepository.GetItemList(new InternalItemsQuery {
+                var items = _itemRepository.GetItemList(new InternalItemsQuery {
                     Recursive = true
                 });
                 foreach (var item in items)
