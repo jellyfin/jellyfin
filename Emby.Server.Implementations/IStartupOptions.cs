@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations
         string PluginManifestUrl { get; }
 
         /// <summary>
-        /// Gets the value of the --auto-discover-publish-url command line option.
+        /// Gets the value of the --published-server-url command line option.
         /// </summary>
         Uri PublishedServerUrl { get; }
     }
