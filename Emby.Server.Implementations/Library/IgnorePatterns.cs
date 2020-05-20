@@ -25,6 +25,7 @@ namespace Emby.Server.Implementations.Library
             "**/extrathumbs/**",
             "**/.actors/**",
             "**/.wd_tv/**",
+            "**/lost+found/**",
 
             // WMC temp recording directories that will constantly be written to
             "**/TempRec/**",
