@@ -246,6 +246,8 @@ namespace Jellyfin.Drawing.Skia
                 throw new FileNotFoundException("File not found", path);
             }
 
+            // Use 4 vertical and 4 horizontal components of DCT of the image.
+            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
             return BlurHashEncoder.Encode(4, 4, path);
         }
 
