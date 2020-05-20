@@ -341,7 +341,7 @@ namespace MediaBrowser.Api.Images
                     var fileInfo = _fileSystem.GetFileInfo(info.Path);
                     length = fileInfo.Length;
 
-                    blurhash = info.Hash;
+                    blurhash = info.BlurHash;
                     width = info.Width;
                     height = info.Height;
 

@@ -718,7 +718,7 @@ namespace Emby.Server.Implementations.Dto
             if (options.EnableImages)
             {
                 dto.ImageTags = new Dictionary<ImageType, string>();
-                dto.ImageHashes = new Dictionary<string, string>();
+                dto.ImageBlurHashes = new Dictionary<string, string>();
 
                 // Prevent implicitly captured closure
                 var currentItem = item;
@@ -733,10 +733,10 @@ namespace Emby.Server.Implementations.Dto
                             dto.ImageTags[image.Type] = tag;
                         }
 
-                        var hash = image.Hash;
+                        var hash = image.BlurHash;
                         if (!string.IsNullOrEmpty(hash))
                         {
-                            dto.ImageHashes[tag] = image.Hash;
+                            dto.ImageBlurHashes[tag] = image.BlurHash;
                         }
                     }
                 }

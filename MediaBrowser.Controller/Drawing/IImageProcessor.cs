@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="path">Path to the image file.</param>
         /// <returns>BlurHash</returns>
-        String GetImageHash(string path);
+        string GetImageBlurHash(string path);
 
         /// <summary>
         /// Gets the image cache tag.

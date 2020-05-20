@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the blurhash.
         /// </summary>
         /// <value>The blurhash.</value>
-        public string Hash { get; set; }
+        public string BlurHash { get; set; }
 
         [JsonIgnore]
         public bool IsLocalFile => Path == null || !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);

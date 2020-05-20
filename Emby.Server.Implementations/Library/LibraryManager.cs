@@ -1829,7 +1829,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var outdated = item.ImageInfos
-                .Where(i => (i.IsLocalFile && (i.Width == 0 || i.Height == 0 || string.IsNullOrEmpty(i.Hash))))
+                .Where(i => (i.IsLocalFile && (i.Width == 0 || i.Height == 0 || string.IsNullOrEmpty(i.BlurHash))))
                 .ToList();
             if (outdated.Count == 0)
             {
@@ -1842,7 +1842,7 @@ namespace Emby.Server.Implementations.Library
                 ImageDimensions size = _imageProcessor.GetImageDimensions(item, img);
                 img.Width = size.Width;
                 img.Height = size.Height;
-                img.Hash = _imageProcessor.GetImageHash(img.Path);
+                img.BlurHash = _imageProcessor.GetImageBlurHash(img.Path);
             });
 
             _itemRepository.SaveImages(item);

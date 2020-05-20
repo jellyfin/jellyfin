@@ -314,7 +314,7 @@ namespace Emby.Drawing
             => _imageEncoder.GetImageSize(path);
 
         /// <inheritdoc />
-        public string GetImageHash(string path)
+        public string GetImageBlurHash(string path)
             => _imageEncoder.GetImageHash(path);
 
         /// <inheritdoc />

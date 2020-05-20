@@ -1144,7 +1144,7 @@ namespace Emby.Server.Implementations.Data
             const string delimeter = "*";
 
             var path = image.Path ?? string.Empty;
-            var hash = image.Hash ?? string.Empty;
+            var hash = image.BlurHash ?? string.Empty;
 
             return GetPathToSave(path) +
                    delimeter +
@@ -1195,7 +1195,7 @@ namespace Emby.Server.Implementations.Data
 
                 if (parts.Length >= 6)
                 {
-                    image.Hash = parts[5].Replace('/', '*').Replace('\\', '|');
+                    image.BlurHash = parts[5].Replace('/', '*').Replace('\\', '|');
                 }
             }
 
