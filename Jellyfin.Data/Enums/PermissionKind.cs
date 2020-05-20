@@ -8,106 +8,106 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// Whether the user is an administrator.
         /// </summary>
-        IsAdministrator,
+        IsAdministrator = 0,
 
         /// <summary>
         /// Whether the user is hidden.
         /// </summary>
-        IsHidden,
+        IsHidden = 1,
 
         /// <summary>
         /// Whether the user is disabled.
         /// </summary>
-        IsDisabled,
+        IsDisabled = 2,
 
         /// <summary>
         /// Whether the user can control shared devices.
         /// </summary>
-        EnableSharedDeviceControl,
+        EnableSharedDeviceControl = 3,
 
         /// <summary>
         /// Whether the user can access the server remotely.
         /// </summary>
-        EnableRemoteAccess,
+        EnableRemoteAccess = 4,
 
         /// <summary>
         /// Whether the user can manage live tv.
         /// </summary>
-        EnableLiveTvManagement,
+        EnableLiveTvManagement = 5,
 
         /// <summary>
         /// Whether the user can access live tv.
         /// </summary>
-        EnableLiveTvAccess,
+        EnableLiveTvAccess = 6,
 
         /// <summary>
         /// Whether the user can play media.
         /// </summary>
-        EnableMediaPlayback,
+        EnableMediaPlayback = 7,
 
         /// <summary>
         /// Whether the server should transcode audio for the user if requested.
         /// </summary>
-        EnableAudioPlaybackTranscoding,
+        EnableAudioPlaybackTranscoding = 8,
 
         /// <summary>
         /// Whether the server should transcode video for the user if requested.
         /// </summary>
-        EnableVideoPlaybackTranscoding,
+        EnableVideoPlaybackTranscoding = 9,
 
         /// <summary>
         /// Whether the user can delete content.
         /// </summary>
-        EnableContentDeletion,
+        EnableContentDeletion = 10,
 
         /// <summary>
         /// Whether the user can download content.
         /// </summary>
-        EnableContentDownloading,
+        EnableContentDownloading = 11,
 
         /// <summary>
         /// Whether to enable sync transcoding for the user.
         /// </summary>
-        EnableSyncTranscoding,
+        EnableSyncTranscoding = 12,
 
         /// <summary>
         /// Whether the user can do media conversion.
         /// </summary>
-        EnableMediaConversion,
+        EnableMediaConversion = 13,
 
         /// <summary>
         /// Whether the user has access to all devices.
         /// </summary>
-        EnableAllDevices,
+        EnableAllDevices = 14,
 
         /// <summary>
         /// Whether the user has access to all channels.
         /// </summary>
-        EnableAllChannels,
+        EnableAllChannels = 15,
 
         /// <summary>
         /// Whether the user has access to all folders.
         /// </summary>
-        EnableAllFolders,
+        EnableAllFolders = 16,
 
         /// <summary>
         /// Whether to enable public sharing for the user.
         /// </summary>
-        EnablePublicSharing,
+        EnablePublicSharing = 17,
 
         /// <summary>
         /// Whether the user can remotely control other users.
         /// </summary>
-        EnableRemoteControlOfOtherUsers,
+        EnableRemoteControlOfOtherUsers = 18,
 
         /// <summary>
         /// Whether the user is permitted to do playback remuxing.
         /// </summary>
-        EnablePlaybackRemuxing,
+        EnablePlaybackRemuxing = 19,
 
         /// <summary>
         /// Whether the server should force transcoding on remote connections for the user.
         /// </summary>
-        ForceRemoteSourceTranscoding
+        ForceRemoteSourceTranscoding = 20
     }
 }
