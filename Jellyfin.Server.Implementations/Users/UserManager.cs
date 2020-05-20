@@ -35,7 +35,7 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
-        private readonly ILogger<IUserManager> _logger;
+        private readonly ILogger<UserManager> _logger;
 
         private IAuthenticationProvider[] _authenticationProviders;
         private DefaultAuthenticationProvider _defaultAuthenticationProvider;
@@ -58,7 +58,7 @@ namespace Jellyfin.Server.Implementations.Users
             INetworkManager networkManager,
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
-            ILogger<IUserManager> logger)
+            ILogger<UserManager> logger)
         {
             _dbProvider = dbProvider;
             _cryptoProvider = cryptoProvider;
@@ -190,7 +190,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             var dbContext = _dbProvider.CreateContext();
 
-            // Temporary measure until user item data is migrated.
+            // TODO: Remove after user item data is migrated.
             var max = dbContext.Users.Select(u => u.InternalId).Max();
 
             var newUser = new User(
