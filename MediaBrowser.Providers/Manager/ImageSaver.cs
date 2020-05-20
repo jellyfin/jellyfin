@@ -131,7 +131,7 @@ namespace MediaBrowser.Providers.Manager
 
             var currentImage = GetCurrentImage(item, type, index);
             var currentImageIsLocalFile = currentImage != null && currentImage.IsLocalFile;
-            var currentImagePath = currentImage == null ? null : currentImage.Path;
+            var currentImagePath = currentImage?.Path;
 
             var savedPaths = new List<string>();
 
@@ -179,13 +179,8 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public async Task SaveImage(User user, Stream source, string mimeType, string path)
+        public async Task SaveImage(User user, Stream source, string path)
         {
-            if (string.IsNullOrEmpty(mimeType))
-            {
-                throw new ArgumentNullException(nameof(mimeType));
-            }
-
             await SaveImageToLocation(source, path, path, CancellationToken.None).ConfigureAwait(false);
         }
 

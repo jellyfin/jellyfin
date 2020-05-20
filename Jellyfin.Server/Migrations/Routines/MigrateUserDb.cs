@@ -7,6 +7,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
@@ -84,9 +85,9 @@ namespace Jellyfin.Server.Migrations.Routines
                         StringComparison.Ordinal)
                         ?? typeof(DefaultAuthenticationProvider).FullName;
 
-                    policy.PasswordResetProviderId ??= typeof(DefaultPasswordResetProvider).FullName;
+                    policy.PasswordResetProviderId = typeof(DefaultPasswordResetProvider).FullName;
 
-                    var user = new User(mockup.Name, policy.AuthenticationProviderId)
+                    var user = new User(mockup.Name, policy.AuthenticationProviderId, string.Empty)
                     {
                         Id = entry[1].ReadGuidFromBlob(),
                         InternalId = entry[0].ToInt64(),
@@ -112,6 +113,16 @@ namespace Jellyfin.Server.Migrations.Routines
                         LastLoginDate = mockup.LastLoginDate ?? DateTime.MinValue,
                         LastActivityDate = mockup.LastActivityDate ?? DateTime.MinValue
                     };
+
+                    if (mockup.ImageInfos.Length > 0)
+                    {
+                        ItemImageInfo info = mockup.ImageInfos[0];
+
+                        user.ProfileImage = new ImageInfo(info.Path, info.Width, info.Height)
+                        {
+                            LastModified = info.DateModified
+                        };
+                    }
 
                     user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
                     user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);
@@ -184,6 +195,8 @@ namespace Jellyfin.Server.Migrations.Routines
             public DateTime? LastActivityDate { get; set; }
 
             public string Name { get; set; }
+
+            public ItemImageInfo[] ImageInfos { get; set; }
         }
     }
 }

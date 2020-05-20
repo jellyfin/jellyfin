@@ -190,7 +190,10 @@ namespace Jellyfin.Server.Implementations.Users
 
             var dbContext = _dbProvider.CreateContext();
 
-            var newUser = new User(name, _defaultAuthenticationProvider.GetType().FullName);
+            var newUser = new User(
+                name,
+                _defaultAuthenticationProvider.GetType().FullName,
+                _defaultPasswordResetProvider.GetType().FullName);
             dbContext.Users.Add(newUser);
             dbContext.SaveChanges();
 

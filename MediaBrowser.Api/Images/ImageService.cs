@@ -17,6 +17,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -887,7 +888,7 @@ namespace MediaBrowser.Api.Images
             var userDataPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
 
             await _providerManager
-                .SaveImage(user, memoryStream, mimeType, Path.Combine(userDataPath, _imageProcessor.GetImageCacheTag(user)))
+                .SaveImage(user, memoryStream, mimeType, Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)))
                 .ConfigureAwait(false);
             await _userManager.UpdateUserAsync(user);
         }

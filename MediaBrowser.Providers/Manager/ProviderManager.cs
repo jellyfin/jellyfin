@@ -191,7 +191,7 @@ namespace MediaBrowser.Providers.Manager
         public Task SaveImage(User user, Stream source, string mimeType, string path)
         {
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
-                .SaveImage(user, source, mimeType, path);
+                .SaveImage(user, source, path);
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, RemoteImageQuery query, CancellationToken cancellationToken)

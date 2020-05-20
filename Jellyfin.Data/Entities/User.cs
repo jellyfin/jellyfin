@@ -25,7 +25,7 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="username">The username for the new user.</param>
         /// <param name="authenticationProviderId">The authentication provider's Id</param>
-        public User(string username, string authenticationProviderId)
+        public User(string username, string authenticationProviderId, string passwordResetProviderId)
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -39,6 +39,7 @@ namespace Jellyfin.Data.Entities
 
             Username = username;
             AuthenticationProviderId = authenticationProviderId;
+            PasswordResetProviderId = passwordResetProviderId;
 
             Groups = new HashSet<Group>();
             Permissions = new HashSet<Permission>();
@@ -85,10 +86,11 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="username">The username for the created user.</param>
         /// <param name="authenticationProviderId">The Id of the user's authentication provider.</param>
+        /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
         /// <returns>The created instance.</returns>
-        public static User Create(string username, string authenticationProviderId)
+        public static User Create(string username, string authenticationProviderId, string passwordResetProviderId)
         {
-            return new User(username, authenticationProviderId);
+            return new User(username, authenticationProviderId, passwordResetProviderId);
         }
 
         /*************************************************************************

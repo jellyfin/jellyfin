@@ -12,14 +12,7 @@ namespace Jellyfin.Data.Entities
         partial void Init();
 
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected Permission()
-        {
-            Init();
-        }
-
-        /// <summary>
+        /// Initializes a new instance of the <see cref="Permission"/> class.
         /// Public constructor with required data
         /// </summary>
         /// <param name="kind"></param>
@@ -30,6 +23,15 @@ namespace Jellyfin.Data.Entities
             Kind = kind;
             Value = value;
 
+            Init();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Permission"/> class.
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// </summary>
+        protected Permission()
+        {
             Init();
         }
 
