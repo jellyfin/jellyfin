@@ -260,9 +260,7 @@ namespace Jellyfin.Data.Entities
 
         public bool HasPermission(PermissionKind permission)
         {
-            var list = Permissions.Where(p => p.Kind == permission);
-
-            return list.First().Value;
+            return Permissions.First(p => p.Kind == permission).Value;
         }
 
         public void SetPermission(PermissionKind kind, bool value)
@@ -283,16 +281,14 @@ namespace Jellyfin.Data.Entities
 
         public void SetPreference(PreferenceKind preference, string[] values)
         {
-            var pref = Preferences.First(p => p.Kind == preference);
-
-            pref.Value = string.Join(Delimiter.ToString(CultureInfo.InvariantCulture), values);
+            Preferences.First(p => p.Kind == preference).Value
+                = string.Join(Delimiter.ToString(CultureInfo.InvariantCulture), values);
         }
 
         public bool IsParentalScheduleAllowed()
         {
-            var schedules = this.AccessSchedules;
-
-            return schedules.Count == 0 || schedules.Any(i => IsParentalScheduleAllowed(i, DateTime.Now));
+            return AccessSchedules.Count == 0
+                   || AccessSchedules.Any(i => IsParentalScheduleAllowed(i, DateTime.UtcNow));
         }
 
         public bool IsFolderGrouped(Guid id)
