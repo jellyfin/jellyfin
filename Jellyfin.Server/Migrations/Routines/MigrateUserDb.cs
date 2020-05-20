@@ -118,7 +118,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     {
                         ItemImageInfo info = mockup.ImageInfos[0];
 
-                        user.ProfileImage = new ImageInfo(info.Path, info.Width, info.Height)
+                        user.ProfileImage = new ImageInfo(info.Path)
                         {
                             LastModified = info.DateModified
                         };

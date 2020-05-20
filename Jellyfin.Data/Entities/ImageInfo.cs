@@ -6,11 +6,9 @@ namespace Jellyfin.Data.Entities
 {
     public class ImageInfo
     {
-        public ImageInfo(string path, int width, int height)
+        public ImageInfo(string path)
         {
             Path = path;
-            Width = width;
-            Height = height;
             LastModified = DateTime.UtcNow;
         }
 
@@ -20,13 +18,9 @@ namespace Jellyfin.Data.Entities
         public int Id { get; protected set; }
 
         [Required]
+        [MaxLength(512)]
+        [StringLength(512)]
         public string Path { get; set; }
-
-        [Required]
-        public int Width { get; set; }
-
-        [Required]
-        public int Height { get; set; }
 
         [Required]
         public DateTime LastModified { get; set; }

@@ -471,8 +471,17 @@ namespace MediaBrowser.Api.Images
             AssertCanUpdateUser(_authContext, _userManager, userId, true);
 
             var user = _userManager.GetUserById(userId);
+            try
+            {
+                File.Delete(user.ProfileImage.Path);
+            }
+            catch (IOException e)
+            {
+                // TODO: Log this
+            }
 
             user.ProfileImage = null;
+            _userManager.UpdateUser(user);
         }
 
         /// <summary>
@@ -639,6 +648,7 @@ namespace MediaBrowser.Api.Images
             IDictionary<string, string> headers,
             bool isHeadRequest)
         {
+            info.Type = ImageType.Profile;
             var options = new ImageProcessingOptions
             {
                 CropWhiteSpace = true,
@@ -886,9 +896,10 @@ namespace MediaBrowser.Api.Images
             // Handle image/png; charset=utf-8
             mimeType = mimeType.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+            user.ProfileImage = new Jellyfin.Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
 
             await _providerManager
-                .SaveImage(user, memoryStream, mimeType, Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)))
+                .SaveImage(user, memoryStream, mimeType, user.ProfileImage.Path)
                 .ConfigureAwait(false);
             await _userManager.UpdateUserAsync(user);
         }
