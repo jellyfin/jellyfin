@@ -190,10 +190,16 @@ namespace Jellyfin.Server.Implementations.Users
 
             var dbContext = _dbProvider.CreateContext();
 
+            // Temporary measure until user item data is migrated.
+            var max = dbContext.Users.Select(u => u.InternalId).Max();
+
             var newUser = new User(
                 name,
                 _defaultAuthenticationProvider.GetType().FullName,
-                _defaultPasswordResetProvider.GetType().FullName);
+                _defaultPasswordResetProvider.GetType().FullName)
+            {
+                InternalId = max + 1
+            };
             dbContext.Users.Add(newUser);
             dbContext.SaveChanges();
 
