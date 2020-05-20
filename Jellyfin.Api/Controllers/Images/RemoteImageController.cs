@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -151,7 +152,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="404">Remote image not found.</response>
         /// <returns>Image Stream.</returns>
         [HttpGet("Remote")]
-        [Produces("application/octet-stream")]
+        [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<FileStreamResult>> GetRemoteImage([FromQuery, BindRequired] string imageUrl)
