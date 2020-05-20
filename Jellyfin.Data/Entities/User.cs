@@ -325,10 +325,10 @@ namespace Jellyfin.Data.Entities
         {
             Permissions.Add(new Permission(PermissionKind.IsAdministrator, false));
             Permissions.Add(new Permission(PermissionKind.IsDisabled, false));
-            Permissions.Add(new Permission(PermissionKind.IsHidden, false));
-            Permissions.Add(new Permission(PermissionKind.EnableAllChannels, false));
+            Permissions.Add(new Permission(PermissionKind.IsHidden, true));
+            Permissions.Add(new Permission(PermissionKind.EnableAllChannels, true));
             Permissions.Add(new Permission(PermissionKind.EnableAllDevices, true));
-            Permissions.Add(new Permission(PermissionKind.EnableAllFolders, false));
+            Permissions.Add(new Permission(PermissionKind.EnableAllFolders, true));
             Permissions.Add(new Permission(PermissionKind.EnableContentDeletion, false));
             Permissions.Add(new Permission(PermissionKind.EnableContentDownloading, true));
             Permissions.Add(new Permission(PermissionKind.EnableMediaConversion, true));

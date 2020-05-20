@@ -288,7 +288,7 @@ namespace Jellyfin.Server.Implementations.Users
                 Name = user.Username,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
-                HasPassword = user.Password == null,
+                HasPassword = user.Password != null,
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
