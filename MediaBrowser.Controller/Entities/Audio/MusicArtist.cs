@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -75,13 +74,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             }
         }
 
-        public override int GetChildCount(Jellyfin.Data.Entities.User user)
+        public override int GetChildCount(User user)
         {
-            if (IsAccessedByName)
-            {
-                return 0;
-            }
-            return base.GetChildCount(user);
+            return IsAccessedByName ? 0 : base.GetChildCount(user);
         }
 
         public override bool IsSaveLocalMetadataEnabled()
@@ -144,7 +139,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
         }
 
-        protected override bool GetBlockUnratedValue(Jellyfin.Data.Entities.User user)
+        protected override bool GetBlockUnratedValue(User user)
         {
             return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
         }

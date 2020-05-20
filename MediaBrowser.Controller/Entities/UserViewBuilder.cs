@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -125,7 +129,7 @@ namespace MediaBrowser.Controller.Entities
             return 50;
         }
 
-        private QueryResult<BaseItem> GetMovieFolders(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieFolders(Folder parent, User user, InternalItemsQuery query)
         {
             if (query.Recursive)
             {
@@ -153,7 +157,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, parent, query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteMovies(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteMovies(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -164,7 +168,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteSeries(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteSeries(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -175,7 +179,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> GetFavoriteEpisodes(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetFavoriteEpisodes(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -186,7 +190,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> GetMovieMovies(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieMovies(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -197,7 +201,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> GetMovieCollections(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieCollections(Folder parent, User user, InternalItemsQuery query)
         {
             query.Parent = null;
             query.IncludeItemTypes = new[] { typeof(BoxSet).Name };
@@ -207,7 +211,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> GetMovieLatest(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieLatest(Folder parent, User user, InternalItemsQuery query)
         {
             query.OrderBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
 
@@ -220,7 +224,7 @@ namespace MediaBrowser.Controller.Entities
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
 
-        private QueryResult<BaseItem> GetMovieResume(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieResume(Folder parent, User user, InternalItemsQuery query)
         {
             query.OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
             query.IsResumable = true;
@@ -243,7 +247,7 @@ namespace MediaBrowser.Controller.Entities
             };
         }
 
-        private QueryResult<BaseItem> GetMovieGenres(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieGenres(Folder parent, User user, InternalItemsQuery query)
         {
             var genres = parent.QueryRecursive(new InternalItemsQuery(user)
             {
@@ -273,7 +277,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(genres, parent, query);
         }
 
-        private QueryResult<BaseItem> GetMovieGenreItems(Folder queryParent, Folder displayParent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = queryParent;
@@ -285,7 +289,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> GetTvView(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetTvView(Folder parent, User user, InternalItemsQuery query)
         {
             if (query.Recursive)
             {
@@ -319,7 +323,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, parent, query);
         }
 
-        private QueryResult<BaseItem> GetTvLatest(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetTvLatest(Folder parent, User user, InternalItemsQuery query)
         {
             query.OrderBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
 
@@ -348,7 +352,7 @@ namespace MediaBrowser.Controller.Entities
             return result;
         }
 
-        private QueryResult<BaseItem> GetTvResume(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetTvResume(Folder parent, User user, InternalItemsQuery query)
         {
             query.OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
             query.IsResumable = true;
@@ -361,7 +365,7 @@ namespace MediaBrowser.Controller.Entities
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
 
-        private QueryResult<BaseItem> GetTvSeries(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetTvSeries(Folder parent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -372,7 +376,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> GetTvGenres(Folder parent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetTvGenres(Folder parent, User user, InternalItemsQuery query)
         {
             var genres = parent.QueryRecursive(new InternalItemsQuery(user)
             {
@@ -402,7 +406,7 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(genres, parent, query);
         }
 
-        private QueryResult<BaseItem> GetTvGenreItems(Folder queryParent, Folder displayParent, Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetTvGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = queryParent;
@@ -492,7 +496,7 @@ namespace MediaBrowser.Controller.Entities
             };
         }
 
-        public static bool Filter(BaseItem item, Jellyfin.Data.Entities.User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
+        public static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
             if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
@@ -950,7 +954,7 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        private IEnumerable<BaseItem> GetMediaFolders(Jellyfin.Data.Entities.User user)
+        private IEnumerable<BaseItem> GetMediaFolders(User user)
         {
             if (user == null)
             {
@@ -965,7 +969,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => user.IsFolderGrouped(i.Id) && UserView.IsEligibleForGrouping(i));
         }
 
-        private BaseItem[] GetMediaFolders(Jellyfin.Data.Entities.User user, IEnumerable<string> viewTypes)
+        private BaseItem[] GetMediaFolders(User user, IEnumerable<string> viewTypes)
         {
             if (user == null)
             {
@@ -986,7 +990,7 @@ namespace MediaBrowser.Controller.Entities
                 }).ToArray();
         }
 
-        private BaseItem[] GetMediaFolders(Folder parent, Jellyfin.Data.Entities.User user, IEnumerable<string> viewTypes)
+        private BaseItem[] GetMediaFolders(Folder parent, User user, IEnumerable<string> viewTypes)
         {
             if (parent == null || parent is UserView)
             {

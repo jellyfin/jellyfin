@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Controller.Authentication;
@@ -42,7 +43,7 @@ namespace Jellyfin.Server.Implementations.Users
 
         /// <inheritdoc />
         // This is the version that we need to use for local users. Because reasons.
-        public Task<ProviderAuthenticationResult> Authenticate(string username, string password, Data.Entities.User resolvedUser)
+        public Task<ProviderAuthenticationResult> Authenticate(string username, string password, User resolvedUser)
         {
             if (resolvedUser == null)
             {
@@ -93,11 +94,11 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public bool HasPassword(Data.Entities.User user)
+        public bool HasPassword(User user)
             => !string.IsNullOrEmpty(user.Password);
 
         /// <inheritdoc />
-        public Task ChangePassword(Data.Entities.User user, string newPassword)
+        public Task ChangePassword(User user, string newPassword)
         {
             if (string.IsNullOrEmpty(newPassword))
             {
@@ -112,7 +113,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public void ChangeEasyPassword(Data.Entities.User user, string newPassword, string newPasswordHash)
+        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
         {
             if (newPassword != null)
             {
@@ -128,7 +129,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public string GetEasyPasswordHash(Data.Entities.User user)
+        public string GetEasyPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
@@ -141,7 +142,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="user">The user.</param>
         /// <param name="str">The string to hash.</param>
         /// <returns>The hashed string.</returns>
-        public string GetHashedString(Data.Entities.User user, string str)
+        public string GetHashedString(User user, string str)
         {
             if (string.IsNullOrEmpty(user.Password))
             {
@@ -167,7 +168,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="user">The user.</param>
         /// <param name="str">The string to hash.</param>
         /// <returns>The hashed string.</returns>
-        public ReadOnlySpan<byte> GetHashed(Data.Entities.User user, string str)
+        public ReadOnlySpan<byte> GetHashed(User user, string str)
         {
             if (string.IsNullOrEmpty(user.Password))
             {

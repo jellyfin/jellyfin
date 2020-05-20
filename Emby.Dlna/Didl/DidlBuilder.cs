@@ -7,12 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Emby.Dlna.ContentDirectory;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
@@ -22,6 +22,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
+using XmlAttribute = MediaBrowser.Model.Dlna.XmlAttribute;
 
 namespace Emby.Dlna.Didl
 {
@@ -38,7 +45,7 @@ namespace Emby.Dlna.Didl
         private readonly IImageProcessor _imageProcessor;
         private readonly string _serverAddress;
         private readonly string _accessToken;
-        private readonly Jellyfin.Data.Entities.User _user;
+        private readonly User _user;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -48,7 +55,7 @@ namespace Emby.Dlna.Didl
 
         public DidlBuilder(
             DeviceProfile profile,
-            Jellyfin.Data.Entities.User user,
+            User user,
             IImageProcessor imageProcessor,
             string serverAddress,
             string accessToken,
@@ -77,7 +84,7 @@ namespace Emby.Dlna.Didl
             return url + "&dlnaheaders=true";
         }
 
-        public string GetItemDidl(BaseItem item, Jellyfin.Data.Entities.User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
+        public string GetItemDidl(BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var settings = new XmlWriterSettings
             {
@@ -131,7 +138,7 @@ namespace Emby.Dlna.Didl
         public void WriteItemElement(
             XmlWriter writer,
             BaseItem item,
-            Jellyfin.Data.Entities.User user,
+            User user,
             BaseItem context,
             StubType? contextStubType,
             string deviceId,
@@ -420,7 +427,6 @@ namespace Emby.Dlna.Didl
                     case StubType.FavoriteSeries: return _localization.GetLocalizedString("HeaderFavoriteShows");
                     case StubType.FavoriteEpisodes: return _localization.GetLocalizedString("HeaderFavoriteEpisodes");
                     case StubType.Series: return _localization.GetLocalizedString("Shows");
-                    default: break;
                 }
             }
 
@@ -662,14 +668,14 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
         }
 
-        private void AddSamsungBookmarkInfo(BaseItem item, Jellyfin.Data.Entities.User user, XmlWriter writer, StreamInfo streamInfo)
+        private void AddSamsungBookmarkInfo(BaseItem item, User user, XmlWriter writer, StreamInfo streamInfo)
         {
             if (!item.SupportsPositionTicksResume || item is Folder)
             {
                 return;
             }
 
-            MediaBrowser.Model.Dlna.XmlAttribute secAttribute = null;
+            XmlAttribute secAttribute = null;
             foreach (var attribute in _profile.XmlRootAttributes)
             {
                 if (string.Equals(attribute.Name, "xmlns:sec", StringComparison.OrdinalIgnoreCase))
@@ -994,7 +1000,6 @@ namespace Emby.Dlna.Didl
             }
 
             AddImageResElement(item, writer, 160, 160, "jpg", "JPEG_TN");
-
         }
 
         private void AddImageResElement(

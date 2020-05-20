@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Controller.Notifications
 {
@@ -25,6 +25,6 @@ namespace MediaBrowser.Controller.Notifications
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if [is enabled for user] [the specified user identifier]; otherwise, <c>false</c>.</returns>
-        bool IsEnabledForUser(Jellyfin.Data.Entities.User user);
+        bool IsEnabledForUser(User user);
     }
 }

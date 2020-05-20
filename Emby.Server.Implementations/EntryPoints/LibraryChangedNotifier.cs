@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -446,7 +447,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="user">The user.</param>
         /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>
         /// <returns>IEnumerable{``0}.</returns>
-        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, Jellyfin.Data.Entities.User user, bool includeIfNotFound = false)
+        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, bool includeIfNotFound = false)
             where T : BaseItem
         {
             // If the physical root changed, return the user root

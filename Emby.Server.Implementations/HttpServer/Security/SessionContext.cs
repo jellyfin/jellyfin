@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -42,14 +42,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return GetSession((IRequest)requestContext);
         }
 
-        public Jellyfin.Data.Entities.User GetUser(IRequest requestContext)
+        public User GetUser(IRequest requestContext)
         {
             var session = GetSession(requestContext);
 
             return session == null || session.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(session.UserId);
         }
 
-        public Jellyfin.Data.Entities.User GetUser(object requestContext)
+        public User GetUser(object requestContext)
         {
             return GetUser((IRequest)requestContext);
         }

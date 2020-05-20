@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -78,7 +79,7 @@ namespace MediaBrowser.Controller.Playlists
             return 1;
         }
 
-        public override bool IsAuthorizedToDelete(Jellyfin.Data.Entities.User user, List<Folder> allCollectionFolders)
+        public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {
             return true;
         }
@@ -99,7 +100,7 @@ namespace MediaBrowser.Controller.Playlists
             return Task.CompletedTask;
         }
 
-        public override List<BaseItem> GetChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
@@ -109,7 +110,7 @@ namespace MediaBrowser.Controller.Playlists
             return new List<BaseItem>();
         }
 
-        public override IEnumerable<BaseItem> GetRecursiveChildren(Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        public override IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
         {
             return GetPlayableItems(user, query);
         }
@@ -119,7 +120,7 @@ namespace MediaBrowser.Controller.Playlists
             return GetLinkedChildrenInfos();
         }
 
-        private List<BaseItem> GetPlayableItems(Jellyfin.Data.Entities.User user, InternalItemsQuery query)
+        private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
             if (query == null)
             {
@@ -131,7 +132,7 @@ namespace MediaBrowser.Controller.Playlists
             return base.GetChildren(user, true, query);
         }
 
-        public static List<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, Jellyfin.Data.Entities.User user, DtoOptions options)
+        public static List<BaseItem> GetPlaylistItems(string playlistMediaType, IEnumerable<BaseItem> inputItems, User user, DtoOptions options)
         {
             if (user != null)
             {
@@ -149,7 +150,7 @@ namespace MediaBrowser.Controller.Playlists
             return list;
         }
 
-        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, Jellyfin.Data.Entities.User user, string mediaType, DtoOptions options)
+        private static IEnumerable<BaseItem> GetPlaylistItems(BaseItem item, User user, string mediaType, DtoOptions options)
         {
             if (item is MusicGenre musicGenre)
             {
@@ -222,7 +223,7 @@ namespace MediaBrowser.Controller.Playlists
             }
         }
 
-        public override bool IsVisible(Jellyfin.Data.Entities.User user)
+        public override bool IsVisible(User user)
         {
             if (!IsSharedItem)
             {
@@ -244,7 +245,7 @@ namespace MediaBrowser.Controller.Playlists
             return shares.Any(share => string.Equals(share.UserId, userId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public override bool IsVisibleStandalone(Jellyfin.Data.Entities.User user)
+        public override bool IsVisibleStandalone(User user)
         {
             if (!IsSharedItem)
             {

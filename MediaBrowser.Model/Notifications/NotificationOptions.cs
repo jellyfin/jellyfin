@@ -4,6 +4,7 @@ using System;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Extensions;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Notifications
@@ -115,7 +116,7 @@ namespace MediaBrowser.Model.Notifications
                    !opt.DisabledMonitorUsers.Contains(userId.ToString(""), StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool IsEnabledToSendToUser(string type, string userId, Jellyfin.Data.Entities.User user)
+        public bool IsEnabledToSendToUser(string type, string userId, User user)
         {
             NotificationOption opt = GetOptions(type);
 

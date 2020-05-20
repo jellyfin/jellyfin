@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -17,8 +18,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -34,6 +33,8 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -763,7 +764,7 @@ namespace Emby.Server.Implementations.LiveTv
             return new Tuple<LiveTvProgram, bool, bool>(item, isNew, isUpdated);
         }
 
-        public async Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, Jellyfin.Data.Entities.User user = null)
+        public async Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null)
         {
             var program = _libraryManager.GetItemById(id);
 
@@ -938,7 +939,7 @@ namespace Emby.Server.Implementations.LiveTv
             };
         }
 
-        private int GetRecommendationScore(LiveTvProgram program, Jellyfin.Data.Entities.User user, bool factorChannelWatchCount)
+        private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
         {
             var score = 0;
 
@@ -1324,7 +1325,7 @@ namespace Emby.Server.Implementations.LiveTv
             return 7;
         }
 
-        private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, DtoOptions dtoOptions, Jellyfin.Data.Entities.User user)
+        private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, DtoOptions dtoOptions, User user)
         {
             if (user == null)
             {
@@ -1432,7 +1433,7 @@ namespace Emby.Server.Implementations.LiveTv
             return result;
         }
 
-        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, ItemFields[] fields, Jellyfin.Data.Entities.User user = null)
+        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, ItemFields[] fields, User user = null)
         {
             var programTuples = new List<Tuple<BaseItemDto, string, string>>();
             var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
@@ -1482,7 +1483,7 @@ namespace Emby.Server.Implementations.LiveTv
             return EmbyTV.EmbyTV.Current.GetActiveRecordingInfo(path);
         }
 
-        public void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, Jellyfin.Data.Entities.User user = null)
+        public void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null)
         {
             var service = EmbyTV.EmbyTV.Current;
 
@@ -1894,7 +1895,7 @@ namespace Emby.Server.Implementations.LiveTv
             return _libraryManager.GetItemById(internalChannelId);
         }
 
-        public void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> tuples, DtoOptions options, Jellyfin.Data.Entities.User user)
+        public void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> tuples, DtoOptions options, User user)
         {
             var now = DateTime.UtcNow;
 
@@ -2215,12 +2216,12 @@ namespace Emby.Server.Implementations.LiveTv
             return info;
         }
 
-        private bool IsLiveTvEnabled(Jellyfin.Data.Entities.User user)
+        private bool IsLiveTvEnabled(User user)
         {
             return user.HasPermission(PermissionKind.EnableLiveTvAccess) && (Services.Count > 1 || GetConfiguration().TunerHosts.Length > 0);
         }
 
-        public IEnumerable<Jellyfin.Data.Entities.User> GetEnabledUsers()
+        public IEnumerable<User> GetEnabledUsers()
         {
             return _userManager.Users
                 .Where(IsLiveTvEnabled);
@@ -2470,12 +2471,12 @@ namespace Emby.Server.Implementations.LiveTv
             return _tvDtoService.GetInternalProgramId(externalId);
         }
 
-        public List<BaseItem> GetRecordingFolders(Jellyfin.Data.Entities.User user)
+        public List<BaseItem> GetRecordingFolders(User user)
         {
             return GetRecordingFolders(user, false);
         }
 
-        private List<BaseItem> GetRecordingFolders(Jellyfin.Data.Entities.User user, bool refreshChannels)
+        private List<BaseItem> GetRecordingFolders(User user, bool refreshChannels)
         {
             var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
                 .SelectMany(i => i.Locations)

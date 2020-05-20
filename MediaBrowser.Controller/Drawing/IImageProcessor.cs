@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -50,7 +51,7 @@ namespace MediaBrowser.Controller.Drawing
 
         string GetImageCacheTag(BaseItem item, ChapterInfo info);
 
-        string GetImageCacheTag(Jellyfin.Data.Entities.User user);
+        string GetImageCacheTag(User user);
 
         /// <summary>
         /// Processes the image.

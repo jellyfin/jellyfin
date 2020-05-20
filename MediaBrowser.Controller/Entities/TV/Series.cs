@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
@@ -110,7 +111,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return series.GetPresentationUniqueKey();
         }
 
-        public override int GetChildCount(Jellyfin.Data.Entities.User user)
+        public override int GetChildCount(User user)
         {
             var seriesKey = GetUniqueSeriesKey(this);
 
@@ -130,7 +131,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return result;
         }
 
-        public override int GetRecursiveChildCount(Jellyfin.Data.Entities.User user)
+        public override int GetRecursiveChildCount(User user)
         {
             var seriesKey = GetUniqueSeriesKey(this);
 
@@ -178,12 +179,12 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        public override List<BaseItem> GetChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetSeasons(user, new DtoOptions(true));
         }
 
-        public List<BaseItem> GetSeasons(Jellyfin.Data.Entities.User user, DtoOptions options)
+        public List<BaseItem> GetSeasons(User user, DtoOptions options)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -195,7 +196,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return LibraryManager.GetItemList(query);
         }
 
-        private void SetSeasonQueryOptions(InternalItemsQuery query, Jellyfin.Data.Entities.User user)
+        private void SetSeasonQueryOptions(InternalItemsQuery query, User user)
         {
             var seriesKey = GetUniqueSeriesKey(this);
 
@@ -239,7 +240,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return LibraryManager.GetItemsResult(query);
         }
 
-        public IEnumerable<BaseItem> GetEpisodes(Jellyfin.Data.Entities.User user, DtoOptions options)
+        public IEnumerable<BaseItem> GetEpisodes(User user, DtoOptions options)
         {
             var seriesKey = GetUniqueSeriesKey(this);
 
@@ -345,7 +346,7 @@ namespace MediaBrowser.Controller.Entities.TV
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
-        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, Jellyfin.Data.Entities.User user, DtoOptions options)
+        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, DtoOptions options)
         {
             var queryFromSeries = ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons;
 
@@ -375,7 +376,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetSeasonEpisodes(parentSeason, user, allItems, options);
         }
 
-        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, Jellyfin.Data.Entities.User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options)
+        public List<BaseItem> GetSeasonEpisodes(Season parentSeason, User user, IEnumerable<BaseItem> allSeriesEpisodes, DtoOptions options)
         {
             if (allSeriesEpisodes == null)
             {
@@ -445,7 +446,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
 
-        protected override bool GetBlockUnratedValue(Jellyfin.Data.Entities.User user)
+        protected override bool GetBlockUnratedValue(User user)
         {
             return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Series.ToString());
         }

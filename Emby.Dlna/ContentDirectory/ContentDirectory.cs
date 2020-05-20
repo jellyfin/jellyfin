@@ -4,12 +4,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.TV;
@@ -33,7 +33,8 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ITVSeriesManager _tvSeriesManager;
 
-        public ContentDirectory(IDlnaManager dlna,
+        public ContentDirectory(
+            IDlnaManager dlna,
             IUserDataManager userDataManager,
             IImageProcessor imageProcessor,
             ILibraryManager libraryManager,
@@ -106,7 +107,7 @@ namespace Emby.Dlna.ContentDirectory
                 .ProcessControlRequestAsync(request);
         }
 
-        private Jellyfin.Data.Entities.User GetUser(DeviceProfile profile)
+        private User GetUser(DeviceProfile profile)
         {
             if (!string.IsNullOrEmpty(profile.UserId))
             {

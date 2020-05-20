@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Api.Movies;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -14,7 +15,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
@@ -27,6 +27,11 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Api.Library
 {
@@ -759,11 +764,11 @@ namespace MediaBrowser.Api.Library
             });
         }
 
-        private void LogDownload(BaseItem item, Jellyfin.Data.Entities.User user, AuthorizationInfo auth)
+        private void LogDownload(BaseItem item, User user, AuthorizationInfo auth)
         {
             try
             {
-                _activityManager.Create(new Jellyfin.Data.Entities.ActivityLog(
+                _activityManager.Create(new ActivityLog(
                     string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
                     "UserDownloadingContent",
                     auth.UserId)
@@ -842,7 +847,7 @@ namespace MediaBrowser.Api.Library
             return baseItemDtos;
         }
 
-        private BaseItem TranslateParentItem(BaseItem item, Jellyfin.Data.Entities.User user)
+        private BaseItem TranslateParentItem(BaseItem item, User user)
         {
             return item.GetParent() is AggregateFolder
                 ? _libraryManager.GetUserRootFolder().GetChildren(user, true)
@@ -884,7 +889,7 @@ namespace MediaBrowser.Api.Library
             return ToOptimizedResult(counts);
         }
 
-        private int GetCount(Type type, Jellyfin.Data.Entities.User user, GetItemCounts request)
+        private int GetCount(Type type, User user, GetItemCounts request)
         {
             var query = new InternalItemsQuery(user)
             {

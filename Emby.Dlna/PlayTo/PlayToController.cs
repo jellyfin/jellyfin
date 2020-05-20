@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -22,6 +23,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -443,7 +445,7 @@ namespace Emby.Dlna.PlayTo
 
         private PlaylistItem CreatePlaylistItem(
             BaseItem item,
-            Jellyfin.Data.Entities.User user,
+            User user,
             long startPostionTicks,
             string mediaSourceId,
             int? audioStreamIndex,

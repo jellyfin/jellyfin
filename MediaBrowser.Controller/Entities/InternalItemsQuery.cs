@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Configuration;
@@ -16,7 +17,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int? Limit { get; set; }
 
-        public Jellyfin.Data.Entities.User User { get; set; }
+        public User User { get; set; }
 
         public BaseItem SimilarTo { get; set; }
 
@@ -214,13 +215,13 @@ namespace MediaBrowser.Controller.Entities
             Years = Array.Empty<int>();
         }
 
-        public InternalItemsQuery(Jellyfin.Data.Entities.User user)
+        public InternalItemsQuery(User user)
             : this()
         {
             SetUser(user);
         }
 
-        public void SetUser(Jellyfin.Data.Entities.User user)
+        public void SetUser(User user)
         {
             if (user != null)
             {

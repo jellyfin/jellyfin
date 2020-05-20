@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -19,6 +20,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 using PlaylistsNET.Models;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace Emby.Server.Implementations.Playlists
 {
@@ -175,7 +178,7 @@ namespace Emby.Server.Implementations.Playlists
             return path;
         }
 
-        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, string playlistMediaType, Jellyfin.Data.Entities.User user, DtoOptions options)
+        private List<BaseItem> GetPlaylistItems(IEnumerable<Guid> itemIds, string playlistMediaType, User user, DtoOptions options)
         {
             var items = itemIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null);
 
@@ -192,7 +195,7 @@ namespace Emby.Server.Implementations.Playlists
             });
         }
 
-        private void AddToPlaylistInternal(string playlistId, ICollection<Guid> newItemIds, Jellyfin.Data.Entities.User user, DtoOptions options)
+        private void AddToPlaylistInternal(string playlistId, ICollection<Guid> newItemIds, User user, DtoOptions options)
         {
             // Retrieve the existing playlist
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist

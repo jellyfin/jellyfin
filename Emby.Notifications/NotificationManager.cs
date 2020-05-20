@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -82,7 +83,7 @@ namespace Emby.Notifications
         private Task SendNotification(
             NotificationRequest request,
             INotificationService service,
-            IEnumerable<Jellyfin.Data.Entities.User> users,
+            IEnumerable<User> users,
             string title,
             string description,
             CancellationToken cancellationToken)
@@ -130,7 +131,7 @@ namespace Emby.Notifications
             INotificationService service,
             string title,
             string description,
-            Jellyfin.Data.Entities.User user,
+            User user,
             CancellationToken cancellationToken)
         {
             var notification = new UserNotification
@@ -155,7 +156,7 @@ namespace Emby.Notifications
             }
         }
 
-        private bool IsEnabledForUser(INotificationService service, Jellyfin.Data.Entities.User user)
+        private bool IsEnabledForUser(INotificationService service, User user)
         {
             try
             {

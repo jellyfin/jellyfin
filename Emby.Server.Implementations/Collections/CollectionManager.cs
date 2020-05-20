@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
@@ -121,7 +122,7 @@ namespace Emby.Server.Implementations.Collections
             return EnsureLibraryFolder(GetCollectionsFolderPath(), createIfNeeded);
         }
 
-        private IEnumerable<BoxSet> GetCollections(Jellyfin.Data.Entities.User user)
+        private IEnumerable<BoxSet> GetCollections(User user)
         {
             var folder = GetCollectionsFolder(false).Result;
 
@@ -325,7 +326,7 @@ namespace Emby.Server.Implementations.Collections
         }
 
         /// <inheritdoc />
-        public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, Jellyfin.Data.Entities.User user)
+        public IEnumerable<BaseItem> CollapseItemsWithinBoxSets(IEnumerable<BaseItem> items, User user)
         {
             var results = new Dictionary<Guid, BaseItem>();
 

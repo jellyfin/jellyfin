@@ -17,6 +17,7 @@ using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -25,7 +26,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -45,6 +45,9 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
 
@@ -1471,7 +1474,7 @@ namespace Emby.Server.Implementations.Library
             query.Parent = null;
         }
 
-        private void AddUserToQuery(InternalItemsQuery query, Jellyfin.Data.Entities.User user, bool allowExternalContent = true)
+        private void AddUserToQuery(InternalItemsQuery query, User user, bool allowExternalContent = true)
         {
             if (query.AncestorIds.Length == 0 &&
                 query.ParentId.Equals(Guid.Empty) &&
@@ -1492,7 +1495,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private IEnumerable<Guid> GetTopParentIdsForQuery(BaseItem item, Jellyfin.Data.Entities.User user)
+        private IEnumerable<Guid> GetTopParentIdsForQuery(BaseItem item, User user)
         {
             if (item is UserView view)
             {
@@ -1559,7 +1562,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        public async Task<IEnumerable<Video>> GetIntros(BaseItem item, Jellyfin.Data.Entities.User user)
+        public async Task<IEnumerable<Video>> GetIntros(BaseItem item, User user)
         {
             var tasks = IntroProviders
                 .OrderBy(i => i.GetType().Name.Contains("Default", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
@@ -1581,7 +1584,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task&lt;IEnumerable&lt;IntroInfo&gt;&gt;.</returns>
-        private async Task<IEnumerable<IntroInfo>> GetIntros(IIntroProvider provider, BaseItem item, Jellyfin.Data.Entities.User user)
+        private async Task<IEnumerable<IntroInfo>> GetIntros(IIntroProvider provider, BaseItem item, User user)
         {
             try
             {
@@ -1682,7 +1685,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="sortBy">The sort by.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, Jellyfin.Data.Entities.User user, IEnumerable<string> sortBy, SortOrder sortOrder)
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder)
         {
             var isFirst = true;
 
@@ -1705,7 +1708,7 @@ namespace Emby.Server.Implementations.Library
             return orderedItems ?? items;
         }
 
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, Jellyfin.Data.Entities.User user, IEnumerable<ValueTuple<string, SortOrder>> orderByList)
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderByList)
         {
             var isFirst = true;
 
@@ -1742,7 +1745,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="name">The name.</param>
         /// <param name="user">The user.</param>
         /// <returns>IBaseItemComparer.</returns>
-        private IBaseItemComparer GetComparer(string name, Jellyfin.Data.Entities.User user)
+        private IBaseItemComparer GetComparer(string name, User user)
         {
             var comparer = Comparers.FirstOrDefault(c => string.Equals(name, c.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -2074,7 +2077,7 @@ namespace Emby.Server.Implementations.Library
         private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 
         public UserView GetNamedView(
-            Jellyfin.Data.Entities.User user,
+            User user,
             string name,
             string viewType,
             string sortName)
@@ -2127,7 +2130,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         public UserView GetNamedView(
-            Jellyfin.Data.Entities.User user,
+            User user,
             string name,
             Guid parentId,
             string viewType,

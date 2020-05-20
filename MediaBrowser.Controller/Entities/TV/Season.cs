@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
@@ -61,7 +62,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return list;
         }
 
-        public override int GetChildCount(Jellyfin.Data.Entities.User user)
+        public override int GetChildCount(User user)
         {
             var result = GetChildren(user, true).Count;
 
@@ -144,17 +145,17 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Gets the episodes.
         /// </summary>
-        public List<BaseItem> GetEpisodes(Jellyfin.Data.Entities.User user, DtoOptions options)
+        public List<BaseItem> GetEpisodes(User user, DtoOptions options)
         {
             return GetEpisodes(Series, user, options);
         }
 
-        public List<BaseItem> GetEpisodes(Series series, Jellyfin.Data.Entities.User user, DtoOptions options)
+        public List<BaseItem> GetEpisodes(Series series, User user, DtoOptions options)
         {
             return GetEpisodes(series, user, null, options);
         }
 
-        public List<BaseItem> GetEpisodes(Series series, Jellyfin.Data.Entities.User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options)
+        public List<BaseItem> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes, DtoOptions options)
         {
             return series.GetSeasonEpisodes(this, user, allSeriesEpisodes, options);
         }
@@ -164,12 +165,12 @@ namespace MediaBrowser.Controller.Entities.TV
             return Series.GetSeasonEpisodes(this, null, null, new DtoOptions(true));
         }
 
-        public override List<BaseItem> GetChildren(Jellyfin.Data.Entities.User user, bool includeLinkedChildren, InternalItemsQuery query)
+        public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
             return GetEpisodes(user, new DtoOptions(true));
         }
 
-        protected override bool GetBlockUnratedValue(Jellyfin.Data.Entities.User config)
+        protected override bool GetBlockUnratedValue(User config)
         {
             // Don't block. Let either the entire series rating or episode rating determine it
             return false;

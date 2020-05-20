@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -115,7 +116,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task{ProgramInfoDto}.</returns>
-        Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, Jellyfin.Data.Entities.User user = null);
+        Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null);
 
         /// <summary>
         /// Gets the programs.
@@ -202,7 +203,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the enabled users.
         /// </summary>
         /// <returns>IEnumerable{User}.</returns>
-        IEnumerable<Jellyfin.Data.Entities.User> GetEnabledUsers();
+        IEnumerable<User> GetEnabledUsers();
 
         /// <summary>
         /// Gets the internal channels.
@@ -221,7 +222,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, ItemFields[] fields, Jellyfin.Data.Entities.User user = null);
+        Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, ItemFields[] fields, User user = null);
 
         /// <summary>
         /// Saves the tuner host.
@@ -258,7 +259,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="items">The items.</param>
         /// <param name="options">The options.</param>
         /// <param name="user">The user.</param>
-        void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> items, DtoOptions options, Jellyfin.Data.Entities.User user);
+        void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> items, DtoOptions options, User user);
 
         Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
         Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
@@ -277,9 +278,9 @@ namespace MediaBrowser.Controller.LiveTv
 
         ActiveRecordingInfo GetActiveRecordingInfo(string path);
 
-        void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, Jellyfin.Data.Entities.User user = null);
+        void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null);
 
-        List<BaseItem> GetRecordingFolders(Jellyfin.Data.Entities.User user);
+        List<BaseItem> GetRecordingFolders(User user);
     }
 
     public class ActiveRecordingInfo

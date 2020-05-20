@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -18,6 +19,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -233,7 +236,7 @@ namespace Emby.Server.Implementations.Library
             return list;
         }
 
-        private IReadOnlyList<BaseItem> GetItemsForLatestItems(Jellyfin.Data.Entities.User user, LatestItemsQuery request, DtoOptions options)
+        private IReadOnlyList<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
         {
             var parentId = request.ParentId;
 

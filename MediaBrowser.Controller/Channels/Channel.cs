@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities;
@@ -12,7 +13,7 @@ namespace MediaBrowser.Controller.Channels
 {
     public class Channel : Folder
     {
-        public override bool IsVisible(Jellyfin.Data.Entities.User user)
+        public override bool IsVisible(User user)
         {
             if (user.GetPreference(PreferenceKind.BlockedChannels) != null)
             {
@@ -77,7 +78,7 @@ namespace MediaBrowser.Controller.Channels
             return false;
         }
 
-        internal static bool IsChannelVisible(BaseItem channelItem, Jellyfin.Data.Entities.User user)
+        internal static bool IsChannelVisible(BaseItem channelItem, User user)
         {
             var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(""));
 

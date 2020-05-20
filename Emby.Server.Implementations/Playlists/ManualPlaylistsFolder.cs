@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
@@ -14,12 +15,12 @@ namespace Emby.Server.Implementations.Playlists
             Name = "Playlists";
         }
 
-        public override bool IsVisible(Jellyfin.Data.Entities.User user)
+        public override bool IsVisible(User user)
         {
             return base.IsVisible(user) && GetChildren(user, true).Any();
         }
 
-        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(Jellyfin.Data.Entities.User user)
+        protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
             return base.GetEligibleChildrenForRecursiveChildren(user).OfType<Playlist>();
         }

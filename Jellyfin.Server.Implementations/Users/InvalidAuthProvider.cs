@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Authentication;
 
 namespace Jellyfin.Server.Implementations.Users
@@ -21,25 +22,25 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public bool HasPassword(Data.Entities.User user)
+        public bool HasPassword(User user)
         {
             return true;
         }
 
         /// <inheritdoc />
-        public Task ChangePassword(Data.Entities.User user, string newPassword)
+        public Task ChangePassword(User user, string newPassword)
         {
             return Task.CompletedTask;
         }
 
         /// <inheritdoc />
-        public void ChangeEasyPassword(Data.Entities.User user, string newPassword, string newPasswordHash)
+        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
         {
             // Nothing here
         }
 
         /// <inheritdoc />
-        public string GetEasyPasswordHash(Data.Entities.User user)
+        public string GetEasyPasswordHash(User user)
         {
             return string.Empty;
         }

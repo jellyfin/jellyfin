@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -171,7 +172,7 @@ namespace MediaBrowser.Api.Music
             return GetResult(items, user, request, dtoOptions);
         }
 
-        private object GetResult(List<BaseItem> items, Jellyfin.Data.Entities.User user, BaseGetSimilarItems request, DtoOptions dtoOptions)
+        private object GetResult(List<BaseItem> items, User user, BaseGetSimilarItems request, DtoOptions dtoOptions)
         {
             var list = items;
 

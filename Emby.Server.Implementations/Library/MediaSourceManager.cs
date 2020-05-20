@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -145,7 +146,7 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        public async Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, Jellyfin.Data.Entities.User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
+        public async Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var mediaSources = GetStaticMediaSources(item, enablePathSubstitution, user);
 
@@ -309,7 +310,7 @@ namespace Emby.Server.Implementations.Library
             return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, Jellyfin.Data.Entities.User user = null)
+        public List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null)
         {
             if (item == null)
             {
@@ -347,7 +348,7 @@ namespace Emby.Server.Implementations.Library
             return new string[] { language };
         }
 
-        private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, Jellyfin.Data.Entities.User user, bool allowRememberingSelection)
+        private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
             if (userData.SubtitleStreamIndex.HasValue
                 && user.RememberSubtitleSelections
@@ -380,7 +381,7 @@ namespace Emby.Server.Implementations.Library
             MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, user.SubtitleMode, audioLangage);
         }
 
-        private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, Jellyfin.Data.Entities.User user, bool allowRememberingSelection)
+        private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
             if (userData.AudioStreamIndex.HasValue && user.RememberAudioSelections && allowRememberingSelection)
             {
@@ -400,7 +401,7 @@ namespace Emby.Server.Implementations.Library
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
         }
 
-        public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, Jellyfin.Data.Entities.User user)
+        public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
         {
             // Item would only be null if the app didn't supply ItemId as part of the live stream open request
             var mediaType = item == null ? MediaType.Video : item.MediaType;
@@ -538,7 +539,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.RunTimeTicks = null;
             }
 
-            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio);
+            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
             if (audioStream == null || audioStream.Index == -1)
             {
@@ -549,7 +550,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.DefaultAudioStreamIndex = audioStream.Index;
             }
 
-            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
+            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
             if (videoStream != null)
             {
                 if (!videoStream.BitRate.HasValue)

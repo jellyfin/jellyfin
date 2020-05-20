@@ -1,6 +1,6 @@
 #nullable enable
 
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 
@@ -9,6 +9,7 @@ namespace MediaBrowser.Controller.Net
     public interface IAuthService
     {
         void Authenticate(IRequest request, IAuthenticationAttributes authAttribtues);
-        Jellyfin.Data.Entities.User? Authenticate(HttpRequest request, IAuthenticationAttributes authAttribtues);
+
+        User? Authenticate(HttpRequest request, IAuthenticationAttributes authAttribtues);
     }
 }

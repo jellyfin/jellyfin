@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
@@ -15,6 +15,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -180,7 +181,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Gets the items to serialize.
         /// </summary>
-        private QueryResult<BaseItem> GetQueryResult(GetItems request, DtoOptions dtoOptions, Jellyfin.Data.Entities.User user)
+        private QueryResult<BaseItem> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
         {
             if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
@@ -255,7 +256,7 @@ namespace MediaBrowser.Api.UserLibrary
             };
         }
 
-        private InternalItemsQuery GetItemsQuery(GetItems request, DtoOptions dtoOptions, Jellyfin.Data.Entities.User user)
+        private InternalItemsQuery GetItemsQuery(GetItems request, DtoOptions dtoOptions, User user)
         {
             var query = new InternalItemsQuery(user)
             {

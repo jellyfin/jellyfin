@@ -1,4 +1,5 @@
 using System;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
@@ -12,7 +13,7 @@ namespace Emby.Server.Implementations.Sorting
         /// Gets or sets the user.
         /// </summary>
         /// <value>The user.</value>
-        public Jellyfin.Data.Entities.User User { get; set; }
+        public User User { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.

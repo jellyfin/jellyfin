@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
@@ -49,7 +50,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public MediaSourceInfo MediaSource { get; set; }
 
-        public Jellyfin.Data.Entities.User User { get; set; }
+        public User User { get; set; }
 
         public long? RunTimeTicks { get; set; }
 

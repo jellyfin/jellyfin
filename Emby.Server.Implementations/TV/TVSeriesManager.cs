@@ -2,15 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.TV
 {
@@ -139,7 +141,7 @@ namespace Emby.Server.Implementations.TV
             return GetResult(episodes, request);
         }
 
-        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, Jellyfin.Data.Entities.User user, IEnumerable<string> seriesKeys, DtoOptions dtoOptions)
+        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<string> seriesKeys, DtoOptions dtoOptions)
         {
             // Avoid implicitly captured closure
             var currentUser = user;
@@ -188,7 +190,7 @@ namespace Emby.Server.Implementations.TV
         /// Gets the next up.
         /// </summary>
         /// <returns>Task{Episode}.</returns>
-        private Tuple<DateTime, Func<Episode>> GetNextUp(string seriesKey, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
+        private Tuple<DateTime, Func<Episode>> GetNextUp(string seriesKey, User user, DtoOptions dtoOptions)
         {
             var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {

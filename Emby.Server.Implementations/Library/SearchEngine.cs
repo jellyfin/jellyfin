@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -12,6 +13,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
 using Microsoft.Extensions.Logging;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -30,7 +33,7 @@ namespace Emby.Server.Implementations.Library
 
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
         {
-            Jellyfin.Data.Entities.User user = null;
+            User user = null;
 
             if (query.UserId.Equals(Guid.Empty))
             {
@@ -76,7 +79,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
         /// <exception cref="ArgumentNullException">searchTerm</exception>
-        private List<SearchHintInfo> GetSearchHints(SearchQuery query, Jellyfin.Data.Entities.User user)
+        private List<SearchHintInfo> GetSearchHints(SearchQuery query, User user)
         {
             var searchTerm = query.SearchTerm;
 

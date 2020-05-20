@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -78,7 +79,7 @@ namespace MediaBrowser.Api
             };
         }
 
-        private QueryResult<BaseItem> GetItems(GetSuggestedItems request, Jellyfin.Data.Entities.User user, DtoOptions dtoOptions)
+        private QueryResult<BaseItem> GetItems(GetSuggestedItems request, User user, DtoOptions dtoOptions)
         {
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {

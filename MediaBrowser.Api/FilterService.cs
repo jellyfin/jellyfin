@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -220,7 +221,7 @@ namespace MediaBrowser.Api
             return result;
         }
 
-        private InternalItemsQuery GetItemsQuery(GetQueryFiltersLegacy request, Jellyfin.Data.Entities.User user)
+        private InternalItemsQuery GetItemsQuery(GetQueryFiltersLegacy request, User user)
         {
             var query = new InternalItemsQuery
             {

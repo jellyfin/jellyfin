@@ -7,6 +7,7 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
@@ -84,7 +85,7 @@ namespace Jellyfin.Api.Tests.Auth
                     a => a.Authenticate(
                         It.IsAny<HttpRequest>(),
                         It.IsAny<AuthenticatedAttribute>()))
-                .Returns((Jellyfin.Data.Entities.User?)null);
+                .Returns((User?)null);
 
             var authenticateResult = await _sut.AuthenticateAsync();
 
@@ -149,9 +150,9 @@ namespace Jellyfin.Api.Tests.Auth
             Assert.Equal(_scheme.Name, authenticatedResult.Ticket.AuthenticationScheme);
         }
 
-        private Jellyfin.Data.Entities.User SetupUser(bool isAdmin = false)
+        private User SetupUser(bool isAdmin = false)
         {
-            var user = _fixture.Create<Jellyfin.Data.Entities.User>();
+            var user = _fixture.Create<User>();
             user.SetPermission(PermissionKind.IsAdministrator, isAdmin);
 
             _jellyfinAuthServiceMock.Setup(

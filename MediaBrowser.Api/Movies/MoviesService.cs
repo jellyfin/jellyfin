@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
@@ -15,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 
 namespace MediaBrowser.Api.Movies
 {
@@ -148,12 +149,7 @@ namespace MediaBrowser.Api.Movies
             return result;
         }
 
-        private IEnumerable<RecommendationDto> GetRecommendationCategories(
-            Jellyfin.Data.Entities.User user,
-            string parentId,
-            int categoryLimit,
-            int itemLimit,
-            DtoOptions dtoOptions)
+        private IEnumerable<RecommendationDto> GetRecommendationCategories(User user, string parentId, int categoryLimit, int itemLimit, DtoOptions dtoOptions)
         {
             var categories = new List<RecommendationDto>();
 
@@ -257,7 +253,7 @@ namespace MediaBrowser.Api.Movies
         }
 
         private IEnumerable<RecommendationDto> GetWithDirector(
-            Jellyfin.Data.Entities.User user,
+            User user,
             IEnumerable<string> names,
             int itemLimit,
             DtoOptions dtoOptions,
@@ -303,12 +299,7 @@ namespace MediaBrowser.Api.Movies
             }
         }
 
-        private IEnumerable<RecommendationDto> GetWithActor(
-            Jellyfin.Data.Entities.User user,
-            IEnumerable<string> names,
-            int itemLimit,
-            DtoOptions dtoOptions,
-            RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithActor(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
             var itemTypes = new List<string> { typeof(Movie).Name };
             if (ServerConfigurationManager.Configuration.EnableExternalContentInSuggestions)
@@ -349,12 +340,7 @@ namespace MediaBrowser.Api.Movies
             }
         }
 
-        private IEnumerable<RecommendationDto> GetSimilarTo(
-            Jellyfin.Data.Entities.User user,
-            List<BaseItem> baselineItems,
-            int itemLimit,
-            DtoOptions dtoOptions,
-            RecommendationType type)
+        private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
             var itemTypes = new List<string> { typeof(Movie).Name };
             if (ServerConfigurationManager.Configuration.EnableExternalContentInSuggestions)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -94,7 +95,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
-            Jellyfin.Data.Entities.User user = null;
+            User user = null;
             BaseItem parentItem;
 
             if (!request.UserId.Equals(Guid.Empty))
@@ -246,7 +247,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
-            Jellyfin.Data.Entities.User user = null;
+            User user = null;
             BaseItem parentItem;
 
             if (!request.UserId.Equals(Guid.Empty))

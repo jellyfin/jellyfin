@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
@@ -13,8 +14,6 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -25,6 +24,14 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Person = MediaBrowser.Controller.Entities.Person;
+using Photo = MediaBrowser.Controller.Entities.Photo;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.Dto
 {
@@ -75,7 +82,7 @@ namespace Emby.Server.Implementations.Dto
         /// <param name="owner">The owner.</param>
         /// <returns>Task{DtoBaseItem}.</returns>
         /// <exception cref="ArgumentNullException">item</exception>
-        public BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, Jellyfin.Data.Entities.User user = null, BaseItem owner = null)
+        public BaseItemDto GetBaseItemDto(BaseItem item, ItemFields[] fields, User user = null, BaseItem owner = null)
         {
             var options = new DtoOptions
             {
@@ -86,7 +93,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, Jellyfin.Data.Entities.User user = null, BaseItem owner = null)
+        public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var returnItems = new BaseItemDto[items.Count];
             var programTuples = new List<(BaseItem, BaseItemDto)>();
@@ -139,7 +146,7 @@ namespace Emby.Server.Implementations.Dto
             return returnItems;
         }
 
-        public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, Jellyfin.Data.Entities.User user = null, BaseItem owner = null)
+        public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var dto = GetBaseItemDtoInternal(item, options, user, owner);
             if (item is LiveTvChannel tvChannel)
@@ -173,7 +180,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private static IList<BaseItem> GetTaggedItems(IItemByName byName, Jellyfin.Data.Entities.User user, DtoOptions options)
+        private static IList<BaseItem> GetTaggedItems(IItemByName byName, User user, DtoOptions options)
         {
             return byName.GetTaggedItems(
                 new InternalItemsQuery(user)
@@ -183,7 +190,7 @@ namespace Emby.Server.Implementations.Dto
                 });
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Jellyfin.Data.Entities.User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var dto = new BaseItemDto
             {
@@ -316,7 +323,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Jellyfin.Data.Entities.User user = null)
+        public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
@@ -328,7 +335,7 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems, Jellyfin.Data.Entities.User user = null)
+        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems, User user = null)
         {
             if (item is MusicArtist)
             {
@@ -364,7 +371,7 @@ namespace Emby.Server.Implementations.Dto
         /// <summary>
         /// Attaches the user specific info.
         /// </summary>
-        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, Jellyfin.Data.Entities.User user, DtoOptions options)
+        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions options)
         {
             if (item.IsFolder)
             {
@@ -423,7 +430,7 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
-        private static int GetChildCount(Folder folder, Jellyfin.Data.Entities.User user)
+        private static int GetChildCount(Folder folder, User user)
         {
             // Right now this is too slow to calculate for top level folders on a per-user basis
             // Just return something so that apps that are expecting a value won't think the folders are empty
