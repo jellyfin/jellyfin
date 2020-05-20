@@ -1,3 +1,5 @@
+using System;
+
 namespace Emby.Server.Implementations
 {
     public interface IStartupOptions
@@ -40,6 +42,6 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the value of the --auto-discover-publish-url command line option.
         /// </summary>
-        string AutoDiscoverPublishUrl { get; }
+        Uri PublishedServerUrl { get; }
     }
 }

@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Udp
         /// <summary>
         /// Address Override Configuration Key
         /// </summary>
-        public const string AddressOverrideConfigKey = "AutoDiscoverAddressOverride";
+        public const string AddressOverrideConfigKey = "PublishedServerUrl";
 
         private Socket _udpSocket;
         private IPEndPoint _endpoint;
@@ -47,17 +47,9 @@ namespace Emby.Server.Implementations.Udp
 
         private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
         {
-            string localUrl;
-
-            if (!string.IsNullOrEmpty(_config[AddressOverrideConfigKey]))
-            {
-                localUrl = _config[AddressOverrideConfigKey];
-            }
-            else
-            {
-                localUrl = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
-            }
-
+            string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
+                ? _config[AddressOverrideConfigKey]
+                : await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(localUrl))
             {
