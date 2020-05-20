@@ -69,6 +69,8 @@ namespace Emby.Server.Implementations.Library
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
         private readonly ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
+        private readonly IImageProcessor _imageProcessor;
+
 
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
@@ -112,12 +114,6 @@ namespace Emby.Server.Implementations.Library
         private IBaseItemComparer[] Comparers { get; set; }
 
         /// <summary>
-        /// Gets or sets the active image processor
-        /// </summary>
-        /// <value>The image processor.</value>
-        public IImageProcessor ImageProcessor { get; set; }
-
-        /// <summary>
         /// Occurs when [item added].
         /// </summary>
         public event EventHandler<ItemChangeEventArgs> ItemAdded;
@@ -155,7 +151,8 @@ namespace Emby.Server.Implementations.Library
             Lazy<IProviderManager> providerManagerFactory,
             Lazy<IUserViewManager> userviewManagerFactory,
             IMediaEncoder mediaEncoder,
-            IItemRepository itemRepository)
+            IItemRepository itemRepository,
+            IImageProcessor imageProcessor)
         {
             _appHost = appHost;
             _logger = logger;
@@ -169,6 +166,7 @@ namespace Emby.Server.Implementations.Library
             _userviewManagerFactory = userviewManagerFactory;
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
+            _imageProcessor = imageProcessor;
 
             _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -1841,10 +1839,10 @@ namespace Emby.Server.Implementations.Library
 
             outdated.ForEach(img =>
             {
-                ImageDimensions size = ImageProcessor.GetImageDimensions(item, img);
+                ImageDimensions size = _imageProcessor.GetImageDimensions(item, img);
                 img.Width = size.Width;
                 img.Height = size.Height;
-                img.Hash = ImageProcessor.GetImageHash(img.Path);
+                img.Hash = _imageProcessor.GetImageHash(img.Path);
             });
 
             _itemRepository.SaveImages(item);
