@@ -73,12 +73,6 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         protected User()
         {
-            Groups = new HashSet<Group>();
-            Permissions = new HashSet<Permission>();
-            ProviderMappings = new HashSet<ProviderMapping>();
-            Preferences = new HashSet<Preference>();
-            AccessSchedules = new HashSet<AccessSchedule>();
-
             Init();
         }
 

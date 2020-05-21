@@ -23,7 +23,7 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<Preference> Preferences { get; set; }
 
-        public virtual DbSet<Data.Entities.User> Users { get; set; }
+        public virtual DbSet<User> Users { get; set; }
         /*public virtual DbSet<Artwork> Artwork { get; set; }
         public virtual DbSet<Book> Books { get; set; }
         public virtual DbSet<BookMetadata> BookMetadata { get; set; }
