@@ -12,10 +12,16 @@ namespace MediaBrowser.Common.Json
         /// <summary>
         /// Gets the default <see cref="JsonSerializerOptions" /> options.
         /// </summary>
+        /// <remarks>
+        /// When changing these options, update
+        ///     Jellyfin.Server/Extensions/ApiServiceCollectionExtensions.cs
+        ///         -> AddJellyfinApi
+        ///             -> AddJsonOptions
+        /// </remarks>
         /// <returns>The default <see cref="JsonSerializerOptions" /> options.</returns>
         public static JsonSerializerOptions GetOptions()
         {
-            var options = new JsonSerializerOptions()
+            var options = new JsonSerializerOptions
             {
                 ReadCommentHandling = JsonCommentHandling.Disallow,
                 WriteIndented = false
@@ -25,6 +31,32 @@ namespace MediaBrowser.Common.Json
             options.Converters.Add(new JsonStringEnumConverter());
 
             return options;
+        }
+        
+        /// <summary>
+        /// Gets CamelCase json options.
+        /// </summary>
+        public static JsonSerializerOptions CamelCase
+        {
+            get
+            {
+                var options = GetOptions();
+                options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                return options;
+            }
+        }
+
+        /// <summary>
+        /// Gets PascalCase json options.
+        /// </summary>
+        public static JsonSerializerOptions PascalCase
+        {
+            get
+            {
+                var options = GetOptions();
+                options.PropertyNamingPolicy = null;
+                return options;
+            }
         }
     }
 }
