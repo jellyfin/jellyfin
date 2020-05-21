@@ -47,7 +47,6 @@ namespace MediaBrowser.Api.Playback
                     var userAgent = UserAgent ?? string.Empty;
 
                     if (userAgent.IndexOf("AppleTV", StringComparison.OrdinalIgnoreCase) != -1 ||
-                        userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) != -1 ||
                         userAgent.IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
                         userAgent.IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
                         userAgent.IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
