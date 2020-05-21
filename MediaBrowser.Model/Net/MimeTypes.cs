@@ -100,6 +100,7 @@ namespace MediaBrowser.Model.Net
             { ".ssa", "text/x-ssa" },
             { ".css", "text/css" },
             { ".csv", "text/csv" },
+            { ".edl", "text/plain" },
             { ".rtf", "text/rtf" },
             { ".txt", "text/plain" },
             { ".vtt", "text/vtt" },
