@@ -5,16 +5,16 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Jellyfin.Server.Converters
+namespace MediaBrowser.Common.Json.Converters
 {
     /// <summary>
     /// Long to String JSON converter.
     /// Javascript does not support 64-bit integers.
     /// </summary>
-    public class LongToStringConverter : JsonConverter<long>
+    public class JsonInt64Converter : JsonConverter<long>
     {
         /// <summary>
-        /// Read JSON string as Long.
+        /// Read JSON string as int64.
         /// </summary>
         /// <param name="reader"><see cref="Utf8JsonReader"/>.</param>
         /// <param name="type">Type.</param>
@@ -25,8 +25,8 @@ namespace Jellyfin.Server.Converters
             if (reader.TokenType == JsonTokenType.String)
             {
                 // try to parse number directly from bytes
-                ReadOnlySpan<byte> span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                if (Utf8Parser.TryParse(span, out long number, out int bytesConsumed) && span.Length == bytesConsumed)
+                var span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                if (Utf8Parser.TryParse(span, out long number, out var bytesConsumed) && span.Length == bytesConsumed)
                 {
                     return number;
                 }
