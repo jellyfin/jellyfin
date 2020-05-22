@@ -350,6 +350,7 @@ namespace MediaBrowser.Api.Library
             _moviesServiceLogger = moviesServiceLogger;
         }
 
+        // Content Types available for each Library
         private string[] GetRepresentativeItemTypes(string contentType)
         {
             return contentType switch
@@ -359,7 +360,7 @@ namespace MediaBrowser.Api.Library
                 CollectionType.Movies => new[] {"Movie"},
                 CollectionType.TvShows => new[] {"Series", "Season", "Episode"},
                 CollectionType.Books => new[] {"Book"},
-                CollectionType.Music => new[] {"MusicAlbum", "MusicArtist", "Audio", "MusicVideo"},
+                CollectionType.Music => new[] {"MusicArtist", "MusicAlbum", "Audio", "MusicVideo"},
                 CollectionType.HomeVideos => new[] {"Video", "Photo"},
                 CollectionType.Photos => new[] {"Video", "Photo"},
                 CollectionType.MusicVideos => new[] {"MusicVideo"},
@@ -425,7 +426,6 @@ namespace MediaBrowser.Api.Library
                 return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase);
             }
 
