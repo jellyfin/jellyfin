@@ -87,14 +87,13 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     policy.PasswordResetProviderId = typeof(DefaultPasswordResetProvider).FullName;
 
-                    var user = new User(mockup.Name, policy.AuthenticationProviderId, string.Empty)
+                    var user = new User(mockup.Name, policy.AuthenticationProviderId, policy.PasswordResetProviderId)
                     {
                         Id = entry[1].ReadGuidFromBlob(),
                         InternalId = entry[0].ToInt64(),
                         MaxParentalAgeRating = policy.MaxParentalRating,
                         EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess,
                         RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit,
-                        PasswordResetProviderId = policy.PasswordResetProviderId,
                         InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount,
                         LoginAttemptsBeforeLockout = policy.LoginAttemptsBeforeLockout == -1 ? null : new int?(policy.LoginAttemptsBeforeLockout),
                         SubtitleMode = config.SubtitleMode,
