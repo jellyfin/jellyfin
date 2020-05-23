@@ -556,6 +556,11 @@ namespace Jellyfin.Server.Implementations.Users
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
+
+            if (_authenticationProviders.Length > 2)
+            {
+                _logger.LogCritical("INVALID NUMBER OF LOGGERS: {0}", _authenticationProviders.Length);
+            }
         }
 
         /// <inheritdoc/>
@@ -616,7 +621,7 @@ namespace Jellyfin.Server.Implementations.Users
         public void UpdatePolicy(Guid userId, UserPolicy policy)
         {
             var user = GetUserById(userId);
-            int? loginAttempts = policy.LoginAttemptsBeforeLockout switch
+            int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
             {
                 -1 => null,
                 0 => 3,
@@ -629,7 +634,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.AuthenticationProviderId = policy.AuthenticationProviderId;
             user.PasswordResetProviderId = policy.PasswordResetProviderId;
             user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
-            user.LoginAttemptsBeforeLockout = loginAttempts;
+            user.LoginAttemptsBeforeLockout = maxLoginAttempts;
             user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
             user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);
             user.SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);

@@ -86,6 +86,12 @@ namespace Jellyfin.Server.Migrations.Routines
                         ?? typeof(DefaultAuthenticationProvider).FullName;
 
                     policy.PasswordResetProviderId = typeof(DefaultPasswordResetProvider).FullName;
+                    int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
+                    {
+                        -1 => null,
+                        0 => 3,
+                        _ => policy.LoginAttemptsBeforeLockout
+                    };
 
                     var user = new User(mockup.Name, policy.AuthenticationProviderId, policy.PasswordResetProviderId)
                     {
@@ -95,7 +101,7 @@ namespace Jellyfin.Server.Migrations.Routines
                         EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess,
                         RemoteClientBitrateLimit = policy.RemoteClientBitrateLimit,
                         InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount,
-                        LoginAttemptsBeforeLockout = policy.LoginAttemptsBeforeLockout == -1 ? null : new int?(policy.LoginAttemptsBeforeLockout),
+                        LoginAttemptsBeforeLockout = maxLoginAttempts,
                         SubtitleMode = config.SubtitleMode,
                         HidePlayedInLatest = config.HidePlayedInLatest,
                         EnableLocalPassword = config.EnableLocalPassword,

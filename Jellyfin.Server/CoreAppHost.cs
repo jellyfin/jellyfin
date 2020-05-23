@@ -85,9 +85,7 @@ namespace Jellyfin.Server
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
         {
             yield return typeof(CoreAppHost).Assembly;
-            yield return typeof(DefaultAuthenticationProvider).Assembly;
-            yield return typeof(DefaultPasswordResetProvider).Assembly;
-            yield return typeof(InvalidAuthProvider).Assembly;
+            yield return Assembly.Load("Jellyfin.Server.Implementations");
         }
 
         /// <inheritdoc />
