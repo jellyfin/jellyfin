@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
@@ -617,6 +618,12 @@ namespace Jellyfin.Server.Implementations.Users
         public void UpdatePolicy(Guid userId, UserPolicy policy)
         {
             var user = GetUserById(userId);
+            int? loginAttempts = policy.LoginAttemptsBeforeLockout switch
+            {
+                -1 => null,
+                0 => 3,
+                _ => policy.LoginAttemptsBeforeLockout
+            };
 
             user.MaxParentalAgeRating = policy.MaxParentalRating;
             user.EnableUserPreferenceAccess = policy.EnableUserPreferenceAccess;
@@ -624,9 +631,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.AuthenticationProviderId = policy.AuthenticationProviderId;
             user.PasswordResetProviderId = policy.PasswordResetProviderId;
             user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
-            user.LoginAttemptsBeforeLockout = policy.LoginAttemptsBeforeLockout == -1
-                ? null
-                : new int?(policy.LoginAttemptsBeforeLockout);
+            user.LoginAttemptsBeforeLockout = loginAttempts;
             user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
             user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);
             user.SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);
