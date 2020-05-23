@@ -6,22 +6,18 @@ using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
 {
+    /// <summary>
+    /// An entity representing a user's access schedule.
+    /// </summary>
     public class AccessSchedule
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AccessSchedule"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected AccessSchedule()
-        {
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AccessSchedule"/> class.
         /// </summary>
         /// <param name="dayOfWeek">The day of the week.</param>
         /// <param name="startHour">The start hour.</param>
         /// <param name="endHour">The end hour.</param>
+        /// <param name="userId">The associated user's id.</param>
         public AccessSchedule(DynamicDayOfWeek dayOfWeek, double startHour, double endHour, Guid userId)
         {
             UserId = userId;
@@ -31,26 +27,31 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Factory method
+        /// Initializes a new instance of the <see cref="AccessSchedule"/> class.
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
         /// </summary>
-        /// <param name="dayOfWeek">The day of the week.</param>
-        /// <param name="startHour">The start hour.</param>
-        /// <param name="endHour">The end hour.</param>
-        /// <returns>The newly created instance.</returns>
-        public static AccessSchedule CreateInstance(DynamicDayOfWeek dayOfWeek, double startHour, double endHour, Guid userId)
+        protected AccessSchedule()
         {
-            return new AccessSchedule(dayOfWeek, startHour, endHour, userId);
         }
 
+        /// <summary>
+        /// Gets or sets the id of this instance.
+        /// </summary>
+        /// <remarks>
+        /// Identity, Indexed, Required.
+        /// </remarks>
         [JsonIgnore]
         [Key]
         [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int Id { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the id of the associated user.
+        /// </summary>
         [Required]
         [ForeignKey("Id")]
-        public Guid UserId { get; set; }
+        public Guid UserId { get; protected set; }
 
         /// <summary>
         /// Gets or sets the day of week.
@@ -72,5 +73,18 @@ namespace Jellyfin.Data.Entities
         /// <value>The end hour.</value>
         [Required]
         public double EndHour { get; set; }
+
+        /// <summary>
+        /// Static create function (for use in LINQ queries, etc.)
+        /// </summary>
+        /// <param name="dayOfWeek">The day of the week.</param>
+        /// <param name="startHour">The start hour.</param>
+        /// <param name="endHour">The end hour.</param>
+        /// <param name="userId">The associated user's id.</param>
+        /// <returns>The newly created instance.</returns>
+        public static AccessSchedule Create(DynamicDayOfWeek dayOfWeek, double startHour, double endHour, Guid userId)
+        {
+            return new AccessSchedule(dayOfWeek, startHour, endHour, userId);
+        }
     }
 }

@@ -1,9 +1,4 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1201 // Constuctors should not follow properties
-#pragma warning disable SA1516 // Elements should be followed by a blank line
-#pragma warning disable SA1623 // Property's documentation should begin with gets or sets
-#pragma warning disable SA1629 // Documentation should end with a period
-#pragma warning disable SA1648 // Inheritdoc should be used with inheriting class
 
 using System.Linq;
 using Jellyfin.Data;
@@ -15,6 +10,19 @@ namespace Jellyfin.Server.Implementations
     /// <inheritdoc/>
     public partial class JellyfinDb : DbContext
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JellyfinDb"/> class.
+        /// </summary>
+        /// <param name="options">The database context options.</param>
+        public JellyfinDb(DbContextOptions<JellyfinDb> options) : base(options)
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the default connection string.
+        /// </summary>
+        public static string ConnectionString { get; set; } = @"Data Source=jellyfin.db";
+
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
 
         public virtual DbSet<Group> Groups { get; set; }
@@ -69,26 +77,24 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<Track> Tracks { get; set; }
         public virtual DbSet<TrackMetadata> TrackMetadata { get; set; }*/
 
-        /// <summary>
-        /// Gets or sets the default connection string.
-        /// </summary>
-        public static string ConnectionString { get; set; } = @"Data Source=jellyfin.db";
-
-        /// <inheritdoc />
-        public JellyfinDb(DbContextOptions<JellyfinDb> options) : base(options)
+        /// <inheritdoc/>
+        public override int SaveChanges()
         {
-        }
+            foreach (var saveEntity in ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Modified)
+                .OfType<ISavingChanges>())
+            {
+                saveEntity.OnSavingChanges();
+            }
 
-        partial void CustomInit(DbContextOptionsBuilder optionsBuilder);
+            return base.SaveChanges();
+        }
 
         /// <inheritdoc />
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             CustomInit(optionsBuilder);
         }
-
-        partial void OnModelCreatingImpl(ModelBuilder modelBuilder);
-        partial void OnModelCreatedImpl(ModelBuilder modelBuilder);
 
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -109,16 +115,10 @@ namespace Jellyfin.Server.Implementations
             OnModelCreatedImpl(modelBuilder);
         }
 
-        public override int SaveChanges()
-        {
-            foreach (var saveEntity in ChangeTracker.Entries()
-                .Where(e => e.State == EntityState.Modified)
-                .OfType<ISavingChanges>())
-            {
-                saveEntity.OnSavingChanges();
-            }
+        partial void CustomInit(DbContextOptionsBuilder optionsBuilder);
 
-            return base.SaveChanges();
-        }
+        partial void OnModelCreatingImpl(ModelBuilder modelBuilder);
+
+        partial void OnModelCreatedImpl(ModelBuilder modelBuilder);
     }
 }
