@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -18,8 +19,22 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 {
     public class TmdbSearch
     {
-        private static readonly CultureInfo EnUs = new CultureInfo("en-US");
-        private const string Search3 = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
+        private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        private static readonly Regex _cleanEnclosed = new Regex(@"\p{Ps}.*\p{Pe}", RegexOptions.Compiled);
+        private static readonly Regex _cleanNonWord = new Regex(@"[\W_]+", RegexOptions.Compiled);
+        private static readonly Regex _cleanStopWords = new Regex(@"\b( # Start at word boundary
+            19[0-9]{2}|20[0-9]{2}| # 1900-2099
+            S[0-9]{2}| # Season
+            E[0-9]{2}| # Episode
+            (2160|1080|720|576|480)[ip]?| # Resolution
+            [xh]?264| # Encoding
+            (web|dvd|bd|hdtv|hd)rip| # *Rip
+            web|hdtv|mp4|bluray|ktr|dl|single|imageset|internal|doku|dubbed|retail|xxx|flac
+            ).* # Match rest of string",
+            RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase);
+
+        private const string _searchURL = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
 
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
@@ -61,19 +76,18 @@ namespace MediaBrowser.Providers.Tmdb.Movies
 
             var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                var parsedName = _libraryManager.ParseName(name);
-                var yearInName = parsedName.Year;
-                name = parsedName.Name;
-                year = year ?? yearInName;
-            }
+            // TODO: Investigate: Does this mean we are reparsing already parsed ItemLookupInfo?
+            var parsedName = _libraryManager.ParseName(name);
+            var yearInName = parsedName.Year;
+            name = parsedName.Name;
+            year ??= yearInName;
 
-            _logger.LogInformation("MovieDbProvider: Finding id for item: " + name);
+            _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name, year);
             var language = idInfo.MetadataLanguage.ToLowerInvariant();
 
-            //nope - search for it
-            //var searchType = item is BoxSet ? "collection" : "movie";
+            // Replace sequences of non-word characters with space
+            // TMDB expects a space separated list of words make sure that is the case
+            name = _cleanNonWord.Replace(name, " ").Trim();
 
             var results = await GetSearchResults(name, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
 
@@ -86,36 +100,35 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                 }
             }
 
+            // TODO: retrying alternatives should be done outside the search
+            // provider so that the retry logic can be common for all search
+            // providers
             if (results.Count == 0)
             {
-                // try with dot and _ turned to space
-                var originalName = name;
+                var name2 = parsedName.Name;
 
-                name = name.Replace(",", " ");
-                name = name.Replace(".", " ");
-                name = name.Replace("_", " ");
-                name = name.Replace("-", " ");
-                name = name.Replace("!", " ");
-                name = name.Replace("?", " ");
+                // Remove things enclosed in []{}() etc
+                name2 = _cleanEnclosed.Replace(name2, string.Empty);
 
-                var parenthIndex = name.IndexOf('(');
-                if (parenthIndex != -1)
-                {
-                    name = name.Substring(0, parenthIndex);
-                }
+                // Replace sequences of non-word characters with space
+                name2 = _cleanNonWord.Replace(name2, " ");
 
-                name = name.Trim();
+                // Clean based on common stop words / tokens
+                name2 = _cleanStopWords.Replace(name2, string.Empty);
+
+                // Trim whitespace
+                name2 = name2.Trim();
 
                 // Search again if the new name is different
-                if (!string.Equals(name, originalName))
+                if (!string.Equals(name2, name) && !string.IsNullOrWhiteSpace(name2))
                 {
-                    results = await GetSearchResults(name, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name2, year);
+                    results = await GetSearchResults(name2, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
 
                     if (results.Count == 0 && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                     {
                         //one more time, in english
-                        results = await GetSearchResults(name, searchType, year, "en", tmdbImageUrl, cancellationToken).ConfigureAwait(false);
-
+                        results = await GetSearchResults(name2, searchType, year, "en", tmdbImageUrl, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -150,7 +163,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                 throw new ArgumentException("name");
             }
 
-            var url3 = string.Format(Search3, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, type);
+            var url3 = string.Format(_searchURL, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, type);
 
             using (var response = await TmdbMovieProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
@@ -179,14 +192,14 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                             if (!string.IsNullOrWhiteSpace(i.Release_Date))
                             {
                                 // These dates are always in this exact format
-                                if (DateTime.TryParseExact(i.Release_Date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out var r))
+                                if (DateTime.TryParseExact(i.Release_Date, "yyyy-MM-dd", _usCulture, DateTimeStyles.None, out var r))
                                 {
                                     remoteResult.PremiereDate = r.ToUniversalTime();
                                     remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
                                 }
                             }
 
-                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(EnUs));
+                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(_usCulture));
 
                             return remoteResult;
 
@@ -203,7 +216,7 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                 throw new ArgumentException("name");
             }
 
-            var url3 = string.Format(Search3, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, "tv");
+            var url3 = string.Format(_searchURL, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, "tv");
 
             using (var response = await TmdbMovieProvider.Current.GetMovieDbResponse(new HttpRequestOptions
             {
@@ -232,14 +245,14 @@ namespace MediaBrowser.Providers.Tmdb.Movies
                             if (!string.IsNullOrWhiteSpace(i.First_Air_Date))
                             {
                                 // These dates are always in this exact format
-                                if (DateTime.TryParseExact(i.First_Air_Date, "yyyy-MM-dd", EnUs, DateTimeStyles.None, out var r))
+                                if (DateTime.TryParseExact(i.First_Air_Date, "yyyy-MM-dd", _usCulture, DateTimeStyles.None, out var r))
                                 {
                                     remoteResult.PremiereDate = r.ToUniversalTime();
                                     remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
                                 }
                             }
 
-                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(EnUs));
+                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(_usCulture));
 
                             return remoteResult;
 
