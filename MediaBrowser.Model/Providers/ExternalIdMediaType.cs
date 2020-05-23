@@ -12,66 +12,66 @@ namespace MediaBrowser.Model.Providers
         /// There is no specific media type associated with the external id, or this is the default id for the external
         /// provider so there is no need to specify a type.
         /// </summary>
-        General,
+        General = 0,
 
         /// <summary>
         /// A music album.
         /// </summary>
-        Album,
+        Album = 1,
 
         /// <summary>
         /// The artist of a music album.
         /// </summary>
-        AlbumArtist,
+        AlbumArtist = 2,
 
         /// <summary>
         /// The artist of a media item.
         /// </summary>
-        Artist,
+        Artist = 3,
 
         /// <summary>
         /// A boxed set of media.
         /// </summary>
-        BoxSet,
+        BoxSet = 4,
 
         /// <summary>
         /// A series episode.
         /// </summary>
-        Episode,
+        Episode = 5,
 
         /// <summary>
         /// A movie.
         /// </summary>
-        Movie,
+        Movie = 6,
 
         /// <summary>
         /// An alternative artist apart from the main artist.
         /// </summary>
-        OtherArtist,
+        OtherArtist = 7,
 
         /// <summary>
         /// A person.
         /// </summary>
-        Person,
+        Person = 8,
 
         /// <summary>
         /// A release group.
         /// </summary>
-        ReleaseGroup,
+        ReleaseGroup = 9,
 
         /// <summary>
         /// A single season of a series.
         /// </summary>
-        Season,
+        Season = 10,
 
         /// <summary>
         /// A series.
         /// </summary>
-        Series,
+        Series = 11,
 
         /// <summary>
         /// A music track.
         /// </summary>
-        Track
+        Track = 12
     }
 }
