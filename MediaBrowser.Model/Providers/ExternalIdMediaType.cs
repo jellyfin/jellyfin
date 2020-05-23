@@ -9,12 +9,6 @@ namespace MediaBrowser.Model.Providers
     public enum ExternalIdMediaType
     {
         /// <summary>
-        /// There is no specific media type associated with the external id, or this is the default id for the external
-        /// provider so there is no need to specify a type.
-        /// </summary>
-        General = 0,
-
-        /// <summary>
         /// A music album.
         /// </summary>
         Album = 1,

@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Tmdb.TV
         public string Key => MetadataProviders.Tmdb.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.Series;
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Series;
 
         /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "tv/{0}";

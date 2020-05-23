@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Key => MetadataProviders.AudioDbAlbum.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.General;
+        public ExternalIdMediaType? Type => null;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/album/{0}";
@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Key => MetadataProviders.AudioDbAlbum.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.Album;
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/album/{0}";
@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Key => MetadataProviders.AudioDbArtist.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.Artist;
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Artist;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/artist/{0}";
@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Key => MetadataProviders.AudioDbArtist.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.OtherArtist;
+        public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/artist/{0}";

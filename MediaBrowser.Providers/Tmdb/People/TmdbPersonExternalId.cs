@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Tmdb.People
         public string Key => MetadataProviders.Tmdb.ToString();
 
         /// <inheritdoc />
-        public ExternalIdMediaType Type => ExternalIdMediaType.Person;
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Person;
 
         /// <inheritdoc />
         public string UrlFormatString => TmdbUtils.BaseTmdbUrl + "person/{0}";
