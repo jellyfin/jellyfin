@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -800,16 +801,16 @@ namespace Jellyfin.Server.Implementations.Users
 
         private void IncrementInvalidLoginAttemptCount(User user)
         {
-            int invalidLogins = user.InvalidLoginAttemptCount;
+            user.InvalidLoginAttemptCount++;
             int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
-            if (maxInvalidLogins.HasValue && invalidLogins >= maxInvalidLogins)
+            if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
             {
                 user.SetPermission(PermissionKind.IsDisabled, true);
                 OnUserLockedOut?.Invoke(this, new GenericEventArgs<User>(user));
                 _logger.LogWarning(
                     "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
                     user.Username,
-                    invalidLogins);
+                    user.InvalidLoginAttemptCount);
             }
 
             UpdateUser(user);

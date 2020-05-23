@@ -104,8 +104,10 @@ namespace Emby.Server.Implementations.Activity
                         _localization.GetLocalizedString("UserLockedOutWithName"),
                         e.Argument.Username),
                     NotificationType.UserLockedOut.ToString(),
-                    e.Argument.Id))
-                .ConfigureAwait(false);
+                    e.Argument.Id)
+            {
+                LogSeverity = LogLevel.Error
+            }).ConfigureAwait(false);
         }
 
         private async void OnSubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
@@ -301,18 +303,6 @@ namespace Emby.Server.Implementations.Activity
                     _localization.GetLocalizedString("LabelIpAddressValue"),
                     e.Argument.RemoteEndPoint),
             }).ConfigureAwait(false);
-        }
-
-        private async void OnUserPolicyUpdated(object sender, GenericEventArgs<User> e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserPolicyUpdatedWithName"),
-                    e.Argument.Username),
-                "UserPolicyUpdated",
-                e.Argument.Id))
-                .ConfigureAwait(false);
         }
 
         private async void OnUserDeleted(object sender, GenericEventArgs<User> e)
