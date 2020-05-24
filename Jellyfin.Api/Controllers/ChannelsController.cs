@@ -86,19 +86,19 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Get channel features.
         /// </summary>
-        /// <param name="id">Channel id.</param>
+        /// <param name="channelId">Channel id.</param>
         /// <response code="200">Channel features returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the channel features.</returns>
-        [HttpGet("{Id}/Features")]
-        public ActionResult<ChannelFeatures> GetChannelFeatures([FromRoute] string id)
+        [HttpGet("{channelId}/Features")]
+        public ActionResult<ChannelFeatures> GetChannelFeatures([FromRoute] string channelId)
         {
-            return _channelManager.GetChannelFeatures(id);
+            return _channelManager.GetChannelFeatures(channelId);
         }
 
         /// <summary>
         /// Get channel items.
         /// </summary>
-        /// <param name="id">Channel Id.</param>
+        /// <param name="channelId">Channel Id.</param>
         /// <param name="folderId">Optional. Folder Id.</param>
         /// <param name="userId">Optional. User Id.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
@@ -109,9 +109,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
         /// <response code="200">Channel items returned.</response>
         /// <returns>Channel items.</returns>
-        [HttpGet("{Id}/Items")]
+        [HttpGet("{channelId}/Items")]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetChannelItems(
-            [FromRoute] Guid id,
+            [FromRoute] Guid channelId,
             [FromQuery] Guid? folderId,
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
@@ -129,7 +129,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                ChannelIds = new[] { id },
+                ChannelIds = new[] { channelId },
                 ParentId = folderId ?? Guid.Empty,
                 OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                 DtoOptions = new DtoOptions { Fields = RequestHelpers.GetItemFields(fields) }
