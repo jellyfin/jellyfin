@@ -42,14 +42,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets available channels.
         /// </summary>
-        /// <param name="userId">User Id.</param>
+        /// <param name="userId">User Id to filter by. Use <see cref="Guid.Empty"/> to not filter by user.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="supportsLatestItems">Optional. Filter by channels that support getting latest items.</param>
         /// <param name="supportsMediaDeletion">Optional. Filter by channels that support media deletion.</param>
         /// <param name="isFavorite">Optional. Filter by channels that are favorite.</param>
         /// <response code="200">Channels returned.</response>
-        /// <returns>Channels.</returns>
+        /// <returns>An <see cref="OkResult"/> containing the channels.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetChannels(
@@ -75,10 +75,10 @@ namespace Jellyfin.Api.Controllers
         /// Get all channel features.
         /// </summary>
         /// <response code="200">All channel features returned.</response>
-        /// <returns>Channel features.</returns>
+        /// <returns>An <see cref="OkResult"/> containing the channel features.</returns>
         [HttpGet("Features")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IEnumerable<ChannelFeatures> GetAllChannelFeatures()
+        public ActionResult<IEnumerable<ChannelFeatures>> GetAllChannelFeatures()
         {
             return _channelManager.GetAllChannelFeatures();
         }
@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="id">Channel id.</param>
         /// <response code="200">Channel features returned.</response>
-        /// <returns>Channel features.</returns>
+        /// <returns>An <see cref="OkResult"/> containing the channel features.</returns>
         [HttpGet("{Id}/Features")]
         public ActionResult<ChannelFeatures> GetChannelFeatures([FromRoute] string id)
         {
@@ -99,11 +99,11 @@ namespace Jellyfin.Api.Controllers
         /// Get channel items.
         /// </summary>
         /// <param name="id">Channel Id.</param>
-        /// <param name="folderId">Folder Id.</param>
-        /// <param name="userId">User Id.</param>
+        /// <param name="folderId">Optional. Folder Id.</param>
+        /// <param name="userId">Optional. User Id.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
+        /// <param name="sortOrder">Optional. Sort Order - Ascending,Descending.</param>
         /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
         /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
@@ -175,14 +175,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets latest channel items.
         /// </summary>
-        /// <param name="userId">User Id.</param>
+        /// <param name="userId">Optional. User Id.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="filters">Optional. Specify additional filters to apply. This allows multiple, comma delimited. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
         /// <param name="channelIds">Optional. Specify one or more channel id's, comma delimited.</param>
         /// <response code="200">Latest channel items returned.</response>
-        /// <returns>Latest channel items.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> representing the request to get the latest channel items.
+        /// The task result contains an <see cref="OkResult"/> containing the latest channel items.
+        /// </returns>
         [HttpGet("Items/Latest")]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLatestChannelItems(
             [FromQuery] Guid? userId,
@@ -192,7 +195,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string fields,
             [FromQuery] string channelIds)
         {
-            var user = userId == null
+            var user = userId == null || userId == Guid.Empty
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
@@ -200,9 +203,11 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                ChannelIds =
-                    (channelIds ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Select(i => new Guid(i)).ToArray(),
+                ChannelIds = (channelIds ?? string.Empty)
+                    .Split(',')
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .Select(i => new Guid(i))
+                    .ToArray(),
                 DtoOptions = new DtoOptions { Fields = RequestExtensions.GetItemFields(fields) }
             };
 
