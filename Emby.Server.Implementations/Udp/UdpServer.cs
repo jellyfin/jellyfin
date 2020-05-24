@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Udp
         private readonly IConfiguration _config;
 
         /// <summary>
-        /// Address Override Configuration Key
+        /// Address Override Configuration Key.
         /// </summary>
         public const string AddressOverrideConfigKey = "PublishedServerUrl";
 
