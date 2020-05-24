@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -131,11 +131,11 @@ namespace Jellyfin.Api.Controllers
                 StartIndex = startIndex,
                 ChannelIds = new[] { id },
                 ParentId = folderId ?? Guid.Empty,
-                OrderBy = RequestExtensions.GetOrderBy(sortBy, sortOrder),
-                DtoOptions = new DtoOptions { Fields = RequestExtensions.GetItemFields(fields) }
+                OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
+                DtoOptions = new DtoOptions { Fields = RequestHelpers.GetItemFields(fields) }
             };
 
-            foreach (var filter in RequestExtensions.GetFilters(filters))
+            foreach (var filter in RequestHelpers.GetFilters(filters))
             {
                 switch (filter)
                 {
@@ -208,10 +208,10 @@ namespace Jellyfin.Api.Controllers
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Select(i => new Guid(i))
                     .ToArray(),
-                DtoOptions = new DtoOptions { Fields = RequestExtensions.GetItemFields(fields) }
+                DtoOptions = new DtoOptions { Fields = RequestHelpers.GetItemFields(fields) }
             };
 
-            foreach (var filter in RequestExtensions.GetFilters(filters))
+            foreach (var filter in RequestHelpers.GetFilters(filters))
             {
                 switch (filter)
                 {

@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Api.Extensions
+namespace Jellyfin.Api.Helpers
 {
     /// <summary>
     /// Request Extensions.
     /// </summary>
-    public static class RequestExtensions
+    public static class RequestHelpers
     {
         /// <summary>
         /// Get Order By.
