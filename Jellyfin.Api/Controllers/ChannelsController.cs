@@ -183,6 +183,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="channelIds">Optional. Specify one or more channel id's, comma delimited.</param>
         /// <response code="200">Latest channel items returned.</response>
         /// <returns>Latest channel items.</returns>
+        [HttpGet("Items/Latest")]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLatestChannelItems(
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
