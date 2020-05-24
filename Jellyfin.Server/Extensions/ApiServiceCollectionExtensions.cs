@@ -120,6 +120,8 @@ namespace Jellyfin.Server.Extensions
                     description.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null);
 
                 // Add types not supported by System.Text.Json
+                // TODO: Remove this once these types are supported by System.Text.Json and Swashbuckle
+                // See: https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/1667
                 c.MapSwaggerGenTypes();
             });
         }
