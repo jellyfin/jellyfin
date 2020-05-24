@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Updates;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -85,19 +86,19 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        private void OnPackageInstalling(object sender, InstallationEventArgs e)
+        private void OnPackageInstalling(object sender, InstallationInfo e)
         {
-            SendMessageToAdminSessions("PackageInstalling", e.InstallationInfo);
+            SendMessageToAdminSessions("PackageInstalling", e);
         }
 
-        private void OnPackageInstallationCancelled(object sender, InstallationEventArgs e)
+        private void OnPackageInstallationCancelled(object sender, InstallationInfo e)
         {
-            SendMessageToAdminSessions("PackageInstallationCancelled", e.InstallationInfo);
+            SendMessageToAdminSessions("PackageInstallationCancelled", e);
         }
 
-        private void OnPackageInstallationCompleted(object sender, InstallationEventArgs e)
+        private void OnPackageInstallationCompleted(object sender, InstallationInfo e)
         {
-            SendMessageToAdminSessions("PackageInstallationCompleted", e.InstallationInfo);
+            SendMessageToAdminSessions("PackageInstallationCompleted", e);
         }
 
         private void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
@@ -115,9 +116,9 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void OnPluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        private void OnPluginUninstalled(object sender, IPlugin e)
         {
-            SendMessageToAdminSessions("PluginUninstalled", e.Argument.GetPluginInfo());
+            SendMessageToAdminSessions("PluginUninstalled", e);
         }
 
         /// <summary>
