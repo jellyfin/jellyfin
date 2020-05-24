@@ -1,13 +1,17 @@
+using System.Collections.Generic;
+using System.Linq;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -89,7 +93,25 @@ namespace Jellyfin.Server.Extensions
             return serviceCollection.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+                c.MapSwaggerGenTypes();
             });
+        }
+
+        private static void MapSwaggerGenTypes(this SwaggerGenOptions options)
+        {
+            // BaseItemDto.ImageTags
+            options.MapType<Dictionary<ImageType, string>>(() =>
+                new OpenApiSchema
+                {
+                    Type = "object",
+                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
+                        name => name,
+                        name => new OpenApiSchema
+                        {
+                            Type = "string",
+                            Format = "string"
+                        })
+                });
         }
     }
 }
