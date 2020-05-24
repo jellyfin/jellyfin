@@ -116,10 +116,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string sortOrder,
-            [FromQuery] string filters,
-            [FromQuery] string sortBy,
-            [FromQuery] string fields)
+            [FromQuery] string? sortOrder,
+            [FromQuery] string? filters,
+            [FromQuery] string? sortBy,
+            [FromQuery] string? fields)
         {
             var user = userId == null
                 ? null
