@@ -36,5 +36,11 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The checksum.</value>
         public string checksum { get; set; }
+
+        /// <summary>
+        /// Gets or sets a timestamp of when the binary was built.
+        /// </summary>
+        /// <value>The timestamp.</value>
+        public string timestamp { get; set; }
     }
 }
