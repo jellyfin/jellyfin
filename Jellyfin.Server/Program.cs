@@ -47,8 +47,9 @@ namespace Jellyfin.Server
         /// </summary>
         public static readonly string LoggingConfigFileSystem = "logging.json";
 
-        private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
+
+        private static CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static ILogger _logger = NullLogger.Instance;
         private static bool _restartOnShutdown;
 
@@ -152,15 +153,37 @@ namespace Jellyfin.Server
                 Shutdown();
             };
 
+            PerformStaticInitialization();
+
+            do
+            {
+                _restartOnShutdown = false;
+
+                await StartServer(appPaths, options, startupConfig, stopWatch).ConfigureAwait(false);
+
+                if (_restartOnShutdown)
+                {
+                    stopWatch.Restart();
+                    _logger.LogInformation("Restarting server");
+                    _tokenSource = new CancellationTokenSource();
+                }
+            }
+            while (_restartOnShutdown);
+        }
+
+        /// <summary>
+        /// Initialize the application host and start the Kestrel server. The current thread will then block until
+        /// <see cref="_tokenSource"/> is cancelled, at which point all the server resources will be disposed.
+        /// </summary>
+        private static async Task StartServer(ServerApplicationPaths appPaths, StartupOptions options, IConfiguration startupConfig, Stopwatch stopWatch)
+        {
             _logger.LogInformation(
                 "Jellyfin version: {Version}",
                 Assembly.GetEntryAssembly()!.GetName().Version!.ToString(3));
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
-            PerformStaticInitialization();
-
-            var appHost = new CoreAppHost(
+            using var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
@@ -219,15 +242,6 @@ namespace Jellyfin.Server
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, "Error while starting server.");
-            }
-            finally
-            {
-                appHost?.Dispose();
-            }
-
-            if (_restartOnShutdown)
-            {
-                StartNewInstance(options);
             }
         }
 
@@ -610,45 +624,6 @@ namespace Jellyfin.Server
 
                 Serilog.Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
-        }
-
-        private static void StartNewInstance(StartupOptions options)
-        {
-            _logger.LogInformation("Starting new instance");
-
-            var module = options.RestartPath;
-
-            if (string.IsNullOrWhiteSpace(module))
-            {
-                module = Environment.GetCommandLineArgs()[0];
-            }
-
-            string commandLineArgsString;
-            if (options.RestartArgs != null)
-            {
-                commandLineArgsString = options.RestartArgs ?? string.Empty;
-            }
-            else
-            {
-                commandLineArgsString = string.Join(
-                    ' ',
-                    Environment.GetCommandLineArgs().Skip(1).Select(NormalizeCommandLineArgument));
-            }
-
-            _logger.LogInformation("Executable: {0}", module);
-            _logger.LogInformation("Arguments: {0}", commandLineArgsString);
-
-            Process.Start(module, commandLineArgsString);
-        }
-
-        private static string NormalizeCommandLineArgument(string arg)
-        {
-            if (!arg.Contains(" ", StringComparison.OrdinalIgnoreCase))
-            {
-                return arg;
-            }
-
-            return "\"" + arg + "\"";
         }
     }
 }
