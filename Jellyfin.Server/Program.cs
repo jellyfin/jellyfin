@@ -248,6 +248,9 @@ namespace Jellyfin.Server
         /// <summary>
         /// Call static initialization methods for the application.
         /// </summary>
+        /// <remarks>
+        /// This initialization should only performed the first time the application starts, and not on each restart.
+        /// </remarks>
         public static void PerformStaticInitialization()
         {
             // Make sure we have all the code pages we can get
