@@ -71,7 +71,6 @@ namespace Emby.Server.Implementations.Library
         private readonly ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
         private readonly IImageProcessor _imageProcessor;
 
-
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
 

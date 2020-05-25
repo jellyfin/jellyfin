@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Drawing
         ImageDimensions GetImageSize(string path);
 
         /// <summary>
-        /// Get the blurhash of an image.
+        /// Gets the blurhash of an image.
         /// </summary>
         /// <param name="path">The filepath of the image.</param>
         /// <returns>The blurhash.</returns>

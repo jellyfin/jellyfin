@@ -511,7 +511,7 @@ namespace MediaBrowser.Model.Dto
         public string SeriesThumbImageTag { get; set; }
 
         /// <summary>
-        /// Gets or sets the blurhash for the image tags.
+        /// Gets or sets the blurhashes for the image tags.
         /// </summary>
         /// <value>The blurhashes.</value>
         public Dictionary<string, string> ImageBlurHashes { get; set; }
