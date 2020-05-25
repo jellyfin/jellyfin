@@ -104,7 +104,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            if _mediaEncoder.SupportsHwaccel("vaapi");
+            return _mediaEncoder.SupportsHwaccel("vaapi");
 
         }
 
