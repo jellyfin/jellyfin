@@ -241,14 +241,20 @@ namespace Jellyfin.Drawing.Skia
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (!File.Exists(path))
+            var dims = GetImageSize(path);
+            if (dims.Width <= 0 || dims.Height <= 0)
             {
-                throw new FileNotFoundException("File not found", path);
+                // empty image does not have any blurhash
+                return string.Empty;
             }
 
-            // Use 4 vertical and 4 horizontal components of DCT of the image.
+            // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
+            // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
             // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
-            return BlurHashEncoder.Encode(4, 4, path);
+            float xComp = MathF.Sqrt(16.0f * dims.Width / dims.Height);
+            float yComp = xComp * dims.Height / dims.Width;
+
+            return BlurHashEncoder.Encode(Math.Min((int)xComp + 1, 9), Math.Min((int)yComp + 1, 9), path);
         }
 
         private static bool HasDiacritics(string text)
