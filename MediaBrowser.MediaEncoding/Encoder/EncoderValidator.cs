@@ -51,7 +51,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg2_videotoolbox",
             "mpeg4_videotoolbox",
             "vp8_videotoolbox",
-            "vp9_videotoolbox"
+            "vp9_videotoolbox",
+            "vc1_videotoolbox"
         };
 
         private static readonly string[] requiredEncoders = new[]
