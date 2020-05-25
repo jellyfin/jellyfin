@@ -555,8 +555,7 @@ namespace MediaBrowser.Api.Images
             var imageInfo = GetImageInfo(request, item);
             if (imageInfo == null)
             {
-                var displayText = item == null ? itemId.ToString() : item.Name;
-                throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", displayText, request.Type));
+                throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
             }
 
             bool cropwhitespace;
