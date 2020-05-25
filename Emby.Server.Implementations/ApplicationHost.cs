@@ -125,11 +125,6 @@ namespace Emby.Server.Implementations
         private IHttpServer _httpServer;
         private IHttpClient _httpClient;
 
-        /// <summary>
-        /// Gets a value indicating whether this instance can self restart.
-        /// </summary>
-        public bool CanSelfRestart => _startupOptions.RestartPath != null;
-
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -981,11 +976,6 @@ namespace Emby.Server.Implementations
         /// </summary>
         public void Restart()
         {
-            if (!CanSelfRestart)
-            {
-                throw new PlatformNotSupportedException("The server is unable to self-restart. Please restart manually.");
-            }
-
             if (IsShuttingDown)
             {
                 return;
@@ -1111,7 +1101,6 @@ namespace Emby.Server.Implementations
                 CachePath = ApplicationPaths.CachePath,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 OperatingSystemDisplayName = OperatingSystem.Name,
-                CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 HasUpdateAvailable = HasUpdateAvailable,
                 TranscodingTempPath = transcodingTempPath,
