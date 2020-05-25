@@ -46,6 +46,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg4_mediacodec",
             "vp8_mediacodec",
             "vp9_mediacodec"
+            "h264_videotoolbox",
+            "hevc_videotoolbox",
+            "mpeg2_videotoolbox",
+            "mpeg4_videotoolbox",
+            "vp8_videotoolbox",
+            "vp9_videotoolbox"
         };
 
         private static readonly string[] requiredEncoders = new[]
@@ -74,6 +80,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "h264_omx",
             "hevc_omx",
             "h264_v4l2m2m"
+            "h264_videotoolbox"
+            "hevc_videotoolbox"
         };
 
         // Try and use the individual library versions to determine a FFmpeg version
@@ -252,7 +260,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var found = output.Split(new char[] {'\r','\n'},StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
+            var found = output.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
 
             found.RemoveAt(0);
 
