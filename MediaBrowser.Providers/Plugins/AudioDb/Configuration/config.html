@@ -31,8 +31,8 @@
             $('.configPage').on('pageshow', function () {
                 Dashboard.showLoadingMsg();
                 ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
-                    $('#enable').checked(config.Enable);
-                    $('#replaceAlbumName').checked(config.ReplaceAlbumName);
+                    $('#enable').checked = config.Enable;
+                    $('#replaceAlbumName').checked = config.ReplaceAlbumName;
 
                     Dashboard.hideLoadingMsg();
                 });
@@ -43,8 +43,8 @@
 
                 var form = this;
                 ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
-                    config.Enable = $('#enable', form).checked();
-                    config.ReplaceAlbumName = $('#replaceAlbumName', form).checked();
+                    config.Enable = $('#enable', form).checked;
+                    config.ReplaceAlbumName = $('#replaceAlbumName', form).checked;
 
                     ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
