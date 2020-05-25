@@ -366,7 +366,7 @@ namespace MediaBrowser.Api.Images
                     ImageType = info.Type,
                     ImageTag = _imageProcessor.GetImageCacheTag(item, info),
                     Size = length,
-                    Hash = blurhash,
+                    BlurHash = blurhash,
                     Width = width,
                     Height = height
                 };
