@@ -27,21 +27,21 @@ namespace MediaBrowser.Controller.MediaEncoding
         string EncoderPath { get; }
 
         /// <summary>
-        /// Supportses the encoder.
+        /// Whether given encoder codec is supported.
         /// </summary>
         /// <param name="encoder">The encoder.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool SupportsEncoder(string encoder);
 
         /// <summary>
-        /// Supportses the decoder.
+        /// Whether given decoder codec is supported.
         /// </summary>
         /// <param name="decoder">The decoder.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool SupportsDecoder(string decoder);
 
         /// <summary>
-        /// Supportses the hwaccel.
+        /// Whether given hardware acceleration type is supported.
         /// </summary>
         /// <param name="hwaccel">The hwaccel.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
