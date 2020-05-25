@@ -186,7 +186,7 @@ namespace Jellyfin.Server
                 ServiceCollection serviceCollection = new ServiceCollection();
                 appHost.Init(serviceCollection);
 
-                var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
+                using var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
                 // Re-use the web host service provider in the app host since ASP.NET doesn't allow a custom service collection.
                 appHost.ServiceProvider = webHost.Services;
