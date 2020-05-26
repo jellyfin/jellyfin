@@ -208,9 +208,8 @@ namespace Emby.Server.Implementations.SocketSharp
 
         private static string GetQueryStringContentType(HttpRequest httpReq)
         {
-            string formatStr = httpReq.Query["format"].ToString();
-            ReadOnlySpan<char> format = formatStr;
-            if (formatStr == null)
+            ReadOnlySpan<char> format = httpReq.Query["format"].ToString();
+            if (formatStr == ReadOnlySpan<char>.Empty)
             {
                 const int FormatMaxLength = 4;
                 ReadOnlySpan<char> pi = httpReq.Path.ToString();
