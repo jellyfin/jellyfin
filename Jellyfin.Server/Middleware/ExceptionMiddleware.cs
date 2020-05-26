@@ -7,7 +7,9 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Middleware
@@ -20,6 +22,7 @@ namespace Jellyfin.Server.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
         private readonly IServerConfigurationManager _configuration;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionMiddleware"/> class.
@@ -27,14 +30,17 @@ namespace Jellyfin.Server.Middleware
         /// <param name="next">Next request delegate.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{ExceptionMiddleware}"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="hostEnvironment">Instance of the <see cref="IWebHostEnvironment"/> interface.</param>
         public ExceptionMiddleware(
             RequestDelegate next,
             ILogger<ExceptionMiddleware> logger,
-            IServerConfigurationManager serverConfigurationManager)
+            IServerConfigurationManager serverConfigurationManager,
+            IWebHostEnvironment hostEnvironment)
         {
             _next = next;
             _logger = logger;
             _configuration = serverConfigurationManager;
+            _hostEnvironment = hostEnvironment;
         }
 
         /// <summary>
@@ -85,6 +91,14 @@ namespace Jellyfin.Server.Middleware
 
                 context.Response.StatusCode = GetStatusCode(ex);
                 context.Response.ContentType = MediaTypeNames.Text.Plain;
+
+                // Don't send exception unless the server is in a Development environment
+                if (!_hostEnvironment.IsDevelopment())
+                {
+                    await context.Response.WriteAsync("Error processing request.").ConfigureAwait(false);
+                    return;
+                }
+
                 var errorContent = NormalizeExceptionMessage(ex.Message);
                 await context.Response.WriteAsync(errorContent).ConfigureAwait(false);
             }
