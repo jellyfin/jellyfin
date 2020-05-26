@@ -1991,7 +1991,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var videoStream = state.VideoStream;
             var filters = new List<string>();
 
-            var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options);
+            var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options) ?? string.Empty;
             var inputWidth = videoStream?.Width;
             var inputHeight = videoStream?.Height;
             var threeDFormat = state.MediaSource.Video3DFormat;
@@ -2016,7 +2016,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
-            else if ((videoDecoder ?? string.Empty).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
+            else if (videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
                 && string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 var codec = videoStream.Codec.ToLowerInvariant();
@@ -2607,7 +2607,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (videoStream.Codec.ToLowerInvariant())
@@ -2661,7 +2660,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "mediacodec", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (videoStream.Codec.ToLowerInvariant())
@@ -2708,7 +2706,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "omx", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (videoStream.Codec.ToLowerInvariant())
@@ -2740,7 +2737,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (videoStream.Codec.ToLowerInvariant())
@@ -2750,17 +2746,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                             return GetHwaccelType(state, encodingOptions, "h264");
                         case "hevc":
                         case "h265":
-                            if (isColorDepth10)
-                            {
-                                if (encodingOptions.EnableDecodingColorDepth10)
-                                {
-                                    return GetHwaccelType(state, encodingOptions, "hevc");
-                                }
-
-                                return null;
-                            }
-
-                            return GetHwaccelType(state, encodingOptions, "hevc");
+                            return (isColorDepth10 &&
+                                    !encodingOptions.EnableDecodingColorDepth10) ? null : GetHwaccelType(state, encodingOptions, "hevc");
                         case "mpeg2video":
                             return GetHwaccelType(state, encodingOptions, "mpeg2video");
                         case "vc1":
@@ -2768,20 +2755,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                         case "mpeg4":
                             return GetHwaccelType(state, encodingOptions, "mpeg4");
                         case "vp9":
-                            if (isColorDepth10)
-                            {
-                                if (encodingOptions.EnableDecodingColorDepth10)
-                                {
-                                    return GetHwaccelType(state, encodingOptions, "vp9");
-                                }
-
-                                return null;
-                            }
-
-                            return GetHwaccelType(state, encodingOptions, "vp9");
+                            return (isColorDepth10 &&
+                                    !encodingOptions.EnableDecodingColorDepth10) ? null : GetHwaccelType(state, encodingOptions, "vp9");
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (videoStream.Codec.ToLowerInvariant())
@@ -2791,17 +2768,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                             return GetHwaccelType(state, encodingOptions, "h264");
                         case "hevc":
                         case "h265":
-                            if (isColorDepth10)
-                            {
-                                if (encodingOptions.EnableDecodingColorDepth10)
-                                {
-                                    return GetHwaccelType(state, encodingOptions, "hevc");
-                                }
-
-                                return null;
-                            }
-
-                            return GetHwaccelType(state, encodingOptions, "hevc");
+                            return (isColorDepth10 &&
+                                    !encodingOptions.EnableDecodingColorDepth10) ? null : GetHwaccelType(state, encodingOptions, "hevc");
                         case "mpeg2video":
                             return GetHwaccelType(state, encodingOptions, "mpeg2video");
                         case "vc1":
@@ -2809,17 +2777,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         case "vp8":
                             return GetHwaccelType(state, encodingOptions, "vp8");
                         case "vp9":
-                            if (isColorDepth10)
-                            {
-                                if (encodingOptions.EnableDecodingColorDepth10)
-                                {
-                                    return GetHwaccelType(state, encodingOptions, "vp9");
-                                }
-
-                                return null;
-                            }
-
-                            return GetHwaccelType(state, encodingOptions, "vp9");
+                            return (isColorDepth10 &&
+                                    !encodingOptions.EnableDecodingColorDepth10) ? null : GetHwaccelType(state, encodingOptions, "vp9");
                     }
                 }
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
@@ -2853,7 +2812,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-                
             }
 
             var whichCodec = videoStream.Codec.ToLowerInvariant();
