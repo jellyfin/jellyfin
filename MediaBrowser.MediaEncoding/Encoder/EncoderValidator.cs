@@ -45,7 +45,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg2_mediacodec",
             "mpeg4_mediacodec",
             "vp8_mediacodec",
-            "vp9_mediacodec"
+            "vp9_mediacodec",
             "h264_videotoolbox",
             "hevc_videotoolbox",
             "mpeg2_videotoolbox",
@@ -80,8 +80,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc_vaapi",
             "h264_omx",
             "hevc_omx",
-            "h264_v4l2m2m"
-            "h264_videotoolbox"
+            "h264_v4l2m2m",
+            "h264_videotoolbox",
             "hevc_videotoolbox"
         };
 

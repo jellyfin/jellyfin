@@ -258,7 +258,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
         }
 
-        private List<string> _hwaccels = Array.Empty<string>();
+        private List<string> _hwaccels = new List<string>();
         public void SetAvailableHwaccels(IEnumerable<string> list)
         {
             _hwaccels = list.ToList();

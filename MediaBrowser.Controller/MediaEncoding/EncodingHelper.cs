@@ -475,9 +475,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (state.IsVideoRequest
                 && string.Equals(encodingOptions.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
             {
-                var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions);
-                var outputVideoCodec = GetVideoEncoder(state, encodingOptions);
-
                 var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
                 if (!hasTextSubs)
