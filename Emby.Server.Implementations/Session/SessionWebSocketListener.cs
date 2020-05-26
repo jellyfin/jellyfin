@@ -87,13 +87,13 @@ namespace Emby.Server.Implementations.Session
             httpServer.WebSocketConnected += OnServerManagerWebSocketConnected;
         }
 
-        private void OnServerManagerWebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
+        private async void OnServerManagerWebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
         {
             var session = GetSession(e.Argument.QueryString, e.Argument.RemoteEndPoint.ToString());
             if (session != null)
             {
                 EnsureController(session, e.Argument);
-                KeepAliveWebSocket(e.Argument);
+                await KeepAliveWebSocket(e.Argument);
             }
             else
             {
@@ -149,7 +149,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="e">The event arguments.</param>
         private void OnWebSocketClosed(object sender, EventArgs e)
         {
-            var webSocket = (IWebSocketConnection) sender;
+            var webSocket = (IWebSocketConnection)sender;
             _logger.LogDebug("WebSocket {0} is closed.", webSocket);
             RemoveWebSocket(webSocket);
         }
@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.Session
         /// Adds a WebSocket to the KeepAlive watchlist.
         /// </summary>
         /// <param name="webSocket">The WebSocket to monitor.</param>
-        private void KeepAliveWebSocket(IWebSocketConnection webSocket)
+        private async Task KeepAliveWebSocket(IWebSocketConnection webSocket)
         {
             lock (_webSocketsLock)
             {
@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.Session
             // Notify WebSocket about timeout
             try
             {
-                SendForceKeepAlive(webSocket).Wait();
+                await SendForceKeepAlive(webSocket);
             }
             catch (WebSocketException exception)
             {

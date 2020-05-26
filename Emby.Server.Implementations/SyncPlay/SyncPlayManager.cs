@@ -374,6 +374,7 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 throw new InvalidOperationException("Session in other group already!");
             }
+
             _sessionToGroupMap[session.Id] = group;
         }
 

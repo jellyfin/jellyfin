@@ -16,12 +16,13 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <summary>
         /// Default ping value used for sessions.
         /// </summary>
-        public readonly long DefaulPing = 500;
+        public long DefaulPing { get; } = 500;
+
         /// <summary>
         /// Gets or sets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>
-        public readonly Guid GroupId = Guid.NewGuid();
+        public Guid GroupId { get; } = Guid.NewGuid();
 
         /// <summary>
         /// Gets or sets the playing item.
@@ -51,7 +52,7 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Gets the participants.
         /// </summary>
         /// <value>The participants, or members of the group.</value>
-        public readonly Dictionary<string, GroupMember> Participants =
+        public Dictionary<string, GroupMember> Participants { get; } =
             new Dictionary<string, GroupMember>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
@@ -85,7 +86,6 @@ namespace MediaBrowser.Controller.SyncPlay
         /// Removes the session from the group.
         /// </summary>
         /// <param name="session">The session.</param>
-
         public void RemoveSession(SessionInfo session)
         {
             if (!ContainsSession(session.Id.ToString()))
@@ -153,6 +153,7 @@ namespace MediaBrowser.Controller.SyncPlay
                     return true;
                 }
             }
+
             return false;
         }
 

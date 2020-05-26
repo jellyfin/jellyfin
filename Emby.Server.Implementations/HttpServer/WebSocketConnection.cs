@@ -223,7 +223,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (info.MessageType.Equals("KeepAlive", StringComparison.Ordinal))
             {
-                SendKeepAliveResponse();
+                await SendKeepAliveResponse();
             }
             else
             {
@@ -231,10 +231,10 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private void SendKeepAliveResponse()
+        private Task SendKeepAliveResponse()
         {
             LastKeepAliveDate = DateTime.UtcNow;
-            SendAsync(new WebSocketMessage<string>
+            return SendAsync(new WebSocketMessage<string>
             {
                 MessageType = "KeepAlive"
             }, CancellationToken.None);

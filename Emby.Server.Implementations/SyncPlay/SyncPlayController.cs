@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.SyncPlay
     /// <remarks>
     /// Class is not thread-safe, external locking is required when accessing methods.
     /// </remarks>
-    public class SyncPlayController : ISyncPlayController, IDisposable
+    public class SyncPlayController : ISyncPlayController
     {
         /// <summary>
         /// Used to filter the sessions of a group.
@@ -65,44 +65,12 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public bool IsGroupEmpty() => _group.IsEmpty();
 
-        private bool _disposed = false;
-
         public SyncPlayController(
             ISessionManager sessionManager,
             ISyncPlayManager syncPlayManager)
         {
             _sessionManager = sessionManager;
             _syncPlayManager = syncPlayManager;
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and optionally managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-        }
-
-        // TODO: use this somewhere
-        private void CheckDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
         }
 
         /// <summary>
@@ -518,6 +486,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 var runTimeTicks = _group.PlayingItem.RunTimeTicks ?? 0;
                 ticks = ticks > runTimeTicks ? runTimeTicks : ticks;
             }
+
             return ticks;
         }
 
@@ -541,7 +510,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 PlayingItemName = _group.PlayingItem.Name,
                 PlayingItemId = _group.PlayingItem.Id.ToString(),
                 PositionTicks = _group.PositionTicks,
-                Participants = _group.Participants.Values.Select(session => session.Session.UserName).Distinct().ToList().AsReadOnly()
+                Participants = _group.Participants.Values.Select(session => session.Session.UserName).Distinct().ToList()
             };
         }
     }
