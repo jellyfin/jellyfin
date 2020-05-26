@@ -144,14 +144,6 @@ namespace MediaBrowser.Controller.Library
         UserDto GetUserDto(User user, string remoteEndPoint = null);
 
         /// <summary>
-        /// Gets the user public dto.
-        /// </summary>
-        /// <param name="user">Ther user.</param>\
-        /// <param name="remoteEndPoint">The remote end point.</param>
-        /// <returns>A public UserDto, aka a UserDto stripped of personal data.</returns>
-        PublicUserDto GetPublicUserDto(User user, string remoteEndPoint = null);
-
-        /// <summary>
         /// Authenticates the user.
         /// </summary>
         Task<User> AuthenticateUser(string username, string password, string passwordSha1, string remoteEndPoint, bool isUserSession);
