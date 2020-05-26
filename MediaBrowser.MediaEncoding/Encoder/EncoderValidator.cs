@@ -261,10 +261,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var found = output.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries).Distinct().ToList();
-
-            found.RemoveAt(0);
-
+            var found = output.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
             _logger.LogInformation("Available hwaccel types: {Types}", found);
 
             return found;
