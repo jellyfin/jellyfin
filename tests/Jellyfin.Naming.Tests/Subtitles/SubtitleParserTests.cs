@@ -23,9 +23,9 @@ namespace Jellyfin.Naming.Tests.Subtitles
 
             var result = parser.ParseFile(input);
 
-            Assert.Equal(language, result.Language, true);
-            Assert.Equal(isDefault, result.IsDefault);
-            Assert.Equal(isForced, result.IsForced);
+            Assert.Equal(language, result?.Language, true);
+            Assert.Equal(isDefault, result?.IsDefault);
+            Assert.Equal(isForced, result?.IsForced);
         }
 
         [Theory]

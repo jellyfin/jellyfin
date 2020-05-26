@@ -22,7 +22,6 @@ using Emby.Dlna.Ssdp;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
-using Emby.Server.Implementations.Activity;
 using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
@@ -83,7 +82,6 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
-using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dlna;
@@ -632,9 +630,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
-            serviceCollection.AddSingleton<IActivityRepository, ActivityRepository>();
-            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
-
             serviceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
             serviceCollection.AddSingleton<ISessionContext, SessionContext>();
 
@@ -665,7 +660,6 @@ namespace Emby.Server.Implementations
             ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
             ((SqliteUserRepository)Resolve<IUserRepository>()).Initialize();
-            ((ActivityRepository)Resolve<IActivityRepository>()).Initialize();
 
             SetStaticProperties();
 
