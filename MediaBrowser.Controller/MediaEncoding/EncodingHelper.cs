@@ -446,12 +446,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string GetInputArgument(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var arg = new StringBuilder();
-            var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions);
-            var outputVideoCodec = GetVideoEncoder(state, encodingOptions);
-            bool isVaapiDecoder = (videoDecoder ?? string.Empty).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
-            bool isVaapiEncoder = (outputVideoCodec ?? string.Empty).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
-            bool isQsvDecoder = (videoDecoder ?? string.Empty).IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
-            bool isQsvEncoder = (outputVideoCodec ?? string.Empty).IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
+            var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions) ?? string.Empty;
+            var outputVideoCodec = GetVideoEncoder(state, encodingOptions) ?? string.Empty;
+            bool isVaapiDecoder = videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
+            bool isVaapiEncoder = outputVideoCodec.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
+            bool isQsvDecoder = videoDecoder.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
+            bool isQsvEncoder = outputVideoCodec.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
 
             if (state.IsVideoRequest
                 && string.Equals(encodingOptions.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
@@ -463,7 +463,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                         .Append(encodingOptions.VaapiDevice)
                         .Append(" ");
                 }
-                // While using SW decoder and VAAPI encoder
                 else if (!isVaapiDecoder && isVaapiEncoder)
                 {
                     arg.Append("-vaapi_device ")
@@ -1542,8 +1541,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             EncodingOptions options,
             string outputVideoCodec)
         {
-            var outputSizeParam = string.Empty;
+            outputVideoCodec ??= string.Empty;
 
+            var outputSizeParam = string.Empty;
             var request = state.BaseRequest;
 
             // Add resolution params, if specified
@@ -1586,7 +1586,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             var videoSizeParam = string.Empty;
-            var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options);
+            var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options) ?? string.Empty;
 
             // Setup subtitle scaling
             if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
@@ -1606,10 +1606,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // For VAAPI and CUVID decoder
                 // these encoders cannot automatically adjust the size of graphical subtitles to fit the output video,
                 // thus needs to be manually adjusted.
-                if ((videoDecoder ?? string.Empty).IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1
+                if (videoDecoder.IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1
                     || (IsVaapiSupported(state) && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
-                        && ((videoDecoder ?? string.Empty).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
-                            || (outputVideoCodec ?? string.Empty).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1)))
+                        && (videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
+                            || outputVideoCodec.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1)))
                 {
                     var videoStream = state.VideoStream;
                     var inputWidth = videoStream?.Width;
@@ -1651,7 +1651,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
-            else if (IsVaapiSupported(state) && (videoDecoder ?? string.Empty).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
+            else if (IsVaapiSupported(state) && videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
                 && string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 /*
@@ -1662,7 +1662,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outputSizeParam = outputSizeParam.TrimStart(',');
                 retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay\"";
             }
-
             else if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
                 /*
@@ -1670,7 +1669,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     For software decoding and hardware encoding option, frames must be hwuploaded into hardware
                     with fixed frame size.
                 */
-                if ((videoDecoder ?? string.Empty).IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1)
+                if (videoDecoder.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv=x=(W-w)/2:y=(H-h)/2{3}\"";
                 }
