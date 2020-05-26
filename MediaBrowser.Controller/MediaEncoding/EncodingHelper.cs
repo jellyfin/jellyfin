@@ -2880,21 +2880,21 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         public string GetHwaccelType(EncodingJobInfo state, EncodingOptions options, string videoCodec)
         {
-            var IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
-            var IsNewWindows = Environment.OSVersion.Version.Major > 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor > 1);
-            var IsDxvaSupported = _mediaEncoder.SupportsHwaccel("dxva2") || _mediaEncoder.SupportsHwaccel("d3d11va");
+            var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
+            var isWindows8orLater = Environment.OSVersion.Version.Major > 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor > 1);
+            var isDxvaSupported = _mediaEncoder.SupportsHwaccel("dxva2") || _mediaEncoder.SupportsHwaccel("d3d11va");
 
-            if ((IsDxvaSupported || IsVaapiSupported(state)) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase))
+            if ((isDxvaSupported || IsVaapiSupported(state)) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase))
             {
-                if (!IsWindows)
+                if (!isWindows)
                 {
                     return "-hwaccel vaapi";
                 }
-                else if (IsWindows && IsNewWindows)
+                else if (isWindows8orLater)
                 {
                     return "-hwaccel d3d11va";
                 }
-                else if (IsWindows && !IsNewWindows)
+                else
                 {
                     return "-hwaccel dxva2";
                 }
