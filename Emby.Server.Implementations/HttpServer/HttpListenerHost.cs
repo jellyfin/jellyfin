@@ -230,6 +230,12 @@ namespace Emby.Server.Implementations.HttpServer
 
             httpRes.StatusCode = statusCode;
 
+            if (!_hostEnvironment.IsDevelopment())
+            {
+                await httpRes.WriteAsync("Error processing request.").ConfigureAwait(false);
+                return;
+            }
+
             var errContent = NormalizeExceptionMessage(ex) ?? string.Empty;
             httpRes.ContentType = "text/plain";
             httpRes.ContentLength = errContent.Length;
