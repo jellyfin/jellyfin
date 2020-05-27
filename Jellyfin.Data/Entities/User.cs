@@ -38,6 +38,11 @@ namespace Jellyfin.Data.Entities
                 throw new ArgumentNullException(nameof(authenticationProviderId));
             }
 
+            if (string.IsNullOrEmpty(passwordResetProviderId))
+            {
+                throw new ArgumentNullException(nameof(passwordResetProviderId));
+            }
+
             Username = username;
             AuthenticationProviderId = authenticationProviderId;
             PasswordResetProviderId = passwordResetProviderId;
