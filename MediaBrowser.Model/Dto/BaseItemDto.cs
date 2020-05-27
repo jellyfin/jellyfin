@@ -512,9 +512,10 @@ namespace MediaBrowser.Model.Dto
 
         /// <summary>
         /// Gets or sets the blurhashes for the image tags.
+        /// Maps image type to dictionary mapping image tag to blurhash value.
         /// </summary>
         /// <value>The blurhashes.</value>
-        public Dictionary<ImageType, string> ImageBlurHashes { get; set; }
+        public Dictionary<ImageType, Dictionary<string, string>> ImageBlurHashes { get; set; }
 
         /// <summary>
         /// Gets or sets the series studio.
