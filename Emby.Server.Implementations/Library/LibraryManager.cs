@@ -1841,7 +1841,15 @@ namespace Emby.Server.Implementations.Library
                 ImageDimensions size = _imageProcessor.GetImageDimensions(item, img);
                 img.Width = size.Width;
                 img.Height = size.Height;
-                img.BlurHash = _imageProcessor.GetImageBlurHash(img.Path);
+                try
+                {
+                    img.BlurHash = _imageProcessor.GetImageBlurHash(img.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot compute blurhash for {0}", img.Path);
+                    img.BlurHash = string.Empty;
+                }
             });
 
             _itemRepository.SaveImages(item);
