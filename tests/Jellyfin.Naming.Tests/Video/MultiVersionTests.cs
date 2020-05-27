@@ -12,7 +12,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiEdition1()
+        private void TestMultiEdition1()
         {
             var files = new[]
             {
@@ -28,7 +28,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -37,7 +36,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiEdition2()
+        private void TestMultiEdition2()
         {
             var files = new[]
             {
@@ -53,7 +52,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -76,7 +74,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -85,7 +82,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestLetterFolders()
+        private void TestLetterFolders()
         {
             var files = new[]
             {
@@ -104,7 +101,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(7, result.Count);
@@ -114,7 +110,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersionLimit()
+        private void TestMultiVersionLimit()
         {
             var files = new[]
             {
@@ -134,7 +130,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -144,7 +139,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersionLimit2()
+        private void TestMultiVersionLimit2()
         {
             var files = new[]
             {
@@ -165,7 +160,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(9, result.Count);
@@ -175,7 +169,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion3()
+        private void TestMultiVersion3()
         {
             var files = new[]
             {
@@ -192,7 +186,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(5, result.Count);
@@ -202,7 +195,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion4()
+        private void TestMultiVersion4()
         {
             // Test for false positive
 
@@ -221,7 +214,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(5, result.Count);
@@ -231,7 +223,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion5()
+        private void TestMultiVersion5()
         {
             var files = new[]
             {
@@ -251,7 +243,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -264,7 +255,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion6()
+        private void TestMultiVersion6()
         {
             var files = new[]
             {
@@ -284,7 +275,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -297,7 +287,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion7()
+        private void TestMultiVersion7()
         {
             var files = new[]
             {
@@ -311,7 +301,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(2, result.Count);
@@ -319,7 +308,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion8()
+        private void TestMultiVersion8()
         {
             // This is not actually supported yet
 
@@ -340,7 +329,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -353,7 +341,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion9()
+        private void TestMultiVersion9()
         {
             // Test for false positive
 
@@ -372,7 +360,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Equal(5, result.Count);
@@ -382,7 +369,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion10()
+        private void TestMultiVersion10()
         {
             var files = new[]
             {
@@ -396,7 +383,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);
@@ -406,7 +392,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         // FIXME
         // [Fact]
-        public void TestMultiVersion11()
+        private void TestMultiVersion11()
         {
             // Currently not supported but we should probably handle this.
 
@@ -422,7 +408,6 @@ namespace Jellyfin.Naming.Tests.Video
             {
                 IsDirectory = false,
                 FullName = i
-
             }).ToList()).ToList();
 
             Assert.Single(result);

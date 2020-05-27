@@ -25,8 +25,8 @@ namespace Jellyfin.Naming.Tests.Video
             var result =
                 new VideoResolver(_namingOptions).ResolveFile(@"C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.3d.hsbs.mkv");
 
-            Assert.Equal("hsbs", result.Format3D);
-            Assert.Equal("Oblivion", result.Name);
+            Assert.Equal("hsbs", result?.Format3D);
+            Assert.Equal("Oblivion", result?.Name);
         }
 
         [Fact]
