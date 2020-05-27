@@ -251,10 +251,18 @@ namespace Jellyfin.Drawing.Skia
             // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
             // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
             // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
-            float xComp = MathF.Sqrt(16.0f * dims.Width / dims.Height);
-            float yComp = xComp * dims.Height / dims.Width;
+            float xCompF = MathF.Sqrt(16.0f * dims.Width / dims.Height);
+            float yCompF = xCompF * dims.Height / dims.Width;
 
-            return BlurHashEncoder.Encode(Math.Min((int)xComp + 1, 9), Math.Min((int)yComp + 1, 9), path);
+            int xComp = Math.Min((int)xCompF + 1, 9);
+            int yComp = Math.Min((int)yCompF + 1, 9);
+
+            // FIXME: current lib is bugged for xComp != yComp
+            // remove when https://github.com/Bond-009/BlurHashSharp/pull/1 is merged
+            int tmp = Math.Max(xComp, yComp);
+            xComp = yComp = tmp;
+
+            return BlurHashEncoder.Encode(xComp, yComp, path);
         }
 
         private static bool HasDiacritics(string text)
