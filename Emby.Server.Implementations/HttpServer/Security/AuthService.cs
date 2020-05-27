@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Authentication;
 using Emby.Server.Implementations.SocketSharp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -68,7 +69,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (user == null && auth.UserId != Guid.Empty)
             {
-                throw new SecurityException("User with Id " + auth.UserId + " not found");
+                throw new AuthenticationException("User with Id " + auth.UserId + " not found");
             }
 
             if (user != null)
@@ -108,18 +109,12 @@ namespace Emby.Server.Implementations.HttpServer.Security
         {
             if (user.Policy.IsDisabled)
             {
-                throw new SecurityException("User account has been disabled.")
-                {
-                    SecurityExceptionType = SecurityExceptionType.Unauthenticated
-                };
+                throw new SecurityException("User account has been disabled.");
             }
 
             if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(request.RemoteIp))
             {
-                throw new SecurityException("User account has been disabled.")
-                {
-                    SecurityExceptionType = SecurityExceptionType.Unauthenticated
-                };
+                throw new SecurityException("User account has been disabled.");
             }
 
             if (!user.Policy.IsAdministrator
@@ -128,10 +123,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 request.Response.Headers.Add("X-Application-Error-Code", "ParentalControl");
 
-                throw new SecurityException("This user account is not allowed access at this time.")
-                {
-                    SecurityExceptionType = SecurityExceptionType.ParentalControl
-                };
+                throw new SecurityException("This user account is not allowed access at this time.");
             }
         }
 
@@ -190,10 +182,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 if (user == null || !user.Policy.IsAdministrator)
                 {
-                    throw new SecurityException("User does not have admin access.")
-                    {
-                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
-                    };
+                    throw new SecurityException("User does not have admin access.");
                 }
             }
 
@@ -201,10 +190,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 if (user == null || !user.Policy.EnableContentDeletion)
                 {
-                    throw new SecurityException("User does not have delete access.")
-                    {
-                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
-                    };
+                    throw new SecurityException("User does not have delete access.");
                 }
             }
 
@@ -212,10 +198,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 if (user == null || !user.Policy.EnableContentDownloading)
                 {
-                    throw new SecurityException("User does not have download access.")
-                    {
-                        SecurityExceptionType = SecurityExceptionType.Unauthenticated
-                    };
+                    throw new SecurityException("User does not have download access.");
                 }
             }
         }
@@ -230,14 +213,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
         {
             if (string.IsNullOrEmpty(token))
             {
-                throw new SecurityException("Access token is required.");
+                throw new AuthenticationException("Access token is required.");
             }
 
             var info = GetTokenInfo(request);
 
             if (info == null)
             {
-                throw new SecurityException("Access token is invalid or expired.");
+                throw new AuthenticationException("Access token is invalid or expired.");
             }
 
             //if (!string.IsNullOrEmpty(info.UserId))

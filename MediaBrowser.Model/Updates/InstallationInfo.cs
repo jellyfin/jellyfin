@@ -9,10 +9,10 @@ namespace MediaBrowser.Model.Updates
     public class InstallationInfo
     {
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets or sets the guid.
         /// </summary>
-        /// <value>The id.</value>
-        public Guid Id { get; set; }
+        /// <value>The guid.</value>
+        public string Guid { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -21,21 +21,9 @@ namespace MediaBrowser.Model.Updates
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly guid.
-        /// </summary>
-        /// <value>The guid of the assembly.</value>
-        public string AssemblyGuid { get; set; }
-
-        /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
         public string Version { get; set; }
-
-        /// <summary>
-        /// Gets or sets the update class.
-        /// </summary>
-        /// <value>The update class.</value>
-        public PackageVersionClass UpdateClass { get; set; }
     }
 }

@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -7,29 +5,36 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.Channels
 {
+    /// <summary>
+    /// The "Refresh Channels" scheduled task.
+    /// </summary>
     public class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly IChannelManager _channelManager;
-        private readonly IUserManager _userManager;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RefreshChannelsScheduledTask"/> class.
+        /// </summary>
+        /// <param name="channelManager">The channel manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="localization">The localization manager.</param>
         public RefreshChannelsScheduledTask(
             IChannelManager channelManager,
-            IUserManager userManager,
             ILogger<RefreshChannelsScheduledTask> logger,
             ILibraryManager libraryManager,
             ILocalizationManager localization)
         {
             _channelManager = channelManager;
-            _userManager = userManager;
             _logger = logger;
             _libraryManager = libraryManager;
             _localization = localization;
@@ -63,7 +68,7 @@ namespace Emby.Server.Implementations.Channels
 
             await manager.RefreshChannels(new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
 
-            await new ChannelPostScanTask(_channelManager, _userManager, _logger, _libraryManager).Run(progress, cancellationToken)
+            await new ChannelPostScanTask(_channelManager, _logger, _libraryManager).Run(progress, cancellationToken)
                     .ConfigureAwait(false);
         }
 
@@ -72,7 +77,6 @@ namespace Emby.Server.Implementations.Channels
         {
             return new[]
             {
-
                 // Every so often
                 new TaskTriggerInfo
                 {

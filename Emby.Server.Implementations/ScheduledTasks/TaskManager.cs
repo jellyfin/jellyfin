@@ -32,22 +32,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
             new ConcurrentQueue<Tuple<Type, TaskOptions>>();
 
-        /// <summary>
-        /// Gets or sets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
         private readonly IJsonSerializer _jsonSerializer;
-
-        /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
         private readonly IApplicationPaths _applicationPaths;
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
@@ -56,17 +42,17 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="fileSystem">The filesystem manager.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,
             IJsonSerializer jsonSerializer,
-            ILoggerFactory loggerFactory,
+            ILogger<TaskManager> logger,
             IFileSystem fileSystem)
         {
             _applicationPaths = applicationPaths;
             _jsonSerializer = jsonSerializer;
-            _logger = loggerFactory.CreateLogger(nameof(TaskManager));
+            _logger = logger;
             _fileSystem = fileSystem;
 
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();

@@ -1,4 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{3998657B-1CCC-49DD-A19F-275DC8495F57}</ProjectGuid>
+  </PropertyGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -16,5 +21,15 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Emby.Naming\Emby.Naming.csproj" />
   </ItemGroup>
+  
+  <!-- Code Analyzers-->
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
 
 </Project>

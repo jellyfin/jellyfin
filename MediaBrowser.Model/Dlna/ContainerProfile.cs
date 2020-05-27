@@ -2,8 +2,8 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Linq;
 using System.Xml.Serialization;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -74,7 +74,7 @@ namespace MediaBrowser.Model.Dlna
 
                 foreach (var container in allInputContainers)
                 {
-                    if (ListHelper.ContainsIgnoreCase(profileContainers, container))
+                    if (profileContainers.Contains(container, StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -88,7 +88,7 @@ namespace MediaBrowser.Model.Dlna
 
                 foreach (var container in allInputContainers)
                 {
-                    if (ListHelper.ContainsIgnoreCase(profileContainers, container))
+                    if (profileContainers.Contains(container, StringComparer.OrdinalIgnoreCase))
                     {
                         return true;
                     }
