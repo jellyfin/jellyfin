@@ -43,8 +43,8 @@ namespace Emby.Server.Implementations.Library
             "**/System Volume Information/**",
             "**/.grab/**",
 
-            // Unix hidden files and directories
-            "**/.*/**",
+            // MacOS hidden files and directories
+            "**/._*/**",
 
             // thumbs.db
             "**/thumbs.db",
