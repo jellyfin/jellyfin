@@ -6,6 +6,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
@@ -70,7 +71,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 foreach (var entry in queryResult)
                 {
-                    UserMockup mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob());
+                    UserMockup mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob(), JsonDefaults.GetOptions());
                     var userDataDir = Path.Combine(_paths.UserConfigurationDirectoryPath, mockup.Name);
 
                     var config = File.Exists(Path.Combine(userDataDir, "config.xml"))

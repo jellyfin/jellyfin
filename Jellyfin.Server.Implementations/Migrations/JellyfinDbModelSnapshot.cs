@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("jellyfin")
-                .HasAnnotation("ProductVersion", "3.1.3");
+                .HasAnnotation("ProductVersion", "3.1.4");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -124,7 +124,8 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(512);
 
                     b.HasKey("Id");
 
@@ -324,6 +325,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasMaxLength(255);
 
                     b.Property<int>("SubtitleMode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SyncPlayAccess")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Username")

@@ -17,7 +17,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Path = table.Column<string>(nullable: false),
+                    Path = table.Column<string>(maxLength: 512, nullable: false),
                     LastModified = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -58,6 +58,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     RemoteClientBitrateLimit = table.Column<int>(nullable: true),
                     InternalId = table.Column<long>(nullable: false),
                     ProfileImageId = table.Column<int>(nullable: true),
+                    SyncPlayAccess = table.Column<int>(nullable: false),
                     RowVersion = table.Column<uint>(nullable: false)
                 },
                 constraints: table =>

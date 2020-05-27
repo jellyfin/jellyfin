@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
@@ -40,7 +41,7 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        [JsonIgnore]
+        [XmlIgnore]
         [Key]
         [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -49,6 +50,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets the id of the associated user.
         /// </summary>
+        [XmlIgnore]
         [Required]
         [ForeignKey("Id")]
         public Guid UserId { get; protected set; }
