@@ -1820,23 +1820,44 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public void UpdateImages(BaseItem item)
+        private bool ImageNeedsRefresh(ItemImageInfo image)
+        {
+            if (image.Path != null && image.IsLocalFile)
+            {
+                if (image.Width == 0 || image.Height == 0 || string.IsNullOrEmpty(image.BlurHash))
+                {
+                    return true;
+                }
+
+                try
+                {
+                    return _fileSystem.GetLastWriteTimeUtc(image.Path) != image.DateModified;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot get file info for {0}", image.Path);
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        public void UpdateImages(BaseItem item, bool forceUpdate = false)
         {
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var outdated = item.ImageInfos
-                .Where(i => (i.IsLocalFile && (i.Width == 0 || i.Height == 0 || string.IsNullOrEmpty(i.BlurHash))))
-                .ToList();
-            if (outdated.Count == 0)
+            var outdated = forceUpdate ? item.ImageInfos : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
+            if (outdated.Length == 0)
             {
                 RegisterItem(item);
                 return;
             }
 
-            outdated.ForEach(img =>
+            foreach (var img in outdated)
             {
                 ImageDimensions size = _imageProcessor.GetImageDimensions(item, img);
                 img.Width = size.Width;
@@ -1850,10 +1871,18 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Cannot compute blurhash for {0}", img.Path);
                     img.BlurHash = string.Empty;
                 }
-            });
+
+                try
+                {
+                    img.DateModified = _fileSystem.GetLastWriteTimeUtc(img.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot update DateModified for {0}", img.Path);
+                }
+            }
 
             _itemRepository.SaveImages(item);
-
             RegisterItem(item);
         }
 
@@ -1874,7 +1903,7 @@ namespace Emby.Server.Implementations.Library
 
                 item.DateLastSaved = DateTime.UtcNow;
 
-                UpdateImages(item);
+                UpdateImages(item, updateReason >= ItemUpdateType.ImageUpdate);
             }
 
             _itemRepository.SaveItems(itemsList, cancellationToken);
