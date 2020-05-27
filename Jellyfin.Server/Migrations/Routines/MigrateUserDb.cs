@@ -116,8 +116,8 @@ namespace Jellyfin.Server.Migrations.Routines
                         SubtitleLanguagePreference = config.SubtitleLanguagePreference,
                         Password = mockup.Password,
                         EasyPassword = mockup.EasyPassword,
-                        LastLoginDate = mockup.LastLoginDate ?? DateTime.MinValue,
-                        LastActivityDate = mockup.LastActivityDate ?? DateTime.MinValue
+                        LastLoginDate = mockup.LastLoginDate,
+                        LastActivityDate = mockup.LastActivityDate
                     };
 
                     if (mockup.ImageInfos.Length > 0)
@@ -196,9 +196,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
             public string EasyPassword { get; set; }
 
-            public DateTime? LastLoginDate { get; set; }
+            public DateTime LastLoginDate { get; set; }
 
-            public DateTime? LastActivityDate { get; set; }
+            public DateTime LastActivityDate { get; set; }
 
             public string Name { get; set; }
 
