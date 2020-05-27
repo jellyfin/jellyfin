@@ -8,7 +8,6 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
 

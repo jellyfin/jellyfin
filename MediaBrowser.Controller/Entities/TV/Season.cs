@@ -6,9 +6,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -170,7 +168,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetEpisodes(user, new DtoOptions(true));
         }
 
-        protected override bool GetBlockUnratedValue(User config)
+        protected override bool GetBlockUnratedValue(User user)
         {
             // Don't block. Let either the entire series rating or episode rating determine it
             return false;

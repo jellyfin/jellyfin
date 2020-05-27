@@ -4,7 +4,6 @@ using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities

@@ -625,12 +625,9 @@ namespace MediaBrowser.Api.Images
 
             var outputFormats = GetOutputFormats(request);
 
-            return GetImageResult(
-                user,
-                user.Id,
+            return GetImageResult(user.Id,
                 request,
                 imageInfo,
-                false,
                 outputFormats,
                 cacheDuration,
                 responseHeaders,
@@ -638,11 +635,9 @@ namespace MediaBrowser.Api.Images
         }
 
         private async Task<object> GetImageResult(
-            User user,
             Guid itemId,
             ImageRequest request,
             ItemImageInfo info,
-            bool cropWhitespace,
             IReadOnlyCollection<ImageFormat> supportedFormats,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
