@@ -61,6 +61,7 @@ namespace Jellyfin.Data.Entities
             EnableAutoLogin = false;
             PlayDefaultAudioTrack = true;
             SubtitleMode = SubtitlePlaybackMode.Default;
+            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
 
             AddDefaultPermissions();
             AddDefaultPreferences();
@@ -318,6 +319,9 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the user's profile image. Can be <c>null</c>.
         /// </summary>
         public virtual ImageInfo ProfileImage { get; set; }
+
+        [Required]
+        public SyncPlayAccess SyncPlayAccess { get; set; }
 
         /// <summary>
         /// Gets or sets the row version.

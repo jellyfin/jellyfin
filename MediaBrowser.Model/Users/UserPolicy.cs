@@ -1,10 +1,10 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Text.Json.Serialization;
 using System.Xml.Serialization;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Model.Configuration;
+using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
 
 namespace MediaBrowser.Model.Users
 {

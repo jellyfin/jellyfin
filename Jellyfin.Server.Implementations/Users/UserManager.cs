@@ -352,31 +352,9 @@ namespace Jellyfin.Server.Implementations.Users
                     EnabledChannels = user.GetPreference(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
                     EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders),
-                    EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders)
+                    EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
+                    SyncPlayAccess = user.SyncPlayAccess
                 }
-            };
-        }
-
-        /// <inheritdoc/>
-        public PublicUserDto GetPublicUserDto(User user, string remoteEndPoint = null)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user);
-            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
-
-            bool hasPassword = user.EnableLocalPassword &&
-                               !string.IsNullOrEmpty(remoteEndPoint) &&
-                               _networkManager.IsInLocalNetwork(remoteEndPoint) ? hasConfiguredEasyPassword : hasConfiguredPassword;
-
-            return new PublicUserDto
-            {
-                Name = user.Username,
-                HasPassword = hasPassword,
-                HasConfiguredPassword = hasConfiguredPassword
             };
         }
 
@@ -635,6 +613,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.PasswordResetProviderId = policy.PasswordResetProviderId;
             user.InvalidLoginAttemptCount = policy.InvalidLoginAttemptCount;
             user.LoginAttemptsBeforeLockout = maxLoginAttempts;
+            user.SyncPlayAccess = policy.SyncPlayAccess;
             user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
             user.SetPermission(PermissionKind.IsHidden, policy.IsHidden);
             user.SetPermission(PermissionKind.IsDisabled, policy.IsDisabled);
