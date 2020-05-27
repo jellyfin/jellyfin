@@ -150,9 +150,7 @@ namespace Emby.Notifications.Api
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetNotificationsSummary request)
         {
-            return new NotificationsSummary
-            {
-            };
+            return new NotificationsSummary();
         }
 
         public Task Post(AddAdminNotification request)
@@ -166,8 +164,8 @@ namespace Emby.Notifications.Api
                 Name = request.Name,
                 Url = request.Url,
                 UserIds = _userManager.Users
-                    .Where(p => p.Permissions.Select(x => x.Kind).Contains(PermissionKind.IsAdministrator))
-                    .Select(p => p.Id)
+                    .Where(user => user.HasPermission(PermissionKind.IsAdministrator))
+                    .Select(user => user.Id)
                     .ToArray()
             };
 

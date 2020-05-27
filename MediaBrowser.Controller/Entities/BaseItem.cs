@@ -2760,14 +2760,7 @@ namespace MediaBrowser.Controller.Entities
                 return this;
             }
 
-            foreach (var parent in GetParents())
-            {
-                if (parent.IsTopParent)
-                {
-                    return parent;
-                }
-            }
-            return null;
+            return GetParents().FirstOrDefault(parent => parent.IsTopParent);
         }
 
         [JsonIgnore]

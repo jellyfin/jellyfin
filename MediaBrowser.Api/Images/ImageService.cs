@@ -477,7 +477,7 @@ namespace MediaBrowser.Api.Images
             }
             catch (IOException e)
             {
-                // TODO: Log this
+                Logger.LogError(e, "Error deleting user profile image:");
             }
 
             user.ProfileImage = null;
@@ -820,14 +820,14 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
-        private ItemImageInfo GetImageInfo(ImageRequest request, BaseItem item)
+        private static ItemImageInfo GetImageInfo(ImageRequest request, BaseItem item)
         {
             var index = request.Index ?? 0;
 
             return item.GetImageInfo(request.Type, index);
         }
 
-        private ItemImageInfo GetImageInfo(ImageRequest request, User user)
+        private static ItemImageInfo GetImageInfo(ImageRequest request, User user)
         {
             var info = new ItemImageInfo
             {
@@ -859,15 +859,7 @@ namespace MediaBrowser.Api.Images
         /// <returns>Task.</returns>
         public async Task PostImage(BaseItem entity, Stream inputStream, ImageType imageType, string mimeType)
         {
-            using var reader = new StreamReader(inputStream);
-            var text = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-            var bytes = Convert.FromBase64String(text);
-
-            var memoryStream = new MemoryStream(bytes)
-            {
-                Position = 0
-            };
+            var memoryStream = await GetMemoryStream(inputStream);
 
             // Handle image/png; charset=utf-8
             mimeType = mimeType.Split(';').FirstOrDefault();
@@ -877,16 +869,21 @@ namespace MediaBrowser.Api.Images
             entity.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }
 
-        public async Task PostImage(User user, Stream inputStream, string mimeType)
+        private static async Task<MemoryStream> GetMemoryStream(Stream inputStream)
         {
             using var reader = new StreamReader(inputStream);
             var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
             var bytes = Convert.FromBase64String(text);
-            var memoryStream = new MemoryStream(bytes)
+            return new MemoryStream(bytes)
             {
                 Position = 0
             };
+        }
+
+        private async Task PostImage(User user, Stream inputStream, string mimeType)
+        {
+            var memoryStream = await GetMemoryStream(inputStream);
 
             // Handle image/png; charset=utf-8
             mimeType = mimeType.Split(';').FirstOrDefault();
