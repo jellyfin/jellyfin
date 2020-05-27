@@ -252,18 +252,15 @@ namespace MediaBrowser.Providers.Manager
 
         private void AddPersonImage(Person personEntity, LibraryOptions libraryOptions, string imageUrl, CancellationToken cancellationToken)
         {
-            //if (libraryOptions.DownloadImagesInAdvance)
-            //{
-            //    try
-            //    {
-            //        await ProviderManager.SaveImage(personEntity, imageUrl, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
-            //        return;
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Logger.LogError(ex, "Error in AddPersonImage");
-            //    }
-            //}
+            try
+            {
+                await ProviderManager.SaveImage(personEntity, imageUrl, ImageType.Primary, null, cancellationToken).ConfigureAwait(false);
+                return;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error in AddPersonImage");
+            }
 
             personEntity.SetImage(new ItemImageInfo
             {

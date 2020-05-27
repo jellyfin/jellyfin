@@ -495,17 +495,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (libraryOptions.DownloadImagesInAdvance)
-            {
-                return false;
-            }
-
-            //if (!item.IsSaveLocalMetadataEnabled())
-            //{
-            //    return true;
-            //}
-
-            return true;
+            return false;
         }
 
         private void SaveImageStub(BaseItem item, ImageType imageType, IEnumerable<string> urls)

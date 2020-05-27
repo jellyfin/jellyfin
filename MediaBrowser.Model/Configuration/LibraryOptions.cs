@@ -12,7 +12,6 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableRealtimeMonitor { get; set; }
         public bool EnableChapterImageExtraction { get; set; }
         public bool ExtractChapterImagesDuringLibraryScan { get; set; }
-        public bool DownloadImagesInAdvance { get; set; }
         public MediaPathInfo[] PathInfos { get; set; }
 
         public bool SaveLocalMetadata { get; set; }
