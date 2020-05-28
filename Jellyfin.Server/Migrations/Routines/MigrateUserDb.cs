@@ -196,9 +196,9 @@ namespace Jellyfin.Server.Migrations.Routines
 
             public string EasyPassword { get; set; }
 
-            public DateTime LastLoginDate { get; set; }
+            public DateTime? LastLoginDate { get; set; }
 
-            public DateTime LastActivityDate { get; set; }
+            public DateTime? LastActivityDate { get; set; }
 
             public string Name { get; set; }
 

@@ -134,11 +134,8 @@ namespace Emby.Server.Implementations.SyncPlay
             var item = _libraryManager.GetItemById(itemId);
 
             // Check ParentalRating access
-            var hasParentalRatingAccess = true;
-            if (user.MaxParentalAgeRating.HasValue)
-            {
-                hasParentalRatingAccess = item.InheritedParentalRatingValue <= user.MaxParentalAgeRating.Value;
-            }
+            var hasParentalRatingAccess = !user.MaxParentalAgeRating.HasValue
+                || item.InheritedParentalRatingValue <= user.MaxParentalAgeRating;
 
             if (!user.HasPermission(PermissionKind.EnableAllFolders) && hasParentalRatingAccess)
             {
@@ -255,8 +252,7 @@ namespace Emby.Server.Implementations.SyncPlay
             // TODO: determine what happens to users that are in a group and get their permissions revoked
             lock (_groupsLock)
             {
-                ISyncPlayController group;
-                _sessionToGroupMap.TryGetValue(session.Id, out group);
+                _sessionToGroupMap.TryGetValue(session.Id, out var group);
 
                 if (group == null)
                 {
@@ -329,8 +325,7 @@ namespace Emby.Server.Implementations.SyncPlay
 
             lock (_groupsLock)
             {
-                ISyncPlayController group;
-                _sessionToGroupMap.TryGetValue(session.Id, out group);
+                _sessionToGroupMap.TryGetValue(session.Id, out var group);
 
                 if (group == null)
                 {
@@ -340,7 +335,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     {
                         Type = GroupUpdateType.NotInGroup
                     };
-                    _sessionManager.SendSyncPlayGroupUpdate(session.Id.ToString(), error, CancellationToken.None);
+                    _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
                     return;
                 }
 
@@ -367,8 +362,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 throw new InvalidOperationException("Session not in any group!");
             }
 
-            ISyncPlayController tempGroup;
-            _sessionToGroupMap.Remove(session.Id, out tempGroup);
+            _sessionToGroupMap.Remove(session.Id, out var tempGroup);
 
             if (!tempGroup.GetGroupId().Equals(group.GetGroupId()))
             {

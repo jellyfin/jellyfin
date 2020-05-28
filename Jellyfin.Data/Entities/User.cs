@@ -181,12 +181,12 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets the last activity date.
         /// </summary>
-        public DateTime LastActivityDate { get; set; }
+        public DateTime? LastActivityDate { get; set; }
 
         /// <summary>
         /// Gets or sets the last login date.
         /// </summary>
-        public DateTime LastLoginDate { get; set; }
+        public DateTime? LastLoginDate { get; set; }
 
         /// <summary>
         /// Gets or sets the number of login attempts the user can make before they are locked out.

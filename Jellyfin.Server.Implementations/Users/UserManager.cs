@@ -218,7 +218,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             var dbContext = _dbProvider.CreateContext();
 
-            if (!dbContext.Users.Contains(user))
+            if (dbContext.Users.Find(user.Id) == null)
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,

@@ -282,7 +282,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user != null)
             {
-                var userLastActivityDate = user.LastActivityDate;
+                var userLastActivityDate = user.LastActivityDate ?? DateTime.MinValue;
                 user.LastActivityDate = activityDate;
 
                 if ((activityDate - userLastActivityDate).TotalSeconds > 60)
