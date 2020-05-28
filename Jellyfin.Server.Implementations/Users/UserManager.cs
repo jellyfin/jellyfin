@@ -534,11 +534,6 @@ namespace Jellyfin.Server.Implementations.Users
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
-
-            if (_authenticationProviders.Length > 2)
-            {
-                _logger.LogCritical("INVALID NUMBER OF LOGGERS: {0}", _authenticationProviders.Length);
-            }
         }
 
         /// <inheritdoc/>
