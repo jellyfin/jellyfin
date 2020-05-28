@@ -257,11 +257,6 @@ namespace Jellyfin.Drawing.Skia
             int xComp = Math.Min((int)xCompF + 1, 9);
             int yComp = Math.Min((int)yCompF + 1, 9);
 
-            // FIXME: current lib is bugged for xComp != yComp
-            // remove when https://github.com/Bond-009/BlurHashSharp/pull/1 is merged
-            int tmp = Math.Max(xComp, yComp);
-            xComp = yComp = tmp;
-
             return BlurHashEncoder.Encode(xComp, yComp, path);
         }
 
