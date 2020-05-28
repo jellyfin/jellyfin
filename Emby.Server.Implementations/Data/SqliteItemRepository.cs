@@ -1141,21 +1141,21 @@ namespace Emby.Server.Implementations.Data
 
         public string ToValueString(ItemImageInfo image)
         {
-            const string delimeter = "*";
+            const string Delimeter = "*";
 
             var path = image.Path ?? string.Empty;
             var hash = image.BlurHash ?? string.Empty;
 
             return GetPathToSave(path) +
-                   delimeter +
+                   Delimeter +
                    image.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) +
-                   delimeter +
+                   Delimeter +
                    image.Type +
-                   delimeter +
+                   Delimeter +
                    image.Width.ToString(CultureInfo.InvariantCulture) +
-                   delimeter +
+                   Delimeter +
                    image.Height.ToString(CultureInfo.InvariantCulture) +
-                   delimeter +
+                   Delimeter +
                    // Replace delimiters with other characters.
                    // This can be removed when we migrate to a proper DB.
                    hash.Replace('*', '/').Replace('|', '\\');
