@@ -1840,7 +1840,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            return false;
+            return image.Path != null && !image.IsLocalFile;
         }
 
         public void UpdateImages(BaseItem item, bool forceUpdate = false)
@@ -1850,7 +1850,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var outdated = forceUpdate ? item.ImageInfos.Where(i => i.IsLocalFile).ToArray() : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
+            var outdated = forceUpdate ? item.ImageInfos.Where(i => i.Path != null).ToArray() : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
             if (outdated.Length == 0)
             {
                 RegisterItem(item);
@@ -1859,26 +1859,46 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var img in outdated)
             {
-                ImageDimensions size = _imageProcessor.GetImageDimensions(item, img);
-                img.Width = size.Width;
-                img.Height = size.Height;
+                var image = img;
+                if (!img.IsLocalFile)
+                {
+                    try
+                    {
+                        var index = item.GetImageIndex(img);
+                        image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
+                    }
+                    catch (ArgumentException)
+                    {
+                        _logger.LogWarning("Cannot get image index for {0}", img.Path);
+                        continue;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        _logger.LogWarning("Cannot fetch image from {0}", img.Path);
+                        continue;
+                    }
+                }
+
+                ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                image.Width = size.Width;
+                image.Height = size.Height;
                 try
                 {
-                    img.BlurHash = _imageProcessor.GetImageBlurHash(img.Path);
+                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Cannot compute blurhash for {0}", img.Path);
-                    img.BlurHash = string.Empty;
+                    _logger.LogError(ex, "Cannot compute blurhash for {0}", image.Path);
+                    image.BlurHash = string.Empty;
                 }
 
                 try
                 {
-                    img.DateModified = _fileSystem.GetLastWriteTimeUtc(img.Path);
+                    image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Cannot update DateModified for {0}", img.Path);
+                    _logger.LogError(ex, "Cannot update DateModified for {0}", image.Path);
                 }
             }
 
