@@ -321,11 +321,11 @@ namespace Jellyfin.Server.Implementations.Users
                 {
                     MaxParentalRating = user.MaxParentalAgeRating,
                     EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
-                    RemoteClientBitrateLimit = user.RemoteClientBitrateLimit.GetValueOrDefault(),
+                    RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? -1,
                     AuthenticationProviderId = user.AuthenticationProviderId,
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
-                    LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout.GetValueOrDefault(),
+                    LoginAttemptsBeforeLockout = user.LoginAttemptsBeforeLockout ?? -1,
                     IsAdministrator = user.HasPermission(PermissionKind.IsAdministrator),
                     IsHidden = user.HasPermission(PermissionKind.IsHidden),
                     IsDisabled = user.HasPermission(PermissionKind.IsDisabled),
@@ -490,8 +490,6 @@ namespace Jellyfin.Server.Implementations.Users
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
 
-            var action = ForgotPasswordAction.InNetworkRequired;
-
             if (user != null && isInNetwork)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
@@ -500,7 +498,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             return new ForgotPasswordResult
             {
-                Action = action,
+                Action = ForgotPasswordAction.InNetworkRequired,
                 PinFile = string.Empty
             };
         }
@@ -569,7 +567,8 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void UpdateConfiguration(Guid userId, UserConfiguration config)
         {
-            var user = GetUserById(userId);
+            var dbContext = _dbProvider.CreateContext();
+            var user = dbContext.Users.Find(userId) ?? throw new ArgumentException("No user exists with given Id!");
             user.SubtitleMode = config.SubtitleMode;
             user.HidePlayedInLatest = config.HidePlayedInLatest;
             user.EnableLocalPassword = config.EnableLocalPassword;
@@ -587,13 +586,15 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.MyMediaExcludes, config.MyMediaExcludes);
             user.SetPreference(PreferenceKind.LatestItemExcludes, config.LatestItemsExcludes);
 
-            UpdateUser(user);
+            dbContext.Update(user);
+            dbContext.SaveChanges();
         }
 
         /// <inheritdoc/>
         public void UpdatePolicy(Guid userId, UserPolicy policy)
         {
-            var user = GetUserById(userId);
+            var dbContext = _dbProvider.CreateContext();
+            var user = dbContext.Users.Find(userId) ?? throw new ArgumentException("No user exists with given Id!");
             int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
             {
                 -1 => null,
@@ -642,6 +643,9 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
             user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
+
+            dbContext.Update(user);
+            dbContext.SaveChanges();
         }
 
         private bool IsValidUsername(string name)
