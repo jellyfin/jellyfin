@@ -1850,7 +1850,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var outdated = forceUpdate ? item.ImageInfos : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
+            var outdated = forceUpdate ? item.ImageInfos.Where(i => i.IsLocalFile).ToArray() : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
             if (outdated.Length == 0)
             {
                 RegisterItem(item);
