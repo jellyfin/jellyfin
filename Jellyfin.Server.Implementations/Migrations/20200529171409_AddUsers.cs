@@ -1,7 +1,4 @@
-﻿#pragma warning disable CS1591
-#pragma warning disable SA1601
-
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jellyfin.Server.Implementations.Migrations
@@ -39,8 +36,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                     AuthenticationProviderId = table.Column<string>(maxLength: 255, nullable: false),
                     PasswordResetProviderId = table.Column<string>(maxLength: 255, nullable: false),
                     InvalidLoginAttemptCount = table.Column<int>(nullable: false),
-                    LastActivityDate = table.Column<DateTime>(nullable: false),
-                    LastLoginDate = table.Column<DateTime>(nullable: false),
+                    LastActivityDate = table.Column<DateTime>(nullable: true),
+                    LastLoginDate = table.Column<DateTime>(nullable: true),
                     LoginAttemptsBeforeLockout = table.Column<int>(nullable: true),
                     SubtitleMode = table.Column<int>(nullable: false),
                     PlayDefaultAudioTrack = table.Column<bool>(nullable: false),

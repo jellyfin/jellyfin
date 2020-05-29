@@ -277,10 +277,10 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("InvalidLoginAttemptCount")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("LastActivityDate")
+                    b.Property<DateTime?>("LastActivityDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("LastLoginDate")
+                    b.Property<DateTime?>("LastLoginDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("LoginAttemptsBeforeLockout")
