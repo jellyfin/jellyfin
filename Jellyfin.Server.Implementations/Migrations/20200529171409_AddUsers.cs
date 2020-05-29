@@ -1,4 +1,7 @@
-﻿using System;
+﻿#pragma warning disable CS1591
+#pragma warning disable SA1601
+
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jellyfin.Server.Implementations.Migrations
