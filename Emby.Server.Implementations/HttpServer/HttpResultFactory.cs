@@ -56,6 +56,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Gets the result.
         /// </summary>
+        /// <param name="requestContext">The request context.</param>
         /// <param name="content">The content.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="responseHeaders">The response headers.</param>

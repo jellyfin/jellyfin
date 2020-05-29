@@ -65,6 +65,11 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public bool IsGroupEmpty() => _group.IsEmpty();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SyncPlayController" /> class.
+        /// </summary>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="syncPlayManager">The SyncPlay manager.</param>
         public SyncPlayController(
             ISessionManager sessionManager,
             ISyncPlayManager syncPlayManager)

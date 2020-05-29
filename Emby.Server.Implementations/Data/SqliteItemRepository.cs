@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -33,7 +35,7 @@ using SQLitePCL.pretty;
 namespace Emby.Server.Implementations.Data
 {
     /// <summary>
-    /// Class SQLiteItemRepository
+    /// Class SQLiteItemRepository.
     /// </summary>
     public class SqliteItemRepository : BaseSqliteRepository, IItemRepository
     {
@@ -1971,6 +1973,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the chapter.
         /// </summary>
         /// <param name="reader">The reader.</param>
+        /// <param name="item">The item.</param>
         /// <returns>ChapterInfo.</returns>
         private ChapterInfo GetChapter(IReadOnlyList<IResultSetValue> reader, BaseItem item)
         {

@@ -50,7 +50,7 @@ using VideoResolver = Emby.Naming.Video.VideoResolver;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Class LibraryManager
+    /// Class LibraryManager.
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
@@ -135,6 +135,12 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="libraryMonitorFactory">The library monitor.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="providerManagerFactory">The provider manager.</param>
+        /// <param name="userviewManagerFactory">The userview manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
+        /// <param name="itemRepository">The item repository.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILogger<LibraryManager> logger,

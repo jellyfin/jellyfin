@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -199,7 +201,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="tasks">The tasks.</param>
         public void AddTasks(IEnumerable<IScheduledTask> tasks)
         {
-            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _jsonSerializer, _logger, _fileSystem));
+            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _jsonSerializer, _logger));
 
             ScheduledTasks = ScheduledTasks.Concat(list).ToArray();
         }
