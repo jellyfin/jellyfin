@@ -46,13 +46,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg4_mediacodec",
             "vp8_mediacodec",
             "vp9_mediacodec",
-            "h264_videotoolbox",
-            "hevc_videotoolbox",
-            "mpeg2_videotoolbox",
-            "mpeg4_videotoolbox",
-            "vp8_videotoolbox",
-            "vp9_videotoolbox",
-            "vc1_videotoolbox"
+            "h264_opencl",
+            "hevc_opencl",
+            "mpeg2_opencl",
+            "mpeg4_opencl",
+            "vp8_opencl",
+            "vp9_opencl",
+            "vc1_opencl"
         };
 
         private static readonly string[] requiredEncoders = new[]
