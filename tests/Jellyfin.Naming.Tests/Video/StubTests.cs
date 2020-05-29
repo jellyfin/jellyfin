@@ -4,8 +4,10 @@ using Xunit;
 
 namespace Jellyfin.Naming.Tests.Video
 {
-    public class StubTests : BaseVideoTest
+    public class StubTests
     {
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
         [Fact]
         public void TestStubs()
         {
@@ -27,16 +29,14 @@ namespace Jellyfin.Naming.Tests.Video
         public void TestStubName()
         {
             var result =
-                GetParser().ResolveFile(@"C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.dvd.disc");
+                new VideoResolver(_namingOptions).ResolveFile(@"C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.dvd.disc");
 
-            Assert.Equal("Oblivion", result.Name);
+            Assert.Equal("Oblivion", result?.Name);
         }
 
-        private void Test(string path, bool isStub, string stubType)
+        private void Test(string path, bool isStub, string? stubType)
         {
-            var options = new NamingOptions();
-
-            var isStubResult = StubResolver.TryResolveFile(path, options, out var stubTypeResult);
+            var isStubResult = StubResolver.TryResolveFile(path, _namingOptions, out var stubTypeResult);
 
             Assert.Equal(isStub, isStubResult);
 

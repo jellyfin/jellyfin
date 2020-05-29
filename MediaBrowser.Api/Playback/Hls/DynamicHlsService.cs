@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.Playback.Hls
     public class DynamicHlsService : BaseHlsService
     {
         public DynamicHlsService(
-            ILogger logger,
+            ILogger<DynamicHlsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -720,22 +720,203 @@ namespace MediaBrowser.Api.Playback.Hls
             //return state.VideoRequest.VideoBitRate.HasValue;
         }
 
+        /// <summary>
+        /// Get the H.26X level of the output video stream.
+        /// </summary>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>H.26X level of the output video stream.</returns>
+        private int? GetOutputVideoCodecLevel(StreamState state)
+        {
+            string levelString;
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase)
+                && state.VideoStream.Level.HasValue)
+            {
+                levelString = state.VideoStream?.Level.ToString();
+            }
+            else
+            {
+                levelString = state.GetRequestedLevel(state.ActualOutputVideoCodec);
+            }
+
+            if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
+            {
+                return parsedLevel;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a formatted string of the output audio codec, for use in the CODECS field.
+        /// </summary>
+        /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
+        /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>Formatted audio codec string.</returns>
+        private string GetPlaylistAudioCodecs(StreamState state)
+        {
+
+            if (string.Equals(state.ActualOutputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("aac").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetAACString(profile);
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetMP3String();
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetAC3String();
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetEAC3String();
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets a formatted string of the output video codec, for use in the CODECS field.
+        /// </summary>
+        /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
+        /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>Formatted video codec string.</returns>
+        private string GetPlaylistVideoCodecs(StreamState state, string codec, int level)
+        {
+            if (level == 0)
+            {
+                // This is 0 when there's no requested H.26X level in the device profile
+                // and the source is not encoded in H.26X
+                Logger.LogError("Got invalid H.26X level when building CODECS field for HLS master playlist");
+                return string.Empty;
+            }
+
+            if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("h264").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetH264String(profile, level);
+            }
+            else if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("h265").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetH265String(profile, level);
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Appends a CODECS field containing formatted strings of
+        /// the active streams output video and audio codecs.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
+        /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistCodecsField(StringBuilder builder, StreamState state)
+        {
+            // Video
+            string videoCodecs = string.Empty;
+            int? videoCodecLevel = GetOutputVideoCodecLevel(state);
+            if (!string.IsNullOrEmpty(state.ActualOutputVideoCodec) && videoCodecLevel.HasValue)
+            {
+                videoCodecs = GetPlaylistVideoCodecs(state, state.ActualOutputVideoCodec, videoCodecLevel.Value);
+            }
+
+            // Audio
+            string audioCodecs = string.Empty;
+            if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))
+            {
+                audioCodecs = GetPlaylistAudioCodecs(state);
+            }
+
+            StringBuilder codecs = new StringBuilder();
+
+            codecs.Append(videoCodecs)
+                .Append(',')
+                .Append(audioCodecs);
+
+            if (codecs.Length > 1)
+            {
+                builder.Append(",CODECS=\"")
+                    .Append(codecs)
+                    .Append('"');
+            }
+        }
+
+        /// <summary>
+        /// Appends a FRAME-RATE field containing the framerate of the output stream.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistFramerateField(StringBuilder builder, StreamState state)
+        {
+            double? framerate = null;
+            if (state.TargetFramerate.HasValue)
+            {
+                framerate = Math.Round(state.TargetFramerate.GetValueOrDefault(), 3);
+            }
+            else if (state.VideoStream?.RealFrameRate != null)
+            {
+                framerate = Math.Round(state.VideoStream.RealFrameRate.GetValueOrDefault(), 3);
+            }
+
+            if (framerate.HasValue)
+            {
+                builder.Append(",FRAME-RATE=\"")
+                    .Append(framerate.Value)
+                    .Append('"');
+            }
+        }
+
+        /// <summary>
+        /// Appends a RESOLUTION field containing the resolution of the output stream.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistResolutionField(StringBuilder builder, StreamState state)
+        {
+            if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
+            {
+                builder.Append(",RESOLUTION=\"")
+                    .Append(state.OutputWidth.GetValueOrDefault())
+                    .Append('x')
+                    .Append(state.OutputHeight.GetValueOrDefault())
+                    .Append('"');
+            }
+        }
+
         private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string subtitleGroup)
         {
-            var header = "#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.ToString(CultureInfo.InvariantCulture) + ",AVERAGE-BANDWIDTH=" + bitrate.ToString(CultureInfo.InvariantCulture);
+            builder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
+                .Append(bitrate.ToString(CultureInfo.InvariantCulture))
+                .Append(",AVERAGE-BANDWIDTH=")
+                .Append(bitrate.ToString(CultureInfo.InvariantCulture));
 
-            // tvos wants resolution, codecs, framerate
-            //if (state.TargetFramerate.HasValue)
-            //{
-            //    header += string.Format(",FRAME-RATE=\"{0}\"", state.TargetFramerate.Value.ToString(CultureInfo.InvariantCulture));
-            //}
+            AppendPlaylistCodecsField(builder, state);
+
+            AppendPlaylistResolutionField(builder, state);
+
+            AppendPlaylistFramerateField(builder, state);
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
-                header += string.Format(",SUBTITLES=\"{0}\"", subtitleGroup);
+                builder.Append(",SUBTITLES=\"")
+                    .Append(subtitleGroup)
+                    .Append('"');
             }
 
-            builder.AppendLine(header);
+            builder.Append(Environment.NewLine);
             builder.AppendLine(url);
         }
 

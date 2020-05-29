@@ -59,7 +59,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="localization">The localization.</param>
         /// <param name="dtoService">The dto service.</param>
         public ItemsService(
-            ILogger logger,
+            ILogger<ItemsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -242,11 +242,11 @@ namespace MediaBrowser.Api.UserLibrary
                 return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
-            var itemsArray = folder.GetChildren(user, true).ToArray();
+            var itemsArray = folder.GetChildren(user, true);
             return new QueryResult<BaseItem>
             {
                 Items = itemsArray,
-                TotalRecordCount = itemsArray.Length,
+                TotalRecordCount = itemsArray.Count,
                 StartIndex = 0
             };
         }

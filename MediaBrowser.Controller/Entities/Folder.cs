@@ -864,7 +864,7 @@ namespace MediaBrowser.Controller.Entities
                     return SortItemsByRequest(query, result);
                 }
 
-                return result.ToArray();
+                return result;
             }
 
             return GetItemsInternal(query).Items;
