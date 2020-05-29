@@ -648,7 +648,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.SaveChanges();
         }
 
-        private bool IsValidUsername(string name)
+        private static bool IsValidUsername(string name)
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
