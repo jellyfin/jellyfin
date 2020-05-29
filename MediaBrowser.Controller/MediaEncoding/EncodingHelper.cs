@@ -2793,6 +2793,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return "-c:v h264_opencl";
                             }
                             break;
+                        case "hevc":
+                        case "h265":
+                            if (_mediaEncoder.SupportsDecoder("hevc_opencl") && encodingOptions.HardwareDecodingCodecs.Contains("h264", StringComparer.OrdinalIgnoreCase))
+                            {
+                                return (isColorDepth10 &&
+                                    !encodingOptions.EnableDecodingColorDepth10Hevc) ? null : "-c:v hevc_opencl";
+                            }
+                            break;
                         case "mpeg2video":
                             if (_mediaEncoder.SupportsDecoder("mpeg2_opencl") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
                             {
@@ -2820,7 +2828,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                         case "vp9":
                             if (_mediaEncoder.SupportsDecoder("vp9_opencl") && encodingOptions.HardwareDecodingCodecs.Contains("vc1", StringComparer.OrdinalIgnoreCase))
                             {
-                                return "-c:v vp9_opencl;
+                                return (isColorDepth10 &&
+                                    !encodingOptions.EnableDecodingColorDepth10Vp9) ? null : "-c:v vp9_opencl";
                             }
                             break;
                     }
