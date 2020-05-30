@@ -467,10 +467,10 @@ namespace Jellyfin.Server.Implementations.Users
                 if (isUserSession)
                 {
                     user.LastActivityDate = user.LastLoginDate = DateTime.UtcNow;
-                    await UpdateUserAsync(user).ConfigureAwait(false);
                 }
 
                 user.InvalidLoginAttemptCount = 0;
+                await UpdateUserAsync(user).ConfigureAwait(false);
                 _logger.LogInformation("Authentication request for {UserName} has succeeded.", user.Username);
             }
             else
