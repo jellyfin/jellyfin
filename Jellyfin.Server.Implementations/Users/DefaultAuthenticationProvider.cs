@@ -95,7 +95,7 @@ namespace Jellyfin.Server.Implementations.Users
 
         /// <inheritdoc />
         public bool HasPassword(User user)
-            => !string.IsNullOrEmpty(user.Password);
+            => !string.IsNullOrEmpty(user?.Password);
 
         /// <inheritdoc />
         public Task ChangePassword(User user, string newPassword)

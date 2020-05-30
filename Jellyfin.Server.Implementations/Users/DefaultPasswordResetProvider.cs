@@ -52,16 +52,16 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
         {
-            SerializablePasswordReset spr;
-            List<string> usersReset = new List<string>();
+            var usersReset = new List<string>();
             foreach (var resetFile in Directory.EnumerateFiles(_passwordResetFileBaseDir, $"{BaseResetFileName}*"))
             {
+                SerializablePasswordReset spr;
                 await using (var str = File.OpenRead(resetFile))
                 {
                     spr = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
                 }
 
-                if (spr.ExpirationDate < DateTime.Now)
+                if (spr.ExpirationDate < DateTime.UtcNow)
                 {
                     File.Delete(resetFile);
                 }
@@ -70,11 +70,8 @@ namespace Jellyfin.Server.Implementations.Users
                     pin.Replace("-", string.Empty, StringComparison.Ordinal),
                     StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var resetUser = _userManager.GetUserByName(spr.UserName);
-                    if (resetUser == null)
-                    {
-                        throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
-                    }
+                    var resetUser = _userManager.GetUserByName(spr.UserName)
+                        ?? throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");
 
                     await _userManager.ChangePassword(resetUser, pin).ConfigureAwait(false);
                     usersReset.Add(resetUser.Username);
@@ -105,7 +102,21 @@ namespace Jellyfin.Server.Implementations.Users
                 pin = BitConverter.ToString(bytes);
             }
 
-            DateTime expireTime = DateTime.Now.AddMinutes(30);
+            DateTime expireTime = DateTime.UtcNow.AddMinutes(30);
+            string filePath = _passwordResetFileBase + user.Id + ".json";
+            SerializablePasswordReset spr = new SerializablePasswordReset
+            {
+                ExpirationDate = expireTime,
+                Pin = pin,
+                PinFile = filePath,
+                UserName = user.Username
+            };
+
+            await using (FileStream fileStream = File.OpenWrite(filePath))
+            {
+                _jsonSerializer.SerializeToStream(spr, fileStream);
+                await fileStream.FlushAsync().ConfigureAwait(false);
+            }
 
             user.EasyPassword = pin;
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
