@@ -8,63 +8,58 @@ namespace Jellyfin.Data
     {
         public static List<DayOfWeek> GetDaysOfWeek(DynamicDayOfWeek day)
         {
-            return GetDaysOfWeek(new List<DynamicDayOfWeek> { day });
-        }
+            var days = new List<DayOfWeek>(7);
 
-        public static List<DayOfWeek> GetDaysOfWeek(List<DynamicDayOfWeek> days)
-        {
-            var list = new List<DayOfWeek>();
-
-            if (days.Contains(DynamicDayOfWeek.Sunday) ||
-                days.Contains(DynamicDayOfWeek.Weekend) ||
-                days.Contains(DynamicDayOfWeek.Everyday))
+            if (day == DynamicDayOfWeek.Sunday
+                || day == DynamicDayOfWeek.Weekend
+                || day == DynamicDayOfWeek.Everyday)
             {
-                list.Add(DayOfWeek.Sunday);
+                days.Add(DayOfWeek.Sunday);
             }
 
-            if (days.Contains(DynamicDayOfWeek.Saturday) ||
-                days.Contains(DynamicDayOfWeek.Weekend) ||
-                days.Contains(DynamicDayOfWeek.Everyday))
+            if (day == DynamicDayOfWeek.Monday
+                || day == DynamicDayOfWeek.Weekday
+                || day == DynamicDayOfWeek.Everyday)
             {
-                list.Add(DayOfWeek.Saturday);
+                days.Add(DayOfWeek.Monday);
             }
 
-            if (days.Contains(DynamicDayOfWeek.Monday) ||
-                days.Contains(DynamicDayOfWeek.Weekday) ||
-                days.Contains(DynamicDayOfWeek.Everyday))
+            if (day == DynamicDayOfWeek.Tuesday
+                || day == DynamicDayOfWeek.Weekday
+                || day == DynamicDayOfWeek.Everyday)
             {
-                list.Add(DayOfWeek.Monday);
+                days.Add(DayOfWeek.Tuesday);
             }
 
-            if (days.Contains(DynamicDayOfWeek.Tuesday) ||
-                days.Contains(DynamicDayOfWeek.Weekday) ||
-                days.Contains(DynamicDayOfWeek.Everyday))
+            if (day == DynamicDayOfWeek.Wednesday
+                || day == DynamicDayOfWeek.Weekday
+                || day == DynamicDayOfWeek.Everyday)
             {
-                list.Add(DayOfWeek.Tuesday);
+                days.Add(DayOfWeek.Wednesday);
             }
 
-            if (days.Contains(DynamicDayOfWeek.Wednesday) ||
-                days.Contains(DynamicDayOfWeek.Weekday) ||
-                days.Contains(DynamicDayOfWeek.Everyday))
+            if (day == DynamicDayOfWeek.Thursday
+                || day == DynamicDayOfWeek.Weekday
+                || day == DynamicDayOfWeek.Everyday)
             {
-                list.Add(DayOfWeek.Wednesday);
+                days.Add(DayOfWeek.Thursday);
             }
 
-            if (days.Contains(DynamicDayOfWeek.Thursday) ||
-                days.Contains(DynamicDayOfWeek.Weekday) ||
-                days.Contains(DynamicDayOfWeek.Everyday))
+            if (day == DynamicDayOfWeek.Friday
+                || day == DynamicDayOfWeek.Weekday
+                || day == DynamicDayOfWeek.Everyday)
             {
-                list.Add(DayOfWeek.Thursday);
+                days.Add(DayOfWeek.Friday);
             }
 
-            if (days.Contains(DynamicDayOfWeek.Friday) ||
-                days.Contains(DynamicDayOfWeek.Weekday) ||
-                days.Contains(DynamicDayOfWeek.Everyday))
+            if (day == DynamicDayOfWeek.Saturday
+                || day == DynamicDayOfWeek.Weekend
+                || day == DynamicDayOfWeek.Everyday)
             {
-                list.Add(DayOfWeek.Friday);
+                days.Add(DayOfWeek.Saturday);
             }
 
-            return list;
+            return days;
         }
     }
 }
