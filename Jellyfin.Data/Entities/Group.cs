@@ -7,15 +7,26 @@ using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
 {
+    /// <summary>
+    /// An entity representing a group.
+    /// </summary>
     public partial class Group : IHasPermissions, ISavingChanges
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Group"/> class.
+        /// Public constructor with required data.
         /// </summary>
-        protected Group()
+        /// <param name="name">The name of the group.</param>
+        public Group(string name)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            Name = name;
+            Id = Guid.NewGuid();
+
             Permissions = new HashSet<Permission>();
             ProviderMappings = new HashSet<ProviderMapping>();
             Preferences = new HashSet<Preference>();
@@ -24,35 +35,12 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Initializes a new instance of the <see cref="Group"/> class.
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="user"></param>
-        public Group(string name, User user)
+        protected Group()
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            this.Name = name;
-            user.Groups.Add(this);
-
-            this.Permissions = new HashSet<Permission>();
-            this.ProviderMappings = new HashSet<ProviderMapping>();
-            this.Preferences = new HashSet<Preference>();
-
             Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_user0"></param>
-        public static Group Create(string name, User user)
-        {
-            return new Group(name, user);
         }
 
         /*************************************************************************
@@ -60,23 +48,32 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Gets or sets the id of this group.
         /// </summary>
+        /// <remarks>
+        /// Identity, Indexed, Required.
+        /// </remarks>
         [Key]
         [Required]
         public Guid Id { get; protected set; }
 
         /// <summary>
-        /// Required, Max length = 255
+        /// Gets or sets the group's name.
         /// </summary>
+        /// <remarks>
+        /// Required, Max length = 255.
+        /// </remarks>
         [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Name { get; set; }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Gets or sets the row version.
         /// </summary>
+        /// <remarks>
+        /// Required, Concurrency Token.
+        /// </remarks>
         [ConcurrencyCheck]
         [Required]
         public uint RowVersion { get; set; }
@@ -99,14 +96,27 @@ namespace Jellyfin.Data.Entities
         [ForeignKey("Preference_Preferences_Id")]
         public virtual ICollection<Preference> Preferences { get; protected set; }
 
+        /// <summary>
+        /// Static create function (for use in LINQ queries, etc.)
+        /// </summary>
+        /// <param name="name">The name of this group</param>
+        public static Group Create(string name)
+        {
+            return new Group(name);
+        }
+
+        /// <inheritdoc/>
         public bool HasPermission(PermissionKind kind)
         {
             return Permissions.First(p => p.Kind == kind).Value;
         }
 
+        /// <inheritdoc/>
         public void SetPermission(PermissionKind kind, bool value)
         {
             Permissions.First(p => p.Kind == kind).Value = value;
         }
+
+        partial void Init();
     }
 }
