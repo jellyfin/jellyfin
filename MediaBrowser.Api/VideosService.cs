@@ -125,7 +125,6 @@ namespace MediaBrowser.Api
 
         public void Post(MergeVersions request)
         {
-
             var items = request.Ids.Split(',')
                 .Select(i => _libraryManager.GetItemById(i))
                 .OfType<Video>()
