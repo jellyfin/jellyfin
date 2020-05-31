@@ -47,11 +47,11 @@ namespace Jellyfin.Data.Entities
             AuthenticationProviderId = authenticationProviderId;
             PasswordResetProviderId = passwordResetProviderId;
 
-            Groups = new HashSet<Group>();
-            Permissions = new HashSet<Permission>();
-            ProviderMappings = new HashSet<ProviderMapping>();
-            Preferences = new HashSet<Preference>();
             AccessSchedules = new HashSet<AccessSchedule>();
+            // Groups = new HashSet<Group>();
+            Permissions = new HashSet<Permission>();
+            Preferences = new HashSet<Preference>();
+            // ProviderMappings = new HashSet<ProviderMapping>();
 
             // Set default values
             Id = Guid.NewGuid();
@@ -343,10 +343,17 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
+        /// Gets or sets the list of access schedules this user has.
+        /// </summary>
+        public virtual ICollection<AccessSchedule> AccessSchedules { get; protected set; }
+
+        /*
+        /// <summary>
         /// Gets or sets the list of groups this user is a member of.
         /// </summary>
         [ForeignKey("Group_Groups_Guid")]
         public virtual ICollection<Group> Groups { get; protected set; }
+        */
 
         /// <summary>
         /// Gets or sets the list of permissions this user has.
@@ -354,22 +361,19 @@ namespace Jellyfin.Data.Entities
         [ForeignKey("Permission_Permissions_Guid")]
         public virtual ICollection<Permission> Permissions { get; protected set; }
 
+        /*
         /// <summary>
         /// Gets or sets the list of provider mappings this user has.
         /// </summary>
         [ForeignKey("ProviderMapping_ProviderMappings_Id")]
         public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
+        */
 
         /// <summary>
         /// Gets or sets the list of preferences this user has.
         /// </summary>
         [ForeignKey("Preference_Preferences_Guid")]
         public virtual ICollection<Preference> Preferences { get; protected set; }
-
-        /// <summary>
-        /// Gets or sets the list of access schedules this user has.
-        /// </summary>
-        public virtual ICollection<AccessSchedule> AccessSchedules { get; protected set; }
 
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)

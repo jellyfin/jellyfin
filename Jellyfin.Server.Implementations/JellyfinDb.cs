@@ -25,8 +25,6 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
 
-        public virtual DbSet<Group> Groups { get; set; }
-
         public virtual DbSet<Permission> Permissions { get; set; }
 
         public virtual DbSet<Preference> Preferences { get; set; }
@@ -45,6 +43,7 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<Episode> Episodes { get; set; }
         public virtual DbSet<EpisodeMetadata> EpisodeMetadata { get; set; }
         public virtual DbSet<Genre> Genres { get; set; }
+        public virtual DbSet<Group> Groups { get; set; }
         public virtual DbSet<Library> Libraries { get; set; }
         public virtual DbSet<LibraryItem> LibraryItems { get; set; }
         public virtual DbSet<LibraryRoot> LibraryRoot { get; set; }

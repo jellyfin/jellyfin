@@ -88,31 +88,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("ActivityLogs");
                 });
 
-            modelBuilder.Entity("Jellyfin.Data.Entities.Group", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("Group_Groups_Guid")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasMaxLength(255);
-
-                    b.Property<uint>("RowVersion")
-                        .IsConcurrencyToken()
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Group_Groups_Guid");
-
-                    b.ToTable("Groups");
-                });
-
             modelBuilder.Entity("Jellyfin.Data.Entities.ImageInfo", b =>
                 {
                     b.Property<int>("Id")
@@ -141,9 +116,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("Permission_GroupPermissions_Id")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid?>("Permission_Permissions_Guid")
                         .HasColumnType("TEXT");
 
@@ -155,8 +127,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Permission_GroupPermissions_Id");
 
                     b.HasIndex("Permission_Permissions_Guid");
 
@@ -175,9 +145,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<Guid?>("Preference_Preferences_Guid")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("Preference_Preferences_Id")
-                        .HasColumnType("TEXT");
-
                     b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
@@ -191,44 +158,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("Preference_Preferences_Guid");
 
-                    b.HasIndex("Preference_Preferences_Id");
-
                     b.ToTable("Preferences");
-                });
-
-            modelBuilder.Entity("Jellyfin.Data.Entities.ProviderMapping", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ProviderData")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasMaxLength(65535);
-
-                    b.Property<Guid?>("ProviderMapping_ProviderMappings_Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ProviderName")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasMaxLength(255);
-
-                    b.Property<string>("ProviderSecrets")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasMaxLength(65535);
-
-                    b.Property<uint>("RowVersion")
-                        .IsConcurrencyToken()
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProviderMapping_ProviderMappings_Id");
-
-                    b.ToTable("ProviderMapping");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.User", b =>
@@ -351,19 +281,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Jellyfin.Data.Entities.Group", b =>
-                {
-                    b.HasOne("Jellyfin.Data.Entities.User", null)
-                        .WithMany("Groups")
-                        .HasForeignKey("Group_Groups_Guid");
-                });
-
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>
                 {
-                    b.HasOne("Jellyfin.Data.Entities.Group", null)
-                        .WithMany("Permissions")
-                        .HasForeignKey("Permission_GroupPermissions_Id");
-
                     b.HasOne("Jellyfin.Data.Entities.User", null)
                         .WithMany("Permissions")
                         .HasForeignKey("Permission_Permissions_Guid");
@@ -374,21 +293,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Data.Entities.User", null)
                         .WithMany("Preferences")
                         .HasForeignKey("Preference_Preferences_Guid");
-
-                    b.HasOne("Jellyfin.Data.Entities.Group", null)
-                        .WithMany("Preferences")
-                        .HasForeignKey("Preference_Preferences_Id");
-                });
-
-            modelBuilder.Entity("Jellyfin.Data.Entities.ProviderMapping", b =>
-                {
-                    b.HasOne("Jellyfin.Data.Entities.Group", null)
-                        .WithMany("ProviderMappings")
-                        .HasForeignKey("ProviderMapping_ProviderMappings_Id");
-
-                    b.HasOne("Jellyfin.Data.Entities.User", null)
-                        .WithMany("ProviderMappings")
-                        .HasForeignKey("ProviderMapping_ProviderMappings_Id");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.User", b =>

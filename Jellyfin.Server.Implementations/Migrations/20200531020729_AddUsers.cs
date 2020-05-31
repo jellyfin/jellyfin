@@ -98,28 +98,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Groups",
-                schema: "jellyfin",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(maxLength: 255, nullable: false),
-                    RowVersion = table.Column<uint>(nullable: false),
-                    Group_Groups_Guid = table.Column<Guid>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Groups", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Groups_Users_Group_Groups_Guid",
-                        column: x => x.Group_Groups_Guid,
-                        principalSchema: "jellyfin",
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Permissions",
                 schema: "jellyfin",
                 columns: table => new
@@ -129,19 +107,11 @@ namespace Jellyfin.Server.Implementations.Migrations
                     Kind = table.Column<int>(nullable: false),
                     Value = table.Column<bool>(nullable: false),
                     RowVersion = table.Column<uint>(nullable: false),
-                    Permission_GroupPermissions_Id = table.Column<Guid>(nullable: true),
                     Permission_Permissions_Guid = table.Column<Guid>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Permissions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Permissions_Groups_Permission_GroupPermissions_Id",
-                        column: x => x.Permission_GroupPermissions_Id,
-                        principalSchema: "jellyfin",
-                        principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Permissions_Users_Permission_Permissions_Guid",
                         column: x => x.Permission_Permissions_Guid,
@@ -161,8 +131,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     Kind = table.Column<int>(nullable: false),
                     Value = table.Column<string>(maxLength: 65535, nullable: false),
                     RowVersion = table.Column<uint>(nullable: false),
-                    Preference_Preferences_Guid = table.Column<Guid>(nullable: true),
-                    Preference_Preferences_Id = table.Column<Guid>(nullable: true)
+                    Preference_Preferences_Guid = table.Column<Guid>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -170,45 +139,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     table.ForeignKey(
                         name: "FK_Preferences_Users_Preference_Preferences_Guid",
                         column: x => x.Preference_Preferences_Guid,
-                        principalSchema: "jellyfin",
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Preferences_Groups_Preference_Preferences_Id",
-                        column: x => x.Preference_Preferences_Id,
-                        principalSchema: "jellyfin",
-                        principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProviderMapping",
-                schema: "jellyfin",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    ProviderName = table.Column<string>(maxLength: 255, nullable: false),
-                    ProviderSecrets = table.Column<string>(maxLength: 65535, nullable: false),
-                    ProviderData = table.Column<string>(maxLength: 65535, nullable: false),
-                    RowVersion = table.Column<uint>(nullable: false),
-                    ProviderMapping_ProviderMappings_Id = table.Column<Guid>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProviderMapping", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ProviderMapping_Groups_ProviderMapping_ProviderMappings_Id",
-                        column: x => x.ProviderMapping_ProviderMappings_Id,
-                        principalSchema: "jellyfin",
-                        principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ProviderMapping_Users_ProviderMapping_ProviderMappings_Id",
-                        column: x => x.ProviderMapping_ProviderMappings_Id,
                         principalSchema: "jellyfin",
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -222,18 +152,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Groups_Group_Groups_Guid",
-                schema: "jellyfin",
-                table: "Groups",
-                column: "Group_Groups_Guid");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Permissions_Permission_GroupPermissions_Id",
-                schema: "jellyfin",
-                table: "Permissions",
-                column: "Permission_GroupPermissions_Id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Permissions_Permission_Permissions_Guid",
                 schema: "jellyfin",
                 table: "Permissions",
@@ -244,18 +162,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 schema: "jellyfin",
                 table: "Preferences",
                 column: "Preference_Preferences_Guid");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Preferences_Preference_Preferences_Id",
-                schema: "jellyfin",
-                table: "Preferences",
-                column: "Preference_Preferences_Id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProviderMapping_ProviderMapping_ProviderMappings_Id",
-                schema: "jellyfin",
-                table: "ProviderMapping",
-                column: "ProviderMapping_ProviderMappings_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_ProfileImageId",
@@ -276,14 +182,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             migrationBuilder.DropTable(
                 name: "Preferences",
-                schema: "jellyfin");
-
-            migrationBuilder.DropTable(
-                name: "ProviderMapping",
-                schema: "jellyfin");
-
-            migrationBuilder.DropTable(
-                name: "Groups",
                 schema: "jellyfin");
 
             migrationBuilder.DropTable(
