@@ -84,8 +84,11 @@ namespace Jellyfin.Server
         /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
         {
+            // Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
-            yield return Assembly.Load("Jellyfin.Server.Implementations");
+
+            // Jellyfin.Server.Implementations
+            yield return typeof(JellyfinDb).Assembly;
         }
 
         /// <inheritdoc />

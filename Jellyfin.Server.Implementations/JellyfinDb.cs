@@ -81,6 +81,7 @@ namespace Jellyfin.Server.Implementations
         {
             foreach (var saveEntity in ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Modified)
+                .Select(entry => entry.Entity)
                 .OfType<ISavingChanges>())
             {
                 saveEntity.OnSavingChanges();
