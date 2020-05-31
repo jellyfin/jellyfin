@@ -389,16 +389,14 @@ namespace Jellyfin.Data.Entities
             RowVersion++;
         }
 
-        partial void Init();
-
         /// <summary>
         /// Checks whether the user has the specified permission.
         /// </summary>
-        /// <param name="permission">The permission kind.</param>
+        /// <param name="kind">The permission kind.</param>
         /// <returns><c>True</c> if the user has the specified permission.</returns>
-        public bool HasPermission(PermissionKind permission)
+        public bool HasPermission(PermissionKind kind)
         {
-            return Permissions.First(p => p.Kind == permission).Value;
+            return Permissions.First(p => p.Kind == kind).Value;
         }
 
         /// <summary>
@@ -408,8 +406,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="value">The value to set.</param>
         public void SetPermission(PermissionKind kind, bool value)
         {
-            var permissionObj = Permissions.First(p => p.Kind == kind);
-            permissionObj.Value = value;
+            Permissions.First(p => p.Kind == kind).Value = value;
         }
 
         /// <summary>
@@ -501,5 +498,7 @@ namespace Jellyfin.Data.Entities
                 Preferences.Add(new Preference(val, string.Empty));
             }
         }
+
+        partial void Init();
     }
 }

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
 {
@@ -96,6 +98,15 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Preference_Preferences_Id")]
         public virtual ICollection<Preference> Preferences { get; protected set; }
+
+        public bool HasPermission(PermissionKind kind)
+        {
+            return Permissions.First(p => p.Kind == kind).Value;
+        }
+
+        public void SetPermission(PermissionKind kind, bool value)
+        {
+            Permissions.First(p => p.Kind == kind).Value = value;
+        }
     }
 }
-
