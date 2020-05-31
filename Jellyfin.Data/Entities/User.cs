@@ -458,24 +458,14 @@ namespace Jellyfin.Data.Entities
             return GetPreference(PreferenceKind.GroupedFolders).Any(i => new Guid(i) == id);
         }
 
-        private bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
+        private static bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
         {
-            if (date.Kind != DateTimeKind.Utc)
-            {
-                throw new ArgumentException("Utc date expected");
-            }
-
             var localTime = date.ToLocalTime();
-
-            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek) &&
-                   IsWithinTime(schedule, localTime);
-        }
-
-        private bool IsWithinTime(AccessSchedule schedule, DateTime localTime)
-        {
             var hour = localTime.TimeOfDay.TotalHours;
 
-            return hour >= schedule.StartHour && hour <= schedule.EndHour;
+            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek)
+                   && hour >= schedule.StartHour
+                   && hour <= schedule.EndHour;
         }
 
         // TODO: make these user configurable?
