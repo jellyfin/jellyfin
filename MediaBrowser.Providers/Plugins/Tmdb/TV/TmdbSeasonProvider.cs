@@ -145,6 +145,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             {
                 throw new ArgumentNullException(nameof(tmdbId));
             }
+
             if (string.IsNullOrEmpty(language))
             {
                 throw new ArgumentNullException(nameof(language));
@@ -172,6 +173,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             {
                 throw new ArgumentNullException(nameof(tmdbId));
             }
+
             if (string.IsNullOrEmpty(preferredLanguage))
             {
                 throw new ArgumentNullException(nameof(preferredLanguage));
@@ -216,7 +218,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Url = url,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)

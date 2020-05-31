@@ -53,6 +53,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             {
                 throw new ArgumentNullException(nameof(tmdbId));
             }
+
             if (string.IsNullOrEmpty(language))
             {
                 throw new ArgumentNullException(nameof(language));
@@ -80,6 +81,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             {
                 throw new ArgumentNullException(nameof(tmdbId));
             }
+
             if (string.IsNullOrEmpty(preferredLanguage))
             {
                 throw new ArgumentNullException(nameof(preferredLanguage));

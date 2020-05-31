@@ -263,10 +263,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 {
                     series.SetProviderId(MetadataProviders.Imdb, ids.Imdb_Id);
                 }
+
                 if (ids.Tvrage_Id > 0)
                 {
                     series.SetProviderId(MetadataProviders.TvRage, ids.Tvrage_Id.ToString(_usCulture));
                 }
+
                 if (ids.Tvdb_Id > 0)
                 {
                     series.SetProviderId(MetadataProviders.Tvdb, ids.Tvdb_Id.ToString(_usCulture));
@@ -416,7 +418,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Url = url,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)
@@ -453,7 +454,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     Url = url,
                     CancellationToken = cancellationToken,
                     AcceptHeader = TmdbUtils.AcceptHeader
-
                 }).ConfigureAwait(false))
                 {
                     using (var json = response.Content)
@@ -518,7 +518,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Url = url,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)

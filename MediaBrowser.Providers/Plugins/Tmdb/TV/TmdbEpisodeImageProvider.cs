@@ -80,7 +80,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 RatingType = RatingType.Score
             }));
 
-
             var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
 
             return list.OrderByDescending(i =>
@@ -89,6 +88,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 {
                     return 3;
                 }
+
                 if (!isLanguageEn)
                 {
                     if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
@@ -96,22 +96,22 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                         return 2;
                     }
                 }
+
                 if (string.IsNullOrEmpty(i.Language))
                 {
                     return isLanguageEn ? 3 : 2;
                 }
+
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)
                 .ThenByDescending(i => i.VoteCount ?? 0);
-
         }
 
         private IEnumerable<Still> GetPosters(StillImages images)
         {
             return images.Stills ?? new List<Still>();
         }
-
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

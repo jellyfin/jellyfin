@@ -5,7 +5,7 @@ using MediaBrowser.Providers.Plugins.Tmdb.Models.General;
 namespace MediaBrowser.Providers.Plugins.Tmdb
 {
     /// <summary>
-    /// Utilities for the TMDb provider
+    /// Utilities for the TMDb provider.
     /// </summary>
     public static class TmdbUtils
     {

@@ -78,9 +78,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 var result = new RemoteSearchResult
                 {
                     Name = info.Name,
-
                     SearchProviderName = Name,
-
                     ImageUrl = images.Count == 0 ? null : (tmdbImageUrl + images[0].File_Path)
                 };
 
@@ -191,7 +189,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 Url = url,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)
@@ -219,7 +216,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                         Url = url,
                         CancellationToken = cancellationToken,
                         AcceptHeader = TmdbUtils.AcceptHeader
-
                     }).ConfigureAwait(false))
                     {
                         using (var json = response.Content)
@@ -229,6 +225,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                     }
                 }
             }
+
             return mainResult;
         }
 
