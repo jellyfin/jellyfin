@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
@@ -98,7 +98,7 @@ namespace MediaBrowser.Api.System
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
 
-        private readonly INetworkManager _network;
+        private readonly NetworkManager _network;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemService" /> class.
@@ -112,7 +112,7 @@ namespace MediaBrowser.Api.System
             IHttpResultFactory httpResultFactory,
             IServerApplicationHost appHost,
             IFileSystem fileSystem,
-            INetworkManager network)
+            NetworkManager network)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _appPaths = serverConfigurationManager.ApplicationPaths;
@@ -178,16 +178,16 @@ namespace MediaBrowser.Api.System
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public async Task<object> Get(GetSystemInfo request)
+        public object Get(GetSystemInfo request)
         {
-            var result = await _appHost.GetSystemInfo(CancellationToken.None).ConfigureAwait(false);
+            var result = _appHost.GetSystemInfo(CancellationToken.None);
 
             return ToOptimizedResult(result);
         }
 
-        public async Task<object> Get(GetPublicSystemInfo request)
+        public object Get(GetPublicSystemInfo request)
         {
-            var result = await _appHost.GetPublicSystemInfo(CancellationToken.None).ConfigureAwait(false);
+            var result = _appHost.GetPublicSystemInfo(CancellationToken.None);
 
             return ToOptimizedResult(result);
         }

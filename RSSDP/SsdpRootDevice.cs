@@ -78,6 +78,14 @@ namespace Rssdp
             }
         }
 
+        /// <summary>
+        /// Returns this object as a string.
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{DeviceType} - {Uuid} - {Location}";                
+        }
+    
         #endregion
     }
 }

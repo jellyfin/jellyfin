@@ -10,9 +10,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Devices;
@@ -565,9 +565,10 @@ namespace Emby.Server.Implementations.Library
             bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user);
             bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
 
-            bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
-                hasConfiguredEasyPassword :
-                hasConfiguredPassword;
+            bool hasPassword = user.Configuration.EnableLocalPassword
+                && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
+                    hasConfiguredEasyPassword :
+                    hasConfiguredPassword;
 
             UserDto dto = new UserDto
             {
@@ -620,7 +621,6 @@ namespace Emby.Server.Implementations.Library
             bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(authenticationProvider.GetEasyPasswordHash(user));
 
             bool hasPassword = user.Configuration.EnableLocalPassword &&
-                !string.IsNullOrEmpty(remoteEndPoint) &&
                 _networkManager.IsInLocalNetwork(remoteEndPoint) ? hasConfiguredEasyPassword : hasConfiguredPassword;
 
             PublicUserDto dto = new PublicUserDto

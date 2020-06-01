@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
@@ -17,20 +18,20 @@ namespace Emby.Server.Implementations.Udp
     public sealed class UdpServer : IDisposable
     {
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
-
+        private readonly byte[] _receiveBuffer = new byte[8192];
         private Socket _udpSocket;
         private IPEndPoint _endpoint;
-        private readonly byte[] _receiveBuffer = new byte[8192];
-
         private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
         /// </summary>
+        /// <param name="appHost">IServerApplicationHost instance.</param>
+        /// <param name="logger"> ILogger instance.</param>
         public UdpServer(ILogger logger, IServerApplicationHost appHost)
         {
             _logger = logger;
@@ -39,7 +40,7 @@ namespace Emby.Server.Implementations.Udp
 
         private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
         {
-            var localUrl = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            var localUrl = _appHost.GetLocalApiUrl(cancellationToken);
 
             if (!string.IsNullOrEmpty(localUrl))
             {
@@ -75,12 +76,21 @@ namespace Emby.Server.Implementations.Udp
         /// Starts the specified port.
         /// </summary>
         /// <param name="port">The port.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Cancellaton Token.</param>
         public void Start(int port, CancellationToken cancellationToken)
         {
             _endpoint = new IPEndPoint(IPAddress.Any, port);
 
-            _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            if (_appHost.NetManager.IsIP6Enabled)
+            {
+                _udpSocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+                _udpSocket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+            }
+            else
+            {
+                _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            }
+
             _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _udpSocket.Bind(_endpoint);
 
@@ -97,10 +107,18 @@ namespace Emby.Server.Implementations.Udp
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
-                    if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+                    // If this from an excluded address don't both responding to it.
+                    if (!_appHost.NetManager.IsExcluded(((IPEndPoint)result.RemoteEndPoint).Address))
                     {
-                        await RespondToV2Message(text, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
+                        if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await RespondToV2Message(text, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Filtering traffic from [{0}] to {1}.", result.RemoteEndPoint, _endpoint);
                     }
                 }
                 catch (SocketException ex)
