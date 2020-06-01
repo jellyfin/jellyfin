@@ -1,5 +1,6 @@
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Middleware;
+using Jellyfin.Server.Models;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
@@ -68,9 +69,10 @@ namespace Jellyfin.Server
             // TODO app.UseMiddleware<WebSocketMiddleware>();
             app.Use(serverApplicationHost.ExecuteWebsocketHandlerAsync);
 
-            // TODO use when old API is removed: app.UseAuthentication();
+            app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
+            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
