@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Networking
                     continue;
                 }
 
-                if (Array.IndexOf(subnets, "[" + i.ToString() + "]") == -1)
+                if (Array.IndexOf(subnets, $"[{i}]") == -1)
                 {
                     listClone.Add(i);
                 }
