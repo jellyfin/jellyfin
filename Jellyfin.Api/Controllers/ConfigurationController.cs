@@ -1,12 +1,12 @@
 #nullable enable
 
+using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,22 +23,18 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationController"/> class.
         /// </summary>
         /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="jsonSerializer">Instance of the <see cref="IJsonSerializer"/> interface.</param>
         public ConfigurationController(
             IServerConfigurationManager configurationManager,
-            IMediaEncoder mediaEncoder,
-            IJsonSerializer jsonSerializer)
+            IMediaEncoder mediaEncoder)
         {
             _configurationManager = configurationManager;
             _mediaEncoder = mediaEncoder;
-            _jsonSerializer = jsonSerializer;
         }
 
         /// <summary>
@@ -93,13 +89,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string key)
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
-            /*
-            // TODO switch to System.Text.Json when https://github.com/dotnet/runtime/issues/30255 is fixed.
-            var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType);
-            */
-
-            var configuration = await _jsonSerializer.DeserializeFromStreamAsync(Request.Body, configurationType)
-                .ConfigureAwait(false);
+            var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType).ConfigureAwait(false);
             _configurationManager.SaveConfiguration(key, configuration);
             return Ok();
         }
