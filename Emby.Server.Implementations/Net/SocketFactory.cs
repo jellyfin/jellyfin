@@ -2,11 +2,17 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using MediaBrowser.Model.Net;
+using Rssdp.Infrastructure;
 
 namespace Emby.Server.Implementations.Net
 {
     public class SocketFactory : ISocketFactory
     {
+        /// <summary>
+        /// Creates an IPv4 Socket.
+        /// </summary>
+        /// <param name="localPort">UDP port to bind.</param>
+        /// <returns>Socket interface object.</returns>
         public ISocket CreateUdpBroadcastSocket(int localPort)
         {
             if (localPort < 0)
@@ -33,6 +39,8 @@ namespace Emby.Server.Implementations.Net
         /// <summary>
         /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
         /// </summary>
+        /// <param name="localIpAddress">IP Address to bind.</param>
+        /// <param name="localPort">UDP port to bind.</param>
         /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
         public ISocket CreateSsdpUdpSocket(IPAddress localIpAddress, int localPort)
         {
@@ -41,13 +49,30 @@ namespace Emby.Server.Implementations.Net
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
             }
 
-            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+            // Change this in readiness for ipv6 socket support.
+            var retVal = new Socket(localIpAddress.AddressFamily, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
+                if (localIpAddress.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, SsdpConstants.SsdpDefaultMulticastTimeToLive);
 
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), localIpAddress));
+                    retVal.SetSocketOption(
+                        SocketOptionLevel.IP,
+                        SocketOptionName.AddMembership,
+                        new MulticastOption(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddress), localIpAddress));
+                }
+                else
+                {
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastTimeToLive, SsdpConstants.SsdpDefaultMulticastTimeToLive);
+
+                    retVal.SetSocketOption(
+                        SocketOptionLevel.IPv6,
+                        SocketOptionName.AddMembership,
+                        new MulticastOption(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddressV6), localIpAddress));
+                }
+
                 return new UdpSocket(retVal, localPort, localIpAddress);
             }
             catch
@@ -64,7 +89,7 @@ namespace Emby.Server.Implementations.Net
         /// <param name="ipAddress">The multicast IP address to make the acceptSocket a member of.</param>
         /// <param name="multicastTimeToLive">The multicast time to live value for the acceptSocket.</param>
         /// <param name="localPort">The number of the local port to bind to.</param>
-        /// <returns></returns>
+        /// <returns>Socket interface object.</returns>
         public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
         {
             if (ipAddress == null)

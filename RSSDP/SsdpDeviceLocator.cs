@@ -345,7 +345,7 @@ namespace Rssdp.Infrastructure
             values["ST"] = "ssdp:all";
 
             // Seconds to delay response
-            values["MX"] = "3";
+            values["MX"] = "3"; // mxValue.ToString(); ??
 
             var header = "M-SEARCH * HTTP/1.1";
 
@@ -435,10 +435,9 @@ namespace Rssdp.Infrastructure
         private string GetFirstHeaderStringValue(string headerName, HttpResponseMessage message)
         {
             string retVal = null;
-            IEnumerable<string> values;
             if (message.Headers.Contains(headerName))
             {
-                message.Headers.TryGetValues(headerName, out values);
+                message.Headers.TryGetValues(headerName, out IEnumerable<string> values);
                 if (values != null)
                     retVal = values.FirstOrDefault();
             }
@@ -448,11 +447,10 @@ namespace Rssdp.Infrastructure
 
         private string GetFirstHeaderStringValue(string headerName, HttpRequestMessage message)
         {
-            string retVal = null;
-            IEnumerable<string> values;
+            string retVal = null;            
             if (message.Headers.Contains(headerName))
             {
-                message.Headers.TryGetValues(headerName, out values);
+                message.Headers.TryGetValues(headerName, out IEnumerable<string> values);
                 if (values != null)
                     retVal = values.FirstOrDefault();
             }
@@ -463,32 +461,28 @@ namespace Rssdp.Infrastructure
         private Uri GetFirstHeaderUriValue(string headerName, HttpRequestMessage request)
         {
             string value = null;
-            IEnumerable<string> values;
             if (request.Headers.Contains(headerName))
             {
-                request.Headers.TryGetValues(headerName, out values);
+                request.Headers.TryGetValues(headerName, out IEnumerable<string> values);
                 if (values != null)
                     value = values.FirstOrDefault();
             }
 
-            Uri retVal;
-            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out retVal);
+            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri retVal);
             return retVal;
         }
 
         private Uri GetFirstHeaderUriValue(string headerName, HttpResponseMessage response)
         {
             string value = null;
-            IEnumerable<string> values;
             if (response.Headers.Contains(headerName))
             {
-                response.Headers.TryGetValues(headerName, out values);
+                response.Headers.TryGetValues(headerName, out IEnumerable<string> values);
                 if (values != null)
                     value = values.FirstOrDefault();
             }
-
-            Uri retVal;
-            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out retVal);
+             
+            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri retVal);
             return retVal;
         }
 

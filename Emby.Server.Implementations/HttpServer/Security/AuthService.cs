@@ -3,8 +3,8 @@
 using System;
 using System.Linq;
 using System.Security.Authentication;
+using Common.Networking;
 using Emby.Server.Implementations.SocketSharp;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
@@ -22,14 +22,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private readonly IAuthorizationContext _authorizationContext;
         private readonly ISessionManager _sessionManager;
         private readonly IServerConfigurationManager _config;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
 
         public AuthService(
             ILogger<AuthService> logger,
             IAuthorizationContext authorizationContext,
             IServerConfigurationManager config,
             ISessionManager sessionManager,
-            INetworkManager networkManager)
+            NetworkManager networkManager)
         {
             _logger = logger;
             _authorizationContext = authorizationContext;

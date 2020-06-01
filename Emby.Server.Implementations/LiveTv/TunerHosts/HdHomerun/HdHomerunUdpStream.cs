@@ -7,8 +7,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
 
         public HdHomerunUdpStream(
             MediaSourceInfo mediaSource,
@@ -38,7 +38,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             ILogger logger,
             IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {

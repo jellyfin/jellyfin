@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -244,7 +244,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IUserManager _userManager;
         private readonly ISessionManager _sessionMananger;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
         private readonly IAuthorizationContext _authContext;
 
@@ -254,7 +254,7 @@ namespace MediaBrowser.Api
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ISessionManager sessionMananger,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             IDeviceManager deviceManager,
             IAuthorizationContext authContext)
             : base(logger, serverConfigurationManager, httpResultFactory)

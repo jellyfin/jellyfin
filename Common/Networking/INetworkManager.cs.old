@@ -1,0 +1,124 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Common.Networking
+{
+    /// <summary>
+    /// Interface for the NetworkManager class.
+    /// </summary>
+    public interface INetworkManager
+    {
+        /// <summary>
+        /// Event triggered on network changes.
+        /// </summary>
+        event EventHandler NetworkChanged;
+
+        /// <summary>
+        /// Gets or sets the LAN settings stored in config.
+        /// </summary>
+        Func<string[]> LocalSubnetsFn { get; set; }
+
+        /// <summary>
+        /// Gets a random port number that is currently available.
+        /// </summary>
+        /// <returns>System.Int32.</returns>
+        int GetRandomUnusedTcpPort();
+
+        /// <summary>
+        /// Gets a random port number that is currently available.
+        /// </summary>
+        /// <returns>System.Int32.</returns>
+        int GetRandomUnusedUdpPort();
+
+        /// <summary>
+        /// Event triggered when configuration is changed.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">New configuration.</param>
+        public void NamedConfigurationUpdated(object sender, EventArgs e);
+
+        /// <summary>
+        /// Get a list of all the MAC addresses associated with active interfaces.
+        /// </summary>
+        /// <returns>List of MAC addresses.</returns>
+        List<PhysicalAddress> GetMacAddresses();
+
+        /// <summary>
+        /// Calculates if the endpoint given falls within the LAN networks specified in config.
+        /// </summary>
+        /// <param name="endpoint">IP to check.</param>
+        /// <returns>True if endpoint is within the LAN range.</returns>
+        bool IsInLocalNetwork(string endpoint);
+
+        /// <summary>
+        /// Returns true if the IP address in address2 is within the network address1/subnetMask.
+        /// </summary>
+        /// <param name="subnetIP">Subnet IP.</param>
+        /// <param name="subnetMask">Subnet Mask.</param>
+        /// <param name="address">Address to check.</param>
+        /// <returns>True if address is in the subnet.</returns>
+        bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address);
+
+        /// <summary>
+        /// Returns all filtered interface addresses that respond to ping.
+        /// </summary>
+        /// <param name="allowLoopback">Allow loopback addresses in the list.</param>
+        /// <param name="limit">Limit the number of items in the response.</param>
+        /// <returns>Returns a filtered list of IPV4 interface addresses.</returns>
+        public NetCollection GetPingableIPv4InterfaceAddresses(bool allowLoopback, int limit);
+
+        /// <summary>
+        /// Parses an array of strings into a NetCollection.
+        /// </summary>
+        /// <param name="values">Values to parse.</param>
+        /// <param name="bracketed">When true, only include values in []. When false, ignore bracketed values.</param>
+        /// <returns>IPCollection object containing the value strings.</returns>
+        public NetCollection CreateIPCollection(string[] values, bool bracketed = false);
+
+        /// <summary>
+        /// Interface callback function.
+        /// </summary>
+        /// <param name="allowLoopback">Allow loopback addresses in the list.</param>
+        /// <param name="limit">Limit the number of items in the response.</param>
+        /// <param name="callback">Delegate function to call on each match.</param>
+        /// <param name="cancellationToken">Cancellation Token.</param>
+        /// <returns>true or false.</returns>
+        public NetCollection GetCallbackFilteredInterfaceAddresses(bool allowLoopback, int limit, Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns all the filtered interfaces addresses.
+        /// </summary>
+        /// <returns>A filtered list of interfaces addresses.</returns>
+        public NetCollection GetFilteredInterfaceAddresses();
+
+        /// <summary>
+        /// Returns true if the IP address is in the excluded list.
+        /// </summary>
+        /// <param name="ip">IP to check.</param>
+        /// <returns>True if excluded.</returns>
+        public bool IsExcluded(IPAddress ip);
+
+        /// <summary>
+        /// Gets the filtered LAN ip addresses.
+        /// </summary>
+        /// <param name="filter">Filter for the list.</param>
+        /// <returns>Returns a filtered list of LAN addresses.</returns>
+        public NetCollection GetFilteredLANAddresses(NetCollection filter);
+
+        /// <summary>
+        ///  Returns all the filtered LAN addresses.
+        /// </summary>
+        /// <returns>A filtered list of LAN subnets/IPs.</returns>
+        public NetCollection GetLANAddresses();
+
+        /// <summary>
+        /// Returns all filtered interface addresses.
+        /// </summary>
+        /// <returns>Returns a filtered list of IPV4 interface addresses.</returns>
+        public NetCollection GetFilteredIPv4InterfaceAddresses();
+    }
+}

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+using Common.Networking;
 
 namespace Rssdp.Infrastructure
 {
@@ -14,7 +14,7 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public class SsdpDevicePublisher : DisposableManagedObjectBase, ISsdpDevicePublisher
     {
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
 
         private ISsdpCommunicationsServer _CommsServer;
         private string _OSName;
@@ -37,11 +37,9 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, INetworkManager networkManager,
+        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, NetworkManager networkManager,
             string osName, string osVersion, bool sendOnlyMatchedHost)
         {
-            if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
-            if (networkManager == null) throw new ArgumentNullException(nameof(networkManager));
             if (osName == null) throw new ArgumentNullException(nameof(osName));
             if (osName.Length == 0) throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
             if (osVersion == null) throw new ArgumentNullException(nameof(osVersion));
@@ -53,8 +51,8 @@ namespace Rssdp.Infrastructure
             _RecentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _Random = new Random();
 
-            _networkManager = networkManager;
-            _CommsServer = communicationsServer;
+            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+            _CommsServer = communicationsServer ?? throw new ArgumentNullException(nameof(communicationsServer));
             _CommsServer.RequestReceived += CommsServer_RequestReceived;
             _OSName = osName;
             _OSVersion = osVersion;
@@ -255,8 +253,9 @@ namespace Rssdp.Infrastructure
 
                     foreach (var device in deviceList)
                     {
-                        if (!_sendOnlyMatchedHost ||
-                            _networkManager.IsInSameSubnet(device.ToRootDevice().Address, remoteEndPoint.Address, device.ToRootDevice().SubnetMask))
+                        var rt = device.ToRootDevice();
+                        if (!_sendOnlyMatchedHost || 
+                            _networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address))
                         {
                             SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
                         }
@@ -518,7 +517,7 @@ namespace Rssdp.Infrastructure
         private string GetFirstHeaderValue(System.Net.Http.Headers.HttpRequestHeaders httpRequestHeaders, string headerName)
         {
             string retVal = null;
-            IEnumerable<String> values = null;
+            IEnumerable<String> values;
             if (httpRequestHeaders.TryGetValues(headerName, out values) && values != null)
                 retVal = values.FirstOrDefault();
 

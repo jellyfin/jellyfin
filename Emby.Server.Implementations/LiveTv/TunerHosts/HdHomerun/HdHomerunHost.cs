@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -33,7 +34,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
         public HdHomerunHost(
@@ -44,7 +45,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IHttpClient httpClient,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(config, logger, jsonSerializer, fileSystem)
         {

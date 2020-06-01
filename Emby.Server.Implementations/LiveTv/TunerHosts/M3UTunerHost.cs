@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -28,7 +29,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     {
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
 
@@ -40,7 +41,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             IFileSystem fileSystem,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(config, logger, jsonSerializer, fileSystem)
         {

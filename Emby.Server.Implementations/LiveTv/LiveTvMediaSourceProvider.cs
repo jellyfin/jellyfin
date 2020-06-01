@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             var list = sources.ToList();
-            var serverUrl = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            var serverUrl = _appHost.GetLocalApiUrl(cancellationToken);
 
             foreach (var source in list)
             {

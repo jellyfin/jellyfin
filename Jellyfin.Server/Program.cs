@@ -10,10 +10,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using Common.Networking;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Networking;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.WebDashboard.Api;
@@ -160,12 +160,14 @@ namespace Jellyfin.Server
 
             PerformStaticInitialization();
 
+            NetworkManager networkManager = new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>());
+
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
+                networkManager);
 
             try
             {
@@ -276,13 +278,10 @@ namespace Jellyfin.Server
             return builder
                 .UseKestrel((builderContext, options) =>
                 {
-                    var addresses = appHost.ServerConfigurationManager
-                        .Configuration
-                        .LocalNetworkAddresses
-                        .Select(appHost.NormalizeConfiguredLocalAddress)
-                        .Where(i => i != null)
-                        .ToHashSet();
-                    if (addresses.Any() && !addresses.Contains(IPAddress.Any))
+                    // Override the local IP address to bind the http server to. If left empty, the server will bind to all availabile addresses.
+                    NetCollection addresses = appHost.NetManager.CreateIPCollection(appHost.ServerConfigurationManager.Configuration.LocalNetworkAddresses);
+
+                    if (addresses.Any() && !addresses.Exists(IPAddress.Any))
                     {
                         if (!addresses.Contains(IPAddress.Loopback))
                         {
@@ -290,13 +289,17 @@ namespace Jellyfin.Server
                             addresses.Add(IPAddress.Loopback);
                         }
 
-                        foreach (var address in addresses)
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type. addresses.Count>0, so netAdd will always have a value.
+                        foreach (IPNetAddress netAdd in addresses)
                         {
-                            _logger.LogInformation("Kestrel listening on {IpAddress}", address);
-                            options.Listen(address, appHost.HttpPort);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type. addresses.Count>0, so netAdd will always have a value.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                            _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd.Address);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                            options.Listen(netAdd.Address, appHost.HttpPort);
                             if (appHost.ListenWithHttps)
                             {
-                                options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
                                 {
                                     listenOptions.UseHttps(appHost.Certificate);
                                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
@@ -306,7 +309,7 @@ namespace Jellyfin.Server
                             {
                                 try
                                 {
-                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
+                                    options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
                                     {
                                         listenOptions.UseHttps();
                                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;

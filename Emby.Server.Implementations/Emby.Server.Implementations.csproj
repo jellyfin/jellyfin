@@ -5,7 +5,7 @@
     <ProjectGuid>{E383961B-9356-4D5D-8233-9A1079D03055}</ProjectGuid>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup>         
     <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
     <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
     <ProjectReference Include="..\Jellyfin.Api\Jellyfin.Api.csproj" />

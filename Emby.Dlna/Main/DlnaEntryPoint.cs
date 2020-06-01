@@ -2,9 +2,8 @@
 
 using System;
 using System.Globalization;
-using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
@@ -26,6 +25,7 @@ using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
+
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
@@ -53,7 +53,7 @@ namespace Emby.Dlna.Main
         private SsdpDevicePublisher _Publisher;
 
         private readonly ISocketFactory _socketFactory;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
 
         private ISsdpCommunicationsServer _communicationsServer;
 
@@ -80,7 +80,7 @@ namespace Emby.Dlna.Main
             IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
             ISocketFactory socketFactory,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             IUserViewManager userViewManager,
             ITVSeriesManager tvSeriesManager)
         {
@@ -238,9 +238,11 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost);
-                _Publisher.LogFunction = LogMessage;
-                _Publisher.SupportPnpRootDevice = false;
+                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                {
+                    LogFunction = LogMessage,
+                    SupportPnpRootDevice = false
+                };
 
                 await RegisterServerEndpoints().ConfigureAwait(false);
 
@@ -254,31 +256,23 @@ namespace Emby.Dlna.Main
 
         private async Task RegisterServerEndpoints()
         {
-            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
-
             var udn = CreateUuid(_appHost.SystemId);
 
-            foreach (var address in addresses)
+            foreach (IPNetAddress addr in _networkManager.GetFilteredIPv4InterfaceAddresses())
             {
-                if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    // Not supporting IPv6 right now
-                    continue;
-                }
-
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
+                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, addr.Address);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+                var uri = new Uri(_appHost.GetLocalApiUrl(addr.Address) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), //How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = address,
-                    SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
+                    Address = addr.Address,
+                    SubnetMask = addr.Mask,
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",
@@ -336,6 +330,7 @@ namespace Emby.Dlna.Main
         }
 
         private readonly object _syncLock = new object();
+
         private void StartPlayToManager()
         {
             lock (_syncLock)

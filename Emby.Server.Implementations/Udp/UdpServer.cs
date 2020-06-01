@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ namespace Emby.Server.Implementations.Udp
 
         private Socket _udpSocket;
         private IPEndPoint _endpoint;
-        private readonly byte[] _receiveBuffer = new byte[8192];
+        private readonly byte[] _receiveBuffer = new byte[8192];        
 
         private bool _disposed = false;
 
@@ -39,7 +40,7 @@ namespace Emby.Server.Implementations.Udp
 
         private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
         {
-            var localUrl = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            var localUrl = _appHost.GetLocalApiUrl(cancellationToken);
 
             if (!string.IsNullOrEmpty(localUrl))
             {
@@ -75,7 +76,7 @@ namespace Emby.Server.Implementations.Udp
         /// Starts the specified port.
         /// </summary>
         /// <param name="port">The port.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">Cancellaton Token.</param>
         public void Start(int port, CancellationToken cancellationToken)
         {
             _endpoint = new IPEndPoint(IPAddress.Any, port);
@@ -97,10 +98,15 @@ namespace Emby.Server.Implementations.Udp
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
-                    if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+                    // If this is an excluded interface don't both responding to it.
+                    if (!_appHost.NetManager.IsExcluded(_endpoint.Address))
                     {
-                        await RespondToV2Message(text, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+
+                        var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
+                        if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await RespondToV2Message(text, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        }
                     }
                 }
                 catch (SocketException ex)

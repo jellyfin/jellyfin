@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+using Common.Networking;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
@@ -46,7 +46,7 @@ namespace Rssdp.Infrastructure
         private HttpResponseParser _ResponseParser;
         private readonly ILogger _logger;
         private ISocketFactory _SocketFactory;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
         private readonly IServerConfigurationManager _config;
 
         private int _LocalPort;
@@ -78,7 +78,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         public SsdpCommunicationsServer(IServerConfigurationManager config, ISocketFactory socketFactory,
-            INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
+            NetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
             _config = config;
@@ -89,7 +89,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
+        public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, NetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
         {
             if (socketFactory == null) throw new ArgumentNullException(nameof(socketFactory));
             if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
@@ -338,6 +338,15 @@ namespace Rssdp.Infrastructure
 
         #region Private Methods
 
+
+        /// <summary>
+        /// Sends the same message out to all sockets in @sockets.
+        /// </summary>
+        /// <param name="messageData">Message to transmit.</param>
+        /// <param name="destination">Destination endpoint.</param>
+        /// <param name="fromLocalIpAddress">Source endpoint.</param>
+        /// <param name="cancellationToken">Propegates notification that a cancellation should take place.</param>
+        /// <returns></returns>
         private Task SendMessageIfSocketNotDisposed(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
             var sockets = _sendSockets;
@@ -345,14 +354,21 @@ namespace Rssdp.Infrastructure
             {
                 sockets = sockets.ToList();
 
+                // Exclude any interfaces/IP's the user has defined.
                 var tasks = sockets.Where(s => (fromLocalIpAddress == null || fromLocalIpAddress.Equals(s.LocalIPAddress)))
+                    .Where(s => !_networkManager.IsExcluded(s.LocalIPAddress))
                     .Select(s => SendFromSocket(s, messageData, destination, cancellationToken));
+                    
                 return Task.WhenAll(tasks);
             }
 
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private ISocket ListenForBroadcastsAsync()
         {
             var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
@@ -362,31 +378,32 @@ namespace Rssdp.Infrastructure
             return socket;
         }
 
+        /// <summary>
+        /// Creates sockets for all unfiltered IPv4 interfaces.
+        /// </summary>
+        /// <returns>List of ISockets.</returns>
         private List<ISocket> CreateSocketAndListenForResponsesAsync()
         {
             var sockets = new List<ISocket>();
-
-            sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IPAddress.Any, _LocalPort));
-
+            
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetLocalIpAddresses(_config.Configuration.IgnoreVirtualInterfaces))
+                foreach (IPNetAddress address in _networkManager.GetFilteredIPv4InterfaceAddresses())
                 {
-                    if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                    {
-                        // Not support IPv6 right now
-                        continue;
-                    }
-
                     try
                     {
-                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address, _LocalPort));
+                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address.Address, _LocalPort));
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", address);
                     }
                 }
+            }
+            else
+            {
+                // Only create a socket for all interfaces if multisocket binding isn't enabled.
+                sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IPAddress.Any, _LocalPort));
             }
 
             foreach (var socket in sockets)
@@ -408,7 +425,10 @@ namespace Rssdp.Infrastructure
                 {
                     var result = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, CancellationToken.None).ConfigureAwait(false);
 
-                    if (result.ReceivedBytes > 0)
+                    // If this is a user defined excluded interface/address ignore it.
+                    if (result.ReceivedBytes > 0 &&
+                        (!_networkManager.IsExcluded(result.LocalIPAddress) ||
+                         !_networkManager.IsExcluded(result.RemoteEndPoint.Address)))
                     {
                         // Strange cannot convert compiler error here if I don't explicitly
                         // assign or cast to Action first. Assignment is easier to read,
@@ -493,19 +513,15 @@ namespace Rssdp.Infrastructure
                 return;
             }
 
-            var handlers = this.RequestReceived;
-            if (handlers != null)
-                handlers(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnLocalIpAddress));
+            this.RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnLocalIpAddress));
         }
 
         private void OnResponseReceived(HttpResponseMessage data, IPEndPoint endPoint, IPAddress localIpAddress)
         {
-            var handlers = this.ResponseReceived;
-            if (handlers != null)
-                handlers(this, new ResponseReceivedEventArgs(data, endPoint)
-                {
-                    LocalIpAddress = localIpAddress
-                });
+            this.ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(data, endPoint)
+            {
+                LocalIpAddress = localIpAddress
+            });
         }
 
         #endregion

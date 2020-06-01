@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+using Common.Networking;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
@@ -73,7 +73,7 @@ namespace MediaBrowser.Api.Playback
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IDeviceManager _deviceManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
@@ -85,7 +85,7 @@ namespace MediaBrowser.Api.Playback
             IMediaSourceManager mediaSourceManager,
             IDeviceManager deviceManager,
             ILibraryManager libraryManager,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             IMediaEncoder mediaEncoder,
             IUserManager userManager,
             IAuthorizationContext authContext)

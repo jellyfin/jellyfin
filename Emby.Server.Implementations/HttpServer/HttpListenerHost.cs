@@ -10,6 +10,7 @@ using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.SocketSharp;
 using MediaBrowser.Common.Extensions;
@@ -44,7 +45,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IServerConfigurationManager _config;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
@@ -63,7 +64,7 @@ namespace Emby.Server.Implementations.HttpServer
             ILogger<HttpListenerHost> logger,
             IServerConfigurationManager config,
             IConfiguration configuration,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
             ILocalizationManager localizationManager,
@@ -287,39 +288,29 @@ namespace Emby.Server.Implementations.HttpServer
             return url;
         }
 
-        private static string NormalizeConfiguredLocalAddress(string address)
-        {
-            var add = address.AsSpan().Trim('/');
-            int index = add.IndexOf('/');
-            if (index != -1)
-            {
-                add = add.Slice(index + 1);
-            }
-
-            return add.TrimStart('/').ToString();
-        }
-
+        /// <summary>
+        /// Checks to see if a host is part of the internal network.
+        /// </summary>
+        /// <param name="host">Hostname to check.</param>
+        /// <returns>Returns true of host is part of the defined LAN network, or true if it's external.</returns>
         private bool ValidateHost(string host)
         {
-            var hosts = _config
-                .Configuration
-                .LocalNetworkAddresses
-                .Select(NormalizeConfiguredLocalAddress)
-                .ToList();
+            IPHost h = IPHost.Parse(host);
 
-            if (hosts.Count == 0)
+            if (h.Addresses == null)
             {
-                return true;
+                // unresolvable item - return false;
+                return false;
             }
 
-            host ??= string.Empty;
-
-            if (_networkManager.IsInPrivateAddressSpace(host))
+            if (h.IsPrivateAddressRange())
             {
-                hosts.Add("localhost");
-                hosts.Add("127.0.0.1");
+                // LAN if undefined will be the network interfaces.
+                NetCollection nc = _networkManager.GetLANAddresses();
+                nc.Add(IPHost.Parse("127.0.0.1"));
+                nc.Add(IPHost.Parse("localhost"));
 
-                return hosts.Any(i => host.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1);
+                return nc.Contains(h);
             }
 
             return true;
@@ -332,28 +323,33 @@ namespace Emby.Server.Implementations.HttpServer
                 return true;
             }
 
-            if (_config.Configuration.EnableRemoteAccess)
+            if (!_networkManager.IsInLocalNetwork(remoteIp))
             {
-                var addressFilter = _config.Configuration.RemoteIPFilter.Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-
-                if (addressFilter.Length > 0 && !_networkManager.IsInLocalNetwork(remoteIp))
+                if (_config.Configuration.EnableRemoteAccess)
                 {
+                    // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                    // If left blank, all remote addresses will be allowed.
+                    NetCollection addressFilter = _networkManager.CreateIPCollection(_config.Configuration.RemoteIPFilter);
+
+                    if (addressFilter.Count == 0)
+                    {
+                        return true;
+                    }
+
+                    // addressFilter is a whitelist or blacklist.
+                    NetCollection lanAddresses = _networkManager.GetFilteredLANAddresses(addressFilter);
+
                     if (_config.Configuration.IsRemoteIPFilterBlacklist)
                     {
-                        return !_networkManager.IsAddressInSubnets(remoteIp, addressFilter);
+                        return !lanAddresses.Contains(remoteIp);
                     }
                     else
                     {
-                        return _networkManager.IsAddressInSubnets(remoteIp, addressFilter);
+                        return lanAddresses.Contains(remoteIp);
                     }
                 }
-            }
-            else
-            {
-                if (!_networkManager.IsInLocalNetwork(remoteIp))
-                {
-                    return false;
-                }
+
+                return false;
             }
 
             return true;
@@ -447,10 +443,11 @@ namespace Emby.Server.Implementations.HttpServer
                 if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.StatusCode = 200;
-                    foreach(var (key, value) in GetDefaultCorsHeaders(httpReq))
+                    foreach (var (key, value) in GetDefaultCorsHeaders(httpReq))
                     {
                         httpRes.Headers.Add(key, value);
                     }
+
                     httpRes.ContentType = "text/plain";
                     await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
                     return;

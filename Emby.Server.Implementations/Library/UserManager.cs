@@ -10,9 +10,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Devices;
@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IUserRepository _userRepository;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly INetworkManager _networkManager;
+        private readonly NetworkManager _networkManager;
         private readonly IImageProcessor _imageProcessor;
         private readonly Lazy<IDtoService> _dtoServiceFactory;
         private readonly IServerApplicationHost _appHost;
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Library
             ILogger<UserManager> logger,
             IUserRepository userRepository,
             IXmlSerializer xmlSerializer,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             IImageProcessor imageProcessor,
             Lazy<IDtoService> dtoServiceFactory,
             IServerApplicationHost appHost,

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Common.Networking;
 using Emby.Drawing;
 using Emby.Server.Implementations;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
@@ -29,13 +29,13 @@ namespace Jellyfin.Server
         /// <param name="loggerFactory">The <see cref="ILoggerFactory" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="options">The <see cref="StartupOptions" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
-        /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
+        /// <param name="networkManager">The <see cref="NetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
         public CoreAppHost(
             ServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             StartupOptions options,
             IFileSystem fileSystem,
-            INetworkManager networkManager)
+            NetworkManager networkManager)
             : base(
                 applicationPaths,
                 loggerFactory,

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Api.Playback.Hls;
 using MediaBrowser.Api.Playback.Progressive;
 using MediaBrowser.Common.Net;
@@ -93,7 +94,7 @@ namespace MediaBrowser.Api.Playback
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
-            INetworkManager networkManager,
+            NetworkManager networkManager,
             EncodingHelper encodingHelper)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
@@ -124,7 +125,7 @@ namespace MediaBrowser.Api.Playback
         protected IMediaSourceManager MediaSourceManager { get; private set; }
         protected IJsonSerializer JsonSerializer { get; private set; }
         protected IAuthorizationContext AuthorizationContext { get; private set; }
-        protected INetworkManager NetworkManager { get; private set; }
+        protected NetworkManager NetworkManager { get; private set; }
 
         public Task<object> Get(GetUniversalAudioStream request)
         {
