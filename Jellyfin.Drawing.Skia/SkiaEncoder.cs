@@ -234,28 +234,12 @@ namespace Jellyfin.Drawing.Skia
         /// <exception cref="ArgumentNullException">The path is null.</exception>
         /// <exception cref="FileNotFoundException">The path is not valid.</exception>
         /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
-        public string GetImageHash(string path)
+        public string GetImageBlurHash(int xComp, int yComp, string path)
         {
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
-
-            var dims = GetImageSize(path);
-            if (dims.Width <= 0 || dims.Height <= 0)
-            {
-                // empty image does not have any blurhash
-                return string.Empty;
-            }
-
-            // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
-            // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
-            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
-            float xCompF = MathF.Sqrt(16.0f * dims.Width / dims.Height);
-            float yCompF = xCompF * dims.Height / dims.Width;
-
-            int xComp = Math.Min((int)xCompF + 1, 9);
-            int yComp = Math.Min((int)yCompF + 1, 9);
 
             return BlurHashEncoder.Encode(xComp, yComp, path);
         }

@@ -46,9 +46,11 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Gets the blurhash of an image.
         /// </summary>
+        /// <param name="xComp">Amount of X components of DCT to take.</param>
+        /// <param name="yComp">Amount of Y components of DCT to take.</param>
         /// <param name="path">The filepath of the image.</param>
         /// <returns>The blurhash.</returns>
-        string GetImageHash(string path);
+        string GetImageBlurHash(int xComp, int yComp, string path);
 
         /// <summary>
         /// Encode an image.

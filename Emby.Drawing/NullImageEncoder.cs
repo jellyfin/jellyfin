@@ -44,7 +44,7 @@ namespace Emby.Drawing
         }
 
         /// <inheritdoc />
-        public string GetImageHash(string path)
+        public string GetImageBlurHash(int xComp, int yComp, string path)
         {
             throw new NotImplementedException();
         }

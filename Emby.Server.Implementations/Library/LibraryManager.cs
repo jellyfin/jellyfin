@@ -1882,6 +1882,7 @@ namespace Emby.Server.Implementations.Library
                 ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
                 image.Width = size.Width;
                 image.Height = size.Height;
+
                 try
                 {
                     image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);

@@ -315,7 +315,24 @@ namespace Emby.Drawing
 
         /// <inheritdoc />
         public string GetImageBlurHash(string path)
-            => _imageEncoder.GetImageHash(path);
+        {
+            var size = GetImageDimensions(path);
+            if (size.Width <= 0 || size.Height <= 0)
+            {
+                return string.Empty;
+            }
+
+            // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
+            // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
+            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
+            float xCompF = MathF.Sqrt(16.0f * size.Width / size.Height);
+            float yCompF = xCompF * size.Height / size.Width;
+
+            int xComp = Math.Min((int)xCompF + 1, 9);
+            int yComp = Math.Min((int)yCompF + 1, 9);
+
+            return _imageEncoder.GetImageBlurHash(xComp, yComp, path);
+        }
 
         /// <inheritdoc />
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
