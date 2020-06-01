@@ -123,12 +123,7 @@ namespace Emby.Server.Implementations.Networking
         /// <inheritdoc/>
         public List<PhysicalAddress> GetMacAddresses()
         {
-            if (_macAddresses == null)
-            {
-                _macAddresses = GetMacAddressesInternal().ToList();
-            }
-
-            return _macAddresses;
+            return _macAddresses ??= GetMacAddressesInternal().ToList();
         }
 
         /// <inheritdoc/>
