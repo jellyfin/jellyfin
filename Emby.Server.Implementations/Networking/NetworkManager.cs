@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.Networking
             => NetworkInterface.GetAllNetworkInterfaces()
                 .Where(i => i.NetworkInterfaceType != NetworkInterfaceType.Loopback)
                 .Select(x => x.GetPhysicalAddress())
-                .Where(x => x != null && x != PhysicalAddress.None);
+                .Where(x => !x.Equals(PhysicalAddress.None));
 
         private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
