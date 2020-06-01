@@ -183,9 +183,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
                     }
 
-                    // ToDo - Enable the ffmpeg validator.  At the moment any version can be used.
-                    rc = true;
-
                     _ffmpegPath = path;
                     EncoderLocation = location;
                 }

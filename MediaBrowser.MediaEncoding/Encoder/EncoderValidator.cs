@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,7 +13,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
     {
         private const string DefaultEncoderPath = "ffmpeg";
 
-        private static readonly string[] requiredDecoders = new[]
+        private static readonly string[] _requiredDecoders = new[]
         {
             "mpeg2video",
             "h264_qsv",
@@ -33,7 +34,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc"
         };
 
-        private static readonly string[] requiredEncoders = new[]
+        private static readonly string[] _requiredEncoders = new[]
         {
             "libx264",
             "libx265",
@@ -61,7 +62,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "hevc_amf"
         };
 
-        // Try and use the individual library versions to determine a FFmpeg version
+        // These are the library versions that corresponds to our minimum ffmpeg version 4.x according to the version table below
+        private static readonly IReadOnlyDictionary<string, double> _ffmpegMinimumLibraryVersions = new Dictionary<string, double>
+        {
+            {"libavutil", 56.14},
+            {"libavcodec", 58.18 },
+            {"libavformat", 58.12 },
+            {"libavdevice", 58.3 },
+            {"libavfilter", 7.16 },
+            {"libswscale", 5.1 },
+            {"libswresample", 3.1},
+            {"libpostproc", 55.1 }
+        };
+
         // This lookup table is to be maintained with the following command line:
         // $ ffmpeg -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
         private static readonly IReadOnlyDictionary<string, Version> _ffmpegVersionMap = new Dictionary<string, Version>
@@ -123,32 +136,36 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Work out what the version under test is
             var version = GetFFmpegVersion(versionOutput);
 
-            _logger.LogInformation("Found ffmpeg version {0}", version != null ? version.ToString() : "unknown");
+            _logger.LogInformation("Found ffmpeg version {Version}", version != null ? version.ToString() : "unknown");
 
             if (version == null)
             {
-                if (MinVersion != null && MaxVersion != null) // Version is unknown
+                if (MaxVersion != null) // Version is unknown
                 {
                     if (MinVersion == MaxVersion)
                     {
-                        _logger.LogWarning("FFmpeg validation: We recommend ffmpeg version {0}", MinVersion);
+                        _logger.LogWarning("FFmpeg validation: We recommend version {MinVersion}", MinVersion);
                     }
                     else
                     {
-                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);
+                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {MinVersion} and maximum of {MaxVersion}", MinVersion, MaxVersion);
                     }
+                }
+                else
+                {
+                    _logger.LogWarning("FFmpeg validation: We recommend minimum version {MinVersion}", MinVersion);
                 }
 
                 return false;
             }
-            else if (MinVersion != null && version < MinVersion) // Version is below what we recommend
+            else if (version < MinVersion) // Version is below what we recommend
             {
-                _logger.LogWarning("FFmpeg validation: The minimum recommended ffmpeg version is {0}", MinVersion);
+                _logger.LogWarning("FFmpeg validation: The minimum recommended version is {MinVersion}", MinVersion);
                 return false;
             }
             else if (MaxVersion != null && version > MaxVersion) // Version is above what we recommend
             {
-                _logger.LogWarning("FFmpeg validation: The maximum recommended ffmpeg version is {0}", MaxVersion);
+                _logger.LogWarning("FFmpeg validation: The maximum recommended version is {MaxVersion}", MaxVersion);
                 return false;
             }
 
@@ -162,13 +179,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Using the output from "ffmpeg -version" work out the FFmpeg version.
         /// For pre-built binaries the first line should contain a string like "ffmpeg version x.y", which is easy
-        /// to parse.  If this is not available, then we try to match known library versions to FFmpeg versions.
-        /// If that fails then we use one of the main libraries to determine if it's new/older than the latest
-        /// we have stored.
+        /// to parse. If this is not available, then we try to match known library versions to FFmpeg versions.
+        /// If that fails then we test the libraries to determine if they're newer than our minimum versions.
         /// </summary>
         /// <param name="output"></param>
         /// <returns></returns>
-        internal static Version GetFFmpegVersion(string output)
+        internal Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
             var match = Regex.Match(output, @"^ffmpeg version n?((?:\d+\.?)+)");
@@ -179,37 +195,87 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                // Create a reduced version string and lookup key from dictionary
-                var reducedVersion = GetLibrariesVersionString(output);
+                if (!TryGetFFmpegLibraryVersions(output, out string versionString, out IReadOnlyDictionary<string, double> versionMap))
+                {
+                    _logger.LogError("No ffmpeg library versions found");
 
-                // Try to lookup the string and return Key, otherwise if not found returns null
-                return _ffmpegVersionMap.TryGetValue(reducedVersion, out Version version) ? version : null;
+                    return null;
+                }
+
+                // First try to lookup the full version string
+                if (_ffmpegVersionMap.TryGetValue(versionString, out Version version))
+                {
+                    return version;
+                }
+
+                // Then try to test for minimum library versions
+                return TestMinimumFFmpegLibraryVersions(versionMap);
             }
+        }
+
+        private Version TestMinimumFFmpegLibraryVersions(IReadOnlyDictionary<string, double> versionMap)
+        {
+            var allVersionsValidated = true;
+
+            foreach (var minimumVersion in _ffmpegMinimumLibraryVersions)
+            {
+                if (versionMap.TryGetValue(minimumVersion.Key, out var foundVersion))
+                {
+                    if (foundVersion >= minimumVersion.Value)
+                    {
+                        _logger.LogInformation("Found {Library} version {FoundVersion} ({MinimumVersion})", minimumVersion.Key, foundVersion, minimumVersion.Value);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Found {Library} version {FoundVersion} lower than recommended version {MinimumVersion}", minimumVersion.Key, foundVersion, minimumVersion.Value);
+                        allVersionsValidated = false;
+                    }
+                }
+                else
+                {
+                    _logger.LogError("{Library} version not found", minimumVersion.Key);
+                    allVersionsValidated = false;
+                }
+            }
+
+            return allVersionsValidated ? MinVersion : null;
         }
 
         /// <summary>
         /// Grabs the library names and major.minor version numbers from the 'ffmpeg -version' output
-        /// and condenses them on to one line.  Output format is "name1=major.minor,name2=major.minor,etc."
         /// </summary>
         /// <param name="output"></param>
+        /// <param name="versionString"></param>
+        /// <param name="versionMap"></param>
         /// <returns></returns>
-        private static string GetLibrariesVersionString(string output)
+        private static bool TryGetFFmpegLibraryVersions(string output, out string versionString, out IReadOnlyDictionary<string, double> versionMap)
         {
-            var rc = new StringBuilder(144);
-            foreach (Match m in Regex.Matches(
+            var sb = new StringBuilder(144);
+
+            var map = new Dictionary<string, double>();
+
+            foreach (Match match in Regex.Matches(
                 output,
                 @"((?<name>lib\w+)\s+(?<major>\d+)\.\s*(?<minor>\d+))",
                 RegexOptions.Multiline))
             {
-                rc.Append(m.Groups["name"])
+                sb.Append(match.Groups["name"])
                     .Append('=')
-                    .Append(m.Groups["major"])
+                    .Append(match.Groups["major"])
                     .Append('.')
-                    .Append(m.Groups["minor"])
+                    .Append(match.Groups["minor"])
                     .Append(',');
+
+                var str = $"{match.Groups["major"]}.{match.Groups["minor"]}";
+                var versionNumber = double.Parse(str, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
+
+                map.Add(match.Groups["name"].Value, versionNumber);
             }
 
-            return rc.Length == 0 ? null : rc.ToString();
+            versionString = sb.ToString();
+            versionMap = map as IReadOnlyDictionary<string, double>;
+
+            return sb.Length > 0;
         }
 
         private enum Codec
@@ -236,7 +302,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var required = codec == Codec.Encoder ? requiredEncoders : requiredDecoders;
+            var required = codec == Codec.Encoder ? _requiredEncoders : _requiredDecoders;
 
             var found = Regex
                 .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)
