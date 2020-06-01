@@ -114,11 +114,9 @@ namespace Emby.Server.Implementations.Networking
         public int GetRandomUnusedUdpPort()
         {
             var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            var udpClient = new UdpClient(localEndPoint);
-            using (udpClient)
+            using (var udpClient = new UdpClient(localEndPoint))
             {
-                var port = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
-                return port;
+                return ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
             }
         }
 
