@@ -64,6 +64,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 ConnectionFlags.ReadOnly,
                 null))
             {
+                using var userDbConnection = SQLite3.Open(Path.Combine(dataPath, "users.db"), ConnectionFlags.ReadOnly, null);
                 _logger.LogWarning("Migrating the activity database may take a while, do not stop Jellyfin.");
                 using var dbContext = _provider.CreateContext();
 
@@ -76,17 +77,38 @@ namespace Jellyfin.Server.Migrations.Routines
                 dbContext.Database.ExecuteSqlRaw("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'ActivityLog';");
                 dbContext.SaveChanges();
 
-                var newEntries = queryResult.Select(entry =>
+                var newEntries = new List<ActivityLog>();
+
+                foreach (var entry in queryResult)
                 {
                     if (!logLevelDictionary.TryGetValue(entry[8].ToString(), out var severity))
                     {
                         severity = LogLevel.Trace;
                     }
 
+                    Guid guid;
+                    if (entry[6].SQLiteType == SQLiteType.Null)
+                    {
+                        guid = Guid.Empty;
+                    }
+                    else if (!Guid.TryParse(entry[6].ToString(), out guid))
+                    {
+                        // This is not a valid Guid, see if it is an internal ID from an old Emby schema
+                        var userEntry = userDbConnection
+                            .Query($"SELECT guid FROM LocalUsersv2 WHERE Id = {entry[6].ToString()}")
+                            .FirstOrDefault();
+
+                        if (userEntry.Count == 0 || !Guid.TryParse(userEntry[0].ToString(), out guid))
+                        {
+                            // Give up, just use Guid.Empty
+                            guid = Guid.Empty;
+                        }
+                    }
+
                     var newEntry = new ActivityLog(
                         entry[1].ToString(),
                         entry[4].ToString(),
-                        entry[6].SQLiteType == SQLiteType.Null ? Guid.Empty : Guid.Parse(entry[6].ToString()))
+                        guid)
                     {
                         DateCreated = entry[7].ReadDateTime(),
                         LogSeverity = severity
@@ -107,8 +129,8 @@ namespace Jellyfin.Server.Migrations.Routines
                         newEntry.ItemId = entry[5].ToString();
                     }
 
-                    return newEntry;
-                });
+                    newEntries.Add(newEntry);
+                }
 
                 dbContext.ActivityLogs.AddRange(newEntries);
                 dbContext.SaveChanges();
