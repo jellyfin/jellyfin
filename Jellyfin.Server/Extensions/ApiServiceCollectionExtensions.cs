@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
@@ -9,6 +11,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Formatters;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -128,7 +131,30 @@ namespace Jellyfin.Server.Extensions
                 // Use method name as operationId
                 c.CustomOperationIds(description =>
                     description.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null);
+
+                // TODO - remove when all types are supported in System.Text.Json
+                c.AddSwaggerTypeMappings();
             });
+        }
+
+        private static void AddSwaggerTypeMappings(this SwaggerGenOptions options)
+        {
+            /*
+             * TODO remove when System.Text.Json supports non-string keys.
+             * Used in Jellyfin.Api.Controller.GetChannels.
+             */
+            options.MapType<Dictionary<ImageType, string>>(() =>
+                new OpenApiSchema
+                {
+                    Type = "object",
+                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
+                        name => name,
+                        name => new OpenApiSchema
+                        {
+                            Type = "string",
+                            Format = "string"
+                        })
+                });
         }
     }
 }
