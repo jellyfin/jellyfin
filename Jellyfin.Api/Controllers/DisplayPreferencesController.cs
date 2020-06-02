@@ -35,7 +35,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">User id.</param>
         /// <param name="client">Client.</param>
         /// <response code="200">Display preferences retrieved.</response>
-        /// <response code="404">Specified display preferences not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the display preferences on success, or a <see cref="NotFoundResult"/> if the display preferences could not be found.</returns>
         [HttpGet("{DisplayPreferencesId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -45,13 +44,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] [Required] string userId,
             [FromQuery] [Required] string client)
         {
-            var result = _displayPreferencesRepository.GetDisplayPreferences(displayPreferencesId, userId, client);
-            if (result == null)
-            {
-                return NotFound();
-            }
-
-            return result;
+            return _displayPreferencesRepository.GetDisplayPreferences(displayPreferencesId, userId, client);
         }
 
         /// <summary>
@@ -62,7 +55,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="client">Client.</param>
         /// <param name="displayPreferences">New Display Preferences object.</param>
         /// <response code="200">Display preferences updated.</response>
-        /// <response code="404">Specified display preferences not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the display preferences could not be found.</returns>
         [HttpPost("{DisplayPreferencesId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
