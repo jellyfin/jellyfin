@@ -65,14 +65,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         // These are the library versions that corresponds to our minimum ffmpeg version 4.x according to the version table below
         private static readonly IReadOnlyDictionary<string, double> _ffmpegMinimumLibraryVersions = new Dictionary<string, double>
         {
-            {"libavutil", 56.14},
-            {"libavcodec", 58.18 },
-            {"libavformat", 58.12 },
-            {"libavdevice", 58.3 },
-            {"libavfilter", 7.16 },
-            {"libswscale", 5.1 },
-            {"libswresample", 3.1},
-            {"libpostproc", 55.1 }
+            { "libavutil", 56.14 },
+            { "libavcodec", 58.18 },
+            { "libavformat", 58.12 },
+            { "libavdevice", 58.3 },
+            { "libavfilter", 7.16 },
+            { "libswscale", 5.1 },
+            { "libswresample", 3.1 },
+            { "libpostproc", 55.1 }
         };
 
         // This lookup table is to be maintained with the following command line:
