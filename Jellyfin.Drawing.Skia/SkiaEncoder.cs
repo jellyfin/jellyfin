@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using BlurHashSharp.SkiaSharp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
@@ -227,6 +228,20 @@ namespace Jellyfin.Drawing.Skia
 
                 return new ImageDimensions(info.Width, info.Height);
             }
+        }
+
+        /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">The path is null.</exception>
+        /// <exception cref="FileNotFoundException">The path is not valid.</exception>
+        /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
+        public string GetImageBlurHash(int xComp, int yComp, string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            return BlurHashEncoder.Encode(xComp, yComp, path);
         }
 
         private static bool HasDiacritics(string text)

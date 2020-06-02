@@ -31,6 +31,12 @@ namespace MediaBrowser.Model.Dto
         public string Path { get; set; }
 
         /// <summary>
+        /// Gets or sets the blurhash.
+        /// </summary>
+        /// <value>The blurhash.</value>
+        public string BlurHash { get; set; }
+
+        /// <summary>
         /// Gets or sets the height.
         /// </summary>
         /// <value>The height.</value>
