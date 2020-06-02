@@ -109,6 +109,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Initial user retrieved.</response>
         /// <returns>The first user.</returns>
         [HttpGet("User")]
+        [HttpGet("FirstUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<StartupUserDto> GetFirstUser()
         {
