@@ -93,13 +93,9 @@ namespace Jellyfin.Server.Middleware
                 context.Response.ContentType = MediaTypeNames.Text.Plain;
 
                 // Don't send exception unless the server is in a Development environment
-                if (!_hostEnvironment.IsDevelopment())
-                {
-                    await context.Response.WriteAsync("Error processing request.").ConfigureAwait(false);
-                    return;
-                }
-
-                var errorContent = NormalizeExceptionMessage(ex.Message);
+                var errorContent = _hostEnvironment.IsDevelopment()
+                        ? NormalizeExceptionMessage(ex.Message)
+                        : "Error processing request.";
                 await context.Response.WriteAsync(errorContent).ConfigureAwait(false);
             }
         }
