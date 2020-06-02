@@ -43,3 +43,4 @@ jobs:
           NugetPackageName: Jellyfin.Common
           AssemblyFileName: MediaBrowser.Common.dll
       LinuxImage: "ubuntu-latest"
+      
