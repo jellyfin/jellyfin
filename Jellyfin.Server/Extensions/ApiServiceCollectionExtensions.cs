@@ -10,6 +10,7 @@ using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Formatters;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -83,8 +84,20 @@ namespace Jellyfin.Server.Extensions
                 .AddApplicationPart(typeof(StartupController).Assembly)
                 .AddJsonOptions(options =>
                 {
-                    // Setting the naming policy to null leaves the property names as-is when serializing objects to JSON.
-                    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    // Update all properties that are set in JsonDefaults
+                    var jsonOptions = JsonDefaults.PascalCase;
+
+                    // From JsonDefaults
+                    options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
+                    options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
+                    options.JsonSerializerOptions.Converters.Clear();
+                    foreach (var converter in jsonOptions.Converters)
+                    {
+                        options.JsonSerializerOptions.Converters.Add(converter);
+                    }
+
+                    // From JsonDefaults.PascalCase
+                    options.JsonSerializerOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
                 })
                 .AddControllersAsServices();
         }
@@ -98,7 +111,7 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API" });
+                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
 
                 // Add all xml doc files to swagger generator.
                 var xmlFiles = Directory.GetFiles(
@@ -119,16 +132,17 @@ namespace Jellyfin.Server.Extensions
                 c.CustomOperationIds(description =>
                     description.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null);
 
-                // Add types not supported by System.Text.Json
-                // TODO: Remove this once these types are supported by System.Text.Json and Swashbuckle
-                // See: https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/1667
-                c.MapSwaggerGenTypes();
+                // TODO - remove when all types are supported in System.Text.Json
+                c.AddSwaggerTypeMappings();
             });
         }
 
-        private static void MapSwaggerGenTypes(this SwaggerGenOptions options)
+        private static void AddSwaggerTypeMappings(this SwaggerGenOptions options)
         {
-            // BaseItemDto.ImageTags
+            /*
+             * TODO remove when System.Text.Json supports non-string keys.
+             * Used in Jellyfin.Api.Controller.GetChannels.
+             */
             options.MapType<Dictionary<ImageType, string>>(() =>
                 new OpenApiSchema
                 {
