@@ -204,12 +204,11 @@ namespace Emby.Server.Implementations.Updates
 
             if (minVersion != null)
             {
-                availableVersions = availableVersions
-                    .Where(x => new Version(x.version) >= minVersion)
-                    .OrderByDescending(x => x.version);
+                availableVersions = availableVersions.Where(x => new Version(x.version) >= minVersion);
             }
 
-            foreach (var v in availableVersions)
+            foreach (var v in availableVersions.OrderByDescending(x => x.version))
+)
             {
                 yield return new InstallationInfo
                 {
@@ -331,13 +330,13 @@ namespace Emby.Server.Implementations.Updates
             // Do plugin-specific processing
             if (plugin == null)
             {
-                _logger.LogInformation("New plugin installed: {0} {1} {2}", package.Name, package.Version);
+                _logger.LogInformation("New plugin installed: {0} {1}", package.Name, package.Version);
 
                 PluginInstalled?.Invoke(this, package);
             }
             else
             {
-                _logger.LogInformation("Plugin updated: {0} {1} {2}", package.Name, package.Version);
+                _logger.LogInformation("Plugin updated: {0} {1}", package.Name, package.Version);
 
                 PluginUpdated?.Invoke(this, package);
             }
