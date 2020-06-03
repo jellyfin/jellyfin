@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -43,10 +45,7 @@ namespace Emby.Server.Implementations.Services
 
         private static string GetContentTypeWithoutEncoding(string contentType)
         {
-            return contentType == null
-                       ? null
-                       : contentType.Split(';')[0].ToLowerInvariant().Trim();
+            return contentType?.Split(';')[0].ToLowerInvariant().Trim();
         }
-
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.Configuration;
@@ -75,14 +77,14 @@ namespace Emby.Server.Implementations.UserViews
                 return false;
             }
 
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 if (folder.IsTopParent)
                 {
                     return false;
                 }
             }
+
             return true;
             //return item.SourceType == SourceType.Library;
         }

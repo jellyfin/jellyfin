@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -10,6 +11,7 @@ namespace MediaBrowser.Model.Dlna
     {
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
+
         public ProfileCondition[] Conditions { get; set; }
 
         [XmlAttribute("container")]

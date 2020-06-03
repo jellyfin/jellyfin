@@ -1,3 +1,4 @@
+#nullable disable
 namespace MediaBrowser.Model.Plugins
 {
     /// <summary>
