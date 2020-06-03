@@ -208,14 +208,15 @@ namespace Emby.Server.Implementations.Updates
             }
 
             foreach (var v in availableVersions.OrderByDescending(x => x.version))
-)
             {
                 yield return new InstallationInfo
                 {
                     Changelog = v.changelog,
                     Guid = new Guid(package.guid),
                     Name = package.name,
-                    Version = new Version(v.version)
+                    Version = new Version(v.version),
+                    SourceUrl = v.sourceUrl,
+                    Checksum = v.checksum
                 };
             }
         }
