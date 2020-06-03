@@ -40,12 +40,12 @@ namespace Jellyfin.Server
         /// <summary>
         /// The name of logging configuration file containing application defaults.
         /// </summary>
-        public static readonly string LoggingConfigFileDefault = "logging.default.json";
+        public const string LoggingConfigFileDefault = "logging.default.json";
 
         /// <summary>
         /// The name of the logging configuration file containing the system-specific override settings.
         /// </summary>
-        public static readonly string LoggingConfigFileSystem = "logging.json";
+        public const string LoggingConfigFileSystem = "logging.json";
 
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
