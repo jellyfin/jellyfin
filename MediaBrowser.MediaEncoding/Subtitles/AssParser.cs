@@ -33,10 +33,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         continue;
                     }
+
                     if (line.StartsWith("["))
+                    {
                         break;
-                    if (string.IsNullOrEmpty(line))
-                        continue;
+                    }
+
                     var subEvent = new SubtitleTrackEvent { Id = eventIndex.ToString(_usCulture) };
                     eventIndex++;
                     var sections = line.Substring(10).Split(',');

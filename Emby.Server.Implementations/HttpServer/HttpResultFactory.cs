@@ -255,16 +255,20 @@ namespace Emby.Server.Implementations.HttpServer
         {
             var acceptEncoding = request.Headers[HeaderNames.AcceptEncoding].ToString();
 
-            if (string.IsNullOrEmpty(acceptEncoding))
+            if (!string.IsNullOrEmpty(acceptEncoding))
             {
-                //if (_brotliCompressor != null && acceptEncoding.IndexOf("br", StringComparison.OrdinalIgnoreCase) != -1)
+                // if (_brotliCompressor != null && acceptEncoding.IndexOf("br", StringComparison.OrdinalIgnoreCase) != -1)
                 //    return "br";
 
-                if (acceptEncoding.IndexOf("deflate", StringComparison.OrdinalIgnoreCase) != -1)
+                if (acceptEncoding.Contains("deflate", StringComparison.OrdinalIgnoreCase))
+                {
                     return "deflate";
+                }
 
-                if (acceptEncoding.IndexOf("gzip", StringComparison.OrdinalIgnoreCase) != -1)
+                if (acceptEncoding.Contains("gzip", StringComparison.OrdinalIgnoreCase))
+                {
                     return "gzip";
+                }
             }
 
             return null;

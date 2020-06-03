@@ -788,22 +788,12 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (query.OrderBy.Count == 0)
             {
-                if (query.IsAiring ?? false)
+
+                // Unless something else was specified, order by start date to take advantage of a specialized index
+                query.OrderBy = new[]
                 {
-                    // Unless something else was specified, order by start date to take advantage of a specialized index
-                    query.OrderBy = new[]
-                    {
-                        (ItemSortBy.StartDate, SortOrder.Ascending)
-                    };
-                }
-                else
-                {
-                    // Unless something else was specified, order by start date to take advantage of a specialized index
-                    query.OrderBy = new[]
-                    {
-                        (ItemSortBy.StartDate, SortOrder.Ascending)
-                    };
-                }
+                    (ItemSortBy.StartDate, SortOrder.Ascending)
+                };
             }
 
             RemoveFields(options);
