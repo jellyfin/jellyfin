@@ -521,11 +521,7 @@ namespace Emby.Server.Implementations.Library
                 SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);
             }
 
-            return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse
-            {
-                MediaSource = clone
-
-            }, liveStream as IDirectStreamProvider);
+            return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);
         }
 
         private static void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)

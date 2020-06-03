@@ -114,7 +114,7 @@ namespace Emby.Drawing
             => _transparentImageTypes.Contains(Path.GetExtension(path));
 
         /// <inheritdoc />
-        public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
+        public async Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
@@ -230,7 +230,7 @@ namespace Emby.Drawing
             return ImageFormat.Jpg;
         }
 
-        private string GetMimeType(ImageFormat format, string path)
+        private string? GetMimeType(ImageFormat format, string path)
             => format switch
             {
                 ImageFormat.Bmp => MimeTypes.GetMimeType("i.bmp"),

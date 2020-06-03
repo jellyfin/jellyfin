@@ -46,14 +46,14 @@ namespace Emby.Server.Implementations.Channels
             new ConcurrentDictionary<string, Tuple<DateTime, List<MediaSourceInfo>>>();
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="config">The server configuration manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="userDataManager">The user data manager.</param>

@@ -1,11 +1,11 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Threading;
@@ -456,7 +456,7 @@ namespace Emby.Server.Implementations.Updates
                 _config.SaveConfiguration();
             }
 
-            PluginUninstalled?.Invoke(this, new GenericEventArgs<IPlugin> { Argument = plugin });
+            PluginUninstalled?.Invoke(this, new GenericEventArgs<IPlugin>(plugin));
 
             _applicationHost.NotifyPendingRestart();
         }

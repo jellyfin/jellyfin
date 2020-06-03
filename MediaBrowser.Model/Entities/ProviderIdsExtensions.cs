@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="instance">The instance.</param>
         /// <param name="provider">The provider.</param>
         /// <returns>System.String.</returns>
-        public static string GetProviderId(this IHasProviderIds instance, MetadataProviders provider)
+        public static string? GetProviderId(this IHasProviderIds instance, MetadataProviders provider)
         {
             return instance.GetProviderId(provider.ToString());
         }
@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="instance">The instance.</param>
         /// <param name="name">The name.</param>
         /// <returns>System.String.</returns>
-        public static string GetProviderId(this IHasProviderIds instance, string name)
+        public static string? GetProviderId(this IHasProviderIds instance, string name)
         {
             if (instance == null)
             {

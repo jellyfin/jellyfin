@@ -146,11 +146,14 @@ namespace Emby.Dlna.PlayTo
                 {
                     var positionTicks = GetProgressPositionTicks(streamInfo);
 
-                    ReportPlaybackStopped(streamInfo, positionTicks);
+                    await ReportPlaybackStopped(streamInfo, positionTicks).ConfigureAwait(false);
                 }
 
                 streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager, _mediaSourceManager);
-                if (streamInfo.Item == null) return;
+                if (streamInfo.Item == null)
+                {
+                    return;
+                }
 
                 var newItemProgress = GetProgressInfo(streamInfo);
 
@@ -173,11 +176,14 @@ namespace Emby.Dlna.PlayTo
             {
                 var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager);
 
-                if (streamInfo.Item == null) return;
+                if (streamInfo.Item == null)
+                {
+                    return;
+                }
 
                 var positionTicks = GetProgressPositionTicks(streamInfo);
 
-                ReportPlaybackStopped(streamInfo, positionTicks);
+                await ReportPlaybackStopped(streamInfo, positionTicks).ConfigureAwait(false);
 
                 var mediaSource = await streamInfo.GetMediaSource(CancellationToken.None).ConfigureAwait(false);
 
@@ -185,7 +191,7 @@ namespace Emby.Dlna.PlayTo
                     (_device.Duration == null ? (long?)null : _device.Duration.Value.Ticks) :
                     mediaSource.RunTimeTicks;
 
-                var playedToCompletion = (positionTicks.HasValue && positionTicks.Value == 0);
+                var playedToCompletion = positionTicks.HasValue && positionTicks.Value == 0;
 
                 if (!playedToCompletion && duration.HasValue && positionTicks.HasValue)
                 {
@@ -210,7 +216,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void ReportPlaybackStopped(StreamParams streamInfo, long? positionTicks)
+        private async Task ReportPlaybackStopped(StreamParams streamInfo, long? positionTicks)
         {
             try
             {
@@ -220,7 +226,6 @@ namespace Emby.Dlna.PlayTo
                     SessionId = _session.Id,
                     PositionTicks = positionTicks,
                     MediaSourceId = streamInfo.MediaSourceId
-
                 }).ConfigureAwait(false);
             }
             catch (Exception ex)
