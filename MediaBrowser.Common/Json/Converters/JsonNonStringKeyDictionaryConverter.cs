@@ -73,7 +73,6 @@ namespace MediaBrowser.Common.Json.Converters
                 convertedDictionary[k?.ToString()] = v;
             }
             JsonSerializer.Serialize(writer, convertedDictionary, options);
-            convertedDictionary.Clear();
         }
     }
 }
