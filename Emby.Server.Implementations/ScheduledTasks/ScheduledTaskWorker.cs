@@ -392,7 +392,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             ((TaskManager)TaskManager).OnTaskExecuting(this);
 
-            progress.ProgressChanged += progress_ProgressChanged;
+            progress.ProgressChanged += OnProgressChanged;
 
             TaskCompletionStatus status;
             CurrentExecutionStartTime = DateTime.UtcNow;
@@ -426,7 +426,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             var startTime = CurrentExecutionStartTime;
             var endTime = DateTime.UtcNow;
 
-            progress.ProgressChanged -= progress_ProgressChanged;
+            progress.ProgressChanged -= OnProgressChanged;
             CurrentCancellationTokenSource.Dispose();
             CurrentCancellationTokenSource = null;
             CurrentProgress = null;
@@ -439,16 +439,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void progress_ProgressChanged(object sender, double e)
+        private void OnProgressChanged(object sender, double e)
         {
             e = Math.Min(e, 100);
 
             CurrentProgress = e;
 
-            TaskProgress?.Invoke(this, new GenericEventArgs<double>
-            {
-                Argument = e
-            });
+            TaskProgress?.Invoke(this, new GenericEventArgs<double>(e));
         }
 
         /// <summary>
