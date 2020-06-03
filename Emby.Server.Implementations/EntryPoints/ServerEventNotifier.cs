@@ -88,17 +88,17 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private async void OnPackageInstalling(object sender, InstallationInfo e)
         {
-            await SendMessageToAdminSessions("PackageInstalling", e);
+            await SendMessageToAdminSessions("PackageInstalling", e).ConfigureAwait(false);
         }
 
         private async void OnPackageInstallationCancelled(object sender, InstallationInfo e)
         {
-            await SendMessageToAdminSessions("PackageInstallationCancelled", e);
+            await SendMessageToAdminSessions("PackageInstallationCancelled", e).ConfigureAwait(false);
         }
 
         private async void OnPackageInstallationCompleted(object sender, InstallationInfo e)
         {
-            await SendMessageToAdminSessions("PackageInstallationCompleted", e);
+            await SendMessageToAdminSessions("PackageInstallationCompleted", e).ConfigureAwait(false);
         }
 
         private async void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
@@ -118,7 +118,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="e">The e.</param>
         private async void OnPluginUninstalled(object sender, IPlugin e)
         {
-            await SendMessageToAdminSessions("PluginUninstalled", e);
+            await SendMessageToAdminSessions("PluginUninstalled", e).ConfigureAwait(false);
         }
 
         /// <summary>
