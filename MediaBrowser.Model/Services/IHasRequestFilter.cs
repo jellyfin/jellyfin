@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.Services
     {
         /// <summary>
         /// Gets the order in which Request Filters are executed.
-        /// &lt;0 Executed before global request filters
+        /// &lt;0 Executed before global request filters.
         /// &gt;0 Executed after global request filters.
         /// </summary>
         int Priority { get; }
