@@ -144,6 +144,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userviewManagerFactory">The userview manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
+        /// <param name="imageProcessor">The image processor.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILogger<LibraryManager> logger,
