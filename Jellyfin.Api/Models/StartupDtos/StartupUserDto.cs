@@ -1,3 +1,5 @@
+#nullable disable
+
 namespace Jellyfin.Api.Models.StartupDtos
 {
     /// <summary>
