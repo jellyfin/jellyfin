@@ -42,7 +42,7 @@ namespace MediaBrowser.Api.Playback
                     return Request.SegmentLength.Value;
                 }
 
-                if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     var userAgent = UserAgent ?? string.Empty;
 
