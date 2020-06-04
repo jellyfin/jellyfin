@@ -18,8 +18,14 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Images
 {
+    /// <summary>
+    /// Class MusicGenreImageProvider.
+    /// </summary>
     public class MusicGenreImageProvider : BaseDynamicImageProvider<MusicGenre>
     {
+        /// <summary>
+        /// The library manager.
+        /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         public MusicGenreImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
@@ -27,6 +33,11 @@ namespace Emby.Server.Implementations.Images
             _libraryManager = libraryManager;
         }
 
+        /// <summary>
+        /// Get children objects used to create an music genre image.
+        /// </summary>
+        /// <param name="item">The music genre used to create the image.</param>
+        /// <returns>Any relevant children objects.</returns>
         protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
@@ -42,8 +53,14 @@ namespace Emby.Server.Implementations.Images
         }
     }
 
+    /// <summary>
+    /// Class GenreImageProvider.
+    /// </summary>
     public class GenreImageProvider : BaseDynamicImageProvider<Genre>
     {
+        /// <summary>
+        /// The library manager.
+        /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         public GenreImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
@@ -51,6 +68,11 @@ namespace Emby.Server.Implementations.Images
             _libraryManager = libraryManager;
         }
 
+        /// <summary>
+        /// Get children objects used to create an genre image.
+        /// </summary>
+        /// <param name="item">The genre used to create the image.</param>
+        /// <returns>Any relevant children objects.</returns>
         protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             return _libraryManager.GetItemList(new InternalItemsQuery
