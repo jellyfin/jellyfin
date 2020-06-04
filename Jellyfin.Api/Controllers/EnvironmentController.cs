@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -21,17 +22,20 @@ namespace Jellyfin.Api.Controllers
     public class EnvironmentController : BaseJellyfinApiController
     {
         private const char UncSeparator = '\\';
-        private const string UncSeparatorString = "\\";
+        private const string UncStartPrefix = @"\\";
 
         private readonly IFileSystem _fileSystem;
+        private readonly ILogger<EnvironmentController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnvironmentController"/> class.
         /// </summary>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        public EnvironmentController(IFileSystem fileSystem)
+        /// <param name="logger">Instance of the <see cref="ILogger{EnvironmentController}"/> interface.</param>
+        public EnvironmentController(IFileSystem fileSystem, ILogger<EnvironmentController> logger)
         {
             _fileSystem = fileSystem;
+            _logger = logger;
         }
 
         /// <summary>
@@ -46,27 +50,19 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<FileSystemEntryInfo> GetDirectoryContents(
             [FromQuery, BindRequired] string path,
-            [FromQuery] bool includeFiles,
-            [FromQuery] bool includeDirectories)
+            [FromQuery] bool includeFiles = false,
+            [FromQuery] bool includeDirectories = false)
         {
-            const string networkPrefix = UncSeparatorString + UncSeparatorString;
-            if (path.StartsWith(networkPrefix, StringComparison.OrdinalIgnoreCase)
+            if (path.StartsWith(UncStartPrefix, StringComparison.OrdinalIgnoreCase)
                 && path.LastIndexOf(UncSeparator) == 1)
             {
                 return Array.Empty<FileSystemEntryInfo>();
             }
 
-            var entries = _fileSystem.GetFileSystemEntries(path).OrderBy(i => i.FullName).Where(i =>
-            {
-                var isDirectory = i.IsDirectory;
-
-                if (!includeFiles && !isDirectory)
-                {
-                    return false;
-                }
-
-                return includeDirectories || !isDirectory;
-            });
+            var entries =
+                _fileSystem.GetFileSystemEntries(path)
+                    .Where(i => (i.IsDirectory && includeDirectories) || (!i.IsDirectory && includeFiles))
+                    .OrderBy(i => i.FullName);
 
             return entries.Select(f => new FileSystemEntryInfo
             {
@@ -142,6 +138,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<FileSystemEntryInfo>> GetNetworkShares()
         {
+            _logger.LogWarning("Obsolete endpoint accessed: /Environment/NetworkShares");
             return Array.Empty<FileSystemEntryInfo>();
         }
 
