@@ -549,7 +549,6 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public DateTime DateModified { get; set; }
 
-        [JsonIgnore]
         public DateTime DateLastSaved { get; set; }
 
         [JsonIgnore]
@@ -2741,7 +2740,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = GetEtagValues(user);
 
-            return string.Join("|", list.ToArray()).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            return string.Join("|", list).GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         protected virtual List<string> GetEtagValues(User user)
@@ -2784,8 +2783,7 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
 
-                var view = this as IHasCollectionType;
-                if (view != null)
+                if (this is IHasCollectionType view)
                 {
                     if (string.Equals(view.CollectionType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
                     {

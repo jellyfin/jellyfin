@@ -1,13 +1,22 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Formatters;
+using MediaBrowser.Common.Json;
+using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Jellyfin.Server.Extensions
 {
@@ -66,6 +75,8 @@ namespace Jellyfin.Server.Extensions
             return serviceCollection.AddMvc(opts =>
                 {
                     opts.UseGeneralRoutePrefix(baseUrl);
+                    opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
+                    opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
@@ -73,8 +84,20 @@ namespace Jellyfin.Server.Extensions
                 .AddApplicationPart(typeof(StartupController).Assembly)
                 .AddJsonOptions(options =>
                 {
-                    // Setting the naming policy to null leaves the property names as-is when serializing objects to JSON.
-                    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    // Update all properties that are set in JsonDefaults
+                    var jsonOptions = JsonDefaults.PascalCase;
+
+                    // From JsonDefaults
+                    options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
+                    options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
+                    options.JsonSerializerOptions.Converters.Clear();
+                    foreach (var converter in jsonOptions.Converters)
+                    {
+                        options.JsonSerializerOptions.Converters.Add(converter);
+                    }
+
+                    // From JsonDefaults.PascalCase
+                    options.JsonSerializerOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
                 })
                 .AddControllersAsServices();
         }
@@ -88,8 +111,50 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+
+                // Add all xml doc files to swagger generator.
+                var xmlFiles = Directory.GetFiles(
+                    AppContext.BaseDirectory,
+                    "*.xml",
+                    SearchOption.TopDirectoryOnly);
+
+                foreach (var xmlFile in xmlFiles)
+                {
+                    c.IncludeXmlComments(xmlFile);
+                }
+
+                // Order actions by route path, then by http method.
+                c.OrderActionsBy(description =>
+                    $"{description.ActionDescriptor.RouteValues["controller"]}_{description.HttpMethod}");
+
+                // Use method name as operationId
+                c.CustomOperationIds(description =>
+                    description.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null);
+
+                // TODO - remove when all types are supported in System.Text.Json
+                c.AddSwaggerTypeMappings();
             });
+        }
+
+        private static void AddSwaggerTypeMappings(this SwaggerGenOptions options)
+        {
+            /*
+             * TODO remove when System.Text.Json supports non-string keys.
+             * Used in Jellyfin.Api.Controller.GetChannels.
+             */
+            options.MapType<Dictionary<ImageType, string>>(() =>
+                new OpenApiSchema
+                {
+                    Type = "object",
+                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
+                        name => name,
+                        name => new OpenApiSchema
+                        {
+                            Type = "string",
+                            Format = "string"
+                        })
+                });
         }
     }
 }

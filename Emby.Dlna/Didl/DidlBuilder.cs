@@ -1018,17 +1018,56 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            item = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Primary));
-
-            if (item != null)
+            // For audio tracks without art use album art if available.
+            if (item is Audio audioItem)
             {
-                if (item.HasImage(ImageType.Primary))
-                {
-                    return GetImageInfo(item, ImageType.Primary);
-                }
+                var album = audioItem.AlbumEntity;
+                return album != null && album.HasImage(ImageType.Primary)
+                    ? GetImageInfo(album, ImageType.Primary)
+                    : null;
+            }
+
+            // Don't look beyond album/playlist level. Metadata service may assign an image from a different album/show to the parent folder.
+            if (item is MusicAlbum || item is Playlist)
+            {
+                return null;
+            }
+
+            // For other item types check parents, but be aware that image retrieved from a parent may be not suitable for this media item.
+            var parentWithImage = GetFirstParentWithImageBelowUserRoot(item);
+            if (parentWithImage != null)
+            {
+                return GetImageInfo(parentWithImage, ImageType.Primary);
             }
 
             return null;
+        }
+
+        private BaseItem GetFirstParentWithImageBelowUserRoot(BaseItem item)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            if (item.HasImage(ImageType.Primary))
+            {
+                return item;
+            }
+
+            var parent = item.GetParent();
+            if (parent is UserRootFolder)
+            {
+                return null;
+            }
+
+            // terminate in case we went past user root folder (unlikely?)
+            if (parent is Folder folder && folder.IsRoot)
+            {
+                return null;
+            }
+
+            return GetFirstParentWithImageBelowUserRoot(parent);
         }
 
         private ImageDownloadInfo GetImageInfo(BaseItem item, ImageType type)
