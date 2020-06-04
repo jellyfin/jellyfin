@@ -1,20 +1,16 @@
-using System;
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Linq;
-using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Images
 {
