@@ -42,10 +42,11 @@ namespace Jellyfin.Api.Controllers
         /// Refreshes metadata for an item.
         /// </summary>
         /// <param name="id">Item id.</param>
-        /// <param name="metadataRefreshMode">Specifies the metadata refresh mode.</param>
-        /// <param name="imageRefreshMode">Specifies the image refresh mode.</param>
-        /// <param name="replaceAllMetadata">Determines if metadata should be replaced. Only applicable if mode is FullRefresh.</param>
-        /// <param name="replaceAllImages">Determines if images should be replaced. Only applicable if mode is FullRefresh.</param>
+        /// <param name="metadataRefreshMode">(Optional) Specifies the metadata refresh mode.</param>
+        /// <param name="imageRefreshMode">(Optional) Specifies the image refresh mode.</param>
+        /// <param name="replaceAllMetadata">(Optional) Determines if metadata should be replaced. Only applicable if mode is FullRefresh.</param>
+        /// <param name="replaceAllImages">(Optional) Determines if images should be replaced. Only applicable if mode is FullRefresh.</param>
+        /// <param name="recursive">(Unused) Indicates if the refresh should occur recursively.</param>
         /// <response code="200">Item metadata refresh queued.</response>
         /// <response code="404">Item to refresh not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
@@ -55,10 +56,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Post(
             [FromRoute] string id,
-            [FromQuery] MetadataRefreshMode metadataRefreshMode,
-            [FromQuery] MetadataRefreshMode imageRefreshMode,
-            [FromQuery] bool replaceAllMetadata,
-            [FromQuery] bool replaceAllImages)
+            [FromQuery] MetadataRefreshMode metadataRefreshMode = MetadataRefreshMode.None,
+            [FromQuery] MetadataRefreshMode imageRefreshMode = MetadataRefreshMode.None,
+            [FromQuery] bool replaceAllMetadata = false,
+            [FromQuery] bool replaceAllImages = false,
+            [FromQuery] bool recursive = false)
         {
             var item = _libraryManager.GetItemById(id);
             if (item == null)
