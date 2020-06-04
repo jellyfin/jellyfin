@@ -53,9 +53,7 @@ namespace Jellyfin.Drawing.Skia
                 "jpeg",
                 "jpg",
                 "png",
-
                 "dng",
-
                 "webp",
                 "gif",
                 "bmp",
@@ -64,10 +62,8 @@ namespace Jellyfin.Drawing.Skia
                 "ktx",
                 "pkm",
                 "wbmp",
-
-                // TODO
-                // Are all of these supported? https://github.com/google/skia/blob/master/infra/bots/recipes/test.py#L454
-
+                // TODO: check if these are supported on multiple platforms
+                // https://github.com/google/skia/blob/master/infra/bots/recipes/test.py#L454
                 // working on windows at least
                 "cr2",
                 "nef",
@@ -272,7 +268,7 @@ namespace Jellyfin.Drawing.Skia
                 return path;
             }
 
-            var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path) ?? string.Empty);
+            var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
 
             Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
             File.Copy(path, tempPath, true);

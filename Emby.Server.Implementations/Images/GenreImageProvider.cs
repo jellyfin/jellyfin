@@ -1,5 +1,4 @@
-#pragma warning disable CS1591
-
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Emby.Server.Implementations.Images;
@@ -17,56 +16,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 
-namespace Emby.Server.Implementations.Playlists
+namespace Emby.Server.Implementations.Images
 {
-    public class PlaylistImageProvider : BaseDynamicImageProvider<Playlist>
-    {
-        public PlaylistImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
-        {
-        }
-
-        protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
-        {
-            var playlist = (Playlist)item;
-
-            return playlist.GetManageableItems()
-                .Select(i =>
-                {
-                    var subItem = i.Item2;
-
-                    if (subItem is Episode episode)
-                    {
-                        var series = episode.Series;
-                        if (series != null && series.HasImage(ImageType.Primary))
-                        {
-                            return series;
-                        }
-                    }
-
-                    if (subItem.HasImage(ImageType.Primary))
-                    {
-                        return subItem;
-                    }
-
-                    var parent = subItem.GetOwner() ?? subItem.GetParent();
-
-                    if (parent != null && parent.HasImage(ImageType.Primary))
-                    {
-                        if (parent is MusicAlbum)
-                        {
-                            return parent;
-                        }
-                    }
-
-                    return null;
-                })
-                .Where(i => i != null)
-                .GroupBy(x => x.Id)
-                .Select(x => x.First())
-                .ToList();
-        }
-    }
-
     public class MusicGenreImageProvider : BaseDynamicImageProvider<MusicGenre>
     {
         private readonly ILibraryManager _libraryManager;

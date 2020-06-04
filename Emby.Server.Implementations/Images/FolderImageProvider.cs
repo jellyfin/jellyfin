@@ -13,7 +13,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 
-namespace Emby.Server.Implementations.UserViews
+namespace Emby.Server.Implementations.Images
 {
     public abstract class BaseFolderImageProvider<T> : BaseDynamicImageProvider<T>
         where T : Folder, new()
@@ -77,16 +77,12 @@ namespace Emby.Server.Implementations.UserViews
                 return false;
             }
 
-            if (item is Folder folder)
+            if (item is Folder && item.IsTopParent)
             {
-                if (folder.IsTopParent)
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
-            //return item.SourceType == SourceType.Library;
         }
     }
 
