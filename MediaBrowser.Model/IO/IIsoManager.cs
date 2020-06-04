@@ -16,7 +16,6 @@ namespace MediaBrowser.Model.IO
         /// <param name="isoPath">The iso path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IsoMount.</returns>
-        /// <exception cref="ArgumentNullException">isoPath</exception>
         /// <exception cref="IOException">Unable to create mount.</exception>
         Task<IIsoMount> Mount(string isoPath, CancellationToken cancellationToken);
 

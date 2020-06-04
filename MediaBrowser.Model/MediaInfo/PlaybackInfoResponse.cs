@@ -20,7 +20,7 @@ namespace MediaBrowser.Model.MediaInfo
         /// Gets or sets the play session identifier.
         /// </summary>
         /// <value>The play session identifier.</value>
-        public string PlaySessionId { get; set; }
+        public string? PlaySessionId { get; set; }
 
         /// <summary>
         /// Gets or sets the error code.

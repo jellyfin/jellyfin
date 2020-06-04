@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.Configuration
             ValidateMetadataPath(newConfig);
             ValidateSslCertificate(newConfig);
 
-            ConfigurationUpdating?.Invoke(this, new GenericEventArgs<ServerConfiguration> { Argument = newConfig });
+            ConfigurationUpdating?.Invoke(this, new GenericEventArgs<ServerConfiguration>(newConfig));
 
             base.ReplaceConfiguration(newConfiguration);
         }

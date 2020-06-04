@@ -8,12 +8,12 @@ using System.Linq;
 namespace MediaBrowser.Model.Net
 {
     /// <summary>
-    /// Class MimeTypes
+    /// Class MimeTypes.
     /// </summary>
     public static class MimeTypes
     {
         /// <summary>
-        /// Any extension in this list is considered a video file
+        /// Any extension in this list is considered a video file.
         /// </summary>
         private static readonly HashSet<string> _videoFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -163,16 +163,16 @@ namespace MediaBrowser.Model.Net
             return dict;
         }
 
-        public static string GetMimeType(string path) => GetMimeType(path, true);
+        public static string? GetMimeType(string path) => GetMimeType(path, true);
 
         /// <summary>
         /// Gets the type of the MIME.
         /// </summary>
-        public static string GetMimeType(string path, bool enableStreamDefault)
+        public static string? GetMimeType(string path, bool enableStreamDefault)
         {
-            if (string.IsNullOrEmpty(path))
+            if (path.Length == 0)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentException("String can't be empty.", nameof(path));
             }
 
             var ext = Path.GetExtension(path);
@@ -210,11 +210,11 @@ namespace MediaBrowser.Model.Net
             return enableStreamDefault ? "application/octet-stream" : null;
         }
 
-        public static string ToExtension(string mimeType)
+        public static string? ToExtension(string mimeType)
         {
-            if (string.IsNullOrEmpty(mimeType))
+            if (mimeType.Length == 0)
             {
-                throw new ArgumentNullException(nameof(mimeType));
+                throw new ArgumentException("String can't be empty.", nameof(mimeType));
             }
 
             // handle text/html; charset=UTF-8

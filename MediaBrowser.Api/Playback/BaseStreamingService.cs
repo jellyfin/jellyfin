@@ -194,7 +194,7 @@ namespace MediaBrowser.Api.Playback
 
             await AcquireResources(state, cancellationTokenSource).ConfigureAwait(false);
 
-            if (state.VideoRequest != null && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (state.VideoRequest != null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 var auth = AuthorizationContext.GetAuthorizationInfo(Request);
                 if (auth.User != null && !auth.User.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
@@ -244,9 +244,9 @@ namespace MediaBrowser.Api.Playback
 
             var logFilePrefix = "ffmpeg-transcode";
             if (state.VideoRequest != null
-                && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                && EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                logFilePrefix = string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase)
+                logFilePrefix = EncodingHelper.IsCopyCodec(state.OutputAudioCodec)
                     ? "ffmpeg-remux" : "ffmpeg-directstream";
             }
 
@@ -329,7 +329,7 @@ namespace MediaBrowser.Api.Playback
                        state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks &&
                        state.IsInputVideo &&
                        state.VideoType == VideoType.VideoFile &&
-                       !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+                       !EncodingHelper.IsCopyCodec(state.OutputVideoCodec);
             }
 
             return false;
@@ -792,7 +792,7 @@ namespace MediaBrowser.Api.Playback
                     EncodingHelper.TryStreamCopy(state);
                 }
 
-                if (state.OutputVideoBitrate.HasValue && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (state.OutputVideoBitrate.HasValue && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
                 {
                     var resolution = ResolutionNormalizer.Normalize(
                         state.VideoStream?.BitRate,

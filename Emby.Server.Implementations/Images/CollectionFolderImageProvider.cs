@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +13,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 
-namespace Emby.Server.Implementations.UserViews
+namespace Emby.Server.Implementations.Images
 {
     public class CollectionFolderImageProvider : BaseDynamicImageProvider<CollectionFolder>
     {
