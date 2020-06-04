@@ -70,7 +70,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Task retrieved.</response>
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the task on success, or a <see cref="NotFoundResult"/> if the task could not be found.</returns>
-        [HttpGet("{TaskID}")]
+        [HttpGet("{taskId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<TaskInfo> GetTask([FromRoute] string taskId)
@@ -93,7 +93,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Task started.</response>
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
-        [HttpPost("Running/{TaskID}")]
+        [HttpPost("Running/{taskId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult StartTask([FromRoute] string taskId)
@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Task stopped.</response>
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
-        [HttpDelete("Running/{TaskID}")]
+        [HttpDelete("Running/{taskId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult StopTask([FromRoute] string taskId)
@@ -142,7 +142,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Task triggers updated.</response>
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
-        [HttpPost("{TaskID}/Triggers")]
+        [HttpPost("{taskId}/Triggers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateTask(
