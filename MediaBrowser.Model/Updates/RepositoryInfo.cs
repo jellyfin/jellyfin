@@ -1,0 +1,34 @@
+using System;
+
+namespace MediaBrowser.Model.Updates
+{
+    /// <summary>
+    /// Class RepositoryInfo.
+    /// </summary>
+    public class RepositoryInfo
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>The URL.</value>
+        public string Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ID.
+        /// </summary>
+        /// <value>The ID.</value>
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enabled status of the repository.
+        /// </summary>
+        /// <value>The enabled status.</value>
+        public bool Enabled { get; set; }
+    }
+}

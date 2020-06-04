@@ -2,7 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -229,6 +231,8 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] CodecsUsed { get; set; }
 
+        public List<RepositoryInfo> PluginRepositories { get; set; }
+
         public bool IgnoreVirtualInterfaces { get; set; }
 
         public bool EnableExternalContentInSuggestions { get; set; }
@@ -241,11 +245,13 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableNewOmdbSupport { get; set; }
 
         public string[] RemoteIPFilter { get; set; }
+
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; }
+
         public bool EnableSimpleArtistDetection { get; set; }
 
         public string[] UninstalledPlugins { get; set; }
@@ -297,6 +303,17 @@ namespace MediaBrowser.Model.Configuration
             SortReplaceCharacters = new[] { ".", "+", "%" };
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
+
+            PluginRepositories = new List<RepositoryInfo>
+            {
+                new RepositoryInfo
+                {
+                    Name = "Jellyfin Stable",
+                    Url = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json",
+                    Id = Guid.Parse("3721cd80-b10f-4b26-aecd-74c0f0defe97"),
+                    Enabled = true
+                }
+            };
 
             BaseUrl = string.Empty;
             UICulture = "en-US";
@@ -355,6 +372,7 @@ namespace MediaBrowser.Model.Configuration
     public class PathSubstitution
     {
         public string From { get; set; }
+
         public string To { get; set; }
     }
 }
