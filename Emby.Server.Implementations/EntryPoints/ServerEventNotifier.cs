@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Updates;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -85,19 +86,19 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        private async void OnPackageInstalling(object sender, InstallationEventArgs e)
+        private async void OnPackageInstalling(object sender, InstallationInfo e)
         {
-            await SendMessageToAdminSessions("PackageInstalling", e.InstallationInfo).ConfigureAwait(false);
+            await SendMessageToAdminSessions("PackageInstalling", e).ConfigureAwait(false);
         }
 
-        private async void OnPackageInstallationCancelled(object sender, InstallationEventArgs e)
+        private async void OnPackageInstallationCancelled(object sender, InstallationInfo e)
         {
-            await SendMessageToAdminSessions("PackageInstallationCancelled", e.InstallationInfo).ConfigureAwait(false);
+            await SendMessageToAdminSessions("PackageInstallationCancelled", e).ConfigureAwait(false);
         }
 
-        private async void OnPackageInstallationCompleted(object sender, InstallationEventArgs e)
+        private async void OnPackageInstallationCompleted(object sender, InstallationInfo e)
         {
-            await SendMessageToAdminSessions("PackageInstallationCompleted", e.InstallationInfo).ConfigureAwait(false);
+            await SendMessageToAdminSessions("PackageInstallationCompleted", e).ConfigureAwait(false);
         }
 
         private async void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
@@ -115,9 +116,9 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private async void OnPluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        private async void OnPluginUninstalled(object sender, IPlugin e)
         {
-            await SendMessageToAdminSessions("PluginUninstalled", e.Argument.GetPluginInfo()).ConfigureAwait(false);
+            await SendMessageToAdminSessions("PluginUninstalled", e).ConfigureAwait(false);
         }
 
         /// <summary>
