@@ -21,7 +21,6 @@ namespace Jellyfin.Api.Controllers.Images
     ///     Images By Name Controller.
     /// </summary>
     [Route("Images")]
-    [Authorize]
     public class ImageByNameController : BaseJellyfinApiController
     {
         private readonly IServerApplicationPaths _applicationPaths;
@@ -46,6 +45,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="200">Retrieved list of images.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("General")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetGeneralImages()
         {
@@ -61,6 +61,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("General/{Name}/{Type}")]
+        [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -70,11 +71,11 @@ namespace Jellyfin.Api.Controllers.Images
                 ? "folder"
                 : type;
 
-            var paths = BaseItem.SupportedImageExtensions
-                .Select(i => Path.Combine(_applicationPaths.GeneralPath, name, filename + i)).ToList();
+            var path = BaseItem.SupportedImageExtensions
+                .Select(i => Path.Combine(_applicationPaths.GeneralPath, name, filename + i))
+                .FirstOrDefault(System.IO.File.Exists);
 
-            var path = paths.FirstOrDefault(System.IO.File.Exists) ?? paths.FirstOrDefault();
-            if (path == null || !System.IO.File.Exists(path))
+            if (path == null)
             {
                 return NotFound();
             }
@@ -89,6 +90,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="200">Retrieved list of images.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("Ratings")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetRatingImages()
         {
@@ -104,6 +106,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("Ratings/{Theme}/{Name}")]
+        [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -120,6 +123,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="200">Image list retrieved.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("MediaInfo")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetMediaInfoImages()
         {
@@ -135,6 +139,7 @@ namespace Jellyfin.Api.Controllers.Images
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         [HttpGet("MediaInfo/{Theme}/{Name}")]
+        [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
