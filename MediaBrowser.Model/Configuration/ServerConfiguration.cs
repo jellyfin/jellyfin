@@ -304,17 +304,6 @@ namespace MediaBrowser.Model.Configuration
             SortRemoveCharacters = new[] { ",", "&", "-", "{", "}", "'" };
             SortRemoveWords = new[] { "the", "a", "an" };
 
-            PluginRepositories = new List<RepositoryInfo>
-            {
-                new RepositoryInfo
-                {
-                    Name = "Jellyfin Stable",
-                    Url = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json",
-                    Id = Guid.Parse("3721cd80-b10f-4b26-aecd-74c0f0defe97"),
-                    Enabled = true
-                }
-            };
-
             BaseUrl = string.Empty;
             UICulture = "en-US";
 
