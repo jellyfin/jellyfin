@@ -244,7 +244,7 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IUserManager _userManager;
         private readonly ISessionManager _sessionMananger;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
         private readonly IAuthorizationContext _authContext;
 
@@ -254,7 +254,7 @@ namespace MediaBrowser.Api
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
             ISessionManager sessionMananger,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IDeviceManager deviceManager,
             IAuthorizationContext authContext)
             : base(logger, serverConfigurationManager, httpResultFactory)

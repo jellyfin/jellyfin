@@ -13,9 +13,7 @@ namespace Rssdp.Infrastructure
     /// Provides the platform independent logic for publishing SSDP devices (notifications and search responses).
     /// </summary>
     public class SsdpDevicePublisher : DisposableManagedObjectBase, ISsdpDevicePublisher
-    {
-        private readonly NetworkManager _networkManager;
-
+    {        
         private ISsdpCommunicationsServer _CommsServer;
         private string _OSName;
         private string _OSVersion;
@@ -37,8 +35,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, NetworkManager networkManager,
-            string osName, string osVersion, bool sendOnlyMatchedHost)
+        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, string osName, string osVersion, bool sendOnlyMatchedHost)
         {
             if (osName == null) throw new ArgumentNullException(nameof(osName));
             if (osName.Length == 0) throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
@@ -50,8 +47,7 @@ namespace Rssdp.Infrastructure
             _ReadOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_Devices);
             _RecentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _Random = new Random();
-
-            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+            
             _CommsServer = communicationsServer ?? throw new ArgumentNullException(nameof(communicationsServer));
             _CommsServer.RequestReceived += CommsServer_RequestReceived;
             _OSName = osName;
@@ -249,21 +245,21 @@ namespace Rssdp.Infrastructure
                 if (devices != null)
                 {
                     var deviceList = devices.ToList();
-                    //WriteTrace(String.Format("Sending {0} search responses", deviceList.Count));
+                    WriteTrace(String.Format("Sending {0} search responses", deviceList.Count));
 
                     foreach (var device in deviceList)
                     {
                         var rt = device.ToRootDevice();
-                        if (!_sendOnlyMatchedHost || 
-                            _networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address))
+                        if (!_sendOnlyMatchedHost ||
+                            NetworkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address))
                         {
                             SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
-                        }
+                        }                        
                     }
                 }
                 else
                 {
-                    //WriteTrace(String.Format("Sending 0 search responses."));
+                    WriteTrace(String.Format("Sending 0 search responses."));
                 }
             });
         }
@@ -337,7 +333,7 @@ namespace Rssdp.Infrastructure
 
             }
 
-            //WriteTrace(String.Format("Sent search response to " + endPoint.ToString()), device);
+            WriteTrace(String.Format("Sent search response to " + endPoint.ToString()), device);
         }
 
         private bool IsDuplicateSearchRequest(string searchTarget, IPEndPoint endPoint)
@@ -434,12 +430,14 @@ namespace Rssdp.Infrastructure
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             // If needed later for non-server devices, these headers will need to be dynamic
-            values["HOST"] = "239.255.255.250:1900";
+            values["HOST"] = rootDevice.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ?
+                $"{SsdpConstants.MulticastLocalAdminAddress}:1900" :
+                $"{SsdpConstants.MulticastLocalAdminAddressV6}:1900";
             values["DATE"] = DateTime.UtcNow.ToString("r");
             values["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds;
             values["LOCATION"] = rootDevice.Location.ToString();
             values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
-            values["NTS"] = "ssdp:alive";
+            values["NTS"] = SsdpConstants.SsdpKeepAliveNotification;
             values["NT"] = notificationType;
             values["USN"] = uniqueServiceName;
 
@@ -447,7 +445,7 @@ namespace Rssdp.Infrastructure
 
             _CommsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null, cancellationToken);
 
-            //WriteTrace(String.Format("Sent alive notification"), device);
+            WriteTrace(String.Format("Sent alive notification"), device);
         }
 
         private Task SendByeByeNotifications(SsdpDevice device, bool isRoot, CancellationToken cancellationToken)
@@ -479,10 +477,12 @@ namespace Rssdp.Infrastructure
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             // If needed later for non-server devices, these headers will need to be dynamic
-            values["HOST"] = "239.255.255.250:1900";
+            values["HOST"] = device.ToRootDevice().Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ?
+                $"{SsdpConstants.MulticastLocalAdminAddress}:1900" :
+                $"{SsdpConstants.MulticastLocalAdminAddressV6}:1900";
             values["DATE"] = DateTime.UtcNow.ToString("r");
             values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
-            values["NTS"] = "ssdp:byebye";
+            values["NTS"] = SsdpConstants.SsdpByeByeNotification;
             values["NT"] = notificationType;
             values["USN"] = uniqueServiceName;
 
@@ -503,8 +503,7 @@ namespace Rssdp.Infrastructure
 
         private TimeSpan GetMinimumNonZeroCacheLifetime()
         {
-            var nonzeroCacheLifetimesQuery = (from device
-                                                                                in _Devices
+            var nonzeroCacheLifetimesQuery = (from device in _Devices
                                               where device.CacheLifetime != TimeSpan.Zero
                                               select device.CacheLifetime).ToList();
 
@@ -557,7 +556,8 @@ namespace Rssdp.Infrastructure
                 //else if (!e.Message.Headers.Contains("MAN"))
                 //    WriteTrace("Ignoring search request - missing MAN header.");
                 //else
-                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress, CancellationToken.None);
+
+                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress, CancellationToken.None);                
             }
         }
 

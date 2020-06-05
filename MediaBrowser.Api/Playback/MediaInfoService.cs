@@ -73,7 +73,7 @@ namespace MediaBrowser.Api.Playback
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IDeviceManager _deviceManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
@@ -85,7 +85,7 @@ namespace MediaBrowser.Api.Playback
             IMediaSourceManager mediaSourceManager,
             IDeviceManager deviceManager,
             ILibraryManager libraryManager,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IMediaEncoder mediaEncoder,
             IUserManager userManager,
             IAuthorizationContext authContext)

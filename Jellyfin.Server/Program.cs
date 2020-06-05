@@ -160,14 +160,12 @@ namespace Jellyfin.Server
 
             PerformStaticInitialization();
 
-            NetworkManager networkManager = new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>());
-
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                networkManager);
+                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()));
 
             try
             {
@@ -278,16 +276,12 @@ namespace Jellyfin.Server
             return builder
                 .UseKestrel((builderContext, options) =>
                 {
-                    // Override the local IP address to bind the http server to. If left empty, the server will bind to all availabile addresses.
-                    NetCollection addresses = appHost.NetManager.CreateIPCollection(appHost.ServerConfigurationManager.Configuration.LocalNetworkAddresses);
+                    NetCollection addresses = appHost.NetManager.GetBindInterfaces();
 
                     if (addresses.Any() && !addresses.Exists(IPAddress.Any))
                     {
-                        if (!addresses.Contains(IPAddress.Loopback))
-                        {
-                            // we must listen on loopback for LiveTV to function regardless of the settings
-                            addresses.Add(IPAddress.Loopback);
-                        }
+                        // we must listen on loopback for LiveTV to function regardless of the settings
+                        addresses.Add(IPAddress.Loopback);
 
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type. addresses.Count>0, so netAdd will always have a value.
                         foreach (IPNetAddress netAdd in addresses)
@@ -315,9 +309,9 @@ namespace Jellyfin.Server
                                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                                     });
                                 }
-                                catch (InvalidOperationException ex)
+                                catch (InvalidOperationException)
                                 {
-                                    _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                    _logger.LogError("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
                                 }
                             }
                         }
@@ -345,9 +339,9 @@ namespace Jellyfin.Server
                                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
                                 });
                             }
-                            catch (InvalidOperationException ex)
+                            catch (InvalidOperationException)
                             {
-                                _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                _logger.LogError("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
                             }
                         }
                     }

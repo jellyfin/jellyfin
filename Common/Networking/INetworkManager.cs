@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Common.Networking
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Net.NetworkInformation;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Interface for the NetworkManager class.
     /// </summary>
@@ -18,9 +18,29 @@ namespace Common.Networking
         event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets or sets the LAN settings stored in config.
+        /// Gets a value indicating whether IP6 is enabled..
         /// </summary>
-        Func<string[]> LocalSubnetsFn { get; set; }
+        public bool IsIP6Enabled { get; }
+
+        /// <summary>
+        /// Initialises the object. Can't be in constructor, as network changes could happen before this class has initialised.
+        /// </summary>
+        /// <param name="ip6Enabled">Function that returns the EnableIPV6 config option.</param>
+        /// <param name="subnets">Function that returns the LocalNetworkSubnets config option.</param>
+        /// <param name="bindInterfaces">Function that returns the LocalNetworkAddresses config option.</param>
+        void Initialise(Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces);
+
+        /// <summary>
+        /// Returns all the valid interfaces in config LocalNetworkAddresses.
+        /// </summary>
+        /// <returns>A NetCollection object containing all the interfaces to bind.</returns>
+        NetCollection GetBindInterfaces();
+
+        /// <summary>
+        /// Returns all the excluded interfaces in config LocalNetworkAddresses.
+        /// </summary>
+        /// <returns>A NetCollection object containing all the excluded interfaces.</returns>
+        NetCollection GetBindExclusions();
 
         /// <summary>
         /// Gets a random port number that is currently available.
@@ -55,21 +75,19 @@ namespace Common.Networking
         bool IsInLocalNetwork(string endpoint);
 
         /// <summary>
-        /// Returns true if the IP address in address2 is within the network address1/subnetMask.
+        /// Calculates if the endpoint given falls within the LAN networks specified in config.
         /// </summary>
-        /// <param name="subnetIP">Subnet IP.</param>
-        /// <param name="subnetMask">Subnet Mask.</param>
-        /// <param name="address">Address to check.</param>
-        /// <returns>True if address is in the subnet.</returns>
-        bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address);
+        /// <param name="endpoint">IP to check.</param>
+        /// <returns>True if endpoint is within the LAN range.</returns>
+        bool IsInLocalNetwork(IPNetAddress endpoint);
 
         /// <summary>
         /// Returns all filtered interface addresses that respond to ping.
         /// </summary>
         /// <param name="allowLoopback">Allow loopback addresses in the list.</param>
         /// <param name="limit">Limit the number of items in the response.</param>
-        /// <returns>Returns a filtered list of IPV4 interface addresses.</returns>
-        public NetCollection GetPingableIPv4InterfaceAddresses(bool allowLoopback, int limit);
+        /// <returns>Returns a filtered list of interface addresses.</returns>
+        public NetCollection GetPingableInterfaceAddresses(bool allowLoopback, int limit);
 
         /// <summary>
         /// Parses an array of strings into a NetCollection.
@@ -82,18 +100,16 @@ namespace Common.Networking
         /// <summary>
         /// Interface callback function.
         /// </summary>
-        /// <param name="allowLoopback">Allow loopback addresses in the list.</param>
-        /// <param name="limit">Limit the number of items in the response.</param>
         /// <param name="callback">Delegate function to call on each match.</param>
         /// <param name="cancellationToken">Cancellation Token.</param>
         /// <returns>true or false.</returns>
-        public NetCollection GetCallbackFilteredInterfaceAddresses(bool allowLoopback, int limit, Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken cancellationToken);
+        public NetCollection CallbackOnFilteredBindAddresses(Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns all the filtered interfaces addresses.
+        /// Returns all the filtered LAN interfaces addresses.
         /// </summary>
-        /// <returns>A filtered list of interfaces addresses.</returns>
-        public NetCollection GetFilteredInterfaceAddresses();
+        /// <returns>An internal list of interfaces addresses.</returns>
+        public NetCollection GetInternalInterfaceAddresses();
 
         /// <summary>
         /// Returns true if the IP address is in the excluded list.
@@ -110,15 +126,15 @@ namespace Common.Networking
         public NetCollection GetFilteredLANAddresses(NetCollection filter);
 
         /// <summary>
-        ///  Returns all the filtered LAN addresses.
+        /// Returns all the filtered LAN addresses.
         /// </summary>
         /// <returns>A filtered list of LAN subnets/IPs.</returns>
         public NetCollection GetLANAddresses();
 
         /// <summary>
-        /// Returns all filtered interface addresses.
+        /// Returns all filtered IPv4 LAN interface addresses, regardless of IPv6 status.
         /// </summary>
         /// <returns>Returns a filtered list of IPV4 interface addresses.</returns>
-        public NetCollection GetFilteredIPv4InterfaceAddresses();
+        public NetCollection GetInternalIPv4InterfaceAddresses();
     }
 }

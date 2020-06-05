@@ -53,7 +53,7 @@ namespace Emby.Dlna.Main
         private SsdpDevicePublisher _Publisher;
 
         private readonly ISocketFactory _socketFactory;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
 
         private ISsdpCommunicationsServer _communicationsServer;
 
@@ -80,7 +80,7 @@ namespace Emby.Dlna.Main
             IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
             ISocketFactory socketFactory,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IUserViewManager userViewManager,
             ITVSeriesManager tvSeriesManager)
         {
@@ -238,7 +238,7 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                _Publisher = new SsdpDevicePublisher(_communicationsServer, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
                     LogFunction = LogMessage,
                     SupportPnpRootDevice = false
@@ -258,7 +258,7 @@ namespace Emby.Dlna.Main
         {
             var udn = CreateUuid(_appHost.SystemId);
 
-            foreach (IPNetAddress addr in _networkManager.GetFilteredIPv4InterfaceAddresses())
+            foreach (IPNetAddress addr in _networkManager.GetInternalInterfaceAddresses())
             {
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 

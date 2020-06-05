@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -335,23 +336,23 @@ namespace Rssdp.Infrastructure
         {
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            values["HOST"] = "239.255.255.250:1900";
+            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddress}:1900";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
             //values["X-EMBY-SERVERID"] = _appHost.SystemId;
-
             values["MAN"] = "\"ssdp:discover\"";
-
             // Search target
             values["ST"] = "ssdp:all";
-
             // Seconds to delay response
             values["MX"] = "3"; // mxValue.ToString(); ??
 
             var header = "M-SEARCH * HTTP/1.1";
-
             var message = BuildMessage(header, values);
 
-            return _CommunicationsServer.SendMulticastMessage(message, null, cancellationToken);
+            _CommunicationsServer.SendMulticastMessage(message, IPAddress.Any, cancellationToken);
+
+            // Now retransmit as IPv6.
+            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddressV6}:1900";
+            return _CommunicationsServer.SendMulticastMessage(message, IPAddress.IPv6Any, cancellationToken);
         }
 
         private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress localIpAddress)

@@ -1,39 +1,56 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-
 namespace Common.Networking
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Object that holds a host name.
     /// </summary>
     public class IPHost : IPObject
     {
+        /// <summary>
+        /// Time when last resolved. Timeout is 30 minutes..
+        /// </summary>
+        private long _lastResolved;
+
+        /// <summary>
+        /// Host name of this object..
+        /// </summary>
         private string _hostName = string.Empty;
 
         /// <summary>
-        /// Gets the IP Addresses, attempting to resolve the name, if there are none.
+        /// Gets the IP Addresses, attempting to resolve the name, if there are none..
         /// </summary>
         private IPAddress[] _addresses;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IPHost"/> class without any checking if the host name is valid.
+        /// Initializes a new instance of the <see cref="IPHost"/> class.
         /// </summary>
         /// <param name="name">Host name to assign.</param>
-        public IPHost(string name) => _hostName = name;
+        public IPHost(string name)
+        {
+            _hostName = name;
+            Valid = true;
+        }
 
         /// <summary>
-        /// Gets the host name of this object.
+        /// Gets the host name of this object..
         /// </summary>
-        public string HostName { get => _hostName;  }
+        public string HostName { get => _hostName; }
 
         /// <summary>
-        /// Gets or sets the IP Addresses associated with this object.
+        /// Gets a value indicating whether this object is valid.
         /// </summary>
-#pragma warning disable CA1819 // Properties should not return arrays
+        public bool Valid { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the IP Addresses associated with this object..
+        /// </summary>
+#pragma warning disable CA1819 // Properties should not return arrays.
         public IPAddress[] Addresses
 #pragma warning restore CA1819 // Properties should not return arrays
         {
@@ -41,7 +58,7 @@ namespace Common.Networking
             {
                 if (_addresses == null)
                 {
-                    ResolveHostInternal();
+                    _ = ResolveHostInternal();
                 }
 
                 return _addresses;
@@ -50,6 +67,19 @@ namespace Common.Networking
             set
             {
                 _addresses = value;
+                _lastResolved = 0;
+                Valid = true;
+                if (_addresses != null)
+                {
+                    if (_addresses.Length == 1)
+                    {
+                        AddressFamily = _addresses[0].AddressFamily;
+                    }
+                    else
+                    {
+                        AddressFamily = AddressFamily.Unspecified;
+                    }
+                }
             }
         }
 
@@ -71,13 +101,38 @@ namespace Common.Networking
                 }
                 else
                 {
+                    // Does it have a port at the end?
+                    string[] hosts = host.Split(':');
+
+                    if (hosts.Length > 2)
+                    {
+                        // Could be an abreviated IP6 address.
+                        if (IPAddress.TryParse(host, out IPAddress ip))
+                        {
+                            // Host name is an ip address, so fake resolve.
+                            hostObj = new IPHost(host)
+                            {
+                                _addresses = new IPAddress[] { ip }
+                            };
+
+                            return true;
+                        }
+
+                        hostObj = null;
+                        return false;
+                    }
+
                     // Remove port from IPv4 if it exists.
-                    host = host.Split(':')[0];
+                    host = hosts[0];
                 }
 
                 if (!string.IsNullOrEmpty(host))
                 {
-                    if (Uri.CheckHostName(host).Equals(UriHostNameType.Dns))
+                    // Use regular expression as CheckHostName isn't RFC5892 compliant.
+                    // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
+                    Regex re = new Regex(@"^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                    if (re.Match(host).Success)
+                    // if (Uri.CheckHostName(host) != UriHostNameType.Unknown)
                     {
                         hostObj = new IPHost(host);
                         return true;
@@ -141,9 +196,7 @@ namespace Common.Networking
                         IPHostEntry ip = await Dns.GetHostEntryAsync(host).ConfigureAwait(false);
                         return ip.AddressList;
                     }
-#pragma warning disable CA1031 // Do not catch general exception types
                     catch
-#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         // Ignore errors, as the result value will just be null.
                     }
@@ -248,16 +301,56 @@ namespace Common.Networking
         /// <inheritdoc/>
         public override string ToString()
         {
-            string output = $"{HostName}[";
+            string output = string.Empty;
             if (Addresses != null)
             {
-                foreach (IPAddress a in Addresses)
+                if (Addresses.Length > 1)
                 {
-                    output += $"{a} ";
+                    output = "[";
+                }
+
+                foreach (var i in Addresses)
+                {
+                    output += $"{i}/32,";
+                }
+
+                output = output[0..^1];
+
+                if (Addresses.Length > 1)
+                {
+                    output += "]";
                 }
             }
+            else
+            {
+                output = HostName;
+            }
 
-            return output.Trim() + "]";
+            return output;
+        }
+
+        /// <summary>
+        /// Removes IP6 addresses from this object.
+        /// </summary>
+        public override void RemoveIP6()
+        {
+            if (Addresses != null)
+            {
+                List<IPAddress> add = new List<IPAddress>();
+
+                // Filter out IP6 addresses
+                foreach (IPAddress addr in _addresses)
+                {
+                    if (addr.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        continue;
+                    }
+
+                    add.Add(addr);
+                }
+
+                _addresses = add.ToArray();
+            }
         }
 
         /// <inheritdoc/>
@@ -277,8 +370,21 @@ namespace Common.Networking
         /// <returns>The result of the comparison function.</returns>
         private bool ResolveHostInternal()
         {
-            _addresses = Resolve(HostName).Result;
-            return _addresses != null;
+            // When was the last time we resolved?
+            if (_lastResolved == 0)
+            {
+                _lastResolved = DateTime.Now.Ticks;
+            }
+
+            // If we haven't resolved before, or out timer has run out...
+            if ((_addresses == null && Valid) || (TimeSpan.FromTicks(DateTime.Now.Ticks - _lastResolved).TotalMinutes > 30))
+            {
+                _lastResolved = DateTime.Now.Ticks;
+                _addresses = Resolve(HostName).Result;
+                Valid = _addresses != null;
+            }
+
+            return Valid;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller
 
         bool CanLaunchWebBrowser { get; }
 
-        public NetworkManager NetManager { get; }
+        public INetworkManager NetManager { get; }
 
         /// <summary>
         /// Gets the HTTP server port.

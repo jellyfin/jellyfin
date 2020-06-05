@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -29,7 +27,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     {
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IStreamHelper _streamHelper;
 
@@ -41,7 +39,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             IFileSystem fileSystem,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(config, logger, jsonSerializer, fileSystem)
         {

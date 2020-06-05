@@ -119,13 +119,14 @@ namespace Emby.Server.Implementations
         private readonly IFileSystem _fileSystemManager;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
-        private NetworkManager _networkManager;
+        private INetworkManager _networkManager;
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
         private IHttpClient _httpClient;
+        private string _cachedLocalApiUrl = string.Empty;
 
-        public NetworkManager NetManager => _networkManager; 
+        public INetworkManager NetManager => _networkManager;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -240,7 +241,7 @@ namespace Emby.Server.Implementations
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
-            NetworkManager nwManager)
+            INetworkManager nwManager)
         {
             _xmlSerializer = new MyXmlSerializer();
 
@@ -252,7 +253,7 @@ namespace Emby.Server.Implementations
 
             // LocalSubnetFn must be assigned after ConfigurationManager has been created, so the config is available at initiation.
             _networkManager = nwManager;
-            _networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
+            _networkManager.Initialise(GetConfiguredIPV6Status, GetConfiguredLocalSubnets, GetConfiguredBindAddresses);
             ConfigurationManager.ConfigurationUpdated += _networkManager.NamedConfigurationUpdated;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
@@ -298,9 +299,19 @@ namespace Emby.Server.Implementations
             return ServerConfigurationManager.Configuration.LocalNetworkSubnets;
         }
 
+        private bool GetConfiguredIPV6Status()
+        {
+            return ServerConfigurationManager.Configuration.EnableIPV6;
+        }
+
+        private string[] GetConfiguredBindAddresses()
+        {
+            return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
+        }
+
         private void OnNetworkChanged(object sender, EventArgs e)
         {
-            _validAddressResults.Clear();
+            _cachedLocalApiUrl = string.Empty;
         }
 
         /// <inheritdoc />
@@ -1154,20 +1165,27 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLocalApiUrl(CancellationToken cancellationToken)
         {
+            if (!string.IsNullOrEmpty(_cachedLocalApiUrl))
+            {
+                // This function gets called twice - so use the results from last time.
+                return _cachedLocalApiUrl;
+            }
+
             try
             {
-                NetCollection addresses = _networkManager.GetCallbackFilteredInterfaceAddresses(false, 1, IsLocalIpAddressValidAsync, cancellationToken);
+                NetCollection addresses = _networkManager.CallbackOnFilteredBindAddresses(IsLocalIpAddressValidAsync, cancellationToken);
 
                 if (addresses.Count == 0)
                 {
                     return null;
                 }
 
-                return GetLocalApiUrl(((IPNetAddress)addresses.Items[0]).Address);
+                _cachedLocalApiUrl = GetLocalApiUrl(((IPNetAddress)addresses.Items[0]).Address);
+                return _cachedLocalApiUrl;
             }
-            catch (Exception ex)
+            catch (InvalidOperationException)
             {
-                Logger.LogError(ex, "Error getting local Ip address information");
+                Logger.LogError("No response from any of the bind addresses: {0}", _networkManager.GetBindInterfaces());
             }
 
             return null;
@@ -1226,17 +1244,10 @@ namespace Emby.Server.Implementations
             }.ToString().TrimEnd('/');
         }
 
-        private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-
         private async Task<bool> IsLocalIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
         {
             var apiUrl = GetLocalApiUrl(address);
             apiUrl += "/system/ping";
-
-            if (_validAddressResults.TryGetValue(apiUrl, out var cachedResult))
-            {
-                return cachedResult;
-            }
 
             try
             {
@@ -1254,7 +1265,6 @@ namespace Emby.Server.Implementations
                         var result = await reader.ReadToEndAsync().ConfigureAwait(false);
                         var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 
-                        _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
                         Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
                         return valid;
                     }
@@ -1268,11 +1278,9 @@ namespace Emby.Server.Implementations
             catch (Exception ex)
             {
                 Logger.LogDebug(ex, "Ping test result to {0}. Success: {1}", apiUrl, false);
-
-                _validAddressResults.AddOrUpdate(apiUrl, false, (k, v) => false);
                 return false;
             }
-        }        
+        }
 
         public string FriendlyName =>
             string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)

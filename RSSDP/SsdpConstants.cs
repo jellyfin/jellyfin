@@ -13,7 +13,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Multicast IP6 Address used for SSDP multicast messages. 
         /// </summary>
-        public const string MulticastLocalAdminAddressV6 = "FF02:0:0:0:0:0:0:C";
+        public const string MulticastLocalAdminAddressV6 = "ff05::c"; // Site-local - could also be link-local ff02::c;
         /// <summary>
         /// The UDP port used for SSDP multicast messages. Values is 1900.
         /// </summary>

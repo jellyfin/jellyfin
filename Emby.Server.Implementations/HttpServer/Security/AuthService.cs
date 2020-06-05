@@ -22,14 +22,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private readonly IAuthorizationContext _authorizationContext;
         private readonly ISessionManager _sessionManager;
         private readonly IServerConfigurationManager _config;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
 
         public AuthService(
             ILogger<AuthService> logger,
             IAuthorizationContext authorizationContext,
             IServerConfigurationManager config,
             ISessionManager sessionManager,
-            NetworkManager networkManager)
+            INetworkManager networkManager)
         {
             _logger = logger;
             _authorizationContext = authorizationContext;

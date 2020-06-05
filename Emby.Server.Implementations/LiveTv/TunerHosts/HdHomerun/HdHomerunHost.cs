@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
         private readonly ISocketFactory _socketFactory;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
         public HdHomerunHost(
@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IHttpClient httpClient,
             IServerApplicationHost appHost,
             ISocketFactory socketFactory,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(config, logger, jsonSerializer, fileSystem)
         {
@@ -697,12 +697,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             // Create udp broadcast discovery message
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
-            using (var udpClient = _socketFactory.CreateUdpBroadcastSocket(0))
+            using (var udpClient = _socketFactory.CreateUdpBroadcastSocket(0, _networkManager.IsIP6Enabled))
             {
                 // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken);
+                    // TODO : Implement IPv6
+
+                    await udpClient.SendToAsync(discBytes,
+                        0,
+                        discBytes.Length,
+                        new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001),
+                        cancellationToken);
                     var receiveBuffer = new byte[8192];
 
                     while (!cancellationToken.IsCancellationRequested)

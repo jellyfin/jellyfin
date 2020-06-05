@@ -1,25 +1,38 @@
-using System;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Common.Networking
 {
+    using System;
+    using System.Net;
+    using System.Net.NetworkInformation;
+    using System.Net.Sockets;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Base network object class.
     /// </summary>
     public abstract class IPObject
     {
-        private static readonly byte[] _ip6loopback = { 0, 0, 0, 0, 0, 0, 0, 1 };
+        /// <summary>
+        /// Defines the _ip6loopback.
+        /// </summary>
+        private static readonly byte[] _ip6loopback = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+
+        /// <summary>
+        /// Defines the _ip4loopback.
+        /// </summary>
         private static readonly byte[] _ip4loopback = { 127, 0, 0, 1 };
 
         /// <summary>
-        /// Gets or sets the user defined functions that need storage in this object.
+        /// Gets or sets the user defined functions that need storage in this object..
         /// </summary>
         public long Tag { get; set; }
+
+        /// <summary>
+        /// Gets the AddressFamily
+        /// Gets the AddressFamily of this object..
+        /// </summary>
+        public AddressFamily AddressFamily { get; internal set; }
 
         /// <summary>
         /// Tests to see if the ip address is an AIPIPA address. (169.254.x.x).
@@ -103,11 +116,137 @@ namespace Common.Networking
 
                     byte[] octet = i.GetAddressBytes();
 
-                    uint word = (uint)(octet[0] << 32) + octet[1];
+                    uint word = (uint)(octet[0] << 8) + octet[1];
 
                     return (word == 0xfc00 && word <= 0xfdff) // Unique local address.
                         || (word >= 0xfe80 && word <= 0xfebf) // Local link address.
                         || word == 0x100; // Discard prefix.
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Convert a subnet mask in CIDR notation to a dotted decimal string value. IPv4 only.
+        /// </summary>
+        /// <param name="cidr">Subnet mask in CIDR notation.</param>
+        /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
+        public static IPAddress CidrToMask(byte cidr)
+        {
+            uint addr = 0xFFFFFFFF << (32 - cidr);
+            addr =
+                ((addr & 0xff000000) >> 24) |
+                ((addr & 0x00ff0000) >> 8) |
+                ((addr & 0x0000ff00) << 8) |
+                ((addr & 0x000000ff) << 24);
+            return new IPAddress(addr);
+        }
+
+        /// <summary>
+        /// Convert a mask to a CIDR. IPv4 only.
+        /// https://stackoverflow.com/questions/36954345/get-cidr-from-netmask.
+        /// </summary>
+        /// <param name="mask">Subnet mask.</param>
+        /// <returns>Byte CIDR representing the mask.</returns>
+        public static int MaskToCidr(IPAddress mask)
+        {
+            int cidrnet = 0;
+            if (mask != null)
+            {
+                byte[] bytes = mask.GetAddressBytes();
+
+                var zeroed = false;
+                for (var i = 0; i < bytes.Length; i++)
+                {
+                    for (int v = bytes[i]; (v & 0xFF) != 0; v <<= 1)
+                    {
+                        if (zeroed)
+                        {
+                            // invalid netmask
+                            return ~cidrnet;
+                        }
+
+                        if ((v & 0x80) == 0)
+                        {
+                            zeroed = true;
+                        }
+                        else
+                        {
+                            cidrnet++;
+                        }
+                    }
+                }
+            }
+
+            return cidrnet;
+        }
+
+        /// <summary>
+        /// Returns the Network address of an ip address.
+        /// </summary>
+        /// <param name="address">IP address.</param>
+        /// <param name="mask">Submask.</param>
+        /// <returns>The network ip address of the subnet.</returns>
+        public static IPAddress NetworkAddress(IPAddress address, IPAddress mask)
+        {
+            if (address != null)
+            {
+                if (address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    if (mask == null)
+                    {
+                        throw new ArgumentException("Mask required to calculate the network address.");
+                    }
+
+                    byte[] addressBytes = address.GetAddressBytes();
+                    byte[] maskBytes = mask.GetAddressBytes();
+
+                    if (addressBytes.Length != maskBytes.Length)
+                    {
+                        throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
+                    }
+
+                    byte[] networkAddress = new byte[addressBytes.Length];
+                    for (int i = 0; i < networkAddress.Length; i++)
+                    {
+                        networkAddress[i] = (byte)(addressBytes[i] & maskBytes[i]);
+                    }
+
+                    return new IPAddress(networkAddress);
+                }
+                else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                {
+                    // First 64 bits contain the routing prefix.
+                    byte[] addressBytes = new byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                    Array.Copy(address.GetAddressBytes(), addressBytes, 8);
+                    return new IPAddress(addressBytes);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Implements internal code for async callbacks.
+        /// </summary>
+        /// <param name="ip">IPAddress to pass.</param>
+        /// <param name="callback">Delegate function.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>True to include, false to exclude.</returns>
+        public static async Task<bool> CallbackAsyncInternal(IPAddress ip, Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken ct)
+        {
+            if (callback != null)
+            {
+                try
+                {
+                    return await callback(ip, ct).ConfigureAwait(false);
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
+                catch
+#pragma warning restore CA1031 // Do not catch general exception types
+                {
+                    // Ignore error.
                 }
             }
 
@@ -136,27 +275,6 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Implements internal code for async callbacks.
-        /// </summary>
-        /// <param name="ip">IPAddress to pass.</param>
-        /// <param name="callback">Delegate function.</param>
-        /// <param name="ct">Cancellation token.</param>
-        /// <returns>True to include, false to exclude.</returns>
-        public static async Task<bool> CallbackAsyncInternal(IPAddress ip, Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken ct)
-        {
-            try
-            {
-                return await callback(ip, ct).ConfigureAwait(false);
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Implements code for async callbacks.
         /// </summary>
         /// <param name="callback">Function to call.</param>
@@ -178,11 +296,16 @@ namespace Common.Networking
         /// Tests to see if this object is a Loopback address.
         /// </summary>
         /// <returns>True if it is.</returns>
-#pragma warning disable SA1202 // Elements should be ordered by access
         public virtual bool IsLoopback()
-#pragma warning restore SA1202 // Elements should be ordered by access
         {
             return IsLoopback(GetAddressInternal());
+        }
+
+        /// <summary>
+        /// Removes IP6 addresses from this object.
+        /// </summary>
+        public virtual void RemoveIP6()
+        {
         }
 
         /// <summary>
@@ -216,14 +339,19 @@ namespace Common.Networking
         /// Copys the contents of another object.
         /// </summary>
         /// <param name="ip">Object to copy.</param>
-        public abstract void Copy(IPObject ip);
+        public virtual void Copy(IPObject ip)
+        {
+        }
 
         /// <summary>
         /// Compares this to the object passed as a parameter.
         /// </summary>
         /// <param name="ip">Object to compare to.</param>
         /// <returns>Equality result.</returns>
-        public abstract bool Equals(IPObject ip);
+        public virtual bool Equals(IPObject ip)
+        {
+            return false;
+        }
 
         /// <summary>
         /// Compares this to the object passed as a parameter.
@@ -260,7 +388,10 @@ namespace Common.Networking
         /// </summary>
         /// <param name="ip">Address to check for.</param>
         /// <returns>Existential result.</returns>
-        public abstract bool Exists(IPAddress ip);
+        public virtual bool Exists(IPAddress ip)
+        {
+            return false;
+        }
 
         /// <summary>
         /// Returns true if IP exists in this parameter.
@@ -283,10 +414,24 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Returns the address item of the ancestor objects to use in low level functons.
+        /// Compares two byte arrays.
         /// </summary>
-        /// <returns>IP address.</returns>
-        protected abstract IPAddress GetAddressInternal();
+        /// <param name="src">Array one.</param>
+        /// <param name="dest">Array two.</param>
+        /// <param name="len">Length of both arrays. Must be the same.</param>
+        /// <returns>True if the two arrays match.</returns>
+        internal static bool CompareByteArray(byte[] src, byte[] dest, byte len)
+        {
+            for (int i = 0; i < len; i++)
+            {
+                if (src[i] != dest[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         /// <summary>
         /// Task that pings an IP address.
@@ -317,41 +462,9 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Sums the value of the byte array.
+        /// Returns the address item of the ancestor objects to use in low level functons.
         /// </summary>
-        /// <param name="b">Array to sum.</param>
-        /// <param name="start">Starting index.</param>
-        /// <param name="finish">Ending index.</param>
-        /// <returns>Sum of all the values.</returns>
-        protected static int BitSum(byte[] b, int start, int finish)
-        {
-            int sum = 0;
-            for (int i = start; i <= finish; i++)
-            {
-                sum += b[i];
-            }
-
-            return sum;
-        }
-
-        /// <summary>
-        /// Compares two byte arrays.
-        /// </summary>
-        /// <param name="src">Array one.</param>
-        /// <param name="dest">Array two.</param>
-        /// <param name="len">Length of both arrays. Must be the same.</param>
-        /// <returns>True if the two arrays match.</returns>
-        protected static bool CompareByteArray(byte[] src, byte[] dest, byte len)
-        {
-            for (int i = 0; i < len; i++)
-            {
-                if (src[i] != dest[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+        /// <returns>IP address.</returns>
+        protected abstract IPAddress GetAddressInternal();
     }
 }

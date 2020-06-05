@@ -80,7 +80,7 @@ namespace MediaBrowser.Api.Tests
                 loggerFactory,
                 commandLineOpts,
                 new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                networkManager);
+                (INetworkManager)networkManager);
             _disposableComponents.Add(appHost);
             var serviceCollection = new ServiceCollection();
             appHost.Init(serviceCollection);

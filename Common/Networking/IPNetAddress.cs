@@ -1,96 +1,91 @@
-using System;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-
 namespace Common.Networking
 {
+    using System;
+    using System.Net;
+    using System.Net.Sockets;
+
     /// <summary>
     /// An object that holds and IP address and subnet mask.
     /// </summary>
     public class IPNetAddress : IPObject
     {
         /// <summary>
-        /// Object's subnet mask.
-        /// </summary>
-        private IPAddress _mask;
-
-        /// <summary>
-        /// Object's ip address.
+        /// Object's IP address..
         /// </summary>
         private IPAddress _address;
 
         /// <summary>
-        /// Gets the IP Address of this object.
+        /// Object's subnet mask..
         /// </summary>
-        public IPAddress Address => _address;
+        private IPAddress _mask;
 
         /// <summary>
-        /// Gets the subnet mask of this object.
+        /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
-        public IPAddress Mask => _mask;
-
-        /// <summary>
-        /// Convert a subnet mask in CIDR notation to a dotted decimal string value.
-        /// </summary>
-        /// <param name="cidr">Subnet mask in CIDR notation.</param>
-        /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
-        public static IPAddress CidrToMask(byte cidr)
+        /// <param name="ip">Address to assign.</param>
+        public IPNetAddress(IPAddress ip)
         {
-            uint addr = 0xFFFFFFFF << (32 - cidr);
-            addr =
-                ((addr & 0xff000000) >> 24) |
-                ((addr & 0x00ff0000) >> 8) |
-                ((addr & 0x0000ff00) << 8) |
-                ((addr & 0x000000ff) << 24);
-            return new IPAddress(addr);
+            Address = ip;
+            _mask = null;
         }
 
         /// <summary>
-        /// Returns the Network address of an ip address.
+        /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
-        /// <param name="address">IP address.</param>
-        /// <param name="mask">Submask.</param>
-        /// <returns>The network ip address of the subnet.</returns>
-        public static IPAddress NetworkAddress(IPAddress address, IPAddress mask)
+        /// <param name="address">Address to assign.</param>
+        /// <param name="subnet">Mask to assign.</param>
+        public IPNetAddress(IPAddress address, IPAddress subnet)
+        {
+            Address = address;
+            _mask = subnet;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
+        /// </summary>
+        /// <param name="address">IP Address.</param>
+        /// <param name="cidr">Mask as a CIDR.</param>
+        public IPNetAddress(IPAddress address, byte cidr)
         {
             if (address != null)
             {
-                if (address.AddressFamily == AddressFamily.InterNetwork)
+                Address = address;
+                if (Address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    if (mask == null)
-                    {
-                        throw new ArgumentException("Mask required to calculate the network address.");
-                    }
-
-                    byte[] addressBytes = address.GetAddressBytes();
-                    byte[] maskBytes = mask.GetAddressBytes();
-
-                    if (addressBytes.Length != maskBytes.Length)
-                    {
-                        throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
-                    }
-
-                    byte[] networkAddress = new byte[addressBytes.Length];
-                    for (int i = 0; i < networkAddress.Length; i++)
-                    {
-                        networkAddress[i] = (byte)(addressBytes[i] & maskBytes[i]);
-                    }
-
-                    return new IPAddress(networkAddress);
+                    _mask = null;
                 }
-                else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+                else
                 {
-                    // First 64 bits contain the routing prefix.
-                    byte[] addressBytes = new byte[8];
-                    Array.Copy(address.GetAddressBytes(), addressBytes, 8);
-                    return new IPAddress(addressBytes);
+                    _mask = CidrToMask(cidr);
                 }
             }
-
-            return null;
+            else
+            {
+                throw new ArgumentException("Address cannot be null.");
+            }
         }
+
+        /// <summary>
+        /// Gets the IP Address of this object..
+        /// </summary>
+        public IPAddress Address
+        {
+            get
+            {
+                return _address;
+            }
+
+            private set
+            {
+                AddressFamily = value.AddressFamily;
+                _address = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the subnet mask of this object..
+        /// </summary>
+        public IPAddress Mask => _mask;
 
         /// <summary>
         /// Try to parse the address and subnet strings into an IPNetAddress object.
@@ -127,7 +122,7 @@ namespace Common.Networking
                             return true;
                         }
 
-                        if (IPAddress.TryParse(tokens[0], out IPAddress mask))
+                        if (IPAddress.TryParse(tokens[1], out IPAddress mask))
                         {
                             ip = new IPNetAddress(res, mask);
                             return true;
@@ -156,60 +151,12 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
-        /// </summary>
-        /// <param name="ip">Address to assign.</param>
-#pragma warning disable SA1201 // Elements should appear in the correct order
-        public IPNetAddress(IPAddress ip)
-#pragma warning restore SA1201 // Elements should appear in the correct order
-        {
-            _address = ip;
-            _mask = null;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
-        /// </summary>
-        /// <param name="address">Address to assign.</param>
-        /// <param name="subnet">Mask to assign.</param>
-        public IPNetAddress(IPAddress address, IPAddress subnet)
-        {
-            _address = address;
-            _mask = subnet;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
-        /// </summary>
-        /// <param name="address">IP Address.</param>
-        /// <param name="cidr">Mask as a CIDR.</param>
-        public IPNetAddress(IPAddress address, byte cidr)
-        {
-            if (address != null)
-            {
-                _address = address;
-                if (_address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    _mask = null;
-                }
-                else
-                {
-                    _mask = CidrToMask(cidr);
-                }
-            }
-            else
-            {
-                throw new ArgumentException("Address cannot be null.");
-            }
-        }
-
-        /// <summary>
         /// Returns the Network address of this object.
         /// </summary>
         /// <returns>The Network IP address of our this object.</returns>
         public IPAddress NetworkAddress()
         {
-            return IPNetAddress.NetworkAddress(_address, _mask);
+            return IPNetAddress.NetworkAddress(Address, _mask);
         }
 
         /// <summary>
@@ -219,12 +166,29 @@ namespace Common.Networking
         /// <returns>Comparison result.</returns>
         public override bool Contains(IPAddress ip)
         {
-            IPAddress nwAdd1 = IPNetAddress.NetworkAddress(_address, _mask);
+            IPAddress nwAdd1 = IPNetAddress.NetworkAddress(Address, _mask);
             IPAddress nwAdd2 = IPNetAddress.NetworkAddress(ip, _mask);
 
             if (nwAdd1 != null && nwAdd2 != null)
             {
                 return nwAdd1.Equals(nwAdd2);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Assumes the address in this object is a network address. Checks to see if Ip is with in this subnet.
+        /// </summary>
+        /// <param name="ip">Object's IP address to compare to.</param>
+        /// <returns>Comparison result.</returns>
+        public bool NetworkContains(IPAddress ip)
+        {
+            IPAddress nwAdd2 = IPNetAddress.NetworkAddress(ip, _mask);
+
+            if (nwAdd2 != null)
+            {
+                return Equals(nwAdd2);
             }
 
             return false;
@@ -263,7 +227,7 @@ namespace Common.Networking
         {
             if (ip is IPNetAddress obj)
             {
-                _address = obj.Address;
+                Address = obj.Address;
                 _mask = obj.Mask;
             }
             else
@@ -284,29 +248,41 @@ namespace Common.Networking
                         if (Address.AddressFamily == ipObj.Address.AddressFamily)
                         {
                             // Compare only the address for IPv6, but both Address and Mask for IPv4.
-                            if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-                            {
-                                return Address.Equals(ipObj.Address);
-                            }
-                            else if (Address.AddressFamily == AddressFamily.InterNetwork)
+
+                            if (Address.AddressFamily == AddressFamily.InterNetwork)
                             {
                                 if (Mask != null)
                                 {
-                                    return Address.Equals(ipObj.Address) && Mask.Equals(ipObj.Mask);
+                                    // Return true if ipObj is a host and we're a network and the host matches ours.
+                                    bool eqAdd = Address.Equals(ipObj.Address);
+                                    return (eqAdd && Mask.Equals(ipObj.Mask)) ||
+                                        (eqAdd && ipObj.Mask.Equals(IPAddress.Broadcast));
                                 }
 
+                                return Address.Equals(ipObj.Address);
+                            }
+                            else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
+                            {
                                 return Address.Equals(ipObj.Address);
                             }
                         }
                         else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
                         {
                             // Is one an ipv4 to ipv6 mapping?
-                            return string.Equals(Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase), ip.ToString(), StringComparison.OrdinalIgnoreCase);
+                            return string.Equals(
+                                Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+#pragma warning disable CA1062 // Validate arguments of public methods : "ip has a value here."
+                                ip.ToString(),
+#pragma warning restore CA1062 // Validate arguments of public methods
+                                StringComparison.OrdinalIgnoreCase);
                         }
                         else if (Address.AddressFamily == AddressFamily.InterNetwork)
                         {
                             // Is one an ipv4 to ipv6 mapping?
-                            return string.Equals(ip.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase), Address.ToString(), StringComparison.OrdinalIgnoreCase);
+                            return string.Equals(
+                                ip.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+                                Address.ToString(),
+                                StringComparison.OrdinalIgnoreCase);
                         }
                     }
                 }
@@ -329,12 +305,18 @@ namespace Common.Networking
                     else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
                         // Is one an ipv4 to ipv6 mapping?
-                        return string.Equals(Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase), ip.ToString(), StringComparison.OrdinalIgnoreCase);
+                        return string.Equals(
+                            Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+                            ip.ToString(),
+                            StringComparison.OrdinalIgnoreCase);
                     }
                     else if (Address.AddressFamily == AddressFamily.InterNetwork)
                     {
                         // Is one an ipv4 to ipv6 mapping?
-                        return string.Equals(ip.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase), Address.ToString(), StringComparison.OrdinalIgnoreCase);
+                        return string.Equals(
+                            ip.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+                            Address.ToString(),
+                            StringComparison.OrdinalIgnoreCase);
                     }
                 }
             }
@@ -382,7 +364,7 @@ namespace Common.Networking
             {
                 if (Mask != null)
                 {
-                    return $"{Address}/{Mask}"; // {Address.ToString() + "/" + Mask.ToString();
+                    return $"{Address}/" + IPObject.MaskToCidr(Mask);
                 }
 
                 return Address.ToString();

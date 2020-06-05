@@ -1,66 +1,101 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-
 namespace Common.Networking
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Net;
+    using System.Net.NetworkInformation;
+    using System.Net.Sockets;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+
     /// <summary>
     /// Class to take care of network interface management.
     /// </summary>
-    public class NetworkManager
+    public class NetworkManager : INetworkManager
     {
+        /// <summary>
+        /// Defines the _logger.
+        /// </summary>
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Threading object for network interfaces.
+        /// Threading object for network interfaces..
         /// </summary>
         private readonly object _intLock = new object();
 
         /// <summary>
-        /// List of calculated LAN addresses.
+        /// True if IP6 addresses be ignored..
+        /// </summary>
+        private bool _ignoreIP6 = true;
+
+        /// <summary>
+        /// Unfiltered user defined LAN addresses,
+        /// or internal interface network addresses if undefined by user..
         /// </summary>
         private NetCollection _lanAddresses;
 
         /// <summary>
-        /// Cached list of filtered LAN addresses.
-        /// </summary>
-        private NetCollection _filteredLANAddresses;
-
-        /// <summary>
-        /// List of LAN excluded addresses.
+        /// User defined list of addresses to excluded from the LAN..
         /// </summary>
         private NetCollection _excludedAddresses;
 
         /// <summary>
-        /// List of all interface addresses and masks.
+        /// Cached list of filtered addresses comprising the LAN. (_lanAddresses ?? _interfaceAddresses).Exclude(_excludedAddresses)..
+        /// </summary>
+        private NetCollection _filteredLANAddresses;
+
+        /// <summary>
+        /// List of interface addresses to bind the WS..
+        /// </summary>
+        private NetCollection _bindAddresses;
+
+        /// <summary>
+        /// List of interface addresses to exclude from bind..
+        /// </summary>
+        private NetCollection _bindExclusions;
+
+        /// <summary>
+        /// List of all interface addresses and masks..
         /// </summary>
         private NetCollection _interfaceAddresses;
 
         /// <summary>
-        /// Caches list of all filtered interface addresses and masks.
+        /// Caches list of all internal filtered interface addresses and masks..
         /// </summary>
-        private NetCollection _filteredInterfaceAddresses;
+        private NetCollection _internalInterfaceAddresses;
 
         /// <summary>
-        /// List of all interface mac addresses.
+        /// List of all interface mac addresses..
         /// </summary>
         private List<PhysicalAddress> _macAddresses;
 
         /// <summary>
-        /// Flag set when _lanAddressses is set to _interfaceAddresses as no custom LAN has been defined in the config.
+        /// Defines the _interfaceNames.
+        /// </summary>
+        private SortedList<string, int> _interfaceNames;
+
+        /// <summary>
+        /// Flag set when _lanAddressses is set to _interfaceAddresses as no custom LAN has been defined in the config..
         /// </summary>
         private bool _usingInterfaces = false;
 
         /// <summary>
-        /// Function that return the LAN addresses from the config.
+        /// Function that return the LAN addresses from the config..
         /// </summary>
         private Func<string[]> _localSubnetsFn;
+
+        /// <summary>
+        /// Function that return the IP  addresses from the config..
+        /// </summary>
+        private Func<string[]> _bindAddressesFn;
+
+        /// <summary>
+        /// Gets or sets the EnableIPV6 setting from config..
+        /// </summary>
+        private Func<bool> _isIP6EnabledFn;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkManager"/> class.
@@ -69,9 +104,7 @@ namespace Common.Networking
         public NetworkManager(ILogger<NetworkManager> logger)
         {
             _logger = logger;
-            InitialiseInterfaces();
-            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
-            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+            _interfaceNames = new SortedList<string, int>();
         }
 
         /// <summary>
@@ -80,20 +113,51 @@ namespace Common.Networking
         public event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets or sets the LAN settings stored in config.
+        /// Gets a value indicating whether IP6 is enabled..
         /// </summary>
-        public Func<string[]> LocalSubnetsFn
+        public bool IsIP6Enabled
         {
             get
             {
-                return _localSubnetsFn;
+                return !_ignoreIP6;
             }
+        }
 
-            set
-            {
-                _localSubnetsFn = value;
-                InitialiseLAN();
-            }
+        /// <summary>
+        /// Returns true if the IP address in address2 is within the network address1/subnetMask.
+        /// </summary>
+        /// <param name="subnetIP">Subnet IP.</param>
+        /// <param name="subnetMask">Subnet Mask.</param>
+        /// <param name="address">Address to check.</param>
+        /// <returns>True if address is in the subnet.</returns>
+        public static bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address)
+        {
+            return IPNetAddress.NetworkAddress(subnetIP, subnetMask) == IPNetAddress.NetworkAddress(address, subnetMask);
+        }
+
+        /// <summary>
+        /// Initialises the object. Can't be in constructor, as network changes could happen before this class has initialised.
+        /// </summary>
+        /// <param name="ip6Enabled">Function that returns the EnableIPV6 config option.</param>
+        /// <param name="subnets">Function that returns the LocalNetworkSubnets config option.</param>
+        /// <param name="bindInterfaces">Function that returns the LocalNetworkAddresses config option.</param>
+        public void Initialise(Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces)
+        {
+            _isIP6EnabledFn = ip6Enabled;
+            #pragma warning disable CA1062 // Validate arguments of public methods : "No need as is6Enabled will always have a value."
+            _ignoreIP6 = !_isIP6EnabledFn();
+            #pragma warning restore CA1062
+
+            InitialiseInterfaces();
+
+            _localSubnetsFn = subnets;
+            InitialiseLAN();
+
+            _bindAddressesFn = bindInterfaces;
+            InitialiseBind();
+
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
         }
 
         /// <summary>
@@ -103,7 +167,15 @@ namespace Common.Networking
         /// <param name="e">New configuration.</param>
         public void NamedConfigurationUpdated(object sender, EventArgs e)
         {
+            // IP6 settings changed.
+            if (_ignoreIP6 == _isIP6EnabledFn())
+            {
+                InitialiseInterfaces();
+                _ignoreIP6 = !_ignoreIP6;
+            }
+
             InitialiseLAN();
+            InitialiseBind();
         }
 
         /// <summary>
@@ -126,7 +198,9 @@ namespace Common.Networking
         public int GetRandomUnusedUdpPort()
         {
             var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            #pragma warning disable IDE0063 // Use simple 'using' statement - want the item to be disposed of immediately.
             using (var udpClient = new UdpClient(localEndPoint))
+            #pragma warning restore IDE0063
             {
                 return ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
             }
@@ -153,18 +227,6 @@ namespace Common.Networking
         public bool IsExcluded(IPAddress ip)
         {
             return _excludedAddresses.Exists(ip);
-        }
-
-        /// <summary>
-        /// Returns true if the IP address in address2 is within the network address1/subnetMask.
-        /// </summary>
-        /// <param name="subnetIP">Subnet IP.</param>
-        /// <param name="subnetMask">Subnet Mask.</param>
-        /// <param name="address">Address to check.</param>
-        /// <returns>True if address is in the subnet.</returns>
-        public static bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address)
-        {
-            return IPNetAddress.NetworkAddress(subnetIP, subnetMask) == IPNetAddress.NetworkAddress(address, subnetMask);
         }
 
         /// <summary>
@@ -195,6 +257,33 @@ namespace Common.Networking
         }
 
         /// <summary>
+        /// Calculates if the endpoint given falls within the LAN networks specified in config.
+        /// </summary>
+        /// <param name="endpoint">IP to check.</param>
+        /// <returns>True if endpoint is within the LAN range.</returns>
+        public bool IsInLocalNetwork(IPNetAddress endpoint)
+        {
+            lock (_intLock)
+            {
+                if (endpoint == null)
+                {
+                    return false;
+                }
+
+                // If LAN addresses haven't been defined, the code uses interface addresses.
+                if (_usingInterfaces)
+                {
+                    // Ensure we're an internal address.
+                    return _filteredLANAddresses.Contains(endpoint) && endpoint.IsPrivateAddressRange();
+                }
+                else
+                {
+                    return _filteredLANAddresses.Contains(endpoint);
+                }
+            }
+        }
+
+        /// <summary>
         /// Parses an array of strings into a NetCollection.
         /// </summary>
         /// <param name="values">Values to parse.</param>
@@ -208,31 +297,94 @@ namespace Common.Networking
                 for (int a = 0; a < values.Length; a++)
                 {
                     string v = values[a].Trim();
+
                     try
                     {
                         if (v.StartsWith("[", StringComparison.OrdinalIgnoreCase) && v.EndsWith("]", StringComparison.OrdinalIgnoreCase))
                         {
                             if (bracketed)
                             {
-                                col.Add(v[1..^1]);
+                                AddToCollection(col, v[1..^1].Trim());
                             }
                         }
                         else
                         {
                             if (!bracketed)
                             {
-                                col.Add(v);
+                                AddToCollection(col, v);
                             }
                         }
                     }
                     catch (ArgumentException e)
                     {
-                        _logger.LogInformation("Ignoring LAN value {value}. Reason : {reason}", v, e.Message);
+                        _logger?.LogInformation("Ignoring LAN value {value}. Reason : {reason}", v, e.Message);
                     }
                 }
             }
 
             return col;
+        }
+
+        /// <summary>
+        /// Returns all the valid interfaces in config LocalNetworkAddresses.
+        /// </summary>
+        /// <returns>A NetCollection object containing all the interfaces to bind.</returns>
+        public NetCollection GetBindInterfaces()
+        {
+            lock (_intLock)
+            {
+                if (_bindAddresses.Count == 0)
+                {
+                    if (_bindExclusions.Count > 0)
+                    {
+                        // Return all the interfaces except the one excluded.
+                        return new NetCollection(_interfaceAddresses.Exclude(_bindExclusions));
+                    }
+                    else
+                    {
+                        // Return all interfaces.
+                        return new NetCollection();
+                    }
+                }
+                else
+                {
+                    // Return only interface addresses that are valid.
+                    if (_bindAddresses.Equals(_interfaceAddresses))
+                    {
+                        // If bindAddress == interfaceAddresses then listen on any address.
+                        return new NetCollection();
+                    }
+                    else
+                    {
+                        // Otherwise, return only valid interface addresses.
+                        return new NetCollection(_bindAddresses.Matches(_interfaceAddresses));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns all the excluded interfaces in config LocalNetworkAddresses.
+        /// </summary>
+        /// <returns>A NetCollection object containing all the excluded interfaces.</returns>
+        public NetCollection GetBindExclusions()
+        {
+            lock (_intLock)
+            {
+                return new NetCollection(_bindExclusions.Matches(_interfaceAddresses));
+            }
+        }
+
+        /// <summary>
+        /// Returns all the filtered LAN addresses.
+        /// </summary>
+        /// <returns>A filtered list of LAN subnets/IPs.</returns>
+        public NetCollection GetLANAddresses()
+        {
+            lock (_intLock)
+            {
+                return new NetCollection(_lanAddresses);
+            }
         }
 
         /// <summary>
@@ -245,18 +397,6 @@ namespace Common.Networking
             lock (_intLock)
             {
                 return new NetCollection(_lanAddresses.Exclude(filter));
-            }
-        }
-
-        /// <summary>
-        ///  Returns all the filtered LAN addresses.
-        /// </summary>
-        /// <returns>A filtered list of LAN subnets/IPs.</returns>
-        public NetCollection GetLANAddresses()
-        {
-            lock (_intLock)
-            {
-                return new NetCollection(_lanAddresses);
             }
         }
 
@@ -274,26 +414,26 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Returns all the filtered interfaces addresses.
+        /// Returns all the filtered LAN interfaces addresses.
         /// </summary>
-        /// <returns>A filtered list of interfaces addresses.</returns>
-        public NetCollection GetFilteredInterfaceAddresses()
+        /// <returns>An internal list of interfaces addresses.</returns>
+        public NetCollection GetInternalInterfaceAddresses()
         {
             lock (_intLock)
             {
-                return new NetCollection(_filteredInterfaceAddresses);
+                return new NetCollection(_internalInterfaceAddresses);
             }
         }
 
         /// <summary>
-        /// Returns all filtered interface addresses.
+        /// Returns all filtered IPv4 LAN interface addresses, regardless of IPv6 status.
         /// </summary>
-        /// <returns>Returns a filtered list of IPV4 interface addresses.</returns>
-        public NetCollection GetFilteredIPv4InterfaceAddresses()
+        /// <returns>Returns an internal list of IPV4 interface addresses.</returns>
+        public NetCollection GetInternalIPv4InterfaceAddresses()
         {
             lock (_intLock)
             {
-                return new NetCollection(_filteredInterfaceAddresses
+                return new NetCollection(_internalInterfaceAddresses
                     .Where(i => ((IPNetAddress)i).Address.AddressFamily == AddressFamily.InterNetwork));
             }
         }
@@ -303,12 +443,12 @@ namespace Common.Networking
         /// </summary>
         /// <param name="allowLoopback">Allow loopback addresses in the list.</param>
         /// <param name="limit">Limit the number of items in the response.</param>
-        /// <returns>Returns a filtered list of IPV4 interface addresses.</returns>
-        public NetCollection GetPingableIPv4InterfaceAddresses(bool allowLoopback, int limit)
+        /// <returns>Returns a filtered list of interface addresses.</returns>
+        public NetCollection GetPingableInterfaceAddresses(bool allowLoopback, int limit)
         {
             lock (_intLock)
             {
-                return new NetCollection(_filteredInterfaceAddresses
+                return new NetCollection(_internalInterfaceAddresses
                     .Where(i => ((IPNetAddress)i).Address.AddressFamily == AddressFamily.InterNetwork)
                     .Where(i => allowLoopback || !i.IsLoopback())
                     .Take(limit));
@@ -318,74 +458,62 @@ namespace Common.Networking
         /// <summary>
         /// Interface callback function.
         /// </summary>
-        /// <param name="allowLoopback">Allow loopback addresses in the list.</param>
-        /// <param name="limit">Limit the number of items in the response.</param>
         /// <param name="callback">Delegate function to call on each match.</param>
         /// <param name="cancellationToken">Cancellation Tolken.</param>
         /// <returns>true or false.</returns>
-        public NetCollection GetCallbackFilteredInterfaceAddresses(bool allowLoopback, int limit, Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken cancellationToken)
+        public NetCollection CallbackOnFilteredBindAddresses(Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken cancellationToken)
         {
-            lock (_intLock)
-            {
-                return new NetCollection(_filteredInterfaceAddresses
-                    .Where(i => allowLoopback || !i.IsLoopback())
-                    .Where(i => callback(((IPNetAddress)i).Address, cancellationToken).Result)
-                    .Take(limit));
-            }
+            NetCollection nc = new NetCollection(GetBindInterfaces()
+                .Where(i => callback(((IPNetAddress)i).Address, cancellationToken).Result)
+                .First());
+
+            return nc;
         }
 
         /// <summary>
-        /// Initialises internal variables.
+        /// Parses strings into the collection, replacing any interface references.
         /// </summary>
-        private void InitialiseLAN()
+        /// <param name="col">Collection.</param>
+        /// <param name="token">String to parse.</param>
+        internal void AddToCollection(NetCollection col, string token)
         {
-            lock (_intLock)
+            // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
+            if (_interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
             {
-                _excludedAddresses = CreateIPCollection(LocalSubnetsFn(), true);
+                _logger?.LogInformation("Interface {0} used in settings. Using its interface addresses.", token);
 
-                // Collate and cache all the LAN network information.
-                _lanAddresses = CreateIPCollection(LocalSubnetsFn(), false);
-
-                if (_excludedAddresses.Count > 0)
+                // Replace interface tags with the interface IP's.
+                foreach (IPNetAddress iface in _interfaceAddresses)
                 {
-                    _filteredInterfaceAddresses = _interfaceAddresses.Exclude(_excludedAddresses);
-                    _filteredLANAddresses = _lanAddresses.Exclude(_excludedAddresses);
-                }
-                else
-                {
-                    _filteredInterfaceAddresses = _interfaceAddresses;
-                    _filteredLANAddresses = _lanAddresses;
-                }
-
-                // If no LAN addresses are specified - all interface subnets are deemed to be the LAN
-                _usingInterfaces = _lanAddresses.Count == 0;
-                if (_usingInterfaces)
-                {
-                    foreach (IPObject i in _interfaceAddresses)
+                    if (iface.Tag == index)
                     {
-                        if (i is IPNetAddress nw)
+                        if ((!IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                            || IsIP6Enabled)
                         {
-                            // Add the subnet calculated from the interface address/mask.
-                            IPNetAddress lan = new IPNetAddress(IPNetAddress.NetworkAddress(nw.Address, nw.Mask), nw.Mask)
-                            {
-                                Tag = i.Tag
-                            };
-                            _lanAddresses.Add(lan);
-                        }
-                        else
-                        {
-                            // Flatten out IPHost and add all its ip addresses.
-                            foreach (var addr in ((IPHost)i).Addresses)
-                            {
-                                IPNetAddress host = new IPNetAddress(addr, 32)
-                                {
-                                    Tag = i.Tag
-                                };
-                                _lanAddresses.Add(host);
-                            }
+                            col.Add(iface);
                         }
                     }
                 }
+            }
+            else if (NetCollection.TryParse(token, out IPObject obj))
+            {
+                if (!IsIP6Enabled)
+                {
+                    // Remove IP6 addresses from multi-homed IPHosts.
+                    obj.RemoveIP6();
+                    if (!obj.IsIP6())
+                    {
+                        col.Add(obj);
+                    }
+                }
+                else
+                {
+                    col.Add(obj);
+                }
+            }
+            else
+            {
+                _logger?.LogDebug("Invalid or unknown network {0}.", token);
             }
         }
 
@@ -396,7 +524,7 @@ namespace Common.Networking
         /// <param name="e">Network availablity information.</param>
         private void OnNetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
-            _logger.LogDebug("NetworkAvailabilityChanged");
+            _logger?.LogDebug("NetworkAvailabilityChanged");
             OnNetworkChanged();
         }
 
@@ -407,7 +535,7 @@ namespace Common.Networking
         /// <param name="e">Event arguments.</param>
         private void OnNetworkAddressChanged(object sender, EventArgs e)
         {
-            _logger.LogDebug("NetworkAddressChanged");
+            _logger?.LogDebug("NetworkAddressChanged");
             OnNetworkChanged();
         }
 
@@ -421,6 +549,64 @@ namespace Common.Networking
         }
 
         /// <summary>
+        /// Reparses the Bind address settings.
+        /// </summary>
+        private void InitialiseBind()
+        {
+            string[] ba = _bindAddressesFn();
+            lock (_intLock)
+            {
+                _bindAddresses = CreateIPCollection(ba);
+                _bindExclusions = CreateIPCollection(ba, true);
+            }
+        }
+
+        /// <summary>
+        /// Initialises internal variables.
+        /// </summary>
+        private void InitialiseLAN()
+        {
+            lock (_intLock)
+            {
+                _logger?.LogDebug("Refreshing LAN information.");
+
+                // Get config options.
+                bool excludeIP6 = !_isIP6EnabledFn();
+                string[] subnets = _localSubnetsFn();
+
+                // Create lists from user settings.
+                _lanAddresses = NetCollection.AsNetworks(CreateIPCollection(subnets));
+                _excludedAddresses = CreateIPCollection(subnets, true);
+
+                _logger?.LogDebug("# User defined LAN addresses : {0}", _lanAddresses);
+                _logger?.LogDebug("# User defined LAN exclusions : {0}", _excludedAddresses);
+
+                // If no LAN addresses are specified - all interface subnets are deemed to be the LAN
+                _usingInterfaces = _lanAddresses.Count == 0;
+
+                if (_usingInterfaces)
+                {
+                    _logger?.LogDebug("Using interface addresses as user provided no LAN details.");
+                    _lanAddresses = _interfaceAddresses;
+                }
+
+                // Cache results.
+                if (_excludedAddresses.Count > 0)
+                {
+                    _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Exclude(_excludedAddresses).Where(i => i.IsPrivateAddressRange()));
+                    _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses.Exclude(_excludedAddresses));
+                }
+                else
+                {
+                    _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Where(i => i.IsPrivateAddressRange()));
+                    _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses);
+                }
+
+                _logger?.LogDebug("Using LAN addresses: {0}", _filteredLANAddresses);
+            }
+        }
+
+        /// <summary>
         /// Generate a list of all the interface ip addresses and submasks where that are in the active/unknown state.
         /// Generate a list of all active mac addresses that aren't loopback addreses.
         /// </summary>
@@ -428,12 +614,17 @@ namespace Common.Networking
         {
             lock (_intLock)
             {
+                _interfaceNames.Clear();
+                _logger?.LogDebug("Refreshing interfaces.");
+
                 _interfaceAddresses = new NetCollection();
                 _macAddresses = new List<PhysicalAddress>();
 
                 // retrieve a list of network interfaces that are up or unknown? (why unknown???)
                 try
                 {
+                    bool ip6 = _isIP6EnabledFn();
+
                     IEnumerable<NetworkInterface> nics = NetworkInterface.GetAllNetworkInterfaces()
                         .Where(x => x.OperationalStatus == OperationalStatus.Up
                             || x.OperationalStatus == OperationalStatus.Unknown);
@@ -457,25 +648,36 @@ namespace Common.Networking
                                 IPNetAddress nw = new IPNetAddress(info.Address, info.IPv4Mask)
                                 {
                                     // Keep the number of gateways on this interface, along with its index.
-                                    Tag = ((long)ipProperties.GetIPv4Properties().Index << 32) + ipProperties.GatewayAddresses.Count
+                                    Tag = (long)ipProperties.GetIPv4Properties().Index
                                 };
                                 _interfaceAddresses.Add(nw);
+
+                                // Store interface name so we can use the name in Collections.
+                                _interfaceNames[adapter.Name.ToLower(CultureInfo.InvariantCulture)] = (int)nw.Tag;
+                                _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = (int)nw.Tag;
                             }
-                            else if (info.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                            else if (ip6 && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                             {
                                 IPNetAddress nw = new IPNetAddress(info.Address)
                                 {
                                     // Keep the number of gateways on this interface, along with its index.
-                                    Tag = ((long)ipProperties.GetIPv6Properties().Index << 32) + ipProperties.GatewayAddresses.Count
+                                    Tag = (long)ipProperties.GetIPv6Properties().Index
                                 };
                                 _interfaceAddresses.Add(nw);
+
+                                // Store interface name so we can use the name in Collections.
+                                _interfaceNames[adapter.Name.ToLower(CultureInfo.InvariantCulture)] = (int)nw.Tag;
+                                _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = (int)nw.Tag;
                             }
                         }
                     }
 
+                    _logger?.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
+
                     // If for some reason we don't have an interface info, resolve our DNS name.
                     if (_interfaceAddresses.Count == 0)
                     {
+                        _logger?.LogWarning("No inferfaces information available. Resolving DNS name.");
                         IPHost host = new IPHost(Dns.GetHostName());
                         foreach (var a in host.Addresses)
                         {
@@ -485,7 +687,7 @@ namespace Common.Networking
                 }
                 catch (NetworkInformationException ex)
                 {
-                    _logger.LogError(ex, "Error in GetAllNetworkInterfaces");
+                    _logger?.LogError(ex, "Error in InitialiseInterfaces.");
                 }
             }
         }

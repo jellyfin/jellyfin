@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Net
     /// </summary>
     public interface ISocketFactory
     {
-        ISocket CreateUdpBroadcastSocket(int localPort);
+        ISocket CreateUdpBroadcastSocket(int localPort, bool ip6 = false);
 
         /// <summary>
         /// Creates a new unicast socket using the specified local port number.

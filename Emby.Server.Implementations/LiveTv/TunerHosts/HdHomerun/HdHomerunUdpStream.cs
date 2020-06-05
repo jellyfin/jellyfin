@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
 
         public HdHomerunUdpStream(
             MediaSourceInfo mediaSource,
@@ -38,7 +38,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             ILogger logger,
             IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {

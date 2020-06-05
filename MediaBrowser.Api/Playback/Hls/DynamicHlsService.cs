@@ -107,7 +107,7 @@ namespace MediaBrowser.Api.Playback.Hls
             IMediaSourceManager mediaSourceManager,
             IJsonSerializer jsonSerializer,
             IAuthorizationContext authorizationContext,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             EncodingHelper encodingHelper)
             : base(
                 logger,
@@ -125,9 +125,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 authorizationContext,
                 encodingHelper)
         {
-            NetworkManager = networkManager;
+            NetworkManager = (NetworkManager)networkManager;
         }
-
         protected NetworkManager NetworkManager { get; private set; }
 
         public Task<object> Get(GetMasterHlsVideoPlaylist request)

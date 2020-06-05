@@ -1,16 +1,21 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-
 namespace Common.Networking
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net;
+
     /// <summary>
     /// A class that holds a list of Network Address objects. (IPAddress, IPNetAddress and IPHostEntry).
     /// </summary>
-    public class NetCollection : IEnumerable<IPObject>
+    public class NetCollection : ICollection<IPObject>, IEnumerable<IPObject>
     {
+        /// <summary>
+        /// Defines the _network.
+        /// </summary>
+        private bool _network = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NetCollection"/> class.
         /// </summary>
@@ -53,14 +58,20 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Gets the number in this list.
+        /// Gets the number in this list..
         /// </summary>
         public int Count => Items.Count;
 
         /// <summary>
-        /// Gets direct access to the list.
+        /// Gets the Items
+        /// Gets direct access to the list..
         /// </summary>
         public List<IPObject> Items { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this collection is readonly..
+        /// </summary>
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Parses an array of strings into a NetCollection.
@@ -113,6 +124,55 @@ namespace Common.Networking
         }
 
         /// <summary>
+        /// Returns all the subnets of a NetCollection.
+        /// </summary>
+        /// <param name="nc">NetCollection to convert.</param>
+        /// <returns>NetCollection object contains subnets.</returns>
+        public static NetCollection AsNetworks(NetCollection nc)
+        {
+            if (nc == null)
+            {
+                throw new ArgumentException("Parameter cannot be null.");
+            }
+
+            NetCollection res = new NetCollection();
+
+            foreach (IPObject i in nc)
+            {
+                if (i is IPNetAddress nw)
+                {
+                    if (!nw.IsLoopback())
+                    {
+                        // Add the subnet calculated from the interface address/mask.
+                        IPNetAddress lan = new IPNetAddress(IPNetAddress.NetworkAddress(nw.Address, nw.Mask), nw.Mask)
+                        {
+                            Tag = i.Tag
+                        };
+                        res.Add(lan);
+                    }
+                }
+                else
+                {
+                    // Flatten out IPHost and add all its ip addresses.
+                    foreach (var addr in ((IPHost)i).Addresses)
+                    {
+                        if (!IPObject.IsLoopback(addr))
+                        {
+                            IPNetAddress host = new IPNetAddress(addr, 32)
+                            {
+                                Tag = i.Tag
+                            };
+                            res.Add(host);
+                        }
+                    }
+                }
+            }
+
+            res._network = true;
+            return res;
+        }
+
+        /// <summary>
         /// Assigns the result of a LINQ to this object.
         /// </summary>
         /// <param name="item">LINQ item to assign.</param>
@@ -120,11 +180,14 @@ namespace Common.Networking
         public NetCollection Assign(IEnumerable<IPObject> item)
         {
             Items.Clear();
-            if (item != null)
+            if (item == null)
             {
-                Items.AddRange(item.ToList<IPObject>());
+                throw new ArgumentException("Argument cannot be null.");
             }
 
+            Items.AddRange(item.ToList<IPObject>());
+
+            _network = false;
             return this;
         }
 
@@ -137,6 +200,7 @@ namespace Common.Networking
             if (!Exists(ip))
             {
                 Items.Add(new IPNetAddress(ip, 32));
+                _network = false;
             }
         }
 
@@ -149,6 +213,7 @@ namespace Common.Networking
             if (!Exists(network))
             {
                 Items.Add(network);
+                _network = false;
             }
         }
 
@@ -166,6 +231,7 @@ namespace Common.Networking
             if (!Exists(ip))
             {
                 Items.Add(ip);
+                _network = false;
             }
         }
 
@@ -175,6 +241,7 @@ namespace Common.Networking
         public void Clear()
         {
             Items.Clear();
+            _network = false;
         }
 
         /// <summary>
@@ -184,15 +251,17 @@ namespace Common.Networking
         /// <returns>True if the item was removed.</returns>
         public bool Remove(IPObject item)
         {
-            if (item != null)
+            if (item == null)
             {
-                foreach (IPObject i in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            foreach (IPObject i in Items)
+            {
+                if (i.Equals(item))
                 {
-                    if (i.Equals(item))
-                    {
-                        Items.Remove(i);
-                        return true;
-                    }
+                    Items.Remove(i);
+                    return true;
                 }
             }
 
@@ -208,29 +277,32 @@ namespace Common.Networking
         {
             NetCollection results = new NetCollection();
 
-            if (excludeList != null)
+            if (excludeList == null)
             {
-                bool found;
-                foreach (var outer in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            bool found;
+            foreach (var outer in Items)
+            {
+                found = false;
+
+                foreach (var inner in excludeList.Items)
                 {
-                    found = false;
-
-                    foreach (var inner in excludeList.Items)
+                    if (outer.Equals(inner))
                     {
-                        if (inner.Equals(outer))
-                        {
-                            found = true;
-                            break;
-                        }
+                        found = true;
+                        break;
                     }
+                }
 
-                    if (!found)
-                    {
-                        results.Items.Add(outer);
-                    }
+                if (!found)
+                {
+                    results.Items.Add(outer);
                 }
             }
 
+            results._network = excludeList._network;
             return results;
         }
 
@@ -241,14 +313,24 @@ namespace Common.Networking
         /// <returns>True or false.</returns>
         public bool Contains(IPAddress search)
         {
-            if (search != null)
+            if (search == null)
             {
-                foreach (var item in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            foreach (var item in Items)
+            {
+                if (_network)
                 {
-                    if (item.Contains(search))
+                    // We're a network, so just compare search's network address.
+                    if (item.Equals(IPNetAddress.NetworkAddress(search, ((IPNetAddress)item).Mask)))
                     {
                         return true;
                     }
+                }
+                else if (item.Contains(search))
+                {
+                    return true;
                 }
             }
 
@@ -275,7 +357,15 @@ namespace Common.Networking
             {
                 foreach (var item in Items)
                 {
-                    if (item.Contains(a))
+                    if (_network)
+                    {
+                        // We're a network, so just compare search's network address.
+                        if (item.Equals(IPNetAddress.NetworkAddress(a, ((IPNetAddress)item).Mask)))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (item.Contains(a))
                     {
                         return true;
                     }
@@ -292,9 +382,14 @@ namespace Common.Networking
         /// <returns>True or false.</returns>
         public bool Contains(IPObject search)
         {
-            if (search != null)
+            if (search == null)
             {
-                foreach (var item in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            foreach (var item in Items)
+            {
+                if (item.AddressFamily == search.AddressFamily)
                 {
                     if (item.Contains(search))
                     {
@@ -313,14 +408,16 @@ namespace Common.Networking
         /// <returns>True or false.</returns>
         public bool Equals(IPAddress search)
         {
-            if (search != null)
+            if (search == null)
             {
-                foreach (var item in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            foreach (var item in Items)
+            {
+                if (item.Equals(search))
                 {
-                    if (item.Equals(search))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -334,14 +431,16 @@ namespace Common.Networking
         /// <returns>True or false.</returns>
         public bool Equals(IPObject search)
         {
-            if (search != null)
+            if (search == null)
             {
-                foreach (var item in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            foreach (var item in Items)
+            {
+                if (item.Equals(search))
                 {
-                    if (item.Equals(search))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -370,18 +469,45 @@ namespace Common.Networking
         /// <returns>True of false.</returns>
         public bool Exists(IPAddress networkItem)
         {
-            if (networkItem != null)
+            if (networkItem == null)
             {
-                foreach (IPObject i in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            foreach (IPObject i in Items)
+            {
+                if (i.Exists(networkItem))
                 {
-                    if (i.Exists(networkItem))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Returns all items that co-exist in this object and target.
+        /// </summary>
+        /// <param name="target">NetCollection to compare with.</param>
+        /// <returns>A NetCollection containing all the matches.</returns>
+        public NetCollection Matches(NetCollection target)
+        {
+            if (target == null)
+            {
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            NetCollection nc = new NetCollection();
+
+            foreach (IPObject i in target)
+            {
+                if (Equals(i))
+                {
+                    nc.Add(i);
+                }
+            }
+
+            return nc;
         }
 
         /// <summary>
@@ -391,14 +517,16 @@ namespace Common.Networking
         /// <returns>True of false.</returns>
         public bool Exists(IPObject networkItem)
         {
-            if (networkItem != null)
+            if (networkItem == null)
             {
-                foreach (IPObject i in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            foreach (IPObject i in Items)
+            {
+                if (i.Equals(networkItem))
                 {
-                    if (i.Equals(networkItem))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -433,18 +561,40 @@ namespace Common.Networking
         /// <returns>True of false.</returns>
         public IPObject Find(IPAddress networkItem)
         {
-            if (networkItem != null)
+            if (networkItem == null)
             {
-                foreach (IPObject i in Items)
+                throw new ArgumentException("Argument cannot be null.");
+            }
+
+            foreach (IPObject i in Items)
+            {
+                if (i.Equals(networkItem))
                 {
-                    if (i.Equals(networkItem))
-                    {
-                        return i;
-                    }
+                    return i;
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Converts this object to a string.
+        /// </summary>
+        /// <returns>Returns a string representation of this object.</returns>
+        public override string ToString()
+        {
+            string output = "[";
+            if (Count > 0)
+            {
+                foreach (var i in Items)
+                {
+                    output += $"{i},";
+                }
+
+                output = output[0..^1];
+            }
+
+            return $"{output}]";
         }
 
         /// <summary>
@@ -463,6 +613,16 @@ namespace Common.Networking
         IEnumerator<IPObject> IEnumerable<IPObject>.GetEnumerator()
         {
             return Items.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Copies the entire Collection to a compatible one-dimensional Array, starting at the specified index of the target array.
+        /// </summary>
+        /// <param name="array">The one-dimensional Array that is the destination of the elements copied from Collection. The Array must have zero-based indexing.</param>
+        /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+        public void CopyTo(IPObject[] array, int arrayIndex)
+        {
+            Items.CopyTo(array, arrayIndex);
         }
     }
 }

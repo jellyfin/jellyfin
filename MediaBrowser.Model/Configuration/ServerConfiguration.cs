@@ -31,6 +31,12 @@ namespace MediaBrowser.Model.Configuration
         public int PublicPort { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether gets or sets IPV6 capability.
+        /// </summary>
+        /// <value>If IPv6 is enabled.</value>
+        public bool EnableIPV6 { get; set; }
+
+        /// <summary>
         /// Gets or sets the public HTTPS port.
         /// </summary>
         /// <value>The public HTTPS port.</value>
@@ -260,8 +266,9 @@ namespace MediaBrowser.Model.Configuration
             LocalNetworkAddresses = Array.Empty<string>();
             CodecsUsed = Array.Empty<string>();
             PathSubstitutions = Array.Empty<PathSubstitution>();
-            IgnoreVirtualInterfaces = false;
+            IgnoreVirtualInterfaces = false; // Unused.
             EnableSimpleArtistDetection = false;
+            EnableIPV6 = false;
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;

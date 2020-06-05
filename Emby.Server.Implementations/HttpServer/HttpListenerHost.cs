@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IServerConfigurationManager _config;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.HttpServer
             ILogger<HttpListenerHost> logger,
             IServerConfigurationManager config,
             IConfiguration configuration,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IJsonSerializer jsonSerializer,
             IXmlSerializer xmlSerializer,
             ILocalizationManager localizationManager,
@@ -299,6 +299,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (h.Addresses == null)
             {
+                _logger.LogWarning("Recieved request from {0}. Unable to resolve name.", host);
                 // unresolvable item - return false;
                 return false;
             }
@@ -307,7 +308,16 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 // LAN if undefined will be the network interfaces.
                 NetCollection nc = _networkManager.GetLANAddresses();
-                nc.Add(IPHost.Parse("127.0.0.1"));
+
+                if (_config.Configuration.EnableIPV6)
+                {
+                    nc.Add(IPHost.Parse("::1"));
+                }
+                else
+                {
+                    nc.Add(IPHost.Parse("127.0.0.1"));
+                }
+
                 nc.Add(IPHost.Parse("localhost"));
 
                 return nc.Contains(h);
@@ -323,29 +333,32 @@ namespace Emby.Server.Implementations.HttpServer
                 return true;
             }
 
-            if (!_networkManager.IsInLocalNetwork(remoteIp))
+            if (IPNetAddress.TryParse(remoteIp, out IPNetAddress remoteIPObj))
             {
-                if (_config.Configuration.EnableRemoteAccess)
+                if (!_networkManager.IsInLocalNetwork(remoteIPObj))
                 {
-                    // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
-                    // If left blank, all remote addresses will be allowed.
-                    NetCollection addressFilter = _networkManager.CreateIPCollection(_config.Configuration.RemoteIPFilter);
-
-                    if (addressFilter.Count == 0)
+                    if (_config.Configuration.EnableRemoteAccess)
                     {
-                        return true;
-                    }
+                        // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                        // If left blank, all remote addresses will be allowed.
+                        NetCollection remoteAddressFilter = _networkManager.CreateIPCollection(_config.Configuration.RemoteIPFilter);
 
-                    // addressFilter is a whitelist or blacklist.
-                    NetCollection lanAddresses = _networkManager.GetFilteredLANAddresses(addressFilter);
+                        if (remoteAddressFilter.Count == 0)
+                        {
+                            return true;
+                        }
 
-                    if (_config.Configuration.IsRemoteIPFilterBlacklist)
-                    {
-                        return !lanAddresses.Contains(remoteIp);
-                    }
-                    else
-                    {
-                        return lanAddresses.Contains(remoteIp);
+                        // remoteAddressFilter is a whitelist or blacklist.
+                        NetCollection lanAddresses = _networkManager.GetFilteredLANAddresses(remoteAddressFilter);
+
+                        if (_config.Configuration.IsRemoteIPFilterBlacklist)
+                        {
+                            return !lanAddresses.Contains(remoteIPObj);
+                        }
+                        else
+                        {
+                            return lanAddresses.Contains(remoteIPObj);
+                        }
                     }
                 }
 
@@ -557,6 +570,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             try
             {
+                if (_networkManager.GetBindExclusions().Exists(context.Connection.RemoteIpAddress))
+                {
+                    _logger.LogInformation("Filtering WS {IP} request. Arrived on an excluded interface.", context.Connection.RemoteIpAddress);
+                    context.Response.StatusCode = 401;
+                    return;
+                }
+
                 _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);
 
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);

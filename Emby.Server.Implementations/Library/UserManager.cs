@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IUserRepository _userRepository;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
         private readonly IImageProcessor _imageProcessor;
         private readonly Lazy<IDtoService> _dtoServiceFactory;
         private readonly IServerApplicationHost _appHost;
@@ -73,7 +73,7 @@ namespace Emby.Server.Implementations.Library
             ILogger<UserManager> logger,
             IUserRepository userRepository,
             IXmlSerializer xmlSerializer,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IImageProcessor imageProcessor,
             Lazy<IDtoService> dtoServiceFactory,
             IServerApplicationHost appHost,
@@ -565,9 +565,10 @@ namespace Emby.Server.Implementations.Library
             bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user);
             bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
 
-            bool hasPassword = user.Configuration.EnableLocalPassword && !string.IsNullOrEmpty(remoteEndPoint) && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
-                hasConfiguredEasyPassword :
-                hasConfiguredPassword;
+            bool hasPassword = user.Configuration.EnableLocalPassword
+                && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
+                    hasConfiguredEasyPassword :
+                    hasConfiguredPassword;
 
             UserDto dto = new UserDto
             {
@@ -620,7 +621,6 @@ namespace Emby.Server.Implementations.Library
             bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(authenticationProvider.GetEasyPasswordHash(user));
 
             bool hasPassword = user.Configuration.EnableLocalPassword &&
-                !string.IsNullOrEmpty(remoteEndPoint) &&
                 _networkManager.IsInLocalNetwork(remoteEndPoint) ? hasConfiguredEasyPassword : hasConfiguredPassword;
 
             PublicUserDto dto = new PublicUserDto
