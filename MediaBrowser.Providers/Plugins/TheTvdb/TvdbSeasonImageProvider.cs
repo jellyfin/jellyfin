@@ -90,6 +90,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         {
             var list = new List<RemoteImageInfo>();
             var languages = _tvdbClientManager.GetLanguagesAsync(CancellationToken.None).Result.Data;
+            // any languages with null ids are ignored
+            languages = Array.FindAll(languages, language => language.Id != null);
             foreach (Image image in images)
             {
                 var imageInfo = new RemoteImageInfo
