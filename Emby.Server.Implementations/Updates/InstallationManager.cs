@@ -139,14 +139,19 @@ namespace Emby.Server.Implementations.Updates
                     catch (SerializationException ex)
                     {
                         _logger.LogError(ex, "Failed to deserialize the plugin manifest retrieved from {Manifest}", manifest);
-                        throw;
+                        return Enumerable.Empty<PackageInfo>();
                     }
                 }
             }
             catch (UriFormatException ex)
             {
                 _logger.LogError(ex, "The URL configured for the plugin repository manifest URL is not valid: {Manifest}", manifest);
-                throw;
+                return Enumerable.Empty<PackageInfo>();
+            }
+            catch (HttpException ex)
+            {
+                _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
+                return Enumerable.Empty<PackageInfo>();
             }
         }
 
@@ -159,7 +164,7 @@ namespace Emby.Server.Implementations.Updates
                 result.AddRange(await GetPackages(repository.Url, cancellationToken).ConfigureAwait(true));
             }
 
-            return result.ToList().AsReadOnly();
+            return result.AsReadOnly();
         }
 
         /// <inheritdoc />
