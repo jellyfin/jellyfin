@@ -15,9 +15,9 @@ namespace Emby.Server.Implementations.Net
         /// Creates an UDP Socket.
         /// </summary>
         /// <param name="localPort">UDP port to bind.</param>
-        /// <param name="ip6">Create an IP6 compatible socket.</param>
+        /// <param name="addr">Address to use</param>
         /// <returns>Socket interface object.</returns>
-        public ISocket CreateUdpBroadcastSocket(int localPort, bool ip6 = false)
+        public ISocket CreateUdpBroadcastSocket(int localPort, IPAddress addr)
         {
             if (localPort < 0)
             {
@@ -25,12 +25,22 @@ namespace Emby.Server.Implementations.Net
             }
 
             Socket retVal;
-            if (ip6)
+            if (addr.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 // IPv6 is enabled so create a dual IP4/IP6 socket
                 retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
                 retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
                 retVal.DualMode = true;
+
+                if (addr.Equals(IPAddress.IPv6Any))
+                {
+                    // Simulate a broadcast on IP6.
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastLoopback, true);
+                    retVal.SetSocketOption(
+                        SocketOptionLevel.IPv6,
+                        SocketOptionName.AddMembership,
+                        new IPv6MulticastOption(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddressV6)));
+                }
             }
             else
             {
@@ -50,7 +60,7 @@ namespace Emby.Server.Implementations.Net
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
-                return new UdpSocket(retVal, localPort, IPAddress.Any);
+                return new UdpSocket(retVal, localPort, addr);
             }
             catch
             {

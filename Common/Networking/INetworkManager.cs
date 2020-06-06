@@ -112,10 +112,17 @@ namespace Common.Networking
         public NetCollection GetInternalInterfaceAddresses();
 
         /// <summary>
-        /// Returns true if the IP address is in the excluded list.
+        /// Checks to see if an IP address is still a valid interface address.
         /// </summary>
-        /// <param name="ip">IP to check.</param>
-        /// <returns>True if excluded.</returns>
+        /// <param name="address">IP address to check.</param>
+        /// <returns>True if it is.</returns>
+        public bool IsValidInterfaceAddress(IPAddress address);
+
+            /// <summary>
+            /// Returns true if the IP address is in the excluded list.
+            /// </summary>
+            /// <param name="ip">IP to check.</param>
+            /// <returns>True if excluded.</returns>
         public bool IsExcluded(IPAddress ip);
 
         /// <summary>

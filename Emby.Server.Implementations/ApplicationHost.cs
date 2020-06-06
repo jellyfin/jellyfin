@@ -526,6 +526,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddMemoryCache();
 
             serviceCollection.AddSingleton(ConfigurationManager);
+
             serviceCollection.AddSingleton<IApplicationHost>(this);
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);

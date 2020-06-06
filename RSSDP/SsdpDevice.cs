@@ -292,7 +292,7 @@ namespace Rssdp
 
             if (wasAdded)
                 OnDeviceAdded(device);
-        }
+        }       
 
         /// <summary>
         /// Removes a child device from the <see cref="Devices"/> collection.
@@ -320,6 +320,10 @@ namespace Rssdp
 
             if (wasRemoved)
                 OnDeviceRemoved(device);
+        }
+        public override string ToString()
+        {
+            return $"{DeviceType} - {Uuid}";
         }
 
         /// <summary>

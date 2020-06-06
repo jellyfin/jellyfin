@@ -126,6 +126,9 @@ namespace Emby.Dlna.Main
                 loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
                 httpClient,
                 config);
+
+            _networkManager.NetworkChanged += delegate { ReloadComponents(); };
+
             Current = this;
         }
 
@@ -146,15 +149,17 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private async void ReloadComponents()
+        private void ReloadComponents()
         {
+            _logger.LogDebug("Reloading DLNA components.");
+
             var options = _config.GetDlnaConfiguration();
 
             StartSsdpHandler();
 
             if (options.EnableServer)
             {
-                await StartDevicePublisher(options).ConfigureAwait(false);
+                StartDevicePublisher(options);
             }
             else
             {
@@ -224,7 +229,7 @@ namespace Emby.Dlna.Main
             }
         }
 
-        public async Task StartDevicePublisher(Configuration.DlnaOptions options)
+        public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
             if (!options.BlastAliveMessages)
             {
@@ -233,18 +238,32 @@ namespace Emby.Dlna.Main
 
             if (_Publisher != null)
             {
+                // See if there are any more endpoints.
+                try
+                {
+                    RegisterServerEndpoints();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error registering endpoint");
+                }
+
                 return;
             }
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                _Publisher = new SsdpDevicePublisher(
+                    _communicationsServer,
+                    OperatingSystem.Name,
+                    Environment.OSVersion.VersionString,
+                    _logger,
+                    _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
-                    LogFunction = LogMessage,
                     SupportPnpRootDevice = false
                 };
 
-                await RegisterServerEndpoints().ConfigureAwait(false);
+                RegisterServerEndpoints();
 
                 _Publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
             }
@@ -254,7 +273,10 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private async Task RegisterServerEndpoints()
+        /// <summary>
+        /// Registers SSDP endpoints on the internal interfaces.
+        /// </summary>
+        private void RegisterServerEndpoints()
         {
             var udn = CreateUuid(_appHost.SystemId);
 
@@ -281,6 +303,7 @@ namespace Emby.Dlna.Main
                 };
 
                 SetProperies(device, fullService);
+
                 _Publisher.AddDevice(device);
 
                 var embeddedDevices = new[]
@@ -302,6 +325,7 @@ namespace Emby.Dlna.Main
                     };
 
                     SetProperies(embeddedDevice, subDevice);
+
                     device.AddDevice(embeddedDevice);
                 }
             }

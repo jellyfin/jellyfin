@@ -695,26 +695,31 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(discoveryDurationMs).Token, cancellationToken).Token;
             var list = new List<TunerHostInfo>();
 
+            // TODO: Enable IPv6.
+
             // Create udp broadcast discovery message
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
-            using (var udpClient = _socketFactory.CreateUdpBroadcastSocket(0, _networkManager.IsIP6Enabled))
+
+            using (var udpClient = _socketFactory.CreateUdpBroadcastSocket(0, IPAddress.Any))
             {
                 // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    // TODO : Implement IPv6
-
                     await udpClient.SendToAsync(discBytes,
                         0,
                         discBytes.Length,
-                        new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001),
-                        cancellationToken);
+                        new IPEndPoint(IPAddress.Broadcast, 65001),
+                        cancellationToken).ConfigureAwait(false);
                     var receiveBuffer = new byte[8192];
 
                     while (!cancellationToken.IsCancellationRequested)
                     {
                         var response = await udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
                         var deviceIp = response.RemoteEndPoint.Address.ToString();
+                        if (_networkManager.IsExcluded(response.RemoteEndPoint.Address))
+                        {
+                            continue;
+                        }
 
                         // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
                         if (response.ReceivedBytes > 13 && response.Buffer[1] == 3)

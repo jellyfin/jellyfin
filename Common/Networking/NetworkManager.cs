@@ -27,6 +27,11 @@ namespace Common.Networking
         private readonly object _intLock = new object();
 
         /// <summary>
+        /// Used to stop "event-racing conditions".
+        /// </summary>
+        private bool _eventfire = false;
+
+        /// <summary>
         /// True if IP6 addresses be ignored..
         /// </summary>
         private bool _ignoreIP6 = true;
@@ -401,6 +406,19 @@ namespace Common.Networking
         }
 
         /// <summary>
+        /// Checks to see if an IP address is still a valid interface address.
+        /// </summary>
+        /// <param name="address">IP address to check.</param>
+        /// <returns>True if it is.</returns>
+        public bool IsValidInterfaceAddress(IPAddress address)
+        {
+            lock (_intLock)
+            {
+                return _interfaceAddresses.Exists(address);
+            }
+        }
+
+        /// <summary>
         /// Returns all the interfaces filtered by filter.
         /// </summary>
         /// <param name="filter">The list to filter the interfaces by.</param>
@@ -542,10 +560,27 @@ namespace Common.Networking
         /// <summary>
         /// Triggers our event, and re-loads interface information.
         /// </summary>
-        private void OnNetworkChanged()
+        private async void OnNetworkChanged()
         {
-            InitialiseInterfaces();
-            NetworkChanged?.Invoke(this, EventArgs.Empty);
+            if (!_eventfire)
+            {
+                try
+                {
+                    // As network events tend to fire one after the other only fire once every second.
+                    _eventfire = true;
+                    await Task.Delay(2000).ConfigureAwait(false);
+                    InitialiseInterfaces();
+                    // Recalculate LAN caches.
+                    InitialiseLAN();
+                    // Don't know if we need to do this - but it won't hurt.
+                    InitialiseBind();
+                    NetworkChanged?.Invoke(this, EventArgs.Empty);
+                }
+                finally
+                {
+                    _eventfire = false;
+                }
+            }
         }
 
         /// <summary>

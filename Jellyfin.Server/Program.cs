@@ -311,7 +311,7 @@ namespace Jellyfin.Server
                                 }
                                 catch (InvalidOperationException)
                                 {
-                                    _logger.LogError("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                    _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
                                 }
                             }
                         }
@@ -341,7 +341,7 @@ namespace Jellyfin.Server
                             }
                             catch (InvalidOperationException)
                             {
-                                _logger.LogError("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
                             }
                         }
                     }

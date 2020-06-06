@@ -9,11 +9,20 @@ namespace MediaBrowser.Model.Net
     /// </summary>
     public interface ISocketFactory
     {
-        ISocket CreateUdpBroadcastSocket(int localPort, bool ip6 = false);
+        /// <summary>
+        /// Creates an UDP Socket.
+        /// </summary>
+        /// <param name="localPort">UDP port to bind.</param>
+        /// <param name="addr">Address to use</param>
+        /// <returns>Socket interface object.</returns>
+        ISocket CreateUdpBroadcastSocket(int localPort, IPAddress addr);
 
         /// <summary>
-        /// Creates a new unicast socket using the specified local port number.
+        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
         /// </summary>
+        /// <param name="localIpAddress">IP Address to bind.</param>
+        /// <param name="localPort">UDP port to bind.</param>
+        /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
         ISocket CreateSsdpUdpSocket(IPAddress localIp, int localPort);
 
         /// <summary>
@@ -22,7 +31,7 @@ namespace MediaBrowser.Model.Net
         /// <param name="ipAddress">The multicast IP address to bind to.</param>
         /// <param name="multicastTimeToLive">The multicast time to live value. Actually a maximum number of network hops for UDP packets.</param>
         /// <param name="localPort">The local port to bind to.</param>
-        /// <returns>A <see cref="ISocket"/> implementation.</returns>
+        /// <returns>Socket interface object.</returns>
         ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort);
     }
 }
