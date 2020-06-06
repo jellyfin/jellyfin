@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ConcurrentDictionary<string, UserItemData> _userData =
             new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ILogger _logger;
+        private readonly ILogger<UserDataManager> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IUserManager _userManager;
         private readonly IUserDataRepository _repository;

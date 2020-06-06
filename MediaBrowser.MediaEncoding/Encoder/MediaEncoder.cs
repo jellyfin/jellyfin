@@ -34,7 +34,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         internal const int DefaultImageExtractionTimeout = 5000;
 
-        private readonly ILogger _logger;
+        private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;

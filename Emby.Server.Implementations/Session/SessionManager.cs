@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<SessionManager> _logger;
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;

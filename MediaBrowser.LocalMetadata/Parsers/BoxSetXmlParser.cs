@@ -85,7 +85,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             item.Item.LinkedChildren = list.ToArray();
         }
 
-        public BoxSetXmlParser(ILogger logger, IProviderManager providerManager)
+        public BoxSetXmlParser(ILogger<BoxSetXmlParser> logger, IProviderManager providerManager)
             : base(logger, providerManager)
         {
         }

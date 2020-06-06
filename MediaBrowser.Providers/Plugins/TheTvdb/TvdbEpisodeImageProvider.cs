@@ -17,7 +17,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbEpisodeImageProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
         public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger<TvdbEpisodeImageProvider> logger, TvdbClientManager tvdbClientManager)

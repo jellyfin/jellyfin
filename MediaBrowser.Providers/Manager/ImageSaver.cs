@@ -15,6 +15,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Providers.Tmdb.Models.General;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Manager

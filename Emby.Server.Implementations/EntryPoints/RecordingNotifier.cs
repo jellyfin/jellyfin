@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ILiveTvManager _liveTvManager;
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<RecordingNotifier> _logger;
 
         public RecordingNotifier(
             ISessionManager sessionManager,

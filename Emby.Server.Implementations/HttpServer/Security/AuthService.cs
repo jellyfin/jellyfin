@@ -45,7 +45,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
         {
-            var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
+            var req = new WebSocketSharpRequest(request, null, request.Path);
             var user = ValidateUser(req, authAttributes);
             return user;
         }

@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Services
 
     public class ServiceController
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ServiceController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceController"/> class.

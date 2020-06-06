@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbEpisodeProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
         public TvdbEpisodeProvider(IHttpClient httpClient, ILogger<TvdbEpisodeProvider> logger, TvdbClientManager tvdbClientManager)

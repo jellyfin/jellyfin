@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.Tmdb.People
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TmdbPersonProvider> _logger;
 
         public TmdbPersonProvider(
             IFileSystem fileSystem,

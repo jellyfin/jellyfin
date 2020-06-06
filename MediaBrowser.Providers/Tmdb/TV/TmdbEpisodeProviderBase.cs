@@ -24,14 +24,14 @@ namespace MediaBrowser.Providers.Tmdb.TV
         private readonly ILocalizationManager _localization;
         private readonly ILogger _logger;
 
-        protected TmdbEpisodeProviderBase(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
+        protected TmdbEpisodeProviderBase(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILogger logger)
         {
             _httpClient = httpClient;
             _configurationManager = configurationManager;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _localization = localization;
-            _logger = loggerFactory.CreateLogger(GetType().Name);
+            _logger = logger;
         }
 
         protected ILogger Logger => _logger;

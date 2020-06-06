@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Music
 
         private readonly IHttpClient _httpClient;
         private readonly IApplicationHost _appHost;
-        private readonly ILogger _logger;
+        private readonly ILogger<MusicBrainzAlbumProvider> _logger;
 
         private readonly string _musicBrainzBaseUrl;
 

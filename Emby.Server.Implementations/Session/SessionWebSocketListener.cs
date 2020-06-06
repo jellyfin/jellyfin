@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The _logger
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<SessionWebSocketListener> _logger;
         private readonly ILoggerFactory _loggerFactory;
 
         private readonly IHttpServer _httpServer;

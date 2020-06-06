@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbPersonImageProvider> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly TvdbClientManager _tvdbClientManager;
 

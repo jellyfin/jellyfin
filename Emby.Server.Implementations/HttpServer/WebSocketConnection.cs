@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<WebSocketConnection> _logger;
 
         /// <summary>
         /// The json serializer options.

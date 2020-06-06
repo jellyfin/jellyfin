@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Collections
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _iLibraryMonitor;
-        private readonly ILogger _logger;
+        private readonly ILogger<CollectionManager> _logger;
         private readonly IProviderManager _providerManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.Collections
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
-            _logger = loggerFactory.CreateLogger(nameof(CollectionManager));
+            _logger = loggerFactory.CreateLogger<CollectionManager>();
             _providerManager = providerManager;
             _localizationManager = localizationManager;
             _appPaths = appPaths;
@@ -370,7 +370,7 @@ namespace Emby.Server.Implementations.Collections
     {
         private readonly CollectionManager _collectionManager;
         private readonly IServerConfigurationManager _config;
-        private readonly ILogger _logger;
+        private readonly ILogger<CollectionManagerEntryPoint> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionManagerEntryPoint"/> class.

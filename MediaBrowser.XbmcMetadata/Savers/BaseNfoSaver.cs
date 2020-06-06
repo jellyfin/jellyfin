@@ -105,7 +105,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
-            ILogger logger)
+            ILogger<BaseNfoSaver> logger)
         {
             Logger = logger;
             UserDataManager = userDataManager;
@@ -125,7 +125,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         protected IUserDataManager UserDataManager { get; }
 
-        protected ILogger Logger { get; }
+        protected ILogger<BaseNfoSaver> Logger { get; }
 
         protected ItemUpdateType MinimumUpdateType
         {
@@ -974,7 +974,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             => string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
 
-        private void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer, ILogger logger)
+        private void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer, ILogger<BaseNfoSaver> logger)
         {
             var settings = new XmlReaderSettings()
             {

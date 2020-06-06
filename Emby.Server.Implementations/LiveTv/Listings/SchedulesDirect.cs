@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 {
     public class SchedulesDirect : IListingsProvider
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SchedulesDirect> _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);

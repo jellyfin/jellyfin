@@ -20,12 +20,12 @@ namespace MediaBrowser.Providers.Manager
         where TIdType : ItemLookupInfo, new()
     {
         protected readonly IServerConfigurationManager ServerConfigurationManager;
-        protected readonly ILogger Logger;
+        protected readonly ILogger<MetadataService<TItemType, TIdType>> Logger;
         protected readonly IProviderManager ProviderManager;
         protected readonly IFileSystem FileSystem;
         protected readonly ILibraryManager LibraryManager;
 
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;

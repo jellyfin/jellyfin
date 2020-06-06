@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     public class SeriesResolver : FolderResolver<Series>
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<SeriesResolver> _logger;
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             IEnumerable<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService,
             IFileSystem fileSystem,
-            ILogger logger,
+            ILogger<SeriesResolver> logger,
             ILibraryManager libraryManager,
             bool isTvContentType)
         {

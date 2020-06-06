@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Localization
 
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly ILogger _logger;
+        private readonly ILogger<LocalizationManager> _logger;
 
         private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
             new Dictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);

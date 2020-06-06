@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
     /// </summary>
     public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTask
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<DeleteTranscodeFileTask> _logger;
         private readonly IConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;

@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Subtitles
 {
     public class SubtitleManager : ISubtitleManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SubtitleManager> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _monitor;
         private readonly IMediaSourceManager _mediaSourceManager;

@@ -12,12 +12,12 @@ namespace Emby.Dlna.Service
         protected IHttpClient HttpClient;
         protected ILogger Logger;
 
-        protected BaseService(ILogger<BaseService> logger, IHttpClient httpClient)
+        protected BaseService(ILogger logger, IHttpClient httpClient)
         {
             Logger = logger;
             HttpClient = httpClient;
 
-            EventManager = new EventManager(Logger, HttpClient);
+            EventManager = new EventManager(logger, HttpClient);
         }
 
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)

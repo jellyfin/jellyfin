@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<ChannelManager> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
