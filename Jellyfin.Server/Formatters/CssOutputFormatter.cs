@@ -16,7 +16,6 @@ namespace Jellyfin.Server.Formatters
         /// </summary>
         public CssOutputFormatter()
         {
-            SupportedMediaTypes.Clear();
             SupportedMediaTypes.Add("text/css");
 
             SupportedEncodings.Add(Encoding.UTF8);
