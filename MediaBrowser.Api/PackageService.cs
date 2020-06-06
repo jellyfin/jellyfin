@@ -128,6 +128,7 @@ namespace MediaBrowser.Api
         public void Post(SetRepositories request)
         {
             _serverConfigurationManager.Configuration.PluginRepositories = request;
+            _serverConfigurationManager.SaveConfiguration();
         }
 
         /// <summary>
