@@ -57,7 +57,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 {
                     EnableImages = false
                 }
-
             }).Cast<Series>()
                 .Where(i => TvdbSeriesProvider.IsValidSeries(i.ProviderIds))
                 .ToList();

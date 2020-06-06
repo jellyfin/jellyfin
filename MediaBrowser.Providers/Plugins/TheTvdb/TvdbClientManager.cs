@@ -120,6 +120,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             var cacheKey = GenerateKey("series", zap2ItId, language);
             return TryGetValue(cacheKey, language, () => TvDbClient.Search.SearchSeriesByZap2ItIdAsync(zap2ItId, cancellationToken));
         }
+
         public Task<TvDbResponse<Actor[]>> GetActorsAsync(
             int tvdbId,
             string language,
@@ -190,7 +191,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                         episodeQuery.AbsoluteNumber = searchInfo.IndexNumber.Value;
                         break;
                     default:
-                        //aired order
+                        // aired order
                         episodeQuery.AiredEpisode = searchInfo.IndexNumber.Value;
                         episodeQuery.AiredSeason = searchInfo.ParentIndexNumber.Value;
                         break;
