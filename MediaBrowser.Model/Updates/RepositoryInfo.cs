@@ -20,12 +20,6 @@ namespace MediaBrowser.Model.Updates
         public string Url { get; set; }
 
         /// <summary>
-        /// Gets or sets the ID.
-        /// </summary>
-        /// <value>The ID.</value>
-        public Guid Id { get; set; }
-
-        /// <summary>
         /// Gets or sets the enabled status of the repository.
         /// </summary>
         /// <value>The enabled status.</value>

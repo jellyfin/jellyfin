@@ -15,7 +15,6 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             Name = "Jellyfin Stable",
             Url = "https://repo.jellyfin.org/releases/plugin/manifest-stable.json",
-            Id = Guid.Parse("3721cd80-b10f-4b26-aecd-74c0f0defe97"),
             Enabled = true
         };
 
