@@ -240,7 +240,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Enforce MinResumeDuration
                     var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds && !(item is Book))
                     {
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;
