@@ -101,5 +101,18 @@
     "TaskRefreshLibrary": "Skann mediebibliotek",
     "TaskRefreshChapterImagesDescription": "Lager forhåndsvisningsbilder for videoer som har kapitler.",
     "TaskRefreshChapterImages": "Trekk ut Kapittelbilder",
-    "TaskCleanCacheDescription": "Sletter mellomlagrede filer som ikke lengre trengs av systemet."
+    "TaskCleanCacheDescription": "Sletter mellomlagrede filer som ikke lengre trengs av systemet.",
+    "TaskDownloadMissingSubtitlesDescription": "Søker etter manglende underteksting på nett basert på metadatakonfigurasjon.",
+    "TaskDownloadMissingSubtitles": "Last ned manglende underteksting",
+    "TaskRefreshChannelsDescription": "Frisker opp internettkanalinformasjon.",
+    "TaskRefreshChannels": "Oppfrisk kanaler",
+    "TaskCleanTranscodeDescription": "Sletter omkodede filer som er mer enn én dag gamle.",
+    "TaskCleanTranscode": "Tøm transkodingmappe",
+    "TaskUpdatePluginsDescription": "Laster ned og installerer oppdateringer for utvidelser som er stilt inn til å oppdatere automatisk.",
+    "TaskUpdatePlugins": "Oppdater utvidelser",
+    "TaskRefreshPeopleDescription": "Oppdaterer metadata for skuespillere og regissører i mediebiblioteket ditt.",
+    "TaskRefreshPeople": "Oppfrisk personer",
+    "TaskCleanLogsDescription": "Sletter loggfiler som er eldre enn {0} dager gamle.",
+    "TaskCleanLogs": "Tøm loggmappe",
+    "TaskRefreshLibraryDescription": "Skanner mediebibliotekene dine for nye filer og oppdaterer metadata."
 }
