@@ -543,7 +543,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     var tmdbCollection = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdbCollection))
                     {
-                        item.SetProviderId(MetadataProviders.TmdbCollection, tmdbCollection);
+                        item.SetProviderId(MetadataProvider.TmdbCollection, tmdbCollection);
                     }
                     break;
 
