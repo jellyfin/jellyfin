@@ -135,52 +135,5 @@ namespace Jellyfin.Server.Implementations.Users
                 ? null
                 : Hex.Encode(PasswordHash.Parse(user.EasyPassword).Hash);
         }
-
-        /// <summary>
-        /// Hashes the provided string.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="str">The string to hash.</param>
-        /// <returns>The hashed string.</returns>
-        public string GetHashedString(User user, string str)
-        {
-            if (string.IsNullOrEmpty(user.Password))
-            {
-                return _cryptographyProvider.CreatePasswordHash(str).ToString();
-            }
-
-            // TODO: make use of iterations parameter?
-            PasswordHash passwordHash = PasswordHash.Parse(user.Password);
-            var salt = passwordHash.Salt.ToArray();
-            return new PasswordHash(
-                passwordHash.Id,
-                _cryptographyProvider.ComputeHash(
-                    passwordHash.Id,
-                    Encoding.UTF8.GetBytes(str),
-                    salt),
-                salt,
-                passwordHash.Parameters.ToDictionary(x => x.Key, y => y.Value)).ToString();
-        }
-
-        /// <summary>
-        /// Hashes the provided string.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="str">The string to hash.</param>
-        /// <returns>The hashed string.</returns>
-        public ReadOnlySpan<byte> GetHashed(User user, string str)
-        {
-            if (string.IsNullOrEmpty(user.Password))
-            {
-                return _cryptographyProvider.CreatePasswordHash(str).Hash;
-            }
-
-            // TODO: make use of iterations parameter?
-            PasswordHash passwordHash = PasswordHash.Parse(user.Password);
-            return _cryptographyProvider.ComputeHash(
-                    passwordHash.Id,
-                    Encoding.UTF8.GetBytes(str),
-                    passwordHash.Salt.ToArray());
-        }
     }
 }
