@@ -92,6 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             return item is Movie || item is Trailer || item is Episode;
         }
+
         // After other internet providers, because they're better
         // But before fallback providers like screengrab
         public int Order => 90;

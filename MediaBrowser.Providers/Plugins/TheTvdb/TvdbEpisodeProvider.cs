@@ -14,9 +14,8 @@ using TvDbSharper.Dto;
 
 namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
-
     /// <summary>
-    /// Class RemoteEpisodeProvider
+    /// Class RemoteEpisodeProvider.
     /// </summary>
     public class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
@@ -139,7 +138,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Name = episode.EpisodeName,
                     Overview = episode.Overview,
                     CommunityRating = (float?)episode.SiteRating,
-
                 }
             };
             result.ResetPeople();

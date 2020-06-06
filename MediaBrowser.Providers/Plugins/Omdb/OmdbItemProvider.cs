@@ -103,6 +103,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 {
                     urlQuery += "&t=" + WebUtility.UrlEncode(name);
                 }
+
                 urlQuery += "&type=" + type;
             }
             else
@@ -117,6 +118,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 {
                     urlQuery += string.Format(CultureInfo.InvariantCulture, "&Episode={0}", searchInfo.IndexNumber);
                 }
+
                 if (searchInfo.ParentIndexNumber.HasValue)
                 {
                     urlQuery += string.Format(CultureInfo.InvariantCulture, "&Season={0}", searchInfo.ParentIndexNumber);

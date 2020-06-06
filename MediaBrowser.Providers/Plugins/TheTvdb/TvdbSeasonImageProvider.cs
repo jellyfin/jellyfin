@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             if (series == null || !season.IndexNumber.HasValue || !TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
-                return new RemoteImageInfo[] { };
+                return Array.Empty<RemoteImageInfo>();
             }
 
             var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb));
@@ -113,8 +113,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 imageInfo.Type = TvdbUtils.GetImageTypeFromKeyType(image.KeyType);
                 list.Add(imageInfo);
             }
-            var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
 
+            var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
             return list.OrderByDescending(i =>
                 {
                     if (string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase))
