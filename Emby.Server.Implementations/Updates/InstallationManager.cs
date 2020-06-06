@@ -156,11 +156,6 @@ namespace Emby.Server.Implementations.Updates
             var result = new List<PackageInfo>();
             foreach (RepositoryInfo repository in _config.Configuration.PluginRepositories)
             {
-                if (!repository.Enabled)
-                {
-                    continue;
-                }
-
                 result.AddRange(await GetPackages(repository.Url, cancellationToken).ConfigureAwait(true));
             }
 
