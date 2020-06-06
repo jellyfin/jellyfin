@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -280,8 +281,15 @@ namespace MediaBrowser.Api.Images
         public List<ImageInfo> GetItemImageInfos(BaseItem item)
         {
             var list = new List<ImageInfo>();
-
             var itemImages = item.ImageInfos;
+
+            if (itemImages.Length == 0)
+            {
+                // short-circuit
+                return list;
+            }
+
+            _libraryManager.UpdateImages(item); // this makes sure dimensions and hashes are correct
 
             foreach (var image in itemImages)
             {
@@ -323,6 +331,7 @@ namespace MediaBrowser.Api.Images
         {
             int? width = null;
             int? height = null;
+            string blurhash = null;
             long length = 0;
 
             try
@@ -332,10 +341,9 @@ namespace MediaBrowser.Api.Images
                     var fileInfo = _fileSystem.GetFileInfo(info.Path);
                     length = fileInfo.Length;
 
-                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, info);
-                    _libraryManager.UpdateImages(item);
-                    width = size.Width;
-                    height = size.Height;
+                    blurhash = info.BlurHash;
+                    width = info.Width;
+                    height = info.Height;
 
                     if (width <= 0 || height <= 0)
                     {
@@ -358,6 +366,7 @@ namespace MediaBrowser.Api.Images
                     ImageType = info.Type,
                     ImageTag = _imageProcessor.GetImageCacheTag(item, info),
                     Size = length,
+                    BlurHash = blurhash,
                     Width = width,
                     Height = height
                 };
@@ -555,8 +564,7 @@ namespace MediaBrowser.Api.Images
             var imageInfo = GetImageInfo(request, item);
             if (imageInfo == null)
             {
-                var displayText = item == null ? itemId.ToString() : item.Name;
-                throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", displayText, request.Type));
+                throw new ResourceNotFoundException(string.Format("{0} does not have an image of type {1}", item.Name, request.Type));
             }
 
             bool cropwhitespace;

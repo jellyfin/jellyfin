@@ -42,27 +42,27 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        private void OnLiveTvManagerSeriesTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerSeriesTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
-            SendMessage("SeriesTimerCreated", e.Argument);
+            await SendMessage("SeriesTimerCreated", e.Argument).ConfigureAwait(false);
         }
 
-        private void OnLiveTvManagerTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
-            SendMessage("TimerCreated", e.Argument);
+            await SendMessage("TimerCreated", e.Argument).ConfigureAwait(false);
         }
 
-        private void OnLiveTvManagerSeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerSeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
-            SendMessage("SeriesTimerCancelled", e.Argument);
+            await SendMessage("SeriesTimerCancelled", e.Argument).ConfigureAwait(false);
         }
 
-        private void OnLiveTvManagerTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private async void OnLiveTvManagerTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
-            SendMessage("TimerCancelled", e.Argument);
+            await SendMessage("TimerCancelled", e.Argument).ConfigureAwait(false);
         }
 
-        private async void SendMessage(string name, TimerEventInfo info)
+        private async Task SendMessage(string name, TimerEventInfo info)
         {
             var users = _userManager.Users.Where(i => i.Policy.EnableLiveTvAccess).Select(i => i.Id).ToList();
 

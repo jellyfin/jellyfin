@@ -169,18 +169,25 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
+        /// <inheritdoc />
         public string Name => _localization.GetLocalizedString("TaskRefreshChapterImages");
 
+        /// <inheritdoc />
         public string Description => _localization.GetLocalizedString("TaskRefreshChapterImagesDescription");
 
+        /// <inheritdoc />
         public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
 
+        /// <inheritdoc />
         public string Key => "RefreshChapterImages";
 
+        /// <inheritdoc />
         public bool IsHidden => false;
 
+        /// <inheritdoc />
         public bool IsEnabled => true;
 
+        /// <inheritdoc />
         public bool IsLogged => true;
     }
 }
