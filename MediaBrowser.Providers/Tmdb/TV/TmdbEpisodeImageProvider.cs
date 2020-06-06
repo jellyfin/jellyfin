@@ -24,8 +24,8 @@ namespace MediaBrowser.Providers.Tmdb.TV
             IRemoteImageProvider,
             IHasOrder
     {
-        public TmdbEpisodeImageProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILogger logger)
-            : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, logger)
+        public TmdbEpisodeImageProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
+            : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
         { }
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)

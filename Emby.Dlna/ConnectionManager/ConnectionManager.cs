@@ -18,7 +18,7 @@ namespace Emby.Dlna.ConnectionManager
         public ConnectionManager(
             IDlnaManager dlna,
             IServerConfigurationManager config,
-            ILogger logger,
+            ILogger<ConnectionManager> logger,
             IHttpClient httpClient)
             : base(logger, httpClient)
         {

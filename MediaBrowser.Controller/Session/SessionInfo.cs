@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;

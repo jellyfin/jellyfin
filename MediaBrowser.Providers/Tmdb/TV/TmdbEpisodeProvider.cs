@@ -25,8 +25,8 @@ namespace MediaBrowser.Providers.Tmdb.TV
             IRemoteMetadataProvider<Episode, EpisodeInfo>,
             IHasOrder
     {
-        public TmdbEpisodeProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILogger logger)
-            : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, logger)
+        public TmdbEpisodeProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
+            : base(httpClient, configurationManager, jsonSerializer, fileSystem, localization, loggerFactory)
         { }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)

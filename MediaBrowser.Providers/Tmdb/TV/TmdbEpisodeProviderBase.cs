@@ -22,16 +22,16 @@ namespace MediaBrowser.Providers.Tmdb.TV
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
-        private readonly ILogger _logger;
+        private readonly ILogger<TmdbEpisodeProviderBase> _logger;
 
-        protected TmdbEpisodeProviderBase(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILogger logger)
+        protected TmdbEpisodeProviderBase(IHttpClient httpClient, IServerConfigurationManager configurationManager, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ILocalizationManager localization, ILoggerFactory loggerFactory)
         {
             _httpClient = httpClient;
             _configurationManager = configurationManager;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _localization = localization;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<TmdbEpisodeProviderBase>();
         }
 
         protected ILogger Logger => _logger;
