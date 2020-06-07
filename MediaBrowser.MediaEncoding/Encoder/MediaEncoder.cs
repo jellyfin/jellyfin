@@ -346,8 +346,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             CancellationToken cancellationToken)
         {
             var args = extractChapters
-                ? "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_chapters -show_format"
-                : "{0} -i {1} -threads 0 -v warning -print_format json -show_streams -show_format";
+                ? "{0} -i \"{1}\" -threads 0 -v warning -print_format json -show_streams -show_chapters -show_format"
+                : "{0} -i \"{1}\" -threads 0 -v warning -print_format json -show_streams -show_format";
             args = string.Format(args, probeSizeArgument, inputPath).Trim();
 
             var process = new Process
