@@ -49,5 +49,4 @@
     <None Remove="Plugins\MusicBrainz\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\MusicBrainz\Configuration\config.html" />
   </ItemGroup>
-  
 </Project>
