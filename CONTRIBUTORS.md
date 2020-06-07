@@ -130,6 +130,7 @@
  - [XVicarious](https://github.com/XVicarious)
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
+ - [Pusta] (https://github.com/pusta)
 
 # Emby Contributors
 
