@@ -57,11 +57,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="userId">Optional. Supply a user id to search within a user's library or omit to search all.</param>
         /// <param name="searchTerm">The search term to filter on.</param>
-        /// <param name="includePeople">Optional filter whether to include people.</param>
-        /// <param name="includeMedia">Optional filter whether to include media.</param>
-        /// <param name="includeGenres">Optional filter whether to include genres.</param>
-        /// <param name="includeStudios">Optional filter whether to include studios.</param>
-        /// <param name="includeArtists">Optional filter whether to include artists.</param>
         /// <param name="includeItemTypes">If specified, only results with the specified item types are returned. This allows multiple, comma delimeted.</param>
         /// <param name="excludeItemTypes">If specified, results with these item types are filtered out. This allows multiple, comma delimeted.</param>
         /// <param name="mediaTypes">If specified, only results with the specified media types are returned. This allows multiple, comma delimeted.</param>
@@ -71,6 +66,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isNews">Optional filter for news.</param>
         /// <param name="isKids">Optional filter for kids.</param>
         /// <param name="isSports">Optional filter for sports.</param>
+        /// <param name="includePeople">Optional filter whether to include people.</param>
+        /// <param name="includeMedia">Optional filter whether to include media.</param>
+        /// <param name="includeGenres">Optional filter whether to include genres.</param>
+        /// <param name="includeStudios">Optional filter whether to include studios.</param>
+        /// <param name="includeArtists">Optional filter whether to include artists.</param>
         /// <returns>An <see cref="SearchHintResult"/> with the results of the search.</returns>
         [HttpGet]
         [Description("Gets search hints based on a search term")]
@@ -80,11 +80,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] Guid userId,
             [FromQuery, Required] string searchTerm,
-            [FromQuery] bool includePeople,
-            [FromQuery] bool includeMedia,
-            [FromQuery] bool includeGenres,
-            [FromQuery] bool includeStudios,
-            [FromQuery] bool includeArtists,
             [FromQuery] string includeItemTypes,
             [FromQuery] string excludeItemTypes,
             [FromQuery] string mediaTypes,
@@ -93,7 +88,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSeries,
             [FromQuery] bool? isNews,
             [FromQuery] bool? isKids,
-            [FromQuery] bool? isSports)
+            [FromQuery] bool? isSports,
+            [FromQuery] bool includePeople = true,
+            [FromQuery] bool includeMedia = true,
+            [FromQuery] bool includeGenres = true,
+            [FromQuery] bool includeStudios = true,
+            [FromQuery] bool includeArtists = true)
         {
             var result = _searchEngine.GetSearchHints(new SearchQuery
             {
