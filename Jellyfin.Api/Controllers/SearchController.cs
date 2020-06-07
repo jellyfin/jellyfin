@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -105,9 +106,9 @@ namespace Jellyfin.Api.Controllers
                 IncludeStudios = includeStudios,
                 StartIndex = startIndex,
                 UserId = userId,
-                IncludeItemTypes = Split(includeItemTypes, ',', true),
-                ExcludeItemTypes = Split(excludeItemTypes, ',', true),
-                MediaTypes = Split(mediaTypes, ',', true),
+                IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
+                ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
+                MediaTypes = RequestHelpers.Split(mediaTypes, ',', true),
                 ParentId = parentId,
 
                 IsKids = isKids,
