@@ -262,7 +262,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1)
         {
-            GetAuthenticationProvider(user).ChangeEasyPassword(user, newPassword, newPasswordSha1);
+            user.EasyPassword = _cryptoProvider.CreatePasswordHash(newPassword).ToString();
             UpdateUser(user);
 
             OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
