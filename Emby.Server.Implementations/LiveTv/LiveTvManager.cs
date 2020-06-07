@@ -10,10 +10,8 @@ using Emby.Server.Implementations.Library;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -148,27 +146,18 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var timerId = e.Argument;
 
-            TimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>
-            {
-                Argument = new TimerEventInfo
-                {
-                    Id = timerId
-                }
-            });
+            TimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>(new TimerEventInfo(timerId)));
         }
 
         private void OnEmbyTvTimerCreated(object sender, GenericEventArgs<TimerInfo> e)
         {
             var timer = e.Argument;
 
-            TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>
-            {
-                Argument = new TimerEventInfo
+            TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>(
+                new TimerEventInfo(timer.Id)
                 {
-                    ProgramId = _tvDtoService.GetInternalProgramId(timer.ProgramId),
-                    Id = timer.Id
-                }
-            });
+                    ProgramId = _tvDtoService.GetInternalProgramId(timer.ProgramId)
+                }));
         }
 
         public List<NameIdPair> GetTunerHostTypes()
@@ -788,22 +777,12 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (query.OrderBy.Count == 0)
             {
-                if (query.IsAiring ?? false)
+
+                // Unless something else was specified, order by start date to take advantage of a specialized index
+                query.OrderBy = new[]
                 {
-                    // Unless something else was specified, order by start date to take advantage of a specialized index
-                    query.OrderBy = new[]
-                    {
-                        (ItemSortBy.StartDate, SortOrder.Ascending)
-                    };
-                }
-                else
-                {
-                    // Unless something else was specified, order by start date to take advantage of a specialized index
-                    query.OrderBy = new[]
-                    {
-                        (ItemSortBy.StartDate, SortOrder.Ascending)
-                    };
-                }
+                    (ItemSortBy.StartDate, SortOrder.Ascending)
+                };
             }
 
             RemoveFields(options);
@@ -1734,13 +1713,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (!(service is EmbyTV.EmbyTV))
             {
-                TimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>
-                {
-                    Argument = new TimerEventInfo
-                    {
-                        Id = id
-                    }
-                });
+                TimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>(new TimerEventInfo(id)));
             }
         }
 
@@ -1757,13 +1730,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             await service.CancelSeriesTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
 
-            SeriesTimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>
-            {
-                Argument = new TimerEventInfo
-                {
-                    Id = id
-                }
-            });
+            SeriesTimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>(new TimerEventInfo(id)));
         }
 
         public async Task<TimerInfoDto> GetTimer(string id, CancellationToken cancellationToken)
@@ -2082,14 +2049,11 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (!(service is EmbyTV.EmbyTV))
             {
-                TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>
-                {
-                    Argument = new TimerEventInfo
+                TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>(
+                    new TimerEventInfo(newTimerId)
                     {
-                        ProgramId = _tvDtoService.GetInternalProgramId(info.ProgramId),
-                        Id = newTimerId
-                    }
-                });
+                        ProgramId = _tvDtoService.GetInternalProgramId(info.ProgramId)
+                    }));
             }
         }
 
@@ -2114,14 +2078,11 @@ namespace Emby.Server.Implementations.LiveTv
                 await service.CreateSeriesTimerAsync(info, cancellationToken).ConfigureAwait(false);
             }
 
-            SeriesTimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>
-            {
-                Argument = new TimerEventInfo
+            SeriesTimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>(
+                new TimerEventInfo(newTimerId)
                 {
-                    ProgramId = _tvDtoService.GetInternalProgramId(info.ProgramId),
-                    Id = newTimerId
-                }
-            });
+                    ProgramId = _tvDtoService.GetInternalProgramId(info.ProgramId)
+                }));
         }
 
         public async Task UpdateTimer(TimerInfoDto timer, CancellationToken cancellationToken)

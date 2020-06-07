@@ -52,12 +52,6 @@ namespace MediaBrowser.WebDashboard.Api
         public string Name { get; set; }
     }
 
-    [Route("/web/Package", "GET", IsHidden = true)]
-    public class GetDashboardPackage
-    {
-        public string Mode { get; set; }
-    }
-
     [Route("/robots.txt", "GET", IsHidden = true)]
     public class GetRobotsTxt
     {
@@ -225,7 +219,7 @@ namespace MediaBrowser.WebDashboard.Api
                     return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => Task.FromResult(stream));
                 }
 
-                return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => PackageCreator.ModifyHtml(false, stream, null, _appHost.ApplicationVersionString, null));
+                return _resultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => Task.FromResult(stream));
             }
 
             throw new ResourceNotFoundException();
@@ -328,154 +322,19 @@ namespace MediaBrowser.WebDashboard.Api
                 throw new ResourceNotFoundException();
             }
 
-            var path = request.ResourceName;
-
-            var contentType = MimeTypes.GetMimeType(path);
+            var path = request?.ResourceName;
             var basePath = DashboardUIPath;
 
             // Bounce them to the startup wizard if it hasn't been completed yet
-            if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted &&
-                Request.RawUrl.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1 &&
-                PackageCreator.IsCoreHtml(path))
+            if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted
+                && !Request.RawUrl.Contains("wizard", StringComparison.OrdinalIgnoreCase)
+                && Request.RawUrl.Contains("index", StringComparison.OrdinalIgnoreCase))
             {
-                // But don't redirect if an html import is being requested.
-                if (path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
-                {
-                    Request.Response.Redirect("index.html?start=wizard#!/wizardstart.html");
-                    return null;
-                }
-            }
-
-            var localizationCulture = GetLocalizationCulture();
-
-            // Don't cache if not configured to do so
-            // But always cache images to simulate production
-            if (!_serverConfigurationManager.Configuration.EnableDashboardResponseCaching &&
-                !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) &&
-                !contentType.StartsWith("font/", StringComparison.OrdinalIgnoreCase))
-            {
-                var stream = await GetResourceStream(basePath, path, localizationCulture).ConfigureAwait(false);
-                return _resultFactory.GetResult(Request, stream, contentType);
-            }
-
-            TimeSpan? cacheDuration = null;
-
-            // Cache images unconditionally - updates to image files will require new filename
-            // If there's a version number in the query string we can cache this unconditionally
-            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) || contentType.StartsWith("font/", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrEmpty(request.V))
-            {
-                cacheDuration = TimeSpan.FromDays(365);
-            }
-
-            var cacheKey = (_appHost.ApplicationVersionString + (localizationCulture ?? string.Empty) + path).GetMD5();
-
-            // html gets modified on the fly
-            if (contentType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
-            {
-                return await _resultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(basePath, path, localizationCulture)).ConfigureAwait(false);
+                Request.Response.Redirect("index.html?start=wizard#!/wizardstart.html");
+                return null;
             }
 
             return await _resultFactory.GetStaticFileResult(Request, _resourceFileManager.GetResourcePath(basePath, path)).ConfigureAwait(false);
-        }
-
-        private string GetLocalizationCulture()
-        {
-            return _serverConfigurationManager.Configuration.UICulture;
-        }
-
-        /// <summary>
-        /// Gets the resource stream.
-        /// </summary>
-        private Task<Stream> GetResourceStream(string basePath, string virtualPath, string localizationCulture)
-        {
-            return GetPackageCreator(basePath)
-                .GetResource(virtualPath, null, localizationCulture, _appHost.ApplicationVersionString);
-        }
-
-        private PackageCreator GetPackageCreator(string basePath)
-        {
-            return new PackageCreator(basePath, _resourceFileManager);
-        }
-
-        public async Task<object> Get(GetDashboardPackage request)
-        {
-            if (!_appConfig.HostWebClient() || DashboardUIPath == null)
-            {
-                throw new ResourceNotFoundException();
-            }
-
-            var mode = request.Mode;
-
-            var inputPath = string.IsNullOrWhiteSpace(mode) ?
-                DashboardUIPath
-                : "C:\\dev\\emby-web-mobile-master\\dist";
-
-            var targetPath = !string.IsNullOrWhiteSpace(mode) ?
-                inputPath
-                : "C:\\dev\\emby-web-mobile\\src";
-
-            var packageCreator = GetPackageCreator(inputPath);
-
-            if (!string.Equals(inputPath, targetPath, StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    Directory.Delete(targetPath, true);
-                }
-                catch (IOException ex)
-                {
-                    _logger.LogError(ex, "Error deleting {Path}", targetPath);
-                }
-
-                CopyDirectory(inputPath, targetPath);
-            }
-
-            var appVersion = _appHost.ApplicationVersionString;
-
-            await DumpHtml(packageCreator, inputPath, targetPath, mode, appVersion).ConfigureAwait(false);
-
-            return string.Empty;
-        }
-
-        private async Task DumpHtml(PackageCreator packageCreator, string source, string destination, string mode, string appVersion)
-        {
-            foreach (var file in _fileSystem.GetFiles(source))
-            {
-                var filename = file.Name;
-
-                if (!string.Equals(file.Extension, ".html", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                await DumpFile(packageCreator, filename, Path.Combine(destination, filename), mode, appVersion).ConfigureAwait(false);
-            }
-        }
-
-        private async Task DumpFile(PackageCreator packageCreator, string resourceVirtualPath, string destinationFilePath, string mode, string appVersion)
-        {
-            using (var stream = await packageCreator.GetResource(resourceVirtualPath, mode, null, appVersion).ConfigureAwait(false))
-            using (var fs = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
-            {
-                await stream.CopyToAsync(fs).ConfigureAwait(false);
-            }
-        }
-
-        private void CopyDirectory(string source, string destination)
-        {
-            Directory.CreateDirectory(destination);
-
-            // Now Create all of the directories
-            foreach (var dirPath in _fileSystem.GetDirectories(source, true))
-            {
-                Directory.CreateDirectory(dirPath.FullName.Replace(source, destination, StringComparison.Ordinal));
-            }
-
-            // Copy all the files & Replaces any files with the same name
-            foreach (var newPath in _fileSystem.GetFiles(source, true))
-            {
-                File.Copy(newPath.FullName, newPath.FullName.Replace(source, destination, StringComparison.Ordinal), true);
-            }
         }
     }
 }

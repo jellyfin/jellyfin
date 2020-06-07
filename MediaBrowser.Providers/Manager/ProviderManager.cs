@@ -255,11 +255,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{IImageProvider}.</returns>
         public IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(BaseItem item)
         {
-            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo
-            {
-                Name = i.Name,
-                SupportedImages = i.GetSupportedImages(item).ToArray()
-            });
+            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo(i.Name, i.GetSupportedImages(item).ToArray()));
         }
 
         public IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions)

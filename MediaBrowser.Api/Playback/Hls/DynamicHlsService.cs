@@ -699,12 +699,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
-            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 return false;
             }
 
-            if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(state.OutputAudioCodec))
             {
                 return false;
             }
@@ -727,7 +727,7 @@ namespace MediaBrowser.Api.Playback.Hls
         private int? GetOutputVideoCodecLevel(StreamState state)
         {
             string levelString;
-            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase)
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                 && state.VideoStream.Level.HasValue)
             {
                 levelString = state.VideoStream?.Level.ToString();
@@ -864,16 +864,15 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 framerate = Math.Round(state.TargetFramerate.GetValueOrDefault(), 3);
             }
-            else if (state.VideoStream.RealFrameRate.HasValue)
+            else if (state.VideoStream?.RealFrameRate != null)
             {
                 framerate = Math.Round(state.VideoStream.RealFrameRate.GetValueOrDefault(), 3);
             }
 
             if (framerate.HasValue)
             {
-                builder.Append(",FRAME-RATE=\"")
-                    .Append(framerate.Value)
-                    .Append('"');
+                builder.Append(",FRAME-RATE=")
+                    .Append(framerate.Value);
             }
         }
 
@@ -887,11 +886,10 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
             {
-                builder.Append(",RESOLUTION=\"")
+                builder.Append(",RESOLUTION=")
                     .Append(state.OutputWidth.GetValueOrDefault())
                     .Append('x')
-                    .Append(state.OutputHeight.GetValueOrDefault())
-                    .Append('"');
+                    .Append(state.OutputHeight.GetValueOrDefault());
             }
         }
 
@@ -1007,7 +1005,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!state.IsOutputVideo)
             {
-                if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
                     return "-acodec copy";
                 }
@@ -1035,11 +1033,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Join(" ", audioTranscodeParams.ToArray());
             }
 
-            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(audioCodec))
             {
                 var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
 
-                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.EnableBreakOnNonKeyFrames(videoCodec))
+                if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
                     return "-codec:a:0 copy -copypriorss:a:0 0";
                 }
@@ -1090,7 +1088,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // }
 
             // See if we can save come cpu cycles by avoiding encoding
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(codec))
             {
                 if (state.VideoStream != null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {

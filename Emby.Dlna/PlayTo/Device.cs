@@ -34,7 +34,7 @@ namespace Emby.Dlna.PlayTo
         {
             get
             {
-                RefreshVolumeIfNeeded();
+                RefreshVolumeIfNeeded().GetAwaiter().GetResult();
                 return _volume;
             }
             set => _volume = value;
@@ -76,24 +76,24 @@ namespace Emby.Dlna.PlayTo
 
         private DateTime _lastVolumeRefresh;
         private bool _volumeRefreshActive;
-        private void RefreshVolumeIfNeeded()
+        private Task RefreshVolumeIfNeeded()
         {
-            if (!_volumeRefreshActive)
-            {
-                return;
-            }
-
-            if (DateTime.UtcNow >= _lastVolumeRefresh.AddSeconds(5))
+            if (_volumeRefreshActive
+                && DateTime.UtcNow >= _lastVolumeRefresh.AddSeconds(5))
             {
                 _lastVolumeRefresh = DateTime.UtcNow;
-                RefreshVolume(CancellationToken.None);
+                return RefreshVolume();
             }
+
+            return Task.CompletedTask;
         }
 
-        private async void RefreshVolume(CancellationToken cancellationToken)
+        private async Task RefreshVolume(CancellationToken cancellationToken = default)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             try
             {

@@ -140,11 +140,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "livetv", StringComparison.OrdinalIgnoreCase))
             {
-                OnRecordingFoldersChanged();
+                await CreateRecordingFolders().ConfigureAwait(false);
             }
         }
 
@@ -153,11 +153,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _timerProvider.RestartTimers();
 
             return CreateRecordingFolders();
-        }
-
-        private async void OnRecordingFoldersChanged()
-        {
-            await CreateRecordingFolders().ConfigureAwait(false);
         }
 
         internal async Task CreateRecordingFolders()
@@ -1334,7 +1329,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     await CreateRecordingFolders().ConfigureAwait(false);
 
                     TriggerRefresh(recordPath);
-                    EnforceKeepUpTo(timer, seriesPath);
+                    await EnforceKeepUpTo(timer, seriesPath).ConfigureAwait(false);
                 };
 
                 await recorder.Record(directStreamProvider, mediaStreamInfo, recordPath, duration, onStarted, activeRecordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
@@ -1494,7 +1489,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return item;
         }
 
-        private async void EnforceKeepUpTo(TimerInfo timer, string seriesPath)
+        private async Task EnforceKeepUpTo(TimerInfo timer, string seriesPath)
         {
             if (string.IsNullOrWhiteSpace(timer.SeriesTimerId))
             {

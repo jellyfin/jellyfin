@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -509,6 +510,13 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series thumb image tag.</value>
         public string SeriesThumbImageTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the blurhashes for the image tags.
+        /// Maps image type to dictionary mapping image tag to blurhash value.
+        /// </summary>
+        /// <value>The blurhashes.</value>
+        public Dictionary<ImageType, Dictionary<string, string>> ImageBlurHashes { get; set; }
 
         /// <summary>
         /// Gets or sets the series studio.

@@ -35,7 +35,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/Users/Public", "GET", Summary = "Gets a list of publicly visible users for display on a login screen.")]
-    public class GetPublicUsers : IReturn<PublicUserDto[]>
+    public class GetPublicUsers : IReturn<UserDto[]>
     {
     }
 
@@ -266,38 +266,22 @@ namespace MediaBrowser.Api
             _authContext = authContext;
         }
 
-        /// <summary>
-        /// Gets the public available Users information
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
         public object Get(GetPublicUsers request)
         {
-            var result = _userManager
-                .Users
-                .Where(item => !item.Policy.IsDisabled);
-
-            if (ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
+            // If the startup wizard hasn't been completed then just return all users
+            if (!ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
-                var deviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
-                result = result.Where(item => !item.Policy.IsHidden);
-
-                if (!string.IsNullOrWhiteSpace(deviceId))
+                return Get(new GetUsers
                 {
-                    result = result.Where(i => _deviceManager.CanAccessDevice(i, deviceId));
-                }
-
-                if (!_networkManager.IsInLocalNetwork(Request.RemoteIp))
-                {
-                    result = result.Where(i => i.Policy.EnableRemoteAccess);
-                }
+                    IsDisabled = false
+                });
             }
 
-            return ToOptimizedResult(result
-                    .OrderBy(u => u.Name)
-                    .Select(i => _userManager.GetPublicUserDto(i, Request.RemoteIp))
-                    .ToArray()
-                );
+            return Get(new GetUsers
+            {
+                IsHidden = false,
+                IsDisabled = false
+            }, true, true);
         }
 
         /// <summary>

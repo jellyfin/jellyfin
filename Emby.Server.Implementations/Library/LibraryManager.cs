@@ -21,6 +21,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -35,6 +36,7 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -50,7 +52,7 @@ using VideoResolver = Emby.Naming.Video.VideoResolver;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Class LibraryManager
+    /// Class LibraryManager.
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
@@ -67,6 +69,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
         private readonly ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
+        private readonly IImageProcessor _imageProcessor;
 
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
@@ -135,6 +138,13 @@ namespace Emby.Server.Implementations.Library
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="libraryMonitorFactory">The library monitor.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="providerManagerFactory">The provider manager.</param>
+        /// <param name="userviewManagerFactory">The userview manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
+        /// <param name="itemRepository">The item repository.</param>
+        /// <param name="imageProcessor">The image processor.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILogger<LibraryManager> logger,
@@ -147,7 +157,8 @@ namespace Emby.Server.Implementations.Library
             Lazy<IProviderManager> providerManagerFactory,
             Lazy<IUserViewManager> userviewManagerFactory,
             IMediaEncoder mediaEncoder,
-            IItemRepository itemRepository)
+            IItemRepository itemRepository,
+            IImageProcessor imageProcessor)
         {
             _appHost = appHost;
             _logger = logger;
@@ -161,6 +172,7 @@ namespace Emby.Server.Implementations.Library
             _userviewManagerFactory = userviewManagerFactory;
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
+            _imageProcessor = imageProcessor;
 
             _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -1815,10 +1827,90 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public void UpdateImages(BaseItem item)
+        private bool ImageNeedsRefresh(ItemImageInfo image)
         {
-            _itemRepository.SaveImages(item);
+            if (image.Path != null && image.IsLocalFile)
+            {
+                if (image.Width == 0 || image.Height == 0 || string.IsNullOrEmpty(image.BlurHash))
+                {
+                    return true;
+                }
 
+                try
+                {
+                    return _fileSystem.GetLastWriteTimeUtc(image.Path) != image.DateModified;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot get file info for {0}", image.Path);
+                    return false;
+                }
+            }
+
+            return image.Path != null && !image.IsLocalFile;
+        }
+
+        public void UpdateImages(BaseItem item, bool forceUpdate = false)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            var outdated = forceUpdate ? item.ImageInfos.Where(i => i.Path != null).ToArray() : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
+            if (outdated.Length == 0)
+            {
+                RegisterItem(item);
+                return;
+            }
+
+            foreach (var img in outdated)
+            {
+                var image = img;
+                if (!img.IsLocalFile)
+                {
+                    try
+                    {
+                        var index = item.GetImageIndex(img);
+                        image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
+                    }
+                    catch (ArgumentException)
+                    {
+                        _logger.LogWarning("Cannot get image index for {0}", img.Path);
+                        continue;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        _logger.LogWarning("Cannot fetch image from {0}", img.Path);
+                        continue;
+                    }
+                }
+
+                ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                image.Width = size.Width;
+                image.Height = size.Height;
+
+                try
+                {
+                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot compute blurhash for {0}", image.Path);
+                    image.BlurHash = string.Empty;
+                }
+
+                try
+                {
+                    image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot update DateModified for {0}", image.Path);
+                }
+            }
+
+            _itemRepository.SaveImages(item);
             RegisterItem(item);
         }
 
@@ -1839,7 +1931,7 @@ namespace Emby.Server.Implementations.Library
 
                 item.DateLastSaved = DateTime.UtcNow;
 
-                RegisterItem(item);
+                UpdateImages(item, updateReason >= ItemUpdateType.ImageUpdate);
             }
 
             _itemRepository.SaveItems(itemsList, cancellationToken);

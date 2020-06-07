@@ -114,7 +114,7 @@ namespace Emby.Drawing
             => _transparentImageTypes.Contains(Path.GetExtension(path));
 
         /// <inheritdoc />
-        public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
+        public async Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
@@ -230,7 +230,7 @@ namespace Emby.Drawing
             return ImageFormat.Jpg;
         }
 
-        private string GetMimeType(ImageFormat format, string path)
+        private string? GetMimeType(ImageFormat format, string path)
             => format switch
             {
                 ImageFormat.Bmp => MimeTypes.GetMimeType("i.bmp"),
@@ -312,6 +312,27 @@ namespace Emby.Drawing
         /// <inheritdoc />
         public ImageDimensions GetImageDimensions(string path)
             => _imageEncoder.GetImageSize(path);
+
+        /// <inheritdoc />
+        public string GetImageBlurHash(string path)
+        {
+            var size = GetImageDimensions(path);
+            if (size.Width <= 0 || size.Height <= 0)
+            {
+                return string.Empty;
+            }
+
+            // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
+            // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
+            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
+            float xCompF = MathF.Sqrt(16.0f * size.Width / size.Height);
+            float yCompF = xCompF * size.Height / size.Width;
+
+            int xComp = Math.Min((int)xCompF + 1, 9);
+            int yComp = Math.Min((int)yCompF + 1, 9);
+
+            return _imageEncoder.GetImageBlurHash(xComp, yComp, path);
+        }
 
         /// <inheritdoc />
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image)

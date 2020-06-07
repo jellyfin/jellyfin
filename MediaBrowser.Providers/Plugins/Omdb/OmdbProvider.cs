@@ -87,10 +87,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 item.CommunityRating = imdbRating;
             }
 
-            //if (!string.IsNullOrEmpty(result.Website))
-            //{
-            //    item.HomePageUrl = result.Website;
-            //}
+            if (!string.IsNullOrEmpty(result.Website))
+            {
+                item.HomePageUrl = result.Website;
+            }
 
             if (!string.IsNullOrWhiteSpace(result.imdbID))
             {
@@ -121,7 +121,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             if (!string.IsNullOrWhiteSpace(episodeImdbId))
             {
-                foreach (var episode in (seasonResult.Episodes ?? new RootObject[] { }))
+                foreach (var episode in seasonResult.Episodes)
                 {
                     if (string.Equals(episodeImdbId, episode.imdbID, StringComparison.OrdinalIgnoreCase))
                     {
@@ -134,7 +134,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             // finally, search by numbers
             if (result == null)
             {
-                foreach (var episode in (seasonResult.Episodes ?? new RootObject[] { }))
+                foreach (var episode in seasonResult.Episodes)
                 {
                     if (episode.Episode == episodeNumber)
                     {
@@ -188,10 +188,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 item.CommunityRating = imdbRating;
             }
 
-            //if (!string.IsNullOrEmpty(result.Website))
-            //{
-            //    item.HomePageUrl = result.Website;
-            //}
+            if (!string.IsNullOrEmpty(result.Website))
+            {
+                item.HomePageUrl = result.Website;
+            }
 
             if (!string.IsNullOrWhiteSpace(result.imdbID))
             {
@@ -263,6 +263,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 return url;
             }
+
             return url + "&" + query;
         }
 
@@ -386,7 +387,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var isConfiguredForEnglish = IsConfiguredForEnglish(item) || _configurationManager.Configuration.EnableNewOmdbSupport;
 
-            // Grab series genres because imdb data is better than tvdb. Leave movies alone
+            // Grab series genres because IMDb data is better than TVDB. Leave movies alone
             // But only do it if english is the preferred language because this data will not be localized
             if (isConfiguredForEnglish && !string.IsNullOrWhiteSpace(result.Genre))
             {
@@ -407,45 +408,50 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 item.Overview = result.Plot;
             }
 
-            //if (!string.IsNullOrWhiteSpace(result.Director))
-            //{
-            //    var person = new PersonInfo
-            //    {
-            //        Name = result.Director.Trim(),
-            //        Type = PersonType.Director
-            //    };
+            if (!Plugin.Instance.Configuration.CastAndCrew)
+            {
+                return;
+            }
 
-            //    itemResult.AddPerson(person);
-            //}
+            if (!string.IsNullOrWhiteSpace(result.Director))
+            {
+                var person = new PersonInfo
+                {
+                    Name = result.Director.Trim(),
+                    Type = PersonType.Director
+                };
 
-            //if (!string.IsNullOrWhiteSpace(result.Writer))
-            //{
-            //    var person = new PersonInfo
-            //    {
-            //        Name = result.Director.Trim(),
-            //        Type = PersonType.Writer
-            //    };
+                itemResult.AddPerson(person);
+            }
 
-            //    itemResult.AddPerson(person);
-            //}
+            if (!string.IsNullOrWhiteSpace(result.Writer))
+            {
+                var person = new PersonInfo
+                {
+                    Name = result.Director.Trim(),
+                    Type = PersonType.Writer
+                };
 
-            //if (!string.IsNullOrWhiteSpace(result.Actors))
-            //{
-            //    var actorList = result.Actors.Split(',');
-            //    foreach (var actor in actorList)
-            //    {
-            //        if (!string.IsNullOrWhiteSpace(actor))
-            //        {
-            //            var person = new PersonInfo
-            //            {
-            //                Name = actor.Trim(),
-            //                Type = PersonType.Actor
-            //            };
+                itemResult.AddPerson(person);
+            }
 
-            //            itemResult.AddPerson(person);
-            //        }
-            //    }
-            //}
+            if (!string.IsNullOrWhiteSpace(result.Actors))
+            {
+                var actorList = result.Actors.Split(',');
+                foreach (var actor in actorList)
+                {
+                    if (!string.IsNullOrWhiteSpace(actor))
+                    {
+                        var person = new PersonInfo
+                        {
+                            Name = actor.Trim(),
+                            Type = PersonType.Actor
+                        };
+
+                        itemResult.AddPerson(person);
+                    }
+                }
+            }
         }
 
         private bool IsConfiguredForEnglish(BaseItem item)
@@ -459,40 +465,70 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         internal class SeasonRootObject
         {
             public string Title { get; set; }
+
             public string seriesID { get; set; }
+
             public int Season { get; set; }
+
             public int? totalSeasons { get; set; }
+
             public RootObject[] Episodes { get; set; }
+
             public string Response { get; set; }
         }
 
         internal class RootObject
         {
             public string Title { get; set; }
+
             public string Year { get; set; }
+
             public string Rated { get; set; }
+
             public string Released { get; set; }
+
             public string Runtime { get; set; }
+
             public string Genre { get; set; }
+
             public string Director { get; set; }
+
             public string Writer { get; set; }
+
             public string Actors { get; set; }
+
             public string Plot { get; set; }
+
             public string Language { get; set; }
+
             public string Country { get; set; }
+
             public string Awards { get; set; }
+
             public string Poster { get; set; }
+
             public List<OmdbRating> Ratings { get; set; }
+
             public string Metascore { get; set; }
+
             public string imdbRating { get; set; }
+
             public string imdbVotes { get; set; }
+
             public string imdbID { get; set; }
+
             public string Type { get; set; }
+
             public string DVD { get; set; }
+
             public string BoxOffice { get; set; }
+
             public string Production { get; set; }
+
             public string Website { get; set; }
+
             public string Response { get; set; }
+
             public int Episode { get; set; }
 
             public float? GetRottenTomatoScore()
@@ -509,12 +545,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                         }
                     }
                 }
+
                 return null;
             }
         }
+
         public class OmdbRating
         {
             public string Source { get; set; }
+
             public string Value { get; set; }
         }
     }
