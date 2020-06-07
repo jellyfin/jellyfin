@@ -111,29 +111,5 @@ namespace Jellyfin.Server.Implementations.Users
 
             return Task.CompletedTask;
         }
-
-        /// <inheritdoc />
-        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
-        {
-            if (newPassword != null)
-            {
-                newPasswordHash = _cryptographyProvider.CreatePasswordHash(newPassword).ToString();
-            }
-
-            if (string.IsNullOrWhiteSpace(newPasswordHash))
-            {
-                throw new ArgumentNullException(nameof(newPasswordHash));
-            }
-
-            user.EasyPassword = newPasswordHash;
-        }
-
-        /// <inheritdoc />
-        public string GetEasyPasswordHash(User user)
-        {
-            return string.IsNullOrEmpty(user.EasyPassword)
-                ? null
-                : Hex.Encode(PasswordHash.Parse(user.EasyPassword).Hash);
-        }
     }
 }
