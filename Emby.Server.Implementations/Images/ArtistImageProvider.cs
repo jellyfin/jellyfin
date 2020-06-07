@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +20,14 @@ using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Images
 {
+    /// <summary>
+    /// Class ArtistImageProvider.
+    /// </summary>
     public class ArtistImageProvider : BaseDynamicImageProvider<MusicArtist>
     {
+        /// <summary>
+        /// The library manager.
+        /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         public ArtistImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
@@ -27,6 +35,11 @@ namespace Emby.Server.Implementations.Images
             _libraryManager = libraryManager;
         }
 
+        /// <summary>
+        /// Get children objects used to create an artist image.
+        /// </summary>
+        /// <param name="item">The artist used to create the image.</param>
+        /// <returns>Any relevant children objects.</returns>
         protected override IReadOnlyList<BaseItem> GetItemsWithImages(BaseItem item)
         {
             return Array.Empty<BaseItem>();

@@ -872,9 +872,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (framerate.HasValue)
             {
-                builder.Append(",FRAME-RATE=\"")
-                    .Append(framerate.Value)
-                    .Append('"');
+                builder.Append(",FRAME-RATE=")
+                    .Append(framerate.Value);
             }
         }
 
@@ -888,11 +887,10 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
             {
-                builder.Append(",RESOLUTION=\"")
+                builder.Append(",RESOLUTION=")
                     .Append(state.OutputWidth.GetValueOrDefault())
                     .Append('x')
-                    .Append(state.OutputHeight.GetValueOrDefault())
-                    .Append('"');
+                    .Append(state.OutputHeight.GetValueOrDefault());
             }
         }
 
