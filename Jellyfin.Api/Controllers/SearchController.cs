@@ -10,9 +10,9 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +22,7 @@ namespace Jellyfin.Api.Controllers
     /// Search controller.
     /// </summary>
     [Route("/Search/Hints")]
-    [Authenticated]
+    [Authorize]
     public class SearchController : BaseJellyfinApiController
     {
         private readonly ISearchEngine _searchEngine;
@@ -52,9 +52,9 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets the search hint result.
         /// </summary>
-        /// <param name="startIndex">The record index to start at. All items with a lower index will be dropped from the results.</param>
-        /// <param name="limit">The maximum number of records to return.</param>
-        /// <param name="userId">Supply a user id to search within a user's library or omit to search all.</param>
+        /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
+        /// <param name="limit">Optional. The maximum number of records to return.</param>
+        /// <param name="userId">Optional. Supply a user id to search within a user's library or omit to search all.</param>
         /// <param name="searchTerm">The search term to filter on.</param>
         /// <param name="includePeople">Optional filter whether to include people.</param>
         /// <param name="includeMedia">Optional filter whether to include media.</param>
@@ -117,11 +117,11 @@ namespace Jellyfin.Api.Controllers
                 IsSports = isSports
             });
 
-            return Ok(new SearchHintResult
+            return new SearchHintResult
             {
                 TotalRecordCount = result.TotalRecordCount,
                 SearchHints = result.Items.Select(GetSearchHintResult).ToArray()
-            });
+            };
         }
 
         /// <summary>
