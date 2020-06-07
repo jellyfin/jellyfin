@@ -420,10 +420,7 @@ namespace Jellyfin.Data.Entities
         /// <returns>A string array containing the user's preferences.</returns>
         public string[] GetPreference(PreferenceKind preference)
         {
-            var val = Preferences
-                .Where(p => p.Kind == preference)
-                .Select(p => p.Value)
-                .First();
+            var val = Preferences.First(p => p.Kind == preference).Value;
 
             return Equals(val, string.Empty) ? Array.Empty<string>() : val.Split(Delimiter);
         }

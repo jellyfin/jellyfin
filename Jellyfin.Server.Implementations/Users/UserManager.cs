@@ -84,24 +84,10 @@ namespace Jellyfin.Server.Implementations.Users
         public event EventHandler<GenericEventArgs<User>> OnUserLockedOut;
 
         /// <inheritdoc/>
-        public IEnumerable<User> Users
-        {
-            get
-            {
-                var dbContext = _dbProvider.CreateContext();
-                return dbContext.Users;
-            }
-        }
+        public IEnumerable<User> Users => _dbProvider.CreateContext().Users;
 
         /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds
-        {
-            get
-            {
-                var dbContext = _dbProvider.CreateContext();
-                return dbContext.Users.Select(u => u.Id);
-            }
-        }
+        public IEnumerable<Guid> UsersIds => _dbProvider.CreateContext().Users.Select(u => u.Id);
 
         /// <inheritdoc/>
         public User GetUserById(Guid id)
@@ -111,9 +97,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            var dbContext = _dbProvider.CreateContext();
-
-            return dbContext.Users.Find(id);
+            return _dbProvider.CreateContext().Users.Find(id);
         }
 
         /// <inheritdoc/>
@@ -124,11 +108,9 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            var dbContext = _dbProvider.CreateContext();
-
             // This can't use an overload with StringComparer because that would cause the query to
             // have to be evaluated client-side.
-            return dbContext.Users.FirstOrDefault(u => string.Equals(u.Username, name));
+            return _dbProvider.CreateContext().Users.FirstOrDefault(u => string.Equals(u.Username, name));
         }
 
         /// <inheritdoc/>

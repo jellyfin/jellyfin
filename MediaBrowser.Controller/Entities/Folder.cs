@@ -182,12 +182,13 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder && !(this is BasePluginFolder))
             {
-                if (user.GetPreference(PreferenceKind.BlockedMediaFolders) != null)
+                var blockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders);
+                if (blockedMediaFolders.Length > 0)
                 {
-                    if (user.GetPreference(PreferenceKind.BlockedMediaFolders).Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
+                    if (blockedMediaFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
 
                         // Backwards compatibility
-                        user.GetPreference(PreferenceKind.BlockedMediaFolders).Contains(Name, StringComparer.OrdinalIgnoreCase))
+                        blockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
