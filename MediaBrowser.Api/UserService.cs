@@ -566,7 +566,6 @@ namespace MediaBrowser.Api
             AssertCanUpdateUser(_authContext, _userManager, request.Id, false);
 
             _userManager.UpdateConfiguration(request.Id, request);
-
         }
 
         public void Post(UpdateUserPolicy request)

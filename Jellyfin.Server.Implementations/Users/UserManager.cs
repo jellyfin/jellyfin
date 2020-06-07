@@ -276,7 +276,7 @@ namespace Jellyfin.Server.Implementations.Users
                 Name = user.Username,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
-                HasPassword = user.Password != null,
+                HasPassword = GetAuthenticationProvider(user).HasPassword(user),
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
@@ -303,7 +303,7 @@ namespace Jellyfin.Server.Implementations.Users
                 {
                     MaxParentalRating = user.MaxParentalAgeRating,
                     EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
-                    RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? -1,
+                    RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? 0,
                     AuthenticationProviderId = user.AuthenticationProviderId,
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
