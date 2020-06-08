@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -240,11 +241,13 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableNewOmdbSupport { get; set; }
 
         public string[] RemoteIPFilter { get; set; }
+
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; }
+
         public bool EnableSimpleArtistDetection { get; set; }
 
         public string[] UninstalledPlugins { get; set; }
@@ -313,24 +316,24 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "MusicVideo",
-                    DisabledMetadataFetchers = new [] { "The Open Movie Database" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database" }
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "Series",
-                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "TheMovieDb" }
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "TheMovieDb" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "MusicAlbum",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "MusicArtist",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
                 },
                 new MetadataOptions
                 {
@@ -339,13 +342,13 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "Season",
-                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
                 },
                 new MetadataOptions
                 {
                     ItemType = "Episode",
-                    DisabledMetadataFetchers = new [] { "The Open Movie Database", "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database", "TheMovieDb" }
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database", "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
         }
@@ -354,6 +357,7 @@ namespace MediaBrowser.Model.Configuration
     public class PathSubstitution
     {
         public string From { get; set; }
+
         public string To { get; set; }
     }
 }

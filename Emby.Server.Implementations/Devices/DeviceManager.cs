@@ -62,13 +62,7 @@ namespace Emby.Server.Implementations.Devices
         {
             _authRepo.UpdateDeviceOptions(deviceId, options);
 
-            if (DeviceOptionsUpdated != null)
-            {
-                DeviceOptionsUpdated(this, new GenericEventArgs<Tuple<string, DeviceOptions>>()
-                {
-                    Argument = new Tuple<string, DeviceOptions>(deviceId, options)
-                });
-            }
+            DeviceOptionsUpdated?.Invoke(this, new GenericEventArgs<Tuple<string, DeviceOptions>>(new Tuple<string, DeviceOptions>(deviceId, options)));
         }
 
         public DeviceOptions GetDeviceOptions(string deviceId)

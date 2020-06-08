@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -153,10 +155,7 @@ namespace Emby.Server.Implementations.Playlists
                     });
                 }
 
-                return new PlaylistCreationResult
-                {
-                    Id = playlist.Id.ToString("N", CultureInfo.InvariantCulture)
-                };
+                return new PlaylistCreationResult(playlist.Id.ToString("N", CultureInfo.InvariantCulture));
             }
             finally
             {

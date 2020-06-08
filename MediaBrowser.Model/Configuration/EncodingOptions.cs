@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 namespace MediaBrowser.Model.Configuration
@@ -5,10 +6,15 @@ namespace MediaBrowser.Model.Configuration
     public class EncodingOptions
     {
         public int EncodingThreadCount { get; set; }
+
         public string TranscodingTempPath { get; set; }
+
         public double DownMixAudioBoost { get; set; }
+
         public bool EnableThrottling { get; set; }
+
         public int ThrottleDelaySeconds { get; set; }
+
         public string HardwareAccelerationType { get; set; }
 
         /// <summary>
@@ -20,13 +26,19 @@ namespace MediaBrowser.Model.Configuration
         /// The current FFmpeg path being used by the system and displayed on the transcode page.
         /// </summary>
         public string EncoderAppPathDisplay { get; set; }
+
         public string VaapiDevice { get; set; }
+
         public int H264Crf { get; set; }
+
         public int H265Crf { get; set; }
+
         public string EncoderPreset { get; set; }
+
         public string DeinterlaceMethod { get; set; }
         public bool EnableDecodingColorDepth10 { get; set; }
         public bool EnableHardwareEncoding { get; set; }
+
         public bool EnableSubtitleExtraction { get; set; }
 
         public string[] HardwareDecodingCodecs { get; set; }

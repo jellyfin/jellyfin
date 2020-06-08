@@ -45,6 +45,7 @@ using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
+using Emby.Server.Implementations.SyncPlay;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -78,6 +79,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.TV;
+using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Configuration;
@@ -612,6 +614,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
             serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
+
+            serviceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
 
             serviceCollection.AddSingleton<LiveTvDtoService>();
             serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();

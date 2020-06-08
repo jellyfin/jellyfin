@@ -118,7 +118,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         void QueueLibraryScan();
 
-        void UpdateImages(BaseItem item);
+        void UpdateImages(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
         /// Gets the default view.
@@ -195,6 +195,7 @@ namespace MediaBrowser.Controller.Library
         /// Updates the item.
         /// </summary>
         void UpdateItems(IEnumerable<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
+
         void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>

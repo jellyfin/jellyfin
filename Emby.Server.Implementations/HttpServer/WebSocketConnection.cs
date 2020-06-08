@@ -78,6 +78,9 @@ namespace Emby.Server.Implementations.HttpServer
         /// <value>The last activity date.</value>
         public DateTime LastActivityDate { get; private set; }
 
+        /// <inheritdoc />
+        public DateTime LastKeepAliveDate { get; set; }
+
         /// <summary>
         /// Gets or sets the query string.
         /// </summary>
@@ -218,7 +221,42 @@ namespace Emby.Server.Implementations.HttpServer
                 Connection = this
             };
 
-            await OnReceive(info).ConfigureAwait(false);
+            if (info.MessageType.Equals("KeepAlive", StringComparison.Ordinal))
+            {
+                await SendKeepAliveResponse();
+            }
+            else
+            {
+                await OnReceive(info).ConfigureAwait(false);
+            }
+        }
+
+        private Task SendKeepAliveResponse()
+        {
+            LastKeepAliveDate = DateTime.UtcNow;
+            return SendAsync(new WebSocketMessage<string>
+            {
+                MessageType = "KeepAlive"
+            }, CancellationToken.None);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                _socket.Dispose();
+            }
         }
     }
 }

@@ -1352,7 +1352,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 transcoderChannelLimit = 6;
             }
 
-            var isTranscodingAudio = !string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase);
+            var isTranscodingAudio = !EncodingHelper.IsCopyCodec(codec);
 
             int? resultChannels = state.GetRequestedAudioChannels(codec);
             if (isTranscodingAudio)
@@ -1748,7 +1748,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-            if (string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase) || (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) && !hasTextSubs)
+            if ((string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+                || (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) && !hasTextSubs))
                 && width.HasValue
                 && height.HasValue)
             {
@@ -2005,7 +2006,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 filters.Add("hwupload");
             }
 
-            // When the input may or may not be hardware QSV decodable            
+            // When the input may or may not be hardware QSV decodable
             else if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
                 if (!hasTextSubs)
@@ -2262,7 +2263,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 flags.Add("+ignidx");
             }
 
-            if (state.GenPtsInput || string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (state.GenPtsInput || EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 flags.Add("+genpts");
             }
@@ -2530,7 +2531,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isColorDepth10 = !string.IsNullOrEmpty(videoStream.Profile) && (videoStream.Profile.Contains("Main 10", StringComparison.OrdinalIgnoreCase)
                 || videoStream.Profile.Contains("High 10", StringComparison.OrdinalIgnoreCase));
 
-            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 return null;
             }
@@ -2941,7 +2943,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += " -mpegts_m2ts_mode 1";
             }
 
-            if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(videoCodec))
             {
                 if (state.VideoStream != null
                     && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase)
@@ -3043,7 +3045,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var args = "-codec:a:0 " + codec;
 
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(codec))
             {
                 return args;
             }
@@ -3114,6 +3116,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 string.Empty,
                 string.Empty,
                 string.Empty).Trim();
+        }
+
+        public static bool IsCopyCodec(string codec)
+        {
+            return string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
