@@ -271,12 +271,14 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public UserDto GetUserDto(User user, string remoteEndPoint = null)
         {
+            var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
             return new UserDto
             {
                 Name = user.Username,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
-                HasPassword = GetAuthenticationProvider(user).HasPassword(user),
+                HasPassword = hasPassword,
+                HasConfiguredPassword = hasPassword,
                 HasConfiguredEasyPassword = !string.IsNullOrEmpty(user.EasyPassword),
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
