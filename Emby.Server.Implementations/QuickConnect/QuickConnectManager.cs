@@ -234,7 +234,8 @@ namespace Emby.Server.Implementations.QuickConnect
             result.Authentication = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             // Advance the time on the request so it expires sooner as the client will pick up the changes in a few seconds
-            result.DateAdded = result.DateAdded.Subtract(new TimeSpan(0, RequestExpiry - 1, 0));
+            var added = result.DateAdded ?? DateTime.Now.Subtract(new TimeSpan(0, RequestExpiry, 0));
+            result.DateAdded = added.Subtract(new TimeSpan(0, RequestExpiry - 1, 0));
 
             _authenticationRepository.Create(new AuthenticationInfo
             {
@@ -284,7 +285,7 @@ namespace Emby.Server.Implementations.QuickConnect
         {
             bool expireAll = false;
 
-            // check if quick connect should be deactivated
+            // Check if quick connect should be deactivated
             if (TemporaryActivation && DateTime.Now > DateActivated.AddMinutes(10) && State == QuickConnectState.Active)
             {
                 _logger.LogDebug("Quick connect time expired, deactivating");
@@ -293,13 +294,14 @@ namespace Emby.Server.Implementations.QuickConnect
                 TemporaryActivation = false;
             }
 
-            // expire stale connection requests
+            // Expire stale connection requests
             var delete = new List<string>();
             var values = _currentRequests.Values.ToList();
 
             for (int i = 0; i < _currentRequests.Count; i++)
             {
-                if (DateTime.Now > values[i].DateAdded.AddMinutes(RequestExpiry) || expireAll)
+                var added = values[i].DateAdded ?? DateTime.UnixEpoch;
+                if (DateTime.Now > added.AddMinutes(RequestExpiry) || expireAll)
                 {
                     delete.Add(values[i].Lookup);
                 }

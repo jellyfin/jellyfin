@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Model.QuickConnect;
 
 namespace Emby.Server.Implementations.QuickConnect

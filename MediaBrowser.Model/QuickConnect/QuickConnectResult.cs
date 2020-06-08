@@ -15,36 +15,36 @@ namespace MediaBrowser.Model.QuickConnect
         /// <summary>
         /// Gets or sets the secret value used to uniquely identify this request. Can be used to retrieve authentication information.
         /// </summary>
-        public string Secret { get; set; }
+        public string? Secret { get; set; }
 
         /// <summary>
         /// Gets or sets the public value used to uniquely identify this request. Can only be used to authorize the request.
         /// </summary>
-        public string Lookup { get; set; }
+        public string? Lookup { get; set; }
 
         /// <summary>
         /// Gets or sets the user facing code used so the user can quickly differentiate this request from others.
         /// </summary>
-        public string Code { get; set; }
+        public string? Code { get; set; }
 
         /// <summary>
         /// Gets or sets the device friendly name.
         /// </summary>
-        public string FriendlyName { get; set; }
+        public string? FriendlyName { get; set; }
 
         /// <summary>
         /// Gets or sets the private access token.
         /// </summary>
-        public string Authentication { get; set; }
+        public string? Authentication { get; set; }
 
         /// <summary>
         /// Gets or sets an error message.
         /// </summary>
-        public string Error { get; set; }
+        public string? Error { get; set; }
 
         /// <summary>
         /// Gets or sets the DateTime that this request was created.
         /// </summary>
-        public DateTime DateAdded { get; set; }
+        public DateTime? DateAdded { get; set; }
     }
 }

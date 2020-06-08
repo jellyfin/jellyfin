@@ -15,22 +15,22 @@ namespace MediaBrowser.Model.QuickConnect
         /// <summary>
         /// Gets the user facing code used so the user can quickly differentiate this request from others.
         /// </summary>
-        public string Code { get; private set; }
+        public string? Code { get; private set; }
 
         /// <summary>
         /// Gets the public value used to uniquely identify this request. Can only be used to authorize the request.
         /// </summary>
-        public string Lookup { get; private set; }
+        public string? Lookup { get; private set; }
 
         /// <summary>
         /// Gets the device friendly name.
         /// </summary>
-        public string FriendlyName { get; private set; }
+        public string? FriendlyName { get; private set; }
 
         /// <summary>
         /// Gets the DateTime that this request was created.
         /// </summary>
-        public DateTime DateAdded { get; private set; }
+        public DateTime? DateAdded { get; private set; }
 
         /// <summary>
         /// Cast an internal quick connect result to a DTO by removing all sensitive properties.
