@@ -14,66 +14,6 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
-    [Route("/Playlists", "POST", Summary = "Creates a new playlist")]
-    public class CreatePlaylist : IReturn<PlaylistCreationResult>
-    {
-        [ApiMember(Name = "Name", Description = "The name of the new playlist.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Name { get; set; }
-
-        [ApiMember(Name = "Ids", Description = "Item Ids to add to the playlist", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
-        public string Ids { get; set; }
-
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
-
-        [ApiMember(Name = "MediaType", Description = "The playlist media type", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string MediaType { get; set; }
-    }
-
-    [Route("/Playlists/{Id}/Items", "POST", Summary = "Adds items to a playlist")]
-    public class AddToPlaylist : IReturnVoid
-    {
-        [ApiMember(Name = "Ids", Description = "Item id, comma delimited", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Ids { get; set; }
-
-        [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public Guid UserId { get; set; }
-    }
-
-    [Route("/Playlists/{Id}/Items/{ItemId}/Move/{NewIndex}", "POST", Summary = "Moves a playlist item")]
-    public class MoveItem : IReturnVoid
-    {
-        [ApiMember(Name = "ItemId", Description = "ItemId", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string ItemId { get; set; }
-
-        [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "NewIndex", Description = "NewIndex", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public int NewIndex { get; set; }
-    }
-
-    [Route("/Playlists/{Id}/Items", "DELETE", Summary = "Removes items from a playlist")]
-    public class RemoveFromPlaylist : IReturnVoid
-    {
-        [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
-
-        [ApiMember(Name = "EntryIds", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
-        public string EntryIds { get; set; }
-    }
-
     [Route("/Playlists/{Id}/Items", "GET", Summary = "Gets the original items of a playlist")]
     public class GetPlaylistItems : IReturn<QueryResult<BaseItemDto>>, IHasDtoOptions
     {
@@ -151,20 +91,6 @@ namespace MediaBrowser.Api
         public void Post(MoveItem request)
         {
             _playlistManager.MoveItem(request.Id, request.ItemId, request.NewIndex);
-        }
-
-        public async Task<object> Post(CreatePlaylist request)
-        {
-            var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest
-            {
-                Name = request.Name,
-                ItemIdList = GetGuids(request.Ids),
-                UserId = request.UserId,
-                MediaType = request.MediaType
-
-            }).ConfigureAwait(false);
-
-            return ToOptimizedResult(result);
         }
 
         public void Post(AddToPlaylist request)
