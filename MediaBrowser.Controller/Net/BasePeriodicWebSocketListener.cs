@@ -104,7 +104,7 @@ namespace MediaBrowser.Controller.Net
             }
         }
 
-        protected void SendData(bool force)
+        protected async Task SendData(bool force)
         {
             Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>[] tuples;
 
@@ -128,13 +128,18 @@ namespace MediaBrowser.Controller.Net
                     .ToArray();
             }
 
-            foreach (var tuple in tuples)
+            IEnumerable<Task> GetTasks()
             {
-                SendData(tuple);
+                foreach (var tuple in tuples)
+                {
+                    yield return SendData(tuple);
+                }
             }
+
+            await Task.WhenAll(GetTasks()).ConfigureAwait(false);
         }
 
-        private async void SendData(Tuple<IWebSocketConnection, CancellationTokenSource, TStateType> tuple)
+        private async Task SendData(Tuple<IWebSocketConnection, CancellationTokenSource, TStateType> tuple)
         {
             var connection = tuple.Item1;
 
@@ -148,11 +153,13 @@ namespace MediaBrowser.Controller.Net
 
                 if (data != null)
                 {
-                    await connection.SendAsync(new WebSocketMessage<TReturnDataType>
-                    {
-                        MessageType = Name,
-                        Data = data
-                    }, cancellationToken).ConfigureAwait(false);
+                    await connection.SendAsync(
+                        new WebSocketMessage<TReturnDataType>
+                        {
+                            MessageType = Name,
+                            Data = data
+                        },
+                        cancellationToken).ConfigureAwait(false);
 
                     state.DateLastSendUtc = DateTime.UtcNow;
                 }

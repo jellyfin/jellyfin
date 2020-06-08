@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -13,8 +14,11 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
+
         public bool? EnableImages { get; set; }
+
         public int? ImageTypeLimit { get; set; }
+
         public ImageType[] EnableImageTypes { get; set; }
 
         /// <summary>
@@ -48,7 +52,9 @@ namespace MediaBrowser.Model.Channels
         /// </summary>
         /// <value><c>null</c> if [is favorite] contains no value, <c>true</c> if [is favorite]; otherwise, <c>false</c>.</value>
         public bool? IsFavorite { get; set; }
+
         public bool? IsRecordingsFolder { get; set; }
+
         public bool RefreshLatestChannelItems { get; set; }
     }
 }

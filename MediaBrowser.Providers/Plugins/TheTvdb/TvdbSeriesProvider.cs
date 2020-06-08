@@ -22,6 +22,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         internal static TvdbSeriesProvider Current { get; private set; }
+
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
@@ -145,7 +146,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
-
             TvDbResponse<SeriesSearchResult[]> result = null;
 
             try
@@ -249,6 +249,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     ImageUrl = TvdbUtils.BannerUrl + seriesSearchResult.Banner
 
                 };
+
                 try
                 {
                     var seriesSesult =
@@ -274,11 +275,12 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         }
 
         /// <summary>
-        /// The remove
+        /// The remove.
         /// </summary>
         const string remove = "\"'!`?";
+
         /// <summary>
-        /// The spacers
+        /// The spacers.
         /// </summary>
         const string spacers = "/,.:;\\(){}[]+-_=–*";  // (there are two types of dashes, short and long)
 
@@ -315,8 +317,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     sb.Append(c);
                 }
             }
-            sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
 
+            sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
             return Regex.Replace(sb.ToString().Trim(), @"\s+", " ");
         }
 

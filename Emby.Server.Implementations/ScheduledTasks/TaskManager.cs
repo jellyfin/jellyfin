@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -199,7 +201,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="tasks">The tasks.</param>
         public void AddTasks(IEnumerable<IScheduledTask> tasks)
         {
-            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _jsonSerializer, _logger, _fileSystem));
+            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _jsonSerializer, _logger));
 
             ScheduledTasks = ScheduledTasks.Concat(list).ToArray();
         }
@@ -240,10 +242,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="task">The task.</param>
         internal void OnTaskExecuting(IScheduledTaskWorker task)
         {
-            TaskExecuting?.Invoke(this, new GenericEventArgs<IScheduledTaskWorker>
-            {
-                Argument = task
-            });
+            TaskExecuting?.Invoke(this, new GenericEventArgs<IScheduledTaskWorker>(task));
         }
 
         /// <summary>
@@ -253,11 +252,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="result">The result.</param>
         internal void OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs
-            {
-                Result = result,
-                Task = task
-            });
+            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs(task, result));
 
             ExecuteQueuedTasks();
         }

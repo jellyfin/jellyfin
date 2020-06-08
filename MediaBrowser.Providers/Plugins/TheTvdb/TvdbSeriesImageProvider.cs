@@ -79,6 +79,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                         tvdbId);
                 }
             }
+
             return remoteImages;
         }
 
@@ -110,8 +111,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 imageInfo.Type = TvdbUtils.GetImageTypeFromKeyType(image.KeyType);
                 list.Add(imageInfo);
             }
-            var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
 
+            var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
             return list.OrderByDescending(i =>
                 {
                     if (string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase))

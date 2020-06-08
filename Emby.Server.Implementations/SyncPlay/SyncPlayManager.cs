@@ -57,6 +57,13 @@ namespace Emby.Server.Implementations.SyncPlay
 
         private bool _disposed = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SyncPlayManager" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public SyncPlayManager(
             ILogger<SyncPlayManager> logger,
             IUserManager userManager,

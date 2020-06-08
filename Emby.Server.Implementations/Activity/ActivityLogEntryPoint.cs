@@ -377,50 +377,50 @@ namespace Emby.Server.Implementations.Activity
             }).ConfigureAwait(false);
         }
 
-        private async void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, VersionInfo)> e)
+        private async void OnPluginUpdated(object sender, InstallationInfo e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginUpdatedWithName"),
-                    e.Argument.Item1.Name),
+                    e.Name),
                 NotificationType.PluginUpdateInstalled.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.Item2.version),
-                Overview = e.Argument.Item2.changelog
+                    e.Version),
+                Overview = e.Changelog
             }).ConfigureAwait(false);
         }
 
-        private async void OnPluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        private async void OnPluginUninstalled(object sender, IPlugin e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginUninstalledWithName"),
-                    e.Argument.Name),
+                    e.Name),
                 NotificationType.PluginUninstalled.ToString(),
                 Guid.Empty))
                 .ConfigureAwait(false);
         }
 
-        private async void OnPluginInstalled(object sender, GenericEventArgs<VersionInfo> e)
+        private async void OnPluginInstalled(object sender, InstallationInfo e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginInstalledWithName"),
-                    e.Argument.name),
+                    e.Name),
                 NotificationType.PluginInstalled.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.version)
+                    e.Version)
             }).ConfigureAwait(false);
         }
 
