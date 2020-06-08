@@ -44,6 +44,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="parentId">Optional. Parent id.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
         /// <param name="mediaTypes">Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
+        /// <response code="200">Legacy filters retrieved.</response>
         /// <returns>Legacy query filters.</returns>
         [HttpGet("/Items/Filters")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -133,6 +134,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isNews">Optional. Is item news.</param>
         /// <param name="isSeries">Optional. Is item series.</param>
         /// <param name="recursive">Optional. Search recursive.</param>
+        /// <response code="200">Filters retrieved.</response>
         /// <returns>Query filters.</returns>
         [HttpGet("/Items/Filters2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
