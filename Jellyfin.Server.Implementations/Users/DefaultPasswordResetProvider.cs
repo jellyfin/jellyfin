@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -128,6 +130,7 @@ namespace Jellyfin.Server.Implementations.Users
             };
         }
 
+#nullable disable
         private class SerializablePasswordReset : PasswordPinCreationResult
         {
             public string Pin { get; set; }

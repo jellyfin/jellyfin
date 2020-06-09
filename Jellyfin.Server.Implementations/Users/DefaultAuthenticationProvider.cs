@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Text;
@@ -129,7 +131,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public string GetEasyPasswordHash(User user)
+        public string? GetEasyPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null

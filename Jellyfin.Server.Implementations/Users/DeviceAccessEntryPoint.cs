@@ -1,4 +1,5 @@
-﻿#pragma warning disable CS1591
+﻿#nullable enable
+#pragma warning disable CS1591
 
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -38,7 +39,7 @@ namespace Jellyfin.Server.Implementations.Users
         {
         }
 
-        private void OnUserUpdated(object sender, GenericEventArgs<User> e)
+        private void OnUserUpdated(object? sender, GenericEventArgs<User> e)
         {
             var user = e.Argument;
             if (!user.HasPermission(PermissionKind.EnableAllDevices))
