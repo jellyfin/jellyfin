@@ -71,6 +71,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="includeGenres">Optional filter whether to include genres.</param>
         /// <param name="includeStudios">Optional filter whether to include studios.</param>
         /// <param name="includeArtists">Optional filter whether to include artists.</param>
+        /// <response code="200">Search hint returned.</response>
         /// <returns>An <see cref="SearchHintResult"/> with the results of the search.</returns>
         [HttpGet]
         [Description("Gets search hints based on a search term")]
