@@ -53,6 +53,11 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<Guid> UsersIds { get; }
 
         /// <summary>
+        /// Initializes the user manager and ensures that a user exists.
+        /// </summary>
+        void Initialize();
+
+        /// <summary>
         /// Gets a user by Id.
         /// </summary>
         /// <param name="id">The id.</param>

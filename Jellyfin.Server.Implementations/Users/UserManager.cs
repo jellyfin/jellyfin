@@ -520,6 +520,39 @@ namespace Jellyfin.Server.Implementations.Users
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
+        /// <inheritdoc />
+        public void Initialize()
+        {
+            // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
+            var dbContext = _dbProvider.CreateContext();
+
+            if (dbContext.Users.Any())
+            {
+                return;
+            }
+
+            var defaultName = Environment.UserName;
+            if (string.IsNullOrWhiteSpace(defaultName))
+            {
+                defaultName = "MyJellyfinUser";
+            }
+
+            _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
+
+            if (!IsValidUsername(defaultName))
+            {
+                throw new ArgumentException("Provided username is not valid!", defaultName);
+            }
+
+            var newUser = CreateUser(defaultName);
+            newUser.SetPermission(PermissionKind.IsAdministrator, true);
+            newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
+            newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
+
+            dbContext.Users.Add(newUser);
+            dbContext.SaveChanges();
+        }
+
         /// <inheritdoc/>
         public NameIdPair[] GetAuthenticationProviders()
         {
