@@ -77,6 +77,8 @@ namespace Jellyfin.Server.Extensions
                     opts.UseGeneralRoutePrefix(baseUrl);
                     opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
+
+                    opts.OutputFormatters.Add(new CssOutputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
