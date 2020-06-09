@@ -131,69 +131,20 @@ namespace Emby.Dlna.Main
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
-            ReloadComponents();
+            await ReloadComponents().ConfigureAwait(false);
 
-            _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
-        }
+            _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
+        }       
 
-        public void Dispose()
-        {
-            DisposeDevicePublisher();
-            DisposePlayToManager();
-            DisposeDeviceDiscovery();
-
-            if (_communicationsServer != null)
-            {
-                _logger.LogInformation("Disposing SsdpCommunicationsServer");
-                _communicationsServer.Dispose();
-                _communicationsServer = null;
-            }
-
-            ContentDirectory = null;
-            ConnectionManager = null;
-            MediaReceiverRegistrar = null;
-            Current = null;
-        }
-
-        public async Task StartDevicePublisher(Configuration.DlnaOptions options)
-        {
-            if (!options.BlastAliveMessages)
-            {
-                return;
-            }
-
-            if (_publisher != null)
-            {
-                return;
-            }
-
-            try
-            {
-                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
-                {
-                    LogFunction = LogMessage,
-                    SupportPnpRootDevice = false
-                };
-
-                await RegisterServerEndpoints().ConfigureAwait(false);
-
-                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error registering endpoint");
-            }
-        }
-
-        void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                ReloadComponents();
+                await ReloadComponents().ConfigureAwait(false);
             }
         }
 
-        private async void ReloadComponents()
+        private async Task ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
 
@@ -227,7 +178,7 @@ namespace Emby.Dlna.Main
                     var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
                                                    OperatingSystem.Id == OperatingSystemId.Linux;
 
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
+                    _communicationsServer = new SsdpCommunicationsServer(_config, _socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
                         IsShared = true
                     };
@@ -268,6 +219,36 @@ namespace Emby.Dlna.Main
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error stopping device discovery");
+            }
+        }
+
+        public async Task StartDevicePublisher(Configuration.DlnaOptions options)
+        {
+            if (!options.BlastAliveMessages)
+            {
+                return;
+            }
+
+            if (_publisher != null)
+            {
+                return;
+            }
+
+            try
+            {
+                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                {
+                    LogFunction = LogMessage,
+                    SupportPnpRootDevice = false
+                };
+
+                await RegisterServerEndpoints().ConfigureAwait(false);
+
+                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error registering endpoint");
             }
         }
 
@@ -416,6 +397,25 @@ namespace Emby.Dlna.Main
                     _manager = null;
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            DisposeDevicePublisher();
+            DisposePlayToManager();
+            DisposeDeviceDiscovery();
+
+            if (_communicationsServer != null)
+            {
+                _logger.LogInformation("Disposing SsdpCommunicationsServer");
+                _communicationsServer.Dispose();
+                _communicationsServer = null;
+            }
+
+            ContentDirectory = null;
+            ConnectionManager = null;
+            MediaReceiverRegistrar = null;
+            Current = null;
         }
 
         public void DisposeDevicePublisher()
