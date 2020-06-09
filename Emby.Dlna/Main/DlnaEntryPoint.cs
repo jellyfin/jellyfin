@@ -134,7 +134,7 @@ namespace Emby.Dlna.Main
             await ReloadComponents().ConfigureAwait(false);
 
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
-        }       
+        }
 
         private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
