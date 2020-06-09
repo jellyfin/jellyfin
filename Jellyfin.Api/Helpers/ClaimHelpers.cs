@@ -1,9 +1,9 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Microsoft.AspNetCore.Http;
-
-#nullable enable
 
 namespace Jellyfin.Api.Helpers
 {
