@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.QuickConnect
     /// <summary>
     /// Quick connect implementation.
     /// </summary>
-    public class QuickConnectManager : IQuickConnect
+    public class QuickConnectManager : IQuickConnect, IDisposable
     {
         private readonly RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
         private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new ConcurrentDictionary<string, QuickConnectResult>();
