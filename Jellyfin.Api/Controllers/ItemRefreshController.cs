@@ -74,9 +74,10 @@ namespace Jellyfin.Api.Controllers
                 ImageRefreshMode = imageRefreshMode,
                 ReplaceAllImages = replaceAllImages,
                 ReplaceAllMetadata = replaceAllMetadata,
-                ForceSave = metadataRefreshMode == MetadataRefreshMode.FullRefresh ||
-                            imageRefreshMode == MetadataRefreshMode.FullRefresh ||
-                            replaceAllImages || replaceAllMetadata,
+                ForceSave = metadataRefreshMode == MetadataRefreshMode.FullRefresh
+                    || imageRefreshMode == MetadataRefreshMode.FullRefresh
+                    || replaceAllImages
+                    || replaceAllMetadata,
                 IsAutomated = false
             };
 
