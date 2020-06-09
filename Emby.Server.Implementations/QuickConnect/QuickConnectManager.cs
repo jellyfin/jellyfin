@@ -1,20 +1,16 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.QuickConnect;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.QuickConnect
@@ -25,7 +21,7 @@ namespace Emby.Server.Implementations.QuickConnect
     public class QuickConnectManager : IQuickConnect
     {
         private readonly RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
-        private Dictionary<string, QuickConnectResult> _currentRequests = new Dictionary<string, QuickConnectResult>();
+        private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new ConcurrentDictionary<string, QuickConnectResult>();
 
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<QuickConnectManager> _logger;
@@ -39,42 +35,23 @@ namespace Emby.Server.Implementations.QuickConnect
         /// </summary>
         /// <param name="config">Configuration.</param>
         /// <param name="logger">Logger.</param>
-        /// <param name="userManager">User manager.</param>
-        /// <param name="localization">Localization.</param>
-        /// <param name="jsonSerializer">JSON serializer.</param>
         /// <param name="appHost">Application host.</param>
         /// <param name="authContext">Authentication context.</param>
         /// <param name="authenticationRepository">Authentication repository.</param>
-        /// <param name="taskManager">Task scheduler.</param>
         public QuickConnectManager(
             IServerConfigurationManager config,
             ILogger<QuickConnectManager> logger,
-            IUserManager userManager,
-            ILocalizationManager localization,
-            IJsonSerializer jsonSerializer,
             IServerApplicationHost appHost,
             IAuthorizationContext authContext,
-            IAuthenticationRepository authenticationRepository,
-            ITaskManager taskManager)
+            IAuthenticationRepository authenticationRepository)
         {
             _config = config;
             _logger = logger;
-            _userManager = userManager;
-            _localizationManager = localization;
-            _jsonSerializer = jsonSerializer;
             _appHost = appHost;
             _authContext = authContext;
             _authenticationRepository = authenticationRepository;
-            _taskManager = taskManager;
 
             ReloadConfiguration();
-        }
-
-        private void ReloadConfiguration()
-        {
-            var config = _config.GetQuickConnectConfiguration();
-
-            State = config.State;
         }
 
         /// <inheritdoc/>
@@ -118,6 +95,7 @@ namespace Emby.Server.Implementations.QuickConnect
         {
             _logger.LogDebug("Changed quick connect state from {0} to {1}", State, newState);
 
+            ExpireRequests(true);
             State = newState;
 
             _config.SaveConfiguration("quickconnect", new QuickConnectConfiguration()
@@ -167,12 +145,12 @@ namespace Emby.Server.Implementations.QuickConnect
 
             string lookup = _currentRequests.Where(x => x.Value.Secret == secret).Select(x => x.Value.Lookup).DefaultIfEmpty(string.Empty).First();
 
-            if (!_currentRequests.ContainsKey(lookup))
+            if (!_currentRequests.TryGetValue(lookup, out QuickConnectResult result))
             {
                 throw new KeyNotFoundException("Unable to find request with provided identifier");
             }
 
-            return _currentRequests[lookup];
+            return result;
         }
 
         /// <inheritdoc/>
@@ -215,12 +193,10 @@ namespace Emby.Server.Implementations.QuickConnect
 
             var auth = _authContext.GetAuthorizationInfo(request);
 
-            if (!_currentRequests.ContainsKey(lookup))
+            if (!_currentRequests.TryGetValue(lookup, out QuickConnectResult result))
             {
                 throw new KeyNotFoundException("Unable to find request");
             }
-
-            QuickConnectResult result = _currentRequests[lookup];
 
             if (result.Authenticated)
             {
@@ -268,6 +244,7 @@ namespace Emby.Server.Implementations.QuickConnect
 
             return tokens.Count();
         }
+
         /// <summary>
         /// Dispose.
         /// </summary>
@@ -288,6 +265,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 _rng?.Dispose();
             }
         }
+
         private string GenerateSecureRandom(int length = 32)
         {
             var bytes = new byte[length];
@@ -296,12 +274,14 @@ namespace Emby.Server.Implementations.QuickConnect
             return string.Join(string.Empty, bytes.Select(x => x.ToString("x2", CultureInfo.InvariantCulture)));
         }
 
-        private void ExpireRequests()
+        /// <summary>
+        /// Expire quick connect requests that are over the time limit. If <paramref name="expireAll"/> is true, all requests are unconditionally expired.
+        /// </summary>
+        /// <param name="expireAll">If true, all requests will be expired.</param>
+        private void ExpireRequests(bool expireAll = false)
         {
-            bool expireAll = false;
-
             // Check if quick connect should be deactivated
-            if (TemporaryActivation && DateTime.Now > DateActivated.AddMinutes(10) && State == QuickConnectState.Active)
+            if (TemporaryActivation && DateTime.Now > DateActivated.AddMinutes(10) && State == QuickConnectState.Active && !expireAll)
             {
                 _logger.LogDebug("Quick connect time expired, deactivating");
                 SetEnabled(QuickConnectState.Available);
@@ -313,7 +293,7 @@ namespace Emby.Server.Implementations.QuickConnect
             var delete = new List<string>();
             var values = _currentRequests.Values.ToList();
 
-            for (int i = 0; i < _currentRequests.Count; i++)
+            for (int i = 0; i < values.Count; i++)
             {
                 var added = values[i].DateAdded ?? DateTime.UnixEpoch;
                 if (DateTime.Now > added.AddMinutes(RequestExpiry) || expireAll)
@@ -324,9 +304,20 @@ namespace Emby.Server.Implementations.QuickConnect
 
             foreach (var lookup in delete)
             {
-                _logger.LogDebug("Removing expired request {0}", lookup);
-                _currentRequests.Remove(lookup);
+                _logger.LogDebug("Removing expired request {lookup}", lookup);
+
+                if (!_currentRequests.TryRemove(lookup, out _))
+                {
+                    _logger.LogWarning("Request {lookup} already expired", lookup);
+                }
             }
+        }
+
+        private void ReloadConfiguration()
+        {
+            var config = _config.GetQuickConnectConfiguration();
+
+            State = config.State;
         }
     }
 }
