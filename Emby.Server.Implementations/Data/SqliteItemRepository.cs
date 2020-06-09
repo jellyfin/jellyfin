@@ -1626,11 +1626,11 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    IEnumerable<MetadataFields> GetLockedFields(string s)
+                    IEnumerable<MetadataField> GetLockedFields(string s)
                     {
                         foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            if (Enum.TryParse(i, true, out MetadataFields parsedValue))
+                            if (Enum.TryParse(i, true, out MetadataField parsedValue))
                             {
                                 yield return parsedValue;
                             }
