@@ -37,13 +37,20 @@ namespace Jellyfin.Api.Auth
         /// <inheritdoc />
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var authenticatedAttribute = new AuthenticatedAttribute();
+            var authenticatedAttribute = new AuthenticatedAttribute
+            {
+                IgnoreLegacyAuth = true
+            };
+
             try
             {
                 var user = _authService.Authenticate(Request, authenticatedAttribute);
                 if (user == null)
                 {
-                    return Task.FromResult(AuthenticateResult.Fail("Invalid user"));
+                    return Task.FromResult(AuthenticateResult.NoResult());
+                    // TODO return when legacy API is removed.
+                    // Don't spam the log with "Invalid User"
+                    // return Task.FromResult(AuthenticateResult.Fail("Invalid user"));
                 }
 
                 var claims = new[]
