@@ -1413,7 +1413,7 @@ namespace Emby.Server.Implementations.Session
                 Limit = 1
             });
 
-            if(result.TotalRecordCount < 1)
+            if (result.TotalRecordCount < 1)
             {
                 throw new SecurityException("Unknown quick connect token");
             }

@@ -27,15 +27,11 @@ namespace Emby.Server.Implementations.QuickConnect
         private readonly RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
         private Dictionary<string, QuickConnectResult> _currentRequests = new Dictionary<string, QuickConnectResult>();
 
-        private IServerConfigurationManager _config;
-        private ILogger _logger;
-        private IUserManager _userManager;
-        private ILocalizationManager _localizationManager;
-        private IJsonSerializer _jsonSerializer;
-        private IAuthenticationRepository _authenticationRepository;
-        private IAuthorizationContext _authContext;
-        private IServerApplicationHost _appHost;
-        private ITaskManager _taskManager;
+        private readonly IServerConfigurationManager _config;
+        private readonly ILogger<QuickConnectManager> _logger;
+        private readonly IAuthenticationRepository _authenticationRepository;
+        private readonly IAuthorizationContext _authContext;
+        private readonly IServerApplicationHost _appHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QuickConnectManager"/> class.
@@ -207,7 +203,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 scale = BitConverter.ToUInt32(raw, 0);
             }
 
-            int code = (int)(min + (max - min) * (scale / (double)uint.MaxValue));
+            int code = (int)(min + ((max - min) * (scale / (double)uint.MaxValue)));
             return code.ToString(CultureInfo.InvariantCulture);
         }
 
@@ -272,7 +268,26 @@ namespace Emby.Server.Implementations.QuickConnect
 
             return tokens.Count();
         }
+        /// <summary>
+        /// Dispose.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
+        /// <summary>
+        /// Dispose.
+        /// </summary>
+        /// <param name="disposing">Dispose unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _rng?.Dispose();
+            }
+        }
         private string GenerateSecureRandom(int length = 32)
         {
             var bytes = new byte[length];

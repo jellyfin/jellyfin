@@ -646,7 +646,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
         }
 
-
         /// <summary>
         /// Create services registered with the service container that need to be initialized at application startup.
         /// </summary>
