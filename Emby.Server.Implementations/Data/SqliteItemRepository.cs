@@ -2734,7 +2734,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var providerId in newItem.ProviderIds)
                 {
-                    if (providerId.Key == MetadataProviders.TmdbCollection.ToString())
+                    if (providerId.Key == MetadataProvider.TmdbCollection.ToString())
                     {
                         continue;
                     }
@@ -4324,7 +4324,7 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var pair in query.ExcludeProviderIds)
                 {
-                    if (string.Equals(pair.Key, MetadataProviders.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(pair.Key, MetadataProvider.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -4353,7 +4353,7 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var pair in query.HasAnyProviderId)
                 {
-                    if (string.Equals(pair.Key, MetadataProviders.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(pair.Key, MetadataProvider.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

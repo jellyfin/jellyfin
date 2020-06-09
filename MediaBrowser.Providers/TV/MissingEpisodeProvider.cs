@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
         {
-            var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
+            var tvdbId = series.GetProviderId(MetadataProvider.Tvdb);
             if (string.IsNullOrEmpty(tvdbId))
             {
                 return false;

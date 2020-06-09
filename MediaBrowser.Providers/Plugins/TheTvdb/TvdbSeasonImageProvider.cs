@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 return Array.Empty<RemoteImageInfo>();
             }
 
-            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb));
+            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProvider.Tvdb));
             var seasonNumber = season.IndexNumber.Value;
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();

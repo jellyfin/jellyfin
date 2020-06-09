@@ -158,11 +158,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.SetStudios(data.Studios);
             }
 
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist));
-            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, data.GetProviderId(MetadataProviders.MusicBrainzArtist));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, data.GetProviderId(MetadataProviders.MusicBrainzAlbum));
-            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, data.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup));
-            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, data.GetProviderId(MetadataProviders.MusicBrainzTrack));
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist));
+            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, data.GetProviderId(MetadataProvider.MusicBrainzArtist));
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, data.GetProviderId(MetadataProvider.MusicBrainzAlbum));
+            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, data.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup));
+            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, data.GetProviderId(MetadataProvider.MusicBrainzTrack));
         }
     }
 }

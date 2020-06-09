@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                             "Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                             episodeInfo.ParentIndexNumber,
                             episodeInfo.IndexNumber,
-                            series.GetProviderId(MetadataProviders.Tvdb));
+                            series.GetProviderId(MetadataProvider.Tvdb));
                         return imageResult;
                     }
 
@@ -85,7 +85,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 }
                 catch (TvDbServerException e)
                 {
-                    _logger.LogError(e, "Failed to retrieve episode images for series {TvDbId}", series.GetProviderId(MetadataProviders.Tvdb));
+                    _logger.LogError(e, "Failed to retrieve episode images for series {TvDbId}", series.GetProviderId(MetadataProvider.Tvdb));
                 }
             }
 

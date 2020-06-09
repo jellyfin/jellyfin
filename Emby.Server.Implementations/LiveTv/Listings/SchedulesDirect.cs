@@ -342,7 +342,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 info.SeriesId = programId.Substring(0, 10);
 
-                info.SeriesProviderIds[MetadataProviders.Zap2It.ToString()] = info.SeriesId;
+                info.SeriesProviderIds[MetadataProvider.Zap2It.ToString()] = info.SeriesId;
 
                 if (details.metadata != null)
                 {
