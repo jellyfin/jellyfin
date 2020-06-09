@@ -192,6 +192,12 @@ namespace Jellyfin.Api.Auth
 
             if (string.IsNullOrEmpty(token))
             {
+                Request.Query.TryGetValue("ApiKey", out var value);
+                token = value;
+            }
+
+            if (string.IsNullOrEmpty(token))
+            {
                 Request.Query.TryGetValue("api_key", out var value);
                 token = value;
             }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 #nullable enable
 
-namespace Jellyfin.Api.Extensions
+namespace Jellyfin.Api.Helpers
 {
     /// <summary>
     /// Claim Helpers.
