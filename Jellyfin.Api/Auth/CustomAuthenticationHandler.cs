@@ -190,6 +190,7 @@ namespace Jellyfin.Api.Auth
                 token = value;
             }
 
+            // TODO deprecate this query parameter.
             if (string.IsNullOrEmpty(token))
             {
                 Request.Query.TryGetValue("api_key", out var value);
