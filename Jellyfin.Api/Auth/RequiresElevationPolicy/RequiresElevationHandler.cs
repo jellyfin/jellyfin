@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Jellyfin.Api.Auth.RequiresElevationPolicy
@@ -7,14 +9,29 @@ namespace Jellyfin.Api.Auth.RequiresElevationPolicy
     /// <summary>
     /// Authorization handler for requiring elevated privileges.
     /// </summary>
-    public class RequiresElevationHandler : AuthorizationHandler<RequiresElevationRequirement>
+    public class RequiresElevationHandler : BaseAuthorizationHandler<RequiresElevationRequirement>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequiresElevationHandler"/> class.
+        /// </summary>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
+        public RequiresElevationHandler(IUserManager userManager, INetworkManager networkManager)
+            : base(userManager, networkManager)
+        {
+        }
+
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RequiresElevationRequirement requirement)
         {
-            if (context.User.IsInRole(UserRoles.Administrator))
+            var validated = ValidateClaims(context.User);
+            if (validated && context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(requirement);
+            }
+            else
+            {
+                context.Fail();
             }
 
             return Task.CompletedTask;
