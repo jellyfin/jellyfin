@@ -171,6 +171,11 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return true;
             }
 
+            if (authAttribtues.IgnoreLegacyAuth)
+            {
+                return true;
+            }
+
             return false;
         }
 

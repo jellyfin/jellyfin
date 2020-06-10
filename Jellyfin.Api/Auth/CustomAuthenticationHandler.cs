@@ -46,7 +46,10 @@ namespace Jellyfin.Api.Auth
                 var authorizationInfo = _authService.Authenticate(Request);
                 if (authorizationInfo == null)
                 {
-                    return Task.FromResult(AuthenticateResult.Fail("Invalid user"));
+                    return Task.FromResult(AuthenticateResult.NoResult());
+                    // TODO return when legacy API is removed.
+                    // Don't spam the log with "Invalid User"
+                    // return Task.FromResult(AuthenticateResult.Fail("Invalid user"));
                 }
 
                 var claims = new[]

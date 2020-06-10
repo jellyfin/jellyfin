@@ -10,6 +10,7 @@ using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Formatters;
+using Jellyfin.Server.Models;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -72,11 +73,18 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The MVC builder.</returns>
         public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl)
         {
-            return serviceCollection.AddMvc(opts =>
+            return serviceCollection
+                .AddCors(options =>
+                {
+                    options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
+                })
+                .AddMvc(opts =>
                 {
                     opts.UseGeneralRoutePrefix(baseUrl);
                     opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
+
+                    opts.OutputFormatters.Add(new CssOutputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
