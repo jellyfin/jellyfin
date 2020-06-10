@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Jellyfin.Api.Controllers.System
+namespace Jellyfin.Api.Controllers
 {
     /// <summary>
     /// Activity log controller.
     /// </summary>
-    [Route("/System/ActivityLog/Entries")]
+    [Route("/System/ActivityLog")]
     [Authorize(Policy = Policies.RequiresElevation)]
     public class ActivityLogController : BaseJellyfinApiController
     {
@@ -36,19 +36,15 @@ namespace Jellyfin.Api.Controllers.System
         /// <param name="hasUserId">Optional. Only returns activities that have a user associated.</param>
         /// <response code="200">Activity log returned.</response>
         /// <returns>A <see cref="QueryResult{ActivityLogEntry}"/> containing the log entries.</returns>
-        [HttpGet]
+        [HttpGet("Entries")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<ActivityLogEntry>> GetLogEntries(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string minDate,
+            [FromQuery] DateTime? minDate,
             bool? hasUserId)
         {
-            DateTime? startDate = string.IsNullOrWhiteSpace(minDate) ?
-                (DateTime?)null :
-                DateTime.Parse(minDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-
-            return _activityManager.GetActivityLogEntries(startDate, hasUserId, startIndex, limit);
+            return _activityManager.GetActivityLogEntries(minDate, hasUserId, startIndex, limit);
         }
     }
 }
