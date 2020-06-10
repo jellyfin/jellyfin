@@ -166,38 +166,38 @@ namespace Jellyfin.Api.Auth
                 Token = token
             };
 
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(info.Token))
             {
                 Request.Headers.TryGetValue("X-Jellyfin-Token", out var value);
-                token = value;
+                info.Token = value;
             }
 
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(info.Token))
             {
                 Request.Headers.TryGetValue("X-Emby-Token", out var value);
-                token = value;
+                info.Token = value;
             }
 
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(info.Token))
             {
                 Request.Headers.TryGetValue("X-MediaBrowser-Token", out var value);
-                token = value;
+                info.Token = value;
             }
 
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(info.Token))
             {
                 Request.Query.TryGetValue("ApiKey", out var value);
-                token = value;
+                info.Token = value;
             }
 
             // TODO deprecate this query parameter.
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(info.Token))
             {
                 Request.Query.TryGetValue("api_key", out var value);
-                token = value;
+                info.Token = value;
             }
 
-            var result = _authRepo.Get(new AuthenticationInfoQuery { AccessToken = token });
+            var result = _authRepo.Get(new AuthenticationInfoQuery { AccessToken = info.Token });
             var tokenInfo = result.Items.Count > 0 ? result.Items[0] : null;
             if (tokenInfo == null)
             {
