@@ -39,9 +39,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _networkManager = networkManager;
         }
 
-        public void Authenticate(IRequest request, IAuthenticationAttributes authAttribtues)
+        public void Authenticate(IRequest request, IAuthenticationAttributes authAttributes)
         {
-            ValidateUser(request, authAttribtues);
+            ValidateUser(request, authAttributes);
         }
 
         public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
@@ -49,6 +49,25 @@ namespace Emby.Server.Implementations.HttpServer.Security
             var req = new WebSocketSharpRequest(request, null, request.Path);
             var user = ValidateUser(req, authAttributes);
             return user;
+        }
+
+        public AuthorizationInfo Authenticate(HttpRequest request)
+        {
+            var auth = _authorizationContext.GetAuthorizationInfo(request);
+            if (auth?.User == null)
+            {
+                return null;
+            }
+
+            if (auth.User.Policy.IsDisabled)
+            {
+                throw new SecurityException("User account has been disabled.")
+                {
+                    SecurityExceptionType = SecurityExceptionType.Unauthenticated
+                };
+            }
+
+            return auth;
         }
 
         private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
@@ -75,7 +94,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (user != null)
             {
-                ValidateUserAccess(user, request, authAttribtues, auth);
+                ValidateUserAccess(user, request, authAttribtues);
             }
 
             var info = GetTokenInfo(request);
@@ -106,8 +125,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private void ValidateUserAccess(
             User user,
             IRequest request,
-            IAuthenticationAttributes authAttributes,
-            AuthorizationInfo auth)
+            IAuthenticationAttributes authAttributes)
         {
             if (user.HasPermission(PermissionKind.IsDisabled))
             {
@@ -230,16 +248,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 throw new AuthenticationException("Access token is invalid or expired.");
             }
-
-            //if (!string.IsNullOrEmpty(info.UserId))
-            //{
-            //    var user = _userManager.GetUserById(info.UserId);
-
-            //    if (user == null || user.Configuration.IsDisabled)
-            //    {
-            //        throw new SecurityException("User account has been disabled.");
-            //    }
-            //}
         }
     }
 }

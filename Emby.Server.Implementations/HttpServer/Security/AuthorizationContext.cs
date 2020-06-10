@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer.Security
@@ -38,6 +39,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return GetAuthorization(requestContext);
         }
 
+        public AuthorizationInfo GetAuthorizationInfo(HttpRequest requestContext)
+        {
+            var auth = GetAuthorizationDictionary(requestContext);
+            var (authInfo, _) =
+                GetAuthorizationInfoFromDictionary(auth, requestContext.Headers, requestContext.Query);
+            return authInfo;
+        }
+
         /// <summary>
         /// Gets the authorization.
         /// </summary>
@@ -46,7 +55,23 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private AuthorizationInfo GetAuthorization(IRequest httpReq)
         {
             var auth = GetAuthorizationDictionary(httpReq);
+            var (authInfo, originalAuthInfo) =
+                GetAuthorizationInfoFromDictionary(auth, httpReq.Headers, httpReq.QueryString);
 
+            if (originalAuthInfo != null)
+            {
+                httpReq.Items["OriginalAuthenticationInfo"] = originalAuthInfo;
+            }
+
+            httpReq.Items["AuthorizationInfo"] = authInfo;
+            return authInfo;
+        }
+
+        private (AuthorizationInfo authInfo, AuthenticationInfo originalAuthenticationInfo) GetAuthorizationInfoFromDictionary(
+            in Dictionary<string, string> auth,
+            in IHeaderDictionary headers,
+            in IQueryCollection queryString)
+        {
             string deviceId = null;
             string device = null;
             string client = null;
@@ -64,19 +89,31 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (string.IsNullOrEmpty(token))
             {
-                token = httpReq.Headers["X-Emby-Token"];
+                token = headers["X-Jellyfin-Token"];
             }
 
             if (string.IsNullOrEmpty(token))
             {
-                token = httpReq.Headers["X-MediaBrowser-Token"];
-            }
-            if (string.IsNullOrEmpty(token))
-            {
-                token = httpReq.QueryString["api_key"];
+                token = headers["X-Emby-Token"];
             }
 
-            var info = new AuthorizationInfo
+            if (string.IsNullOrEmpty(token))
+            {
+                token = headers["X-MediaBrowser-Token"];
+            }
+
+            if (string.IsNullOrEmpty(token))
+            {
+                token = queryString["ApiKey"];
+            }
+
+            // TODO depricate this query parameter.
+            if (string.IsNullOrEmpty(token))
+            {
+                token = queryString["api_key"];
+            }
+
+            var authInfo = new AuthorizationInfo
             {
                 Client = client,
                 Device = device,
@@ -85,6 +122,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 Token = token
             };
 
+            AuthenticationInfo originalAuthenticationInfo = null;
             if (!string.IsNullOrWhiteSpace(token))
             {
                 var result = _authRepo.Get(new AuthenticationInfoQuery
@@ -92,81 +130,77 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     AccessToken = token
                 });
 
-                var tokenInfo = result.Items.Count > 0 ? result.Items[0] : null;
+                originalAuthenticationInfo = result.Items.Count > 0 ? result.Items[0] : null;
 
-                if (tokenInfo != null)
+                if (originalAuthenticationInfo != null)
                 {
                     var updateToken = false;
 
                     // TODO: Remove these checks for IsNullOrWhiteSpace
-                    if (string.IsNullOrWhiteSpace(info.Client))
+                    if (string.IsNullOrWhiteSpace(authInfo.Client))
                     {
-                        info.Client = tokenInfo.AppName;
+                        authInfo.Client = originalAuthenticationInfo.AppName;
                     }
 
-                    if (string.IsNullOrWhiteSpace(info.DeviceId))
+                    if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
                     {
-                        info.DeviceId = tokenInfo.DeviceId;
+                        authInfo.DeviceId = originalAuthenticationInfo.DeviceId;
                     }
 
                     // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
-                    var allowTokenInfoUpdate = info.Client == null || info.Client.IndexOf("chromecast", StringComparison.OrdinalIgnoreCase) == -1;
+                    var allowTokenInfoUpdate = authInfo.Client == null || authInfo.Client.IndexOf("chromecast", StringComparison.OrdinalIgnoreCase) == -1;
 
-                    if (string.IsNullOrWhiteSpace(info.Device))
+                    if (string.IsNullOrWhiteSpace(authInfo.Device))
                     {
-                        info.Device = tokenInfo.DeviceName;
+                        authInfo.Device = originalAuthenticationInfo.DeviceName;
                     }
-
-                    else if (!string.Equals(info.Device, tokenInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
+                    else if (!string.Equals(authInfo.Device, originalAuthenticationInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
                     {
                         if (allowTokenInfoUpdate)
                         {
                             updateToken = true;
-                            tokenInfo.DeviceName = info.Device;
+                            originalAuthenticationInfo.DeviceName = authInfo.Device;
                         }
                     }
 
-                    if (string.IsNullOrWhiteSpace(info.Version))
+                    if (string.IsNullOrWhiteSpace(authInfo.Version))
                     {
-                        info.Version = tokenInfo.AppVersion;
+                        authInfo.Version = originalAuthenticationInfo.AppVersion;
                     }
-                    else if (!string.Equals(info.Version, tokenInfo.AppVersion, StringComparison.OrdinalIgnoreCase))
+                    else if (!string.Equals(authInfo.Version, originalAuthenticationInfo.AppVersion, StringComparison.OrdinalIgnoreCase))
                     {
                         if (allowTokenInfoUpdate)
                         {
                             updateToken = true;
-                            tokenInfo.AppVersion = info.Version;
+                            originalAuthenticationInfo.AppVersion = authInfo.Version;
                         }
                     }
 
-                    if ((DateTime.UtcNow - tokenInfo.DateLastActivity).TotalMinutes > 3)
+                    if ((DateTime.UtcNow - originalAuthenticationInfo.DateLastActivity).TotalMinutes > 3)
                     {
-                        tokenInfo.DateLastActivity = DateTime.UtcNow;
+                        originalAuthenticationInfo.DateLastActivity = DateTime.UtcNow;
                         updateToken = true;
                     }
 
-                    if (!tokenInfo.UserId.Equals(Guid.Empty))
+                    if (!originalAuthenticationInfo.UserId.Equals(Guid.Empty))
                     {
-                        info.User = _userManager.GetUserById(tokenInfo.UserId);
+                        authInfo.User = _userManager.GetUserById(originalAuthenticationInfo.UserId);
 
-                        if (info.User != null && !string.Equals(info.User.Username, tokenInfo.UserName, StringComparison.OrdinalIgnoreCase))
+                        if (authInfo.User != null && !string.Equals(authInfo.User.Name, originalAuthenticationInfo.UserName, StringComparison.OrdinalIgnoreCase))
                         {
-                            tokenInfo.UserName = info.User.Username;
+                            originalAuthenticationInfo.UserName = authInfo.User.Name;
                             updateToken = true;
                         }
                     }
 
                     if (updateToken)
                     {
-                        _authRepo.Update(tokenInfo);
+                        _authRepo.Update(originalAuthenticationInfo);
                     }
                 }
-                httpReq.Items["OriginalAuthenticationInfo"] = tokenInfo;
             }
 
-            httpReq.Items["AuthorizationInfo"] = info;
-
-            return info;
+            return (authInfo, originalAuthenticationInfo);
         }
 
         /// <summary>
@@ -176,7 +210,32 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private Dictionary<string, string> GetAuthorizationDictionary(IRequest httpReq)
         {
-            var auth = httpReq.Headers["X-Emby-Authorization"];
+            var auth = httpReq.Headers["X-Jellyfin-Authorization"];
+            if (string.IsNullOrEmpty(auth))
+            {
+                auth = httpReq.Headers["X-Emby-Authorization"];
+            }
+
+            if (string.IsNullOrEmpty(auth))
+            {
+                auth = httpReq.Headers[HeaderNames.Authorization];
+            }
+
+            return GetAuthorization(auth);
+        }
+
+        /// <summary>
+        /// Gets the auth.
+        /// </summary>
+        /// <param name="httpReq">The HTTP req.</param>
+        /// <returns>Dictionary{System.StringSystem.String}.</returns>
+        private Dictionary<string, string> GetAuthorizationDictionary(HttpRequest httpReq)
+        {
+            var auth = httpReq.Headers["X-Jellyfin-Authorization"];
+            if (string.IsNullOrEmpty(auth))
+            {
+                auth = httpReq.Headers["X-Emby-Authorization"];
+            }
 
             if (string.IsNullOrEmpty(auth))
             {
@@ -206,7 +265,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return null;
             }
 
-            var acceptedNames = new[] { "MediaBrowser", "Emby" };
+            var acceptedNames = new[] { "MediaBrowser", "Emby", "Jellyfin" };
 
             // It has to be a digest request
             if (!acceptedNames.Contains(parts[0], StringComparer.OrdinalIgnoreCase))
@@ -236,12 +295,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         private static string NormalizeValue(string value)
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                return value;
-            }
-
-            return WebUtility.HtmlEncode(value);
+            return string.IsNullOrEmpty(value) ? value : WebUtility.HtmlEncode(value);
         }
     }
 }

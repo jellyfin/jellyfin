@@ -3,6 +3,9 @@ using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Controller.Net
 {
+    /// <summary>
+    /// Authorization info.
+    /// </summary>
     public class AuthorizationInfo
     {
         /// <summary>
@@ -41,6 +44,9 @@ namespace MediaBrowser.Controller.Net
         /// <value>The token.</value>
         public string Token { get; set; }
 
+        /// <summary>
+        /// Gets or sets the user.
+        /// </summary>
         public User User { get; set; }
     }
 }
