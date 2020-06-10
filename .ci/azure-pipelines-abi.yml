@@ -79,13 +79,6 @@ jobs:
           overWrite: true
           flattenFolders: true
 
-      - task: ExtractFiles@1
-        displayName: "Extract ABI Compatibility Check Tool"
-        inputs:
-          archiveFilePatterns: "$(System.ArtifactsDirectory)/*-ci.zip"
-          destinationFolder: $(System.ArtifactsDirectory)/tools
-          cleanDestinationFolder: true
-
       # The `--warnings-only` switch will swallow the return code and not emit any errors.
       - task: DotNetCoreCLI@2
         displayName: 'Execute ABI Compatibility Check Tool'
