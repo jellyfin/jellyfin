@@ -195,10 +195,10 @@ namespace Jellyfin.Api.Controllers
                 genreQuery.Parent = parentItem;
             }
 
-            if (string.Equals(includeItemTypes, nameof(MusicAlbum), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(includeItemTypes, nameof(MusicVideo), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(includeItemTypes, nameof(MusicArtist), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(includeItemTypes, nameof(Audio), StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(includeItemTypes, nameof(MusicAlbum), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(includeItemTypes, nameof(MusicVideo), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(includeItemTypes, nameof(MusicArtist), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(includeItemTypes, nameof(Audio), StringComparison.OrdinalIgnoreCase))
             {
                 filters.Genres = _libraryManager.GetMusicGenres(genreQuery).Items.Select(i => new NameGuidPair
                 {
