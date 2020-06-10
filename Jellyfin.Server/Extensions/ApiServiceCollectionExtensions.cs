@@ -5,7 +5,10 @@ using System.Linq;
 using System.Reflection;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
+using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
+using Jellyfin.Api.Auth.IgnoreSchedulePolicy;
+using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
@@ -33,10 +36,18 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddJellyfinApiAuthorization(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             return serviceCollection.AddAuthorizationCore(options =>
             {
+                options.AddPolicy(
+                    Policies.DefaultAuthorization,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new DefaultAuthorizationRequirement());
+                    });
                 options.AddPolicy(
                     Policies.RequiresElevation,
                     policy =>
@@ -50,6 +61,20 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.LocalAccessOnly,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new LocalAccessRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.IgnoreSchedule,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new IgnoreScheduleRequirement());
                     });
             });
         }
