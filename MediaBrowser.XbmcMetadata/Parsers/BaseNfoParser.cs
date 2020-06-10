@@ -360,9 +360,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             item.LockedFields = val.Split('|').Select(i =>
                             {
-                                if (Enum.TryParse(i, true, out MetadataFields field))
+                                if (Enum.TryParse(i, true, out MetadataField field))
                                 {
-                                    return (MetadataFields?)field;
+                                    return (MetadataField?)field;
                                 }
 
                                 return null;

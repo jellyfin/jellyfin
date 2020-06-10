@@ -112,7 +112,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Name = data.Name;
             }
 
-            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataFields.Cast))
+            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
 
@@ -143,7 +143,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.ProductionYear = audio.PremiereDate.Value.ToLocalTime().Year;
             }
 
-            if (!audio.LockedFields.Contains(MetadataFields.Genres))
+            if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
                 audio.Genres = Array.Empty<string>();
 
@@ -153,7 +153,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!audio.LockedFields.Contains(MetadataFields.Studios))
+            if (!audio.LockedFields.Contains(MetadataField.Studios))
             {
                 audio.SetStudios(data.Studios);
             }

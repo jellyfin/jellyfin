@@ -582,7 +582,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
-        public MetadataFields[] LockedFields { get; set; }
+        public MetadataField[] LockedFields { get; set; }
 
         /// <summary>
         /// Gets or sets the trailer count.
