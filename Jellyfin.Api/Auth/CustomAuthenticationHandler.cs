@@ -1,3 +1,10 @@
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
@@ -286,6 +293,11 @@ namespace Jellyfin.Api.Auth
             }
 
             return HttpUtility.HtmlEncode(value);
+        }
+
+        private static IPAddress NormalizeIp(IPAddress ip)
+        {
+            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
         }
     }
 }

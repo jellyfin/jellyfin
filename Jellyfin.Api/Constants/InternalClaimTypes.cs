@@ -34,5 +34,10 @@
         /// Token.
         /// </summary>
         public const string Token = "Jellyfin-Token";
+
+        /// <summary>
+        /// IP Address.
+        /// </summary>
+        public const string IPAddress = "Jellyfin-IP";
     }
 }
