@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -69,7 +70,8 @@ namespace Jellyfin.Api.Auth
                     new Claim(ClaimTypes.Name, user.Name),
                     new Claim(
                         ClaimTypes.Role,
-                        value: user.Policy.IsAdministrator ? UserRoles.Administrator : UserRoles.User)
+                        value: user.Policy.IsAdministrator ? UserRoles.Administrator : UserRoles.User),
+                    new Claim(InternalClaimTypes.IPAddress, NormalizeIp(Request.HttpContext.Connection.RemoteIpAddress).ToString())
                 };
 
                 // Load properties from authentication
@@ -280,6 +282,11 @@ namespace Jellyfin.Api.Auth
             }
 
             return HttpUtility.HtmlEncode(value);
+        }
+
+        private static IPAddress NormalizeIp(IPAddress ip)
+        {
+            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
         }
     }
 }

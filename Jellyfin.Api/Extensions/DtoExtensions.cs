@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Extensions
             if (!dtoOptions.ContainsField(ItemFields.RecursiveItemCount)
                 || !dtoOptions.ContainsField(ItemFields.ChildCount))
             {
-                string? client = ClaimHelpers.GetClient(request);
+                string? client = ClaimHelpers.GetClient(request.HttpContext.User);
 
                 // No client in claim
                 if (string.IsNullOrEmpty(client))
