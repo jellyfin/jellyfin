@@ -70,7 +70,10 @@ namespace MediaBrowser.Common.Json.Converters
             var convertedDictionary = new Dictionary<string?, TValue>(value.Count);
             foreach (var (k, v) in value)
             {
-                convertedDictionary[k?.ToString()] = v;
+                if (k != null) 
+                {
+                  convertedDictionary[k.ToString()] = v;
+                }
             }
 
             JsonSerializer.Serialize(writer, convertedDictionary, options);
