@@ -61,7 +61,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>The list of ipaddresses.</returns>
         IPAddress[] GetLocalIpAddresses();
 
-		/// <summary>
+        /// <summary>
         /// Checks if the given address falls within the ranges given in [subnets]. The addresses in subnets can be hosts or subnets in the CIDR format.
         /// </summary>
         /// <param name="addressString">The address to check.</param>
