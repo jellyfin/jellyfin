@@ -489,7 +489,7 @@ namespace MediaBrowser.Api.Images
                 Logger.LogError(e, "Error deleting user profile image:");
             }
 
-            user.ProfileImage = null;
+            _userManager.ClearProfileImage(user);
             _userManager.UpdateUser(user);
         }
 

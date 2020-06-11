@@ -22,7 +22,6 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Users
@@ -666,6 +665,16 @@ namespace Jellyfin.Server.Implementations.Users
 
             dbContext.Update(user);
             dbContext.SaveChanges();
+        }
+
+        public void ClearProfileImage(User user)
+        {
+#nullable disable
+            // TODO: Remove these when User has nullable annotations
+
+            // Can't just set the value to null, as it hasn't been loaded yet, so EF Core wouldn't see the change
+            _dbProvider.CreateContext().Entry(user).Reference(u => u.ProfileImage).CurrentValue = null;
+#nullable enable
         }
 
         private static bool IsValidUsername(string name)

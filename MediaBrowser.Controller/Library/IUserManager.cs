@@ -175,7 +175,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// This method updates the user's configuration.
         /// This is only included as a stopgap until the new API, using this internally is not recommended.
-        /// Instead, modify the user object directlu, then call <see cref="UpdateUser"/>.
+        /// Instead, modify the user object directly, then call <see cref="UpdateUser"/>.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <param name="config">The request containing the new user configuration.</param>
@@ -184,10 +184,16 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// This method updates the user's policy.
         /// This is only included as a stopgap until the new API, using this internally is not recommended.
-        /// Instead, modify the user object directlu, then call <see cref="UpdateUser"/>.
+        /// Instead, modify the user object directly, then call <see cref="UpdateUser"/>.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <param name="policy">The request containing the new user policy.</param>
         void UpdatePolicy(Guid userId, UserPolicy policy);
+
+        /// <summary>
+        /// Clears the user's profile image.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        void ClearProfileImage(User user);
     }
 }
