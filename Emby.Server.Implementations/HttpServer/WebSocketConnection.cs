@@ -234,10 +234,12 @@ namespace Emby.Server.Implementations.HttpServer
         private Task SendKeepAliveResponse()
         {
             LastKeepAliveDate = DateTime.UtcNow;
-            return SendAsync(new WebSocketMessage<string>
-            {
-                MessageType = "KeepAlive"
-            }, CancellationToken.None);
+            return SendAsync(
+                new WebSocketMessage<string>
+                {
+                    MessageId = Guid.NewGuid(),
+                    MessageType = "KeepAlive"
+                }, CancellationToken.None);
         }
 
         /// <inheritdoc />
