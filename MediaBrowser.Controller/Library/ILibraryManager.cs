@@ -30,13 +30,18 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
+        /// <param name="allowIgnorePath">Allow the path to be ignored.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null);
+        BaseItem ResolvePath(
+            FileSystemMetadata fileInfo,
+            Folder parent = null,
+            bool allowIgnorePath = true);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem
         /// </summary>
-        IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files,
+        IEnumerable<BaseItem> ResolvePaths(
+            IEnumerable<FileSystemMetadata> files,
             IDirectoryService directoryService,
             Folder parent,
             LibraryOptions libraryOptions,

@@ -514,8 +514,8 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null)
-            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent);
+        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null, bool allowIgnorePath = true)
+            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent, allowIgnorePath: allowIgnorePath);
 
         private BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
@@ -523,7 +523,8 @@ namespace Emby.Server.Implementations.Library
             IItemResolver[] resolvers,
             Folder parent = null,
             string collectionType = null,
-            LibraryOptions libraryOptions = null)
+            LibraryOptions libraryOptions = null,
+            bool allowIgnorePath = true)
         {
             if (fileInfo == null)
             {
@@ -547,7 +548,7 @@ namespace Emby.Server.Implementations.Library
             };
 
             // Return null if ignore rules deem that we should do so
-            if (IgnoreFile(args.FileInfo, args.Parent))
+            if (allowIgnorePath && IgnoreFile(args.FileInfo, args.Parent))
             {
                 return null;
             }
@@ -711,7 +712,9 @@ namespace Emby.Server.Implementations.Library
 
             Directory.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder, AggregateFolder>();
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
+                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath), allowIgnorePath: false))
+                             .DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
             if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
@@ -792,7 +795,7 @@ namespace Emby.Server.Implementations.Library
                         if (tmpItem == null)
                         {
                             _logger.LogDebug("Creating new userRootFolder with DeepCopy");
-                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
+                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath), allowIgnorePath: false)).DeepCopy<Folder, UserRootFolder>();
                         }
 
                         // In case program data folder was moved

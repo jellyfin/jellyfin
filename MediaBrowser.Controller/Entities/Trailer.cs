@@ -80,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = base.GetRelatedUrls();
 
-            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
             if (!string.IsNullOrEmpty(imdbId))
             {
                 list.Add(new ExternalUrl

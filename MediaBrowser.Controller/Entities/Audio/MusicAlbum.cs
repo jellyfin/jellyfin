@@ -97,14 +97,14 @@ namespace MediaBrowser.Controller.Entities.Audio
                 list.Insert(0, albumArtist + "-" + Name);
             }
 
-            var id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
+            var id = this.GetProviderId(MetadataProvider.MusicBrainzAlbum);
 
             if (!string.IsNullOrEmpty(id))
             {
                 list.Insert(0, "MusicAlbum-Musicbrainz-" + id);
             }
 
-            id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+            id = this.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
 
             if (!string.IsNullOrEmpty(id))
             {

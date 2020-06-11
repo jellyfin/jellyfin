@@ -623,7 +623,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasImdbId.Value;
 
-                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Imdb));
+                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProvider.Imdb));
 
                 if (hasValue != filterValue)
                 {
@@ -635,7 +635,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasTmdbId.Value;
 
-                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb));
+                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProvider.Tmdb));
 
                 if (hasValue != filterValue)
                 {
@@ -647,7 +647,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasTvdbId.Value;
 
-                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tvdb));
+                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProvider.Tvdb));
 
                 if (hasValue != filterValue)
                 {

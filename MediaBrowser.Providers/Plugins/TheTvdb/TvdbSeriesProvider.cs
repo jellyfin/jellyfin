@@ -22,6 +22,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         internal static TvdbSeriesProvider Current { get; private set; }
+
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
@@ -94,22 +95,22 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         {
             var series = result.Item;
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(tvdbId))
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(tvdbId))
             {
-                series.SetProviderId(MetadataProviders.Tvdb, tvdbId);
+                series.SetProviderId(MetadataProvider.Tvdb, tvdbId);
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var imdbId) && !string.IsNullOrEmpty(imdbId))
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out var imdbId) && !string.IsNullOrEmpty(imdbId))
             {
-                series.SetProviderId(MetadataProviders.Imdb, imdbId);
-                tvdbId = await GetSeriesByRemoteId(imdbId, MetadataProviders.Imdb.ToString(), metadataLanguage,
+                series.SetProviderId(MetadataProvider.Imdb, imdbId);
+                tvdbId = await GetSeriesByRemoteId(imdbId, MetadataProvider.Imdb.ToString(), metadataLanguage,
                     cancellationToken).ConfigureAwait(false);
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out var zap2It) && !string.IsNullOrEmpty(zap2It))
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Zap2It.ToString(), out var zap2It) && !string.IsNullOrEmpty(zap2It))
             {
-                series.SetProviderId(MetadataProviders.Zap2It, zap2It);
-                tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProviders.Zap2It.ToString(), metadataLanguage,
+                series.SetProviderId(MetadataProvider.Zap2It, zap2It);
+                tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProvider.Zap2It.ToString(), metadataLanguage,
                     cancellationToken).ConfigureAwait(false);
             }
 
@@ -145,12 +146,11 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
-
             TvDbResponse<SeriesSearchResult[]> result = null;
 
             try
             {
-                if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(idType, MetadataProvider.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     result = await _tvdbClientManager.GetSeriesByZap2ItIdAsync(id, language, cancellationToken)
                         .ConfigureAwait(false);
@@ -176,9 +176,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         /// <returns>True, if the dictionary contains a valid TV provider ID, otherwise false.</returns>
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            return seriesProviderIds.ContainsKey(MetadataProviders.Tvdb.ToString()) ||
-                   seriesProviderIds.ContainsKey(MetadataProviders.Imdb.ToString()) ||
-                   seriesProviderIds.ContainsKey(MetadataProviders.Zap2It.ToString());
+            return seriesProviderIds.ContainsKey(MetadataProvider.Tvdb.ToString()) ||
+                   seriesProviderIds.ContainsKey(MetadataProvider.Imdb.ToString()) ||
+                   seriesProviderIds.ContainsKey(MetadataProvider.Zap2It.ToString());
         }
 
         /// <summary>
@@ -249,20 +249,21 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     ImageUrl = TvdbUtils.BannerUrl + seriesSearchResult.Banner
 
                 };
+
                 try
                 {
                     var seriesSesult =
                         await _tvdbClientManager.GetSeriesByIdAsync(seriesSearchResult.Id, language, cancellationToken)
                             .ConfigureAwait(false);
-                    remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.Data.ImdbId);
-                    remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Data.Zap2itId);
+                    remoteSearchResult.SetProviderId(MetadataProvider.Imdb, seriesSesult.Data.ImdbId);
+                    remoteSearchResult.SetProviderId(MetadataProvider.Zap2It, seriesSesult.Data.Zap2itId);
                 }
                 catch (TvDbServerException e)
                 {
                     _logger.LogError(e, "Unable to retrieve series with id {TvdbId}", seriesSearchResult.Id);
                 }
 
-                remoteSearchResult.SetProviderId(MetadataProviders.Tvdb, seriesSearchResult.Id.ToString());
+                remoteSearchResult.SetProviderId(MetadataProvider.Tvdb, seriesSearchResult.Id.ToString());
                 list.Add(new Tuple<List<string>, RemoteSearchResult>(tvdbTitles, remoteSearchResult));
             }
 
@@ -274,11 +275,12 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         }
 
         /// <summary>
-        /// The remove
+        /// The remove.
         /// </summary>
         const string remove = "\"'!`?";
+
         /// <summary>
-        /// The spacers
+        /// The spacers.
         /// </summary>
         const string spacers = "/,.:;\\(){}[]+-_=–*";  // (there are two types of dashes, short and long)
 
@@ -315,23 +317,23 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     sb.Append(c);
                 }
             }
-            sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
 
+            sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
             return Regex.Replace(sb.ToString().Trim(), @"\s+", " ");
         }
 
         private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)
         {
             Series series = result.Item;
-            series.SetProviderId(MetadataProviders.Tvdb, tvdbSeries.Id.ToString());
+            series.SetProviderId(MetadataProvider.Tvdb, tvdbSeries.Id.ToString());
             series.Name = tvdbSeries.SeriesName;
             series.Overview = (tvdbSeries.Overview ?? string.Empty).Trim();
             result.ResultLanguage = metadataLanguage;
             series.AirDays = TVUtils.GetAirDays(tvdbSeries.AirsDayOfWeek);
             series.AirTime = tvdbSeries.AirsTime;
             series.CommunityRating = (float?)tvdbSeries.SiteRating;
-            series.SetProviderId(MetadataProviders.Imdb, tvdbSeries.ImdbId);
-            series.SetProviderId(MetadataProviders.Zap2It, tvdbSeries.Zap2itId);
+            series.SetProviderId(MetadataProvider.Imdb, tvdbSeries.ImdbId);
+            series.SetProviderId(MetadataProvider.Zap2It, tvdbSeries.Zap2itId);
             if (Enum.TryParse(tvdbSeries.Status, true, out SeriesStatus seriesStatus))
             {
                 series.Status = seriesStatus;
@@ -409,7 +411,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public async Task Identify(SeriesInfo info)
         {
-            if (!string.IsNullOrWhiteSpace(info.GetProviderId(MetadataProviders.Tvdb)))
+            if (!string.IsNullOrWhiteSpace(info.GetProviderId(MetadataProvider.Tvdb)))
             {
                 return;
             }
@@ -421,8 +423,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             if (entry != null)
             {
-                var id = entry.GetProviderId(MetadataProviders.Tvdb);
-                info.SetProviderId(MetadataProviders.Tvdb, id);
+                var id = entry.GetProviderId(MetadataProvider.Tvdb);
+                info.SetProviderId(MetadataProvider.Tvdb, id);
             }
         }
 

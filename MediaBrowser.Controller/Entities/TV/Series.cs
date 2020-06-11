@@ -164,13 +164,13 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var list = base.GetUserDataKeys();
 
-            var key = this.GetProviderId(MetadataProviders.Imdb);
+            var key = this.GetProviderId(MetadataProvider.Imdb);
             if (!string.IsNullOrEmpty(key))
             {
                 list.Insert(0, key);
             }
 
-            key = this.GetProviderId(MetadataProviders.Tvdb);
+            key = this.GetProviderId(MetadataProvider.Tvdb);
             if (!string.IsNullOrEmpty(key))
             {
                 list.Insert(0, key);
@@ -487,7 +487,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var list = base.GetRelatedUrls();
 
-            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
             if (!string.IsNullOrEmpty(imdbId))
             {
                 list.Add(new ExternalUrl
