@@ -217,7 +217,7 @@ namespace Jellyfin.Api.Controllers
 
             if (string.Equals(format, "vtt", StringComparison.OrdinalIgnoreCase) && addVttTimeMap)
             {
-                using var stream = await EncodeSubtitles(id, mediaSourceId, index, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
+                await using Stream stream = await EncodeSubtitles(id, mediaSourceId, index, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
                 using var reader = new StreamReader(stream);
 
                 var text = await reader.ReadToEndAsync().ConfigureAwait(false);
