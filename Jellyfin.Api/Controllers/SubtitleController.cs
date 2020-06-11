@@ -1,4 +1,5 @@
 #nullable enable
+#pragma warning disable CA1801
 
 using System;
 using System.Collections.Generic;
@@ -253,6 +254,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSubtitlePlaylist(
             [FromRoute] Guid id,
+            // TODO: 'int index' is never used: CA1801 is disabled
             [FromRoute] int index,
             [FromRoute] string mediaSourceId,
             [FromQuery, Required] int segmentLength)
