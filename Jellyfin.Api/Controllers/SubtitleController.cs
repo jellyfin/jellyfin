@@ -1,8 +1,12 @@
-﻿using System;
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,10 +111,10 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Items/{id}/RemoteSearch/Subtitles/{language}")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<RemoteSubtitleInfo[]>> SearchRemoteSubtitles(
+        public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
             [FromRoute] Guid id,
             [FromRoute] string language,
-            [FromQuery] bool isPerfectMatch)
+            [FromQuery] bool? isPerfectMatch)
         {
             var video = (Video)_libraryManager.GetItemById(id);
 
@@ -127,26 +131,24 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Items/{id}/RemoteSearch/Subtitles/{subtitleId}")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult DownloadRemoteSubtitles(
+        public async Task<ActionResult> DownloadRemoteSubtitles(
             [FromRoute] Guid id,
             [FromRoute] string subtitleId)
         {
             var video = (Video)_libraryManager.GetItemById(id);
 
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    await _subtitleManager.DownloadSubtitles(video, subtitleId, CancellationToken.None)
-                        .ConfigureAwait(false);
+                await _subtitleManager.DownloadSubtitles(video, subtitleId, CancellationToken.None)
+                    .ConfigureAwait(false);
 
-                    _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error downloading subtitles");
-                }
-            });
+                _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading subtitles");
+            }
+
             return NoContent();
         }
 
@@ -159,6 +161,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Providers/Subtitles/Subtitles/{id}")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces(MediaTypeNames.Application.Octet)]
         public async Task<ActionResult> GetRemoteSubtitles([FromRoute] string id)
         {
             var result = await _subtitleManager.GetRemoteSubtitles(id, CancellationToken.None).ConfigureAwait(false);
@@ -179,8 +182,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
-        [HttpGet("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/Stream.{Format}")]
-        [HttpGet("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/{StartPositionTicks}/Stream.{Format}")]
+        [HttpGet("/Videos/{id}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
+        [HttpGet("/Videos/{id}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks}/Stream.{format}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSubtitle(
             [FromRoute, Required] Guid id,
@@ -217,11 +220,11 @@ namespace Jellyfin.Api.Controllers
                 using var stream = await EncodeSubtitles(id, mediaSourceId, index, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
                 using var reader = new StreamReader(stream);
 
-                var text = reader.ReadToEnd();
+                var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
                 text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000", StringComparison.Ordinal);
 
-                return File(text, MimeTypes.GetMimeType("file." + format));
+                return File(Encoding.UTF8.GetBytes(text), MimeTypes.GetMimeType("file." + format));
             }
 
             return File(
@@ -305,7 +308,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             builder.AppendLine("#EXT-X-ENDLIST");
-            return File(builder.ToString(), MimeTypes.GetMimeType("playlist.m3u8"));
+            return File(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
         }
 
         /// <summary>
