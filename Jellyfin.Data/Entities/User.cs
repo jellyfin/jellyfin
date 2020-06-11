@@ -56,6 +56,7 @@ namespace Jellyfin.Data.Entities
             // Set default values
             Id = Guid.NewGuid();
             InvalidLoginAttemptCount = 0;
+            EnableUserPreferenceAccess = true;
             MustUpdatePassword = false;
             DisplayMissingEpisodes = false;
             DisplayCollectionsView = false;
