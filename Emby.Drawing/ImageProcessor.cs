@@ -300,7 +300,7 @@ namespace Emby.Drawing
             }
 
             string path = info.Path;
-            _logger.LogInformation("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
+            _logger.LogDebug("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
 
             ImageDimensions size = GetImageDimensions(path);
             info.Width = size.Width;

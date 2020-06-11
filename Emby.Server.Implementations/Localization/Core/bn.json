@@ -93,5 +93,12 @@
     "HeaderFavoriteSongs": "প্রিয় গানগুলো",
     "HeaderFavoriteShows": "প্রিয় শোগুলো",
     "TasksLibraryCategory": "গ্রন্থাগার",
-    "TasksMaintenanceCategory": "রক্ষণাবেক্ষণ"
+    "TasksMaintenanceCategory": "রক্ষণাবেক্ষণ",
+    "TaskRefreshLibrary": "স্ক্যান মিডিয়া লাইব্রেরি",
+    "TaskRefreshChapterImagesDescription": "অধ্যায়গুলিতে থাকা ভিডিওগুলির জন্য থাম্বনেইল তৈরি ।",
+    "TaskRefreshChapterImages": "অধ্যায়ের চিত্রগুলি বের করুন",
+    "TaskCleanCacheDescription": "সিস্টেমে আর প্রয়োজন নেই ক্যাশ, ফাইলগুলি মুছে ফেলুন।",
+    "TaskCleanCache": "ক্লিন ক্যাশ ডিরেক্টরি",
+    "TasksChannelsCategory": "ইন্টারনেট চ্যানেল",
+    "TasksApplicationCategory": "আবেদন"
 }

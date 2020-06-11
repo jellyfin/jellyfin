@@ -163,17 +163,17 @@ namespace MediaBrowser.Providers.Music
                                 Name = i.Artists[0].Item1
                             };
 
-                            result.AlbumArtist.SetProviderId(MetadataProviders.MusicBrainzArtist, i.Artists[0].Item2);
+                            result.AlbumArtist.SetProviderId(MetadataProvider.MusicBrainzArtist, i.Artists[0].Item2);
                         }
 
                         if (!string.IsNullOrWhiteSpace(i.ReleaseId))
                         {
-                            result.SetProviderId(MetadataProviders.MusicBrainzAlbum, i.ReleaseId);
+                            result.SetProviderId(MetadataProvider.MusicBrainzAlbum, i.ReleaseId);
                         }
 
                         if (!string.IsNullOrWhiteSpace(i.ReleaseGroupId))
                         {
-                            result.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, i.ReleaseGroupId);
+                            result.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, i.ReleaseGroupId);
                         }
 
                         return result;
@@ -247,12 +247,12 @@ namespace MediaBrowser.Providers.Music
             {
                 if (!string.IsNullOrEmpty(releaseId))
                 {
-                    result.Item.SetProviderId(MetadataProviders.MusicBrainzAlbum, releaseId);
+                    result.Item.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseId);
                 }
 
                 if (!string.IsNullOrEmpty(releaseGroupId))
                 {
-                    result.Item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
+                    result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
                 }
             }
 

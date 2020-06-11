@@ -92,8 +92,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 item.Genres = new[] { result.strGenre };
             }
 
-            item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
-            item.SetProviderId(MetadataProviders.MusicBrainzArtist, result.strMusicBrainzID);
+            item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
+            item.SetProviderId(MetadataProvider.MusicBrainzArtist, result.strMusicBrainzID);
 
             string overview = null;
 
