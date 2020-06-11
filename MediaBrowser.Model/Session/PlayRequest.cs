@@ -2,12 +2,14 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Text.Json.Serialization;
+using MediaBrowser.Model.Serialization.Attributes;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
-    /// Class PlayRequest
+    /// Class PlayRequest.
     /// </summary>
     public class PlayRequest
     {
@@ -22,6 +24,7 @@ namespace MediaBrowser.Model.Session
         /// Gets or sets the start position ticks that the first item should be played at
         /// </summary>
         /// <value>The start position ticks.</value>
+        [Serialization.Attributes.JsonIgnore(Condition = JsonIgnoreCondition.WhenNull)]
         [ApiMember(Name = "StartPositionTicks", Description = "The starting position of the first item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public long? StartPositionTicks { get; set; }
 
@@ -38,9 +41,16 @@ namespace MediaBrowser.Model.Session
         /// <value>The controlling user identifier.</value>
         public Guid ControllingUserId { get; set; }
 
+        [Serialization.Attributes.JsonIgnore(Condition = JsonIgnoreCondition.WhenNull)]
         public int? SubtitleStreamIndex { get; set; }
+
+        [Serialization.Attributes.JsonIgnore(Condition = JsonIgnoreCondition.WhenNull)]
         public int? AudioStreamIndex { get; set; }
+
+        [Serialization.Attributes.JsonIgnore(Condition = JsonIgnoreCondition.WhenNull)]
         public string MediaSourceId { get; set; }
+
+        [Serialization.Attributes.JsonIgnore(Condition = JsonIgnoreCondition.WhenNull)]
         public int? StartIndex { get; set; }
     }
 }
