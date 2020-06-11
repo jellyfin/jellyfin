@@ -667,6 +667,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.SaveChanges();
         }
 
+        /// <inheritdoc/>
         public void ClearProfileImage(User user)
         {
 #nullable disable
