@@ -6,6 +6,7 @@ using System.Reflection;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
+using Jellyfin.Api.Auth.LocalOrElevatedPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
@@ -50,6 +51,13 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.LocalOrElevated,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new LocalOrElevatedPolicyRequirement());
                     });
             });
         }

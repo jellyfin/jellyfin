@@ -14,5 +14,10 @@ namespace Jellyfin.Api.Constants
         /// Policy name for requiring elevated privileges.
         /// </summary>
         public const string RequiresElevation = "RequiresElevation";
+
+        /// <summary>
+        /// Policy name for requiring a local request or elevated privileges.
+        /// </summary>
+        public const string LocalOrElevated = "LocalOrElevated";
     }
 }
