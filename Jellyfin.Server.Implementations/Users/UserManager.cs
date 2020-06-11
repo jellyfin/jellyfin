@@ -22,6 +22,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Users
@@ -174,7 +175,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = _dbProvider.CreateContext();
 
             // TODO: Remove after user item data is migrated.
-            var max = dbContext.Users.Select(u => u.InternalId).Max();
+            var max = dbContext.Users.Any() ? dbContext.Users.Select(u => u.InternalId).Max() : 0;
 
             var newUser = new User(
                 name,
@@ -549,7 +550,7 @@ namespace Jellyfin.Server.Implementations.Users
             newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
             newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
 
-            dbContext.Users.Add(newUser);
+            dbContext.Users.Update(newUser);
             dbContext.SaveChanges();
         }
 
