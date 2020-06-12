@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Json.Converters
         /// <param name="typeToConvert">The type to convert.</param>
         /// <param name="options">The json serializer options.</param>
         /// <returns>Typed dictionary.</returns>
-        /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="NotSupportedException">Dictionary not supported.</exception>
         public override IDictionary<TKey, TValue> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var convertedType = typeof(Dictionary<,>).MakeGenericType(typeof(string), typeToConvert.GenericTypeArguments[1]);
@@ -38,24 +38,24 @@ namespace MediaBrowser.Common.Json.Converters
                 CultureInfo.CurrentCulture);
             var enumerator = (IEnumerator)convertedType.GetMethod("GetEnumerator")!.Invoke(value, null);
             var parse = typeof(TKey).GetMethod(
-                "Parse", 
-                0, 
-                BindingFlags.Public | BindingFlags.Static, 
-                null, 
-                CallingConventions.Any, 
-                new[] { typeof(string) }, 
+                "Parse",
+                0,
+                BindingFlags.Public | BindingFlags.Static,
+                null,
+                CallingConventions.Any,
+                new[] { typeof(string) },
                 null);
             if (parse == null)
             {
                 throw new NotSupportedException($"{typeof(TKey)} as TKey in IDictionary<TKey, TValue> is not supported.");
             }
-            
+
             while (enumerator.MoveNext())
             {
                 var element = (KeyValuePair<string?, TValue>)enumerator.Current;
-                instance.Add((TKey)parse.Invoke(null, new[] { (object?) element.Key }), element.Value);
+                instance.Add((TKey)parse.Invoke(null, new[] { (object?)element.Key }), element.Value);
             }
-            
+
             return instance;
         }
 
@@ -70,8 +70,12 @@ namespace MediaBrowser.Common.Json.Converters
             var convertedDictionary = new Dictionary<string?, TValue>(value.Count);
             foreach (var (k, v) in value)
             {
-                convertedDictionary[k?.ToString()] = v;
+                if (k != null)
+                {
+                    convertedDictionary[k.ToString()] = v;
+                }
             }
+
             JsonSerializer.Serialize(writer, convertedDictionary, options);
         }
     }
