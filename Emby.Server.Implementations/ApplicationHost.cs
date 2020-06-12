@@ -16,6 +16,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
@@ -118,14 +119,16 @@ namespace Emby.Server.Implementations
         private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
         private readonly IFileSystem _fileSystemManager;
-        private readonly INetworkManager _networkManager;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
-
+        private INetworkManager _networkManager;
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
         private IHttpClient _httpClient;
+        private string _cachedLocalApiUrl = string.Empty;
+
+        public INetworkManager NetManager => _networkManager;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -240,18 +243,20 @@ namespace Emby.Server.Implementations
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
-            INetworkManager networkManager)
+            INetworkManager nwManager)
         {
             _xmlSerializer = new MyXmlSerializer();
-
-            _networkManager = networkManager;
-            networkManager.LocalSubnetsFn = GetConfiguredLocalSubnets;
 
             ApplicationPaths = applicationPaths;
             LoggerFactory = loggerFactory;
             _fileSystemManager = fileSystem;
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
+
+            // LocalSubnetFn must be assigned after ConfigurationManager has been created, so the config is available at initiation.
+            _networkManager = nwManager;
+            _networkManager.Initialise(GetConfiguredIPV6Status, GetConfiguredLocalSubnets, GetConfiguredBindAddresses);
+            ConfigurationManager.ConfigurationUpdated += _networkManager.NamedConfigurationUpdated;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
@@ -296,9 +301,19 @@ namespace Emby.Server.Implementations
             return ServerConfigurationManager.Configuration.LocalNetworkSubnets;
         }
 
+        private bool GetConfiguredIPV6Status()
+        {
+            return ServerConfigurationManager.Configuration.EnableIPV6;
+        }
+
+        private string[] GetConfiguredBindAddresses()
+        {
+            return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
+        }
+
         private void OnNetworkChanged(object sender, EventArgs e)
         {
-            _validAddressResults.Clear();
+            _cachedLocalApiUrl = string.Empty;
         }
 
         /// <inheritdoc />
@@ -513,6 +528,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddMemoryCache();
 
             serviceCollection.AddSingleton(ConfigurationManager);
+
             serviceCollection.AddSingleton<IApplicationHost>(this);
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
@@ -1094,9 +1110,9 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>SystemInfo.</returns>
-        public async Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken)
+        public SystemInfo GetSystemInfo(CancellationToken cancellationToken)
         {
-            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            var localAddress = GetLocalApiUrl(cancellationToken);
             var transcodingTempPath = ConfigurationManager.GetTranscodePath();
 
             return new SystemInfo
@@ -1133,9 +1149,9 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public async Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken)
+        public PublicSystemInfo GetPublicSystemInfo(CancellationToken cancellationToken)
         {
-            var localAddress = await GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            var localAddress = GetLocalApiUrl(cancellationToken);
 
             return new PublicSystemInfo
             {
@@ -1152,22 +1168,29 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
 
         /// <inheritdoc/>
-        public async Task<string> GetLocalApiUrl(CancellationToken cancellationToken)
+        public string GetLocalApiUrl(CancellationToken cancellationToken)
         {
+            if (!string.IsNullOrEmpty(_cachedLocalApiUrl))
+            {
+                // This function gets called twice - so use the results from last time.
+                return _cachedLocalApiUrl;
+            }
+
             try
             {
-                // Return the first matched address, if found, or the first known local address
-                var addresses = await GetLocalIpAddressesInternal(false, 1, cancellationToken).ConfigureAwait(false);
+                NetCollection addresses = _networkManager.OnFilteredBindAddressesCallback(IsLocalIpAddressValidAsync, cancellationToken);
+
                 if (addresses.Count == 0)
                 {
                     return null;
                 }
 
-                return GetLocalApiUrl(addresses.First());
+                _cachedLocalApiUrl = GetLocalApiUrl(((IPNetAddress)addresses.Items[0]).Address);
+                return _cachedLocalApiUrl;
             }
-            catch (Exception ex)
+            catch (InvalidOperationException)
             {
-                Logger.LogError(ex, "Error getting local Ip address information");
+                Logger.LogError("No response from any of the bind addresses: {0}", _networkManager.GetBindInterfaces());
             }
 
             return null;
@@ -1226,85 +1249,10 @@ namespace Emby.Server.Implementations
             }.ToString().TrimEnd('/');
         }
 
-        public Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken)
+        private async Task<bool> IsLocalIpAddressValidAsync(IPObject address, CancellationToken cancellationToken)
         {
-            return GetLocalIpAddressesInternal(true, 0, cancellationToken);
-        }
-
-        private async Task<List<IPAddress>> GetLocalIpAddressesInternal(bool allowLoopback, int limit, CancellationToken cancellationToken)
-        {
-            var addresses = ServerConfigurationManager
-                .Configuration
-                .LocalNetworkAddresses
-                .Select(NormalizeConfiguredLocalAddress)
-                .Where(i => i != null)
-                .ToList();
-
-            if (addresses.Count == 0)
-            {
-                addresses.AddRange(_networkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
-            }
-
-            var resultList = new List<IPAddress>();
-
-            foreach (var address in addresses)
-            {
-                if (!allowLoopback)
-                {
-                    if (address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback))
-                    {
-                        continue;
-                    }
-                }
-
-                var valid = await IsLocalIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
-                if (valid)
-                {
-                    resultList.Add(address);
-
-                    if (limit > 0 && resultList.Count >= limit)
-                    {
-                        return resultList;
-                    }
-                }
-            }
-
-            return resultList;
-        }
-
-        public IPAddress NormalizeConfiguredLocalAddress(string address)
-        {
-            var index = address.Trim('/').IndexOf('/');
-
-            if (index != -1)
-            {
-                address = address.Substring(index + 1);
-            }
-
-            if (IPAddress.TryParse(address.Trim('/'), out IPAddress result))
-            {
-                return result;
-            }
-
-            return null;
-        }
-
-        private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-
-        private async Task<bool> IsLocalIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
-        {
-            if (address.Equals(IPAddress.Loopback)
-                || address.Equals(IPAddress.IPv6Loopback))
-            {
-                return true;
-            }
-
-            var apiUrl = GetLocalApiUrl(address) + "/system/ping";
-
-            if (_validAddressResults.TryGetValue(apiUrl, out var cachedResult))
-            {
-                return cachedResult;
-            }
+            var apiUrl = GetLocalApiUrl(((IPNetAddress)address).Address);
+            apiUrl += "/system/ping";
 
             try
             {
@@ -1322,7 +1270,6 @@ namespace Emby.Server.Implementations
                         var result = await reader.ReadToEndAsync().ConfigureAwait(false);
                         var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
 
-                        _validAddressResults.AddOrUpdate(apiUrl, valid, (k, v) => valid);
                         Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
                         return valid;
                     }
@@ -1336,8 +1283,6 @@ namespace Emby.Server.Implementations
             catch (Exception ex)
             {
                 Logger.LogDebug(ex, "Ping test result to {0}. Success: {1}", apiUrl, false);
-
-                _validAddressResults.AddOrUpdate(apiUrl, false, (k, v) => false);
                 return false;
             }
         }

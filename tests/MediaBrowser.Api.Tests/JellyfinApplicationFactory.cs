@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using Common.Networking;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Networking;
-using Jellyfin.Drawing.Skia;
 using Jellyfin.Server;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
@@ -74,13 +73,14 @@ namespace MediaBrowser.Api.Tests
             ILoggerFactory loggerFactory = new SerilogLoggerFactory();
             _disposableComponents.Add(loggerFactory);
 
+            NetworkManager networkManager = new NetworkManager(loggerFactory.CreateLogger<NetworkManager>());
             // Create the app host and initialize it
             var appHost = new CoreAppHost(
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
                 new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(loggerFactory.CreateLogger<NetworkManager>()));
+                (INetworkManager)networkManager);
             _disposableComponents.Add(appHost);
             var serviceCollection = new ServiceCollection();
             appHost.Init(serviceCollection);

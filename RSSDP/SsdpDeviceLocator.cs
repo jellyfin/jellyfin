@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Rssdp.Infrastructure
 {
@@ -15,15 +16,15 @@ namespace Rssdp.Infrastructure
     {
 
         #region Fields & Constants
+        private readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
+        private readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
         private List<DiscoveredSsdpDevice> _Devices;
         private ISsdpCommunicationsServer _CommunicationsServer;
-
         private Timer _BroadcastTimer;
         private object _timerLock = new object();
-
-        private readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
-        private readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
+        private ILogger _logger;
+        private bool _ipV6Enabled;
 
         #endregion
 
@@ -32,7 +33,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer)
+        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ILogger Logger, bool IPv6Enabled)
         {
             if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
 
@@ -40,6 +41,8 @@ namespace Rssdp.Infrastructure
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
 
             _Devices = new List<DiscoveredSsdpDevice>();
+            _logger = Logger;
+            _ipV6Enabled = IPv6Enabled;
         }
 
         #endregion
@@ -292,7 +295,7 @@ namespace Rssdp.Infrastructure
 
         #region Discovery/Device Add
 
-        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress localIpAddress)
+        private bool AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress localIpAddress)
         {
             bool isNewDevice = false;
             lock (_Devices)
@@ -311,6 +314,7 @@ namespace Rssdp.Infrastructure
             }
 
             DeviceFound(device, isNewDevice, localIpAddress);
+            return isNewDevice;
         }
 
         private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress localIpAddress)
@@ -335,23 +339,31 @@ namespace Rssdp.Infrastructure
         {
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            values["HOST"] = "239.255.255.250:1900";
+            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddress}:1900";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
             //values["X-EMBY-SERVERID"] = _appHost.SystemId;
-
             values["MAN"] = "\"ssdp:discover\"";
-
             // Search target
             values["ST"] = "ssdp:all";
-
             // Seconds to delay response
-            values["MX"] = "3";
+            values["MX"] = "3"; // mxValue.ToString(); ??
 
             var header = "M-SEARCH * HTTP/1.1";
-
             var message = BuildMessage(header, values);
 
-            return _CommunicationsServer.SendMulticastMessage(message, null, cancellationToken);
+            if (!_ipV6Enabled)
+            {
+                _logger.LogInformation("Sending IPv4 broadcast.");
+                return _CommunicationsServer.SendMulticastMessage(message, IPAddress.Any, cancellationToken);
+            }
+
+            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddressV6}:1900";
+            var message2 = BuildMessage(header, values);
+            
+            _logger.LogInformation("Sending IPv6 multicast and IPv4 broadcast.");
+
+            return Task.WhenAll(_CommunicationsServer.SendMulticastMessage(message, IPAddress.Any, cancellationToken),
+                _CommunicationsServer.SendMulticastMessage(message2, IPAddress.IPv6Any, cancellationToken));                            
         }
 
         private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress localIpAddress)
@@ -371,7 +383,10 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device, localIpAddress);
+                if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
+                {
+                    _logger.LogDebug("Search Response: {0} {1}", localIpAddress, device);
+                }
             }
         }
 
@@ -401,7 +416,10 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device, localIpAddress);
+                if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
+                {
+                    _logger.LogDebug("Alive notification: {0} {1} ", localIpAddress, device);
+                }
             }
         }
 
@@ -423,7 +441,7 @@ namespace Rssdp.Infrastructure
                         Usn = usn,
                         ResponseHeaders = message.Headers
                     };
-
+                    _logger.LogDebug("Byebye: {0}", deadDevice);
                     if (NotificationTypeMatchesFilter(deadDevice))
                         OnDeviceUnavailable(deadDevice, false);
                 }
@@ -435,10 +453,9 @@ namespace Rssdp.Infrastructure
         private string GetFirstHeaderStringValue(string headerName, HttpResponseMessage message)
         {
             string retVal = null;
-            IEnumerable<string> values;
             if (message.Headers.Contains(headerName))
             {
-                message.Headers.TryGetValues(headerName, out values);
+                message.Headers.TryGetValues(headerName, out IEnumerable<string> values);
                 if (values != null)
                     retVal = values.FirstOrDefault();
             }
@@ -449,10 +466,9 @@ namespace Rssdp.Infrastructure
         private string GetFirstHeaderStringValue(string headerName, HttpRequestMessage message)
         {
             string retVal = null;
-            IEnumerable<string> values;
             if (message.Headers.Contains(headerName))
             {
-                message.Headers.TryGetValues(headerName, out values);
+                message.Headers.TryGetValues(headerName, out IEnumerable<string> values);
                 if (values != null)
                     retVal = values.FirstOrDefault();
             }
@@ -463,32 +479,28 @@ namespace Rssdp.Infrastructure
         private Uri GetFirstHeaderUriValue(string headerName, HttpRequestMessage request)
         {
             string value = null;
-            IEnumerable<string> values;
             if (request.Headers.Contains(headerName))
             {
-                request.Headers.TryGetValues(headerName, out values);
+                request.Headers.TryGetValues(headerName, out IEnumerable<string> values);
                 if (values != null)
                     value = values.FirstOrDefault();
             }
 
-            Uri retVal;
-            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out retVal);
+            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri retVal);
             return retVal;
         }
 
         private Uri GetFirstHeaderUriValue(string headerName, HttpResponseMessage response)
         {
             string value = null;
-            IEnumerable<string> values;
             if (response.Headers.Contains(headerName))
             {
-                response.Headers.TryGetValues(headerName, out values);
+                response.Headers.TryGetValues(headerName, out IEnumerable<string> values);
                 if (values != null)
                     value = values.FirstOrDefault();
             }
 
-            Uri retVal;
-            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out retVal);
+            Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out Uri retVal);
             return retVal;
         }
 

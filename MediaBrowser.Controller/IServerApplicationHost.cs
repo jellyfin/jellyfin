@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
@@ -20,11 +21,13 @@ namespace MediaBrowser.Controller
         /// Gets the system info.
         /// </summary>
         /// <returns>SystemInfo.</returns>
-        Task<SystemInfo> GetSystemInfo(CancellationToken cancellationToken);
+        SystemInfo GetSystemInfo(CancellationToken cancellationToken);
 
-        Task<PublicSystemInfo> GetPublicSystemInfo(CancellationToken cancellationToken);
+        PublicSystemInfo GetPublicSystemInfo(CancellationToken cancellationToken);
 
         bool CanLaunchWebBrowser { get; }
+
+        public INetworkManager NetManager { get; }
 
         /// <summary>
         /// Gets the HTTP server port.
@@ -56,20 +59,12 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
-        /// Gets all the local IP addresses of this API instance. Each address is validated by sending a 'ping' request
-        /// to the API that should exist at the address.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
-        /// <returns>A list containing all the local IP addresses of the server.</returns>
-        Task<List<IPAddress>> GetLocalIpAddresses(CancellationToken cancellationToken);
-
-        /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured
-        /// IP address that can be found via <see cref="GetLocalIpAddresses"/>. HTTPS will be preferred when available.
+        /// HTTPS will be preferred when available.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
         /// <returns>The server URL.</returns>
-        Task<string> GetLocalApiUrl(CancellationToken cancellationToken);
+        string GetLocalApiUrl(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a localhost URL that can be used to access the API using the loop-back IP address (127.0.0.1)

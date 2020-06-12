@@ -17,6 +17,7 @@ namespace Emby.Server.Implementations.Net
         private Socket _socket;
         private int _localPort;
         private bool _disposed = false;
+        private IPEndPoint _endpoint;
 
         public Socket Socket => _socket;
 
@@ -42,8 +43,8 @@ namespace Emby.Server.Implementations.Net
             _socket = socket;
             _localPort = localPort;
             LocalIPAddress = ip;
-
-            _socket.Bind(new IPEndPoint(ip, _localPort));
+            _endpoint = new IPEndPoint(ip, _localPort);
+            _socket.Bind(_endpoint);
 
             InitReceiveSocketAsyncEventArgs();
         }
@@ -115,9 +116,10 @@ namespace Emby.Server.Implementations.Net
         {
             ThrowIfDisposed();
 
-            EndPoint receivedFromEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            // EndPoint receivedFromEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            EndPoint receivedFromEndPoint = _endpoint;
 
-            return _socket.BeginReceiveFrom(buffer, offset, count, SocketFlags.None, ref receivedFromEndPoint, callback, buffer);
+            return _socket.BeginReceiveFrom(buffer, offset, count, SocketFlags.None, ref receivedFromEndPoint, callback, buffer); 
         }
 
         public int Receive(byte[] buffer, int offset, int count)
@@ -131,7 +133,7 @@ namespace Emby.Server.Implementations.Net
         {
             ThrowIfDisposed();
 
-            var sender = new IPEndPoint(IPAddress.Any, 0);
+            var sender = new IPEndPoint(_socket.AddressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any, 0);
             var remoteEndPoint = (EndPoint)sender;
 
             var receivedBytes = _socket.EndReceiveFrom(result, ref remoteEndPoint);

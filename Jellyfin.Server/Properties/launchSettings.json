@@ -3,15 +3,16 @@
     "Jellyfin.Server": {
       "commandName": "Project",
       "environmentVariables": {
+        "JELLYFIN_WEB_DIR": "c:\\code\\jellyweb\\dist",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "Jellyfin.Server (nowebclient)": {
       "commandName": "Project",
+      "commandLineArgs": "--nowebclient",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "commandLineArgs": "--nowebclient"
+      }
     }
   }
 }

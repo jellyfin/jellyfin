@@ -2,9 +2,8 @@
 
 using System;
 using System.Globalization;
-using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
@@ -26,17 +25,18 @@ using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
+
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
     public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
+        public static DlnaEntryPoint Current;
+
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
-
-        private PlayToManager _manager;
         private readonly ISessionManager _sessionManager;
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
@@ -47,25 +47,16 @@ namespace Emby.Dlna.Main
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-
+        private readonly object _syncLock = new object();
         private readonly IDeviceDiscovery _deviceDiscovery;
-
-        private SsdpDevicePublisher _Publisher;
-
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
-
+        private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
+        private PlayToManager _manager;
 
-        internal IContentDirectory ContentDirectory { get; private set; }
-
-        internal IConnectionManager ConnectionManager { get; private set; }
-
-        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
-
-        public static DlnaEntryPoint Current;
-
-        public DlnaEntryPoint(IServerConfigurationManager config,
+        public DlnaEntryPoint(
+            IServerConfigurationManager config,
             ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
@@ -126,35 +117,46 @@ namespace Emby.Dlna.Main
                 loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
                 httpClient,
                 config);
+
+            _networkManager.NetworkChanged += delegate { ReloadComponents(); };
+
             Current = this;
         }
+
+        internal IContentDirectory ContentDirectory { get; private set; }
+
+        internal IConnectionManager ConnectionManager { get; private set; }
+
+        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
         public async Task RunAsync()
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
-            await ReloadComponents().ConfigureAwait(false);
+            ReloadComponents();
 
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                await ReloadComponents().ConfigureAwait(false);
+                ReloadComponents();
             }
         }
 
-        private async Task ReloadComponents()
+        private void ReloadComponents()
         {
+            _logger.LogDebug("Reloading DLNA components.");
+
             var options = _config.GetDlnaConfiguration();
 
             StartSsdpHandler();
 
             if (options.EnableServer)
             {
-                await StartDevicePublisher(options).ConfigureAwait(false);
+                StartDevicePublisher(options);
             }
             else
             {
@@ -194,11 +196,6 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private void LogMessage(string msg)
-        {
-            _logger.LogDebug(msg);
-        }
-
         private void StartDeviceDiscovery(ISsdpCommunicationsServer communicationsServer)
         {
             try
@@ -224,27 +221,43 @@ namespace Emby.Dlna.Main
             }
         }
 
-        public async Task StartDevicePublisher(Configuration.DlnaOptions options)
+        public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
             if (!options.BlastAliveMessages)
             {
                 return;
             }
 
-            if (_Publisher != null)
+            if (_publisher != null)
             {
+                // See if there are any more endpoints.
+                try
+                {
+                    RegisterServerEndpoints();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error registering endpoint");
+                }
+
                 return;
             }
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost);
-                _Publisher.LogFunction = LogMessage;
-                _Publisher.SupportPnpRootDevice = false;
+                _publisher = new SsdpDevicePublisher(
+                    _communicationsServer,
+                    OperatingSystem.Name,
+                    Environment.OSVersion.VersionString,
+                    _logger,
+                    _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                {
+                    SupportPnpRootDevice = false
+                };
 
-                await RegisterServerEndpoints().ConfigureAwait(false);
+                RegisterServerEndpoints();
 
-                _Publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
             }
             catch (Exception ex)
             {
@@ -252,33 +265,28 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private async Task RegisterServerEndpoints()
+        /// <summary>
+        /// Registers SSDP endpoints on the internal interfaces.
+        /// </summary>
+        private void RegisterServerEndpoints()
         {
-            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
-
             var udn = CreateUuid(_appHost.SystemId);
 
-            foreach (var address in addresses)
+            foreach (IPNetAddress addr in _networkManager.GetInternalInterfaceAddresses())
             {
-                if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    // Not supporting IPv6 right now
-                    continue;
-                }
-
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
+                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, addr.Address);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+                var uri = new Uri(_appHost.GetLocalApiUrl(addr.Address) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
-                    CacheLifetime = TimeSpan.FromSeconds(1800), //How long SSDP clients can cache this info.
+                    CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = address,
-                    SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
+                    Address = addr.Address,
+                    SubnetMask = addr.Mask,
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",
@@ -287,13 +295,14 @@ namespace Emby.Dlna.Main
                 };
 
                 SetProperies(device, fullService);
-                _Publisher.AddDevice(device);
+
+                _publisher.AddDevice(device);
 
                 var embeddedDevices = new[]
                 {
                     "urn:schemas-upnp-org:service:ContentDirectory:1",
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
-                    //"urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
+                    // "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
                 };
 
                 foreach (var subDevice in embeddedDevices)
@@ -308,6 +317,7 @@ namespace Emby.Dlna.Main
                     };
 
                     SetProperies(embeddedDevice, subDevice);
+
                     device.AddDevice(embeddedDevice);
                 }
             }
@@ -319,12 +329,13 @@ namespace Emby.Dlna.Main
             {
                 guid = text.GetMD5();
             }
+
             return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
         private void SetProperies(SsdpDevice device, string fullDeviceType)
         {
-            var service = fullDeviceType.Replace("urn:", string.Empty).Replace(":1", string.Empty);
+            var service = fullDeviceType.Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase);
 
             var serviceParts = service.Split(':');
 
@@ -335,7 +346,6 @@ namespace Emby.Dlna.Main
             device.DeviceType = serviceParts[2];
         }
 
-        private readonly object _syncLock = new object();
         private void StartPlayToManager()
         {
             lock (_syncLock)
@@ -347,7 +357,8 @@ namespace Emby.Dlna.Main
 
                 try
                 {
-                    _manager = new PlayToManager(_logger,
+                    _manager = new PlayToManager(
+                        _logger,
                         _sessionManager,
                         _libraryManager,
                         _userManager,
@@ -386,6 +397,7 @@ namespace Emby.Dlna.Main
                     {
                         _logger.LogError(ex, "Error disposing PlayTo manager");
                     }
+
                     _manager = null;
                 }
             }
@@ -412,11 +424,11 @@ namespace Emby.Dlna.Main
 
         public void DisposeDevicePublisher()
         {
-            if (_Publisher != null)
+            if (_publisher != null)
             {
                 _logger.LogInformation("Disposing SsdpDevicePublisher");
-                _Publisher.Dispose();
-                _Publisher = null;
+                _publisher.Dispose();
+                _publisher = null;
             }
         }
     }
