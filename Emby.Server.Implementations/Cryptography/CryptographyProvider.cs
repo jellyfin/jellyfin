@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -31,7 +33,7 @@ namespace Emby.Server.Implementations.Cryptography
 
         private RandomNumberGenerator _randomNumberGenerator;
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CryptographyProvider"/> class.
@@ -56,15 +58,13 @@ namespace Emby.Server.Implementations.Cryptography
         {
             // downgrading for now as we need this library to be dotnetstandard compliant
             // with this downgrade we'll add a check to make sure we're on the downgrade method at the moment
-            if (method == DefaultHashMethod)
+            if (method != DefaultHashMethod)
             {
-                using (var r = new Rfc2898DeriveBytes(bytes, salt, iterations))
-                {
-                    return r.GetBytes(32);
-                }
+                throw new CryptographicException($"Cannot currently use PBKDF2 with requested hash method: {method}");
             }
 
-            throw new CryptographicException($"Cannot currently use PBKDF2 with requested hash method: {method}");
+            using var r = new Rfc2898DeriveBytes(bytes, salt, iterations);
+            return r.GetBytes(32);
         }
 
         /// <inheritdoc />
@@ -74,25 +74,22 @@ namespace Emby.Server.Implementations.Cryptography
             {
                 return PBKDF2(hashMethod, bytes, salt, DefaultIterations);
             }
-            else if (_supportedHashMethods.Contains(hashMethod))
+
+            if (!_supportedHashMethods.Contains(hashMethod))
             {
-                using (var h = HashAlgorithm.Create(hashMethod))
-                {
-                    if (salt.Length == 0)
-                    {
-                        return h.ComputeHash(bytes);
-                    }
-                    else
-                    {
-                        byte[] salted = new byte[bytes.Length + salt.Length];
-                        Array.Copy(bytes, salted, bytes.Length);
-                        Array.Copy(salt, 0, salted, bytes.Length, salt.Length);
-                        return h.ComputeHash(salted);
-                    }
-                }
+                throw new CryptographicException($"Requested hash method is not supported: {hashMethod}");
             }
 
-            throw new CryptographicException($"Requested hash method is not supported: {hashMethod}");
+            using var h = HashAlgorithm.Create(hashMethod);
+            if (salt.Length == 0)
+            {
+                return h.ComputeHash(bytes);
+            }
+
+            byte[] salted = new byte[bytes.Length + salt.Length];
+            Array.Copy(bytes, salted, bytes.Length);
+            Array.Copy(salt, 0, salted, bytes.Length, salt.Length);
+            return h.ComputeHash(salted);
         }
 
         /// <inheritdoc />
@@ -133,8 +130,6 @@ namespace Emby.Server.Implementations.Cryptography
             {
                 _randomNumberGenerator.Dispose();
             }
-
-            _randomNumberGenerator = null;
 
             _disposed = true;
         }
