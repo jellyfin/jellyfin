@@ -139,7 +139,6 @@ namespace Jellyfin.Server.Extensions
                 {
                     { securitySchemeRef, Array.Empty<string>() }
                 });
-                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
 
                 // Add all xml doc files to swagger generator.
                 var xmlFiles = Directory.GetFiles(
