@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryManager> _logger;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;

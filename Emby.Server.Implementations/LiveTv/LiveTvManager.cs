@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.LiveTv
         private const string EtagKey = "ProgramEtag";
 
         private readonly IServerConfigurationManager _config;
-        private readonly ILogger _logger;
+        private readonly ILogger<LiveTvManager> _logger;
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;

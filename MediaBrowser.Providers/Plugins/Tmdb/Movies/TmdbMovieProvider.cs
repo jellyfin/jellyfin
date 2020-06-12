@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<TmdbMovieProvider> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationHost _appHost;
 

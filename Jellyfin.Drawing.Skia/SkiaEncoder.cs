@@ -21,7 +21,7 @@ namespace Jellyfin.Drawing.Skia
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
 
-        private readonly ILogger _logger;
+        private readonly ILogger<SkiaEncoder> _logger;
         private readonly IApplicationPaths _appPaths;
 
         /// <summary>

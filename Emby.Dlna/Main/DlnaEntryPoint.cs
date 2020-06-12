@@ -33,7 +33,7 @@ namespace Emby.Dlna.Main
     public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
         private readonly IServerConfigurationManager _config;
-        private readonly ILogger _logger;
+        private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
 
         private PlayToManager _manager;
@@ -65,7 +65,8 @@ namespace Emby.Dlna.Main
 
         public static DlnaEntryPoint Current;
 
-        public DlnaEntryPoint(IServerConfigurationManager config,
+        public DlnaEntryPoint(
+            IServerConfigurationManager config,
             ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
@@ -99,7 +100,7 @@ namespace Emby.Dlna.Main
             _mediaEncoder = mediaEncoder;
             _socketFactory = socketFactory;
             _networkManager = networkManager;
-            _logger = loggerFactory.CreateLogger("Dlna");
+            _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
             ContentDirectory = new ContentDirectory.ContentDirectory(
                 dlnaManager,
@@ -347,7 +348,8 @@ namespace Emby.Dlna.Main
 
                 try
                 {
-                    _manager = new PlayToManager(_logger,
+                    _manager = new PlayToManager(
+                        _logger,
                         _sessionManager,
                         _libraryManager,
                         _userManager,

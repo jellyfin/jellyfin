@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Browser
             }
             catch (Exception ex)
             {
-                var logger = appHost.Resolve<ILogger>();
+                var logger = appHost.Resolve<ILogger<IServerApplicationHost>>();
                 logger?.LogError(ex, "Failed to open browser window with URL {URL}", relativeUrl);
             }
         }

@@ -21,7 +21,7 @@ namespace Emby.Notifications
     /// </summary>
     public class NotificationManager : INotificationManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<NotificationManager> _logger;
         private readonly IUserManager _userManager;
         private readonly IServerConfigurationManager _config;
 

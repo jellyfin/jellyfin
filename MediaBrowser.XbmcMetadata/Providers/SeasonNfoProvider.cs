@@ -14,7 +14,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
     /// </summary>
     public class SeasonNfoProvider : BaseNfoProvider<Season>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SeasonNfoProvider> _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
 
