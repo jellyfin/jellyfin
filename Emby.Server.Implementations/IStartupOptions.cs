@@ -1,3 +1,7 @@
+#pragma warning disable CS1591
+
+using System;
+
 namespace Emby.Server.Implementations
 {
     public interface IStartupOptions
@@ -36,5 +40,10 @@ namespace Emby.Server.Implementations
         /// Gets the value of the --plugin-manifest-url command line option.
         /// </summary>
         string PluginManifestUrl { get; }
+
+        /// <summary>
+        /// Gets the value of the --published-server-url command line option.
+        /// </summary>
+        Uri PublishedServerUrl { get; }
     }
 }

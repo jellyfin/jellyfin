@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -29,6 +27,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Channels
 {
+    /// <summary>
+    /// The LiveTV channel manager.
+    /// </summary>
     public class ChannelManager : IChannelManager
     {
         private readonly IUserManager _userManager;
@@ -46,6 +47,18 @@ namespace Emby.Server.Implementations.Channels
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelManager"/> class.
+        /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="dtoService">The dto service.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="config">The server configuration manager.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="jsonSerializer">The JSON serializer.</param>
+        /// <param name="providerManager">The provider manager.</param>
         public ChannelManager(
             IUserManager userManager,
             IDtoService dtoService,
@@ -72,11 +85,13 @@ namespace Emby.Server.Implementations.Channels
 
         private static TimeSpan CacheLength => TimeSpan.FromHours(3);
 
+        /// <inheritdoc />
         public void AddParts(IEnumerable<IChannel> channels)
         {
             Channels = channels.ToArray();
         }
 
+        /// <inheritdoc />
         public bool EnableMediaSourceDisplay(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
@@ -85,6 +100,7 @@ namespace Emby.Server.Implementations.Channels
             return !(channel is IDisableMediaSourceDisplay);
         }
 
+        /// <inheritdoc />
         public bool CanDelete(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
@@ -93,6 +109,7 @@ namespace Emby.Server.Implementations.Channels
             return channel is ISupportsDelete supportsDelete && supportsDelete.CanDelete(item);
         }
 
+        /// <inheritdoc />
         public bool EnableMediaProbe(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
@@ -101,6 +118,7 @@ namespace Emby.Server.Implementations.Channels
             return channel is ISupportsMediaProbe;
         }
 
+        /// <inheritdoc />
         public Task DeleteItem(BaseItem item)
         {
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
@@ -127,11 +145,16 @@ namespace Emby.Server.Implementations.Channels
                 .OrderBy(i => i.Name);
         }
 
+        /// <summary>
+        /// Get the installed channel IDs.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing installed channel IDs.</returns>
         public IEnumerable<Guid> GetInstalledChannelIds()
         {
             return GetAllChannels().Select(i => GetInternalChannelId(i.Name));
         }
 
+        /// <inheritdoc />
         public QueryResult<Channel> GetChannelsInternal(ChannelQuery query)
         {
             var user = query.UserId.Equals(Guid.Empty)
@@ -249,6 +272,7 @@ namespace Emby.Server.Implementations.Channels
             };
         }
 
+        /// <inheritdoc />
         public QueryResult<BaseItemDto> GetChannels(ChannelQuery query)
         {
             var user = query.UserId.Equals(Guid.Empty)
@@ -271,6 +295,12 @@ namespace Emby.Server.Implementations.Channels
             return result;
         }
 
+        /// <summary>
+        /// Refreshes the associated channels.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>The completed task.</returns>
         public async Task RefreshChannels(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var allChannelsList = GetAllChannels().ToList();
@@ -304,14 +334,7 @@ namespace Emby.Server.Implementations.Channels
 
         private Channel GetChannelEntity(IChannel channel)
         {
-            var item = GetChannel(GetInternalChannelId(channel.Name));
-
-            if (item == null)
-            {
-                item = GetChannel(channel, CancellationToken.None).Result;
-            }
-
-            return item;
+            return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).Result;
         }
 
         private List<MediaSourceInfo> GetSavedMediaSources(BaseItem item)
@@ -350,6 +373,7 @@ namespace Emby.Server.Implementations.Channels
             _jsonSerializer.SerializeToFile(mediaSources, path);
         }
 
+        /// <inheritdoc />
         public IEnumerable<MediaSourceInfo> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
             IEnumerable<MediaSourceInfo> results = GetSavedMediaSources(item);
@@ -359,6 +383,12 @@ namespace Emby.Server.Implementations.Channels
                 .ToList();
         }
 
+        /// <summary>
+        /// Gets the dynamic media sources based on the provided item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>The task representing the operation to get the media sources.</returns>
         public async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
             var channel = GetChannel(item.ChannelId);
@@ -403,7 +433,7 @@ namespace Emby.Server.Implementations.Channels
 
         private static MediaSourceInfo NormalizeMediaSource(BaseItem item, MediaSourceInfo info)
         {
-            info.RunTimeTicks = info.RunTimeTicks ?? item.RunTimeTicks;
+            info.RunTimeTicks ??= item.RunTimeTicks;
 
             return info;
         }
@@ -481,31 +511,33 @@ namespace Emby.Server.Implementations.Channels
 
         private static string GetOfficialRating(ChannelParentalRating rating)
         {
-            switch (rating)
+            return rating switch
             {
-                case ChannelParentalRating.Adult:
-                    return "XXX";
-                case ChannelParentalRating.UsR:
-                    return "R";
-                case ChannelParentalRating.UsPG13:
-                    return "PG-13";
-                case ChannelParentalRating.UsPG:
-                    return "PG";
-                default:
-                    return null;
-            }
+                ChannelParentalRating.Adult => "XXX",
+                ChannelParentalRating.UsR => "R",
+                ChannelParentalRating.UsPG13 => "PG-13",
+                ChannelParentalRating.UsPG => "PG",
+                _ => null
+            };
         }
 
+        /// <summary>
+        /// Gets a channel with the provided Guid.
+        /// </summary>
+        /// <param name="id">The Guid.</param>
+        /// <returns>The corresponding channel.</returns>
         public Channel GetChannel(Guid id)
         {
             return _libraryManager.GetItemById(id) as Channel;
         }
 
+        /// <inheritdoc />
         public Channel GetChannel(string id)
         {
             return _libraryManager.GetItemById(id) as Channel;
         }
 
+        /// <inheritdoc />
         public ChannelFeatures[] GetAllChannelFeatures()
         {
             return _libraryManager.GetItemIds(
@@ -516,6 +548,7 @@ namespace Emby.Server.Implementations.Channels
                 }).Select(i => GetChannelFeatures(i.ToString("N", CultureInfo.InvariantCulture))).ToArray();
         }
 
+        /// <inheritdoc />
         public ChannelFeatures GetChannelFeatures(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -529,6 +562,11 @@ namespace Emby.Server.Implementations.Channels
             return GetChannelFeaturesDto(channel, channelProvider, channelProvider.GetChannelFeatures());
         }
 
+        /// <summary>
+        /// Checks whether the provided Guid supports external transfer.
+        /// </summary>
+        /// <param name="channelId">The Guid.</param>
+        /// <returns>Whether or not the provided Guid supports external transfer.</returns>
         public bool SupportsExternalTransfer(Guid channelId)
         {
             var channelProvider = GetChannelProvider(channelId);
@@ -536,6 +574,13 @@ namespace Emby.Server.Implementations.Channels
             return channelProvider.GetChannelFeatures().SupportsContentDownloading;
         }
 
+        /// <summary>
+        /// Gets the provided channel's supported features.
+        /// </summary>
+        /// <param name="channel">The channel.</param>
+        /// <param name="provider">The provider.</param>
+        /// <param name="features">The features.</param>
+        /// <returns>The supported features.</returns>
         public ChannelFeatures GetChannelFeaturesDto(
             Channel channel,
             IChannel provider,
@@ -570,6 +615,7 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetNewItemId("Channel " + name, typeof(Channel));
         }
 
+        /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetLatestChannelItems(InternalItemsQuery query, CancellationToken cancellationToken)
         {
             var internalResult = await GetLatestChannelItemsInternal(query, cancellationToken).ConfigureAwait(false);
@@ -588,6 +634,7 @@ namespace Emby.Server.Implementations.Channels
             return result;
         }
 
+        /// <inheritdoc />
         public async Task<QueryResult<BaseItem>> GetLatestChannelItemsInternal(InternalItemsQuery query, CancellationToken cancellationToken)
         {
             var channels = GetAllChannels().Where(i => i is ISupportsLatestMedia).ToArray();
@@ -666,6 +713,7 @@ namespace Emby.Server.Implementations.Channels
             }
         }
 
+        /// <inheritdoc />
         public async Task<QueryResult<BaseItem>> GetChannelItemsInternal(InternalItemsQuery query, IProgress<double> progress, CancellationToken cancellationToken)
         {
             // Get the internal channel entity
@@ -727,6 +775,7 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemsResult(query);
         }
 
+        /// <inheritdoc />
         public async Task<QueryResult<BaseItemDto>> GetChannelItems(InternalItemsQuery query, CancellationToken cancellationToken)
         {
             var internalResult = await GetChannelItemsInternal(query, new SimpleProgress<double>(), cancellationToken).ConfigureAwait(false);
@@ -796,7 +845,7 @@ namespace Emby.Server.Implementations.Channels
 
                 var query = new InternalChannelItemQuery
                 {
-                    UserId = user == null ? Guid.Empty : user.Id,
+                    UserId = user?.Id ?? Guid.Empty,
                     SortBy = sortField,
                     SortDescending = sortDescending,
                     FolderId = externalFolderId
@@ -923,60 +972,32 @@ namespace Emby.Server.Implementations.Channels
 
             if (info.Type == ChannelItemType.Folder)
             {
-                if (info.FolderType == ChannelFolderType.MusicAlbum)
+                item = info.FolderType switch
                 {
-                    item = GetItemById<MusicAlbum>(info.Id, channelProvider.Name, out isNew);
-                }
-                else if (info.FolderType == ChannelFolderType.MusicArtist)
-                {
-                    item = GetItemById<MusicArtist>(info.Id, channelProvider.Name, out isNew);
-                }
-                else if (info.FolderType == ChannelFolderType.PhotoAlbum)
-                {
-                    item = GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, out isNew);
-                }
-                else if (info.FolderType == ChannelFolderType.Series)
-                {
-                    item = GetItemById<Series>(info.Id, channelProvider.Name, out isNew);
-                }
-                else if (info.FolderType == ChannelFolderType.Season)
-                {
-                    item = GetItemById<Season>(info.Id, channelProvider.Name, out isNew);
-                }
-                else
-                {
-                    item = GetItemById<Folder>(info.Id, channelProvider.Name, out isNew);
-                }
+                    ChannelFolderType.MusicAlbum => GetItemById<MusicAlbum>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.MusicArtist => GetItemById<MusicArtist>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.PhotoAlbum => GetItemById<PhotoAlbum>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.Series => GetItemById<Series>(info.Id, channelProvider.Name, out isNew),
+                    ChannelFolderType.Season => GetItemById<Season>(info.Id, channelProvider.Name, out isNew),
+                    _ => GetItemById<Folder>(info.Id, channelProvider.Name, out isNew)
+                };
             }
             else if (info.MediaType == ChannelMediaType.Audio)
             {
-                if (info.ContentType == ChannelMediaContentType.Podcast)
-                {
-                    item = GetItemById<AudioBook>(info.Id, channelProvider.Name, out isNew);
-                }
-                else
-                {
-                    item = GetItemById<Audio>(info.Id, channelProvider.Name, out isNew);
-                }
+                item = info.ContentType == ChannelMediaContentType.Podcast
+                    ? GetItemById<AudioBook>(info.Id, channelProvider.Name, out isNew)
+                    : GetItemById<Audio>(info.Id, channelProvider.Name, out isNew);
             }
             else
             {
-                if (info.ContentType == ChannelMediaContentType.Episode)
+                item = info.ContentType switch
                 {
-                    item = GetItemById<Episode>(info.Id, channelProvider.Name, out isNew);
-                }
-                else if (info.ContentType == ChannelMediaContentType.Movie)
-                {
-                    item = GetItemById<Movie>(info.Id, channelProvider.Name, out isNew);
-                }
-                else if (info.ContentType == ChannelMediaContentType.Trailer || info.ExtraType == ExtraType.Trailer)
-                {
-                    item = GetItemById<Trailer>(info.Id, channelProvider.Name, out isNew);
-                }
-                else
-                {
-                    item = GetItemById<Video>(info.Id, channelProvider.Name, out isNew);
-                }
+                    ChannelMediaContentType.Episode => GetItemById<Episode>(info.Id, channelProvider.Name, out isNew),
+                    ChannelMediaContentType.Movie => GetItemById<Movie>(info.Id, channelProvider.Name, out isNew),
+                    var x when x == ChannelMediaContentType.Trailer || info.ExtraType == ExtraType.Trailer
+                    => GetItemById<Trailer>(info.Id, channelProvider.Name, out isNew),
+                    _ => GetItemById<Video>(info.Id, channelProvider.Name, out isNew)
+                };
             }
 
             var enableMediaProbe = channelProvider is ISupportsMediaProbe;

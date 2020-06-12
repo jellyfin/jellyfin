@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -32,7 +33,10 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            string dlnaflags = string.Format(";DLNA.ORG_FLAGS={0}", DlnaMaps.FlagsToString(flagValue));
+            string dlnaflags = string.Format(
+                CultureInfo.InvariantCulture,
+                ";DLNA.ORG_FLAGS={0}",
+                DlnaMaps.FlagsToString(flagValue));
 
             ResponseProfile mediaProfile = _profile.GetImageMediaProfile(container,
                 width,

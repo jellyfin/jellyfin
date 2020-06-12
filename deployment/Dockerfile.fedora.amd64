@@ -1,0 +1,31 @@
+FROM fedora:31
+# Docker build arguments
+ARG SOURCE_DIR=/jellyfin
+ARG ARTIFACT_DIR=/dist
+ARG SDK_VERSION=3.1
+# Docker run environment
+ENV SOURCE_DIR=/jellyfin
+ENV ARTIFACT_DIR=/dist
+ENV IS_DOCKER=YES
+
+# Prepare Fedora environment
+RUN dnf update -y \
+ && dnf install -y @buildsys-build rpmdevtools git dnf-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel
+
+# Install DotNET SDK
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc \
+ && curl -o /etc/yum.repos.d/microsoft-prod.repo https://packages.microsoft.com/config/fedora/$(rpm -E %fedora)/prod.repo \
+ && dnf install -y dotnet-sdk-${SDK_VERSION} dotnet-runtime-${SDK_VERSION}
+
+# Create symlinks and directories
+RUN ln -sf ${SOURCE_DIR}/deployment/build.fedora.amd64 /build.sh \
+ && mkdir -p ${SOURCE_DIR}/SPECS \
+ && ln -s ${SOURCE_DIR}/fedora/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \
+ && mkdir -p ${SOURCE_DIR}/SOURCES \
+ && ln -s ${SOURCE_DIR}/fedora ${SOURCE_DIR}/SOURCES
+
+VOLUME ${SOURCE_DIR}/
+
+VOLUME ${ARTIFACT_DIR}/
+
+ENTRYPOINT ["/build.sh"]

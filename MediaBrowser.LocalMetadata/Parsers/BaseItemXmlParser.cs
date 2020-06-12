@@ -249,9 +249,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             item.LockedFields = val.Split('|').Select(i =>
                             {
-                                if (Enum.TryParse(i, true, out MetadataFields field))
+                                if (Enum.TryParse(i, true, out MetadataField field))
                                 {
-                                    return (MetadataFields?)field;
+                                    return (MetadataField?)field;
                                 }
 
                                 return null;
@@ -543,7 +543,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     var tmdbCollection = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdbCollection))
                     {
-                        item.SetProviderId(MetadataProviders.TmdbCollection, tmdbCollection);
+                        item.SetProviderId(MetadataProvider.TmdbCollection, tmdbCollection);
                     }
                     break;
 
