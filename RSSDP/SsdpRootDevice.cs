@@ -10,7 +10,7 @@ namespace Rssdp
     /// <para>Child (embedded) devices are represented by the <see cref="SsdpDevice"/> in the <see cref="SsdpDevice.Devices"/> property.</para>
     /// <para>Root devices contain some information that applies to the whole device tree and is therefore not present on child devices, such as <see cref="CacheLifetime"/> and <see cref="Location"/>.</para>
     /// </remarks>
-    public class SsdpRootDevice : SsdpDevice
+    public class SsdpRootDevice : SsdpDevice, IEquatable<SsdpRootDevice>
     {
         #region Fields
 
@@ -85,7 +85,19 @@ namespace Rssdp
         {
             return $"{DeviceType} - {Uuid} - {Location}";                
         }
-    
+
+        /// <summary>
+        /// Used by List{SsdpRoot}.Contains
+        /// </summary>
+        /// <param name="other">Item to compare</param>
+        /// <returns></returns>
+        public bool Equals(SsdpRootDevice other)
+        {
+            return string.Equals(ToString(), other?.ToString(), StringComparison.OrdinalIgnoreCase)
+                && Address.Equals(other?.Address)
+                && SubnetMask.Equals(other?.SubnetMask);
+        }
+
         #endregion
     }
 }

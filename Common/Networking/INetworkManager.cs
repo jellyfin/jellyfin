@@ -116,6 +116,6 @@ namespace Common.Networking
         /// </summary>
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
-        NetCollection GetFilteredLANAddresses(NetCollection filter = null);
+        NetCollection GetFilteredLANAddresses(NetCollection? filter = null);
     }
 }

@@ -33,8 +33,30 @@ namespace Common.Networking
         /// <param name="name">Host name to assign.</param>
         public IPHost(string name)
         {
+            _addresses = Array.Empty<IPAddress>();
             _hostName = name;
             NotAttemptedBefore = true;
+        }
+
+        /// <summary>
+        /// Gets or sets the object's IP address.
+        /// </summary>
+        public override IPAddress Address
+        {
+            get
+            {
+                if (Addresses.Length > 0)
+                {
+                    return Addresses[0];
+                }
+
+                return null!;
+            }
+
+            set
+            {
+                // do nothing - cannot set the address of this object this way.
+            }
         }
 
         /// <summary>
@@ -56,7 +78,7 @@ namespace Common.Networking
         {
             get
             {
-                if (_addresses == null)
+                if (_addresses.Length == 0)
                 {
                     _ = ResolveHostInternal();
                 }
@@ -66,7 +88,7 @@ namespace Common.Networking
 
             set
             {
-                _addresses = value;
+                _addresses = (value == null) ? Array.Empty<IPAddress>() : value;
                 _lastResolved = 0;
                 NotAttemptedBefore = true;
             }
@@ -78,7 +100,7 @@ namespace Common.Networking
         /// <param name="host">Host name to parse.</param>
         /// <param name="hostObj">Object representing the string, if it has successfully been parsed.</param>
         /// <returns>Success result of the parsing.</returns>
-        public static bool TryParse(string host, out IPHost hostObj)
+        public static bool TryParse(string host, out IPHost? hostObj)
         {
             if (!string.IsNullOrEmpty(host))
             {
@@ -152,9 +174,12 @@ namespace Common.Networking
         public static IPHost Parse(string host)
         {
             if (!string.IsNullOrEmpty(host)
-                && IPHost.TryParse(host, out IPHost res))
+                && IPHost.TryParse(host, out IPHost? res))
             {
+                // If TryParse is true, res is not null.
+#pragma warning disable CS8603 // Possible null reference return.
                 return res;
+#pragma warning restore CS8603 // Possible null reference return.
             }
 
             throw new InvalidCastException("String is not a value host name.");
@@ -185,12 +210,12 @@ namespace Common.Networking
                     }
                     catch (SocketException)
                     {
-                        // Ignore socket errors, as the result value will just be null.
+                        // Ignore socket errors, as the result value will just be an empty array.
                     }
                 }
             }
 
-            return null;
+            return Array.Empty<IPAddress>();
         }
 
         /// <inheritdoc/>
@@ -222,13 +247,16 @@ namespace Common.Networking
         {
             if (ip != null)
             {
-                if (Addresses == null
+                if (Addresses.Length == 0
                     && !ResolveHostInternal())
                 {
                     return false;
                 }
 
+                // If ResolvedHostInternal returns true, Addresses is non null.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 foreach (IPAddress addr in Addresses)
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 {
                     if (addr.Equals(ip))
                     {
@@ -244,7 +272,7 @@ namespace Common.Networking
         public override bool IsIP6()
         {
             // Returns true if interfaces are only IP6.
-            if (Addresses != null)
+            if (Addresses.Length > 0)
             {
                 foreach (IPAddress i in Addresses)
                 {
@@ -265,7 +293,7 @@ namespace Common.Networking
         {
             // StringBuilder not optimum here.
             string output = string.Empty;
-            if (Addresses != null)
+            if (Addresses.Length > 0)
             {
                 if (Addresses.Length > 1)
                 {
@@ -298,7 +326,7 @@ namespace Common.Networking
         /// </summary>
         public override void RemoveIP6()
         {
-            if (Addresses != null)
+            if (Addresses.Length > 0)
             {
                 List<IPAddress> add = new List<IPAddress>();
 
@@ -317,17 +345,6 @@ namespace Common.Networking
             }
         }
 
-        /// <inheritdoc/>
-        protected override IPAddress GetAddressInternal()
-        {
-            if (Addresses != null && Addresses.Length > 0)
-            {
-                return Addresses[0];
-            }
-
-            return null;
-        }
-
         /// <summary>
         /// Attempt to resolve the ip address of a host.
         /// </summary>
@@ -341,14 +358,14 @@ namespace Common.Networking
             }
 
             // If we haven't resolved before, or out timer has run out...
-            if ((_addresses == null && NotAttemptedBefore) || (TimeSpan.FromTicks(DateTime.Now.Ticks - _lastResolved).TotalMinutes > 30))
+            if ((_addresses.Length == 0 && NotAttemptedBefore) || (TimeSpan.FromTicks(DateTime.Now.Ticks - _lastResolved).TotalMinutes > 30))
             {
                 _lastResolved = DateTime.Now.Ticks;
                 _addresses = Resolve(HostName).Result;
                 NotAttemptedBefore = false;
             }
 
-            return _addresses != null;
+            return _addresses.Length > 0;
         }
     }
 }

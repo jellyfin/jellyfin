@@ -286,8 +286,11 @@ namespace Rssdp
             lock (_Devices)
             {
                 device.RootDevice = this.ToRootDevice();
-                _Devices.Add(device);
-                wasAdded = true;
+                if (!_Devices.Contains(device))
+                {
+                    _Devices.Add(device);
+                    wasAdded = true;
+                }
             }
 
             if (wasAdded)
@@ -351,7 +354,6 @@ namespace Rssdp
             if (handlers != null)
                 handlers(this, new DeviceEventArgs(device));
         }
-
         #endregion
 
     }

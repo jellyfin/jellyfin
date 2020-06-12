@@ -339,28 +339,28 @@ namespace Rssdp.Infrastructure
         {
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddress}:1900";
+            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}";
             values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
             //values["X-EMBY-SERVERID"] = _appHost.SystemId;
-            values["MAN"] = "\"ssdp:discover\"";
+            values["MAN"] = $"\"{SsdpConstants.SsdpDiscoverMessage}\"";
             // Search target
-            values["ST"] = "ssdp:all";
+            values["ST"] = SsdpConstants.SsdpDiscoverAllSTHeader;
             // Seconds to delay response
-            values["MX"] = "3"; // mxValue.ToString(); ??
+            values["MX"] = mxValue.Seconds.ToString();
 
             var header = "M-SEARCH * HTTP/1.1";
             var message = BuildMessage(header, values);
 
             if (!_ipV6Enabled)
             {
-                _logger.LogInformation("Sending IPv4 broadcast.");
+                // _logger.LogInformation("Sending IPv4 broadcast.");
                 return _CommunicationsServer.SendMulticastMessage(message, IPAddress.Any, cancellationToken);
             }
 
-            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddressV6}:1900";
+            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddressV6}:{SsdpConstants.MulticastPort}";
             var message2 = BuildMessage(header, values);
             
-            _logger.LogInformation("Sending IPv6 multicast and IPv4 broadcast.");
+            // _logger.LogInformation("Sending IPv6 multicast and IPv4 broadcast.");
 
             return Task.WhenAll(_CommunicationsServer.SendMulticastMessage(message, IPAddress.Any, cancellationToken),
                 _CommunicationsServer.SendMulticastMessage(message2, IPAddress.IPv6Any, cancellationToken));                            
@@ -418,7 +418,7 @@ namespace Rssdp.Infrastructure
 
                 if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
                 {
-                    _logger.LogDebug("Alive notification: {0} {1} ", localIpAddress, device);
+                    _logger.LogDebug("Alive notification: {0} ", device.DescriptionLocation);
                 }
             }
         }

@@ -10,9 +10,14 @@ namespace Common.Networking
     public class IPNetAddress : IPObject
     {
         /// <summary>
-        /// Object's subnet mask..
+        /// Object's IP address.
         /// </summary>
-        private IPAddress _mask;
+        private IPAddress _address;
+
+        /// <summary>
+        /// Object's subnet mask.
+        /// </summary>
+        private IPAddress? _mask;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
@@ -20,7 +25,7 @@ namespace Common.Networking
         /// <param name="ip">Address to assign.</param>
         public IPNetAddress(IPAddress ip)
         {
-            Address = ip;
+            _address = ip;
             _mask = null;
         }
 
@@ -29,9 +34,9 @@ namespace Common.Networking
         /// </summary>
         /// <param name="address">Address to assign.</param>
         /// <param name="subnet">Mask to assign.</param>
-        public IPNetAddress(IPAddress address, IPAddress subnet)
+        public IPNetAddress(IPAddress address, IPAddress? subnet)
         {
-            Address = address;
+            _address = address;
             _mask = subnet;
         }
 
@@ -44,7 +49,7 @@ namespace Common.Networking
         {
             if (address != null)
             {
-                Address = address;
+                _address = address;
                 if (Address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     _mask = null;
@@ -61,14 +66,30 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Gets or sets the IP Address of this object..
+        /// Gets or sets the object's IP address.
         /// </summary>
-        public IPAddress Address { get; set; }
+        public override IPAddress Address
+        {
+            get
+            {
+                return _address;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentException("Unable to assign null.");
+                }
+
+                _address = value;
+            }
+        }
 
         /// <summary>
         /// Gets the subnet mask of this object..
         /// </summary>
-        public IPAddress Mask => _mask;
+        public IPAddress? Mask => _mask;
 
         /// <summary>
         /// Try to parse the address and subnet strings into an IPNetAddress object.
@@ -76,7 +97,7 @@ namespace Common.Networking
         /// <param name="addr">IP address to parse. Can be CIDR or X.X.X.X notation.</param>
         /// <param name="ip">Resultant object.</param>
         /// <returns>True if the values parsed successfully. False if not, resulting in ip being null.</returns>
-        public static bool TryParse(string addr, out IPNetAddress ip)
+        public static bool TryParse(string addr, out IPNetAddress? ip)
         {
             if (!string.IsNullOrEmpty(addr))
             {
@@ -125,38 +146,14 @@ namespace Common.Networking
         /// <returns>IPNetAddress object.</returns>
         public static IPNetAddress Parse(string addr)
         {
-            if (IPNetAddress.TryParse(addr, out IPNetAddress o))
+            if (IPNetAddress.TryParse(addr, out IPNetAddress? o))
             {
+#pragma warning disable CS8603 // Possible null reference return.
                 return o;
+#pragma warning restore CS8603 // Possible null reference return.
             }
 
             throw new ArgumentException("Unable to recognise object :" + addr);
-        }
-
-        /// <summary>
-        /// Returns the Network address of this object.
-        /// </summary>
-        /// <returns>The Network IP address of our this object.</returns>
-        public IPAddress NetworkAddress()
-        {
-            return IPObject.NetworkAddress(Address, _mask);
-        }
-
-        /// <summary>
-        /// Assumes the address in this object is a network address. Checks to see if Ip is with in this subnet.
-        /// </summary>
-        /// <param name="ip">Object's IP address to compare to.</param>
-        /// <returns>Comparison result.</returns>
-        public bool NetworkContains(IPAddress ip)
-        {
-            IPAddress nwAdd2 = IPObject.NetworkAddress(ip, _mask);
-
-            if (nwAdd2 != null)
-            {
-                return Equals(nwAdd2);
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -166,8 +163,8 @@ namespace Common.Networking
         /// <returns>Comparison result.</returns>
         public override bool Contains(IPAddress ip)
         {
-            IPAddress nwAdd1 = IPObject.NetworkAddress(Address, _mask);
-            IPAddress nwAdd2 = IPObject.NetworkAddress(ip, _mask);
+            IPAddress? nwAdd1 = IPObject.NetworkAddress(Address, _mask);
+            IPAddress? nwAdd2 = IPObject.NetworkAddress(ip, _mask);
 
             if (nwAdd1 != null && nwAdd2 != null)
             {
@@ -223,7 +220,7 @@ namespace Common.Networking
                             // Return true if ipObj is a host and we're a network and the host matches ours.
                             bool eqAdd = Address.Equals(ipObj.Address);
                             return (eqAdd && Mask.Equals(ipObj.Mask)) ||
-                                (eqAdd && ipObj.Mask.Equals(IPAddress.Broadcast));
+                                (eqAdd && ipObj.Mask != null && ipObj.Mask.Equals(IPAddress.Broadcast));
                         }
 
                         return Address.Equals(ipObj.Address);
@@ -315,12 +312,6 @@ namespace Common.Networking
             }
 
             return string.Empty;
-        }
-
-        /// <inheritdoc/>
-        protected override IPAddress GetAddressInternal()
-        {
-            return Address;
         }
     }
 }

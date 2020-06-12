@@ -23,7 +23,7 @@ namespace NetworkTesting
 
         public void TestCollectionCreation(string address)
         {
-            Assert.True(NetCollection.TryParse(address, out IPObject result));
+            Assert.True(NetCollection.TryParse(address, out IPObject? result));
         }
 
         [Theory]
@@ -33,7 +33,7 @@ namespace NetworkTesting
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         public void TestInvalidCollectionCreation(string address)
         {
-            Assert.False(NetCollection.TryParse(address, out IPObject result));
+            Assert.False(NetCollection.TryParse(address, out IPObject? result));
         }
 
         public static bool DisableIP6()
@@ -46,9 +46,9 @@ namespace NetworkTesting
             return true;
         }
 
-        public static string[]? NoParams()
+        public static string[] NoParams()
         {
-            return null;
+            return new string[0];
         }
 
         [Theory]
@@ -127,10 +127,14 @@ namespace NetworkTesting
         [InlineData("10.10.10.0/255.255.255.0", "10.10.10.1")]
         public void TestSubnets(string network, string ip)
         {
-            Assert.True(NetCollection.TryParse(network, out IPObject networkObj));
-            Assert.True(NetCollection.TryParse(ip, out IPObject ipObj));
+            Assert.True(NetCollection.TryParse(network, out IPObject? networkObj));
+            Assert.True(NetCollection.TryParse(ip, out IPObject? ipObj));
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8604 // Possible null reference argument.
             Assert.True(networkObj.Contains(ipObj));
+#pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
 
         [Theory]

@@ -234,6 +234,7 @@ namespace Emby.Dlna.Main
                 try
                 {
                     RegisterServerEndpoints();
+                    _publisher.SetBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
                 }
                 catch (Exception ex)
                 {
@@ -250,14 +251,14 @@ namespace Emby.Dlna.Main
                     OperatingSystem.Name,
                     Environment.OSVersion.VersionString,
                     _logger,
+                    _networkManager,
                     _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
                     SupportPnpRootDevice = false
                 };
 
                 RegisterServerEndpoints();
-
-                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+                _publisher.SetBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
             }
             catch (Exception ex)
             {

@@ -19,7 +19,7 @@ namespace Common.Networking
         /// <summary>
         /// Defines the _logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger? _logger;
 
         /// <summary>
         /// Defines the _interfaceNames.
@@ -30,6 +30,16 @@ namespace Common.Networking
         /// Threading object for network interfaces..
         /// </summary>
         private readonly object _intLock = new object();
+
+        /// <summary>
+        /// List of all interface addresses and masks..
+        /// </summary>
+        private readonly NetCollection _interfaceAddresses;
+
+        /// <summary>
+        /// List of all interface mac addresses..
+        /// </summary>
+        private readonly List<PhysicalAddress> _macAddresses;
 
         /// <summary>
         /// Used to stop "event-racing conditions".
@@ -45,42 +55,32 @@ namespace Common.Networking
         /// Unfiltered user defined LAN addresses,
         /// or internal interface network addresses if undefined by user..
         /// </summary>
-        private NetCollection _lanAddresses;
+        private NetCollection _lanAddresses = null!;
 
         /// <summary>
         /// User defined list of addresses to excluded from the LAN..
         /// </summary>
-        private NetCollection _excludedAddresses;
+        private NetCollection _excludedAddresses = null!;
 
         /// <summary>
         /// Cached list of filtered addresses comprising the LAN. (_lanAddresses ?? _interfaceAddresses).Exclude(_excludedAddresses)..
         /// </summary>
-        private NetCollection _filteredLANAddresses;
+        private NetCollection _filteredLANAddresses = null!;
 
         /// <summary>
         /// List of interface addresses to bind the WS..
         /// </summary>
-        private NetCollection _bindAddresses;
+        private NetCollection _bindAddresses = null!;
 
         /// <summary>
         /// List of interface addresses to exclude from bind..
         /// </summary>
-        private NetCollection _bindExclusions;
-
-        /// <summary>
-        /// List of all interface addresses and masks..
-        /// </summary>
-        private NetCollection _interfaceAddresses;
+        private NetCollection _bindExclusions = null!;
 
         /// <summary>
         /// Caches list of all internal filtered interface addresses and masks..
         /// </summary>
-        private NetCollection _internalInterfaceAddresses;
-
-        /// <summary>
-        /// List of all interface mac addresses..
-        /// </summary>
-        private List<PhysicalAddress> _macAddresses;
+        private NetCollection _internalInterfaceAddresses = null!;
 
         /// <summary>
         /// Flag set when _lanAddressses is set to _interfaceAddresses as no custom LAN has been defined in the config..
@@ -106,16 +106,35 @@ namespace Common.Networking
         /// Initializes a new instance of the <see cref="NetworkManager"/> class.
         /// </summary>
         /// <param name="logger">Logger to use for messages.</param>
-        public NetworkManager(ILogger<NetworkManager> logger)
+        public NetworkManager(ILogger<NetworkManager>? logger)
         {
             _logger = logger;
+            _interfaceAddresses = new NetCollection();
+            _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new SortedList<string, int>();
+
+            // Assign empty objects to the rest of the properties
+            // so we don't have to define them as nullable.
+
+            static string[] Empty()
+            {
+                return Array.Empty<string>();
+            }
+
+            static bool EmptyBool()
+            {
+                return false;
+            }
+
+            _localSubnetsFn = Empty;
+            _bindAddressesFn = Empty;
+            _isIP6EnabledFn = EmptyBool;
         }
 
         /// <summary>
         /// Event triggered on network changes.
         /// </summary>
-        public event EventHandler NetworkChanged;
+        public event EventHandler? NetworkChanged;
 
         /// <summary>
         /// Gets a value indicating whether IP6 is enabled..
@@ -149,9 +168,9 @@ namespace Common.Networking
         public void Initialise(Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces)
         {
             _isIP6EnabledFn = ip6Enabled;
-            #pragma warning disable CA1062 // Validate arguments of public methods : "No need as is6Enabled will always have a value."
+#pragma warning disable CA1062 // Validate arguments of public methods. Function has a hardcode value.
             _ignoreIP6 = !_isIP6EnabledFn();
-            #pragma warning restore CA1062
+#pragma warning restore CA1062 // Validate arguments of public methods
 
             InitialiseInterfaces();
 
@@ -228,8 +247,11 @@ namespace Common.Networking
         /// <returns>True if endpoint is within the LAN range.</returns>
         public bool IsInLocalNetwork(string endpoint)
         {
-            if (IPHost.TryParse(endpoint, out IPHost ep))
+            if (IPHost.TryParse(endpoint, out IPHost? ep))
             {
+                // ep is not null as TryParse returned true.
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 lock (_intLock)
                 {
                     // If LAN addresses haven't been defined, the code uses interface addresses.
@@ -242,6 +264,8 @@ namespace Common.Networking
                     return _filteredLANAddresses.Contains(ep);
                 }
             }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8604 // Possible null reference argument.
 
             return false;
         }
@@ -253,11 +277,6 @@ namespace Common.Networking
         /// <returns>True if endpoint is within the LAN range.</returns>
         public bool IsInLocalNetwork(IPNetAddress endpoint)
         {
-            if (endpoint == null)
-            {
-                return false;
-            }
-
             lock (_intLock)
             {
                 // If LAN addresses haven't been defined, the code uses interface addresses.
@@ -363,7 +382,7 @@ namespace Common.Networking
         /// </summary>
         /// <param name="filter">Filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
-        public NetCollection GetFilteredLANAddresses(NetCollection filter = null)
+        public NetCollection GetFilteredLANAddresses(NetCollection? filter = null)
         {
             lock (_intLock)
             {
@@ -452,8 +471,12 @@ namespace Common.Networking
                     }
                 }
             }
-            else if (NetCollection.TryParse(token, out IPObject obj))
+            else if (NetCollection.TryParse(token, out IPObject? obj))
             {
+                // TryParse returned true, so obj is non-null
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8604 // Possible null reference argument.
                 if (!IsIP6Enabled)
                 {
                     // Remove IP6 addresses from multi-homed IPHosts.
@@ -467,6 +490,8 @@ namespace Common.Networking
                 {
                     col.Add(obj);
                 }
+#pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             }
             else
             {
@@ -558,18 +583,18 @@ namespace Common.Networking
 
                 // Create lists from user settings.
                 _lanAddresses = NetCollection.AsNetworks(CreateIPCollection(subnets));
+                // If no LAN addresses are specified - all interface subnets are deemed to be the LAN
+                _usingInterfaces = _lanAddresses.Count == 0;
+
                 _excludedAddresses = CreateIPCollection(subnets, true);
 
                 _logger?.LogDebug("# User defined LAN addresses : {0}", _lanAddresses);
                 _logger?.LogDebug("# User defined LAN exclusions : {0}", _excludedAddresses);
 
-                // If no LAN addresses are specified - all interface subnets are deemed to be the LAN
-                _usingInterfaces = _lanAddresses.Count == 0;
-
                 if (_usingInterfaces)
                 {
                     _logger?.LogDebug("Using interface addresses as user provided no LAN details.");
-                    _lanAddresses = _interfaceAddresses;
+                    _lanAddresses = new NetCollection(_interfaceAddresses);
                 }
 
                 // Cache results.
@@ -596,11 +621,10 @@ namespace Common.Networking
         {
             lock (_intLock)
             {
-                _interfaceNames.Clear();
                 _logger?.LogDebug("Refreshing interfaces.");
 
-                _interfaceAddresses = new NetCollection();
-                _macAddresses = new List<PhysicalAddress>();
+                _interfaceNames.Clear();
+                _interfaceAddresses.Clear();
 
                 // retrieve a list of network interfaces that are up or unknown? (why unknown???)
                 try
@@ -613,45 +637,54 @@ namespace Common.Networking
 
                     foreach (NetworkInterface adapter in nics)
                     {
-                        IPInterfaceProperties ipProperties = adapter.GetIPProperties();
-                        PhysicalAddress mac = adapter.GetPhysicalAddress();
-
-                        // populate mac list
-                        if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && mac != null && mac != PhysicalAddress.None)
+                        try
                         {
-                            _macAddresses.Add(mac);
-                        }
+                            IPInterfaceProperties ipProperties = adapter.GetIPProperties();
+                            PhysicalAddress mac = adapter.GetPhysicalAddress();
 
-                        // populate interface address list
-                        foreach (UnicastIPAddressInformation info in ipProperties.UnicastAddresses)
+                            // populate mac list
+                            if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && mac != null && mac != PhysicalAddress.None)
+                            {
+                                _macAddresses.Add(mac);
+                            }
+
+                            // populate interface address list
+                            foreach (UnicastIPAddressInformation info in ipProperties.UnicastAddresses)
+                            {
+                                if (info.Address.AddressFamily == AddressFamily.InterNetwork)
+                                {
+                                    IPNetAddress nw = new IPNetAddress(info.Address, info.IPv4Mask)
+                                    {
+                                        // Keep the number of gateways on this interface, along with its index.
+                                        Tag = ipProperties.GetIPv4Properties().Index
+                                    };
+                                    _interfaceAddresses.Add(nw);
+
+                                    // Store interface name so we can use the name in Collections.
+                                    _interfaceNames[adapter.Name.ToLower(CultureInfo.InvariantCulture)] = (int)nw.Tag;
+                                    _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = (int)nw.Tag;
+                                }
+                                else if (ip6 && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                                {
+                                    IPNetAddress nw = new IPNetAddress(info.Address)
+                                    {
+                                        // Keep the number of gateways on this interface, along with its index.
+                                        Tag = ipProperties.GetIPv6Properties().Index
+                                    };
+                                    _interfaceAddresses.Add(nw);
+
+                                    // Store interface name so we can use the name in Collections.
+                                    _interfaceNames[adapter.Name.ToLower(CultureInfo.InvariantCulture)] = (int)nw.Tag;
+                                    _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = (int)nw.Tag;
+                                }
+                            }
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch
                         {
-                            if (info.Address.AddressFamily == AddressFamily.InterNetwork)
-                            {
-                                IPNetAddress nw = new IPNetAddress(info.Address, info.IPv4Mask)
-                                {
-                                    // Keep the number of gateways on this interface, along with its index.
-                                    Tag = ipProperties.GetIPv4Properties().Index
-                                };
-                                _interfaceAddresses.Add(nw);
-
-                                // Store interface name so we can use the name in Collections.
-                                _interfaceNames[adapter.Name.ToLower(CultureInfo.InvariantCulture)] = (int)nw.Tag;
-                                _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = (int)nw.Tag;
-                            }
-                            else if (ip6 && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
-                            {
-                                IPNetAddress nw = new IPNetAddress(info.Address)
-                                {
-                                    // Keep the number of gateways on this interface, along with its index.
-                                    Tag = ipProperties.GetIPv6Properties().Index
-                                };
-                                _interfaceAddresses.Add(nw);
-
-                                // Store interface name so we can use the name in Collections.
-                                _interfaceNames[adapter.Name.ToLower(CultureInfo.InvariantCulture)] = (int)nw.Tag;
-                                _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = (int)nw.Tag;
-                            }
+                            // Ignore error, and attempt to continue.
                         }
+#pragma warning restore CA1031 // Do not catch general exception types
                     }
 
                     _logger?.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);

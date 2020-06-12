@@ -72,18 +72,18 @@ namespace Common.Networking
         /// <param name="addr">String to parse.</param>
         /// <param name="result">IPObject to return.</param>
         /// <returns>True if the value parsed successfully.</returns>
-        public static bool TryParse(string addr, out IPObject result)
+        public static bool TryParse(string addr, out IPObject? result)
         {
             if (!string.IsNullOrEmpty(addr))
             {
                 // Is it an IP address
-                if (IPNetAddress.TryParse(addr, out IPNetAddress nw))
+                if (IPNetAddress.TryParse(addr, out IPNetAddress? nw))
                 {
                     result = nw;
                     return true;
                 }
 
-                if (IPHost.TryParse(addr, out IPHost h))
+                if (IPHost.TryParse(addr, out IPHost? h))
                 {
                     result = h;
                     return true;
@@ -214,15 +214,6 @@ namespace Common.Networking
 
             results._network = excludeList._network;
             return results;
-        }
-
-        /// <summary>
-        /// Returns true if this object has any values.
-        /// </summary>
-        /// <returns>True if Count > 0.</returns>
-        public bool Any()
-        {
-            return Count > 0;
         }
 
         /// <summary>
@@ -384,29 +375,6 @@ namespace Common.Networking
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Locates and returns the object that matches the IP Address.
-        /// </summary>
-        /// <param name="networkItem">IP address to search for.</param>
-        /// <returns>True of false.</returns>
-        public IPObject Find(IPAddress networkItem)
-        {
-            if (networkItem == null)
-            {
-                throw new ArgumentException("Argument cannot be null.");
-            }
-
-            foreach (IPObject i in Items)
-            {
-                if (i.Equals(networkItem))
-                {
-                    return i;
-                }
-            }
-
-            return null;
         }
 
         /// <summary>

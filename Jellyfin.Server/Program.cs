@@ -278,18 +278,18 @@ namespace Jellyfin.Server
                 {
                     NetCollection addresses = appHost.NetManager.GetBindInterfaces();
 
-                    if (addresses.Any() && !addresses.Exists(IPAddress.Any))
+                    if (addresses.Count > 0 && !addresses.Exists(IPAddress.Any))
                     {
                         // we must listen on loopback for LiveTV to function regardless of the settings
                         addresses.Add(IPAddress.Loopback);
 
-                        foreach (IPNetAddress netAdd in addresses)
+                        foreach (IPObject? netAdd in addresses)
                         {
-                            _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd.Address);
-                            options.Listen(netAdd.Address, appHost.HttpPort);
+                            _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd!.Address!);
+                            options.Listen(netAdd!.Address, appHost.HttpPort);
                             if (appHost.ListenWithHttps)
                             {
-                                options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
+                                options.Listen(netAdd!.Address, appHost.HttpsPort, listenOptions =>
                                 {
                                     listenOptions.UseHttps(appHost.Certificate);
                                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
@@ -299,7 +299,7 @@ namespace Jellyfin.Server
                             {
                                 try
                                 {
-                                    options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
+                                    options.Listen(netAdd!.Address, appHost.HttpsPort, listenOptions =>
                                     {
                                         listenOptions.UseHttps();
                                         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;

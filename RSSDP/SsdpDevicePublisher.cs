@@ -73,6 +73,8 @@ namespace Rssdp.Infrastructure
         /// </summary>
         private const string ServerVersion = "1.0";
 
+        private INetworkManager _networkManager;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SsdpDevicePublisher"/> class.
         /// </summary>
@@ -80,7 +82,7 @@ namespace Rssdp.Infrastructure
         /// <param name="osName">The osName<see cref="string"/>.</param>
         /// <param name="osVersion">The osVersion<see cref="string"/>.</param>
         /// <param name="sendOnlyMatchedHost">The sendOnlyMatchedHost<see cref="bool"/>.</param>
-        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, string osName, string osVersion, ILogger logger, bool sendOnlyMatchedHost)
+        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, string osName, string osVersion, ILogger logger, INetworkManager networkManager, bool sendOnlyMatchedHost)
         {
             if (osName == null) throw new ArgumentNullException(nameof(osName));
             if (osName.Length == 0) throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
@@ -98,17 +100,24 @@ namespace Rssdp.Infrastructure
             _OSName = osName;
             _OSVersion = osVersion;
             _sendOnlyMatchedHost = sendOnlyMatchedHost;
-
+            _networkManager = networkManager;
             _CommsServer.BeginListeningForBroadcasts();
         }
 
         /// <summary>
-        /// The StartBroadcastingAliveMessages.
+        /// The SetBroadcastingAliveMessages.
         /// </summary>
         /// <param name="interval">The interval<see cref="TimeSpan"/>.</param>
-        public void StartBroadcastingAliveMessages(TimeSpan interval)
+        public void SetBroadcastingAliveMessages(TimeSpan interval)
         {
-            _RebroadcastAliveNotificationsTimer = new Timer(SendAllAliveNotifications, null, TimeSpan.FromSeconds(5), interval);
+            if (_RebroadcastAliveNotificationsTimer != null)
+            {
+                _RebroadcastAliveNotificationsTimer.Change(TimeSpan.FromSeconds(5), interval);
+            }
+            else
+            {
+                _RebroadcastAliveNotificationsTimer = new Timer(SendAllAliveNotifications, null, TimeSpan.FromSeconds(5), interval);
+            }
         }
 
         /// <summary>
@@ -251,6 +260,13 @@ namespace Rssdp.Infrastructure
                 return;
             }
 
+
+            if (_networkManager.IsValidInterfaceAddress(remoteEndPoint.Address))
+            {
+                // Processing our own message!
+                return; 
+            }
+
             //Wait on random interval up to MX, as per SSDP spec.
             //Also, as per UPnP 1.1/SSDP spec ignore missing/bank MX header. If over 120, assume random value between 0 and 120.
             //Using 16 as minimum as that's often the minimum system clock frequency anyway.
@@ -290,21 +306,23 @@ namespace Rssdp.Infrastructure
                   if (devices != null)
                   {
                       var deviceList = devices.ToList();
-                      _logger.LogInformation("Sending {0} search response(s)", deviceList.Count);
 
                       foreach (var device in deviceList)
                       {
                           var rt = device.ToRootDevice();
+                          
+                          // Don't send responses to ourself.
                           if (!_sendOnlyMatchedHost ||
                               NetworkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address))
                           {
+                              _logger.LogInformation("Sending response to {0} {1}.", rt.Address, rt.ModelName);
                               SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);
                           }
                       }
                   }
                   else
                   {
-                      _logger.LogInformation("Sending 0 search responses.");
+                      //_logger.LogInformation("Sending 0 search responses.");
                   }
               });
         }
@@ -464,7 +482,7 @@ namespace Rssdp.Infrastructure
             {
                 if (IsDisposed) return;
 
-                //WriteTrace("Begin Sending Alive Notifications For All Devices");
+                _logger.LogInformation("Begin Sending Alive Notifications For All Devices");
 
                 SsdpRootDevice[] devices;
                 lock (_Devices)
@@ -479,7 +497,7 @@ namespace Rssdp.Infrastructure
                     SendAliveNotifications(device, true, CancellationToken.None);
                 }
 
-                //WriteTrace("Completed Sending Alive Notifications For All Devices");
+                _logger.LogInformation("Completed Sending Alive Notifications For All Devices");
             }
             catch (ObjectDisposedException ex)
             {
@@ -529,8 +547,8 @@ namespace Rssdp.Infrastructure
             {
                 // If needed later for non-server devices, these headers will need to be dynamic
                 ["HOST"] = rootDevice.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ?
-                $"{SsdpConstants.MulticastLocalAdminAddress}:1900" :
-                $"{SsdpConstants.MulticastLocalAdminAddressV6}:1900",
+                $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}" :
+                $"{SsdpConstants.MulticastLocalAdminAddressV6}:{SsdpConstants.MulticastPort}",
                 ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
                 ["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds,
                 ["LOCATION"] = rootDevice.Location.ToString(),
@@ -544,7 +562,7 @@ namespace Rssdp.Infrastructure
 
             _CommsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null, cancellationToken);
 
-            _logger.LogInformation("Sent alive notification : {0}", device);
+            _logger.LogInformation("Sent alive notification : {0} - {1}", device.ModelName, device.DeviceType);
         }
 
         /// <summary>
@@ -564,7 +582,7 @@ namespace Rssdp.Infrastructure
                     GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice),
                     cancellationToken));
                 if (this.SupportPnpRootDevice)
-                    tasks.Add(SendByeByeNotification(device, "pnp:rootdevice", GetUsn(device.Udn, "pnp:rootdevice"), cancellationToken));
+                    tasks.Add(SendByeByeNotification(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn,SsdpConstants.PnpDeviceTypeRootDevice), cancellationToken));
             }
 
             tasks.Add(SendByeByeNotification(device, device.Udn, device.Udn, cancellationToken));
@@ -598,8 +616,8 @@ namespace Rssdp.Infrastructure
             {
                 // If needed later for non-server devices, these headers will need to be dynamic
                 ["HOST"] = device.ToRootDevice().Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ?
-                $"{SsdpConstants.MulticastLocalAdminAddress}:1900" :
-                $"{SsdpConstants.MulticastLocalAdminAddressV6}:1900",
+                $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}" :
+                $"{SsdpConstants.MulticastLocalAdminAddressV6}:{SsdpConstants.MulticastPort}",
                 ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
                 ["SERVER"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion),
                 ["NTS"] = SsdpConstants.SsdpByeByeNotification,
@@ -689,7 +707,8 @@ namespace Rssdp.Infrastructure
                 //    WriteTrace("Ignoring search request - missing MAN header.");
                 //else
 
-                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress, CancellationToken.None);
+                // Only process requests that don't originate from ourselves.
+                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress, CancellationToken.None);                
             }
         }
 

@@ -267,26 +267,22 @@ namespace Rssdp.Infrastructure
             }
             catch (SocketException ex)
             {
-                _logger.LogError(ex, "Socket error encountered sending message from {0} to {1}",
-                    socket.LocalIPAddress,
-                    destination);
+                _logger.LogError("Socket error encountered sending message from {0} to {1}.", socket.LocalIPAddress, destination);
 
-                if (!_networkManager.IsValidInterfaceAddress(socket.LocalIPAddress))
+                // Remove the erroring socket.
+                lock (_SendSocketSynchroniser)
                 {
-                    // Remove socket, as the interface is not longer available.
-                    lock (_SendSocketSynchroniser)
+                    if (_sendSockets != null)
                     {
-                        if (_sendSockets != null)
+                        int index = _sendSockets.Count - 1;
+                        while (index >= 0)
                         {
-                            int index = _sendSockets.Count - 1;
-                            while (index >= 0)
+                            if (_sendSockets[index].Equals(socket))
                             {
-                                if (_sendSockets[index].Equals(socket))
-                                {
-                                    _sendSockets.RemoveAt(index);
-                                    socket.Dispose();
-                                    break;
-                                }
+                                _logger.LogDebug("Disposing socket.");
+                                _sendSockets.RemoveAt(index);
+                                socket.Dispose();
+                                break;
                             }
                         }
                     }
@@ -395,7 +391,7 @@ namespace Rssdp.Infrastructure
                     var sockets = _sendSockets.ToList();
                     _sendSockets = null;
 
-                    _logger.LogInformation("{0} Disposing {1} sendSockets", GetType().Name, sockets.Count);
+                    _logger.LogInformation("{0} disposing {1} sendSockets", GetType().Name, sockets.Count);
 
                     foreach (var socket in sockets)
                     {

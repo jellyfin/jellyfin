@@ -29,16 +29,20 @@ namespace Common.Networking
         public int Tag { get; set; }
 
         /// <summary>
+        /// Gets or sets the object's IP address.
+        /// </summary>
+        public abstract IPAddress Address { get; set; }
+
+        /// <summary>
         /// Gets the AddressFamily of this object..
         /// </summary>
         public AddressFamily AddressFamily
         {
             get
             {
-                IPAddress addr = GetAddressInternal();
-                if (addr != null)
+                if (Address != null)
                 {
-                    return addr.AddressFamily;
+                    return Address.AddressFamily;
                 }
 
                 return AddressFamily.Unspecified;
@@ -113,8 +117,8 @@ namespace Common.Networking
                     return (octet[0] == 10) ||
                         (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) || // RFC1918
                         (octet[0] == 192 && octet[1] == 168) || // RFC1918
-                        (octet[0] == 127) || // RFC1122
-                        (octet[0] == 169 && octet[1] == 254); // RFC3927
+                        (octet[0] == 127); // RFC1122
+                        //  || (octet[0] == 169 && octet[1] == 254 // RFC3927
                 }
                 else
                 {
@@ -128,7 +132,7 @@ namespace Common.Networking
                     uint word = (uint)(octet[0] << 8) + octet[1];
 
                     return (word == 0xfc00 && word <= 0xfdff) // Unique local address.
-                        || (word >= 0xfe80 && word <= 0xfebf) // Local link address.
+                        // || (word >= 0xfe80 && word <= 0xfebf) // Local link address.
                         || word == 0x100; // Discard prefix.
                 }
             }
@@ -197,44 +201,41 @@ namespace Common.Networking
         /// <param name="address">IP address.</param>
         /// <param name="mask">Submask.</param>
         /// <returns>The network ip address of the subnet.</returns>
-        public static IPAddress NetworkAddress(IPAddress address, IPAddress mask)
+        public static IPAddress NetworkAddress(IPAddress address, IPAddress? mask)
         {
-            if (address != null)
+            if (address == null)
             {
-                if (address.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    if (mask == null)
-                    {
-                        throw new ArgumentException("Mask required to calculate the network address.");
-                    }
-
-                    byte[] addressBytes = address.GetAddressBytes();
-                    byte[] maskBytes = mask.GetAddressBytes();
-
-                    if (addressBytes.Length != maskBytes.Length)
-                    {
-                        throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
-                    }
-
-                    byte[] networkAddress = new byte[addressBytes.Length];
-                    for (int i = 0; i < networkAddress.Length; i++)
-                    {
-                        networkAddress[i] = (byte)(addressBytes[i] & maskBytes[i]);
-                    }
-
-                    return new IPAddress(networkAddress);
-                }
-
-                if (address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    // First 64 bits contain the routing prefix.
-                    byte[] addressBytes = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-                    Array.Copy(address.GetAddressBytes(), addressBytes, 8);
-                    return new IPAddress(addressBytes);
-                }
+                throw new ArgumentException("Mask required to calculate the network address.");
             }
 
-            return null;
+            if (address.AddressFamily == AddressFamily.InterNetwork)
+            {
+                if (mask == null)
+                {
+                    throw new ArgumentException("Mask required to calculate the network address.");
+                }
+
+                byte[] addressBytes4 = address.GetAddressBytes();
+                byte[] maskBytes4 = mask.GetAddressBytes();
+
+                if (addressBytes4.Length != maskBytes4.Length)
+                {
+                    throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
+                }
+
+                byte[] networkAddress4 = new byte[addressBytes4.Length];
+                for (int i = 0; i < networkAddress4.Length; i++)
+                {
+                    networkAddress4[i] = (byte)(addressBytes4[i] & maskBytes4[i]);
+                }
+
+                return new IPAddress(networkAddress4);
+            }
+
+            // First 64 bits contain the routing prefix.
+            byte[] addressBytes = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Array.Copy(address.GetAddressBytes(), addressBytes, 8);
+            return new IPAddress(addressBytes);
         }
 
         /// <summary>
@@ -243,7 +244,13 @@ namespace Common.Networking
         /// <returns>True if it is.</returns>
         public virtual bool IsLoopback()
         {
-            return IsLoopback(GetAddressInternal());
+            IPAddress? addr = Address;
+            if (addr != null)
+            {
+                return IsLoopback(addr);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -259,7 +266,13 @@ namespace Common.Networking
         /// <returns>True if it is.</returns>
         public virtual bool IsIP6()
         {
-            return IsIP6(GetAddressInternal());
+            IPAddress? addr = Address;
+            if (addr != null)
+            {
+                return IsIP6(addr);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -268,7 +281,13 @@ namespace Common.Networking
         /// <returns>True this object has a private address.</returns>
         public virtual bool IsPrivateAddressRange()
         {
-            return IsPrivateAddressRange(GetAddressInternal());
+            IPAddress? addr = Address;
+            if (addr != null)
+            {
+                return IsPrivateAddressRange(addr);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -278,7 +297,13 @@ namespace Common.Networking
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPObject other)
         {
-            return GetAddressInternal().Equals(other.GetAddressInternal());
+            IPAddress? addr = Address;
+            if (addr != null && other != null)
+            {
+                return addr.Equals(other.Address);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -298,7 +323,12 @@ namespace Common.Networking
         /// <returns>Equality result.</returns>
         public override bool Equals(object obj)
         {
-            return Equals(obj as IPObject);
+            if (obj is IPObject objIp)
+            {
+                return Equals(objIp);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -334,7 +364,8 @@ namespace Common.Networking
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return GetAddressInternal().GetHashCode();
+            IPAddress? a = Address;
+            return (a == null) ? 0 : a.GetHashCode();
         }
 
         /// <summary>
@@ -356,39 +387,5 @@ namespace Common.Networking
 
             return true;
         }
-
-        /// <summary>
-        /// Task that pings an IP address.
-        /// </summary>
-        /// <param name="ip">Host name to ping.</param>
-        /// <returns>The result of the ping.</returns>
-        protected static async Task<PingReply> PingAsyncInternal(IPAddress ip)
-        {
-            if (ip != null)
-            {
-#pragma warning disable IDE0063 // By putting Ping in a using, it ensures that it is disposed off immediately after use.
-                using (Ping sender = new Ping())
-#pragma warning restore IDE0063
-                {
-                    PingOptions options = new PingOptions
-                    {
-                        DontFragment = true
-                    };
-
-                    string data = "JellyFin Ping Request.!!!!!!!!!!";
-                    byte[] buffer = Encoding.ASCII.GetBytes(data);
-
-                    return await sender.SendPingAsync(ip, 120, buffer, options).ConfigureAwait(false);
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Returns the address item of the ancestor objects to use in low level functons.
-        /// </summary>
-        /// <returns>IP address.</returns>
-        protected abstract IPAddress GetAddressInternal();
     }
 }
