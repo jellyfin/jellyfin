@@ -66,14 +66,6 @@ namespace Jellyfin.Api.Helpers
         public static string? GetToken(in ClaimsPrincipal user)
             => GetClaimValue(user, InternalClaimTypes.Token);
 
-        /// <summary>
-        /// Get request ip address.
-        /// </summary>
-        /// <param name="user">Current claims principal.</param>
-        /// <returns>Ip address.</returns>
-        public static string? GetIpAddress(in ClaimsPrincipal user)
-            => GetClaimValue(user, InternalClaimTypes.IPAddress);
-
         private static string? GetClaimValue(in ClaimsPrincipal user, string name)
         {
             return user?.Identities

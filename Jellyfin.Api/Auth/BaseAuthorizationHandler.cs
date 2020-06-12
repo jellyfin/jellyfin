@@ -1,10 +1,12 @@
 ﻿#nullable enable
 
+using System.Net;
 using System.Security.Claims;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Auth
 {
@@ -17,16 +19,22 @@ namespace Jellyfin.Api.Auth
     {
         private readonly IUserManager _userManager;
         private readonly INetworkManager _networkManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseAuthorizationHandler{T}"/> class.
         /// </summary>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
-        protected BaseAuthorizationHandler(IUserManager userManager, INetworkManager networkManager)
+        /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
+        protected BaseAuthorizationHandler(
+            IUserManager userManager,
+            INetworkManager networkManager,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _networkManager = networkManager;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <summary>
@@ -61,7 +69,7 @@ namespace Jellyfin.Api.Auth
                 return false;
             }
 
-            var ip = ClaimHelpers.GetIpAddress(claimsPrincipal);
+            var ip = NormalizeIp(_httpContextAccessor.HttpContext.Connection.RemoteIpAddress).ToString();
             var isInLocalNetwork = _networkManager.IsInLocalNetwork(ip);
             // User cannot access remotely and user is remote
             if (!user.Policy.EnableRemoteAccess && !isInLocalNetwork)
@@ -83,6 +91,11 @@ namespace Jellyfin.Api.Auth
             }
 
             return true;
+        }
+
+        private static IPAddress NormalizeIp(IPAddress ip)
+        {
+            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
         }
     }
 }

@@ -81,10 +81,5 @@ namespace Jellyfin.Api.Auth
                 return Task.FromResult(AuthenticateResult.Fail(ex));
             }
         }
-
-        private static IPAddress NormalizeIp(IPAddress ip)
-        {
-            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
-        }
     }
 }
