@@ -104,7 +104,7 @@ namespace Emby.Photos
                             item.Overview = image.ImageTag.Comment;
 
                             if (!string.IsNullOrWhiteSpace(image.ImageTag.Title)
-                                && !item.LockedFields.Contains(MetadataFields.Name))
+                                && !item.LockedFields.Contains(MetadataField.Name))
                             {
                                 item.Name = image.ImageTag.Title;
                             }

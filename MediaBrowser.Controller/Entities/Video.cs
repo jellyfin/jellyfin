@@ -272,13 +272,13 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (ExtraType.HasValue)
                 {
-                    var key = this.GetProviderId(MetadataProviders.Tmdb);
+                    var key = this.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, GetUserDataKey(key));
                     }
 
-                    key = this.GetProviderId(MetadataProviders.Imdb);
+                    key = this.GetProviderId(MetadataProvider.Imdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, GetUserDataKey(key));
@@ -286,13 +286,13 @@ namespace MediaBrowser.Controller.Entities
                 }
                 else
                 {
-                    var key = this.GetProviderId(MetadataProviders.Imdb);
+                    var key = this.GetProviderId(MetadataProvider.Imdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, key);
                     }
 
-                    key = this.GetProviderId(MetadataProviders.Tmdb);
+                    key = this.GetProviderId(MetadataProvider.Tmdb);
                     if (!string.IsNullOrEmpty(key))
                     {
                         list.Insert(0, key);

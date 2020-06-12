@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Books
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Book> source, MetadataResult<Book> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Book> source, MetadataResult<Book> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 

@@ -76,19 +76,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
 
-            // TODO: Investigate: Does this mean we are reparsing already parsed ItemLookupInfo?
+            // ParseName is required here.
+            // Caller provides the filename with extension stripped and NOT the parsed filename
             var parsedName = _libraryManager.ParseName(name);
             var yearInName = parsedName.Year;
             name = parsedName.Name;
             year ??= yearInName;
 
-            _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name, year);
             var language = idInfo.MetadataLanguage.ToLowerInvariant();
 
             // Replace sequences of non-word characters with space
             // TMDB expects a space separated list of words make sure that is the case
             name = _cleanNonWord.Replace(name, " ").Trim();
 
+            _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name, year);
             var results = await GetSearchResults(name, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
 
             if (results.Count == 0)
@@ -199,7 +200,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                                 }
                             }
 
-                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(_usCulture));
+                            remoteResult.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(_usCulture));
 
                             return remoteResult;
 
@@ -252,7 +253,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                                 }
                             }
 
-                            remoteResult.SetProviderId(MetadataProviders.Tmdb, i.Id.ToString(_usCulture));
+                            remoteResult.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(_usCulture));
 
                             return remoteResult;
 

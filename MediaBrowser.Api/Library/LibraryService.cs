@@ -655,7 +655,7 @@ namespace MediaBrowser.Api.Library
                     EnableImages = false
                 }
 
-            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProvider.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             foreach (var item in series)
             {
@@ -688,11 +688,11 @@ namespace MediaBrowser.Api.Library
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))
             {
-                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
+                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProvider.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else if (!string.IsNullOrWhiteSpace(request.TmdbId))
             {
-                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
+                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProvider.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {
