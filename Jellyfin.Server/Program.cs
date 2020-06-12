@@ -283,13 +283,9 @@ namespace Jellyfin.Server
                         // we must listen on loopback for LiveTV to function regardless of the settings
                         addresses.Add(IPAddress.Loopback);
 
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type. addresses.Count>0, so netAdd will always have a value.
                         foreach (IPNetAddress netAdd in addresses)
                         {
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type. addresses.Count>0, so netAdd will always have a value.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
                             _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd.Address);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
                             options.Listen(netAdd.Address, appHost.HttpPort);
                             if (appHost.ListenWithHttps)
                             {

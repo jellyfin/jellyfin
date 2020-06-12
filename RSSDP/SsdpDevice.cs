@@ -147,8 +147,8 @@ namespace Rssdp
             get
             {
                 return String.Format("urn:{0}:{3}:{1}:{2}",
-                this.DeviceTypeNamespace ?? String.Empty,
-                this.DeviceType ?? String.Empty,
+                this.DeviceTypeNamespace ?? string.Empty,
+                this.DeviceType ?? string.Empty,
                 this.DeviceVersion,
                 this.DeviceClass ?? "device");
             }
