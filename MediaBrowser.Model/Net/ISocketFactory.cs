@@ -20,7 +20,7 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
         /// </summary>
-        /// <param name="localIpAddress">IP Address to bind.</param>
+        /// <param name="localIp">IP Address to bind.</param>
         /// <param name="localPort">UDP port to bind.</param>
         /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
         ISocket CreateSsdpUdpSocket(IPAddress localIp, int localPort);
