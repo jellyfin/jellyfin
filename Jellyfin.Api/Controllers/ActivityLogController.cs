@@ -1,5 +1,7 @@
+#nullable enable
+#pragma warning disable CA1801
+
 using System;
-using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
