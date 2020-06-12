@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -34,8 +35,22 @@ namespace MediaBrowser.Model.Entities
         /// <value>The language.</value>
         public string Language { get; set; }
 
+        /// <summary>
+        /// Gets or sets the color transfer.
+        /// </summary>
+        /// <value>The color transfer.</value>
         public string ColorTransfer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color primaries.
+        /// </summary>
+        /// <value>The color primaries.</value>
         public string ColorPrimaries { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color space.
+        /// </summary>
+        /// <value>The color space.</value>
         public string ColorSpace { get; set; }
 
         /// <summary>
@@ -44,11 +59,28 @@ namespace MediaBrowser.Model.Entities
         /// <value>The comment.</value>
         public string Comment { get; set; }
 
+        /// <summary>
+        /// Gets or sets the time base.
+        /// </summary>
+        /// <value>The time base.</value>
         public string TimeBase { get; set; }
+
+        /// <summary>
+        /// Gets or sets the codec time base.
+        /// </summary>
+        /// <value>The codec time base.</value>
         public string CodecTimeBase { get; set; }
 
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>The title.</value>
         public string Title { get; set; }
 
+        /// <summary>
+        /// Gets or sets the video range.
+        /// </summary>
+        /// <value>The video range.</value>
         public string VideoRange
         {
             get
@@ -60,7 +92,8 @@ namespace MediaBrowser.Model.Entities
 
                 var colorTransfer = ColorTransfer;
 
-                if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(colorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(colorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
                 {
                     return "HDR";
                 }
@@ -70,7 +103,9 @@ namespace MediaBrowser.Model.Entities
         }
 
         public string localizedUndefined { get; set; }
+
         public string localizedDefault { get; set; }
+
         public string localizedForced { get; set; }
 
         public string DisplayTitle
@@ -197,34 +232,34 @@ namespace MediaBrowser.Model.Entities
                 {
                     if (i.IsInterlaced)
                     {
-                        return "1440I";
+                        return "1440i";
                     }
-                    return "1440P";
+                    return "1440p";
                 }
                 if (width >= 1900 || height >= 1000)
                 {
                     if (i.IsInterlaced)
                     {
-                        return "1080I";
+                        return "1080i";
                     }
-                    return "1080P";
+                    return "1080p";
                 }
                 if (width >= 1260 || height >= 700)
                 {
                     if (i.IsInterlaced)
                     {
-                        return "720I";
+                        return "720i";
                     }
-                    return "720P";
+                    return "720p";
                 }
                 if (width >= 700 || height >= 440)
                 {
 
                     if (i.IsInterlaced)
                     {
-                        return "480I";
+                        return "480i";
                     }
-                    return "480P";
+                    return "480p";
                 }
 
                 return "SD";

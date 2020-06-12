@@ -132,18 +132,25 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
+        /// <inheritdoc />
         public string Name => _localization.GetLocalizedString("TaskCleanTranscode");
 
+        /// <inheritdoc />
         public string Description => _localization.GetLocalizedString("TaskCleanTranscodeDescription");
 
+        /// <inheritdoc />
         public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
+        /// <inheritdoc />
         public string Key => "DeleteTranscodeFiles";
 
+        /// <inheritdoc />
         public bool IsHidden => false;
 
+        /// <inheritdoc />
         public bool IsEnabled => false;
 
+        /// <inheritdoc />
         public bool IsLogged => true;
     }
 }

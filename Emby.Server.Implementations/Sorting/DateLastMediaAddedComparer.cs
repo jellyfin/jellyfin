@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -27,6 +29,12 @@ namespace Emby.Server.Implementations.Sorting
         public IUserDataManager UserDataRepository { get; set; }
 
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.DateLastContentAdded;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -44,9 +52,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private static DateTime GetDate(BaseItem x)
         {
-            var folder = x as Folder;
-
-            if (folder != null)
+            if (x is Folder folder)
             {
                 if (folder.DateLastMediaAdded.HasValue)
                 {
@@ -56,11 +62,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return DateTime.MinValue;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.DateLastContentAdded;
     }
 }

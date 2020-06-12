@@ -133,20 +133,20 @@ namespace Emby.Dlna.Main
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
-            ReloadComponents();
+            await ReloadComponents().ConfigureAwait(false);
 
-            _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
+            _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                ReloadComponents();
+                await ReloadComponents().ConfigureAwait(false);
             }
         }
 
-        private async void ReloadComponents()
+        private async Task ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
 
