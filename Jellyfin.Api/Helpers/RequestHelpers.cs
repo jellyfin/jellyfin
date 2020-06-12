@@ -1,4 +1,6 @@
 ﻿using System;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
 
 namespace Jellyfin.Api.Helpers
 {
@@ -24,6 +26,19 @@ namespace Jellyfin.Api.Helpers
             return removeEmpty
                 ? value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
                 : value.Split(separator);
+        }
+
+        internal static SessionInfo GetSession(ISessionContext sessionContext)
+        {
+            // TODO: how do we get a SessionInfo without IRequest?
+            SessionInfo session = sessionContext.GetSession("Request");
+
+            if (session == null)
+            {
+                throw new ArgumentException("Session not found.");
+            }
+
+            return session;
         }
     }
 }
