@@ -275,16 +275,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         }
 
         /// <summary>
-        /// The remove.
-        /// </summary>
-        const string remove = "\"'!`?";
-
-        /// <summary>
-        /// The spacers.
-        /// </summary>
-        const string spacers = "/,.:;\\(){}[]+-_=–*";  // (there are two types of dashes, short and long)
-
-        /// <summary>
         /// Gets the name of the comparable.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -293,33 +283,11 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         {
             name = name.ToLowerInvariant();
             name = name.Normalize(NormalizationForm.FormKD);
-            var sb = new StringBuilder();
-            foreach (var c in name)
-            {
-                if (c >= 0x2B0 && c <= 0x0333)
-                {
-                    // skip char modifier and diacritics
-                }
-                else if (remove.IndexOf(c) > -1)
-                {
-                    // skip chars we are removing
-                }
-                else if (spacers.IndexOf(c) > -1)
-                {
-                    sb.Append(" ");
-                }
-                else if (c == '&')
-                {
-                    sb.Append(" and ");
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
-
-            sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
-            return Regex.Replace(sb.ToString().Trim(), @"\s+", " ");
+            name = name.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
+            name = name.Replace("&", " and " );
+            name = Regex.Replace(name, @"[\p{Lm}\p{Mn}]", string.Empty); // Remove diacritics, etc
+            name = Regex.Replace(name, @"[\W\p{Pc}]+", " "); // Replace sequences of non-word characters and _ with " "
+            return name.Trim();
         }
 
         private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)
