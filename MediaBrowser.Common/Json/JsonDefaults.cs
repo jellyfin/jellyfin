@@ -16,16 +16,12 @@ namespace MediaBrowser.Common.Json
         /// When changing these options, update
         ///     Jellyfin.Server/Extensions/ApiServiceCollectionExtensions.cs
         ///         -> AddJellyfinApi
-        ///             -> AddJsonOptions
+        ///             -> AddJsonOptions.
         /// </remarks>
         /// <returns>The default <see cref="JsonSerializerOptions" /> options.</returns>
         public static JsonSerializerOptions GetOptions()
         {
-            var options = new JsonSerializerOptions
-            {
-                ReadCommentHandling = JsonCommentHandling.Disallow,
-                WriteIndented = false
-            };
+            var options = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Disallow, WriteIndented = false };
 
             options.Converters.Add(new JsonGuidConverter());
             options.Converters.Add(new JsonStringEnumConverter());
@@ -33,31 +29,27 @@ namespace MediaBrowser.Common.Json
 
             return options;
         }
-        
+
         /// <summary>
         /// Gets CamelCase json options.
         /// </summary>
-        public static JsonSerializerOptions CamelCase
+        /// <returns>The CamelCase <see cref="JsonSerializerOptions" /> options.</returns>
+        public static JsonSerializerOptions GetCamelCaseOptions()
         {
-            get
-            {
-                var options = GetOptions();
-                options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                return options;
-            }
+            var options = GetOptions();
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            return options;
         }
 
         /// <summary>
         /// Gets PascalCase json options.
         /// </summary>
-        public static JsonSerializerOptions PascalCase
+        /// <returns>The PascalCase <see cref="JsonSerializerOptions" /> options.</returns>
+        public static JsonSerializerOptions GetPascalCaseOptions()
         {
-            get
-            {
-                var options = GetOptions();
-                options.PropertyNamingPolicy = null;
-                return options;
-            }
+            var options = GetOptions();
+            options.PropertyNamingPolicy = null;
+            return options;
         }
     }
 }
