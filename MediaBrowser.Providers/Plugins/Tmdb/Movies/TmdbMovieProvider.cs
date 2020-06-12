@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public async Task<IEnumerable<RemoteSearchResult>> GetMovieSearchResults(ItemLookupInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = searchInfo.GetProviderId(MetadataProvider.Tmdb);
 
             if (!string.IsNullOrEmpty(tmdbId))
             {
@@ -100,11 +100,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     }
                 }
 
-                remoteResult.SetProviderId(MetadataProviders.Tmdb, obj.Id.ToString(_usCulture));
+                remoteResult.SetProviderId(MetadataProvider.Tmdb, obj.Id.ToString(_usCulture));
 
                 if (!string.IsNullOrWhiteSpace(obj.Imdb_Id))
                 {
-                    remoteResult.SetProviderId(MetadataProviders.Imdb, obj.Imdb_Id);
+                    remoteResult.SetProviderId(MetadataProvider.Imdb, obj.Imdb_Id);
                 }
 
                 return new[] { remoteResult };

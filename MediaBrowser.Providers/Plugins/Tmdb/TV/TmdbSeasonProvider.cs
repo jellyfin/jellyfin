@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var result = new MetadataResult<Season>();
 
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out string seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string seriesTmdbId);
 
             var seasonNumber = info.IndexNumber;
 
@@ -73,7 +73,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                     if (seasonInfo.External_Ids.Tvdb_Id > 0)
                     {
-                        result.Item.SetProviderId(MetadataProviders.Tvdb, seasonInfo.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
+                        result.Item.SetProviderId(MetadataProvider.Tvdb, seasonInfo.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
                     }
 
                     var credits = seasonInfo.Credits;

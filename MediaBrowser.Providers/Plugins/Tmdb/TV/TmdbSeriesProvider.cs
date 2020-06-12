@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbId = searchInfo.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = searchInfo.GetProviderId(MetadataProvider.Tmdb);
 
             if (!string.IsNullOrEmpty(tmdbId))
             {
@@ -85,18 +85,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     ImageUrl = string.IsNullOrWhiteSpace(obj.Poster_Path) ? null : tmdbImageUrl + obj.Poster_Path
                 };
 
-                remoteResult.SetProviderId(MetadataProviders.Tmdb, obj.Id.ToString(_usCulture));
-                remoteResult.SetProviderId(MetadataProviders.Imdb, obj.External_Ids.Imdb_Id);
+                remoteResult.SetProviderId(MetadataProvider.Tmdb, obj.Id.ToString(_usCulture));
+                remoteResult.SetProviderId(MetadataProvider.Imdb, obj.External_Ids.Imdb_Id);
 
                 if (obj.External_Ids.Tvdb_Id > 0)
                 {
-                    remoteResult.SetProviderId(MetadataProviders.Tvdb, obj.External_Ids.Tvdb_Id.ToString(_usCulture));
+                    remoteResult.SetProviderId(MetadataProvider.Tvdb, obj.External_Ids.Tvdb_Id.ToString(_usCulture));
                 }
 
                 return new[] { remoteResult };
             }
 
-            var imdbId = searchInfo.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = searchInfo.GetProviderId(MetadataProvider.Imdb);
 
             if (!string.IsNullOrEmpty(imdbId))
             {
@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var tvdbId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
+            var tvdbId = searchInfo.GetProviderId(MetadataProvider.Tvdb);
 
             if (!string.IsNullOrEmpty(tvdbId))
             {
@@ -128,11 +128,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var result = new MetadataResult<Series>();
             result.QueriedById = true;
 
-            var tmdbId = info.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                var imdbId = info.GetProviderId(MetadataProviders.Imdb);
+                var imdbId = info.GetProviderId(MetadataProvider.Imdb);
 
                 if (!string.IsNullOrEmpty(imdbId))
                 {
@@ -140,14 +140,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                     if (searchResult != null)
                     {
-                        tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
+                        tmdbId = searchResult.GetProviderId(MetadataProvider.Tmdb);
                     }
                 }
             }
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                var tvdbId = info.GetProviderId(MetadataProviders.Tvdb);
+                var tvdbId = info.GetProviderId(MetadataProvider.Tvdb);
 
                 if (!string.IsNullOrEmpty(tvdbId))
                 {
@@ -155,7 +155,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                     if (searchResult != null)
                     {
-                        tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
+                        tmdbId = searchResult.GetProviderId(MetadataProvider.Tmdb);
                     }
                 }
             }
@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (searchResult != null)
                 {
-                    tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
+                    tmdbId = searchResult.GetProviderId(MetadataProvider.Tmdb);
                 }
             }
 
@@ -219,7 +219,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             series.Name = seriesInfo.Name;
             series.OriginalTitle = seriesInfo.Original_Name;
-            series.SetProviderId(MetadataProviders.Tmdb, seriesInfo.Id.ToString(_usCulture));
+            series.SetProviderId(MetadataProvider.Tmdb, seriesInfo.Id.ToString(_usCulture));
 
             string voteAvg = seriesInfo.Vote_Average.ToString(CultureInfo.InvariantCulture);
 
@@ -261,17 +261,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             {
                 if (!string.IsNullOrWhiteSpace(ids.Imdb_Id))
                 {
-                    series.SetProviderId(MetadataProviders.Imdb, ids.Imdb_Id);
+                    series.SetProviderId(MetadataProvider.Imdb, ids.Imdb_Id);
                 }
 
                 if (ids.Tvrage_Id > 0)
                 {
-                    series.SetProviderId(MetadataProviders.TvRage, ids.Tvrage_Id.ToString(_usCulture));
+                    series.SetProviderId(MetadataProvider.TvRage, ids.Tvrage_Id.ToString(_usCulture));
                 }
 
                 if (ids.Tvdb_Id > 0)
                 {
-                    series.SetProviderId(MetadataProviders.Tvdb, ids.Tvdb_Id.ToString(_usCulture));
+                    series.SetProviderId(MetadataProvider.Tvdb, ids.Tvdb_Id.ToString(_usCulture));
                 }
             }
 
@@ -331,7 +331,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                         if (actor.Id > 0)
                         {
-                            personInfo.SetProviderId(MetadataProviders.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
+                            personInfo.SetProviderId(MetadataProvider.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
                         }
 
                         seriesResult.AddPerson(personInfo);
@@ -540,7 +540,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                                 ImageUrl = string.IsNullOrWhiteSpace(tv.Poster_Path) ? null : tmdbImageUrl + tv.Poster_Path
                             };
 
-                            remoteResult.SetProviderId(MetadataProviders.Tmdb, tv.Id.ToString(_usCulture));
+                            remoteResult.SetProviderId(MetadataProvider.Tmdb, tv.Id.ToString(_usCulture));
 
                             return remoteResult;
                         }
