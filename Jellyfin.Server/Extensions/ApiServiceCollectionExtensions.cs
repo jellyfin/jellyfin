@@ -119,7 +119,7 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API" });
+                c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
                 c.AddSecurityDefinition(AuthenticationSchemes.CustomAuthentication, new OpenApiSecurityScheme
                 {
                     Type = SecuritySchemeType.ApiKey,
