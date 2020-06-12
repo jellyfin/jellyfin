@@ -1,4 +1,4 @@
-using Jellyfin.Server.Models;
+using MediaBrowser.Common.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Formatters
         /// <summary>
         /// Initializes a new instance of the <see cref="PascalCaseJsonProfileFormatter"/> class.
         /// </summary>
-        public PascalCaseJsonProfileFormatter() : base(JsonOptions.PascalCase)
+        public PascalCaseJsonProfileFormatter() : base(JsonDefaults.PascalCase)
         {
             SupportedMediaTypes.Clear();
             // Add application/json for default formatter
