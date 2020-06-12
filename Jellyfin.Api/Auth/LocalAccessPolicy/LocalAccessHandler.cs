@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Auth.LocalAccessPolicy
 {
@@ -15,8 +16,9 @@ namespace Jellyfin.Api.Auth.LocalAccessPolicy
         /// </summary>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
-        public LocalAccessHandler(IUserManager userManager, INetworkManager networkManager)
-            : base(userManager, networkManager)
+        /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
+        public LocalAccessHandler(IUserManager userManager, INetworkManager networkManager, IHttpContextAccessor httpContextAccessor)
+            : base(userManager, networkManager, httpContextAccessor)
         {
         }
 

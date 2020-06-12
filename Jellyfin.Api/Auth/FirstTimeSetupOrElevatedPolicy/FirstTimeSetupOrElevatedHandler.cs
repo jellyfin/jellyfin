@@ -4,6 +4,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy
 {
@@ -20,11 +21,13 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy
         /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
+        /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
         public FirstTimeSetupOrElevatedHandler(
             IConfigurationManager configurationManager,
             IUserManager userManager,
-            INetworkManager networkManager)
-            : base(userManager, networkManager)
+            INetworkManager networkManager,
+            IHttpContextAccessor httpContextAccessor)
+            : base(userManager, networkManager, httpContextAccessor)
         {
             _configurationManager = configurationManager;
         }

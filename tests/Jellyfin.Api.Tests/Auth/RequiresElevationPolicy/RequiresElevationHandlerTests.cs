@@ -3,7 +3,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Auth.RequiresElevationPolicy
@@ -12,9 +15,12 @@ namespace Jellyfin.Api.Tests.Auth.RequiresElevationPolicy
     {
         private readonly RequiresElevationHandler _sut;
 
-        public RequiresElevationHandlerTests()
+        public RequiresElevationHandlerTests(
+            IUserManager userManager,
+            INetworkManager networkManager,
+            IHttpContextAccessor httpContextAccessor)
         {
-            _sut = new RequiresElevationHandler();
+            _sut = new RequiresElevationHandler(userManager, networkManager, httpContextAccessor);
         }
 
         [Theory]

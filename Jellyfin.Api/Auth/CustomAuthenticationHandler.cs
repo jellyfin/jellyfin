@@ -56,7 +56,6 @@ namespace Jellyfin.Api.Auth
                 {
                     new Claim(ClaimTypes.Name, authorizationInfo.User.Name),
                     new Claim(ClaimTypes.Role, value: authorizationInfo.User.Policy.IsAdministrator ? UserRoles.Administrator : UserRoles.User),
-                    new Claim(InternalClaimTypes.IPAddress, NormalizeIp(Request.HttpContext.Connection.RemoteIpAddress).ToString()),
                     new Claim(InternalClaimTypes.UserId, authorizationInfo.UserId.ToString("N", CultureInfo.InvariantCulture)),
                     new Claim(InternalClaimTypes.DeviceId, authorizationInfo.DeviceId),
                     new Claim(InternalClaimTypes.Device, authorizationInfo.Device),
@@ -75,11 +74,6 @@ namespace Jellyfin.Api.Auth
             {
                 return Task.FromResult(AuthenticateResult.Fail(ex));
             }
-        }
-
-        private static IPAddress NormalizeIp(IPAddress ip)
-        {
-            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
         }
     }
 }

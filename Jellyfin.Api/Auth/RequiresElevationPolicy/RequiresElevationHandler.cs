@@ -3,6 +3,7 @@ using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Auth.RequiresElevationPolicy
 {
@@ -16,8 +17,9 @@ namespace Jellyfin.Api.Auth.RequiresElevationPolicy
         /// </summary>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
-        public RequiresElevationHandler(IUserManager userManager, INetworkManager networkManager)
-            : base(userManager, networkManager)
+        /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
+        public RequiresElevationHandler(IUserManager userManager, INetworkManager networkManager, IHttpContextAccessor httpContextAccessor)
+            : base(userManager, networkManager, httpContextAccessor)
         {
         }
 
