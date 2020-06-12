@@ -307,7 +307,7 @@ namespace Emby.Server.Implementations.HttpServer
             if (h.IsPrivateAddressRange())
             {
                 // LAN if undefined will be the network interfaces.
-                NetCollection nc = _networkManager.GetLANAddresses();
+                NetCollection nc = _networkManager.GetFilteredLANAddresses();
 
                 if (_config.Configuration.EnableIPV6)
                 {
@@ -317,8 +317,6 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     nc.Add(IPHost.Parse("127.0.0.1"));
                 }
-
-                nc.Add(IPHost.Parse("localhost"));
 
                 return nc.Contains(h);
             }

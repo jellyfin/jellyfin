@@ -11,7 +11,7 @@ namespace Common.Networking
     /// <summary>
     /// Base network object class.
     /// </summary>
-    public abstract class IPObject
+    public abstract class IPObject : IEquatable<IPObject>
     {
         /// <summary>
         /// Defines the _ip6loopback.
@@ -26,13 +26,24 @@ namespace Common.Networking
         /// <summary>
         /// Gets or sets the user defined functions that need storage in this object..
         /// </summary>
-        public long Tag { get; set; }
+        public int Tag { get; set; }
 
         /// <summary>
-        /// Gets the AddressFamily
         /// Gets the AddressFamily of this object..
         /// </summary>
-        public AddressFamily AddressFamily { get; internal set; }
+        public AddressFamily AddressFamily
+        {
+            get
+            {
+                IPAddress addr = GetAddressInternal();
+                if (addr != null)
+                {
+                    return addr.AddressFamily;
+                }
+
+                return AddressFamily.Unspecified;
+            }
+        }
 
         /// <summary>
         /// Tests to see if the ip address is an AIPIPA address. (169.254.x.x).
@@ -69,10 +80,8 @@ namespace Common.Networking
                 {
                     return CompareByteArray(b, _ip4loopback, 4);
                 }
-                else
-                {
-                    return CompareByteArray(b, _ip6loopback, 16);
-                }
+
+                return CompareByteArray(b, _ip6loopback, 16);
             }
 
             return false;
@@ -215,81 +224,17 @@ namespace Common.Networking
 
                     return new IPAddress(networkAddress);
                 }
-                else if (address.AddressFamily == AddressFamily.InterNetworkV6)
+
+                if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     // First 64 bits contain the routing prefix.
-                    byte[] addressBytes = new byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                    byte[] addressBytes = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
                     Array.Copy(address.GetAddressBytes(), addressBytes, 8);
                     return new IPAddress(addressBytes);
                 }
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Implements internal code for async callbacks.
-        /// </summary>
-        /// <param name="ip">IPAddress to pass.</param>
-        /// <param name="callback">Delegate function.</param>
-        /// <param name="ct">Cancellation token.</param>
-        /// <returns>True to include, false to exclude.</returns>
-        public static async Task<bool> CallbackAsyncInternal(IPAddress ip, Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken ct)
-        {
-            if (callback != null)
-            {
-                try
-                {
-                    return await callback(ip, ct).ConfigureAwait(false);
-                }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch
-#pragma warning restore CA1031 // Do not catch general exception types
-                {
-                    // Ignore error.
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Pings this object.
-        /// </summary>
-        /// <returns>The response of the ping.</returns>
-        public async Task<bool> PingAsync()
-        {
-            IPAddress ip = GetAddressInternal();
-
-            if (ip != null)
-            {
-                PingReply reply = await PingAsyncInternal(ip).ConfigureAwait(false);
-
-                if (reply != null)
-                {
-                    return reply.Status == IPStatus.Success;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Implements code for async callbacks.
-        /// </summary>
-        /// <param name="callback">Function to call.</param>
-        /// <param name="ct">Cancellation Tolken.</param>
-        /// <returns>The response of the ping.</returns>
-        public async Task<bool> CallbackAsync(Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken ct)
-        {
-            IPAddress ip = GetAddressInternal();
-
-            if (ip != null)
-            {
-                return await CallbackAsyncInternal(ip, callback, ct).ConfigureAwait(false);
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -327,30 +272,13 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Tests to see if this object is an AIPIPA address. (169.254.x.x).
-        /// </summary>
-        /// <returns>True if it is.</returns>
-        public virtual bool IsAIPIPA()
-        {
-            return IsAIPIPA(GetAddressInternal());
-        }
-
-        /// <summary>
-        /// Copys the contents of another object.
-        /// </summary>
-        /// <param name="ip">Object to copy.</param>
-        public virtual void Copy(IPObject ip)
-        {
-        }
-
-        /// <summary>
         /// Compares this to the object passed as a parameter.
         /// </summary>
-        /// <param name="ip">Object to compare to.</param>
+        /// <param name="other">Object to compare to.</param>
         /// <returns>Equality result.</returns>
-        public virtual bool Equals(IPObject ip)
+        public virtual bool Equals(IPObject other)
         {
-            return false;
+            return GetAddressInternal().Equals(other.GetAddressInternal());
         }
 
         /// <summary>
@@ -361,6 +289,16 @@ namespace Common.Networking
         public virtual bool Equals(IPAddress ip)
         {
             return Exists(ip);
+        }
+
+        /// <summary>
+        /// Compares this to the object passed as a parameter.
+        /// </summary>
+        /// <param name="obj">Object to compare to.</param>
+        /// <returns>Equality result.</returns>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as IPObject);
         }
 
         /// <summary>
@@ -393,24 +331,10 @@ namespace Common.Networking
             return false;
         }
 
-        /// <summary>
-        /// Returns true if IP exists in this parameter.
-        /// </summary>
-        /// <param name="ip">Address to check for.</param>
-        /// <returns>Existential result.</returns>
-        public virtual bool Exists(IPObject ip)
+        /// <inheritdoc/>
+        public override int GetHashCode()
         {
-            return this.Equals(ip);
-        }
-
-        /// <summary>
-        /// Returns true if IP exists in this parameter.
-        /// </summary>
-        /// <param name="ip">Address to check for.</param>
-        /// <returns>Existential result.</returns>
-        public virtual bool Exists(string ip)
-        {
-            return this.Equals(ip);
+            return GetAddressInternal().GetHashCode();
         }
 
         /// <summary>
@@ -448,7 +372,7 @@ namespace Common.Networking
                 {
                     PingOptions options = new PingOptions
                     {
-                        DontFragment = true,
+                        DontFragment = true
                     };
 
                     string data = "JellyFin Ping Request.!!!!!!!!!!";

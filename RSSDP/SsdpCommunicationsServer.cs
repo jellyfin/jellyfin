@@ -490,19 +490,19 @@ namespace Rssdp.Infrastructure
         private List<ISocket> CreateSocketAndListenForResponsesAsync()
         {
             var sockets = new List<ISocket>();
-
+          
             if (_enableMultiSocketBinding)
             {
-                foreach (IPNetAddress address in _networkManager.GetInternalInterfaceAddresses())
+                foreach (IPNetAddress ip in _networkManager.GetInternalInterfaceAddresses())
                 {
                     try
                     {
-                        _logger.LogInformation("Adding socket.");
-                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address.Address, _LocalPort));
+                        _logger.LogInformation("Adding socket {0}.", ip.Address);
+                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(ip.Address, _LocalPort));
                     }
                     catch (SocketException ex)
                     {
-                        _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", address);
+                        _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", ip.Address);
                     }
                 }
             }

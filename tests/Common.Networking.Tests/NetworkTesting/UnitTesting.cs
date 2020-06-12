@@ -1,7 +1,7 @@
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Common.Networking;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace NetworkTesting
@@ -36,17 +36,17 @@ namespace NetworkTesting
             Assert.False(NetCollection.TryParse(address, out IPObject result));
         }
 
-        public bool DisableIP6()
+        public static bool DisableIP6()
         {
             return false;
         }
 
-        public bool EnableIP6()
+        public static bool EnableIP6()
         {
             return true;
         }
 
-        public string[]? NoParams()
+        public static string[]? NoParams()
         {
             return null;
         }
@@ -147,10 +147,43 @@ namespace NetworkTesting
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
             NetCollection ncDest = nm.CreateIPCollection(dest.Split(","));
-            string ncResult = ncSource.Matches(ncDest).ToString();
+            string ncResult = ncSource.Union(ncDest).ToString();
 
             Assert.True(string.Equals(ncResult, result, System.StringComparison.OrdinalIgnoreCase));
+        }
 
+
+        [Theory]
+        [InlineData("10.1.1.1/32", "10.1.1.1")]
+        [InlineData("192.168.1.254/32", "192.168.1.254/255.255.255.255")]        
+
+        public void TestEquals(string source, string dest)
+        {            
+            Assert.True(IPNetAddress.Parse(source).Equals(IPNetAddress.Parse(dest)));
+            Assert.True(IPNetAddress.Parse(dest).Equals(IPNetAddress.Parse(source)));
+        }
+
+        private async Task<bool> TestAsync(IPObject address, CancellationToken cancellationToken)
+        {            
+            await Task.Delay(5000-(1000*address.Tag));            
+            return address.Equals(IPAddress.Broadcast);
+        }
+
+        [Theory]
+
+        [InlineData("www.google.co.uk;www.helloworld.com;www.123.com;255.255.255.255")]
+        public void TestCallback(string source)
+        {
+
+            NetworkManager nm = new NetworkManager(null);
+
+            // Test included, IP6.
+            NetCollection ncSource = nm.CreateIPCollection(source.Split(";"));
+            ncSource.Items[0].Tag = 1;
+            ncSource.Items[1].Tag = 2;
+            ncSource.Items[2].Tag = 3;
+            NetCollection first = ncSource.Callback(TestAsync, new CancellationToken(), 1);
+            Assert.True(first.Count == 1);
         }
     }
 }

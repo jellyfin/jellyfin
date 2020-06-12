@@ -1178,7 +1178,7 @@ namespace Emby.Server.Implementations
 
             try
             {
-                NetCollection addresses = _networkManager.CallbackOnFilteredBindAddresses(IsLocalIpAddressValidAsync, cancellationToken);
+                NetCollection addresses = _networkManager.OnFilteredBindAddressesCallback(IsLocalIpAddressValidAsync, cancellationToken);
 
                 if (addresses.Count == 0)
                 {
@@ -1249,9 +1249,9 @@ namespace Emby.Server.Implementations
             }.ToString().TrimEnd('/');
         }
 
-        private async Task<bool> IsLocalIpAddressValidAsync(IPAddress address, CancellationToken cancellationToken)
+        private async Task<bool> IsLocalIpAddressValidAsync(IPObject address, CancellationToken cancellationToken)
         {
-            var apiUrl = GetLocalApiUrl(address);
+            var apiUrl = GetLocalApiUrl(((IPNetAddress)address).Address);
             apiUrl += "/system/ping";
 
             try

@@ -10,11 +10,6 @@ namespace Common.Networking
     public class IPNetAddress : IPObject
     {
         /// <summary>
-        /// Object's IP address..
-        /// </summary>
-        private IPAddress _address;
-
-        /// <summary>
         /// Object's subnet mask..
         /// </summary>
         private IPAddress _mask;
@@ -66,21 +61,9 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Gets the IP Address of this object..
+        /// Gets or sets the IP Address of this object..
         /// </summary>
-        public IPAddress Address
-        {
-            get
-            {
-                return _address;
-            }
-
-            private set
-            {
-                AddressFamily = value.AddressFamily;
-                _address = value;
-            }
-        }
+        public IPAddress Address { get; set; }
 
         /// <summary>
         /// Gets the subnet mask of this object..
@@ -156,25 +139,7 @@ namespace Common.Networking
         /// <returns>The Network IP address of our this object.</returns>
         public IPAddress NetworkAddress()
         {
-            return IPNetAddress.NetworkAddress(Address, _mask);
-        }
-
-        /// <summary>
-        /// Compares the address in this object and the address in the object passed as a parameter.
-        /// </summary>
-        /// <param name="ip">Object's IP address to compare to.</param>
-        /// <returns>Comparison result.</returns>
-        public override bool Contains(IPAddress ip)
-        {
-            IPAddress nwAdd1 = IPNetAddress.NetworkAddress(Address, _mask);
-            IPAddress nwAdd2 = IPNetAddress.NetworkAddress(ip, _mask);
-
-            if (nwAdd1 != null && nwAdd2 != null)
-            {
-                return nwAdd1.Equals(nwAdd2);
-            }
-
-            return false;
+            return IPObject.NetworkAddress(Address, _mask);
         }
 
         /// <summary>
@@ -184,11 +149,29 @@ namespace Common.Networking
         /// <returns>Comparison result.</returns>
         public bool NetworkContains(IPAddress ip)
         {
-            IPAddress nwAdd2 = IPNetAddress.NetworkAddress(ip, _mask);
+            IPAddress nwAdd2 = IPObject.NetworkAddress(ip, _mask);
 
             if (nwAdd2 != null)
             {
                 return Equals(nwAdd2);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Compares the address in this object and the address in the object passed as a parameter.
+        /// </summary>
+        /// <param name="ip">Object's IP address to compare to.</param>
+        /// <returns>Comparison result.</returns>
+        public override bool Contains(IPAddress ip)
+        {
+            IPAddress nwAdd1 = IPObject.NetworkAddress(Address, _mask);
+            IPAddress nwAdd2 = IPObject.NetworkAddress(ip, _mask);
+
+            if (nwAdd1 != null && nwAdd2 != null)
+            {
+                return nwAdd1.Equals(nwAdd2);
             }
 
             return false;
@@ -223,68 +206,51 @@ namespace Common.Networking
         }
 
         /// <inheritdoc/>
-        public override void Copy(IPObject ip)
+        public override bool Equals(IPObject other)
         {
-            if (ip is IPNetAddress obj)
+            if (Address != null
+                && other is IPNetAddress ipObj
+                && ipObj.Address != null)
             {
-                Address = obj.Address;
-                _mask = obj.Mask;
-            }
-            else
-            {
-                throw new InvalidCastException("Parameter is not an IPNetAddress.");
-            }
-        }
-
-        /// <inheritdoc/>
-        public override bool Equals(IPObject ip)
-        {
-            if (Address != null)
-            {
-                if (ip is IPNetAddress ipObj)
+                if (Address.AddressFamily == ipObj.Address.AddressFamily)
                 {
-                    if (ipObj.Address != null)
+                    // Compare only the address for IPv6, but both Address and Mask for IPv4.
+
+                    if (Address.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        if (Address.AddressFamily == ipObj.Address.AddressFamily)
+                        if (Mask != null)
                         {
-                            // Compare only the address for IPv6, but both Address and Mask for IPv4.
+                            // Return true if ipObj is a host and we're a network and the host matches ours.
+                            bool eqAdd = Address.Equals(ipObj.Address);
+                            return (eqAdd && Mask.Equals(ipObj.Mask)) ||
+                                (eqAdd && ipObj.Mask.Equals(IPAddress.Broadcast));
+                        }
 
-                            if (Address.AddressFamily == AddressFamily.InterNetwork)
-                            {
-                                if (Mask != null)
-                                {
-                                    // Return true if ipObj is a host and we're a network and the host matches ours.
-                                    bool eqAdd = Address.Equals(ipObj.Address);
-                                    return (eqAdd && Mask.Equals(ipObj.Mask)) ||
-                                        (eqAdd && ipObj.Mask.Equals(IPAddress.Broadcast));
-                                }
-
-                                return Address.Equals(ipObj.Address);
-                            }
-                            else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-                            {
-                                return Address.Equals(ipObj.Address);
-                            }
-                        }
-                        else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-                        {
-                            // Is one an ipv4 to ipv6 mapping?
-                            return string.Equals(
-                                Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-#pragma warning disable CA1062 // Validate arguments of public methods : "ip has a value here."
-                                ip.ToString(),
-#pragma warning restore CA1062 // Validate arguments of public methods
-                                StringComparison.OrdinalIgnoreCase);
-                        }
-                        else if (Address.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            // Is one an ipv4 to ipv6 mapping?
-                            return string.Equals(
-                                ip.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-                                Address.ToString(),
-                                StringComparison.OrdinalIgnoreCase);
-                        }
+                        return Address.Equals(ipObj.Address);
                     }
+
+                    if (Address.AddressFamily == AddressFamily.InterNetworkV6)
+                    {
+                        return Address.Equals(ipObj.Address);
+                    }
+                }
+                else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
+                {
+                    // Is one an ipv4 to ipv6 mapping?
+                    return string.Equals(
+                        Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+#pragma warning disable CA1062 // Validate arguments of public methods : "ip has a value here."
+                        other.ToString(),
+#pragma warning restore CA1062 // Validate arguments of public methods
+                        StringComparison.OrdinalIgnoreCase);
+                }
+                else if (Address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    // Is one an ipv4 to ipv6 mapping?
+                    return string.Equals(
+                        other.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+                        Address.ToString(),
+                        StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -294,30 +260,30 @@ namespace Common.Networking
         /// <inheritdoc/>
         public override bool Equals(IPAddress ip)
         {
-            if (Address != null)
+            if (Address != null
+                && ip != null)
             {
-                if (ip != null)
+                if (Address.AddressFamily == ip.AddressFamily)
                 {
-                    if (Address.AddressFamily == ip.AddressFamily)
-                    {
-                        return ip.Equals(Address);
-                    }
-                    else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-                    {
-                        // Is one an ipv4 to ipv6 mapping?
-                        return string.Equals(
-                            Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-                            ip.ToString(),
-                            StringComparison.OrdinalIgnoreCase);
-                    }
-                    else if (Address.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        // Is one an ipv4 to ipv6 mapping?
-                        return string.Equals(
-                            ip.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-                            Address.ToString(),
-                            StringComparison.OrdinalIgnoreCase);
-                    }
+                    return ip.Equals(Address);
+                }
+
+                if (Address.AddressFamily == AddressFamily.InterNetworkV6)
+                {
+                    // Is one an ipv4 to ipv6 mapping?
+                    return string.Equals(
+                        Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+                        ip.ToString(),
+                        StringComparison.OrdinalIgnoreCase);
+                }
+
+                if (Address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    // Is one an ipv4 to ipv6 mapping?
+                    return string.Equals(
+                        ip.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+                        Address.ToString(),
+                        StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -336,28 +302,6 @@ namespace Common.Networking
         }
 
         /// <inheritdoc/>
-        public override bool Exists(string addr)
-        {
-            if (Address != null && !string.IsNullOrEmpty(addr))
-            {
-                return Equals(IPNetAddress.Parse(addr));
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
-        public override bool Exists(IPObject ip)
-        {
-            if (ip is IPNetAddress ipObj)
-            {
-                return Exists(ipObj.Address);
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
         public override string ToString()
         {
             if (Address != null)
@@ -369,10 +313,8 @@ namespace Common.Networking
 
                 return Address.ToString();
             }
-            else
-            {
-                return string.Empty;
-            }
+
+            return string.Empty;
         }
 
         /// <inheritdoc/>

@@ -20,7 +20,7 @@ namespace Common.Networking
         /// <summary>
         /// Gets a value indicating whether IP6 is enabled..
         /// </summary>
-        public bool IsIP6Enabled { get; }
+        bool IsIP6Enabled { get; }
 
         /// <summary>
         /// Initialises the object. Can't be in constructor, as network changes could happen before this class has initialised.
@@ -46,12 +46,6 @@ namespace Common.Networking
         /// Gets a random port number that is currently available.
         /// </summary>
         /// <returns>System.Int32.</returns>
-        int GetRandomUnusedTcpPort();
-
-        /// <summary>
-        /// Gets a random port number that is currently available.
-        /// </summary>
-        /// <returns>System.Int32.</returns>
         int GetRandomUnusedUdpPort();
 
         /// <summary>
@@ -59,7 +53,7 @@ namespace Common.Networking
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">New configuration.</param>
-        public void NamedConfigurationUpdated(object sender, EventArgs e);
+        void NamedConfigurationUpdated(object sender, EventArgs e);
 
         /// <summary>
         /// Get a list of all the MAC addresses associated with active interfaces.
@@ -82,66 +76,46 @@ namespace Common.Networking
         bool IsInLocalNetwork(IPNetAddress endpoint);
 
         /// <summary>
-        /// Returns all filtered interface addresses that respond to ping.
-        /// </summary>
-        /// <param name="allowLoopback">Allow loopback addresses in the list.</param>
-        /// <param name="limit">Limit the number of items in the response.</param>
-        /// <returns>Returns a filtered list of interface addresses.</returns>
-        public NetCollection GetPingableInterfaceAddresses(bool allowLoopback, int limit);
-
-        /// <summary>
         /// Parses an array of strings into a NetCollection.
         /// </summary>
         /// <param name="values">Values to parse.</param>
         /// <param name="bracketed">When true, only include values in []. When false, ignore bracketed values.</param>
         /// <returns>IPCollection object containing the value strings.</returns>
-        public NetCollection CreateIPCollection(string[] values, bool bracketed = false);
+        NetCollection CreateIPCollection(string[] values, bool bracketed = false);
 
         /// <summary>
-        /// Interface callback function.
+        /// Interface callback function that returns the IP address of the first callback that succeeds.
         /// </summary>
-        /// <param name="callback">Delegate function to call on each match.</param>
+        /// <param name="callback">Delegate function to call for each ip.</param>
         /// <param name="cancellationToken">Cancellation Token.</param>
-        /// <returns>true or false.</returns>
-        public NetCollection CallbackOnFilteredBindAddresses(Func<IPAddress, CancellationToken, Task<bool>> callback, CancellationToken cancellationToken);
+        /// <returns>NetCollection object.</returns>
+        NetCollection OnFilteredBindAddressesCallback(Func<IPObject, CancellationToken, Task<bool>> callback, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns all the filtered LAN interfaces addresses.
         /// </summary>
         /// <returns>An internal list of interfaces addresses.</returns>
-        public NetCollection GetInternalInterfaceAddresses();
+        NetCollection GetInternalInterfaceAddresses();
 
         /// <summary>
         /// Checks to see if an IP address is still a valid interface address.
         /// </summary>
         /// <param name="address">IP address to check.</param>
         /// <returns>True if it is.</returns>
-        public bool IsValidInterfaceAddress(IPAddress address);
+        bool IsValidInterfaceAddress(IPAddress address);
 
-            /// <summary>
-            /// Returns true if the IP address is in the excluded list.
-            /// </summary>
-            /// <param name="ip">IP to check.</param>
-            /// <returns>True if excluded.</returns>
-        public bool IsExcluded(IPAddress ip);
+        /// <summary>
+        /// Returns true if the IP address is in the excluded list.
+        /// </summary>
+        /// <param name="ip">IP to check.</param>
+        /// <returns>True if excluded.</returns>
+        bool IsExcluded(IPAddress ip);
 
         /// <summary>
         /// Gets the filtered LAN ip addresses.
         /// </summary>
-        /// <param name="filter">Filter for the list.</param>
+        /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
-        public NetCollection GetFilteredLANAddresses(NetCollection filter);
-
-        /// <summary>
-        /// Returns all the filtered LAN addresses.
-        /// </summary>
-        /// <returns>A filtered list of LAN subnets/IPs.</returns>
-        public NetCollection GetLANAddresses();
-
-        /// <summary>
-        /// Returns all filtered IPv4 LAN interface addresses, regardless of IPv6 status.
-        /// </summary>
-        /// <returns>Returns a filtered list of IPV4 interface addresses.</returns>
-        public NetCollection GetInternalIPv4InterfaceAddresses();
+        NetCollection GetFilteredLANAddresses(NetCollection filter = null);
     }
 }

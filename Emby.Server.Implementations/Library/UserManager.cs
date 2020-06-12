@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserUpdated(User user)
         {
-            UserUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
+            UserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="user">The user.</param>
         private void OnUserDeleted(User user)
         {
-            UserDeleted?.Invoke(this, new GenericEventArgs<User> { Argument = user });
+            UserDeleted?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         public NameIdPair[] GetAuthenticationProviders()
@@ -565,10 +565,9 @@ namespace Emby.Server.Implementations.Library
             bool hasConfiguredPassword = GetAuthenticationProvider(user).HasPassword(user);
             bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(GetAuthenticationProvider(user).GetEasyPasswordHash(user));
 
-            bool hasPassword = user.Configuration.EnableLocalPassword
-                && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
-                    hasConfiguredEasyPassword :
-                    hasConfiguredPassword;
+            bool hasPassword = user.Configuration.EnableLocalPassword && _networkManager.IsInLocalNetwork(remoteEndPoint) ?
+                hasConfiguredEasyPassword :
+                hasConfiguredPassword;
 
             UserDto dto = new UserDto
             {
@@ -605,30 +604,6 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {User}", user.Name);
                 }
             }
-
-            return dto;
-        }
-
-        public PublicUserDto GetPublicUserDto(User user, string remoteEndPoint = null)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            IAuthenticationProvider authenticationProvider = GetAuthenticationProvider(user);
-            bool hasConfiguredPassword = authenticationProvider.HasPassword(user);
-            bool hasConfiguredEasyPassword = !string.IsNullOrEmpty(authenticationProvider.GetEasyPasswordHash(user));
-
-            bool hasPassword = user.Configuration.EnableLocalPassword &&
-                _networkManager.IsInLocalNetwork(remoteEndPoint) ? hasConfiguredEasyPassword : hasConfiguredPassword;
-
-            PublicUserDto dto = new PublicUserDto
-            {
-                Name = user.Name,
-                HasPassword = hasPassword,
-                HasConfiguredPassword = hasConfiguredPassword,
-            };
 
             return dto;
         }
@@ -776,7 +751,7 @@ namespace Emby.Server.Implementations.Library
 
             _userRepository.CreateUser(user);
 
-            EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User> { Argument = user }, _logger);
+            EventHelper.QueueEventIfNotNull(UserCreated, this, new GenericEventArgs<User>(user), _logger);
 
             return user;
         }
@@ -1001,7 +976,7 @@ namespace Emby.Server.Implementations.Library
 
             if (fireEvent)
             {
-                UserPolicyUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
+                UserPolicyUpdated?.Invoke(this, new GenericEventArgs<User>(user));
             }
         }
 
@@ -1071,7 +1046,7 @@ namespace Emby.Server.Implementations.Library
 
             if (fireEvent)
             {
-                UserConfigurationUpdated?.Invoke(this, new GenericEventArgs<User> { Argument = user });
+                UserConfigurationUpdated?.Invoke(this, new GenericEventArgs<User>(user));
             }
         }
     }
