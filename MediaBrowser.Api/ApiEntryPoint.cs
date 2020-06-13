@@ -31,7 +31,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The logger.
         /// </summary>
-        private ILogger _logger;
+        private ILogger<ApiEntryPoint> _logger;
 
         /// <summary>
         /// The configuration manager.
@@ -284,8 +284,8 @@ namespace MediaBrowser.Api
                     Width = state.OutputWidth,
                     Height = state.OutputHeight,
                     AudioChannels = state.OutputAudioChannels,
-                    IsAudioDirect = string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase),
-                    IsVideoDirect = string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase),
+                    IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
+                    IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
                     TranscodeReasons = state.TranscodeReasons
                 });
             }

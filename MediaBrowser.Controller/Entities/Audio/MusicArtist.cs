@@ -128,7 +128,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         private static List<string> GetUserDataKeys(MusicArtist item)
         {
             var list = new List<string>();
-            var id = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
+            var id = item.GetProviderId(MetadataProvider.MusicBrainzArtist);
 
             if (!string.IsNullOrEmpty(id))
             {

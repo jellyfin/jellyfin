@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#= Fedora 29+ amd64 .rpm
+
+set -o errexit
+set -o xtrace
+
+# Move to source directory
+pushd ${SOURCE_DIR}
+
+# Build RPM
+make -f fedora/Makefile srpm outdir=/root/rpmbuild/SRPMS
+rpmbuild -rb /root/rpmbuild/SRPMS/jellyfin-*.src.rpm
+
+# Move the artifacts out
+mv /root/rpmbuild/RPMS/x86_64/jellyfin-*.rpm /root/rpmbuild/SRPMS/jellyfin-*.src.rpm ${ARTIFACT_DIR}/
+
+if [[ ${IS_DOCKER} == YES ]]; then
+    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+fi
+
+rm -f fedora/jellyfin*.tar.gz
+
+popd

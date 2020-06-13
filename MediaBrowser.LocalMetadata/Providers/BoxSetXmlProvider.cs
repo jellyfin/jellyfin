@@ -13,10 +13,10 @@ namespace MediaBrowser.LocalMetadata.Providers
     /// </summary>
     public class BoxSetXmlProvider : BaseXmlProvider<BoxSet>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<BoxSetXmlParser> _logger;
         private readonly IProviderManager _providerManager;
 
-        public BoxSetXmlProvider(IFileSystem fileSystem, ILogger<BoxSetXmlProvider> logger, IProviderManager providerManager)
+        public BoxSetXmlProvider(IFileSystem fileSystem, ILogger<BoxSetXmlParser> logger, IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;

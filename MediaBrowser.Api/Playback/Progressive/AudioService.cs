@@ -33,7 +33,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     public class AudioService : BaseProgressiveStreamingService
     {
         public AudioService(
-            ILogger logger,
+            ILogger<AudioService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IHttpClient httpClient,

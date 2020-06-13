@@ -88,7 +88,9 @@ namespace Jellyfin.Api.Tests.Auth
             var authenticateResult = await _sut.AuthenticateAsync();
 
             Assert.False(authenticateResult.Succeeded);
-            Assert.Equal("Invalid user", authenticateResult.Failure.Message);
+            Assert.True(authenticateResult.None);
+            // TODO return when legacy API is removed.
+            // Assert.Equal("Invalid user", authenticateResult.Failure.Message);
         }
 
         [Fact]
