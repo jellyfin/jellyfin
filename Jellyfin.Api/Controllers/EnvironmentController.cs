@@ -64,12 +64,7 @@ namespace Jellyfin.Api.Controllers
                     .Where(i => (i.IsDirectory && includeDirectories) || (!i.IsDirectory && includeFiles))
                     .OrderBy(i => i.FullName);
 
-            return entries.Select(f => new FileSystemEntryInfo
-            {
-                Name = f.Name,
-                Path = f.FullName,
-                Type = f.IsDirectory ? FileSystemEntryType.Directory : FileSystemEntryType.File
-            });
+            return entries.Select(f => new FileSystemEntryInfo(f.Name, f.FullName, f.IsDirectory ? FileSystemEntryType.Directory : FileSystemEntryType.File));
         }
 
         /// <summary>
@@ -151,12 +146,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<FileSystemEntryInfo> GetDrives()
         {
-            return _fileSystem.GetDrives().Select(d => new FileSystemEntryInfo
-            {
-                Name = d.Name,
-                Path = d.FullName,
-                Type = FileSystemEntryType.Directory
-            });
+            return _fileSystem.GetDrives().Select(d => new FileSystemEntryInfo(d.Name, d.FullName, FileSystemEntryType.Directory));
         }
 
         /// <summary>
