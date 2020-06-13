@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (resolvedUser == null)
             {
-                throw new ArgumentNullException(nameof(resolvedUser));
+                throw new AuthenticationException($"Specified user does not exist.");
             }
 
             bool success = false;
@@ -134,44 +134,6 @@ namespace Emby.Server.Implementations.Library
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
                 : Hex.Encode(PasswordHash.Parse(user.EasyPassword).Hash);
-        }
-
-        /// <summary>
-        /// Gets the hashed string.
-        /// </summary>
-        public string GetHashedString(User user, string str)
-        {
-            if (string.IsNullOrEmpty(user.Password))
-            {
-                return _cryptographyProvider.CreatePasswordHash(str).ToString();
-            }
-
-            // TODO: make use of iterations parameter?
-            PasswordHash passwordHash = PasswordHash.Parse(user.Password);
-            var salt = passwordHash.Salt.ToArray();
-            return new PasswordHash(
-                passwordHash.Id,
-                _cryptographyProvider.ComputeHash(
-                    passwordHash.Id,
-                    Encoding.UTF8.GetBytes(str),
-                    salt),
-                salt,
-                passwordHash.Parameters.ToDictionary(x => x.Key, y => y.Value)).ToString();
-        }
-
-        public ReadOnlySpan<byte> GetHashed(User user, string str)
-        {
-            if (string.IsNullOrEmpty(user.Password))
-            {
-                return _cryptographyProvider.CreatePasswordHash(str).Hash;
-            }
-
-            // TODO: make use of iterations parameter?
-            PasswordHash passwordHash = PasswordHash.Parse(user.Password);
-            return _cryptographyProvider.ComputeHash(
-                    passwordHash.Id,
-                    Encoding.UTF8.GetBytes(str),
-                    passwordHash.Salt.ToArray());
         }
     }
 }

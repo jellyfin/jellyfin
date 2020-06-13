@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Updates;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -85,29 +86,29 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        private void OnPackageInstalling(object sender, InstallationEventArgs e)
+        private async void OnPackageInstalling(object sender, InstallationInfo e)
         {
-            SendMessageToAdminSessions("PackageInstalling", e.InstallationInfo);
+            await SendMessageToAdminSessions("PackageInstalling", e).ConfigureAwait(false);
         }
 
-        private void OnPackageInstallationCancelled(object sender, InstallationEventArgs e)
+        private async void OnPackageInstallationCancelled(object sender, InstallationInfo e)
         {
-            SendMessageToAdminSessions("PackageInstallationCancelled", e.InstallationInfo);
+            await SendMessageToAdminSessions("PackageInstallationCancelled", e).ConfigureAwait(false);
         }
 
-        private void OnPackageInstallationCompleted(object sender, InstallationEventArgs e)
+        private async void OnPackageInstallationCompleted(object sender, InstallationInfo e)
         {
-            SendMessageToAdminSessions("PackageInstallationCompleted", e.InstallationInfo);
+            await SendMessageToAdminSessions("PackageInstallationCompleted", e).ConfigureAwait(false);
         }
 
-        private void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
+        private async void OnPackageInstallationFailed(object sender, InstallationFailedEventArgs e)
         {
-            SendMessageToAdminSessions("PackageInstallationFailed", e.InstallationInfo);
+            await SendMessageToAdminSessions("PackageInstallationFailed", e.InstallationInfo).ConfigureAwait(false);
         }
 
-        private void OnTaskCompleted(object sender, TaskCompletionEventArgs e)
+        private async void OnTaskCompleted(object sender, TaskCompletionEventArgs e)
         {
-            SendMessageToAdminSessions("ScheduledTaskEnded", e.Result);
+            await SendMessageToAdminSessions("ScheduledTaskEnded", e.Result).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -115,9 +116,9 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void OnPluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        private async void OnPluginUninstalled(object sender, IPlugin e)
         {
-            SendMessageToAdminSessions("PluginUninstalled", e.Argument.GetPluginInfo());
+            await SendMessageToAdminSessions("PluginUninstalled", e).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -125,9 +126,9 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void OnHasPendingRestartChanged(object sender, EventArgs e)
+        private async void OnHasPendingRestartChanged(object sender, EventArgs e)
         {
-            _sessionManager.SendRestartRequiredNotification(CancellationToken.None);
+            await _sessionManager.SendRestartRequiredNotification(CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -135,11 +136,11 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void OnUserUpdated(object sender, GenericEventArgs<User> e)
+        private async void OnUserUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
 
-            SendMessageToUserSession(e.Argument, "UserUpdated", dto);
+            await SendMessageToUserSession(e.Argument, "UserUpdated", dto).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -147,26 +148,26 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void OnUserDeleted(object sender, GenericEventArgs<User> e)
+        private async void OnUserDeleted(object sender, GenericEventArgs<User> e)
         {
-            SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N", CultureInfo.InvariantCulture));
+            await SendMessageToUserSession(e.Argument, "UserDeleted", e.Argument.Id.ToString("N", CultureInfo.InvariantCulture)).ConfigureAwait(false);
         }
 
-        private void OnUserPolicyUpdated(object sender, GenericEventArgs<User> e)
-        {
-            var dto = _userManager.GetUserDto(e.Argument);
-
-            SendMessageToUserSession(e.Argument, "UserPolicyUpdated", dto);
-        }
-
-        private void OnUserConfigurationUpdated(object sender, GenericEventArgs<User> e)
+        private async void OnUserPolicyUpdated(object sender, GenericEventArgs<User> e)
         {
             var dto = _userManager.GetUserDto(e.Argument);
 
-            SendMessageToUserSession(e.Argument, "UserConfigurationUpdated", dto);
+            await SendMessageToUserSession(e.Argument, "UserPolicyUpdated", dto).ConfigureAwait(false);
         }
 
-        private async void SendMessageToAdminSessions<T>(string name, T data)
+        private async void OnUserConfigurationUpdated(object sender, GenericEventArgs<User> e)
+        {
+            var dto = _userManager.GetUserDto(e.Argument);
+
+            await SendMessageToUserSession(e.Argument, "UserConfigurationUpdated", dto).ConfigureAwait(false);
+        }
+
+        private async Task SendMessageToAdminSessions<T>(string name, T data)
         {
             try
             {
@@ -178,7 +179,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        private async void SendMessageToUserSession<T>(User user, string name, T data)
+        private async Task SendMessageToUserSession<T>(User user, string name, T data)
         {
             try
             {

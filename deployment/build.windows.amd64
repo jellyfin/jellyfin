@@ -1,0 +1,54 @@
+#!/bin/bash
+
+#= Windows 7+ amd64 (x64) .zip
+
+set -o errexit
+set -o xtrace
+
+# Version variables
+NSSM_VERSION="nssm-2.24-101-g897c7ad"
+NSSM_URL="http://files.evilt.win/nssm/${NSSM_VERSION}.zip"
+FFMPEG_VERSION="ffmpeg-4.2.1-win64-static"
+FFMPEG_URL="https://ffmpeg.zeranoe.com/builds/win64/static/${FFMPEG_VERSION}.zip"
+
+# Move to source directory
+pushd ${SOURCE_DIR}
+
+# Get version
+version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
+
+output_dir="dist/jellyfin-server_${version}"
+
+# Build binary
+dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime win-x64 --output ${output_dir}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"
+
+# Prepare addins
+addin_build_dir="$( mktemp -d )"
+wget ${NSSM_URL} -O ${addin_build_dir}/nssm.zip
+wget ${FFMPEG_URL} -O ${addin_build_dir}/ffmpeg.zip
+unzip ${addin_build_dir}/nssm.zip -d ${addin_build_dir}
+cp ${addin_build_dir}/${NSSM_VERSION}/win64/nssm.exe ${output_dir}/nssm.exe
+unzip ${addin_build_dir}/ffmpeg.zip -d ${addin_build_dir}
+cp ${addin_build_dir}/${FFMPEG_VERSION}/bin/ffmpeg.exe ${output_dir}/ffmpeg.exe
+cp ${addin_build_dir}/${FFMPEG_VERSION}/bin/ffprobe.exe ${output_dir}/ffprobe.exe
+rm -rf ${addin_build_dir}
+
+# Prepare scripts
+cp ${SOURCE_DIR}/windows/legacy/install-jellyfin.ps1 ${output_dir}/install-jellyfin.ps1
+cp ${SOURCE_DIR}/windows/legacy/install.bat ${output_dir}/install.bat
+
+# Create zip package
+pushd dist
+zip -qr jellyfin-server_${version}.portable.zip jellyfin-server_${version}
+popd
+rm -rf ${output_dir}
+
+# Move the artifacts out
+mkdir -p ${ARTIFACT_DIR}/
+mv dist/jellyfin[-_]*.zip ${ARTIFACT_DIR}/
+
+if [[ ${IS_DOCKER} == YES ]]; then
+    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+fi
+
+popd

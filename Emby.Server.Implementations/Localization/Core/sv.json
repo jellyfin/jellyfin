@@ -9,7 +9,7 @@
     "Channels": "Kanaler",
     "ChapterNameValue": "Kapitel {0}",
     "Collections": "Samlingar",
-    "DeviceOfflineWithName": "{0} har tappat anslutningen",
+    "DeviceOfflineWithName": "{0} har kopplat från",
     "DeviceOnlineWithName": "{0} är ansluten",
     "FailedLoginAttemptWithUserName": "Misslyckat inloggningsförsök från {0}",
     "Favorites": "Favoriter",
@@ -50,7 +50,7 @@
     "NotificationOptionAudioPlayback": "Ljuduppspelning har påbörjats",
     "NotificationOptionAudioPlaybackStopped": "Ljuduppspelning stoppades",
     "NotificationOptionCameraImageUploaded": "Kamerabild har laddats upp",
-    "NotificationOptionInstallationFailed": "Fel vid installation",
+    "NotificationOptionInstallationFailed": "Installationen misslyckades",
     "NotificationOptionNewLibraryContent": "Nytt innehåll har lagts till",
     "NotificationOptionPluginError": "Fel uppstod med tillägget",
     "NotificationOptionPluginInstalled": "Tillägg har installerats",
@@ -113,5 +113,6 @@
     "TasksChannelsCategory": "Internetkanaler",
     "TasksApplicationCategory": "Applikation",
     "TasksLibraryCategory": "Bibliotek",
-    "TasksMaintenanceCategory": "Underhåll"
+    "TasksMaintenanceCategory": "Underhåll",
+    "TaskRefreshPeople": "Uppdatera Personer"
 }

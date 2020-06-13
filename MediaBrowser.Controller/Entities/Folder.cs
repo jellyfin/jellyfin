@@ -341,6 +341,11 @@ namespace MediaBrowser.Controller.Entities
                         {
                             currentChild.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
                         }
+                        else
+                        {
+                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
+                            LibraryManager.UpdateImages(currentChild);
+                        }
 
                         continue;
                     }
@@ -864,7 +869,7 @@ namespace MediaBrowser.Controller.Entities
                     return SortItemsByRequest(query, result);
                 }
 
-                return result.ToArray();
+                return result;
             }
 
             return GetItemsInternal(query).Items;

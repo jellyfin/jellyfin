@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Books
         protected override void MergeData(
             MetadataResult<AudioBook> source,
             MetadataResult<AudioBook> target,
-            MetadataFields[] lockedFields,
+            MetadataField[] lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
         {

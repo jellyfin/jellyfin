@@ -82,7 +82,7 @@ namespace MediaBrowser.Api.Movies
         /// Initializes a new instance of the <see cref="MoviesService" /> class.
         /// </summary>
         public MoviesService(
-            ILogger logger,
+            ILogger<MoviesService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -273,7 +273,7 @@ namespace MediaBrowser.Api.Movies
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
 
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                }).GroupBy(i => i.GetProviderId(MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
                 .ToList();
@@ -314,7 +314,7 @@ namespace MediaBrowser.Api.Movies
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
 
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                }).GroupBy(i => i.GetProviderId(MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
                 .ToList();

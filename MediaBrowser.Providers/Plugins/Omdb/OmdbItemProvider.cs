@@ -17,7 +17,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
@@ -26,22 +25,27 @@ namespace MediaBrowser.Providers.Plugins.Omdb
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IApplicationHost _appHost;
 
-        public OmdbItemProvider(IJsonSerializer jsonSerializer, IApplicationHost appHost, IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbItemProvider(
+            IJsonSerializer jsonSerializer,
+            IApplicationHost appHost,
+            IHttpClient httpClient,
+            ILibraryManager libraryManager,
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
-            _logger = logger;
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _appHost = appHost;
         }
+
         // After primary option
         public int Order => 2;
 
@@ -64,12 +68,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             var episodeSearchInfo = searchInfo as EpisodeInfo;
 
-            var imdbId = searchInfo.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = searchInfo.GetProviderId(MetadataProvider.Imdb);
 
             var urlQuery = "plot=full&r=json";
             if (type == "episode" && episodeSearchInfo != null)
             {
-                episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out imdbId);
+                episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out imdbId);
             }
 
             var name = searchInfo.Name;
@@ -80,7 +84,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 var parsedName = _libraryManager.ParseName(name);
                 var yearInName = parsedName.Year;
                 name = parsedName.Name;
-                year = year ?? yearInName;
+                year ??= yearInName;
             }
 
             if (string.IsNullOrWhiteSpace(imdbId))
@@ -99,6 +103,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 {
                     urlQuery += "&t=" + WebUtility.UrlEncode(name);
                 }
+
                 urlQuery += "&type=" + type;
             }
             else
@@ -113,6 +118,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 {
                     urlQuery += string.Format(CultureInfo.InvariantCulture, "&Episode={0}", searchInfo.IndexNumber);
                 }
+
                 if (searchInfo.ParentIndexNumber.HasValue)
                 {
                     urlQuery += string.Format(CultureInfo.InvariantCulture, "&Season={0}", searchInfo.ParentIndexNumber);
@@ -159,7 +165,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                             item.IndexNumberEnd = episodeSearchInfo.IndexNumberEnd.Value;
                         }
 
-                        item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
+                        item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
 
                         if (result.Year.Length > 0
                             && int.TryParse(result.Year.Substring(0, Math.Min(result.Year.Length, 4)), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedYear))
@@ -204,7 +210,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 QueriedById = true
             };
 
-            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = info.GetProviderId(MetadataProvider.Imdb);
             if (string.IsNullOrWhiteSpace(imdbId))
             {
                 imdbId = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
@@ -213,7 +219,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             if (!string.IsNullOrEmpty(imdbId))
             {
-                result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                result.Item.SetProviderId(MetadataProvider.Imdb, imdbId);
                 result.HasMetadata = true;
 
                 await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _appHost, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
@@ -236,7 +242,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 QueriedById = true
             };
 
-            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = info.GetProviderId(MetadataProvider.Imdb);
             if (string.IsNullOrWhiteSpace(imdbId))
             {
                 imdbId = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
@@ -245,7 +251,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             if (!string.IsNullOrEmpty(imdbId))
             {
-                result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                result.Item.SetProviderId(MetadataProvider.Imdb, imdbId);
                 result.HasMetadata = true;
 
                 await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _appHost, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
@@ -258,14 +264,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             var results = await GetSearchResultsInternal(info, "movie", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
-            return first == null ? null : first.GetProviderId(MetadataProviders.Imdb);
+            return first == null ? null : first.GetProviderId(MetadataProvider.Imdb);
         }
 
         private async Task<string> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
         {
             var results = await GetSearchResultsInternal(info, "series", false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
-            return first == null ? null : first.GetProviderId(MetadataProviders.Imdb);
+            return first == null ? null : first.GetProviderId(MetadataProvider.Imdb);
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
@@ -312,6 +318,5 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             /// <value>The results.</value>
             public List<SearchResult> Search { get; set; }
         }
-
     }
 }
