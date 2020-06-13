@@ -255,7 +255,7 @@ namespace Emby.Server.Implementations
 
             // LocalSubnetFn must be assigned after ConfigurationManager has been created, so the config is available at initiation.
             _networkManager = nwManager;
-            _networkManager.Initialise(GetConfiguredIPV6Status, GetConfiguredLocalSubnets, GetConfiguredBindAddresses);
+            _networkManager.Initialise(GetConfiguredIPV6Status, GetConfiguredLocalSubnets, GetConfiguredBindAddresses, GetMACWOL);
             ConfigurationManager.ConfigurationUpdated += _networkManager.NamedConfigurationUpdated;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
@@ -296,21 +296,41 @@ namespace Emby.Server.Implementations
                 .Replace(appPaths.InternalMetadataPath, appPaths.VirtualInternalMetadataPath, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Function to retreive a value from the config.
+        /// </summary>
+        /// <returns>The config value.</returns>
         private string[] GetConfiguredLocalSubnets()
         {
             return ServerConfigurationManager.Configuration.LocalNetworkSubnets;
         }
 
+        /// <summary>
+        /// Function to retreive a value from the config.
+        /// </summary>
+        /// <returns>The config value.</returns>
         private bool GetConfiguredIPV6Status()
         {
             return ServerConfigurationManager.Configuration.EnableIPV6;
         }
 
+        /// <summary>
+        /// Function to retreive a value from the config.
+        /// </summary>
+        /// <returns>The config value.</returns>
         private string[] GetConfiguredBindAddresses()
         {
             return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
         }
 
+        /// <summary>
+        /// Function to retreive a value from the config.
+        /// </summary>
+        /// <returns>The config value.</returns>
+        private string[] GetMACWOL()
+        {
+            return Array.Empty<string>();
+        }
         private void OnNetworkChanged(object sender, EventArgs e)
         {
             _cachedLocalApiUrl = string.Empty;

@@ -46,6 +46,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSDP", "RSSDP\RSSDP.csproj
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Dlna", "Emby.Dlna\Emby.Dlna.csproj", "{805844AB-E92F-45E6-9D99-4F6D48D129A5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AB1AEF4-8BF4-41E9-8FAE-E243EBC9B355} = {1AB1AEF4-8BF4-41E9-8FAE-E243EBC9B355}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Notifications", "Emby.Notifications\Emby.Notifications.csproj", "{2E030C33-6923-4530-9E54-FA29FA6AD1A9}"
 EndProject
@@ -95,7 +98,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Api.Tests", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Networking", "Common\Networking\Common.Networking.csproj", "{1AB1AEF4-8BF4-41E9-8FAE-E243EBC9B355}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkTesting", "tests\Common.Networking.Tests\NetworkTesting\NetworkTesting.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetworkTesting", "tests\Common.Networking.Tests\NetworkTesting\NetworkTesting.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

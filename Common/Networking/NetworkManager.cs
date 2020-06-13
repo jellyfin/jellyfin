@@ -737,20 +737,11 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Performs an async call to WakeOnLanInternal.
-        /// </summary>
-        /// <param name="macaddress">MAC address to send magic packet to.</param>
-        private async void WakeOnLan(string macaddress)
-        {
-            await WakeOnLanInternal(macaddress);
-        }
-
-        /// <summary>
         /// Send a WOL magic packet across the LAN interfaces.
         /// </summary>
         /// <param name="macAddress">Destination MAC.</param>
         /// <returns>Task id.</returns>
-        private async Task WakeOnLanInternal(string macAddress)
+        private async void WakeOnLan(string macAddress)
         {
             byte[] magicPacket = BuildMagicPacket(macAddress);
 
@@ -811,7 +802,9 @@ namespace Common.Networking
         /// <returns>Task id.</returns>
         private static async Task SendWakeOnLan(IPAddress localIpAddress, IPAddress multicastIpAddress, byte[] magicPacket)
         {
+#pragma warning disable IDE0063 // Use simple 'using' statement
             using (UdpClient client = new UdpClient(new IPEndPoint(localIpAddress, 0)))
+#pragma warning restore IDE0063 // Use simple 'using' statement
             {
                 await client.SendAsync(magicPacket, magicPacket.Length, multicastIpAddress.ToString(), 9);
             }

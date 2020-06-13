@@ -88,7 +88,7 @@ namespace NetworkTesting
             NetworkManager nm = new NetworkManager(null);
 
             // Test included, IP6.
-            nm.Initialise(EnableIP6, NoParams, NoParams);
+            nm.Initialise(EnableIP6, NoParams, NoParams, NoParams);
             NetCollection nc = nm.CreateIPCollection(settings.Split(","), false);           
             Assert.True(string.Equals(nc.ToString(), result1, System.StringComparison.OrdinalIgnoreCase));
 
@@ -97,7 +97,7 @@ namespace NetworkTesting
             Assert.True(string.Equals(nc.ToString(), result3, System.StringComparison.OrdinalIgnoreCase));
 
 
-            nm.Initialise(DisableIP6, NoParams, NoParams);            
+            nm.Initialise(DisableIP6, NoParams, NoParams, NoParams);            
             // Test included, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.True(string.Equals(nc.ToString(), result2, System.StringComparison.OrdinalIgnoreCase));
@@ -106,7 +106,7 @@ namespace NetworkTesting
             nc = nm.CreateIPCollection(settings.Split(","), true);
             Assert.True(string.Equals(nc.ToString(), result4, System.StringComparison.OrdinalIgnoreCase));
 
-            nm.Initialise(EnableIP6, NoParams, NoParams);
+            nm.Initialise(EnableIP6, NoParams, NoParams, NoParams);
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             nc = NetCollection.AsNetworks(nc);            
