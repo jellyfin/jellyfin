@@ -12,7 +12,7 @@ namespace Jellyfin.Server.Formatters
         /// <summary>
         /// Initializes a new instance of the <see cref="CamelCaseJsonProfileFormatter"/> class.
         /// </summary>
-        public CamelCaseJsonProfileFormatter() : base(JsonDefaults.CamelCase)
+        public CamelCaseJsonProfileFormatter() : base(JsonDefaults.GetCamelCaseOptions())
         {
             SupportedMediaTypes.Clear();
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json;profile=\"CamelCase\""));

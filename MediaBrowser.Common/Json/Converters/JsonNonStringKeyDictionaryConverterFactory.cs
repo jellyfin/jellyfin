@@ -22,18 +22,17 @@ namespace MediaBrowser.Common.Json.Converters
         /// <returns>Conversion ability.</returns>
         public override bool CanConvert(Type typeToConvert)
         {
-            
             if (!typeToConvert.IsGenericType)
             {
                 return false;
             }
-            
+
             // Let built in converter handle string keys
             if (typeToConvert.GenericTypeArguments[0] == typeof(string))
             {
                 return false;
             }
-            
+
             // Only support objects that implement IDictionary
             return typeToConvert.GetInterface(nameof(IDictionary)) != null;
         }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,7 +15,7 @@ namespace Emby.Server.Implementations.Networking
 {
     public class NetworkManager : INetworkManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<NetworkManager> _logger;
 
         private IPAddress[] _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();

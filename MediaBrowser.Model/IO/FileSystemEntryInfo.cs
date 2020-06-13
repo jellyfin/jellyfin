@@ -1,26 +1,39 @@
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
-    /// Class FileSystemEntryInfo
+    /// Class FileSystemEntryInfo.
     /// </summary>
     public class FileSystemEntryInfo
     {
         /// <summary>
-        /// Gets or sets the name.
+        /// Initializes a new instance of the <see cref="FileSystemEntryInfo" /> class.
+        /// </summary>
+        /// <param name="name">The filename.</param>
+        /// <param name="path">The file path.</param>
+        /// <param name="type">The file type.</param>
+        public FileSystemEntryInfo(string name, string path, FileSystemEntryType type)
+        {
+            Name = name;
+            Path = path;
+            Type = type;
+        }
+
+        /// <summary>
+        /// Gets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <summary>
-        /// Gets or sets the path.
+        /// Gets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string Path { get; set; }
+        public string Path { get; }
 
         /// <summary>
-        /// Gets or sets the type.
+        /// Gets the type.
         /// </summary>
         /// <value>The type.</value>
-        public FileSystemEntryType Type { get; set; }
+        public FileSystemEntryType Type { get; }
     }
 }

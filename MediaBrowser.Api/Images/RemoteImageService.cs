@@ -147,9 +147,8 @@ namespace MediaBrowser.Api.Images
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
+            var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery(request.ProviderName)
             {
-                ProviderName = request.ProviderName,
                 IncludeAllLanguages = request.IncludeAllLanguages,
                 IncludeDisabledProviders = true,
                 ImageType = request.Type
@@ -265,17 +264,20 @@ namespace MediaBrowser.Api.Images
             {
                 Url = url,
                 BufferContent = false
-
             }).ConfigureAwait(false);
-            var ext = result.ContentType.Split('/').Last();
+            var ext = result.ContentType.Split('/')[^1];
 
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-            using (var stream = result.Content)
+            var stream = result.Content;
+            await using (stream.ConfigureAwait(false))
             {
-                using var filestream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
-                await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                var filestream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+                await using (filestream.ConfigureAwait(false))
+                {
+                    await stream.CopyToAsync(filestream).ConfigureAwait(false);
+                }
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));

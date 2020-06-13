@@ -120,13 +120,13 @@ namespace Jellyfin.Drawing.Skia
                         }
 
                         // resize to the same aspect as the original
-                        int iWidth = (int)Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
+                        int iWidth = Math.Abs(iHeight * currentBitmap.Width / currentBitmap.Height);
                         using (var resizeBitmap = new SKBitmap(iWidth, iHeight, currentBitmap.ColorType, currentBitmap.AlphaType))
                         {
                             currentBitmap.ScalePixels(resizeBitmap, SKFilterQuality.High);
 
                             // crop image
-                            int ix = (int)Math.Abs((iWidth - iSlice) / 2);
+                            int ix = Math.Abs((iWidth - iSlice) / 2);
                             using (var image = SKImage.FromBitmap(resizeBitmap))
                             using (var subset = image.Subset(SKRectI.Create(ix, 0, iSlice, iHeight)))
                             {
@@ -141,10 +141,10 @@ namespace Jellyfin.Drawing.Skia
             return bitmap;
         }
 
-        private SKBitmap GetNextValidImage(string[] paths, int currentIndex, out int newIndex)
+        private SKBitmap? GetNextValidImage(string[] paths, int currentIndex, out int newIndex)
         {
             var imagesTested = new Dictionary<int, int>();
-            SKBitmap bitmap = null;
+            SKBitmap? bitmap = null;
 
             while (imagesTested.Count < paths.Length)
             {
@@ -153,7 +153,7 @@ namespace Jellyfin.Drawing.Skia
                     currentIndex = 0;
                 }
 
-                bitmap = _skiaEncoder.Decode(paths[currentIndex], false, null, out var origin);
+                bitmap = _skiaEncoder.Decode(paths[currentIndex], false, null, out _);
 
                 imagesTested[currentIndex] = 0;
 

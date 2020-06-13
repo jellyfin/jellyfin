@@ -2,6 +2,7 @@
 
 using System.Globalization;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -69,6 +70,10 @@ namespace Jellyfin.Api.Auth
                 var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
                 return Task.FromResult(AuthenticateResult.Success(ticket));
+            }
+            catch (AuthenticationException ex)
+            {
+                return Task.FromResult(AuthenticateResult.Fail(ex));
             }
             catch (SecurityException ex)
             {

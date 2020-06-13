@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
@@ -12,6 +14,24 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <value>The user.</value>
         public User User { get; set; }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.IsUnplayed;
+
+        /// <summary>
+        /// Gets or sets the user data repository.
+        /// </summary>
+        /// <value>The user data repository.</value>
+        public IUserDataManager UserDataRepository { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user manager.
+        /// </summary>
+        /// <value>The user manager.</value>
+        public IUserManager UserManager { get; set; }
 
         /// <summary>
         /// Compares the specified x.
@@ -33,23 +53,5 @@ namespace Emby.Server.Implementations.Sorting
         {
             return x.IsUnplayed(User) ? 0 : 1;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.IsUnplayed;
-
-        /// <summary>
-        /// Gets or sets the user data repository.
-        /// </summary>
-        /// <value>The user data repository.</value>
-        public IUserDataManager UserDataRepository { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user manager.
-        /// </summary>
-        /// <value>The user manager.</value>
-        public IUserManager UserManager { get; set; }
     }
 }
