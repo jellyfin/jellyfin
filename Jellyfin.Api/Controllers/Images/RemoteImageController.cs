@@ -85,9 +85,8 @@ namespace Jellyfin.Api.Controllers.Images
 
             var images = await _providerManager.GetAvailableRemoteImages(
                     item,
-                    new RemoteImageQuery
+                    new RemoteImageQuery(providerName)
                     {
-                        ProviderName = providerName,
                         IncludeAllLanguages = includeAllLanguages,
                         IncludeDisabledProviders = true,
                         ImageType = type
