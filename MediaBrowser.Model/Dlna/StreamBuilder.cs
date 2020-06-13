@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -339,6 +340,7 @@ namespace MediaBrowser.Model.Dlna
                         {
                             transcodeReasons.Add(transcodeReason.Value);
                         }
+
                         all = false;
                         break;
                     }

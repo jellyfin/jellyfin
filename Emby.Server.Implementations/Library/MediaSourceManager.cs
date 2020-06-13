@@ -33,13 +33,13 @@ namespace Emby.Server.Implementations.Library
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
+        private readonly ILogger<MediaSourceManager> _logger;
+        private readonly IUserDataManager _userDataManager;
+        private readonly IMediaEncoder _mediaEncoder;
+        private readonly ILocalizationManager _localizationManager;
+        private readonly IApplicationPaths _appPaths;
 
         private IMediaSourceProvider[] _providers;
-        private readonly ILogger _logger;
-        private readonly IUserDataManager _userDataManager;
-        private readonly Func<IMediaEncoder> _mediaEncoder;
-        private ILocalizationManager _localizationManager;
-        private IApplicationPaths _appPaths;
 
         public MediaSourceManager(
             IItemRepository itemRepo,
@@ -47,16 +47,16 @@ namespace Emby.Server.Implementations.Library
             ILocalizationManager localizationManager,
             IUserManager userManager,
             ILibraryManager libraryManager,
-            ILoggerFactory loggerFactory,
+            ILogger<MediaSourceManager> logger,
             IJsonSerializer jsonSerializer,
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
-            Func<IMediaEncoder> mediaEncoder)
+            IMediaEncoder mediaEncoder)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _logger = loggerFactory.CreateLogger(nameof(MediaSourceManager));
+            _logger = logger;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
@@ -496,7 +496,7 @@ namespace Emby.Server.Implementations.Library
                     // hack - these two values were taken from LiveTVMediaSourceProvider
                     string cacheKey = request.OpenToken;
 
-                    await new LiveStreamHelper(_mediaEncoder(), _logger, _jsonSerializer, _appPaths)
+                    await new LiveStreamHelper(_mediaEncoder, _logger, _jsonSerializer, _appPaths)
                         .AddMediaInfoWithProbe(mediaSource, isAudio, cacheKey, true, cancellationToken)
                         .ConfigureAwait(false);
                 }
@@ -521,11 +521,7 @@ namespace Emby.Server.Implementations.Library
                 SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);
             }
 
-            return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse
-            {
-                MediaSource = clone
-
-            }, liveStream as IDirectStreamProvider);
+            return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);
         }
 
         private static void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)
@@ -621,7 +617,7 @@ namespace Emby.Server.Implementations.Library
 
             if (liveStreamInfo is IDirectStreamProvider)
             {
-                var info = await _mediaEncoder().GetMediaInfo(new MediaInfoRequest
+                var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
                 {
                     MediaSource = mediaSource,
                     ExtractChapters = false,
@@ -674,7 +670,7 @@ namespace Emby.Server.Implementations.Library
                     mediaSource.AnalyzeDurationMs = 3000;
                 }
 
-                mediaInfo = await _mediaEncoder().GetMediaInfo(new MediaInfoRequest
+                mediaInfo = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
                 {
                     MediaSource = mediaSource,
                     MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
