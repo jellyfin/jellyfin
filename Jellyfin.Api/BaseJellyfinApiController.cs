@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 using System;
+=======
+using System.Net.Mime;
+>>>>>>> origin/master
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api
@@ -8,6 +12,7 @@ namespace Jellyfin.Api
     /// </summary>
     [ApiController]
     [Route("[controller]")]
+    [Produces(MediaTypeNames.Application.Json)]
     public class BaseJellyfinApiController : ControllerBase
     {
     }

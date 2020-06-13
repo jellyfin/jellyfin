@@ -1,0 +1,30 @@
+Source: jellyfin-server
+Section: misc
+Priority: optional
+Maintainer: Jellyfin Team <team@jellyfin.org>
+Build-Depends:  debhelper (>= 9),
+                dotnet-sdk-3.1,
+                libc6-dev,
+                libcurl4-openssl-dev,
+                libfontconfig1-dev,
+                libfreetype6-dev,
+                libssl-dev
+Standards-Version: 3.9.4
+Homepage: https://jellyfin.org/
+Vcs-Git: https://github.org/jellyfin/jellyfin.git
+Vcs-Browser: https://github.org/jellyfin/jellyfin
+
+Package: jellyfin-server
+Replaces: mediabrowser, emby, emby-server-beta, jellyfin-dev, emby-server
+Breaks: mediabrowser, emby, emby-server-beta, jellyfin-dev, emby-server
+Conflicts: mediabrowser, emby, emby-server-beta, jellyfin-dev, emby-server
+Architecture: any
+Depends: at,
+         libsqlite3-0,
+         jellyfin-ffmpeg (>= 4.2.1-2),
+         libfontconfig1,
+         libfreetype6,
+         libssl1.1
+Recommends: jellyfin-web
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.

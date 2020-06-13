@@ -22,14 +22,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     public abstract class BaseTunerHost
     {
         protected readonly IServerConfigurationManager Config;
-        protected readonly ILogger Logger;
+        protected readonly ILogger<BaseTunerHost> Logger;
         protected IJsonSerializer JsonSerializer;
         protected readonly IFileSystem FileSystem;
 
         private readonly ConcurrentDictionary<string, ChannelCache> _channelCache =
             new ConcurrentDictionary<string, ChannelCache>(StringComparer.OrdinalIgnoreCase);
 
-        protected BaseTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
+        protected BaseTunerHost(IServerConfigurationManager config, ILogger<BaseTunerHost> logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
         {
             Config = config;
             Logger = logger;

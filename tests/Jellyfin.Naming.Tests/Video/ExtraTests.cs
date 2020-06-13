@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Jellyfin.Naming.Tests.Video
 {
-    public class ExtraTests : BaseVideoTest
+    public class ExtraTests
     {
         private readonly NamingOptions _videoOptions = new NamingOptions();
 

@@ -26,9 +26,8 @@ namespace Emby.Server.Implementations.LiveTv
 
         private const string ServiceName = "Emby";
 
-        private readonly ILogger _logger;
+        private readonly ILogger<LiveTvDtoService> _logger;
         private readonly IImageProcessor _imageProcessor;
-
         private readonly IDtoService _dtoService;
         private readonly IApplicationHost _appHost;
         private readonly ILibraryManager _libraryManager;

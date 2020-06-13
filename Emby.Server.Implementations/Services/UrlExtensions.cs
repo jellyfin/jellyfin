@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System;
+using MediaBrowser.Common.Extensions;
 
 namespace Emby.Server.Implementations.Services
 {
@@ -13,25 +16,12 @@ namespace Emby.Server.Implementations.Services
         public static string GetMethodName(this Type type)
         {
             var typeName = type.FullName != null // can be null, e.g. generic types
-                ? LeftPart(type.FullName, "[[")   // Generic Fullname
-                    .Replace(type.Namespace + ".", string.Empty) // Trim Namespaces
-                    .Replace("+", ".") // Convert nested into normal type
+                ? StringExtensions.LeftPart(type.FullName, "[[", StringComparison.Ordinal).ToString() // Generic Fullname
+                    .Replace(type.Namespace + ".", string.Empty, StringComparison.Ordinal) // Trim Namespaces
+                    .Replace("+", ".", StringComparison.Ordinal) // Convert nested into normal type
                 : type.Name;
 
             return type.IsGenericParameter ? "'" + typeName : typeName;
-        }
-
-        private static string LeftPart(string strVal, string needle)
-        {
-            if (strVal == null)
-            {
-                return null;
-            }
-
-            var pos = strVal.IndexOf(needle, StringComparison.OrdinalIgnoreCase);
-            return pos == -1
-                ? strVal
-                : strVal.Substring(0, pos);
         }
     }
 }
