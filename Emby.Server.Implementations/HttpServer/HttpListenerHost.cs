@@ -315,10 +315,8 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     nc.Add(IPHost.Parse("::1"));
                 }
-                else
-                {
-                    nc.Add(IPHost.Parse("127.0.0.1"));
-                }
+
+                nc.Add(IPHost.Parse("127.0.0.1"));
 
                 return nc.Contains(h);
             }
@@ -362,10 +360,10 @@ namespace Emby.Server.Implementations.HttpServer
                     }
                 }
 
-                return false;
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         /// <summary>

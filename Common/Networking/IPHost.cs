@@ -47,7 +47,7 @@ namespace Common.Networking
             {
                 if (Addresses.Length > 0)
                 {
-                    return Addresses[0];
+                    return _addresses[0];
                 }
 
                 return null!;
@@ -108,8 +108,7 @@ namespace Common.Networking
                 if (i != -1)
                 {
                     // Assume host is encased in [ ] and is IPv6 address.
-                    // c#v8 host = host.TrimStart()[1..i];
-                    host = host.Remove(host.Length - 1).TrimStart(' ', '[');
+                    host = host.Remove(i - 1).TrimStart(' ', '[');
                 }
                 else
                 {

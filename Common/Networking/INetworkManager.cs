@@ -28,7 +28,8 @@ namespace Common.Networking
         /// <param name="ip6Enabled">Function that returns the EnableIPV6 config option.</param>
         /// <param name="subnets">Function that returns the LocalNetworkSubnets config option.</param>
         /// <param name="bindInterfaces">Function that returns the LocalNetworkAddresses config option.</param>
-        void Initialise(Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces);
+        /// <param name="wolMACList">Function that returns a list of MAC addresses which WOL packets are sent to.</param>
+        void Initialise(Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces, Func<string[]> wolMACList);
 
         /// <summary>
         /// Returns all the valid interfaces in config LocalNetworkAddresses.
@@ -117,5 +118,10 @@ namespace Common.Networking
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         NetCollection GetFilteredLANAddresses(NetCollection? filter = null);
+
+        /// <summary>
+        /// Wake up network objects provided by the user defined settings.
+        /// </summary>
+        public void WakeDevices();
     }
 }

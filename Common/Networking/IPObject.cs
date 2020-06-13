@@ -40,12 +40,8 @@ namespace Common.Networking
         {
             get
             {
-                if (Address != null)
-                {
-                    return Address.AddressFamily;
-                }
-
-                return AddressFamily.Unspecified;
+                IPAddress? i = Address;
+                return i != null ? i.AddressFamily : AddressFamily.Unspecified;
             }
         }
 
