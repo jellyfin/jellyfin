@@ -490,7 +490,6 @@ namespace MediaBrowser.Api.Images
             }
 
             _userManager.ClearProfileImage(user);
-            _userManager.UpdateUser(user);
         }
 
         /// <summary>
