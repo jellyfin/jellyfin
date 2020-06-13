@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Manager
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ProviderManager> _logger;
         private readonly IHttpClient _httpClient;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;

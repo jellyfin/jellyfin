@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the logger.
         /// </summary>
-        protected ILogger Logger { get; }
+        protected ILogger<ApplicationHost> Logger { get; }
 
         private IPlugin[] _plugins;
 

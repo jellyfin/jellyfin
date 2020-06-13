@@ -25,7 +25,7 @@ namespace Emby.Notifications
     /// </summary>
     public class NotificationEntryPoint : IServerEntryPoint
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<NotificationEntryPoint> _logger;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
         private readonly INotificationManager _notificationManager;

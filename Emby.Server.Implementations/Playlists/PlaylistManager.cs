@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Playlists
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _iLibraryMonitor;
-        private readonly ILogger _logger;
+        private readonly ILogger<PlaylistManager> _logger;
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
         private readonly IConfiguration _appConfig;

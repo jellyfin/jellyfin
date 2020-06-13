@@ -23,7 +23,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// <summary>
         /// The logger
         /// </summary>
-        protected ILogger Logger { get; private set; }
+        protected ILogger<BaseItemXmlParser<T>> Logger { get; private set; }
         protected IProviderManager ProviderManager { get; private set; }
 
         private Dictionary<string, string> _validProviderIds;
@@ -32,7 +32,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public BaseItemXmlParser(ILogger logger, IProviderManager providerManager)
+        public BaseItemXmlParser(ILogger<BaseItemXmlParser<T>> logger, IProviderManager providerManager)
         {
             Logger = logger;
             ProviderManager = providerManager;

@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<UdpServerEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _config;
 

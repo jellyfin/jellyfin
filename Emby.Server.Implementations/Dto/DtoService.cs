@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.Dto
 {
     public class DtoService : IDtoService
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
         private readonly IItemRepository _itemRepo;

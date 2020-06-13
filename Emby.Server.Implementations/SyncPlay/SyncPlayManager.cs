@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<SyncPlayManager> _logger;
 
         /// <summary>
         /// The user manager.

@@ -2,11 +2,11 @@
 
 using System;
 using System.Linq;
-using System.Security.Authentication;
 using Emby.Server.Implementations.SocketSharp;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
         {
-            var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
+            var req = new WebSocketSharpRequest(request, null, request.Path);
             var user = ValidateUser(req, authAttributes);
             return user;
         }
