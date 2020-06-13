@@ -35,7 +35,7 @@ namespace Emby.Dlna.Main
         public static DlnaEntryPoint Current;
 
         private readonly IServerConfigurationManager _config;
-        private readonly ILogger _logger;
+        private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly ISessionManager _sessionManager;
         private readonly IHttpClient _httpClient;
