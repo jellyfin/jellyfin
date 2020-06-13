@@ -310,8 +310,7 @@ namespace Rssdp.Infrastructure
                       foreach (var device in deviceList)
                       {
                           var rt = device.ToRootDevice();
-                          
-                          // Don't send responses to ourself.
+                                                    
                           if (!_sendOnlyMatchedHost ||
                               NetworkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address))
                           {
