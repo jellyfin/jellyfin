@@ -20,7 +20,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
@@ -618,6 +617,8 @@ namespace Jellyfin.Server.Implementations.Users
         {
             var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users.Find(userId) ?? throw new ArgumentException("No user exists with given Id!");
+
+            // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
             int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
             {
                 -1 => null,
