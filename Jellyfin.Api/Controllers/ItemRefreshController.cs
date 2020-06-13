@@ -1,4 +1,5 @@
 #nullable enable
+#pragma warning disable CA1801
 
 using System.ComponentModel;
 using MediaBrowser.Controller.Library;
