@@ -17,7 +17,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="sortBy">Sort By. Comma delimited string.</param>
         /// <param name="requestedSortOrder">Sort Order. Comma delimited string.</param>
         /// <returns>Order By.</returns>
-        public static ValueTuple<string, SortOrder>[] GetOrderBy(string sortBy, string requestedSortOrder)
+        public static ValueTuple<string, SortOrder>[] GetOrderBy(string? sortBy, string? requestedSortOrder)
         {
             var val = sortBy;
 
@@ -56,7 +56,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="fields">The fields.</param>
         /// <returns>IEnumerable{ItemFields}.</returns>
-        public static ItemFields[] GetItemFields(string fields)
+        public static ItemFields[] GetItemFields(string? fields)
         {
             if (string.IsNullOrEmpty(fields))
             {
@@ -79,7 +79,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="filters">The filters.</param>
         /// <returns>Item filters.</returns>
-        public static IEnumerable<ItemFilter> GetFilters(string filters)
+        public static IEnumerable<ItemFilter> GetFilters(string? filters)
         {
             return string.IsNullOrEmpty(filters)
                 ? Array.Empty<ItemFilter>()
