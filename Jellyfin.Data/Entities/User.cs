@@ -324,6 +324,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets the user's profile image. Can be <c>null</c>.
         /// </summary>
+        // [ForeignKey("UserId")]
         public virtual ImageInfo ProfileImage { get; set; }
 
         [Required]

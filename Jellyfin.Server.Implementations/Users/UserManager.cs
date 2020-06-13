@@ -671,7 +671,7 @@ namespace Jellyfin.Server.Implementations.Users
         public void ClearProfileImage(User user)
         {
             var dbContext = _dbProvider.CreateContext();
-            dbContext.ImageInfos.Remove(user.ProfileImage);
+            dbContext.Remove(user.ProfileImage);
             dbContext.SaveChanges();
         }
 

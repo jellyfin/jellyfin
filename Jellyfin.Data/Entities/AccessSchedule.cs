@@ -52,7 +52,6 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [XmlIgnore]
         [Required]
-        [ForeignKey("Id")]
         public Guid UserId { get; protected set; }
 
         /// <summary>
