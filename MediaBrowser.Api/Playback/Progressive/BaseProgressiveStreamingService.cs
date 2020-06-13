@@ -28,7 +28,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected IHttpClient HttpClient { get; private set; }
 
         public BaseProgressiveStreamingService(
-            ILogger logger,
+            ILogger<BaseProgressiveStreamingService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IHttpClient httpClient,

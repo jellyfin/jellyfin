@@ -426,7 +426,7 @@ namespace MediaBrowser.Api
             catch (SecurityException e)
             {
                 // rethrow adding IP address to message
-                throw new SecurityException($"[{Request.RemoteIp}] {e.Message}");
+                throw new SecurityException($"[{Request.RemoteIp}] {e.Message}", e);
             }
         }
 

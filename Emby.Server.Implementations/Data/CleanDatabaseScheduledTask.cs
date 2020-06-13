@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations.Data
     public class CleanDatabaseScheduledTask : ILibraryPostScanTask
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<CleanDatabaseScheduledTask> _logger;
 
         public CleanDatabaseScheduledTask(ILibraryManager libraryManager, ILogger<CleanDatabaseScheduledTask> logger)
         {

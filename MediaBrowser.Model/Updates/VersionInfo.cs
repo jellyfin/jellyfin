@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 
 namespace MediaBrowser.Model.Updates
@@ -8,22 +10,10 @@ namespace MediaBrowser.Model.Updates
     public class VersionInfo
     {
         /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the guid.
-        /// </summary>
-        /// <value>The guid.</value>
-        public string guid { get; set; }
-
-        /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
-        public Version version { get; set; }
+        public string version { get; set; }
 
         /// <summary>
         /// Gets or sets the changelog for this version.
@@ -50,9 +40,9 @@ namespace MediaBrowser.Model.Updates
         public string checksum { get; set; }
 
         /// <summary>
-        /// Gets or sets the target filename for the downloaded binary.
+        /// Gets or sets a timestamp of when the binary was built.
         /// </summary>
-        /// <value>The target filename.</value>
-        public string filename { get; set; }
+        /// <value>The timestamp.</value>
+        public string timestamp { get; set; }
     }
 }

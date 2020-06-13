@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
@@ -6,6 +8,12 @@ namespace Emby.Server.Implementations.Sorting
 {
     public class IsFolderComparer : IBaseItemComparer
     {
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.IsFolder;
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
@@ -26,11 +34,5 @@ namespace Emby.Server.Implementations.Sorting
         {
             return x.IsFolder ? 0 : 1;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.IsFolder;
     }
 }

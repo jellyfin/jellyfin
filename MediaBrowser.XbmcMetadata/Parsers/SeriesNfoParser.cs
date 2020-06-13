@@ -51,17 +51,17 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(imdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
                         }
 
                         if (!string.IsNullOrWhiteSpace(tmdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Tmdb, tmdbId);
+                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
                         }
 
                         if (!string.IsNullOrWhiteSpace(tvdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Tvdb, tvdbId);
+                            item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
                         }
 
                         break;
