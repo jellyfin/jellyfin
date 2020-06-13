@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Entities
             Genres = Array.Empty<string>();
             Studios = Array.Empty<string>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            LockedFields = Array.Empty<MetadataFields>();
+            LockedFields = Array.Empty<MetadataField>();
             ImageInfos = Array.Empty<ItemImageInfo>();
             ProductionLocations = Array.Empty<string>();
             RemoteTrailers = Array.Empty<MediaUrl>();
@@ -557,7 +557,8 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The logger
         /// </summary>
-        public static ILogger Logger { get; set; }
+        public static ILoggerFactory LoggerFactory { get; set; }
+        public static ILogger<BaseItem> Logger { get; set; }
         public static ILibraryManager LibraryManager { get; set; }
         public static IServerConfigurationManager ConfigurationManager { get; set; }
         public static IProviderManager ProviderManager { get; set; }
@@ -585,7 +586,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The locked fields.</value>
         [JsonIgnore]
-        public MetadataFields[] LockedFields { get; set; }
+        public MetadataField[] LockedFields { get; set; }
 
         /// <summary>
         /// Gets the type of the media.
@@ -1374,6 +1375,7 @@ namespace MediaBrowser.Controller.Entities
                         new List<FileSystemMetadata>();
 
                     var ownedItemsChanged = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
+                    LibraryManager.UpdateImages(this); // ensure all image properties in DB are fresh
 
                     if (ownedItemsChanged)
                     {
@@ -2222,6 +2224,7 @@ namespace MediaBrowser.Controller.Entities
                 existingImage.DateModified = image.DateModified;
                 existingImage.Width = image.Width;
                 existingImage.Height = image.Height;
+                existingImage.BlurHash = image.BlurHash;
             }
             else
             {
@@ -2371,6 +2374,46 @@ namespace MediaBrowser.Controller.Entities
 
             return GetImages(imageType)
                 .ElementAtOrDefault(imageIndex);
+        }
+
+        /// <summary>
+        /// Computes image index for given image or raises if no matching image found.
+        /// </summary>
+        /// <param name="image">Image to compute index for.</param>
+        /// <exception cref="ArgumentException">Image index cannot be computed as no matching image found.
+        /// </exception>
+        /// <returns>Image index.</returns>
+        public int GetImageIndex(ItemImageInfo image)
+        {
+            if (image == null)
+            {
+                throw new ArgumentNullException(nameof(image));
+            }
+
+            if (image.Type == ImageType.Chapter)
+            {
+                var chapters = ItemRepository.GetChapters(this);
+                for (var i = 0; i < chapters.Count; i++)
+                {
+                    if (chapters[i].ImagePath == image.Path)
+                    {
+                        return i;
+                    }
+                }
+
+                throw new ArgumentException("No chapter index found for image path", image.Path);
+            }
+
+            var images = GetImages(image.Type).ToArray();
+            for (var i = 0; i < images.Length; i++)
+            {
+                if (images[i].Path == image.Path)
+                {
+                    return i;
+                }
+            }
+
+            throw new ArgumentException("No image index found for image path", image.Path);
         }
 
         public IEnumerable<ItemImageInfo> GetImages(ImageType imageType)

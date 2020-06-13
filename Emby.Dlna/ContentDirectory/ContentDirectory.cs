@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
@@ -136,12 +137,7 @@ namespace Emby.Dlna.ContentDirectory
                 }
             }
 
-            foreach (var user in _userManager.Users)
-            {
-                return user;
-            }
-
-            return null;
+            return _userManager.Users.FirstOrDefault();
         }
     }
 }

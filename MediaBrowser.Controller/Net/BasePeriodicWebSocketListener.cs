@@ -40,9 +40,9 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// The logger
         /// </summary>
-        protected ILogger Logger;
+        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
 
-        protected BasePeriodicWebSocketListener(ILogger logger)
+        protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
         {
             if (logger == null)
             {
@@ -77,8 +77,6 @@ namespace MediaBrowser.Controller.Net
             return Task.CompletedTask;
         }
 
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Starts sending messages over a web socket
         /// </summary>
@@ -87,12 +85,12 @@ namespace MediaBrowser.Controller.Net
         {
             var vals = message.Data.Split(',');
 
-            var dueTimeMs = long.Parse(vals[0], UsCulture);
-            var periodMs = long.Parse(vals[1], UsCulture);
+            var dueTimeMs = long.Parse(vals[0], CultureInfo.InvariantCulture);
+            var periodMs = long.Parse(vals[1], CultureInfo.InvariantCulture);
 
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Logger.LogDebug("{1} Begin transmitting over websocket to {0}", message.Connection.RemoteEndPoint, GetType().Name);
+            Logger.LogDebug("WS {1} begin transmitting to {0}", message.Connection.RemoteEndPoint, GetType().Name);
 
             var state = new TStateType
             {
@@ -106,7 +104,7 @@ namespace MediaBrowser.Controller.Net
             }
         }
 
-        protected void SendData(bool force)
+        protected async Task SendData(bool force)
         {
             Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>[] tuples;
 
@@ -130,13 +128,18 @@ namespace MediaBrowser.Controller.Net
                     .ToArray();
             }
 
-            foreach (var tuple in tuples)
+            IEnumerable<Task> GetTasks()
             {
-                SendData(tuple);
+                foreach (var tuple in tuples)
+                {
+                    yield return SendData(tuple);
+                }
             }
+
+            await Task.WhenAll(GetTasks()).ConfigureAwait(false);
         }
 
-        private async void SendData(Tuple<IWebSocketConnection, CancellationTokenSource, TStateType> tuple)
+        private async Task SendData(Tuple<IWebSocketConnection, CancellationTokenSource, TStateType> tuple)
         {
             var connection = tuple.Item1;
 
@@ -150,12 +153,13 @@ namespace MediaBrowser.Controller.Net
 
                 if (data != null)
                 {
-                    await connection.SendAsync(new WebSocketMessage<TReturnDataType>
-                    {
-                        MessageType = Name,
-                        Data = data
-
-                    }, cancellationToken).ConfigureAwait(false);
+                    await connection.SendAsync(
+                        new WebSocketMessage<TReturnDataType>
+                        {
+                            MessageType = Name,
+                            Data = data
+                        },
+                        cancellationToken).ConfigureAwait(false);
 
                     state.DateLastSendUtc = DateTime.UtcNow;
                 }
@@ -197,7 +201,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="connection">The connection.</param>
         private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, TStateType> connection)
         {
-            Logger.LogDebug("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
+            Logger.LogDebug("WS {1} stop transmitting to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 
             // TODO disposing the connection seems to break websockets in subtle ways, so what is the purpose of this function really...
             // connection.Item1.Dispose();
@@ -242,6 +246,7 @@ namespace MediaBrowser.Controller.Net
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 
