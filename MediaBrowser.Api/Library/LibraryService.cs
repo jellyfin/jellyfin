@@ -319,11 +319,14 @@ namespace MediaBrowser.Api.Library
         private readonly ILocalizationManager _localization;
         private readonly ILibraryMonitor _libraryMonitor;
 
+        private readonly ILogger<MoviesService> _moviesServiceLogger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(
             ILogger<LibraryService> logger,
+            ILogger<MoviesService> moviesServiceLogger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IProviderManager providerManager,
@@ -344,6 +347,7 @@ namespace MediaBrowser.Api.Library
             _activityManager = activityManager;
             _localization = localization;
             _libraryMonitor = libraryMonitor;
+            _moviesServiceLogger = moviesServiceLogger;
         }
 
         private string[] GetRepresentativeItemTypes(string contentType)
@@ -543,7 +547,7 @@ namespace MediaBrowser.Api.Library
             if (item is Movie || (program != null && program.IsMovie) || item is Trailer)
             {
                 return new MoviesService(
-                    Logger,
+                    _moviesServiceLogger,
                     ServerConfigurationManager,
                     ResultFactory,
                     _userManager,
@@ -651,7 +655,7 @@ namespace MediaBrowser.Api.Library
                     EnableImages = false
                 }
 
-            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProvider.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             foreach (var item in series)
             {
@@ -684,11 +688,11 @@ namespace MediaBrowser.Api.Library
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))
             {
-                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
+                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProvider.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else if (!string.IsNullOrWhiteSpace(request.TmdbId))
             {
-                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
+                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProvider.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {
@@ -759,13 +763,12 @@ namespace MediaBrowser.Api.Library
         {
             try
             {
-                _activityManager.Create(new ActivityLogEntry
+                _activityManager.Create(new Jellyfin.Data.Entities.ActivityLog(
+                    string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
+                    "UserDownloadingContent",
+                    auth.UserId)
                 {
-                    Name = string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
-                    Type = "UserDownloadingContent",
                     ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), auth.Client, auth.Device),
-                    UserId = auth.UserId
-
                 });
             }
             catch

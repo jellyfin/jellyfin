@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -21,10 +22,10 @@ namespace Emby.Server.Implementations.HttpClientManager
     /// </summary>
     public class HttpClientManager : IHttpClient
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpClientManager> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
-        private readonly Func<string> _defaultUserAgentFn;
+        private readonly IApplicationHost _appHost;
 
         /// <summary>
         /// Holds a dictionary of http clients by host.  Use GetHttpClient(host) to retrieve or create a client for web requests.
@@ -40,12 +41,12 @@ namespace Emby.Server.Implementations.HttpClientManager
             IApplicationPaths appPaths,
             ILogger<HttpClientManager> logger,
             IFileSystem fileSystem,
-            Func<string> defaultUserAgentFn)
+            IApplicationHost appHost)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _fileSystem = fileSystem;
             _appPaths = appPaths ?? throw new ArgumentNullException(nameof(appPaths));
-            _defaultUserAgentFn = defaultUserAgentFn;
+            _appHost = appHost;
         }
 
         /// <summary>
@@ -91,7 +92,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             if (options.EnableDefaultUserAgent
                 && !request.Headers.TryGetValues(HeaderNames.UserAgent, out _))
             {
-                request.Headers.Add(HeaderNames.UserAgent, _defaultUserAgentFn());
+                request.Headers.Add(HeaderNames.UserAgent, _appHost.ApplicationUserAgent);
             }
 
             switch (options.DecompressionMethod)
