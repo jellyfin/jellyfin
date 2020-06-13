@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-using System;
-=======
 using System.Net.Mime;
->>>>>>> origin/master
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api
