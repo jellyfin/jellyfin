@@ -17,7 +17,7 @@ namespace Emby.Dlna.Service
             Logger = logger;
             HttpClient = httpClient;
 
-            EventManager = new EventManager(Logger, HttpClient);
+            EventManager = new EventManager(logger, HttpClient);
         }
 
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)

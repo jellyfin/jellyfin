@@ -23,12 +23,9 @@ namespace Emby.Server.Implementations.Localization
         private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
         private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
 
-        /// <summary>
-        /// The _configuration manager.
-        /// </summary>
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly ILogger _logger;
+        private readonly ILogger<LocalizationManager> _logger;
 
         private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
             new Dictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);

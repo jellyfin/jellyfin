@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Music
         protected override void MergeData(
             MetadataResult<MusicVideo> source,
             MetadataResult<MusicVideo> target,
-            MetadataFields[] lockedFields,
+            MetadataField[] lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
         {
