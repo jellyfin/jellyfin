@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         public const string DefaultRedirectKey = "HttpListenerHost:DefaultRedirectPath";
 
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpListenerHost> _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
@@ -404,7 +404,7 @@ namespace Emby.Server.Implementations.HttpServer
             var response = context.Response;
             var localPath = context.Request.Path.ToString();
 
-            var req = new WebSocketSharpRequest(request, response, request.Path, _logger);
+            var req = new WebSocketSharpRequest(request, response, request.Path);
             return RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted);
         }
 

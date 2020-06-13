@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Library
 {
     public class SearchEngine : ISearchEngine
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SearchEngine> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
 

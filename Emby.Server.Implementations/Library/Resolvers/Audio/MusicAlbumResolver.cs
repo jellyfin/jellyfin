@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             IEnumerable<FileSystemMetadata> list,
             bool allowSubfolders,
             IDirectoryService directoryService,
-            ILogger logger,
+            ILogger<MusicAlbumResolver> logger,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)
         {

@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationPaths _applicationPaths;
-        private readonly ILogger _logger;
+        private readonly ILogger<TaskManager> _logger;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>

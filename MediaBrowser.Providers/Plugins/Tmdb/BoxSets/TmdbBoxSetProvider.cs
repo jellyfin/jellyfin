@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
         internal static TmdbBoxSetProvider Current;
 
-        private readonly ILogger _logger;
+        private readonly ILogger<TmdbBoxSetProvider> _logger;
         private readonly IJsonSerializer _json;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;

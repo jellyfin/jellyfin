@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.Library
         private readonly object _policySyncLock = new object();
         private readonly object _configSyncLock = new object();
 
-        private readonly ILogger _logger;
+        private readonly ILogger<UserManager> _logger;
         private readonly IUserRepository _userRepository;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IJsonSerializer _jsonSerializer;
