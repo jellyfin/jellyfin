@@ -37,6 +37,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Stars waiting for the trigger action
         /// </summary>
         /// <param name="lastResult">The last result.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="taskName">The name of the task.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
         public void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {

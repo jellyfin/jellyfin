@@ -28,6 +28,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// Initializes a new instance of the <see cref="DeleteLogFileTask" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="localization">The localization manager.</param>
         public DeleteLogFileTask(IConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization)
         {
             ConfigurationManager = configurationManager;
@@ -82,18 +84,25 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc />
         public string Name => _localization.GetLocalizedString("TaskCleanLogs");
 
+        /// <inheritdoc />
         public string Description => string.Format(_localization.GetLocalizedString("TaskCleanLogsDescription"), ConfigurationManager.CommonConfiguration.LogFileRetentionDays);
 
+        /// <inheritdoc />
         public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
+        /// <inheritdoc />
         public string Key => "CleanLogFiles";
 
+        /// <inheritdoc />
         public bool IsHidden => false;
 
+        /// <inheritdoc />
         public bool IsEnabled => true;
 
+        /// <inheritdoc />
         public bool IsLogged => true;
     }
 }
