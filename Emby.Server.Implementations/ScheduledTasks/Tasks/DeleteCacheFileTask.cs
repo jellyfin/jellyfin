@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <value>The application paths.</value>
         private IApplicationPaths ApplicationPaths { get; set; }
 
-        private readonly ILogger _logger;
+        private readonly ILogger<DeleteCacheFileTask> _logger;
 
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
@@ -165,18 +165,25 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
+        /// <inheritdoc />
         public string Name => _localization.GetLocalizedString("TaskCleanCache");
 
+        /// <inheritdoc />
         public string Description => _localization.GetLocalizedString("TaskCleanCacheDescription");
 
+        /// <inheritdoc />
         public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
+        /// <inheritdoc />
         public string Key => "DeleteCacheFiles";
 
+        /// <inheritdoc />
         public bool IsHidden => false;
 
+        /// <inheritdoc />
         public bool IsEnabled => true;
 
+        /// <inheritdoc />
         public bool IsLogged => true;
     }
 }

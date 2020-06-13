@@ -16,7 +16,7 @@ namespace MediaBrowser.Common.Json
         /// When changing these options, update
         ///     Jellyfin.Server/Extensions/ApiServiceCollectionExtensions.cs
         ///         -> AddJellyfinApi
-        ///             -> AddJsonOptions
+        ///             -> AddJsonOptions.
         /// </remarks>
         /// <returns>The default <see cref="JsonSerializerOptions" /> options.</returns>
         public static JsonSerializerOptions GetOptions()
@@ -33,31 +33,27 @@ namespace MediaBrowser.Common.Json
 
             return options;
         }
-        
+
         /// <summary>
-        /// Gets CamelCase json options.
+        /// Gets camelCase json options.
         /// </summary>
-        public static JsonSerializerOptions CamelCase
+        /// <returns>The camelCase <see cref="JsonSerializerOptions" /> options.</returns>
+        public static JsonSerializerOptions GetCamelCaseOptions()
         {
-            get
-            {
-                var options = GetOptions();
-                options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                return options;
-            }
+            var options = GetOptions();
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            return options;
         }
 
         /// <summary>
         /// Gets PascalCase json options.
         /// </summary>
-        public static JsonSerializerOptions PascalCase
+        /// <returns>The PascalCase <see cref="JsonSerializerOptions" /> options.</returns>
+        public static JsonSerializerOptions GetPascalCaseOptions()
         {
-            get
-            {
-                var options = GetOptions();
-                options.PropertyNamingPolicy = null;
-                return options;
-            }
+            var options = GetOptions();
+            options.PropertyNamingPolicy = null;
+            return options;
         }
     }
 }

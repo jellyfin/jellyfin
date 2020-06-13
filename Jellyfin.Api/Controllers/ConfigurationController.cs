@@ -89,7 +89,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string key)
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
-            var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType);
+            var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType).ConfigureAwait(false);
             _configurationManager.SaveConfiguration(key, configuration);
             return Ok();
         }

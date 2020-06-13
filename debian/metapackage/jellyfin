@@ -1,0 +1,13 @@
+Source: jellyfin
+Section: misc
+Priority: optional
+Homepage: https://jellyfin.org
+Standards-Version: 3.9.2
+
+Package: jellyfin
+Version: 10.6.0
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Depends: jellyfin-server, jellyfin-web
+Description: Provides the Jellyfin Free Software Media System
+ Provides the full Jellyfin experience, including both the server and web interface.
+

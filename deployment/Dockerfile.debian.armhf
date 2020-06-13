@@ -1,0 +1,39 @@
+FROM debian:10
+# Docker build arguments
+ARG SOURCE_DIR=/jellyfin
+ARG ARTIFACT_DIR=/dist
+ARG SDK_VERSION=3.1
+# Docker run environment
+ENV SOURCE_DIR=/jellyfin
+ENV ARTIFACT_DIR=/dist
+ENV DEB_BUILD_OPTIONS=noddebs
+ENV ARCH=amd64
+ENV IS_DOCKER=YES
+
+# Prepare Debian build environment
+RUN apt-get update \
+ && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv
+
+# Install dotnet repository
+# https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
+RUN wget https://download.visualstudio.microsoft.com/download/pr/d731f991-8e68-4c7c-8ea0-fad5605b077a/49497b5420eecbd905158d86d738af64/dotnet-sdk-3.1.100-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+ && mkdir -p dotnet-sdk \
+ && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
+ && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+
+# Prepare the cross-toolchain
+RUN dpkg --add-architecture armhf \
+ && apt-get update \
+ && apt-get install -y cross-gcc-dev \
+ && TARGET_LIST="armhf" cross-gcc-gensource 8 \
+ && cd cross-gcc-packages-amd64/cross-gcc-8-armhf \
+ && apt-get install -y gcc-8-source libstdc++-8-dev-armhf-cross binutils-aarch64-linux-gnu bison flex libtool gdb sharutils netbase libmpc-dev libmpfr-dev libgmp-dev systemtap-sdt-dev autogen expect chrpath zlib1g-dev zip binutils-arm-linux-gnueabihf libc6-dev:armhf linux-libc-dev:armhf libgcc1:armhf libcurl4-openssl-dev:armhf libfontconfig1-dev:armhf libfreetype6-dev:armhf libssl-dev:armhf liblttng-ust0:armhf libstdc++-8-dev:armhf
+
+# Link to build script
+RUN ln -sf ${SOURCE_DIR}/deployment/build.debian.armhf /build.sh
+
+VOLUME ${SOURCE_DIR}/
+
+VOLUME ${ARTIFACT_DIR}/
+
+ENTRYPOINT ["/build.sh"]

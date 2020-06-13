@@ -20,12 +20,12 @@ namespace MediaBrowser.Providers.Manager
         where TIdType : ItemLookupInfo, new()
     {
         protected readonly IServerConfigurationManager ServerConfigurationManager;
-        protected readonly ILogger Logger;
+        protected readonly ILogger<MetadataService<TItemType, TIdType>> Logger;
         protected readonly IProviderManager ProviderManager;
         protected readonly IFileSystem FileSystem;
         protected readonly ILibraryManager LibraryManager;
 
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
@@ -486,7 +486,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            if (!item.LockedFields.Contains(MetadataFields.Genres))
+            if (!item.LockedFields.Contains(MetadataField.Genres))
             {
                 var currentList = item.Genres;
 
@@ -507,7 +507,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            if (!item.LockedFields.Contains(MetadataFields.Studios))
+            if (!item.LockedFields.Contains(MetadataField.Studios))
             {
                 var currentList = item.Studios;
 
@@ -528,7 +528,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            if (!item.LockedFields.Contains(MetadataFields.OfficialRating))
+            if (!item.LockedFields.Contains(MetadataField.OfficialRating))
             {
                 if (item.UpdateRatingToItems(children))
                 {
@@ -718,7 +718,7 @@ namespace MediaBrowser.Providers.Manager
                             userDataList.AddRange(localItem.UserDataList);
                         }
 
-                        MergeData(localItem, temp, new MetadataFields[] { }, !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, new MetadataField[] { }, !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -766,7 +766,7 @@ namespace MediaBrowser.Providers.Manager
                     else
                     {
                         // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, new MetadataFields[] { }, false, false);
+                        MergeData(metadata, temp, new MetadataField[] { }, false, false);
                         MergeData(temp, metadata, item.LockedFields, true, false);
                     }
                 }
@@ -843,7 +843,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         result.Provider = provider.Name;
 
-                        MergeData(result, temp, new MetadataFields[] { }, false, false);
+                        MergeData(result, temp, new MetadataField[] { }, false, false);
                         MergeNewData(temp.Item, id);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
@@ -894,7 +894,7 @@ namespace MediaBrowser.Providers.Manager
 
         protected abstract void MergeData(MetadataResult<TItemType> source,
             MetadataResult<TItemType> target,
-            MetadataFields[] lockedFields,
+            MetadataField[] lockedFields,
             bool replaceData,
             bool mergeMetadataSettings);
 

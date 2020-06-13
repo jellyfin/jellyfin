@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Data
         /// Initializes a new instance of the <see cref="BaseSqliteRepository"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        protected BaseSqliteRepository(ILogger logger)
+        protected BaseSqliteRepository(ILogger<BaseSqliteRepository> logger)
         {
             Logger = logger;
         }
@@ -32,7 +32,7 @@ namespace Emby.Server.Implementations.Data
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; }
+        protected ILogger<BaseSqliteRepository> Logger { get; }
 
         /// <summary>
         /// Gets the default connection flags.
