@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
@@ -339,7 +340,10 @@ namespace Jellyfin.Server.Implementations.Users
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
                     EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders),
                     EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
-                    SyncPlayAccess = user.SyncPlayAccess
+                    SyncPlayAccess = user.SyncPlayAccess,
+                    BlockedChannels = user.GetPreference(PreferenceKind.BlockedChannels),
+                    BlockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders),
+                    BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems).Select(Enum.Parse<UnratedItem>).ToArray()
                 }
             };
         }
