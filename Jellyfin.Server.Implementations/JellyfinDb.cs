@@ -23,7 +23,11 @@ namespace Jellyfin.Server.Implementations
         /// </summary>
         public static string ConnectionString { get; set; } = @"Data Source=jellyfin.db";
 
+        public virtual DbSet<AccessSchedule> AccessSchedules { get; set; }
+
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
+
+        public virtual DbSet<ImageInfo> ImageInfos { get; set; }
 
         public virtual DbSet<Permission> Permissions { get; set; }
 
