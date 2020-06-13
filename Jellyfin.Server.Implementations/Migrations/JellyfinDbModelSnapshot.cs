@@ -39,7 +39,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AccessSchedule");
+                    b.ToTable("AccessSchedules");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.ActivityLog", b =>
@@ -104,7 +104,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ImageInfo");
+                    b.ToTable("ImageInfos");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>

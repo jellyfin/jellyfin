@@ -1,7 +1,4 @@
-﻿#pragma warning disable CS1591
-#pragma warning disable SA1601
-
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jellyfin.Server.Implementations.Migrations
@@ -11,7 +8,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ImageInfo",
+                name: "ImageInfos",
                 schema: "jellyfin",
                 columns: table => new
                 {
@@ -22,7 +19,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ImageInfo", x => x.Id);
+                    table.PrimaryKey("PK_ImageInfos", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -65,16 +62,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_ImageInfo_ProfileImageId",
+                        name: "FK_Users_ImageInfos_ProfileImageId",
                         column: x => x.ProfileImageId,
                         principalSchema: "jellyfin",
-                        principalTable: "ImageInfo",
+                        principalTable: "ImageInfos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "AccessSchedule",
+                name: "AccessSchedules",
                 schema: "jellyfin",
                 columns: table => new
                 {
@@ -87,9 +84,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AccessSchedule", x => x.Id);
+                    table.PrimaryKey("PK_AccessSchedules", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AccessSchedule_Users_UserId",
+                        name: "FK_AccessSchedules_Users_UserId",
                         column: x => x.UserId,
                         principalSchema: "jellyfin",
                         principalTable: "Users",
@@ -146,9 +143,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AccessSchedule_UserId",
+                name: "IX_AccessSchedules_UserId",
                 schema: "jellyfin",
-                table: "AccessSchedule",
+                table: "AccessSchedules",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -173,7 +170,7 @@ namespace Jellyfin.Server.Implementations.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AccessSchedule",
+                name: "AccessSchedules",
                 schema: "jellyfin");
 
             migrationBuilder.DropTable(
@@ -189,7 +186,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 schema: "jellyfin");
 
             migrationBuilder.DropTable(
-                name: "ImageInfo",
+                name: "ImageInfos",
                 schema: "jellyfin");
         }
     }
