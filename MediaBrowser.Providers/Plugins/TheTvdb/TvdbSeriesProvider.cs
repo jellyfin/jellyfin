@@ -24,7 +24,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         internal static TvdbSeriesProvider Current { get; private set; }
 
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbSeriesProvider> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly TvdbClientManager _tvdbClientManager;

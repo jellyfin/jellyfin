@@ -69,7 +69,7 @@ namespace MediaBrowser.Api
     /// </summary>
     public static class SimilarItemsHelper
     {
-        internal static QueryResult<BaseItemDto> GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Type[] includeTypes, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
+        internal static QueryResult<BaseItemDto> GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, BaseGetSimilarItemsFromItem request, Type[] includeTypes, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
             var user = !request.UserId.Equals(Guid.Empty) ? userManager.GetUserById(request.UserId) : null;
 

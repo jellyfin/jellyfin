@@ -67,12 +67,13 @@ namespace MediaBrowser.Api.Music
         {
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
+            var result = SimilarItemsHelper.GetSimilarItemsResult(
+                dtoOptions, 
+                _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 _dtoService,
-                Logger,
                 request, new[] { typeof(MusicArtist) },
                 SimilarItemsHelper.GetSimiliarityScore);
 
@@ -88,12 +89,13 @@ namespace MediaBrowser.Api.Music
         {
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
+            var result = SimilarItemsHelper.GetSimilarItemsResult(
+                dtoOptions, 
+                _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 _dtoService,
-                Logger,
                 request, new[] { typeof(MusicAlbum) },
                 GetAlbumSimilarityScore);
 

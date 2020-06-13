@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Channels
     public class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly IChannelManager _channelManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<RefreshChannelsScheduledTask> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
 

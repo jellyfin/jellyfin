@@ -40,9 +40,9 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// The logger
         /// </summary>
-        protected ILogger Logger;
+        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
 
-        protected BasePeriodicWebSocketListener(ILogger logger)
+        protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
         {
             if (logger == null)
             {

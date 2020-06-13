@@ -29,18 +29,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
-        private readonly ILogger _logger;
+        private readonly ILogger<TmdbSeasonProvider> _logger;
 
         internal static TmdbSeasonProvider Current { get; private set; }
 
-        public TmdbSeasonProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, ILoggerFactory loggerFactory)
+        public TmdbSeasonProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, ILogger<TmdbSeasonProvider> logger)
         {
             _httpClient = httpClient;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _jsonSerializer = jsonSerializer;
-            _logger = loggerFactory.CreateLogger(GetType().Name);
+            _logger = logger;
             Current = this;
         }
 

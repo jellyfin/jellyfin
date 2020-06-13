@@ -25,7 +25,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _subtitleManager = subtitleManager;
         }
 
-        public async Task<List<string>> DownloadSubtitles(Video video,
+        public async Task<List<string>> DownloadSubtitles(
+            Video video,
             List<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,

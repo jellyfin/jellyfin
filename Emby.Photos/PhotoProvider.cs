@@ -22,7 +22,7 @@ namespace Emby.Photos
     /// </summary>
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<PhotoProvider> _logger;
         private readonly IImageProcessor _imageProcessor;
 
         // These are causing taglib to hang
