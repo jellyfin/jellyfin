@@ -657,6 +657,10 @@ namespace Jellyfin.Server.Implementations.Users
                 user.AccessSchedules.Add(policyAccessSchedule);
             }
 
+            // TODO: fix this at some point
+            user.SetPreference(
+                PreferenceKind.BlockUnratedItems,
+                policy.BlockUnratedItems?.Select(i => i.ToString()).ToArray() ?? Array.Empty<string>());
             user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
             user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
