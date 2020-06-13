@@ -783,25 +783,23 @@ namespace Common.Networking
                 macBytes[i] = Convert.ToByte(macAddress.Substring(i * 2, 2), 16);
             }
 
-            using (MemoryStream ms = new MemoryStream())
+            MemoryStream ms = new MemoryStream();
+            using (BinaryWriter bw = new BinaryWriter(ms))
             {
-                using (BinaryWriter bw = new BinaryWriter(ms))
+                // First 6 times 0xff.
+                for (int i = 0; i < 6; i++)
                 {
-                    // First 6 times 0xff.
-                    for (int i = 0; i < 6; i++)
-                    {
-                        bw.Write((byte)0xff);
-                    }
-
-                    // Then 16 times MacAddress.
-                    for (int i = 0; i < 16; i++)
-                    {
-                        bw.Write(macBytes);
-                    }
+                    bw.Write((byte)0xff);
                 }
 
-                return ms.ToArray(); // 102 bytes magic packet
+                // Then 16 times MacAddress.
+                for (int i = 0; i < 16; i++)
+                {
+                    bw.Write(macBytes);
+                }
             }
+
+            return ms.ToArray(); // 102 bytes magic packet
         }
 
         /// <summary>
