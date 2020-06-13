@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.Videos
         public override int Order => 10;
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Video> source, MetadataResult<Video> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Video> source, MetadataResult<Video> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

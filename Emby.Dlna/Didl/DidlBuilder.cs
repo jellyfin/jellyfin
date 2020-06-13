@@ -425,56 +425,98 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            if (item is Episode episode && context is Season season)
+            return item is Episode episode
+                ? GetEpisodeDisplayName(episode, context)
+                : item.Name;
+        }
+
+        /// <summary>
+        /// Gets episode display name appropriate for the given context.
+        /// </summary>
+        /// <remarks>
+        /// If context is a season, this will return a string containing just episode number and name.
+        /// Otherwise the result will include series nams and season number.
+        /// </remarks>
+        /// <param name="episode">The episode.</param>
+        /// <param name="context">Current context.</param>
+        /// <returns>Formatted name of the episode.</returns>
+        private string GetEpisodeDisplayName(Episode episode, BaseItem context)
+        {
+            string[] components;
+
+            if (context is Season season)
             {
                 // This is a special embedded within a season
-                if (item.ParentIndexNumber.HasValue && item.ParentIndexNumber.Value == 0
+                if (episode.ParentIndexNumber.HasValue && episode.ParentIndexNumber.Value == 0
                     && season.IndexNumber.HasValue && season.IndexNumber.Value != 0)
                 {
                     return string.Format(
                         CultureInfo.InvariantCulture,
                         _localization.GetLocalizedString("ValueSpecialEpisodeName"),
-                        item.Name);
+                        episode.Name);
                 }
 
-                if (item.IndexNumber.HasValue)
-                {
-                    var number = item.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
-
-                    if (episode.IndexNumberEnd.HasValue)
-                    {
-                        number += "-" + episode.IndexNumberEnd.Value.ToString("00", CultureInfo.InvariantCulture);
-                    }
-
-                    return number + " - " + item.Name;
-                }
+                // inside a season use simple format (ex. '12 - Episode Name')
+                var epNumberName = GetEpisodeIndexFullName(episode);
+                components = new[] { epNumberName, episode.Name };
             }
-            else if (item is Episode ep)
+            else
             {
-                var parent = ep.GetParent();
-                var name = parent.Name + " - ";
-
-                if (ep.ParentIndexNumber.HasValue)
-                {
-                    name += "S" + ep.ParentIndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
-                }
-                else if (!item.IndexNumber.HasValue)
-                {
-                    return name + " - " + item.Name;
-                }
-
-                name += "E" + ep.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
-                if (ep.IndexNumberEnd.HasValue)
-                {
-                    name += "-" + ep.IndexNumberEnd.Value.ToString("00", CultureInfo.InvariantCulture);
-                }
-
-                name += " - " + item.Name;
-                return name;
+                // outside a season include series and season details (ex. 'TV Show - S05E11 - Episode Name')
+                var epNumberName = GetEpisodeNumberDisplayName(episode);
+                components = new[] { episode.SeriesName, epNumberName, episode.Name };
             }
 
-            return item.Name;
+            return string.Join(" - ", components.Where(NotNullOrWhiteSpace));
         }
+
+        /// <summary>
+        /// Gets complete episode number.
+        /// </summary>
+        /// <param name="episode">The episode.</param>
+        /// <returns>For single episodes returns just the number. For double episodes - current and ending numbers.</returns>
+        private string GetEpisodeIndexFullName(Episode episode)
+        {
+            var name = string.Empty;
+            if (episode.IndexNumber.HasValue)
+            {
+                name += episode.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+
+                if (episode.IndexNumberEnd.HasValue)
+                {
+                    name += "-" + episode.IndexNumberEnd.Value.ToString("00", CultureInfo.InvariantCulture);
+                }
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Gets episode number formatted as 'S##E##'.
+        /// </summary>
+        /// <param name="episode">The episode.</param>
+        /// <returns>Formatted episode number.</returns>
+        private string GetEpisodeNumberDisplayName(Episode episode)
+        {
+            var name = string.Empty;
+            var seasonNumber = episode.Season?.IndexNumber;
+
+            if (seasonNumber.HasValue)
+            {
+                name = "S" + seasonNumber.Value.ToString("00", CultureInfo.InvariantCulture);
+            }
+
+            var indexName = GetEpisodeIndexFullName(episode);
+
+            if (!string.IsNullOrWhiteSpace(indexName))
+            {
+                name += "E" + indexName;
+            }
+
+            return name;
+        }
+
+        private bool NotNullOrWhiteSpace(string s) => !string.IsNullOrWhiteSpace(s);
 
         private void AddAudioResource(XmlWriter writer, BaseItem audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
@@ -1018,17 +1060,56 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            item = item.GetParents().FirstOrDefault(i => i.HasImage(ImageType.Primary));
-
-            if (item != null)
+            // For audio tracks without art use album art if available.
+            if (item is Audio audioItem)
             {
-                if (item.HasImage(ImageType.Primary))
-                {
-                    return GetImageInfo(item, ImageType.Primary);
-                }
+                var album = audioItem.AlbumEntity;
+                return album != null && album.HasImage(ImageType.Primary)
+                    ? GetImageInfo(album, ImageType.Primary)
+                    : null;
+            }
+
+            // Don't look beyond album/playlist level. Metadata service may assign an image from a different album/show to the parent folder.
+            if (item is MusicAlbum || item is Playlist)
+            {
+                return null;
+            }
+
+            // For other item types check parents, but be aware that image retrieved from a parent may be not suitable for this media item.
+            var parentWithImage = GetFirstParentWithImageBelowUserRoot(item);
+            if (parentWithImage != null)
+            {
+                return GetImageInfo(parentWithImage, ImageType.Primary);
             }
 
             return null;
+        }
+
+        private BaseItem GetFirstParentWithImageBelowUserRoot(BaseItem item)
+        {
+            if (item == null)
+            {
+                return null;
+            }
+
+            if (item.HasImage(ImageType.Primary))
+            {
+                return item;
+            }
+
+            var parent = item.GetParent();
+            if (parent is UserRootFolder)
+            {
+                return null;
+            }
+
+            // terminate in case we went past user root folder (unlikely?)
+            if (parent is Folder folder && folder.IsRoot)
+            {
+                return null;
+            }
+
+            return GetFirstParentWithImageBelowUserRoot(parent);
         }
 
         private ImageDownloadInfo GetImageInfo(BaseItem item, ImageType type)

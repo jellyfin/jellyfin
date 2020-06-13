@@ -102,18 +102,4 @@ namespace MediaBrowser.Common.Net
             return value;
         }
     }
-
-    public enum CacheMode
-    {
-        None = 0,
-        Unconditional = 1
-    }
-
-    [Flags]
-    public enum CompressionMethods
-    {
-        None = 0b00000001,
-        Deflate = 0b00000010,
-        Gzip = 0b00000100
-    }
 }

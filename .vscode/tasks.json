@@ -10,6 +10,16 @@
                 "${workspaceFolder}/Jellyfin.Server/Jellyfin.Server.csproj"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "api tests",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/tests/MediaBrowser.Api.Tests/MediaBrowser.Api.Tests.csproj"
+            ],
+            "problemMatcher": "$msCompile"
         }
     ]
 }

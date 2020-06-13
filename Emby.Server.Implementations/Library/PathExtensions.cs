@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Text.RegularExpressions;
 
@@ -12,24 +14,24 @@ namespace Emby.Server.Implementations.Library
         /// Gets the attribute value.
         /// </summary>
         /// <param name="str">The STR.</param>
-        /// <param name="attrib">The attrib.</param>
+        /// <param name="attribute">The attrib.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">attrib</exception>
-        public static string GetAttributeValue(this string str, string attrib)
+        /// <exception cref="ArgumentException"><paramref name="str" /> or <paramref name="attribute" /> is empty.</exception>
+        public static string? GetAttributeValue(this string str, string attribute)
         {
-            if (string.IsNullOrEmpty(str))
+            if (str.Length == 0)
             {
-                throw new ArgumentNullException(nameof(str));
+                throw new ArgumentException("String can't be empty.", nameof(str));
             }
 
-            if (string.IsNullOrEmpty(attrib))
+            if (attribute.Length == 0)
             {
-                throw new ArgumentNullException(nameof(attrib));
+                throw new ArgumentException("String can't be empty.", nameof(attribute));
             }
 
-            string srch = "[" + attrib + "=";
+            string srch = "[" + attribute + "=";
             int start = str.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-            if (start > -1)
+            if (start != -1)
             {
                 start += srch.Length;
                 int end = str.IndexOf(']', start);
@@ -37,9 +39,9 @@ namespace Emby.Server.Implementations.Library
             }
 
             // for imdbid we also accept pattern matching
-            if (string.Equals(attrib, "imdbid", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(attribute, "imdbid", StringComparison.OrdinalIgnoreCase))
             {
-                var m = Regex.Match(str, "tt\\d{7}", RegexOptions.IgnoreCase);
+                var m = Regex.Match(str, "tt([0-9]{7,8})", RegexOptions.IgnoreCase);
                 return m.Success ? m.Value : null;
             }
 

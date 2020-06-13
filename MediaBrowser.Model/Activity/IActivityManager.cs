@@ -1,6 +1,9 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 
@@ -10,10 +13,15 @@ namespace MediaBrowser.Model.Activity
     {
         event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
-        void Create(ActivityLogEntry entry);
+        void Create(ActivityLog entry);
 
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit);
+        Task CreateAsync(ActivityLog entry);
 
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? x, int? y);
+        QueryResult<ActivityLogEntry> GetPagedResult(int? startIndex, int? limit);
+
+        QueryResult<ActivityLogEntry> GetPagedResult(
+            Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>> func,
+            int? startIndex,
+            int? limit);
     }
 }

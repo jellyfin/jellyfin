@@ -26,7 +26,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 paint.Color = SKColor.Parse("#CC00A4DC");
                 paint.Style = SKPaintStyle.Fill;
-                canvas.DrawCircle((float)x, OffsetFromTopRightCorner, 20, paint);
+                canvas.DrawCircle(x, OffsetFromTopRightCorner, 20, paint);
             }
 
             using (var paint = new SKPaint())
@@ -39,16 +39,13 @@ namespace Jellyfin.Drawing.Skia
 
                 // or:
                 // var emojiChar = 0x1F680;
-                var text = "✔️";
-                var emojiChar = StringUtilities.GetUnicodeCharacterCode(text, SKTextEncoding.Utf32);
+                const string Text = "✔️";
+                var emojiChar = StringUtilities.GetUnicodeCharacterCode(Text, SKTextEncoding.Utf32);
 
                 // ask the font manager for a font with that character
-                var fontManager = SKFontManager.Default;
-                var emojiTypeface = fontManager.MatchCharacter(emojiChar);
+                paint.Typeface = SKFontManager.Default.MatchCharacter(emojiChar);
 
-                paint.Typeface = emojiTypeface;
-
-                canvas.DrawText(text, (float)x - 20, OffsetFromTopRightCorner + 12, paint);
+                canvas.DrawText(Text, (float)x - 20, OffsetFromTopRightCorner + 12, paint);
             }
         }
     }

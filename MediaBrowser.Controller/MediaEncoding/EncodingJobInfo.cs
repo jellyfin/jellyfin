@@ -302,7 +302,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return false;
                 }
 
-                return BaseRequest.BreakOnNonKeyFrames && string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+                return BaseRequest.BreakOnNonKeyFrames && EncodingHelper.IsCopyCodec(videoCodec);
             }
 
             return false;
@@ -367,7 +367,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get
             {
                 if (BaseRequest.Static
-                    || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                    || EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
                     if (AudioStream != null)
                     {
@@ -390,7 +390,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get
             {
                 if (BaseRequest.Static
-                    || string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                    || EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
                     if (AudioStream != null)
                     {
@@ -409,7 +409,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.Level;
                 }
@@ -433,7 +433,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get
             {
                 if (BaseRequest.Static
-                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.BitDepth;
                 }
@@ -451,7 +451,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get
             {
                 if (BaseRequest.Static
-                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.RefFrames;
                 }
@@ -468,7 +468,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get
             {
                 if (BaseRequest.Static
-                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream == null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
                 }
@@ -499,7 +499,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.PacketLength;
                 }
@@ -515,7 +515,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.Profile;
                 }
@@ -535,7 +535,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get
             {
                 if (BaseRequest.Static
-                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.CodecTag;
                 }
@@ -549,7 +549,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get
             {
                 if (BaseRequest.Static
-                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.IsAnamorphic;
                 }
@@ -562,7 +562,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.Codec;
                 }
@@ -575,7 +575,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (string.Equals(OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
                     return AudioStream?.Codec;
                 }
@@ -589,7 +589,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             get
             {
                 if (BaseRequest.Static
-                    || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.IsInterlaced;
                 }
@@ -607,7 +607,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             get
             {
-                if (BaseRequest.Static || string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
                     return VideoStream?.IsAVC;
                 }

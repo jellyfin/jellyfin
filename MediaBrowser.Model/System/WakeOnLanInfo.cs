@@ -8,35 +8,20 @@ namespace MediaBrowser.Model.System
     public class WakeOnLanInfo
     {
         /// <summary>
-        /// Returns the MAC address of the device.
-        /// </summary>
-        /// <value>The MAC address.</value>
-        public string MacAddress { get; set; }
-
-        /// <summary>
-        /// Returns the wake-on-LAN port.
-        /// </summary>
-        /// <value>The wake-on-LAN port.</value>
-        public int Port { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="WakeOnLanInfo" /> class.
         /// </summary>
         /// <param name="macAddress">The MAC address.</param>
-        public WakeOnLanInfo(PhysicalAddress macAddress)
+        public WakeOnLanInfo(PhysicalAddress macAddress) : this(macAddress.ToString())
         {
-            MacAddress = macAddress.ToString();
-            Port = 9;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WakeOnLanInfo" /> class.
         /// </summary>
         /// <param name="macAddress">The MAC address.</param>
-        public WakeOnLanInfo(string macAddress)
+        public WakeOnLanInfo(string macAddress) : this()
         {
             MacAddress = macAddress;
-            Port = 9;
         }
 
         /// <summary>
@@ -46,5 +31,17 @@ namespace MediaBrowser.Model.System
         {
             Port = 9;
         }
+
+        /// <summary>
+        /// Gets the MAC address of the device.
+        /// </summary>
+        /// <value>The MAC address.</value>
+        public string? MacAddress { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wake-on-LAN port.
+        /// </summary>
+        /// <value>The wake-on-LAN port.</value>
+        public int Port { get; set; }
     }
 }

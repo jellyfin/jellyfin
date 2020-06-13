@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.Folders
         public override int Order => 10;
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Folder> source, MetadataResult<Folder> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Folder> source, MetadataResult<Folder> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
