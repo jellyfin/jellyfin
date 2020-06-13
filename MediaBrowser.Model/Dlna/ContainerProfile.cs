@@ -1,8 +1,9 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
+using System.Linq;
 using System.Xml.Serialization;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -10,6 +11,7 @@ namespace MediaBrowser.Model.Dlna
     {
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
+
         public ProfileCondition[] Conditions { get; set; }
 
         [XmlAttribute("container")]
@@ -45,7 +47,7 @@ namespace MediaBrowser.Model.Dlna
         public static bool ContainsContainer(string profileContainers, string inputContainer)
         {
             var isNegativeList = false;
-            if (profileContainers != null && profileContainers.StartsWith("-"))
+            if (profileContainers != null && profileContainers.StartsWith("-", StringComparison.Ordinal))
             {
                 isNegativeList = true;
                 profileContainers = profileContainers.Substring(1);
@@ -72,7 +74,7 @@ namespace MediaBrowser.Model.Dlna
 
                 foreach (var container in allInputContainers)
                 {
-                    if (ListHelper.ContainsIgnoreCase(profileContainers, container))
+                    if (profileContainers.Contains(container, StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -86,7 +88,7 @@ namespace MediaBrowser.Model.Dlna
 
                 foreach (var container in allInputContainers)
                 {
-                    if (ListHelper.ContainsIgnoreCase(profileContainers, container))
+                    if (profileContainers.Contains(container, StringComparer.OrdinalIgnoreCase))
                     {
                         return true;
                     }

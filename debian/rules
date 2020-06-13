@@ -1,0 +1,51 @@
+#! /usr/bin/make -f
+CONFIG := Release
+TERM := xterm
+SHELL := /bin/bash
+
+HOST_ARCH := $(shell arch)
+BUILD_ARCH := ${DEB_HOST_MULTIARCH}
+ifeq ($(HOST_ARCH),x86_64)
+    # Building AMD64
+    DOTNETRUNTIME := debian-x64
+    ifeq ($(BUILD_ARCH),arm-linux-gnueabihf)
+        # Cross-building ARM on AMD64
+        DOTNETRUNTIME := debian-arm
+    endif
+    ifeq ($(BUILD_ARCH),aarch64-linux-gnu)
+        # Cross-building ARM on AMD64
+        DOTNETRUNTIME := debian-arm64
+    endif
+endif
+ifeq ($(HOST_ARCH),armv7l)
+    # Building ARM
+    DOTNETRUNTIME := debian-arm
+endif
+ifeq ($(HOST_ARCH),arm64)
+    # Building ARM
+    DOTNETRUNTIME := debian-arm64
+endif
+
+export DH_VERBOSE=1
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+%:
+	dh $@
+
+# disable "make check"
+override_dh_auto_test:
+
+# disable stripping debugging symbols
+override_dh_clistrip:
+
+override_dh_auto_build:
+	dotnet publish --configuration $(CONFIG) --output='$(CURDIR)/usr/lib/jellyfin/bin' --self-contained --runtime $(DOTNETRUNTIME) \
+		"-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none" Jellyfin.Server
+
+override_dh_auto_clean:
+	dotnet clean -maxcpucount:1 --configuration $(CONFIG) Jellyfin.Server || true
+	rm -rf '$(CURDIR)/usr'
+
+# Force the service name to jellyfin even if we're building jellyfin-nightly
+override_dh_installinit:
+	dh_installinit --name=jellyfin

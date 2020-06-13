@@ -194,7 +194,8 @@ namespace Emby.Server.Implementations.Images
             return outputPath;
         }
 
-        protected virtual string CreateImage(BaseItem item,
+        protected virtual string CreateImage(
+            BaseItem item,
             IReadOnlyCollection<BaseItem> itemsWithImages,
             string outputPathWithoutExtension,
             ImageType imageType,
@@ -214,7 +215,12 @@ namespace Emby.Server.Implementations.Images
 
             if (imageType == ImageType.Primary)
             {
-                if (item is UserView || item is Playlist || item is MusicGenre || item is Genre || item is PhotoAlbum)
+                if (item is UserView
+                    || item is Playlist
+                    || item is MusicGenre
+                    || item is Genre
+                    || item is PhotoAlbum
+                    || item is MusicArtist)
                 {
                     return CreateSquareCollage(item, itemsWithImages, outputPath);
                 }
@@ -225,7 +231,7 @@ namespace Emby.Server.Implementations.Images
             throw new ArgumentException("Unexpected image type", nameof(imageType));
         }
 
-        public bool HasChanged(BaseItem item, IDirectoryService directoryServicee)
+        public bool HasChanged(BaseItem item, IDirectoryService directoryService)
         {
             if (!Supports(item))
             {
@@ -236,6 +242,7 @@ namespace Emby.Server.Implementations.Images
             {
                 return true;
             }
+
             if (SupportedImages.Contains(ImageType.Thumb) && HasChanged(item, ImageType.Thumb))
             {
                 return true;

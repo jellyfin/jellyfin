@@ -10,6 +10,7 @@ using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Server.Formatters;
+using Jellyfin.Server.Models;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -72,11 +73,18 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The MVC builder.</returns>
         public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, string baseUrl)
         {
-            return serviceCollection.AddMvc(opts =>
+            return serviceCollection
+                .AddCors(options =>
+                {
+                    options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
+                })
+                .AddMvc(opts =>
                 {
                     opts.UseGeneralRoutePrefix(baseUrl);
                     opts.OutputFormatters.Insert(0, new CamelCaseJsonProfileFormatter());
                     opts.OutputFormatters.Insert(0, new PascalCaseJsonProfileFormatter());
+
+                    opts.OutputFormatters.Add(new CssOutputFormatter());
                 })
 
                 // Clear app parts to avoid other assemblies being picked up
@@ -85,7 +93,7 @@ namespace Jellyfin.Server.Extensions
                 .AddJsonOptions(options =>
                 {
                     // Update all properties that are set in JsonDefaults
-                    var jsonOptions = JsonDefaults.PascalCase;
+                    var jsonOptions = JsonDefaults.GetPascalCaseOptions();
 
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
@@ -112,6 +120,25 @@ namespace Jellyfin.Server.Extensions
             return serviceCollection.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+                c.AddSecurityDefinition(AuthenticationSchemes.CustomAuthentication, new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header,
+                    Name = "X-Emby-Token",
+                    Description = "API key header parameter"
+                });
+
+                var securitySchemeRef = new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = AuthenticationSchemes.CustomAuthentication },
+                };
+
+                // TODO: Apply this with an operation filter instead of globally
+                // https://github.com/domaindrivendev/Swashbuckle.AspNetCore#add-security-definitions-and-requirements
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { securitySchemeRef, Array.Empty<string>() }
+                });
 
                 // Add all xml doc files to swagger generator.
                 var xmlFiles = Directory.GetFiles(

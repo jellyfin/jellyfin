@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Rules for MediaBrowser.Api.Tests" Description="Code analysis rules for MediaBrowser.Api.Tests.csproj" ToolsVersion="14.0">
+
+  <!-- Include the solution default RuleSet. The rules in this file will override the defaults. -->
+  <Include Path="../jellyfin.ruleset" Action="Default" />
+
+  <!-- StyleCop Analyzer Rules -->
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <!-- SA0001: XML comment analysis is disabled due to project configuration -->
+    <Rule Id="SA0001" Action="None" />
+  </Rules>
+
+  <!-- FxCop Analyzer Rules -->
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- CA1707: Identifiers should not contain underscores -->
+    <Rule Id="CA1707" Action="None" />
+    <!-- CA2007: Consider calling ConfigureAwait on the awaited task -->
+    <Rule Id="CA2007" Action="None" />
+    <!-- CA2234: Pass system uri objects instead of strings -->
+    <Rule Id="CA2234" Action="Info" />      
+  </Rules>
+</RuleSet>
