@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +21,6 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Sends the message.
         /// </summary>
-        Task SendMessage<T>(string name, string messageId, T data, ISessionController[] allControllers, CancellationToken cancellationToken);
+        Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken);
     }
 }

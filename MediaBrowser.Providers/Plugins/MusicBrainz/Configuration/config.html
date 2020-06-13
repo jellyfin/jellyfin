@@ -41,8 +41,8 @@
                 ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
                     $('#server').val(config.Server).change();
                     $('#rateLimit').val(config.RateLimit).change();
-                    $('#enable').checked(config.Enable);
-                    $('#replaceArtistName').checked(config.ReplaceArtistName);
+                    $('#enable').checked = config.Enable;
+                    $('#replaceArtistName').checked = config.ReplaceArtistName;
 
                     Dashboard.hideLoadingMsg();
                 });
@@ -55,8 +55,8 @@
                 ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
                     config.Server = $('#server', form).val();
                     config.RateLimit = $('#rateLimit', form).val();
-                    config.Enable = $('#enable', form).checked();
-                    config.ReplaceArtistName = $('#replaceArtistName', form).checked();
+                    config.Enable = $('#enable', form).checked;
+                    config.ReplaceArtistName = $('#replaceArtistName', form).checked;
 
                     ApiClient.updatePluginConfiguration(MusicBrainzPluginConfig.uniquePluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });

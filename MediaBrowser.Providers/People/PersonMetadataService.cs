@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.People
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Person> source, MetadataResult<Person> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Person> source, MetadataResult<Person> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.Playlists
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private ILogger _logger;
+        private readonly ILogger<PlaylistItemsProvider> _logger;
         private IFileSystem _fileSystem;
 
         public PlaylistItemsProvider(IFileSystem fileSystem, ILogger<PlaylistItemsProvider> logger)

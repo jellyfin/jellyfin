@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -17,11 +18,6 @@ namespace MediaBrowser.Model.Services
         private static StringComparison GetStringComparison()
         {
             return StringComparison.OrdinalIgnoreCase;
-        }
-
-        private static StringComparer GetStringComparer()
-        {
-            return StringComparer.OrdinalIgnoreCase;
         }
 
         /// <summary>

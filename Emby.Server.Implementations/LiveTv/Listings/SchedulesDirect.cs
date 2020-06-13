@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 {
     public class SchedulesDirect : IListingsProvider
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SchedulesDirect> _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
@@ -342,7 +342,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 info.SeriesId = programId.Substring(0, 10);
 
-                info.SeriesProviderIds[MetadataProviders.Zap2It.ToString()] = info.SeriesId;
+                info.SeriesProviderIds[MetadataProvider.Zap2It.ToString()] = info.SeriesId;
 
                 if (details.metadata != null)
                 {
