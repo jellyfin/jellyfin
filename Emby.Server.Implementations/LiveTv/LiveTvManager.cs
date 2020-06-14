@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -14,8 +16,6 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -31,6 +31,8 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -696,7 +698,6 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         Path = info.ThumbImageUrl,
                         Type = ImageType.Thumb
-
                     }, 0);
                 }
             }
@@ -709,7 +710,6 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         Path = info.LogoImageUrl,
                         Type = ImageType.Logo
-
                     }, 0);
                 }
             }
@@ -722,7 +722,6 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                         Path = info.BackdropImageUrl,
                         Type = ImageType.Backdrop
-
                     }, 0);
                 }
             }
@@ -760,7 +759,8 @@ namespace Emby.Server.Implementations.LiveTv
 
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
-            var list = new List<Tuple<BaseItemDto, string, string>>() {
+            var list = new List<Tuple<BaseItemDto, string, string>>
+            {
                 new Tuple<BaseItemDto, string, string>(dto, program.ExternalId, program.ExternalSeriesId)
             };
 
@@ -2167,20 +2167,19 @@ namespace Emby.Server.Implementations.LiveTv
             var info = new LiveTvInfo
             {
                 Services = services,
-                IsEnabled = services.Length > 0
+                IsEnabled = services.Length > 0,
+                EnabledUsers = _userManager.Users
+                    .Where(IsLiveTvEnabled)
+                    .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
+                    .ToArray()
             };
-
-            info.EnabledUsers = _userManager.Users
-                .Where(IsLiveTvEnabled)
-                .Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture))
-                .ToArray();
 
             return info;
         }
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.Policy.EnableLiveTvAccess && (Services.Count > 1 || GetConfiguration().TunerHosts.Length > 0);
+            return user.HasPermission(PermissionKind.EnableLiveTvAccess) && (Services.Count > 1 || GetConfiguration().TunerHosts.Length > 0);
         }
 
         public IEnumerable<User> GetEnabledUsers()

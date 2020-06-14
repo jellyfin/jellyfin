@@ -7,6 +7,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -15,7 +17,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -28,7 +29,9 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
 {
@@ -283,11 +286,18 @@ namespace Emby.Server.Implementations.Session
             if (user != null)
             {
                 var userLastActivityDate = user.LastActivityDate ?? DateTime.MinValue;
-                user.LastActivityDate = activityDate;
 
                 if ((activityDate - userLastActivityDate).TotalSeconds > 60)
                 {
-                    _userManager.UpdateUser(user);
+                    try
+                    {
+                        user.LastActivityDate = activityDate;
+                        _userManager.UpdateUser(user);
+                    }
+                    catch (DbUpdateConcurrencyException e)
+                    {
+                        _logger.LogWarning(e, "Error updating user's last activity date.");
+                    }
                 }
             }
 
@@ -434,7 +444,13 @@ namespace Emby.Server.Implementations.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>SessionInfo.</returns>
-        private SessionInfo GetSessionInfo(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
+        private SessionInfo GetSessionInfo(
+            string appName,
+            string appVersion,
+            string deviceId,
+            string deviceName,
+            string remoteEndPoint,
+            User user)
         {
             CheckDisposed();
 
@@ -447,14 +463,13 @@ namespace Emby.Server.Implementations.Session
 
             CheckDisposed();
 
-            var sessionInfo = _activeConnections.GetOrAdd(key, k =>
-            {
-                return CreateSession(k, appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
-            });
+            var sessionInfo = _activeConnections.GetOrAdd(
+                key,
+                k => CreateSession(k, appName, appVersion, deviceId, deviceName, remoteEndPoint, user));
 
-            sessionInfo.UserId = user == null ? Guid.Empty : user.Id;
-            sessionInfo.UserName = user?.Name;
-            sessionInfo.UserPrimaryImageTag = user == null ? null : GetImageCacheTag(user, ImageType.Primary);
+            sessionInfo.UserId = user?.Id ?? Guid.Empty;
+            sessionInfo.UserName = user?.Username;
+            sessionInfo.UserPrimaryImageTag = user?.ProfileImage == null ? null : GetImageCacheTag(user);
             sessionInfo.RemoteEndPoint = remoteEndPoint;
             sessionInfo.Client = appName;
 
@@ -473,7 +488,14 @@ namespace Emby.Server.Implementations.Session
             return sessionInfo;
         }
 
-        private SessionInfo CreateSession(string key, string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user)
+        private SessionInfo CreateSession(
+            string key,
+            string appName,
+            string appVersion,
+            string deviceId,
+            string deviceName,
+            string remoteEndPoint,
+            User user)
         {
             var sessionInfo = new SessionInfo(this, _logger)
             {
@@ -483,11 +505,11 @@ namespace Emby.Server.Implementations.Session
                 Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
-            var username = user?.Name;
+            var username = user?.Username;
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
             sessionInfo.UserName = username;
-            sessionInfo.UserPrimaryImageTag = user == null ? null : GetImageCacheTag(user, ImageType.Primary);
+            sessionInfo.UserPrimaryImageTag = user?.ProfileImage == null ? null : GetImageCacheTag(user);
             sessionInfo.RemoteEndPoint = remoteEndPoint;
 
             if (string.IsNullOrEmpty(deviceName))
@@ -535,10 +557,7 @@ namespace Emby.Server.Implementations.Session
 
         private void StartIdleCheckTimer()
         {
-            if (_idleTimer == null)
-            {
-                _idleTimer = new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
-            }
+            _idleTimer ??= new Timer(CheckForIdlePlayback, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
         }
 
         private void StopIdleCheckTimer()
@@ -786,7 +805,7 @@ namespace Emby.Server.Implementations.Session
         {
             var changed = false;
 
-            if (user.Configuration.RememberAudioSelections)
+            if (user.RememberAudioSelections)
             {
                 if (data.AudioStreamIndex != info.AudioStreamIndex)
                 {
@@ -803,7 +822,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            if (user.Configuration.RememberSubtitleSelections)
+            if (user.RememberSubtitleSelections)
             {
                 if (data.SubtitleStreamIndex != info.SubtitleStreamIndex)
                 {
@@ -1114,13 +1133,13 @@ namespace Emby.Server.Implementations.Session
                 if (items.Any(i => i.GetPlayAccess(user) != PlayAccess.Full))
                 {
                     throw new ArgumentException(
-                        string.Format(CultureInfo.InvariantCulture, "{0} is not allowed to play media.", user.Name));
+                        string.Format(CultureInfo.InvariantCulture, "{0} is not allowed to play media.", user.Username));
                 }
             }
 
             if (user != null
                 && command.ItemIds.Length == 1
-                && user.Configuration.EnableNextEpisodeAutoPlay
+                && user.EnableNextEpisodeAutoPlay
                 && _libraryManager.GetItemById(command.ItemIds[0]) is Episode episode)
             {
                 var series = episode.Series;
@@ -1191,7 +1210,7 @@ namespace Emby.Server.Implementations.Session
                     DtoOptions = new DtoOptions(false)
                     {
                         EnableImages = false,
-                        Fields = new ItemFields[]
+                        Fields = new[]
                         {
                             ItemFields.SortName
                         }
@@ -1353,7 +1372,7 @@ namespace Emby.Server.Implementations.Session
                 list.Add(new SessionUserInfo
                 {
                     UserId = userId,
-                    UserName = user.Name
+                    UserName = user.Username
                 });
 
                 session.AdditionalUsers = list.ToArray();
@@ -1513,7 +1532,7 @@ namespace Emby.Server.Implementations.Session
                 DeviceName = deviceName,
                 UserId = user.Id,
                 AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
-                UserName = user.Name
+                UserName = user.Username
             };
 
             _logger.LogInformation("Creating new access token for user {0}", user.Id);
@@ -1710,15 +1729,15 @@ namespace Emby.Server.Implementations.Session
             return info;
         }
 
-        private string GetImageCacheTag(BaseItem item, ImageType type)
+        private string GetImageCacheTag(User user)
         {
             try
             {
-                return _imageProcessor.GetImageCacheTag(item, type);
+                return _imageProcessor.GetImageCacheTag(user);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                _logger.LogError(ex, "Error getting image information for {Type}", type);
+                _logger.LogError(e, "Error getting image information for profile image");
                 return null;
             }
         }
@@ -1827,7 +1846,10 @@ namespace Emby.Server.Implementations.Session
         {
             CheckDisposed();
 
-            var adminUserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToList();
+            var adminUserIds = _userManager.Users
+                .Where(i => i.HasPermission(PermissionKind.IsAdministrator))
+                .Select(i => i.Id)
+                .ToList();
 
             return SendMessageToUserSessions(adminUserIds, name, data, cancellationToken);
         }
