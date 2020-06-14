@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1801
+#pragma warning disable CA1801
 
 using System;
 using System.Collections.Generic;
@@ -43,7 +43,7 @@ namespace Jellyfin.Api.Controllers
             ILibraryManager libraryManager,
             ILibraryMonitor libraryMonitor)
         {
-            _appPaths = serverConfigurationManager?.ApplicationPaths;
+            _appPaths = serverConfigurationManager.ApplicationPaths;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
         }
