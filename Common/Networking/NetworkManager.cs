@@ -365,7 +365,8 @@ namespace Common.Networking
         /// <summary>
         /// Returns all the valid interfaces in config LocalNetworkAddresses.
         /// </summary>
-        /// <returns>A NetCollection object containing all the interfaces to bind.</returns>
+        /// <returns>A NetCollection object containing all the interfaces to bind.
+        /// If all the interfaces are specified, and none are excluded, it returns zero items.</returns>
         public NetCollection GetBindInterfaces()
         {
             lock (_intLock)
@@ -379,7 +380,7 @@ namespace Common.Networking
                     }
 
                     // Return all interfaces.
-                    return new NetCollection();
+                    return new NetCollection(); 
                 }
 
                 // Return only interface addresses that are valid.
@@ -460,6 +461,15 @@ namespace Common.Networking
             CancellationToken cancellationToken)
         {
             NetCollection interfaces = GetBindInterfaces();
+            // GetBindInterfaces returns zero items for all interfaces.
+            // We require all the individual interfaces.
+            if (interfaces.Count == 0)
+            {
+                lock (_intLock)
+                {
+                    interfaces = new NetCollection(_interfaceAddresses);
+                }
+            }
 
             try
             {

@@ -481,7 +481,7 @@ namespace Rssdp.Infrastructure
             {
                 if (IsDisposed) return;
 
-                _logger.LogInformation("Begin Sending Alive Notifications For All Devices");
+                _logger.LogInformation("Begin sending alive notifications for all Devices");
 
                 SsdpRootDevice[] devices;
                 lock (_Devices)
@@ -496,7 +496,7 @@ namespace Rssdp.Infrastructure
                     SendAliveNotifications(device, true, CancellationToken.None);
                 }
 
-                _logger.LogInformation("Completed Sending Alive Notifications For All Devices");
+                _logger.LogInformation("Completed sending alive notifications for all Devices");
             }
             catch (ObjectDisposedException ex)
             {
@@ -561,7 +561,7 @@ namespace Rssdp.Infrastructure
 
             _CommsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null, cancellationToken);
 
-            _logger.LogInformation("Sent alive notification : {0} - {1}", device.FriendlyName, device.SerialNumber);
+            _logger.LogInformation("Sent alive notification : {0} - {1}", device.FriendlyName, device.ModelUrl);
         }
 
         /// <summary>

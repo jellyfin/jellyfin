@@ -34,7 +34,8 @@ namespace Common.Networking
         /// <summary>
         /// Returns all the valid interfaces in config LocalNetworkAddresses.
         /// </summary>
-        /// <returns>A NetCollection object containing all the interfaces to bind.</returns>
+        /// <returns>A NetCollection object containing all the interfaces to bind.
+        /// If all the interfaces are specified, and none are excluded, it returns zero items.</returns>
         NetCollection GetBindInterfaces();
 
         /// <summary>

@@ -1190,30 +1190,28 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLocalApiUrl(CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(_cachedLocalApiUrl))
+            if (string.IsNullOrEmpty(_cachedLocalApiUrl))
             {
-                // This function gets called twice - so use the results from last time.
-                return _cachedLocalApiUrl;
-            }
-
-            try
-            {
-                NetCollection addresses = _networkManager.OnFilteredBindAddressesCallback(IsLocalIpAddressValidAsync, cancellationToken);
-
-                if (addresses.Count == 0)
+                try
                 {
-                    return null;
+                    NetCollection addresses = _networkManager.OnFilteredBindAddressesCallback(IsLocalIpAddressValidAsync, cancellationToken);
+
+                    if (addresses.Count > 0)
+                    {
+                        _cachedLocalApiUrl = GetLocalApiUrl(addresses.Items[0].Address);
+                    }
+                    else
+                    {
+                        Logger.LogError("No response from any of the bind addresses: {0}", _networkManager.GetBindInterfaces());
+                    }
                 }
-
-                _cachedLocalApiUrl = GetLocalApiUrl(((IPNetAddress)addresses.Items[0]).Address);
-                return _cachedLocalApiUrl;
-            }
-            catch (InvalidOperationException)
-            {
-                Logger.LogError("No response from any of the bind addresses: {0}", _networkManager.GetBindInterfaces());
+                catch (InvalidOperationException ex)
+                {
+                    Logger.LogError(ex, "Error in  OnFilteredBindAddressCallback: Params. {0}.", _networkManager.GetBindInterfaces());
+                }
             }
 
-            return null;
+            return _cachedLocalApiUrl;
         }
 
         /// <summary>
@@ -1269,9 +1267,15 @@ namespace Emby.Server.Implementations
             }.ToString().TrimEnd('/');
         }
 
-        private async Task<bool> IsLocalIpAddressValidAsync(IPObject address, CancellationToken cancellationToken)
+        /// <summary>
+        /// Performs a http ping to the address given in the parameters.
+        /// </summary>
+        /// <param name="item">Item to ping.</param>
+        /// <param name="cancellationToken">CancellationToken object.</param>
+        /// <returns>Boolean result of the operation.</returns>
+        private async Task<bool> IsLocalIpAddressValidAsync(IPObject item, CancellationToken cancellationToken)
         {
-            var apiUrl = GetLocalApiUrl(((IPNetAddress)address).Address);
+            var apiUrl = GetLocalApiUrl(item.Address);
             apiUrl += "/system/ping";
 
             try
