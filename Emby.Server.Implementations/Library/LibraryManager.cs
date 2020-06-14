@@ -2595,7 +2595,7 @@ namespace Emby.Server.Implementations.Library
                     Anime series don't generally have a season in their file name, however,
                     tvdb needs a season to correctly get the metadata.
                     Hence, a null season needs to be filled with something. */
-                    //FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
+                    // FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
                     episode.ParentIndexNumber = 1;
                 }
 
@@ -2991,7 +2991,7 @@ namespace Emby.Server.Implementations.Library
 
         private static bool ValidateNetworkPath(string path)
         {
-            //if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            // if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             //{
             //    // We can't validate protocol-based paths, so just allow them
             //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)

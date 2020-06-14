@@ -147,7 +147,7 @@ namespace MediaBrowser.Controller.LiveTv
         public override string ContainingFolderPath => Path;
 
         //[JsonIgnore]
-        //public override string MediaType
+        // public override string MediaType
         //{
         //    get
         //    {

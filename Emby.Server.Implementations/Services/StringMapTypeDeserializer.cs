@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Services
 
                 if (propertySerializerEntry.PropertyType == typeof(bool))
                 {
-                    //InputExtensions.cs#530 MVC Checkbox helper emits extra hidden input field, generating 2 values, first is the real value
+                    // InputExtensions.cs#530 MVC Checkbox helper emits extra hidden input field, generating 2 values, first is the real value
                     propertyTextValue = StringExtensions.LeftPart(propertyTextValue, ',').ToString();
                 }
 

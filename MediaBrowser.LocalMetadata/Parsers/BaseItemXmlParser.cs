@@ -78,10 +78,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            //Additional Mappings
+            // Additional Mappings
             _validProviderIds.Add("IMDB", "Imdb");
 
-            //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
+            // Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
             Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
         }
 

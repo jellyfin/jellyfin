@@ -225,7 +225,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 throw new AuthenticationException("Access token is invalid or expired.");
             }
 
-            //if (!string.IsNullOrEmpty(info.UserId))
+            // if (!string.IsNullOrEmpty(info.UserId))
             //{
             //    var user = _userManager.GetUserById(info.UserId);
 

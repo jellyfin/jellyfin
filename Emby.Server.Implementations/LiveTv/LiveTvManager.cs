@@ -406,8 +406,8 @@ namespace Emby.Server.Implementations.LiveTv
             if (!(service is EmbyTV.EmbyTV))
             {
                 // We can't trust that we'll be able to direct stream it through emby server, no matter what the provider says
-                //mediaSource.SupportsDirectPlay = false;
-                //mediaSource.SupportsDirectStream = false;
+                // mediaSource.SupportsDirectPlay = false;
+                // mediaSource.SupportsDirectStream = false;
                 mediaSource.SupportsTranscoding = true;
                 foreach (var stream in mediaSource.MediaStreams)
                 {
@@ -558,7 +558,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
             item.ParentId = channel.Id;
 
-            //item.ChannelType = channelType;
+            // item.ChannelType = channelType;
 
             item.Audio = info.Audio;
             item.ChannelId = channel.Id;
@@ -1368,10 +1368,10 @@ namespace Emby.Server.Implementations.LiveTv
                 // limit = (query.Limit ?? 10) * 2;
                 limit = null;
 
-                //var allActivePaths = EmbyTV.EmbyTV.Current.GetAllActiveRecordings().Select(i => i.Path).ToArray();
-                //var items = allActivePaths.Select(i => _libraryManager.FindByPath(i, false)).Where(i => i != null).ToArray();
+                // var allActivePaths = EmbyTV.EmbyTV.Current.GetAllActiveRecordings().Select(i => i.Path).ToArray();
+                // var items = allActivePaths.Select(i => _libraryManager.FindByPath(i, false)).Where(i => i != null).ToArray();
 
-                //return new QueryResult<BaseItem>
+                // return new QueryResult<BaseItem>
                 //{
                 //    Items = items,
                 //    TotalRecordCount = items.Length
@@ -1956,7 +1956,7 @@ namespace Emby.Server.Implementations.LiveTv
                     OriginalAirDate = program.PremiereDate,
                     Overview = program.Overview,
                     StartDate = program.StartDate,
-                    //ImagePath = program.ExternalImagePath,
+                    // ImagePath = program.ExternalImagePath,
                     Name = program.Name,
                     OfficialRating = program.OfficialRating
                 };

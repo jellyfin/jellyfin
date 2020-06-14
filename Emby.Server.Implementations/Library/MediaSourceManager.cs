@@ -646,7 +646,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     mediaInfo = _jsonSerializer.DeserializeFromFile<MediaInfo>(cacheFilePath);
 
-                    //_logger.LogDebug("Found cached media info");
+                    // _logger.LogDebug("Found cached media info");
                 }
                 catch (Exception ex)
                 {
@@ -682,7 +682,7 @@ namespace Emby.Server.Implementations.Library
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     _jsonSerializer.SerializeToFile(mediaInfo, cacheFilePath);
 
-                    //_logger.LogDebug("Saved media info to {0}", cacheFilePath);
+                    // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
             }
 

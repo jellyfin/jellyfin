@@ -91,8 +91,8 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
 
-            //var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
-            //audio.Container = extension;
+            // var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
+            // audio.Container = extension;
 
             FetchDataFromTags(audio, mediaInfo);
 

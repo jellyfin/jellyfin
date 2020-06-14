@@ -96,8 +96,8 @@ namespace MediaBrowser.Api.Playback.Progressive
                             bytesRead = await CopyToInternalAsyncWithSyncRead(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
                         }
 
-                        //var position = fs.Position;
-                        //_logger.LogDebug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+                        // var position = fs.Position;
+                        // _logger.LogDebug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
 
                         if (bytesRead == 0)
                         {

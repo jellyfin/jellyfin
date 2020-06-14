@@ -300,7 +300,7 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                //if (IsOffline)
+                // if (IsOffline)
                 //{
                 //    return LocationType.Offline;
                 //}
@@ -676,7 +676,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
-            if (Name == null) return null; //some items may not have name filled in properly
+            if (Name == null) return null; // some items may not have name filled in properly
 
             if (!EnableAlphaNumericSorting)
             {
@@ -736,7 +736,7 @@ namespace MediaBrowser.Controller.Entities
 
                 builder.Append(chunkBuilder);
             }
-            //logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
+            // logger.LogDebug("ModifySortChunks Start: {0} End: {1}", name, builder.ToString());
             return builder.ToString().RemoveDiacritics();
         }
 
@@ -1011,7 +1011,7 @@ namespace MediaBrowser.Controller.Entities
                 return PlayAccess.None;
             }
 
-            //if (!user.IsParentalScheduleAllowed())
+            // if (!user.IsParentalScheduleAllowed())
             //{
             //    return PlayAccess.None;
             //}
@@ -2175,7 +2175,7 @@ namespace MediaBrowser.Controller.Entities
 
             var data = UserDataManager.GetUserData(user, this);
 
-            //I think it is okay to do this here.
+            // I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
             // then it probably is what we want to do...
             data.PlayCount = 0;
@@ -2760,8 +2760,8 @@ namespace MediaBrowser.Controller.Entities
                 newOptions.ForceSave = true;
             }
 
-            //var parentId = Id;
-            //if (!video.IsOwnedItem || video.ParentId != parentId)
+            // var parentId = Id;
+            // if (!video.IsOwnedItem || video.ParentId != parentId)
             //{
             //    video.IsOwnedItem = true;
             //    video.ParentId = parentId;

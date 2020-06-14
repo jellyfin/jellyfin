@@ -502,8 +502,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 SupportsTranscoding = true,
                 IsInfiniteStream = true,
                 IgnoreDts = true,
-                //IgnoreIndex = true,
-                //ReadAtNativeFramerate = true
+                // IgnoreIndex = true,
+                // ReadAtNativeFramerate = true
             };
 
             mediaSource.InferTotalBitrate();

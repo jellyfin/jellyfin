@@ -167,7 +167,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 // TODO: This should go in PersonMetadataService, not each person provider
                 item.Name = id.Name;
 
-                //item.HomePageUrl = info.homepage;
+                // item.HomePageUrl = info.homepage;
 
                 if (!string.IsNullOrWhiteSpace(info.Place_Of_Birth))
                 {
