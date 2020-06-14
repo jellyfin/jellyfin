@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly IHostEnvironment _hostEnvironment;
 
-        private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
+        private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();        
         private bool _disposed = false;
 
         public HttpListenerHost(
@@ -126,7 +126,6 @@ namespace Emby.Server.Implementations.HttpServer
         /// Applies the request filters. Returns whether or not the request has been handled
         /// and no more processing should be done.
         /// </summary>
-        /// <returns></returns>
         public void ApplyRequestFilters(IRequest req, HttpResponse res, object requestDto)
         {
             // Exec all RequestFilter attributes with Priority < 0
@@ -444,6 +443,8 @@ namespace Emby.Server.Implementations.HttpServer
                     await httpRes.WriteAsync("Forbidden", cancellationToken).ConfigureAwait(false);
                     return;
                 }
+
+                WakeOnLAN.Instance.WakeUpResources();
 
                 if (!ValidateSsl(httpReq.RemoteIp, urlString))
                 {

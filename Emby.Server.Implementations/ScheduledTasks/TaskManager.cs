@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
@@ -20,10 +21,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
     public class TaskManager : ITaskManager
     {
         public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+
         public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
 
         /// <summary>
-        /// Gets the list of Scheduled Tasks
+        /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
         public IScheduledTaskWorker[] ScheduledTasks { get; private set; }
@@ -263,6 +265,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private void ExecuteQueuedTasks()
         {
             _logger.LogInformation("ExecuteQueuedTasks");
+
+            WakeOnLAN.Instance?.WakeUpResources();
 
             // Execute queued tasks
             lock (_taskQueue)

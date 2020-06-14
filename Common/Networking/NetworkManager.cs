@@ -3,12 +3,10 @@ namespace Common.Networking
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.IO;
     using System.Linq;
     using System.Net;
     using System.Net.NetworkInformation;
     using System.Net.Sockets;
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -19,9 +17,9 @@ namespace Common.Networking
     public class NetworkManager : INetworkManager
     {
         /// <summary>
-        /// Defines the _logger.
+        /// Gets the singleton of this object.
         /// </summary>
-        private readonly ILogger? _logger;
+        public static NetworkManager Instance = new NetworkManager();
 
         /// <summary>
         /// Defines the _interfaceNames.
@@ -42,6 +40,11 @@ namespace Common.Networking
         /// List of all interface mac addresses..
         /// </summary>
         private readonly List<PhysicalAddress> _macAddresses;
+
+        /// <summary>
+        /// Defines the _logger.
+        /// </summary>
+        private ILogger? _logger;
 
         /// <summary>
         /// Used to stop "event-racing conditions".
@@ -92,57 +95,65 @@ namespace Common.Networking
         /// <summary>
         /// Function that return the LAN addresses from the config..
         /// </summary>
-        private Func<string[]> _localSubnetsFn;
+        private Func<string[]> _localSubnetsFn = null!;
 
         /// <summary>
         /// Function that return the IP  addresses from the config..
         /// </summary>
-        private Func<string[]> _bindAddressesFn;
+        private Func<string[]> _bindAddressesFn = null!;
 
         /// <summary>
         /// Gets or sets the EnableIPV6 setting from config..
         /// </summary>
-        private Func<bool> _isIP6EnabledFn;
-
-        /// <summary>
-        /// Gets or sets the EnableIPV6 setting from config..
-        /// </summary>
-        private Func<string[]> _wolmacFn;
+        private Func<bool> _isIP6EnabledFn = null!;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkManager"/> class.
         /// </summary>
-        /// <param name="logger">Logger to use for messages.</param>
-        public NetworkManager(ILogger<NetworkManager>? logger)
+        private NetworkManager()
         {
-            _logger = logger;
             _interfaceAddresses = new NetCollection();
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new SortedList<string, int>();
-
-            // Assign empty objects to the rest of the properties
-            // so we don't have to define them as nullable.
-
-            static string[] Empty()
-            {
-                return Array.Empty<string>();
-            }
-
-            static bool EmptyBool()
-            {
-                return false;
-            }
-
-            _localSubnetsFn = Empty;
-            _bindAddressesFn = Empty;
-            _wolmacFn = Empty;
-            _isIP6EnabledFn = EmptyBool;
         }
 
         /// <summary>
         /// Event triggered on network changes.
         /// </summary>
         public event EventHandler? NetworkChanged;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NetworkManager"/> class.
+        /// </summary>
+        /// <param name="logger">Logger to use for messages.</param>
+        /// <param name="ip6Enabled">Function that returns the EnableIPV6 config option.</param>
+        /// <param name="subnets">Function that returns the LocalNetworkSubnets config option.</param>
+        /// <param name="bindInterfaces">Function that returns the LocalNetworkAddresses config option.</param>
+        public void Initialise(ILogger<NetworkManager>? logger, Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces)
+        {
+            _logger = logger;
+
+            // Assign empty objects to the rest of the properties
+            // so we don't have to define them as nullable.
+
+            _isIP6EnabledFn = ip6Enabled;
+#pragma warning disable CA1062 // Validate arguments of public methods. Function has a hardcode value.
+            _ignoreIP6 = !_isIP6EnabledFn();
+#pragma warning restore CA1062 // Validate arguments of public methods
+
+            NetworkManager.Instance = this;
+
+            InitialiseInterfaces();
+
+            _localSubnetsFn = subnets;
+            InitialiseLAN();
+
+            _bindAddressesFn = bindInterfaces;
+            InitialiseBind();
+
+            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
+        }
 
         /// <summary>
         /// Gets a value indicating whether IP6 is enabled..
@@ -168,57 +179,11 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Wake up network objects provided by the user defined settings.
-        /// </summary>
-        public void WakeDevices()
-        {
-            foreach (var mac in _wolmacFn() ?? Array.Empty<string>())
-            {
-                try
-                {
-                    WakeOnLan(mac);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "WOL error to {0}.", mac);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Initialises the object. Can't be in constructor, as network changes could happen before this class has initialised.
-        /// </summary>
-        /// <param name="ip6Enabled">Function that returns the EnableIPV6 config option.</param>
-        /// <param name="subnets">Function that returns the LocalNetworkSubnets config option.</param>
-        /// <param name="bindInterfaces">Function that returns the LocalNetworkAddresses config option.</param>
-        /// <param name="wolMACList">Function that returns a list of MAC addresses which WOL packets are sent to.</param>
-        public void Initialise(Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces, Func<string[]> wolMACList)
-        {
-            _isIP6EnabledFn = ip6Enabled;
-#pragma warning disable CA1062 // Validate arguments of public methods. Function has a hardcode value.
-            _ignoreIP6 = !_isIP6EnabledFn();
-#pragma warning restore CA1062 // Validate arguments of public methods
-
-            InitialiseInterfaces();
-
-            _localSubnetsFn = subnets;
-            InitialiseLAN();
-
-            _bindAddressesFn = bindInterfaces;
-            InitialiseBind();
-
-            _wolmacFn = wolMACList;
-
-            NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
-            NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
-        }
-
-        /// <summary>
         /// Event triggered when configuration is changed.
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">New configuration.</param>
-        public void NamedConfigurationUpdated(object sender, EventArgs e)
+        public void ConfigurationUpdated(object sender, EventArgs e)
         {
             // IP6 settings changed.
             if (_ignoreIP6 == _isIP6EnabledFn())
@@ -340,7 +305,6 @@ namespace Common.Networking
                         {
                             if (bracketed)
                             {
-                                // AddToCollection(col, v[1..^1].Trim());
                                 AddToCollection(col, v.Remove(v.Length - 1).Substring(1));
                             }
                         }
@@ -380,7 +344,7 @@ namespace Common.Networking
                     }
 
                     // Return all interfaces.
-                    return new NetCollection(); 
+                    return new NetCollection();
                 }
 
                 // Return only interface addresses that are valid.
@@ -408,7 +372,7 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Gets the filtered LAN ip addresses.
+        /// Gets the filtered LAN ip networt addresses.
         /// </summary>
         /// <param name="filter">Filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
@@ -574,6 +538,7 @@ namespace Common.Networking
                 InitialiseLAN();
                 // Don't know if we need to do this - but it won't hurt.
                 InitialiseBind();
+
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }
             finally
@@ -743,80 +708,6 @@ namespace Common.Networking
                 {
                     _logger?.LogError(ex, "Error in InitialiseInterfaces.");
                 }
-            }
-        }
-
-        /// <summary>
-        /// Send a WOL magic packet across the LAN interfaces.
-        /// </summary>
-        /// <param name="macAddress">Destination MAC.</param>
-        /// <returns>Task id.</returns>
-        private async void WakeOnLan(string macAddress)
-        {
-            byte[] magicPacket = BuildMagicPacket(macAddress);
-
-            foreach (IPNetAddress interfc in _interfaceAddresses)
-            {
-                if (interfc.IsIP6())
-                {
-                    await SendWakeOnLan(interfc.Address, IPAddress.Parse("ff02::1"), magicPacket);
-                }
-                else
-                {
-                    await SendWakeOnLan(interfc.Address, IPAddress.Parse("224.0.0.1"), magicPacket);
-                }
-            }
-        }
-
-        // Code adapted from https://stackoverflow.com/questions/861873/wake-on-lan-using-c-sharp
-
-        /// <summary>
-        /// Builds a WOL magic packet.
-        /// </summary>
-        /// <param name="macAddress">MAC address to send it to. MacAddress in any standard HEX format.</param>
-        /// <returns>Byte array containg the magic packet.</returns>
-        public static byte[] BuildMagicPacket(string macAddress)
-        {
-            macAddress = Regex.Replace(macAddress, "[: -]", string.Empty);
-            byte[] macBytes = new byte[6];
-            for (int i = 0; i < 6; i++)
-            {
-                macBytes[i] = Convert.ToByte(macAddress.Substring(i * 2, 2), 16);
-            }
-
-            MemoryStream ms = new MemoryStream();
-            using (BinaryWriter bw = new BinaryWriter(ms))
-            {
-                // First 6 times 0xff.
-                for (int i = 0; i < 6; i++)
-                {
-                    bw.Write((byte)0xff);
-                }
-
-                // Then 16 times MacAddress.
-                for (int i = 0; i < 16; i++)
-                {
-                    bw.Write(macBytes);
-                }
-            }
-
-            return ms.ToArray(); // 102 bytes magic packet
-        }
-
-        /// <summary>
-        /// Sends a WOL a magic packet out as a multicast .
-        /// </summary>
-        /// <param name="localIpAddress">Interface to use.</param>
-        /// <param name="multicastIpAddress">Multicast address.</param>
-        /// <param name="magicPacket">Magic packet to send.</param>
-        /// <returns>Task id.</returns>
-        private static async Task SendWakeOnLan(IPAddress localIpAddress, IPAddress multicastIpAddress, byte[] magicPacket)
-        {
-#pragma warning disable IDE0063 // Use simple 'using' statement
-            using (UdpClient client = new UdpClient(new IPEndPoint(localIpAddress, 0)))
-#pragma warning restore IDE0063 // Use simple 'using' statement
-            {
-                await client.SendAsync(magicPacket, magicPacket.Length, multicastIpAddress.ToString(), 9);
             }
         }
     }

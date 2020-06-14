@@ -73,14 +73,12 @@ namespace MediaBrowser.Api.Tests
             ILoggerFactory loggerFactory = new SerilogLoggerFactory();
             _disposableComponents.Add(loggerFactory);
 
-            NetworkManager networkManager = new NetworkManager(loggerFactory.CreateLogger<NetworkManager>());
             // Create the app host and initialize it
             var appHost = new CoreAppHost(
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
-                new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                (INetworkManager)networkManager);
+                new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths));
             _disposableComponents.Add(appHost);
             var serviceCollection = new ServiceCollection();
             appHost.Init(serviceCollection);

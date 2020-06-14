@@ -44,8 +44,8 @@ using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
-using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.SyncPlay;
+using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
@@ -121,7 +121,6 @@ namespace Emby.Server.Implementations
         private readonly IFileSystem _fileSystemManager;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
-        private INetworkManager _networkManager;
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
@@ -187,6 +186,11 @@ namespace Emby.Server.Implementations
         public IReadOnlyList<IPlugin> Plugins => _plugins;
 
         /// <summary>
+        /// Gets the NetworkManager object.
+        /// </summary>
+        public INetworkManager _networkManager;
+
+        /// <summary>
         /// Gets the logger factory.
         /// </summary>
         protected ILoggerFactory LoggerFactory { get; }
@@ -242,8 +246,7 @@ namespace Emby.Server.Implementations
             ServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
-            IFileSystem fileSystem,
-            INetworkManager nwManager)
+            IFileSystem fileSystem)
         {
             _xmlSerializer = new MyXmlSerializer();
 
@@ -254,9 +257,39 @@ namespace Emby.Server.Implementations
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
             // LocalSubnetFn must be assigned after ConfigurationManager has been created, so the config is available at initiation.
-            _networkManager = nwManager;
-            _networkManager.Initialise(GetConfiguredIPV6Status, GetConfiguredLocalSubnets, GetConfiguredBindAddresses, GetMACWOL);
-            ConfigurationManager.ConfigurationUpdated += _networkManager.NamedConfigurationUpdated;
+            NetworkManager.Instance.Initialise(
+                LoggerFactory.CreateLogger<NetworkManager>(),
+                () =>
+                {
+                    return ServerConfigurationManager.Configuration.EnableIPV6;
+                },
+                () =>
+                {
+                    return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
+                },
+                () =>
+                {
+                    return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
+                });
+            ConfigurationManager.ConfigurationUpdated += NetworkManager.Instance.ConfigurationUpdated;
+            _networkManager = (INetworkManager)NetworkManager.Instance;
+
+            WakeOnLAN.Instance.Initialise(
+                LoggerFactory.CreateLogger<WakeOnLAN>(),
+                () =>
+                {
+                    return ServerConfigurationManager.Configuration.MACWakeupList;
+                },
+                () =>
+                {
+                    return ServerConfigurationManager.Configuration.MACWakeupTimeout;
+                },
+                () =>
+                {
+                    return ServerConfigurationManager.Configuration.MACUDPPort;
+                }
+            );
+            ConfigurationManager.ConfigurationUpdated += WakeOnLAN.Instance.ConfigurationUpdated;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
@@ -296,41 +329,6 @@ namespace Emby.Server.Implementations
                 .Replace(appPaths.InternalMetadataPath, appPaths.VirtualInternalMetadataPath, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Function to retreive a value from the config.
-        /// </summary>
-        /// <returns>The config value.</returns>
-        private string[] GetConfiguredLocalSubnets()
-        {
-            return ServerConfigurationManager.Configuration.LocalNetworkSubnets;
-        }
-
-        /// <summary>
-        /// Function to retreive a value from the config.
-        /// </summary>
-        /// <returns>The config value.</returns>
-        private bool GetConfiguredIPV6Status()
-        {
-            return ServerConfigurationManager.Configuration.EnableIPV6;
-        }
-
-        /// <summary>
-        /// Function to retreive a value from the config.
-        /// </summary>
-        /// <returns>The config value.</returns>
-        private string[] GetConfiguredBindAddresses()
-        {
-            return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
-        }
-
-        /// <summary>
-        /// Function to retreive a value from the config.
-        /// </summary>
-        /// <returns>The config value.</returns>
-        private string[] GetMACWOL()
-        {
-            return Array.Empty<string>();
-        }
         private void OnNetworkChanged(object sender, EventArgs e)
         {
             _cachedLocalApiUrl = string.Empty;

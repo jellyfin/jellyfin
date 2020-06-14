@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller
 
         bool CanLaunchWebBrowser { get; }
 
-        public INetworkManager NetManager { get; }
+        INetworkManager NetManager { get; }
 
         /// <summary>
         /// Gets the HTTP server port.
@@ -108,6 +108,7 @@ namespace MediaBrowser.Controller
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);
+
         string ReverseVirtualPath(string path);
 
         Task ExecuteHttpHandlerAsync(HttpContext context, Func<Task> next);

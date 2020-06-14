@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +50,7 @@ namespace NetworkTesting
 
         public static string[] NoParams()
         {
-            return new string[0];
+            return Array.Empty<string>();
         }
 
         [Theory]
@@ -85,30 +87,30 @@ namespace NetworkTesting
             "[192.158.0.0/16,fd23:184f:2029::]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
-            NetworkManager nm = new NetworkManager(null);
+            NetworkManager.Instance.Initialise(null, EnableIP6, NoParams, NoParams);
 
-            // Test included, IP6.
-            nm.Initialise(EnableIP6, NoParams, NoParams, NoParams);
-            NetCollection nc = nm.CreateIPCollection(settings.Split(","), false);           
+            
+            // Test included, IP6.            
+            NetCollection nc = NetworkManager.Instance.CreateIPCollection(settings.Split(","), false);           
             Assert.True(string.Equals(nc.ToString(), result1, System.StringComparison.OrdinalIgnoreCase));
 
             // Text excluded, non IP6.
-            nc = nm.CreateIPCollection(settings.Split(","), true);
+            nc = NetworkManager.Instance.CreateIPCollection(settings.Split(","), true);
             Assert.True(string.Equals(nc.ToString(), result3, System.StringComparison.OrdinalIgnoreCase));
 
+            NetworkManager.Instance.Initialise(null, DisableIP6, NoParams, NoParams);
 
-            nm.Initialise(DisableIP6, NoParams, NoParams, NoParams);            
             // Test included, non IP6.
-            nc = nm.CreateIPCollection(settings.Split(","), false);
+            nc = NetworkManager.Instance.CreateIPCollection(settings.Split(","), false);
             Assert.True(string.Equals(nc.ToString(), result2, System.StringComparison.OrdinalIgnoreCase));
             
             // Test excluded, including IPv6.
-            nc = nm.CreateIPCollection(settings.Split(","), true);
+            nc = NetworkManager.Instance.CreateIPCollection(settings.Split(","), true);
             Assert.True(string.Equals(nc.ToString(), result4, System.StringComparison.OrdinalIgnoreCase));
 
-            nm.Initialise(EnableIP6, NoParams, NoParams, NoParams);
+            NetworkManager.Instance.Initialise(null, EnableIP6, NoParams, NoParams);
             // Test network addresses of collection.
-            nc = nm.CreateIPCollection(settings.Split(","), false);
+            nc = NetworkManager.Instance.CreateIPCollection(settings.Split(","), false);
             nc = NetCollection.AsNetworks(nc);            
             Assert.True(string.Equals(nc.ToString(), result5, System.StringComparison.OrdinalIgnoreCase));
         }
@@ -146,11 +148,11 @@ namespace NetworkTesting
 
         public void TestMatches(string source, string dest, string result)
         {
-            NetworkManager nm = new NetworkManager(null);
+            NetworkManager.Instance.Initialise(null, EnableIP6, NoParams, NoParams);
 
             // Test included, IP6.
-            NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
-            NetCollection ncDest = nm.CreateIPCollection(dest.Split(","));
+            NetCollection ncSource = NetworkManager.Instance.CreateIPCollection(source.Split(","));
+            NetCollection ncDest = NetworkManager.Instance.CreateIPCollection(dest.Split(","));
             string ncResult = ncSource.Union(ncDest).ToString();
 
             Assert.True(string.Equals(ncResult, result, System.StringComparison.OrdinalIgnoreCase));
@@ -179,10 +181,10 @@ namespace NetworkTesting
         public void TestCallback(string source)
         {
 
-            NetworkManager nm = new NetworkManager(null);
+            NetworkManager.Instance.Initialise(null, EnableIP6, NoParams, NoParams);
 
             // Test included, IP6.
-            NetCollection ncSource = nm.CreateIPCollection(source.Split(";"));
+            NetCollection ncSource = NetworkManager.Instance.CreateIPCollection(source.Split(";"));
             ncSource.Items[0].Tag = 1;
             ncSource.Items[1].Tag = 2;
             ncSource.Items[2].Tag = 3;

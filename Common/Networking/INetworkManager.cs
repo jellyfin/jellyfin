@@ -23,15 +23,6 @@ namespace Common.Networking
         bool IsIP6Enabled { get; }
 
         /// <summary>
-        /// Initialises the object. Can't be in constructor, as network changes could happen before this class has initialised.
-        /// </summary>
-        /// <param name="ip6Enabled">Function that returns the EnableIPV6 config option.</param>
-        /// <param name="subnets">Function that returns the LocalNetworkSubnets config option.</param>
-        /// <param name="bindInterfaces">Function that returns the LocalNetworkAddresses config option.</param>
-        /// <param name="wolMACList">Function that returns a list of MAC addresses which WOL packets are sent to.</param>
-        void Initialise(Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces, Func<string[]> wolMACList);
-
-        /// <summary>
         /// Returns all the valid interfaces in config LocalNetworkAddresses.
         /// </summary>
         /// <returns>A NetCollection object containing all the interfaces to bind.
@@ -55,7 +46,7 @@ namespace Common.Networking
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">New configuration.</param>
-        void NamedConfigurationUpdated(object sender, EventArgs e);
+        void ConfigurationUpdated(object sender, EventArgs e);
 
         /// <summary>
         /// Get a list of all the MAC addresses associated with active interfaces.
@@ -119,10 +110,5 @@ namespace Common.Networking
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         NetCollection GetFilteredLANAddresses(NetCollection? filter = null);
-
-        /// <summary>
-        /// Wake up network objects provided by the user defined settings.
-        /// </summary>
-        public void WakeDevices();
     }
 }

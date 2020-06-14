@@ -561,7 +561,7 @@ namespace Rssdp.Infrastructure
 
             _CommsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null, cancellationToken);
 
-            _logger.LogInformation("Sent alive notification : {0} - {1}", device.FriendlyName, device.ModelUrl);
+            _logger.LogInformation("Sent alive notification : {0} - {1}", device.FriendlyName, device.DeviceClass);
         }
 
         /// <summary>
