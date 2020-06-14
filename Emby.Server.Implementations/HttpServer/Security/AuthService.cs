@@ -61,10 +61,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (auth.User.Policy.IsDisabled)
             {
-                throw new SecurityException("User account has been disabled.")
-                {
-                    SecurityExceptionType = SecurityExceptionType.Unauthenticated
-                };
+                throw new SecurityException("User account has been disabled.");
             }
 
             return auth;
