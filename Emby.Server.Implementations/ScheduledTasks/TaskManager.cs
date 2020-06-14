@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -32,23 +34,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
             new ConcurrentQueue<Tuple<Type, TaskOptions>>();
 
-        /// <summary>
-        /// Gets or sets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
         private readonly IJsonSerializer _jsonSerializer;
-
-        /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
         private readonly IApplicationPaths _applicationPaths;
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        private readonly ILogger _logger;
+        private readonly ILogger<TaskManager> _logger;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -56,17 +44,17 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="fileSystem">The filesystem manager.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,
             IJsonSerializer jsonSerializer,
-            ILoggerFactory loggerFactory,
+            ILogger<TaskManager> logger,
             IFileSystem fileSystem)
         {
             _applicationPaths = applicationPaths;
             _jsonSerializer = jsonSerializer;
-            _logger = loggerFactory.CreateLogger(nameof(TaskManager));
+            _logger = logger;
             _fileSystem = fileSystem;
 
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
@@ -213,7 +201,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="tasks">The tasks.</param>
         public void AddTasks(IEnumerable<IScheduledTask> tasks)
         {
-            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _jsonSerializer, _logger, _fileSystem));
+            var list = tasks.Select(t => new ScheduledTaskWorker(t, _applicationPaths, this, _jsonSerializer, _logger));
 
             ScheduledTasks = ScheduledTasks.Concat(list).ToArray();
         }
@@ -254,10 +242,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="task">The task.</param>
         internal void OnTaskExecuting(IScheduledTaskWorker task)
         {
-            TaskExecuting?.Invoke(this, new GenericEventArgs<IScheduledTaskWorker>
-            {
-                Argument = task
-            });
+            TaskExecuting?.Invoke(this, new GenericEventArgs<IScheduledTaskWorker>(task));
         }
 
         /// <summary>
@@ -267,11 +252,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="result">The result.</param>
         internal void OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs
-            {
-                Result = result,
-                Task = task
-            });
+            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs(task, result));
 
             ExecuteQueuedTasks();
         }

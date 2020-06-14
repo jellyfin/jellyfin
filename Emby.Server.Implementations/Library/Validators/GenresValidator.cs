@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<GenresValidator> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GenresValidator"/> class.
@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="itemRepo">The item repository.</param>
-        public GenresValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
+        public GenresValidator(ILibraryManager libraryManager, ILogger<GenresValidator> logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;

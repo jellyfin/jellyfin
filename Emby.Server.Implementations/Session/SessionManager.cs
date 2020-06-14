@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,6 +27,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
+using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Session
@@ -42,7 +45,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<SessionManager> _logger;
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
@@ -477,8 +480,7 @@ namespace Emby.Server.Implementations.Session
                 Client = appName,
                 DeviceId = deviceId,
                 ApplicationVersion = appVersion,
-                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture),
-                ServerId = _appHost.SystemId
+                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             };
 
             var username = user?.Name;
@@ -1042,12 +1044,12 @@ namespace Emby.Server.Implementations.Session
 
         private static async Task SendMessageToSession<T>(SessionInfo session, string name, T data, CancellationToken cancellationToken)
         {
-            var controllers = session.SessionControllers.ToArray();
-            var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            var controllers = session.SessionControllers;
+            var messageId = Guid.NewGuid();
 
             foreach (var controller in controllers)
             {
-                await controller.SendMessage(name, messageId, data, controllers, cancellationToken).ConfigureAwait(false);
+                await controller.SendMessage(name, messageId, data, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1055,13 +1057,13 @@ namespace Emby.Server.Implementations.Session
         {
             IEnumerable<Task> GetTasks()
             {
-                var messageId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+                var messageId = Guid.NewGuid();
                 foreach (var session in sessions)
                 {
                     var controllers = session.SessionControllers;
                     foreach (var controller in controllers)
                     {
-                        yield return controller.SendMessage(name, messageId, data, controllers, cancellationToken);
+                        yield return controller.SendMessage(name, messageId, data, cancellationToken);
                     }
                 }
             }
@@ -1152,6 +1154,22 @@ namespace Emby.Server.Implementations.Session
             }
 
             await SendMessageToSession(session, "Play", command, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task SendSyncPlayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken)
+        {
+            CheckDisposed();
+            var session = GetSessionToRemoteControl(sessionId);
+            await SendMessageToSession(session, "SyncPlayCommand", command, cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken)
+        {
+            CheckDisposed();
+            var session = GetSessionToRemoteControl(sessionId);
+            await SendMessageToSession(session, "SyncPlayGroupUpdate", command, cancellationToken).ConfigureAwait(false);
         }
 
         private IEnumerable<BaseItem> TranslateItemForPlayback(Guid id, User user)
@@ -1414,7 +1432,7 @@ namespace Emby.Server.Implementations.Session
             if (user == null)
             {
                 AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
-                throw new SecurityException("Invalid username or password entered.");
+                throw new AuthenticationException("Invalid username or password entered.");
             }
 
             if (!string.IsNullOrEmpty(request.DeviceId)
@@ -1762,7 +1780,7 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentNullException(nameof(info));
             }
 
-            var user = info.UserId.Equals(Guid.Empty)
+            var user = info.UserId == Guid.Empty
                 ? null
                 : _userManager.GetUserById(info.UserId);
 

@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Events;
@@ -11,11 +9,6 @@ namespace MediaBrowser.Controller.Devices
 {
     public interface IDeviceManager
     {
-        /// <summary>
-        /// Occurs when [camera image uploaded].
-        /// </summary>
-        event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
-
         /// <summary>
         /// Saves the capabilities.
         /// </summary>
@@ -44,22 +37,6 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;DeviceInfo&gt;.</returns>
         QueryResult<DeviceInfo> GetDevices(DeviceQuery query);
-
-        /// <summary>
-        /// Gets the upload history.
-        /// </summary>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <returns>ContentUploadHistory.</returns>
-        ContentUploadHistory GetCameraUploadHistory(string deviceId);
-
-        /// <summary>
-        /// Accepts the upload.
-        /// </summary>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="stream">The stream.</param>
-        /// <param name="file">The file.</param>
-        /// <returns>Task.</returns>
-        Task AcceptCameraUpload(string deviceId, Stream stream, LocalFileInfo file);
 
         /// <summary>
         /// Determines whether this instance [can access device] the specified user identifier.

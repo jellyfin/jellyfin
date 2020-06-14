@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
     /// </summary>
     public class MusicAlbumResolver : ItemResolver<MusicAlbum>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<MusicAlbumResolver> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
 
@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <param name="logger">The logger.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public MusicAlbumResolver(ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public MusicAlbumResolver(ILogger<MusicAlbumResolver> logger, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             IEnumerable<FileSystemMetadata> list,
             bool allowSubfolders,
             IDirectoryService directoryService,
-            ILogger logger,
+            ILogger<MusicAlbumResolver> logger,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)
         {
