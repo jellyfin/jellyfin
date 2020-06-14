@@ -194,7 +194,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         protected abstract void WriteCustomElements(BaseItem item, XmlWriter writer);
 
         /// <summary>
-        /// Adds common notes.
+        /// Adds the common nodes.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="writer">The xml writer.</param>
