@@ -225,7 +225,6 @@ namespace Emby.Server.Implementations.TV
                     ParentIndexNumberNotEquals = 0,
                     MinSortName = lastWatchedEpisode?.SortName,
                     DtoOptions = dtoOptions
-
                 }).Cast<Episode>().FirstOrDefault();
             };
 

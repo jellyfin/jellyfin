@@ -304,6 +304,5 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }).ToArray();
             }
         }
-
     }
 }

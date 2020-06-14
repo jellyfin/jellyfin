@@ -322,7 +322,6 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     ibnItems = ibnItems.Take(request.Limit.Value);
                 }
-
             }
 
             var tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, new List<BaseItem>()));

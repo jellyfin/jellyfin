@@ -109,7 +109,6 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 switch (i.PlayMethod)
@@ -121,7 +120,6 @@ namespace MediaBrowser.Model.Dlna
                     default:
                         return 1;
                 }
-
             }).ThenBy(i =>
             {
                 switch (i.MediaSource.Protocol)
@@ -131,7 +129,6 @@ namespace MediaBrowser.Model.Dlna
                     default:
                         return 1;
                 }
-
             }).ThenBy(i =>
             {
                 if (maxBitrate > 0)
@@ -143,7 +140,6 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 return 0;
-
             }).ThenBy(streams.IndexOf);
         }
 

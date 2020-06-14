@@ -413,7 +413,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
-
             }
             else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
             {
@@ -425,7 +424,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                         Type = PersonType.Writer
                     });
                 }
-
             }
             else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
             {
@@ -1028,7 +1026,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 audio.AlbumArtists = SplitArtists(albumArtist, _nameDelimiters, true)
                     .DistinctNames()
                     .ToArray();
-
             }
 
             if (audio.AlbumArtists.Length == 0)

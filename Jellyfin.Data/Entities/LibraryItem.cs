@@ -164,7 +164,6 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [ForeignKey("LibraryRoot_Id")]
         public virtual LibraryRoot LibraryRoot { get; set; }
-
     }
 }
 

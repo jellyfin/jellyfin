@@ -63,7 +63,6 @@ namespace MediaBrowser.Providers.MediaInfo
                         Path = path,
                         Protocol = protocol
                     }
-
                 }, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();

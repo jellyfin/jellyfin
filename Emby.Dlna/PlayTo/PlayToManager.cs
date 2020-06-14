@@ -112,7 +112,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {
@@ -243,7 +242,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch
             {
-
             }
 
             _sessionLock.Dispose();

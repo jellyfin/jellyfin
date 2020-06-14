@@ -208,7 +208,6 @@ namespace MediaBrowser.Model.Entities
 
                 if (Type == MediaStreamType.Video)
                 {
-
                 }
 
                 return null;

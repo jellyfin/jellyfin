@@ -743,7 +743,6 @@ namespace MediaBrowser.Api.Images
                 Path = imageResult.Item1,
 
                 FileShare = FileShare.Read
-
             }).ConfigureAwait(false);
         }
 

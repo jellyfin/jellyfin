@@ -129,7 +129,6 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     Name = i.Name,
                     Id = i.Id.ToString("N", CultureInfo.InvariantCulture)
-
                 })
             .OrderBy(i => i.Name)
             .ToArray();

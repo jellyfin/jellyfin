@@ -1218,7 +1218,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 public string programID { get; set; }
                 public List<ImageData> data { get; set; }
             }
-
         }
     }
 }

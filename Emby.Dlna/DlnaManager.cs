@@ -88,7 +88,6 @@ namespace Emby.Dlna
                     .Select(i => i.Item2)
                     .ToList();
             }
-
         }
 
         public DeviceProfile GetDefaultProfile()

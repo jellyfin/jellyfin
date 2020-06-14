@@ -562,7 +562,6 @@ namespace MediaBrowser.Api.Library
                     _authContext)
                 {
                     Request = Request,
-
                 }.GetSimilarItemsResult(request);
             }
 
@@ -660,7 +659,6 @@ namespace MediaBrowser.Api.Library
                 {
                     EnableImages = false
                 }
-
             }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProvider.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             foreach (var item in series)
@@ -689,7 +687,6 @@ namespace MediaBrowser.Api.Library
                 {
                     EnableImages = false
                 }
-
             });
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))

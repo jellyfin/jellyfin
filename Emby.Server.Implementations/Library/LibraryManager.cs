@@ -2861,7 +2861,6 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error getting person");
                     return null;
                 }
-
             }).Where(i => i != null).ToList();
         }
 

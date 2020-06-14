@@ -150,7 +150,6 @@ namespace MediaBrowser.Api
                 {
                     Name = i.Item1.Name,
                     Id = i.Item1.Id
-
                 }).ToArray();
             }
             else
@@ -159,7 +158,6 @@ namespace MediaBrowser.Api
                 {
                     Name = i.Item1.Name,
                     Id = i.Item1.Id
-
                 }).ToArray();
             }
 

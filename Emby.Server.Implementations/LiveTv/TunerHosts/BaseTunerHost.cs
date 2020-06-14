@@ -99,7 +99,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         }
                         catch (IOException)
                         {
-
                         }
                     }
                 }
@@ -116,7 +115,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         }
                         catch (IOException)
                         {
-
                         }
                     }
                 }

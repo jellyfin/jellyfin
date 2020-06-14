@@ -436,7 +436,6 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 return 1;
-
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
             .ThenByDescending(i =>
             {
@@ -620,7 +619,6 @@ namespace Emby.Server.Implementations.Library
                     MediaSource = mediaSource,
                     ExtractChapters = false,
                     MediaType = DlnaProfileType.Video
-
                 }, cancellationToken).ConfigureAwait(false);
 
                 mediaSource.MediaStreams = info.MediaStreams;

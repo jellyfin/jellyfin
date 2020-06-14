@@ -500,7 +500,6 @@ namespace MediaBrowser.Controller.Entities
             if (series != null)
             {
                 await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-
             }
             await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
         }
@@ -615,7 +614,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     EnableImages = false
                 }
-
             });
 
             return result.TotalRecordCount;
@@ -1629,7 +1627,6 @@ namespace MediaBrowser.Controller.Entities
                 Recursive = true,
                 IsFolder = false,
                 EnableTotalRecordCount = false
-
             });
 
             // Sweep through recursively and update status
@@ -1647,7 +1644,6 @@ namespace MediaBrowser.Controller.Entities
                 IsFolder = false,
                 IsVirtualItem = false,
                 EnableTotalRecordCount = false
-
             });
 
             return itemsResult

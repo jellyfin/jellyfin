@@ -24,20 +24,17 @@ namespace MediaBrowser.Api.System
     [Authenticated(EscapeParentalControl = true, AllowBeforeStartupWizard = true)]
     public class GetSystemInfo : IReturn<SystemInfo>
     {
-
     }
 
     [Route("/System/Info/Public", "GET", Summary = "Gets public information about the server")]
     public class GetPublicSystemInfo : IReturn<PublicSystemInfo>
     {
-
     }
 
     [Route("/System/Ping", "POST")]
     [Route("/System/Ping", "GET")]
     public class PingSystem : IReturnVoid
     {
-
     }
 
     /// <summary>
@@ -83,7 +80,6 @@ namespace MediaBrowser.Api.System
     [Authenticated]
     public class GetWakeOnLanInfo : IReturn<WakeOnLanInfo[]>
     {
-
     }
 
     /// <summary>
@@ -153,7 +149,6 @@ namespace MediaBrowser.Api.System
                 DateModified = _fileSystem.GetLastWriteTimeUtc(i),
                 Name = i.Name,
                 Size = i.Length
-
             }).OrderByDescending(i => i.DateModified)
                 .ThenByDescending(i => i.DateCreated)
                 .ThenBy(i => i.Name)

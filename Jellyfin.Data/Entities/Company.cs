@@ -131,7 +131,6 @@ namespace Jellyfin.Data.Entities
         public virtual ICollection<CompanyMetadata> CompanyMetadata { get; protected set; }
         [ForeignKey("Company_Parent_Id")]
         public virtual Company Parent { get; set; }
-
     }
 }
 

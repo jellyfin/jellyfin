@@ -261,7 +261,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         text += "</font>";
                     }
                 }
-
             }
 
             text = text.Replace(@"{\i1}", "<i>");

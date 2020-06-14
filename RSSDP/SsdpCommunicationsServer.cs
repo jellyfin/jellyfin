@@ -195,11 +195,9 @@ namespace Rssdp.Infrastructure
             }
             catch (ObjectDisposedException)
             {
-
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {

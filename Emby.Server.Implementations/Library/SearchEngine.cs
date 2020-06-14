@@ -207,7 +207,6 @@ namespace Emby.Server.Implementations.Library
             return mediaItems.Select(i => new SearchHintInfo
             {
                 Item = i
-
             }).ToList();
         }
     }

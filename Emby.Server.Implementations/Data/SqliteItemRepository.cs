@@ -321,7 +321,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
                     AddColumn(db, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
                     AddColumn(db, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
-
                 }, TransactionMode);
 
                 connection.RunQueries(postQueries);
@@ -2044,7 +2043,6 @@ namespace Emby.Server.Implementations.Data
                     db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
 
                     InsertChapters(idBlob, chapters, db);
-
                 }, TransactionMode);
             }
         }
@@ -4789,7 +4787,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 connection.RunInTransaction(db =>
                 {
                     connection.ExecuteAll(sql);
-
                 }, TransactionMode);
             }
         }
@@ -5180,7 +5177,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                         }
                     }
                 }
-
             }
 
             LogQueryTime("GetItemValueNames", commandText, now);
@@ -5631,7 +5627,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
 
                     InsertPeople(itemIdBlob, people, db);
-
                 }, TransactionMode);
             }
         }
@@ -5788,7 +5783,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);
 
                     InsertMediaStreams(itemIdBlob, streams, db);
-
                 }, TransactionMode);
             }
         }
@@ -6134,7 +6128,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
 
                     InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
-
                 }, TransactionMode);
             }
         }

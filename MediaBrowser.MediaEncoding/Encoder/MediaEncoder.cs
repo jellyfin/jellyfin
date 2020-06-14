@@ -920,7 +920,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         var fileParts = _fileSystem.GetFileNameWithoutExtension(f).Split('_');
 
                         return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
-
                     }).ToList();
 
                     // If this resulted in not getting any vobs, just take them all

@@ -60,7 +60,6 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             catch (IOException)
             {
-
             }
 
             return streams;

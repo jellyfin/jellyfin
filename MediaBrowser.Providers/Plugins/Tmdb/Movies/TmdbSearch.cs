@@ -203,7 +203,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                             remoteResult.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(_usCulture));
 
                             return remoteResult;
-
                         })
                         .ToList();
                 }
@@ -224,7 +223,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 Url = url3,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)
@@ -256,7 +254,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                             remoteResult.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(_usCulture));
 
                             return remoteResult;
-
                         })
                         .ToList();
                 }

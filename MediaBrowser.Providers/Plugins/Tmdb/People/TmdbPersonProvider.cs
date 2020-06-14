@@ -232,7 +232,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 Url = url,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)

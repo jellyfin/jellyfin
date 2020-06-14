@@ -12,7 +12,6 @@ namespace Emby.Dlna.Didl
         public Filter()
             : this("*")
         {
-
         }
 
         public Filter(string filter)

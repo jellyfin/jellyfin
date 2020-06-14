@@ -169,7 +169,6 @@ namespace Emby.Dlna.Eventing
             {
                 using (await _httpClient.SendAsync(options, new HttpMethod("NOTIFY")).ConfigureAwait(false))
                 {
-
                 }
             }
             catch (OperationCanceledException)

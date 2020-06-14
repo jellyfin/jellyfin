@@ -767,7 +767,6 @@ namespace MediaBrowser.Controller.Entities
             get => GetParent() as Folder;
             set
             {
-
             }
         }
 
@@ -1064,7 +1063,6 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return 1;
-
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
             .ThenByDescending(i =>
             {
@@ -1347,12 +1345,10 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual void TriggerOnRefreshStart()
         {
-
         }
 
         protected virtual void TriggerOnRefreshComplete()
         {
-
         }
 
         /// <summary>

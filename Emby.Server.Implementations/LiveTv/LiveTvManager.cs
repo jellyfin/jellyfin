@@ -1168,7 +1168,6 @@ namespace Emby.Server.Implementations.LiveTv
                         IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
                         ChannelIds = new Guid[] { currentChannel.Id },
                         DtoOptions = new DtoOptions(true)
-
                     }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
 
                     var newPrograms = new List<LiveTvProgram>();
@@ -1738,7 +1737,6 @@ namespace Emby.Server.Implementations.LiveTv
             var results = await GetTimers(new TimerQuery
             {
                 Id = id
-
             }, cancellationToken).ConfigureAwait(false);
 
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
@@ -1790,7 +1788,6 @@ namespace Emby.Server.Implementations.LiveTv
                 .Select(i =>
                 {
                     return i.Item1;
-
                 })
                 .ToArray();
 
@@ -1845,7 +1842,6 @@ namespace Emby.Server.Implementations.LiveTv
                     }
 
                     return _tvDtoService.GetSeriesTimerInfoDto(i.Item1, i.Item2, channelName);
-
                 })
                 .ToArray();
 
@@ -1878,7 +1874,6 @@ namespace Emby.Server.Implementations.LiveTv
                 OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Id },
                 DtoOptions = options
-
             }) : new List<BaseItem>();
 
             RemoveFields(options);
@@ -2456,7 +2451,6 @@ namespace Emby.Server.Implementations.LiveTv
                 UserId = user.Id,
                 IsRecordingsFolder = true,
                 RefreshLatestChannelItems = refreshChannels
-
             }).Items);
 
             return folders.Cast<BaseItem>().ToList();

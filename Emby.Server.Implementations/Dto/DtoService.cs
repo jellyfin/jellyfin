@@ -593,7 +593,6 @@ namespace Emby.Server.Implementations.Dto
                         _logger.LogError(ex, "Error getting person {Name}", c);
                         return null;
                     }
-
                 }).Where(i => i != null)
                 .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(x => x.First())
@@ -1000,7 +999,6 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-
                     }).Where(i => i != null).ToArray();
             }
 
@@ -1051,7 +1049,6 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-
                     }).Where(i => i != null).ToArray();
             }
 

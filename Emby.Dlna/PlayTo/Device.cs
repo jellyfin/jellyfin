@@ -794,7 +794,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch (XmlException)
             {
-
             }
 
             // first try to add a root node with a dlna namesapce
@@ -806,7 +805,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch (XmlException)
             {
-
             }
 
             // some devices send back invalid xml
@@ -816,7 +814,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch (XmlException)
             {
-
             }
 
             return null;

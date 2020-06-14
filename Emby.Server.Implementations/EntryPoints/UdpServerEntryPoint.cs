@@ -43,7 +43,6 @@ namespace Emby.Server.Implementations.EntryPoints
             _logger = logger;
             _appHost = appHost;
             _config = configuration;
-
         }
 
         /// <inheritdoc />

@@ -51,6 +51,5 @@ namespace MediaBrowser.Model.Providers
 
         public RemoteSearchResult[] Artists { get; set; }
 
-
     }
 }

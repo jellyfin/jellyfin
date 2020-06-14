@@ -255,7 +255,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 }
 
                                 return null;
-
                             }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
                         }
 
@@ -680,7 +679,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         }
 
                         break;
-
                     }
             }
         }
@@ -1260,6 +1258,5 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             return val.Split(separators, options);
         }
-
     }
 }

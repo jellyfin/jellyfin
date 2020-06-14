@@ -180,7 +180,6 @@ namespace MediaBrowser.Api
                 IsNews = request.IsNews,
                 IsSeries = request.IsSeries,
                 IsSports = request.IsSports
-
             });
 
             return new SearchHintResult

@@ -335,7 +335,6 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (FileNotFoundException)
                 {
-
                 }
             }
 
@@ -529,7 +528,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 Path = path,
                 Type = imageType
-
             }, newIndex);
         }
 

@@ -120,7 +120,6 @@ namespace Rssdp.Infrastructure
             }
             catch (Exception)
             {
-
             }
         }
 
@@ -613,6 +612,5 @@ namespace Rssdp.Infrastructure
         }
 
         #endregion
-
     }
 }

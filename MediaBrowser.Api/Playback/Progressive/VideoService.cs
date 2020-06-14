@@ -59,7 +59,6 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream", "HEAD")]
     public class GetVideoStream : VideoStreamRequest
     {
-
     }
 
     /// <summary>

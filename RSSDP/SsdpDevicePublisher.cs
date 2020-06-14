@@ -335,7 +335,6 @@ namespace Rssdp.Infrastructure
             }
             catch (Exception)
             {
-
             }
 
             // WriteTrace(String.Format("Sent search response to " + endPoint.ToString()), device);

@@ -210,7 +210,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         }
                     }
                 }
-
             }
 
             if (!IsValidChannelNumber(numberString))

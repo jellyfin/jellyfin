@@ -73,7 +73,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     {
                         return false;
                     }
-
                 })
                 .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
                 .FirstOrDefault();

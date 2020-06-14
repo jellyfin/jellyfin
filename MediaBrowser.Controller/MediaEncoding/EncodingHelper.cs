@@ -759,7 +759,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 param += " -look_ahead 0";
-
             }
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
                 || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase))
