@@ -406,7 +406,6 @@ namespace Emby.Server.Implementations.Dto
                     dto.DateLastMediaAdded = folder.DateLastMediaAdded;
                 }
             }
-
             else
             {
                 if (options.EnableUserData)

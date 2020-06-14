@@ -1139,7 +1139,6 @@ namespace Emby.Dlna.Didl
                 width = null;
                 height = null;
             }
-
             else if (width == -1 || height == -1)
             {
                 width = null;

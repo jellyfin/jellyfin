@@ -1327,7 +1327,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // wmav2 currently only supports two channel output
                 transcoderChannelLimit = 2;
             }
-
             else if (codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 // libmp3lame currently only supports two channel output
@@ -1462,7 +1461,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     " -map 0:{0}",
                     state.AudioStream.Index);
             }
-
             else
             {
                 args += " -map -0:a";
@@ -1648,7 +1646,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 outputSizeParam = outputSizeParam.TrimStart(',');
                 retStr = " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay\"";
             }
-
             else if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
                 /*
@@ -2574,7 +2571,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (videoStream.Codec.ToLowerInvariant())
@@ -2619,7 +2615,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "mediacodec", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (videoStream.Codec.ToLowerInvariant())
@@ -2664,7 +2659,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "omx", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (videoStream.Codec.ToLowerInvariant())
@@ -2696,7 +2690,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                     }
                 }
-
                 else if (string.Equals(encodingOptions.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase))
                 {
                     if (Environment.OSVersion.Platform == PlatformID.Win32NT)
