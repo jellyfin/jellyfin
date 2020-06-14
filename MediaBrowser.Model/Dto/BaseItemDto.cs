@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -511,6 +512,13 @@ namespace MediaBrowser.Model.Dto
         public string SeriesThumbImageTag { get; set; }
 
         /// <summary>
+        /// Gets or sets the blurhashes for the image tags.
+        /// Maps image type to dictionary mapping image tag to blurhash value.
+        /// </summary>
+        /// <value>The blurhashes.</value>
+        public Dictionary<ImageType, Dictionary<string, string>> ImageBlurHashes { get; set; }
+
+        /// <summary>
         /// Gets or sets the series studio.
         /// </summary>
         /// <value>The series studio.</value>
@@ -574,7 +582,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
-        public MetadataFields[] LockedFields { get; set; }
+        public MetadataField[] LockedFields { get; set; }
 
         /// <summary>
         /// Gets or sets the trailer count.

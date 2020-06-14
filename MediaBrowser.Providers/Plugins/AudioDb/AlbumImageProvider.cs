@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var id = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+            var id = item.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
 
             if (!string.IsNullOrWhiteSpace(id))
             {

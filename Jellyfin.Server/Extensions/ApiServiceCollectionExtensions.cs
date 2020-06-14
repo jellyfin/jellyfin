@@ -93,7 +93,7 @@ namespace Jellyfin.Server.Extensions
                 .AddJsonOptions(options =>
                 {
                     // Update all properties that are set in JsonDefaults
-                    var jsonOptions = JsonDefaults.PascalCase;
+                    var jsonOptions = JsonDefaults.GetPascalCaseOptions();
 
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
@@ -120,6 +120,25 @@ namespace Jellyfin.Server.Extensions
             return serviceCollection.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("api-docs", new OpenApiInfo { Title = "Jellyfin API", Version = "v1" });
+                c.AddSecurityDefinition(AuthenticationSchemes.CustomAuthentication, new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header,
+                    Name = "X-Emby-Token",
+                    Description = "API key header parameter"
+                });
+
+                var securitySchemeRef = new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = AuthenticationSchemes.CustomAuthentication },
+                };
+
+                // TODO: Apply this with an operation filter instead of globally
+                // https://github.com/domaindrivendev/Swashbuckle.AspNetCore#add-security-definitions-and-requirements
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    { securitySchemeRef, Array.Empty<string>() }
+                });
 
                 // Add all xml doc files to swagger generator.
                 var xmlFiles = Directory.GetFiles(

@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.Services
     public interface IHasRequestFilter
     {
         /// <summary>
-        /// Order in which Request Filters are executed.
+        /// Gets the order in which Request Filters are executed.
         /// &lt;0 Executed before global request filters.
         /// &gt;0 Executed after global request filters.
         /// </summary>
