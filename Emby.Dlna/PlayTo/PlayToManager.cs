@@ -184,7 +184,8 @@ namespace Emby.Dlna.PlayTo
                     serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
                 }
 
-                controller = new PlayToController(sessionInfo,
+                controller = new PlayToController(
+                    sessionInfo,
                    _sessionManager,
                    _libraryManager,
                    _logger,

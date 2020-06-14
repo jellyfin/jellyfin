@@ -49,12 +49,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(imdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
                         }
 
                         if (!string.IsNullOrWhiteSpace(tmdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Tmdb, tmdbId);
+                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
                         }
 
                         break;
@@ -67,7 +67,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var tmdbcolid = reader.GetAttribute("tmdbcolid");
                         if (!string.IsNullOrWhiteSpace(tmdbcolid) && movie != null)
                         {
-                            movie.SetProviderId(MetadataProviders.TmdbCollection, tmdbcolid);
+                            movie.SetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
                         }
 
                         var val = reader.ReadInnerXml();
