@@ -100,15 +100,13 @@ namespace Emby.Dlna.Ssdp
 
             var headers = headerDict.ToDictionary(i => i.Key, i => i.Value.Value.FirstOrDefault(), StringComparer.OrdinalIgnoreCase);
 
-            var args = new GenericEventArgs<UpnpDeviceInfo>
-            {
-                Argument = new UpnpDeviceInfo
+            var args = new GenericEventArgs<UpnpDeviceInfo>(
+                new UpnpDeviceInfo
                 {
                     Location = e.DiscoveredDevice.DescriptionLocation,
                     Headers = headers,
                     LocalIpAddress = e.LocalIpAddress
-                }
-            };
+                });
 
             DeviceDiscoveredInternal?.Invoke(this, args);
         }
@@ -121,14 +119,12 @@ namespace Emby.Dlna.Ssdp
 
             var headers = headerDict.ToDictionary(i => i.Key, i => i.Value.Value.FirstOrDefault(), StringComparer.OrdinalIgnoreCase);
 
-            var args = new GenericEventArgs<UpnpDeviceInfo>
-            {
-                Argument = new UpnpDeviceInfo
+            var args = new GenericEventArgs<UpnpDeviceInfo>(
+                new UpnpDeviceInfo
                 {
                     Location = e.DiscoveredDevice.DescriptionLocation,
                     Headers = headers
-                }
-            };
+                });
 
             DeviceLeft?.Invoke(this, args);
         }

@@ -216,7 +216,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            result.SetProviderId(MetadataProviders.MusicBrainzArtist, artistId);
+            result.SetProviderId(MetadataProvider.MusicBrainzArtist, artistId);
 
             if (string.IsNullOrWhiteSpace(artistId) || string.IsNullOrWhiteSpace(result.Name))
             {
@@ -249,7 +249,7 @@ namespace MediaBrowser.Providers.Music
 
                 if (singleResult != null)
                 {
-                    musicBrainzId = singleResult.GetProviderId(MetadataProviders.MusicBrainzArtist);
+                    musicBrainzId = singleResult.GetProviderId(MetadataProvider.MusicBrainzArtist);
                     result.Item.Overview = singleResult.Overview;
 
                     if (Plugin.Instance.Configuration.ReplaceArtistName)
@@ -262,7 +262,7 @@ namespace MediaBrowser.Providers.Music
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
                 result.HasMetadata = true;
-                result.Item.SetProviderId(MetadataProviders.MusicBrainzArtist, musicBrainzId);
+                result.Item.SetProviderId(MetadataProvider.MusicBrainzArtist, musicBrainzId);
             }
 
             return result;

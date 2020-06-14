@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             onStarted();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
+            _ = StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
 
             _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
 
@@ -321,7 +321,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async void StartStreamingLog(Stream source, Stream target)
+        private async Task StartStreamingLog(Stream source, Stream target)
         {
             try
             {
