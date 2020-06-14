@@ -32,17 +32,25 @@ namespace Emby.Dlna.Eventing
         {
             var subscription = GetSubscription(subscriptionId, false);
 
-            subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
-            int timeoutSeconds = subscription.TimeoutSeconds;
-            subscription.SubscriptionTime = DateTime.UtcNow;
+            if (subscription != null)
+            {
+                subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
+                int timeoutSeconds = subscription.TimeoutSeconds;
+                subscription.SubscriptionTime = DateTime.UtcNow;
 
-            _logger.LogDebug(
-                "Renewing event subscription for {0} with timeout of {1} to {2}",
-                subscription.NotificationType,
-                timeoutSeconds,
-                subscription.CallbackUrl);
+                _logger.LogDebug(
+                    "Renewing event subscription for {0} with timeout of {1} to {2}",
+                    subscription.NotificationType,
+                    timeoutSeconds,
+                    subscription.CallbackUrl);
+                return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, timeoutSeconds);
+            }
 
-            return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, timeoutSeconds);
+            return new EventSubscriptionResponse
+            {
+                Content = string.Empty,
+                ContentType = "text/plain"
+            };
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
