@@ -6,8 +6,14 @@ namespace MediaBrowser.Model.Tasks
 {
     public class TaskCompletionEventArgs : EventArgs
     {
-        public IScheduledTaskWorker Task { get; set; }
+        public TaskCompletionEventArgs(IScheduledTaskWorker task, TaskResult result)
+        {
+            Task = task;
+            Result = result;
+        }
 
-        public TaskResult Result { get; set; }
+        public IScheduledTaskWorker Task { get; }
+
+        public TaskResult Result { get; }
     }
 }

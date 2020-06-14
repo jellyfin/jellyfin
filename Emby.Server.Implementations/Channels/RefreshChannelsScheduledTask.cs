@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,13 +11,23 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Channels
 {
+    /// <summary>
+    /// The "Refresh Channels" scheduled task.
+    /// </summary>
     public class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly IChannelManager _channelManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<RefreshChannelsScheduledTask> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RefreshChannelsScheduledTask"/> class.
+        /// </summary>
+        /// <param name="channelManager">The channel manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="localization">The localization manager.</param>
         public RefreshChannelsScheduledTask(
             IChannelManager channelManager,
             ILogger<RefreshChannelsScheduledTask> logger,

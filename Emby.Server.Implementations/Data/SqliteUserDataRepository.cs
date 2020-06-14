@@ -375,5 +375,15 @@ namespace Emby.Server.Implementations.Data
 
             return userData;
         }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// There is nothing to dispose here since <see cref="BaseSqliteRepository.WriteLock"/> and
+        /// <see cref="BaseSqliteRepository.WriteConnection"/> are managed by <see cref="SqliteItemRepository"/>.
+        /// See <see cref="Initialize(IUserManager, SemaphoreSlim, SQLiteDatabaseConnection)"/>.
+        /// </remarks>
+        protected override void Dispose(bool dispose)
+        {
+        }
     }
 }

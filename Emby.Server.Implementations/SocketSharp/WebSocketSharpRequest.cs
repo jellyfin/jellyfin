@@ -1,8 +1,11 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Mime;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -23,7 +26,7 @@ namespace Emby.Server.Implementations.SocketSharp
         private Dictionary<string, object> _items;
         private string _responseContentType;
 
-        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName, ILogger logger)
+        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName)
         {
             this.OperationName = operationName;
             this.Request = httpRequest;
@@ -62,6 +65,9 @@ namespace Emby.Server.Implementations.SocketSharp
                     if (!IPAddress.TryParse(GetHeader(CustomHeaderNames.XRealIP), out ip))
                     {
                         ip = Request.HttpContext.Connection.RemoteIpAddress;
+
+                        // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
+                        ip ??= IPAddress.Loopback;
                     }
                 }
 
@@ -89,7 +95,10 @@ namespace Emby.Server.Implementations.SocketSharp
 
         public IQueryCollection QueryString => Request.Query;
 
-        public bool IsLocal => Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress);
+        public bool IsLocal =>
+            (Request.HttpContext.Connection.LocalIpAddress == null
+            && Request.HttpContext.Connection.RemoteIpAddress == null)
+            || Request.HttpContext.Connection.LocalIpAddress.Equals(Request.HttpContext.Connection.RemoteIpAddress);
 
         public string HttpMethod => Request.Method;
 
@@ -202,7 +211,7 @@ namespace Emby.Server.Implementations.SocketSharp
         private static string GetQueryStringContentType(HttpRequest httpReq)
         {
             ReadOnlySpan<char> format = httpReq.Query["format"].ToString();
-            if (format == null)
+            if (format == ReadOnlySpan<char>.Empty)
             {
                 const int FormatMaxLength = 4;
                 ReadOnlySpan<char> pi = httpReq.Path.ToString();
@@ -216,14 +225,14 @@ namespace Emby.Server.Implementations.SocketSharp
                     pi = pi.Slice(1);
                 }
 
-                format = LeftPart(pi, '/');
+                format = pi.LeftPart('/');
                 if (format.Length > FormatMaxLength)
                 {
                     return null;
                 }
             }
 
-            format = LeftPart(format, '.');
+            format = format.LeftPart('.');
             if (format.Contains("json", StringComparison.OrdinalIgnoreCase))
             {
                 return "application/json";
@@ -234,17 +243,6 @@ namespace Emby.Server.Implementations.SocketSharp
             }
 
             return null;
-        }
-
-        public static ReadOnlySpan<char> LeftPart(ReadOnlySpan<char> strVal, char needle)
-        {
-            if (strVal == null)
-            {
-                return null;
-            }
-
-            var pos = strVal.IndexOf(needle);
-            return pos == -1 ? strVal : strVal.Slice(0, pos);
         }
     }
 }

@@ -212,7 +212,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             var m = Regex.Match(xml, "tt([0-9]{7,8})", RegexOptions.IgnoreCase);
             if (m.Success)
             {
-                item.SetProviderId(MetadataProviders.Imdb, m.Value);
+                item.SetProviderId(MetadataProvider.Imdb, m.Value);
             }
 
             // Support Tmdb
@@ -225,7 +225,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 var tmdbId = xml.Substring(index + srch.Length).TrimEnd('/').Split('-')[0];
                 if (!string.IsNullOrWhiteSpace(tmdbId) && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                 {
-                    item.SetProviderId(MetadataProviders.Tmdb, value.ToString(UsCulture));
+                    item.SetProviderId(MetadataProvider.Tmdb, value.ToString(UsCulture));
                 }
             }
 
@@ -240,7 +240,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     var tvdbId = xml.Substring(index + srch.Length).TrimEnd('/');
                     if (!string.IsNullOrWhiteSpace(tvdbId) && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                     {
-                        item.SetProviderId(MetadataProviders.Tvdb, value.ToString(UsCulture));
+                        item.SetProviderId(MetadataProvider.Tvdb, value.ToString(UsCulture));
                     }
                 }
             }
@@ -360,9 +360,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             item.LockedFields = val.Split('|').Select(i =>
                             {
-                                if (Enum.TryParse(i, true, out MetadataFields field))
+                                if (Enum.TryParse(i, true, out MetadataField field))
                                 {
-                                    return (MetadataFields?)field;
+                                    return (MetadataField?)field;
                                 }
 
                                 return null;

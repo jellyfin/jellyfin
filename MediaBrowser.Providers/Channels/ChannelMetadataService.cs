@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Channels
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Channel> source, MetadataResult<Channel> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Channel> source, MetadataResult<Channel> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

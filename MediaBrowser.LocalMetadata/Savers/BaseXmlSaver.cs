@@ -21,7 +21,7 @@ namespace MediaBrowser.LocalMetadata.Savers
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<BaseXmlSaver> logger)
         {
             FileSystem = fileSystem;
             ConfigurationManager = configurationManager;
@@ -36,7 +36,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         protected ILibraryManager LibraryManager { get; private set; }
         protected IUserManager UserManager { get; private set; }
         protected IUserDataManager UserDataManager { get; private set; }
-        protected ILogger Logger { get; private set; }
+        protected ILogger<BaseXmlSaver> Logger { get; private set; }
 
         public string Name => XmlProviderUtils.Name;
 

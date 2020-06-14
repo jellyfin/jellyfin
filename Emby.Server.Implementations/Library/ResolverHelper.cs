@@ -118,10 +118,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(fileSystem));
             }
+
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
+
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));
