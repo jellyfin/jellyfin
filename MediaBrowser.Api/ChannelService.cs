@@ -240,7 +240,6 @@ namespace MediaBrowser.Api
                 {
                     Fields = request.GetItemFields()
                 }
-
             };
 
             foreach (var filter in request.GetFilters())

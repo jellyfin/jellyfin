@@ -225,7 +225,6 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
         [ForeignKey("MetadataProviderId_Source_Id")]
         public virtual MetadataProviderId Source { get; set; }
-
     }
 }
 

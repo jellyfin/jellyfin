@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// The _logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<PluginUpdateTask> _logger;
 
         private readonly IInstallationManager _installationManager;
         private readonly ILocalizationManager _localization;

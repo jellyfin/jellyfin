@@ -176,7 +176,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaAttachments = mediaInfo.MediaAttachments;
 
                 video.TotalBitrate = mediaInfo.Bitrate;
-                //video.FormatName = (mediaInfo.Container ?? string.Empty)
+                // video.FormatName = (mediaInfo.Container ?? string.Empty)
                 //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
                 // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
@@ -283,7 +283,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var video = (Video)item;
 
-            //video.PlayableStreamFileNames = blurayInfo.Files.ToList();
+            // video.PlayableStreamFileNames = blurayInfo.Files.ToList();
 
             // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
             if (blurayInfo.Files.Length > 1)
@@ -368,7 +368,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var isFullRefresh = refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.OfficialRating))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.OfficialRating))
             {
                 if (!string.IsNullOrWhiteSpace(data.OfficialRating) || isFullRefresh)
                 {
@@ -376,7 +376,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Genres))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Genres))
             {
                 if (video.Genres.Length == 0 || isFullRefresh)
                 {
@@ -389,7 +389,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Studios))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Studios))
             {
                 if (video.Studios.Length == 0 || isFullRefresh)
                 {
@@ -426,7 +426,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Name))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Name))
             {
                 if (!string.IsNullOrWhiteSpace(data.Name) && libraryOptions.EnableEmbeddedTitles)
                 {
@@ -444,7 +444,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.ProductionYear = video.PremiereDate.Value.ToLocalTime().Year;
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Overview))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Overview))
             {
                 if (string.IsNullOrWhiteSpace(video.Overview) || isFullRefresh)
                 {
@@ -457,7 +457,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Cast))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Cast))
             {
                 if (isFullRefresh || _libraryManager.GetPeople(video).Count == 0)
                 {

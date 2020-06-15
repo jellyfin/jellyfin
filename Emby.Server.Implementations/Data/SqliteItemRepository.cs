@@ -321,7 +321,6 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "MediaStreams", "ColorPrimaries", "TEXT", existingColumnNames);
                     AddColumn(db, "MediaStreams", "ColorSpace", "TEXT", existingColumnNames);
                     AddColumn(db, "MediaStreams", "ColorTransfer", "TEXT", existingColumnNames);
-
                 }, TransactionMode);
 
                 connection.RunQueries(postQueries);
@@ -1626,11 +1625,11 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!reader.IsDBNull(index))
                 {
-                    IEnumerable<MetadataFields> GetLockedFields(string s)
+                    IEnumerable<MetadataField> GetLockedFields(string s)
                     {
                         foreach (var i in s.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            if (Enum.TryParse(i, true, out MetadataFields parsedValue))
+                            if (Enum.TryParse(i, true, out MetadataField parsedValue))
                             {
                                 yield return parsedValue;
                             }
@@ -2044,7 +2043,6 @@ namespace Emby.Server.Implementations.Data
                     db.Execute("delete from " + ChaptersTableName + " where ItemId=@ItemId", idBlob);
 
                     InsertChapters(idBlob, chapters, db);
-
                 }, TransactionMode);
             }
         }
@@ -2734,7 +2732,7 @@ namespace Emby.Server.Implementations.Data
 
                 foreach (var providerId in newItem.ProviderIds)
                 {
-                    if (providerId.Key == MetadataProviders.TmdbCollection.ToString())
+                    if (providerId.Key == MetadataProvider.TmdbCollection.ToString())
                     {
                         continue;
                     }
@@ -4324,7 +4322,7 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var pair in query.ExcludeProviderIds)
                 {
-                    if (string.Equals(pair.Key, MetadataProviders.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(pair.Key, MetadataProvider.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -4353,14 +4351,14 @@ namespace Emby.Server.Implementations.Data
                 var index = 0;
                 foreach (var pair in query.HasAnyProviderId)
                 {
-                    if (string.Equals(pair.Key, MetadataProviders.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(pair.Key, MetadataProvider.TmdbCollection.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
                     // TODO this seems to be an idea for a better schema where ProviderIds are their own table
                     //      buut this is not implemented
-                    //hasProviderIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
+                    // hasProviderIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
 
                     // TODO this is a really BAD way to do it since the pair:
                     //      Tmdb, 1234 matches Tmdb=1234 but also Tmdb=1234567
@@ -4789,7 +4787,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                 connection.RunInTransaction(db =>
                 {
                     connection.ExecuteAll(sql);
-
                 }, TransactionMode);
             }
         }
@@ -5180,7 +5177,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                         }
                     }
                 }
-
             }
 
             LogQueryTime("GetItemValueNames", commandText, now);
@@ -5631,7 +5627,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     db.Execute("delete from People where ItemId=@ItemId", itemIdBlob);
 
                     InsertPeople(itemIdBlob, people, db);
-
                 }, TransactionMode);
             }
         }
@@ -5788,7 +5783,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     db.Execute("delete from mediastreams where ItemId=@ItemId", itemIdBlob);
 
                     InsertMediaStreams(itemIdBlob, streams, db);
-
                 }, TransactionMode);
             }
         }
@@ -6134,7 +6128,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     db.Execute("delete from mediaattachments where ItemId=@ItemId", itemIdBlob);
 
                     InsertMediaAttachments(itemIdBlob, attachments, db, cancellationToken);
-
                 }, TransactionMode);
             }
         }

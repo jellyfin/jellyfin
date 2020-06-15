@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
@@ -26,13 +26,13 @@ namespace MediaBrowser.Controller.LiveTv
 
             if (!IsSeries)
             {
-                var key = this.GetProviderId(MetadataProviders.Imdb);
+                var key = this.GetProviderId(MetadataProvider.Imdb);
                 if (!string.IsNullOrEmpty(key))
                 {
                     list.Insert(0, key);
                 }
 
-                key = this.GetProviderId(MetadataProviders.Tmdb);
+                key = this.GetProviderId(MetadataProvider.Tmdb);
                 if (!string.IsNullOrEmpty(key))
                 {
                     list.Insert(0, key);
@@ -147,7 +147,7 @@ namespace MediaBrowser.Controller.LiveTv
         public override string ContainingFolderPath => Path;
 
         //[JsonIgnore]
-        //public override string MediaType
+        // public override string MediaType
         //{
         //    get
         //    {
@@ -253,7 +253,7 @@ namespace MediaBrowser.Controller.LiveTv
         {
             var list = base.GetRelatedUrls();
 
-            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
             if (!string.IsNullOrEmpty(imdbId))
             {
                 if (IsMovie)

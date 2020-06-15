@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
-            var id = person.GetProviderId(MetadataProviders.Tmdb);
+            var id = person.GetProviderId(MetadataProvider.Tmdb);
 
             if (!string.IsNullOrEmpty(id))
             {

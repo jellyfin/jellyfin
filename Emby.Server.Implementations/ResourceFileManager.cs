@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations
     public class ResourceFileManager : IResourceFileManager
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<ResourceFileManager> _logger;
 
         public ResourceFileManager(ILogger<ResourceFileManager> logger, IFileSystem fileSystem)
         {

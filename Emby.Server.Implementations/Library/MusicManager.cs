@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -10,6 +11,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -75,7 +77,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     return Guid.Empty;
                 }
-
             }).Where(i => !i.Equals(Guid.Empty)).ToArray();
 
             return GetInstantMixFromGenreIds(genreIds, user, dtoOptions);
@@ -105,32 +106,27 @@ namespace Emby.Server.Implementations.Library
                 return GetInstantMixFromGenreIds(new[] { item.Id }, user, dtoOptions);
             }
 
-            var playlist = item as Playlist;
-            if (playlist != null)
+            if (item is Playlist playlist)
             {
                 return GetInstantMixFromPlaylist(playlist, user, dtoOptions);
             }
 
-            var album = item as MusicAlbum;
-            if (album != null)
+            if (item is MusicAlbum album)
             {
                 return GetInstantMixFromAlbum(album, user, dtoOptions);
             }
 
-            var artist = item as MusicArtist;
-            if (artist != null)
+            if (item is MusicArtist artist)
             {
                 return GetInstantMixFromArtist(artist, user, dtoOptions);
             }
 
-            var song = item as Audio;
-            if (song != null)
+            if (item is Audio song)
             {
                 return GetInstantMixFromSong(song, user, dtoOptions);
             }
 
-            var folder = item as Folder;
-            if (folder != null)
+            if (item is Folder folder)
             {
                 return GetInstantMixFromFolder(folder, user, dtoOptions);
             }

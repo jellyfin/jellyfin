@@ -29,18 +29,18 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
-        private readonly ILogger _logger;
+        private readonly ILogger<TmdbSeasonProvider> _logger;
 
         internal static TmdbSeasonProvider Current { get; private set; }
 
-        public TmdbSeasonProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, ILoggerFactory loggerFactory)
+        public TmdbSeasonProvider(IHttpClient httpClient, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, ILogger<TmdbSeasonProvider> logger)
         {
             _httpClient = httpClient;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _jsonSerializer = jsonSerializer;
-            _logger = loggerFactory.CreateLogger(GetType().Name);
+            _logger = logger;
             Current = this;
         }
 
@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var result = new MetadataResult<Season>();
 
-            info.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out string seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string seriesTmdbId);
 
             var seasonNumber = info.IndexNumber;
 
@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     result.Item = new Season();
 
                     // Don't use moviedb season names for now until if/when we have field-level configuration
-                    //result.Item.Name = seasonInfo.name;
+                    // result.Item.Name = seasonInfo.name;
 
                     result.Item.Name = info.Name;
 
@@ -73,23 +73,23 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                     if (seasonInfo.External_Ids.Tvdb_Id > 0)
                     {
-                        result.Item.SetProviderId(MetadataProviders.Tvdb, seasonInfo.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
+                        result.Item.SetProviderId(MetadataProvider.Tvdb, seasonInfo.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
                     }
 
                     var credits = seasonInfo.Credits;
                     if (credits != null)
                     {
-                        //Actors, Directors, Writers - all in People
-                        //actors come from cast
+                        // Actors, Directors, Writers - all in People
+                        // actors come from cast
                         if (credits.Cast != null)
                         {
-                            //foreach (var actor in credits.cast.OrderBy(a => a.order)) result.Item.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                            // foreach (var actor in credits.cast.OrderBy(a => a.order)) result.Item.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
                         }
 
-                        //and the rest from crew
+                        // and the rest from crew
                         if (credits.Crew != null)
                         {
-                            //foreach (var person in credits.crew) result.Item.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                            // foreach (var person in credits.crew) result.Item.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
                         }
                     }
 

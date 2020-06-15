@@ -90,7 +90,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        private readonly ILogger _logger;
+        private readonly ILogger<DashboardService> _logger;
 
         /// <summary>
         /// Gets or sets the HTTP result factory.

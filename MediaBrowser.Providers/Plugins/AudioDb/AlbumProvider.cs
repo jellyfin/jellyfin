@@ -104,11 +104,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 item.Genres = new[] { result.strGenre };
             }
 
-            item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
-            item.SetProviderId(MetadataProviders.AudioDbAlbum, result.idAlbum);
+            item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
+            item.SetProviderId(MetadataProvider.AudioDbAlbum, result.idAlbum);
 
-            item.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
-            item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, result.strMusicBrainzID);
+            item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
+            item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, result.strMusicBrainzID);
 
             string overview = null;
 

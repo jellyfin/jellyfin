@@ -41,7 +41,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var episode = (Controller.Entities.TV.Episode)item;
             var series = episode.Series;
 
-            var seriesId = series != null ? series.GetProviderId(MetadataProviders.Tmdb) : null;
+            var seriesId = series != null ? series.GetProviderId(MetadataProvider.Tmdb) : null;
 
             var list = new List<RemoteImageInfo>();
 

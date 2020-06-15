@@ -231,7 +231,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             //// Not static but transcode cache file exists
-            //if (isTranscodeCached && state.VideoRequest == null)
+            // if (isTranscodeCached && state.VideoRequest == null)
             //{
             //    var contentType = state.GetMimeType(outputPath);
 

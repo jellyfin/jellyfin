@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Years
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Year> source, MetadataResult<Year> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Year> source, MetadataResult<Year> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

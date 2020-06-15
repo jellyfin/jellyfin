@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -326,12 +327,12 @@ namespace MediaBrowser.Api.Sessions
 
                 var user = _userManager.GetUserById(request.ControllableByUserId);
 
-                if (!user.Policy.EnableRemoteControlOfOtherUsers)
+                if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
                 {
                     result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(request.ControllableByUserId));
                 }
 
-                if (!user.Policy.EnableSharedDeviceControl)
+                if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
                 {
                     result = result.Where(i => !i.UserId.Equals(Guid.Empty));
                 }

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Configuration;
@@ -772,7 +773,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 param += " -look_ahead 0";
-
             }
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
                 || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase))
@@ -781,7 +781,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     case "veryslow":
 
-                        param += "-preset slow"; //lossless is only supported on maxwell and newer(2014+)
+                        param += "-preset slow"; // lossless is only supported on maxwell and newer(2014+)
                         break;
 
                     case "slow":
@@ -1012,7 +1012,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (string.IsNullOrEmpty(videoStream.Profile))
                 {
-                    //return false;
+                    // return false;
                 }
 
                 var requestedProfile = requestedProfiles[0];
@@ -1085,7 +1085,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (!videoStream.Level.HasValue)
                 {
-                    //return false;
+                    // return false;
                 }
 
                 if (videoStream.Level.HasValue && videoStream.Level.Value > requestLevel)
@@ -1340,7 +1340,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // wmav2 currently only supports two channel output
                 transcoderChannelLimit = 2;
             }
-
             else if (codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 // libmp3lame currently only supports two channel output
@@ -1475,7 +1474,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     " -map 0:{0}",
                     state.AudioStream.Index);
             }
-
             else
             {
                 args += " -map -0:a";
@@ -1946,11 +1944,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                         break;
                     case Video3DFormat.FullSideBySide:
                         filter = "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
-                        //fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to requestedWidth.
+                        // fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to requestedWidth.
                         break;
                     case Video3DFormat.HalfTopAndBottom:
                         filter = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
-                        //htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth
+                        // htab crop height in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to requestedWidth
                         break;
                     case Video3DFormat.FullTopAndBottom:
                         filter = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale={0}:trunc({0}/dar/2)*2";
@@ -2162,7 +2160,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var user = state.User;
 
                 // If the user doesn't have access to transcoding, then force stream copy, regardless of whether it will be compatible or not
-                if (user != null && !user.Policy.EnableVideoPlaybackTranscoding)
+                if (user != null && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
                 {
                     state.OutputVideoCodec = "copy";
                 }
@@ -2178,7 +2176,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var user = state.User;
 
                 // If the user doesn't have access to transcoding, then force stream copy, regardless of whether it will be compatible or not
-                if (user != null && !user.Policy.EnableAudioPlaybackTranscoding)
+                if (user != null && !user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
                 {
                     state.OutputAudioCodec = "copy";
                 }

@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbSeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbSeriesImageProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
         public TvdbSeriesImageProvider(IHttpClient httpClient, ILogger<TvdbSeriesImageProvider> logger, TvdbClientManager tvdbClientManager)
@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
             var keyTypes = new[] { KeyType.Poster, KeyType.Series, KeyType.Fanart };
-            var tvdbId = Convert.ToInt32(item.GetProviderId(MetadataProviders.Tvdb));
+            var tvdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tvdb));
             foreach (KeyType keyType in keyTypes)
             {
                 var imageQuery = new ImagesQuery

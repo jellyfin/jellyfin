@@ -31,7 +31,7 @@ namespace Emby.Dlna
         private readonly IApplicationPaths _appPaths;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<DlnaManager> _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationHost _appHost;
         private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
@@ -49,7 +49,7 @@ namespace Emby.Dlna
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
-            _logger = loggerFactory.CreateLogger("Dlna");
+            _logger = loggerFactory.CreateLogger<DlnaManager>();
             _jsonSerializer = jsonSerializer;
             _appHost = appHost;
         }
@@ -88,7 +88,6 @@ namespace Emby.Dlna
                     .Select(i => i.Item2)
                     .ToList();
             }
-
         }
 
         public DeviceProfile GetDefaultProfile()
@@ -251,7 +250,7 @@ namespace Emby.Dlna
                         return string.Equals(value, header.Value, StringComparison.OrdinalIgnoreCase);
                     case HeaderMatchType.Substring:
                         var isMatch = value.ToString().IndexOf(header.Value, StringComparison.OrdinalIgnoreCase) != -1;
-                        //_logger.LogDebug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
+                        // _logger.LogDebug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
                         return isMatch;
                     case HeaderMatchType.Regex:
                         return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase);
@@ -566,9 +565,9 @@ namespace Emby.Dlna
                 new Foobar2000Profile(),
                 new SharpSmartTvProfile(),
                 new MediaMonkeyProfile(),
-                //new Windows81Profile(),
-                //new WindowsMediaCenterProfile(),
-                //new WindowsPhoneProfile(),
+                // new Windows81Profile(),
+                // new WindowsMediaCenterProfile(),
+                // new WindowsPhoneProfile(),
                 new DirectTvProfile(),
                 new DishHopperJoeyProfile(),
                 new DefaultProfile(),

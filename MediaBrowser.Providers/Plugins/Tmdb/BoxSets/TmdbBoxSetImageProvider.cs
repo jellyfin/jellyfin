@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
+            var tmdbId = item.GetProviderId(MetadataProvider.Tmdb);
 
             if (!string.IsNullOrEmpty(tmdbId))
             {

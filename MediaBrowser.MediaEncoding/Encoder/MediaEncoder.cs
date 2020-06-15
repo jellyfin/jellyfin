@@ -34,7 +34,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         internal const int DefaultImageExtractionTimeout = 5000;
 
-        private readonly ILogger _logger;
+        private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
@@ -248,14 +248,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public void SetAvailableEncoders(IEnumerable<string> list)
         {
             _encoders = list.ToList();
-            //_logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
+            // _logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
         }
 
         private List<string> _decoders = new List<string>();
         public void SetAvailableDecoders(IEnumerable<string> list)
         {
             _decoders = list.ToList();
-            //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
+            // _logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
         }
 
         private List<string> _hwaccels = new List<string>();
@@ -513,11 +513,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         break;
                     case Video3DFormat.FullSideBySide:
                         vf = "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
-                        //fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to 600.
+                        // fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to 600.
                         break;
                     case Video3DFormat.HalfTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
-                        //htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
+                        // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
                         break;
                     case Video3DFormat.FullTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
@@ -933,7 +933,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         var fileParts = _fileSystem.GetFileNameWithoutExtension(f).Split('_');
 
                         return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
-
                     }).ToList();
 
                     // If this resulted in not getting any vobs, just take them all
