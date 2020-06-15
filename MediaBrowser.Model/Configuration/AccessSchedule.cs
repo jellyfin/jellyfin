@@ -1,3 +1,5 @@
+using Jellyfin.Data.Enums;
+
 #pragma warning disable CS1591
 
 namespace MediaBrowser.Model.Configuration

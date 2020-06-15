@@ -1,8 +1,10 @@
-using System.Threading.Tasks;
-using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Entities;
+#nullable enable
 
-namespace Emby.Server.Implementations.Library
+using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using MediaBrowser.Controller.Authentication;
+
+namespace Jellyfin.Server.Implementations.Users
 {
     /// <summary>
     /// An invalid authentication provider.
@@ -37,12 +39,6 @@ namespace Emby.Server.Implementations.Library
         public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
         {
             // Nothing here
-        }
-
-        /// <inheritdoc />
-        public string GetPasswordHash(User user)
-        {
-            return string.Empty;
         }
 
         /// <inheritdoc />

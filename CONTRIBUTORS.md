@@ -7,6 +7,7 @@
  - [anthonylavado](https://github.com/anthonylavado)
  - [Artiume](https://github.com/Artiume)
  - [AThomsen](https://github.com/AThomsen)
+ - [barronpm](https://github.com/barronpm)
  - [bilde2910](https://github.com/bilde2910)
  - [bfayers](https://github.com/bfayers)
  - [BnMcG](https://github.com/BnMcG)
@@ -130,6 +131,7 @@
  - [XVicarious](https://github.com/XVicarious)
  - [YouKnowBlom](https://github.com/YouKnowBlom)
  - [KristupasSavickas](https://github.com/KristupasSavickas)
+ - [Pusta](https://github.com/pusta)
 
 # Emby Contributors
 

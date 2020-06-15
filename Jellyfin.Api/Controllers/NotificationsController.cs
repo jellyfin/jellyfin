@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Models.NotificationDtos;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Dto;
@@ -115,7 +116,10 @@ namespace Jellyfin.Api.Controllers
                 Description = description,
                 Url = url,
                 Level = level ?? NotificationLevel.Normal,
-                UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray(),
+                UserIds = _userManager.Users
+                    .Where(user => user.HasPermission(PermissionKind.IsAdministrator))
+                    .Select(user => user.Id)
+                    .ToArray(),
                 Date = DateTime.UtcNow,
             };
 
