@@ -274,7 +274,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             versionString = sb.ToString();
-            versionMap = map as IReadOnlyDictionary<string, Version>;
+            versionMap = map;
 
             return sb.Length > 0;
         }
