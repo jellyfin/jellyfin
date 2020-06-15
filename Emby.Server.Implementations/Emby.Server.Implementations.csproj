@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="IPNetwork2" Version="2.4.0.126" />
+    <PackageReference Include="IPNetwork2" Version="2.5.211" />
     <PackageReference Include="Jellyfin.XmlTv" Version="10.4.3" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
