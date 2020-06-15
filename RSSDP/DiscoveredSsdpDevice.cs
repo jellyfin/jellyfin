@@ -55,7 +55,7 @@ namespace Rssdp
         }
 
         /// <summary>
-        /// Returns the headers from the SSDP device response message
+        /// Returns the headers from the SSDP device response message.
         /// </summary>
         public HttpHeaders ResponseHeaders { get; set; }
 

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class BaseItemsByNameService
+    /// Class BaseItemsByNameService.
     /// </summary>
     /// <typeparam name="TItemType">The type of the T item type.</typeparam>
     public abstract class BaseItemsByNameService<TItemType> : BaseApiService
@@ -52,7 +52,7 @@ namespace MediaBrowser.Api.UserLibrary
         protected IUserManager UserManager { get; }
 
         /// <summary>
-        /// Gets the library manager
+        /// Gets the library manager.
         /// </summary>
         protected ILibraryManager LibraryManager { get; }
 
@@ -375,7 +375,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetItemsByName
+    /// Class GetItemsByName.
     /// </summary>
     public class GetItemsByName : BaseItemsRequest, IReturn<QueryResult<BaseItemDto>>
     {

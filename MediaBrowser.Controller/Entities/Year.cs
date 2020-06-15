@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Year
+    /// Class Year.
     /// </summary>
     public class Year : BaseItem, IItemByName
     {
@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
+        /// If the item is a folder, it returns the folder itself.
         /// </summary>
         /// <value>The containing folder path.</value>
         [JsonIgnore]
@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {

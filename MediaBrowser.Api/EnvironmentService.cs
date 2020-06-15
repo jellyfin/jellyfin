@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetDirectoryContents
+    /// Class GetDirectoryContents.
     /// </summary>
     [Route("/Environment/DirectoryContents", "GET", Summary = "Gets the contents of a given directory in the file system")]
     public class GetDirectoryContents : IReturn<List<FileSystemEntryInfo>>
@@ -66,7 +66,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetDrives
+    /// Class GetDrives.
     /// </summary>
     [Route("/Environment/Drives", "GET", Summary = "Gets available drives from the server's file system")]
     public class GetDrives : IReturn<List<FileSystemEntryInfo>>
@@ -74,7 +74,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetNetworkComputers
+    /// Class GetNetworkComputers.
     /// </summary>
     [Route("/Environment/NetworkDevices", "GET", Summary = "Gets a list of devices on the network")]
     public class GetNetworkDevices : IReturn<List<FileSystemEntryInfo>>
@@ -103,7 +103,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class EnvironmentService
+    /// Class EnvironmentService.
     /// </summary>
     [Authenticated(Roles = "Admin", AllowBeforeStartupWizard = true)]
     public class EnvironmentService : BaseApiService
@@ -112,7 +112,7 @@ namespace MediaBrowser.Api
         private const string UncSeparatorString = "\\";
 
         /// <summary>
-        /// The _network manager
+        /// The _network manager.
         /// </summary>
         private readonly INetworkManager _networkManager;
         private readonly IFileSystem _fileSystem;
@@ -220,7 +220,7 @@ namespace MediaBrowser.Api
         }
 
         /// <summary>
-        /// Gets the list that is returned when an empty path is supplied
+        /// Gets the list that is returned when an empty path is supplied.
         /// </summary>
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
         private IEnumerable<FileSystemEntryInfo> GetDrives()

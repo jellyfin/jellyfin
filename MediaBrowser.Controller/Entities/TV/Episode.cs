@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.Entities.TV
 {
     /// <summary>
-    /// Class Episode
+    /// Class Episode.
     /// </summary>
     public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
@@ -101,7 +101,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This Episode's Series Instance
+        /// This Episode's Series Instance.
         /// </summary>
         /// <value>The series.</value>
         [JsonIgnore]

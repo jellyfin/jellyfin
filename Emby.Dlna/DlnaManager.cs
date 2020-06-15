@@ -473,7 +473,7 @@ namespace Emby.Dlna
 
         /// <summary>
         /// Recreates the object using serialization, to ensure it's not a subclass.
-        /// If it's a subclass it may not serlialize properly to xml (different root element tag name)
+        /// If it's a subclass it may not serlialize properly to xml (different root element tag name).
         /// </summary>
         /// <param name="profile"></param>
         /// <returns></returns>

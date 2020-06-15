@@ -46,14 +46,14 @@ namespace MediaBrowser.Api.Sessions
         public string Id { get; set; }
 
         /// <summary>
-        /// Artist, Genre, Studio, Person, or any kind of BaseItem
+        /// Artist, Genre, Studio, Person, or any kind of BaseItem.
         /// </summary>
         /// <value>The type of the item.</value>
         [ApiMember(Name = "ItemType", Description = "The type of item to browse to.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ItemType { get; set; }
 
         /// <summary>
-        /// Artist name, genre name, item Id, etc
+        /// Artist name, genre name, item Id, etc.
         /// </summary>
         /// <value>The item identifier.</value>
         [ApiMember(Name = "ItemId", Description = "The Id of the item.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]

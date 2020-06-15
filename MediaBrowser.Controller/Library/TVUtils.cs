@@ -3,7 +3,7 @@ using System;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class TVUtils
+    /// Class TVUtils.
     /// </summary>
     public static class TVUtils
     {

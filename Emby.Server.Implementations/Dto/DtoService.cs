@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Converts a BaseItem to a DTOBaseItem
+        /// Converts a BaseItem to a DTOBaseItem.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="fields">The fields.</param>
@@ -442,7 +442,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Gets client-side Id of a server-side BaseItem
+        /// Gets client-side Id of a server-side BaseItem.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>System.String.</returns>
@@ -537,7 +537,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Attaches People DTO's to a DTOBaseItem
+        /// Attaches People DTO's to a DTOBaseItem.
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
@@ -725,7 +725,7 @@ namespace Emby.Server.Implementations.Dto
         }
 
         /// <summary>
-        /// Sets simple property values on a DTOBaseItem
+        /// Sets simple property values on a DTOBaseItem.
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>

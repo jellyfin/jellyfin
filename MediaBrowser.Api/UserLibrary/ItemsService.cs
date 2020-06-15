@@ -20,7 +20,7 @@ using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetItems
+    /// Class GetItems.
     /// </summary>
     [Route("/Items", "GET", Summary = "Gets items based on a query.")]
     [Route("/Users/{UserId}/Items", "GET", Summary = "Gets items based on a query.")]
@@ -34,18 +34,18 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class ItemsService
+    /// Class ItemsService.
     /// </summary>
     [Authenticated]
     public class ItemsService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
@@ -496,7 +496,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class DateCreatedComparer
+    /// Class DateCreatedComparer.
     /// </summary>
     public class DateCreatedComparer : IComparer<BaseItem>
     {

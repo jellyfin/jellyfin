@@ -65,13 +65,13 @@ namespace MediaBrowser.Api.Movies
     }
 
     /// <summary>
-    /// Class MoviesService
+    /// Class MoviesService.
     /// </summary>
     [Authenticated]
     public class MoviesService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 

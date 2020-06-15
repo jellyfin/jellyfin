@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Session
 {
     /// <summary>
-    /// Class SessionWebSocketListener
+    /// Class SessionWebSocketListener.
     /// </summary>
     public sealed class SessionWebSocketListener : IWebSocketListener, IDisposable
     {
@@ -34,12 +34,12 @@ namespace Emby.Server.Implementations.Session
         public const float ForceKeepAliveFactor = 0.75f;
 
         /// <summary>
-        /// The _session manager
+        /// The _session manager.
         /// </summary>
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger<SessionWebSocketListener> _logger;
         private readonly ILoggerFactory _loggerFactory;

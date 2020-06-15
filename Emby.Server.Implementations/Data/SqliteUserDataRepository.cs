@@ -235,7 +235,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Persist all user data for the specified user
+        /// Persist all user data for the specified user.
         /// </summary>
         private void PersistAllUserData(long internalUserId, UserItemData[] userDataList, CancellationToken cancellationToken)
         {
@@ -309,7 +309,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Return all user-data associated with the given user
+        /// Return all user-data associated with the given user.
         /// </summary>
         /// <param name="internalUserId"></param>
         /// <returns></returns>
@@ -339,7 +339,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Read a row from the specified reader into the provided userData object
+        /// Read a row from the specified reader into the provided userData object.
         /// </summary>
         /// <param name="reader"></param>
         private UserItemData ReadRow(IReadOnlyList<IResultSetValue> reader)

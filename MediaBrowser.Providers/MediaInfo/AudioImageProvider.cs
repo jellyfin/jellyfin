@@ -17,7 +17,7 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.Providers.MediaInfo
 {
     /// <summary>
-    /// Uses ffmpeg to create video images
+    /// Uses ffmpeg to create video images.
     /// </summary>
     public class AudioImageProvider : IDynamicImageProvider
     {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// An interface for tasks that run after the media library scan
+    /// An interface for tasks that run after the media library scan.
     /// </summary>
     public interface ILibraryPostScanTask
     {

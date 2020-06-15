@@ -4,30 +4,30 @@ using MediaBrowser.Model.Services;
 namespace MediaBrowser.Api.Images
 {
     /// <summary>
-    /// Class ImageRequest
+    /// Class ImageRequest.
     /// </summary>
     public class ImageRequest : DeleteImageRequest
     {
         /// <summary>
-        /// The max width
+        /// The max width.
         /// </summary>
         [ApiMember(Name = "MaxWidth", Description = "The maximum image width to return.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MaxWidth { get; set; }
 
         /// <summary>
-        /// The max height
+        /// The max height.
         /// </summary>
         [ApiMember(Name = "MaxHeight", Description = "The maximum image height to return.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MaxHeight { get; set; }
 
         /// <summary>
-        /// The width
+        /// The width.
         /// </summary>
         [ApiMember(Name = "Width", Description = "The fixed image width to return.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Width { get; set; }
 
         /// <summary>
-        /// The height
+        /// The height.
         /// </summary>
         [ApiMember(Name = "Height", Description = "The fixed image height to return.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Height { get; set; }
@@ -79,7 +79,7 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class DeleteImageRequest
+    /// Class DeleteImageRequest.
     /// </summary>
     public class DeleteImageRequest
     {

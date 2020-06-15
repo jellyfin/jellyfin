@@ -7,7 +7,7 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.Controller.Resolvers
 {
     /// <summary>
-    /// Interface IItemResolver
+    /// Interface IItemResolver.
     /// </summary>
     public interface IItemResolver
     {

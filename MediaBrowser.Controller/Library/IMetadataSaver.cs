@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface IMetadataSaver
+    /// Interface IMetadataSaver.
     /// </summary>
     public interface IMetadataSaver
     {

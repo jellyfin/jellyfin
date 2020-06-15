@@ -515,7 +515,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts ffprobe stream info to our MediaAttachment class
+        /// Converts ffprobe stream info to our MediaAttachment class.
         /// </summary>
         /// <param name="streamInfo">The stream info.</param>
         /// <returns>MediaAttachments.</returns>
@@ -548,7 +548,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts ffprobe stream info to our MediaStream class
+        /// Converts ffprobe stream info to our MediaStream class.
         /// </summary>
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
@@ -767,7 +767,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets a string from an FFProbeResult tags dictionary
+        /// Gets a string from an FFProbeResult tags dictionary.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
@@ -1154,7 +1154,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the studios from the tags collection
+        /// Gets the studios from the tags collection.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <param name="tags">The tags.</param>
@@ -1191,7 +1191,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the genres from the tags collection
+        /// Gets the genres from the tags collection.
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="tags">The tags.</param>

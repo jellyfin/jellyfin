@@ -49,7 +49,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetCriticReviews
+    /// Class GetCriticReviews.
     /// </summary>
     [Route("/Items/{Id}/CriticReviews", "GET", Summary = "Gets critic reviews for an item")]
     [Authenticated]
@@ -70,7 +70,7 @@ namespace MediaBrowser.Api.Library
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -78,7 +78,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeSongs
+    /// Class GetThemeSongs.
     /// </summary>
     [Route("/Items/{Id}/ThemeSongs", "GET", Summary = "Gets theme songs for an item")]
     [Authenticated]
@@ -103,7 +103,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeVideos
+    /// Class GetThemeVideos.
     /// </summary>
     [Route("/Items/{Id}/ThemeVideos", "GET", Summary = "Gets theme videos for an item")]
     [Authenticated]
@@ -128,7 +128,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeVideos
+    /// Class GetThemeVideos.
     /// </summary>
     [Route("/Items/{Id}/ThemeMedia", "GET", Summary = "Gets theme videos and songs for an item")]
     [Authenticated]
@@ -205,7 +205,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetPhyscialPaths
+    /// Class GetPhyscialPaths.
     /// </summary>
     [Route("/Library/PhysicalPaths", "GET", Summary = "Gets a list of physical paths from virtual folders")]
     [Authenticated(Roles = "Admin")]
@@ -312,7 +312,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class LibraryService
+    /// Class LibraryService.
     /// </summary>
     public class LibraryService : BaseApiService
     {

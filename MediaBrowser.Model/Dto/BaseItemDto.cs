@@ -308,7 +308,7 @@ namespace MediaBrowser.Model.Dto
         public int? LocalTrailerCount { get; set; }
 
         /// <summary>
-        /// User data for this item based on the user it's being requested for
+        /// User data for this item based on the user it's being requested for.
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }

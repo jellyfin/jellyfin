@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid"></param>
         /// <param name="name"></param>
@@ -59,7 +59,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -72,7 +72,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -97,7 +97,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for UrlId
+        /// Backing field for UrlId.
         /// </summary>
         protected Guid _UrlId;
         /// <summary>
@@ -110,7 +110,7 @@ namespace Jellyfin.Data.Entities
         partial void GetUrlId(ref Guid result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public Guid UrlId
@@ -133,7 +133,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Name
+        /// Backing field for Name.
         /// </summary>
         protected string _Name;
         /// <summary>
@@ -171,7 +171,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for SourceId
+        /// Backing field for SourceId.
         /// </summary>
         protected string _SourceId;
         /// <summary>
@@ -208,7 +208,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateAdded
+        /// Backing field for DateAdded.
         /// </summary>
         protected DateTime _DateAdded;
         /// <summary>
@@ -221,7 +221,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateAdded(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateAdded
@@ -244,7 +244,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateModified
+        /// Backing field for DateModified.
         /// </summary>
         protected DateTime _DateModified;
         /// <summary>
@@ -257,7 +257,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateModified(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateModified
@@ -280,7 +280,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]

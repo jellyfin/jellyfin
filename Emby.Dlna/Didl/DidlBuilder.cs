@@ -705,7 +705,7 @@ namespace Emby.Dlna.Didl
         }
 
         /// <summary>
-        /// Adds fields used by both items and folders
+        /// Adds fields used by both items and folders.
         /// </summary>
         private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
         {

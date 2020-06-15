@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Configuration
     public class BaseApplicationConfiguration
     {
         /// <summary>
-        /// The number of days we should retain log files
+        /// The number of days we should retain log files.
         /// </summary>
         /// <value>The log file retention days.</value>
         public int LogFileRetentionDays { get; set; }

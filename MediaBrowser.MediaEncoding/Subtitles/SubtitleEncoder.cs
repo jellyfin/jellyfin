@@ -344,7 +344,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
 
         /// <summary>
-        /// The _semaphoreLocks
+        /// The _semaphoreLocks.
         /// </summary>
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
             new ConcurrentDictionary<string, SemaphoreSlim>();

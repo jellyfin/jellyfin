@@ -108,7 +108,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets the name of the output video codec
+        /// Gets the name of the output video codec.
         /// </summary>
         public string GetVideoEncoder(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
@@ -285,7 +285,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Infers the audio codec based on the url
+        /// Infers the audio codec based on the url.
         /// </summary>
         public string InferAudioCodec(string container)
         {
@@ -703,7 +703,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets the video bitrate to specify on the command line
+        /// Gets the video bitrate to specify on the command line.
         /// </summary>
         public string GetVideoQualityParam(EncodingJobInfo state, string videoEncoder, EncodingOptions encodingOptions, string defaultPreset)
         {
@@ -1300,7 +1300,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets the number of audio channels to specify on the command line
+        /// Gets the number of audio channels to specify on the command line.
         /// </summary>
         /// <param name="state">The state.</param>
         /// <param name="audioStream">The audio stream.</param>
@@ -1486,7 +1486,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Determines which stream will be used for playback
+        /// Determines which stream will be used for playback.
         /// </summary>
         /// <param name="allStream">All stream.</param>
         /// <param name="desiredIndex">Index of the desired.</param>
@@ -1961,7 +1961,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// If we're going to put a fixed size on the command line, this will calculate it
+        /// If we're going to put a fixed size on the command line, this will calculate it.
         /// </summary>
         public string GetOutputSizeParam(
             EncodingJobInfo state,
@@ -2505,7 +2505,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets the name of the output video codec
+        /// Gets the name of the output video codec.
         /// </summary>
         protected string GetHardwareAcceleratedVideoDecoder(EncodingJobInfo state, EncodingOptions encodingOptions)
         {

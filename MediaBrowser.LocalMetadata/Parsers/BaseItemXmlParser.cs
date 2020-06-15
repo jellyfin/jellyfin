@@ -14,14 +14,14 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     /// <summary>
-    /// Provides a base class for parsing metadata xml
+    /// Provides a base class for parsing metadata xml.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class BaseItemXmlParser<T>
         where T : BaseItem
     {
         /// <summary>
-        /// The logger
+        /// The logger.
         /// </summary>
         protected ILogger<BaseItemXmlParser<T>> Logger { get; private set; }
         protected IProviderManager ProviderManager { get; private set; }
@@ -39,7 +39,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         }
 
         /// <summary>
-        /// Fetches metadata for an item from one xml file
+        /// Fetches metadata for an item from one xml file.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="metadataFile">The metadata file.</param>
@@ -124,7 +124,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         /// <summary>
-        /// Fetches metadata from one Xml Element
+        /// Fetches metadata from one Xml Element.
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="itemResult">The item result.</param>
@@ -1230,7 +1230,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
 
         /// <summary>
-        /// Used to split names of comma or pipe delimeted genres and people
+        /// Used to split names of comma or pipe delimeted genres and people.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>IEnumerable{System.String}.</returns>

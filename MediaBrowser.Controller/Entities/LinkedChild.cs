@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.Entities
         public string Id { get; set; }
 
         /// <summary>
-        /// Serves as a cache
+        /// Serves as a cache.
         /// </summary>
         public Guid? ItemId { get; set; }
 

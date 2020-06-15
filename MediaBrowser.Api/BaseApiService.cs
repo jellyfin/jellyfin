@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class BaseApiService
+    /// Class BaseApiService.
     /// </summary>
     public abstract class BaseApiService : IService, IRequiresRequest
     {

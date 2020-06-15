@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetConfiguration
+    /// Class GetConfiguration.
     /// </summary>
     [Route("/System/Configuration", "GET", Summary = "Gets application configuration")]
     [Authenticated]
@@ -28,7 +28,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdateConfiguration
+    /// Class UpdateConfiguration.
     /// </summary>
     [Route("/System/Configuration", "POST", Summary = "Updates application configuration")]
     [Authenticated(Roles = "Admin")]
@@ -65,12 +65,12 @@ namespace MediaBrowser.Api
     public class ConfigurationService : BaseApiService
     {
         /// <summary>
-        /// The _json serializer
+        /// The _json serializer.
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// The _configuration manager
+        /// The _configuration manager.
         /// </summary>
         private readonly IServerConfigurationManager _configurationManager;
 

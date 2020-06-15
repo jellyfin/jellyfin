@@ -21,7 +21,7 @@ using Microsoft.Net.Http.Headers;
 namespace MediaBrowser.Api.Playback.Progressive
 {
     /// <summary>
-    /// Class BaseProgressiveStreamingService
+    /// Class BaseProgressiveStreamingService.
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {

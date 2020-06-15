@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Dto
         public string Name { get; set; }
 
         /// <summary>
-        /// Differentiate internet url vs local network
+        /// Differentiate internet url vs local network.
         /// </summary>
         public bool IsRemote { get; set; }
 

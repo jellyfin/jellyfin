@@ -7,7 +7,7 @@ using Jellyfin.Data.Enums;
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
-    /// Class UserConfiguration
+    /// Class UserConfiguration.
     /// </summary>
     public class UserConfiguration
     {
