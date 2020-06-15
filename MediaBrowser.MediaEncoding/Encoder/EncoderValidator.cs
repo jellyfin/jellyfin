@@ -63,16 +63,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
         };
 
         // These are the library versions that corresponds to our minimum ffmpeg version 4.x according to the version table below
-        private static readonly IReadOnlyDictionary<string, double> _ffmpegMinimumLibraryVersions = new Dictionary<string, double>
+        private static readonly IReadOnlyDictionary<string, Version> _ffmpegMinimumLibraryVersions = new Dictionary<string, Version>
         {
-            { "libavutil", 56.14 },
-            { "libavcodec", 58.18 },
-            { "libavformat", 58.12 },
-            { "libavdevice", 58.3 },
-            { "libavfilter", 7.16 },
-            { "libswscale", 5.1 },
-            { "libswresample", 3.1 },
-            { "libpostproc", 55.1 }
+            { "libavutil", new Version(56, 14) },
+            { "libavcodec", new Version(58, 18) },
+            { "libavformat", new Version(58, 12) },
+            { "libavdevice", new Version(58, 3) },
+            { "libavfilter", new Version(7, 16) },
+            { "libswscale", new Version(5, 1) },
+            { "libswresample", new Version(3, 1) },
+            { "libpostproc", new Version(55, 1) }
         };
 
         // This lookup table is to be maintained with the following command line:
@@ -195,7 +195,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                if (!TryGetFFmpegLibraryVersions(output, out string versionString, out IReadOnlyDictionary<string, double> versionMap))
+                if (!TryGetFFmpegLibraryVersions(output, out string versionString, out IReadOnlyDictionary<string, Version> versionMap))
                 {
                     _logger.LogError("No ffmpeg library versions found");
 
@@ -213,7 +213,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        private Version TestMinimumFFmpegLibraryVersions(IReadOnlyDictionary<string, double> versionMap)
+        private Version TestMinimumFFmpegLibraryVersions(IReadOnlyDictionary<string, Version> versionMap)
         {
             var allVersionsValidated = true;
 
@@ -248,11 +248,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="versionString"></param>
         /// <param name="versionMap"></param>
         /// <returns></returns>
-        private static bool TryGetFFmpegLibraryVersions(string output, out string versionString, out IReadOnlyDictionary<string, double> versionMap)
+        private static bool TryGetFFmpegLibraryVersions(string output, out string versionString, out IReadOnlyDictionary<string, Version> versionMap)
         {
             var sb = new StringBuilder(144);
 
-            var map = new Dictionary<string, double>();
+            var map = new Dictionary<string, Version>();
 
             foreach (Match match in Regex.Matches(
                 output,
@@ -267,13 +267,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     .Append(',');
 
                 var str = $"{match.Groups["major"]}.{match.Groups["minor"]}";
-                var versionNumber = double.Parse(str, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
 
-                map.Add(match.Groups["name"].Value, versionNumber);
+                var version = Version.Parse(str);
+
+                map.Add(match.Groups["name"].Value, version);
             }
 
             versionString = sb.ToString();
-            versionMap = map as IReadOnlyDictionary<string, double>;
+            versionMap = map as IReadOnlyDictionary<string, Version>;
 
             return sb.Length > 0;
         }
