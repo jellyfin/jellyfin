@@ -81,6 +81,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     seriesId = FindSeriesId();
                 }
+
                 return seriesId == Guid.Empty ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }

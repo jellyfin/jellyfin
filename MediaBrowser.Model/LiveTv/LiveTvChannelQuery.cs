@@ -64,6 +64,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if [add current program]; otherwise, <c>false</c>.</value>
         public bool AddCurrentProgram { get; set; }
+
         public bool EnableUserData { get; set; }
 
         /// <summary>
@@ -88,6 +89,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>null</c> if [is sports] contains no value, <c>true</c> if [is sports]; otherwise, <c>false</c>.</value>
         public bool? IsSports { get; set; }
+
         public bool? IsSeries { get; set; }
 
         public string[] SortBy { get; set; }

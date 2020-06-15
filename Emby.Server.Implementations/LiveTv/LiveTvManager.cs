@@ -556,6 +556,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.ParentId = channel.Id;
 
             // item.ChannelType = channelType;
@@ -575,6 +576,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.ExternalSeriesId = seriesId;
 
             var isSeries = info.IsSeries || !string.IsNullOrEmpty(info.EpisodeTitle);
@@ -589,30 +591,37 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 tags.Add("Live");
             }
+
             if (info.IsPremiere)
             {
                 tags.Add("Premiere");
             }
+
             if (info.IsNews)
             {
                 tags.Add("News");
             }
+
             if (info.IsSports)
             {
                 tags.Add("Sports");
             }
+
             if (info.IsKids)
             {
                 tags.Add("Kids");
             }
+
             if (info.IsRepeat)
             {
                 tags.Add("Repeat");
             }
+
             if (info.IsMovie)
             {
                 tags.Add("Movie");
             }
+
             if (isSeries)
             {
                 tags.Add("Series");
@@ -635,6 +644,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.IsSeries = isSeries;
 
             item.Name = info.Name;
@@ -652,12 +662,14 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.StartDate = info.StartDate;
 
             if (item.EndDate != info.EndDate)
             {
                 forceUpdate = true;
             }
+
             item.EndDate = info.EndDate;
 
             item.ProductionYear = info.ProductionYear;

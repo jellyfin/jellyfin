@@ -86,6 +86,7 @@ namespace Jellyfin.Data.Entities
                 GetEpisodeNumber(ref value);
                 return (_EpisodeNumber = value);
             }
+
             set
             {
                 int? oldValue = _EpisodeNumber;

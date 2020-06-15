@@ -44,6 +44,7 @@ namespace Emby.Server.Implementations.Sorting
                     // Don't blow up if the item has a bad ProductionYear, just return MinValue
                 }
             }
+
             return DateTime.MinValue;
         }
 

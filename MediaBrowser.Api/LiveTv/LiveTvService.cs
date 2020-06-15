@@ -200,10 +200,15 @@ namespace MediaBrowser.Api.LiveTv
         public bool? EnableUserData { get; set; }
 
         public bool? IsMovie { get; set; }
+
         public bool? IsSeries { get; set; }
+
         public bool? IsKids { get; set; }
+
         public bool? IsSports { get; set; }
+
         public bool? IsNews { get; set; }
+
         public bool? IsLibraryItem { get; set; }
 
         public GetRecordings()
@@ -348,6 +353,7 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "HasAired", Description = "Optional. Filter by programs that have completed airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasAired { get; set; }
+
         public bool? IsAiring { get; set; }
 
         [ApiMember(Name = "MaxStartDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
@@ -407,6 +413,7 @@ namespace MediaBrowser.Api.LiveTv
         public bool? EnableUserData { get; set; }
 
         public string SeriesTimerId { get; set; }
+
         public Guid LibrarySeriesId { get; set; }
 
         /// <summary>
@@ -601,7 +608,9 @@ namespace MediaBrowser.Api.LiveTv
     public class AddListingProvider : ListingsProviderInfo, IReturn<ListingsProviderInfo>
     {
         public bool ValidateLogin { get; set; }
+
         public bool ValidateListings { get; set; }
+
         public string Pw { get; set; }
     }
 
@@ -650,15 +659,20 @@ namespace MediaBrowser.Api.LiveTv
     {
         [ApiMember(Name = "Id", Description = "Provider id", IsRequired = true, DataType = "string", ParameterType = "query")]
         public string ProviderId { get; set; }
+
         public string TunerChannelId { get; set; }
+
         public string ProviderChannelId { get; set; }
     }
 
     public class ChannelMappingOptions
     {
         public List<TunerChannelMapping> TunerChannels { get; set; }
+
         public List<NameIdPair> ProviderChannels { get; set; }
+
         public NameValuePair[] Mappings { get; set; }
+
         public string ProviderName { get; set; }
     }
 
@@ -666,6 +680,7 @@ namespace MediaBrowser.Api.LiveTv
     public class GetLiveStreamFile
     {
         public string Id { get; set; }
+
         public string Container { get; set; }
     }
 

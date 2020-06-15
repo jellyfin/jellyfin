@@ -115,6 +115,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 throw new ArgumentNullException(nameof(item));
             }
+
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
                 throw new ArgumentNullException(nameof(mediaSourceId));
@@ -271,8 +272,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             public string Path { get; set; }
+
             public MediaProtocol Protocol { get; set; }
+
             public string Format { get; set; }
+
             public bool IsExternal { get; set; }
         }
 
@@ -287,10 +291,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return new SrtParser(_logger);
             }
+
             if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
             {
                 return new SsaParser();
             }
+
             if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
             {
                 return new AssParser();
@@ -315,14 +321,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return new JsonWriter();
             }
+
             if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
             {
                 return new SrtWriter();
             }
+
             if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase))
             {
                 return new VttWriter();
             }
+
             if (string.Equals(format, SubtitleFormat.TTML, StringComparison.OrdinalIgnoreCase))
             {
                 return new TtmlWriter();

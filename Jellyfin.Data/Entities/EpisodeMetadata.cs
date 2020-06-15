@@ -85,6 +85,7 @@ namespace Jellyfin.Data.Entities
                 GetOutline(ref value);
                 return (_Outline = value);
             }
+
             set
             {
                 string oldValue = _Outline;
@@ -122,6 +123,7 @@ namespace Jellyfin.Data.Entities
                 GetPlot(ref value);
                 return (_Plot = value);
             }
+
             set
             {
                 string oldValue = _Plot;
@@ -159,6 +161,7 @@ namespace Jellyfin.Data.Entities
                 GetTagline(ref value);
                 return (_Tagline = value);
             }
+
             set
             {
                 string oldValue = _Tagline;

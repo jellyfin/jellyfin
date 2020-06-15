@@ -45,6 +45,7 @@ namespace Rssdp
         public DateTimeOffset AsAt
         {
             get { return _AsAt; }
+
             set
             {
                 if (_AsAt != value)

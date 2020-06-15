@@ -84,6 +84,7 @@ namespace Jellyfin.Data.Entities
                 GetISBN(ref value);
                 return (_ISBN = value);
             }
+
             set
             {
                 long? oldValue = _ISBN;

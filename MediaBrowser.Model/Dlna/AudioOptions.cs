@@ -85,6 +85,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return Profile.MaxStaticMusicBitrate;
                 }
+
                 return Profile.MaxStaticBitrate;
             }
 

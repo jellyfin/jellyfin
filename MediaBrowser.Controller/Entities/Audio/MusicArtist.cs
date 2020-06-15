@@ -135,6 +135,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             list.Add("Artist-" + (item.Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
+
         public override string CreatePresentationUniqueKey()
         {
             return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();

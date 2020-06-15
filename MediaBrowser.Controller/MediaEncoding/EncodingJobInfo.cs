@@ -127,13 +127,19 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string AlbumCoverPath { get; set; }
 
         public string InputAudioSync { get; set; }
+
         public string InputVideoSync { get; set; }
+
         public TransportStreamTimestamp InputTimestamp { get; set; }
 
         public MediaStream AudioStream { get; set; }
+
         public string[] SupportedAudioCodecs { get; set; }
+
         public string[] SupportedVideoCodecs { get; set; }
+
         public string InputContainer { get; set; }
+
         public IsoType? IsoType { get; set; }
 
         public BaseEncodingJobOptions BaseRequest { get; set; }
@@ -293,6 +299,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public bool IsVideoRequest { get; set; }
+
         public TranscodingJobType TranscodingType { get; set; }
 
         public EncodingJobInfo(TranscodingJobType jobType)
@@ -672,6 +679,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public IProgress<double> Progress { get; set; }
+
         public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             Progress.Report(percentComplete.Value);

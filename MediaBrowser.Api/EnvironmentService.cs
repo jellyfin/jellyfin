@@ -50,6 +50,7 @@ namespace MediaBrowser.Api
         public string Path { get; set; }
 
         public bool ValidateWriteable { get; set; }
+
         public bool? IsFile { get; set; }
     }
 

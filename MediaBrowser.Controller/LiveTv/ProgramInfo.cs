@@ -199,6 +199,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string Etag { get; set; }
 
         public Dictionary<string, string> ProviderIds { get; set; }
+
         public Dictionary<string, string> SeriesProviderIds { get; set; }
 
         public ProgramInfo()

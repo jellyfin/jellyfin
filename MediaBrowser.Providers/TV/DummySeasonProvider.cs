@@ -72,6 +72,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     seasons = series.Children.OfType<Season>().ToList();
                 }
+
                 var existingSeason = seasons
                     .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
 

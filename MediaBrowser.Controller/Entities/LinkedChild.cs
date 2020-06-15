@@ -9,7 +9,9 @@ namespace MediaBrowser.Controller.Entities
     public class LinkedChild
     {
         public string Path { get; set; }
+
         public LinkedChildType Type { get; set; }
+
         public string LibraryItemId { get; set; }
 
         [JsonIgnore]
@@ -63,6 +65,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 return _fileSystem.AreEqual(x.Path, y.Path);
             }
+
             return false;
         }
 

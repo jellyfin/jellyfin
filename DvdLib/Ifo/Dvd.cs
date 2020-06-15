@@ -125,6 +125,7 @@ namespace DvdLib.Ifo
                             if (titleNum + 1 < numTitles && vtsFs.Position == (baseAddr + offsets[titleNum + 1])) break;
                             chapNum++;
                         }
+
                         while (vtsFs.Position < (baseAddr + endaddr));
                     }
 

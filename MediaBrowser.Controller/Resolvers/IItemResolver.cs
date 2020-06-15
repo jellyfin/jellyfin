@@ -35,6 +35,7 @@ namespace MediaBrowser.Controller.Resolvers
     public class MultiItemResolverResult
     {
         public List<BaseItem> Items { get; set; }
+
         public List<FileSystemMetadata> ExtraFiles { get; set; }
 
         public MultiItemResolverResult()

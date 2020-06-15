@@ -205,22 +205,27 @@ namespace Emby.Server.Implementations.Library
             {
                 return MediaProtocol.Rtsp;
             }
+
             if (path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtmp;
             }
+
             if (path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Http;
             }
+
             if (path.StartsWith("rtp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtp;
             }
+
             if (path.StartsWith("ftp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Ftp;
             }
+
             if (path.StartsWith("udp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Udp;

@@ -93,6 +93,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
             }
+
             songKey += Name;
 
             if (!string.IsNullOrEmpty(Album))
@@ -117,6 +118,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return UnratedItem.Music;
             }
+
             return base.GetBlockUnratedType();
         }
 

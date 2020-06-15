@@ -129,6 +129,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 return false;
             }
+
             if (!item.IsFileProtocol)
             {
                 return false;

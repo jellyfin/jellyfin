@@ -30,6 +30,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         public DayOfWeek[] AirDays { get; set; }
+
         public string AirTime { get; set; }
 
         [JsonIgnore]
@@ -150,6 +151,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 query.IncludeItemTypes = new[] { typeof(Episode).Name };
             }
+
             query.IsVirtualItem = false;
             query.Limit = 0;
             var totalRecordCount = LibraryManager.GetCount(query);

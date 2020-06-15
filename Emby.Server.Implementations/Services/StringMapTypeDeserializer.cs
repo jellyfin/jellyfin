@@ -22,7 +22,9 @@ namespace Emby.Server.Implementations.Services
             }
 
             public Action<object, object> PropertySetFn { get; private set; }
+
             public Func<string, object> PropertyParseStringFn { get; private set; }
+
             public Type PropertyType { get; private set; }
         }
 

@@ -126,10 +126,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (this is UserView)
             {
                 return false;
             }
+
             return true;
         }
 
@@ -156,6 +158,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 item.DateCreated = DateTime.UtcNow;
             }
+
             if (item.DateModified == DateTime.MinValue)
             {
                 item.DateModified = DateTime.UtcNow;
@@ -501,6 +504,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
             }
+
             await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
         }
 
@@ -939,6 +943,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
             }
+
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
                 items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
@@ -989,18 +994,22 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (queryParent is Series)
             {
                 return false;
             }
+
             if (queryParent is Season)
             {
                 return false;
             }
+
             if (queryParent is MusicAlbum)
             {
                 return false;
             }
+
             if (queryParent is MusicArtist)
             {
                 return false;
@@ -1030,22 +1039,27 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (request.IsFavoriteOrLiked.HasValue)
             {
                 return false;
             }
+
             if (request.IsLiked.HasValue)
             {
                 return false;
             }
+
             if (request.IsPlayed.HasValue)
             {
                 return false;
             }
+
             if (request.IsResumable.HasValue)
             {
                 return false;
             }
+
             if (request.IsFolder.HasValue)
             {
                 return false;
@@ -1391,6 +1405,7 @@ namespace MediaBrowser.Controller.Entities
                     list.Add(child);
                 }
             }
+
             return list;
         }
 
@@ -1413,6 +1428,7 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -1665,22 +1681,27 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+
                 if (this is UserView)
                 {
                     return false;
                 }
+
                 if (this is UserRootFolder)
                 {
                     return false;
                 }
+
                 if (this is Channel)
                 {
                     return false;
                 }
+
                 if (SourceType != SourceType.Library)
                 {
                     return false;
                 }
+
                 var iItemByName = this as IItemByName;
                 if (iItemByName != null)
                 {

@@ -77,6 +77,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -116,6 +117,7 @@ namespace Jellyfin.Data.Entities
                 GetPath(ref value);
                 return (_Path = value);
             }
+
             set
             {
                 string oldValue = _Path;
@@ -154,6 +156,7 @@ namespace Jellyfin.Data.Entities
                 GetNetworkPath(ref value);
                 return (_NetworkPath = value);
             }
+
             set
             {
                 string oldValue = _NetworkPath;

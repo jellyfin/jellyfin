@@ -67,6 +67,7 @@ namespace MediaBrowser.Controller.Library
                     message = string.Format("{0} took {1} seconds.",
                         _name, ((float)_stopwatch.ElapsedMilliseconds / 1000).ToString("#0.000"));
                 }
+
                 _logger.LogInformation(message);
             }
         }

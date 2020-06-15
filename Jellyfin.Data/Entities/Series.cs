@@ -67,6 +67,7 @@ namespace Jellyfin.Data.Entities
                 GetAirsDayOfWeek(ref value);
                 return (_AirsDayOfWeek = value);
             }
+
             set
             {
                 DayOfWeek? oldValue = _AirsDayOfWeek;
@@ -102,6 +103,7 @@ namespace Jellyfin.Data.Entities
                 GetAirsTime(ref value);
                 return (_AirsTime = value);
             }
+
             set
             {
                 DateTimeOffset? oldValue = _AirsTime;
@@ -134,6 +136,7 @@ namespace Jellyfin.Data.Entities
                 GetFirstAired(ref value);
                 return (_FirstAired = value);
             }
+
             set
             {
                 DateTimeOffset? oldValue = _FirstAired;

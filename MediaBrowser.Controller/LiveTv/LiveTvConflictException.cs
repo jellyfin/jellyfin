@@ -10,6 +10,7 @@ namespace MediaBrowser.Controller.LiveTv
         public LiveTvConflictException()
         {
         }
+
         public LiveTvConflictException(string message)
             : base(message)
         {

@@ -210,6 +210,7 @@ namespace MediaBrowser.Providers.Manager
                 LibraryManager.UpdatePeople(baseItem, result.People);
                 SavePeopleMetadata(result.People, libraryOptions, cancellationToken);
             }
+
             result.Item.UpdateToRepository(reason, cancellationToken);
         }
 
@@ -324,6 +325,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     return true;
                 }
+
                 var folder = item as Folder;
                 if (folder != null)
                 {
@@ -422,6 +424,7 @@ namespace MediaBrowser.Providers.Manager
                         {
                             dateLastMediaAdded = childDateCreated;
                         }
+
                         any = true;
                     }
                 }
@@ -726,6 +729,7 @@ namespace MediaBrowser.Providers.Manager
                         {
                             hasLocalMetadata = true;
                         }
+
                         break;
                     }
 
@@ -874,6 +878,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 return "en";
             }
+
             return language;
         }
 
@@ -924,7 +929,9 @@ namespace MediaBrowser.Providers.Manager
     public class RefreshResult
     {
         public ItemUpdateType UpdateType { get; set; }
+
         public string ErrorMessage { get; set; }
+
         public int Failures { get; set; }
     }
 }

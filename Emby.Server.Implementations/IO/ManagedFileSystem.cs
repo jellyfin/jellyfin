@@ -628,6 +628,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         return false;
                     }
+
                     return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 });
             }
@@ -682,6 +683,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         return false;
                     }
+
                     return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 });
             }

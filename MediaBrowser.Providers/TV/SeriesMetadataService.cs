@@ -67,10 +67,12 @@ namespace MediaBrowser.Providers.TV
             {
                 return false;
             }
+
             if (!item.ProductionYear.HasValue)
             {
                 return false;
             }
+
             return base.IsFullLocalMetadata(item);
         }
 

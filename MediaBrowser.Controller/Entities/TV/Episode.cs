@@ -34,7 +34,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <value>The aired season.</value>
         public int? AirsBeforeSeasonNumber { get; set; }
+
         public int? AirsAfterSeasonNumber { get; set; }
+
         public int? AirsBeforeEpisodeNumber { get; set; }
 
         /// <summary>
@@ -94,6 +96,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     take--;
                 }
+
                 list.InsertRange(0, seriesUserDataKeys.Take(take).Select(i => i + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000")));
             }
 
@@ -114,6 +117,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     seriesId = FindSeriesId();
                 }
+
                 return !seriesId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seriesId) as Series) : null;
             }
         }
@@ -128,6 +132,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     seasonId = FindSeasonId();
                 }
+
                 return !seasonId.Equals(Guid.Empty) ? (LibraryManager.GetItemById(seasonId) as Season) : null;
             }
         }
@@ -160,6 +165,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     return "Season " + ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
+
                 return "Season Unknown";
             }
 

@@ -277,6 +277,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.EpisodeTitle = dto.Name;
                     dto.Name = dto.SeriesName;
                 }
+
                 liveTvManager.AddInfoToRecordingDto(item, dto, activeRecording, user);
             }
 
@@ -292,6 +293,7 @@ namespace Emby.Server.Implementations.Dto
                 {
                     continue;
                 }
+
                 var containers = container.Split(new[] { ',' });
                 if (containers.Length < 2)
                 {
@@ -456,6 +458,7 @@ namespace Emby.Server.Implementations.Dto
         {
             dto.SeriesName = item.SeriesName;
         }
+
         private static void SetPhotoProperties(BaseItemDto dto, Photo item)
         {
             dto.CameraMake = item.CameraMake;
@@ -554,22 +557,27 @@ namespace Emby.Server.Implementations.Dto
                     {
                         return 0;
                     }
+
                     if (i.IsType(PersonType.GuestStar))
                     {
                         return 1;
                     }
+
                     if (i.IsType(PersonType.Director))
                     {
                         return 2;
                     }
+
                     if (i.IsType(PersonType.Writer))
                     {
                         return 3;
                     }
+
                     if (i.IsType(PersonType.Producer))
                     {
                         return 4;
                     }
+
                     if (i.IsType(PersonType.Composer))
                     {
                         return 4;
@@ -1346,6 +1354,7 @@ namespace Emby.Server.Implementations.Dto
                         dto.ParentLogoImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
+
                 if (artLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && dto.ParentArtItemId == null)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Art);
@@ -1356,6 +1365,7 @@ namespace Emby.Server.Implementations.Dto
                         dto.ParentArtImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
+
                 if (thumbLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && (dto.ParentThumbItemId == null || parent is Series) && !(parent is ICollectionFolder) && !(parent is UserView))
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Thumb);
@@ -1366,6 +1376,7 @@ namespace Emby.Server.Implementations.Dto
                         dto.ParentThumbImageTag = GetTagAndFillBlurhash(dto, parent, image);
                     }
                 }
+
                 if (backdropLimit > 0 && !((dto.BackdropImageTags != null && dto.BackdropImageTags.Length > 0) || (dto.ParentBackdropImageTags != null && dto.ParentBackdropImageTags.Length > 0)))
                 {
                     var images = allImages.Where(i => i.Type == ImageType.Backdrop).Take(backdropLimit).ToList();

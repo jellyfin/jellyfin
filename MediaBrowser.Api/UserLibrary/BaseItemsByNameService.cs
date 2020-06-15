@@ -210,6 +210,7 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     SetItemCounts(dto, i.Item2);
                 }
+
                 return dto;
             });
 

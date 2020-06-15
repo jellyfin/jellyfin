@@ -76,6 +76,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -115,6 +116,7 @@ namespace Jellyfin.Data.Entities
                 GetTitle(ref value);
                 return (_Title = value);
             }
+
             set
             {
                 string oldValue = _Title;
@@ -152,6 +154,7 @@ namespace Jellyfin.Data.Entities
                 GetOriginalTitle(ref value);
                 return (_OriginalTitle = value);
             }
+
             set
             {
                 string oldValue = _OriginalTitle;
@@ -189,6 +192,7 @@ namespace Jellyfin.Data.Entities
                 GetSortTitle(ref value);
                 return (_SortTitle = value);
             }
+
             set
             {
                 string oldValue = _SortTitle;
@@ -229,6 +233,7 @@ namespace Jellyfin.Data.Entities
                 GetLanguage(ref value);
                 return (_Language = value);
             }
+
             set
             {
                 string oldValue = _Language;
@@ -261,6 +266,7 @@ namespace Jellyfin.Data.Entities
                 GetReleaseDate(ref value);
                 return (_ReleaseDate = value);
             }
+
             set
             {
                 DateTimeOffset? oldValue = _ReleaseDate;
@@ -297,6 +303,7 @@ namespace Jellyfin.Data.Entities
                 GetDateAdded(ref value);
                 return (_DateAdded = value);
             }
+
             internal set
             {
                 DateTime oldValue = _DateAdded;
@@ -333,6 +340,7 @@ namespace Jellyfin.Data.Entities
                 GetDateModified(ref value);
                 return (_DateModified = value);
             }
+
             internal set
             {
                 DateTime oldValue = _DateModified;

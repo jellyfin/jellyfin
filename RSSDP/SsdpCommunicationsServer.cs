@@ -311,6 +311,7 @@ namespace Rssdp.Infrastructure
         public bool IsShared
         {
             get { return _IsShared; }
+
             set { _IsShared = value; }
         }
 

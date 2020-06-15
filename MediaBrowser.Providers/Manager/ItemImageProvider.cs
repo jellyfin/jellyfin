@@ -58,6 +58,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 ClearImages(item, ImageType.Backdrop);
             }
+
             if (refreshOptions.IsReplacingImage(ImageType.Screenshot))
             {
                 ClearImages(item, ImageType.Screenshot);
@@ -472,6 +473,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         continue;
                     }
+
                     break;
                 }
             }
@@ -585,6 +587,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         continue;
                     }
+
                     break;
                 }
             }

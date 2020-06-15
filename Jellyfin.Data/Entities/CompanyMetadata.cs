@@ -85,6 +85,7 @@ namespace Jellyfin.Data.Entities
                 GetDescription(ref value);
                 return (_Description = value);
             }
+
             set
             {
                 string oldValue = _Description;
@@ -122,6 +123,7 @@ namespace Jellyfin.Data.Entities
                 GetHeadquarters(ref value);
                 return (_Headquarters = value);
             }
+
             set
             {
                 string oldValue = _Headquarters;
@@ -159,6 +161,7 @@ namespace Jellyfin.Data.Entities
                 GetCountry(ref value);
                 return (_Country = value);
             }
+
             set
             {
                 string oldValue = _Country;
@@ -196,6 +199,7 @@ namespace Jellyfin.Data.Entities
                 GetHomepage(ref value);
                 return (_Homepage = value);
             }
+
             set
             {
                 string oldValue = _Homepage;

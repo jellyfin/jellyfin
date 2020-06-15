@@ -56,6 +56,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return LibraryManager.GetArtist(name, options);
             }
+
             return null;
         }
 

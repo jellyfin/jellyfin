@@ -73,6 +73,7 @@ namespace MediaBrowser.Api
 
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
+
         public bool EnableTotalRecordCount { get; set; }
 
         public GetNextUpEpisodes()

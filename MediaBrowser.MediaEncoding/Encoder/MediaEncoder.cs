@@ -229,6 +229,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 return inJellyfinPath;
             }
+
             var values = Environment.GetEnvironmentVariable("PATH");
 
             foreach (var path in values.Split(Path.PathSeparator))
