@@ -32,6 +32,7 @@ namespace Emby.Dlna.Eventing
         {
             var subscription = GetSubscription(subscriptionId, false);
 
+            // Subscription could have been null.
             if (subscription != null)
             {
                 subscription.TimeoutSeconds = ParseTimeout(requestedTimeoutString) ?? 300;
