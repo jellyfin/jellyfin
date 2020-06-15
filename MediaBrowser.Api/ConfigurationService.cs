@@ -17,7 +17,6 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class GetConfiguration : IReturn<ServerConfiguration>
     {
-
     }
 
     [Route("/System/Configuration/{Key}", "GET", Summary = "Gets a named configuration")]
@@ -51,7 +50,6 @@ namespace MediaBrowser.Api
     [Authenticated(Roles = "Admin")]
     public class GetDefaultMetadataOptions : IReturn<MetadataOptions>
     {
-
     }
 
     [Route("/System/MediaEncoder/Path", "POST", Summary = "Updates the path to the media encoder")]

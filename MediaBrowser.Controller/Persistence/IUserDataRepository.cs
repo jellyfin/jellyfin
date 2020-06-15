@@ -44,6 +44,5 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         void SaveAllUserData(long userId, UserItemData[] userData, CancellationToken cancellationToken);
-
     }
 }

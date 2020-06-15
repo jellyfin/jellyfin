@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private const int TunerDiscoveryDurationMs = 3000;
 
         private readonly IServerApplicationHost _appHost;
-        private readonly ILogger _logger;
+        private readonly ILogger<EmbyTV> _logger;
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;
         private readonly IJsonSerializer _jsonSerializer;
@@ -1547,7 +1547,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         IsFolder = false,
                         Recursive = true,
                         DtoOptions = new DtoOptions(true)
-
                     })
                     .Where(i => i.IsFileProtocol && File.Exists(i.Path))
                     .Skip(seriesTimer.KeepUpTo - 1)

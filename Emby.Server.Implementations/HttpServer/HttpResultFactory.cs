@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpResultFactory> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IStreamHelper _streamHelper;
@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.HttpServer
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _streamHelper = streamHelper;
-            _logger = loggerfactory.CreateLogger("HttpResultFactory");
+            _logger = loggerfactory.CreateLogger<HttpResultFactory>();
         }
 
         /// <summary>
@@ -580,7 +580,6 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (NotSupportedException)
                 {
-
                 }
             }
 

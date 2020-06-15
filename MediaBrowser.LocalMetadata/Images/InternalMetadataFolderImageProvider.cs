@@ -13,7 +13,7 @@ namespace MediaBrowser.LocalMetadata.Images
     {
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<InternalMetadataFolderImageProvider> _logger;
 
         public InternalMetadataFolderImageProvider(
             IServerConfigurationManager config,

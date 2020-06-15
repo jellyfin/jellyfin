@@ -82,7 +82,6 @@ namespace MediaBrowser.Api.Movies
                 _authContext)
             {
                 Request = Request,
-
             }.Get(getItems);
         }
     }

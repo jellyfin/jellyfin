@@ -57,6 +57,5 @@ namespace Rssdp.Infrastructure
         internal const string SsdpByeByeNotification = "ssdp:byebye";
 
         internal const int UdpResendCount = 3;
-
     }
 }

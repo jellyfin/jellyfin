@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<TmdbMovieProvider> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IApplicationHost _appHost;
 
@@ -149,7 +149,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 Url = string.Format(TmdbConfigUrl, TmdbUtils.ApiKey),
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (Stream json = response.Content)
@@ -344,7 +343,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     AcceptHeader = TmdbUtils.AcceptHeader,
                     CacheMode = cacheMode,
                     CacheLength = cacheLength
-
                 }).ConfigureAwait(false))
                 {
                     using (var json = response.Content)
@@ -389,7 +387,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     AcceptHeader = TmdbUtils.AcceptHeader,
                     CacheMode = cacheMode,
                     CacheLength = cacheLength
-
                 }).ConfigureAwait(false))
                 {
                     using (var json = response.Content)

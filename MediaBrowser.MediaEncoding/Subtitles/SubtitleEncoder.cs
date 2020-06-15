@@ -25,7 +25,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     public class SubtitleEncoder : ISubtitleEncoder
     {
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<SubtitleEncoder> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
@@ -640,7 +640,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
                 catch (FileNotFoundException)
                 {
-
                 }
                 catch (IOException ex)
                 {

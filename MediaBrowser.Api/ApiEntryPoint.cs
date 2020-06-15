@@ -31,7 +31,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The logger.
         /// </summary>
-        private ILogger _logger;
+        private ILogger<ApiEntryPoint> _logger;
 
         /// <summary>
         /// The configuration manager.

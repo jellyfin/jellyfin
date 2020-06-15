@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// The _logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<ChapterImagesTask> _logger;
 
         /// <summary>
         /// The _library manager.
@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             IFileSystem fileSystem,
             ILocalizationManager localization)
         {
-            _logger = loggerFactory.CreateLogger(GetType().Name);
+            _logger = loggerFactory.CreateLogger<ChapterImagesTask>();
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _appPaths = appPaths;
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (ObjectDisposedException)
                 {
-                    //TODO Investigate and properly fix.
+                    // TODO Investigate and properly fix.
                     break;
                 }
             }

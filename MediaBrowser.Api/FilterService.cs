@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -149,7 +150,6 @@ namespace MediaBrowser.Api
                 {
                     Name = i.Item1.Name,
                     Id = i.Item1.Id
-
                 }).ToArray();
             }
             else
@@ -158,7 +158,6 @@ namespace MediaBrowser.Api
                 {
                     Name = i.Item1.Name,
                     Id = i.Item1.Id
-
                 }).ToArray();
             }
 

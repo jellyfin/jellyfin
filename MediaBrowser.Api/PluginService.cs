@@ -75,7 +75,7 @@ namespace MediaBrowser.Api
         public Stream RequestStream { get; set; }
     }
 
-    //TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
+    // TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
     // delete all these registration endpoints. They are only kept for compatibility.
     [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
     [Authenticated]

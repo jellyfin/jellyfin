@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -28,7 +29,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryChangedNotifier> _logger;
 
         /// <summary>
         /// The library changed sync lock.
@@ -131,7 +132,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch
                 {
-
                 }
             }
         }

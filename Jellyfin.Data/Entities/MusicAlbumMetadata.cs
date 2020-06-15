@@ -181,7 +181,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Company_Labels_Id")]
         public virtual ICollection<Company> Labels { get; protected set; }
-
     }
 }
 

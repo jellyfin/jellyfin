@@ -69,7 +69,7 @@ namespace MediaBrowser.LocalMetadata
 
         public string Name => XmlProviderUtils.Name;
 
-        //After Nfo
+        // After Nfo
         public virtual int Order => 1;
     }
 

@@ -104,7 +104,6 @@ namespace Jellyfin.Data.Entities
         public virtual ICollection<Release> Releases { get; protected set; }
         [ForeignKey("EpisodeMetadata_EpisodeMetadata_Id")]
         public virtual ICollection<EpisodeMetadata> EpisodeMetadata { get; protected set; }
-
     }
 }
 

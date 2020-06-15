@@ -130,10 +130,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
 
-                //if (header.Length > 0)
-                //subtitle.Header = header.ToString();
+                // if (header.Length > 0)
+                // subtitle.Header = header.ToString();
 
-                //subtitle.Renumber(1);
+                // subtitle.Renumber(1);
             }
             trackInfo.TrackEvents = trackEvents.ToArray();
             return trackInfo;
@@ -261,7 +261,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         text += "</font>";
                     }
                 }
-
             }
 
             text = text.Replace(@"{\i1}", "<i>");

@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.MediaInfo
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<FFProbeProvider> _logger;
         private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
