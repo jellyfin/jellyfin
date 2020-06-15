@@ -99,10 +99,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="description">The description of the notification.</param>
         /// <param name="url">The URL of the notification.</param>
         /// <param name="level">The level of the notification.</param>
-        /// <response code="200">Notification sent.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
+        /// <response code="204">Notification sent.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("Admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CreateAdminNotification(
             [FromQuery] string name,
             [FromQuery] string description,
@@ -121,7 +121,7 @@ namespace Jellyfin.Api.Controllers
 
             _notificationManager.SendNotification(notification, CancellationToken.None);
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -129,15 +129,15 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
-        /// <response code="200">Notifications set as read.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
+        /// <response code="204">Notifications set as read.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("{UserID}/Read")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SetRead(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -145,15 +145,15 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
-        /// <response code="200">Notifications set as unread.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
+        /// <response code="204">Notifications set as unread.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("{UserID}/Unread")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SetUnread(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
-            return Ok();
+            return NoContent();
         }
     }
 }
