@@ -1,0 +1,88 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	
+	<PropertyGroup>		
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>		
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="..\LICENSE.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <CoreCompileDependsOn>SetBuildVersion;$(CoreCompileDependsOn)</CoreCompileDependsOn>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/Configuration/*" />
+  </ItemGroup>
+
+  <!-- Code Analyzers-->
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
+    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <CodeAnalysisRuleSet>jellyfin.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.5" />
+    <PackageReference Include="prometheus-net" Version="3.5.0" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="3.5.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="1.4.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.Graylog" Version="2.1.2" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.0.3" />
+    <PackageReference Include="SQLitePCLRaw.provider.sqlite3.netstandard11" Version="1.1.14" />
+  </ItemGroup>
+
+  <Target Name="SetAssemblyVersion" BeforeTargets="GetAssemblyVersion" Condition="'$(RestoreSuccess)' == 'true' And '$(Configuration)' == 'Release' " DependsOnTargets="GitVersion">
+		<PropertyGroup>
+			<MonoNatFileVersion>2.0.1</MonoNatFileVersion>
+			<MonoNatInformationalVersion>$(MonoNatFileVersion)-$(GitBranch)+$(GitCommit)</MonoNatInformationalVersion>
+
+			<AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(MonoNatABIVersion)</AssemblyVersion>
+			<FileVersion Condition="'$(FileVersion)' == ''">$(MonoNatFileVersion)</FileVersion>
+			<InformationalVersion Condition="'$(InformationalVersion)' == ''">$(MonoNatInformationalVersion)</InformationalVersion>
+		</PropertyGroup>
+	</Target>
+
+	<!-- NuGet related properties. We need to run this as part of the 'PackDependsOn' dependencies
+			to ensure our GitInfo related properties have been calculated correctly. -->
+	<Target Name="SetPackProperties" DependsOnTargets="SetAssemblyVersion">
+		<PropertyGroup>
+			<Authors>Alan McGovern, Ben Motmans, Nicholas Terry</Authors>
+			<PackageDescription>Mono.Nat is a modern and full-featured library which supports both the UPNP (Universal Plug and Play) and NAT-PMP (Port Mapping Protocol) protocols for port forwarding.</PackageDescription>
+			<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+			<PackageProjectUrl>https://github.com/mono/Mono.Nat</PackageProjectUrl>
+			<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+			<PackageVersion>$(MonoNatFileVersion)</PackageVersion>
+			<PackageTags>upnp;natpmp;nat-pmp;port;fowarding</PackageTags>
+
+			<IncludeSource>true</IncludeSource>
+			<IncludeSymbols>true</IncludeSymbols>
+			<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+			<RepositoryType>git</RepositoryType>
+			<RepositoryBranch>$(GitBranch)</RepositoryBranch>
+			<RepositoryCommit>$(GitSha)</RepositoryCommit>
+			<RepositoryUrl>https://github.com/mono/Mono.Nat</RepositoryUrl>
+
+			<Copyright>Alan McGovern, Ben Motmans, Nicholas Terry</Copyright>
+		</PropertyGroup>
+	</Target>
+
+</Project>

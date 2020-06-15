@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             _logger.LogInformation("Starting NAT discovery");
-
+            NatUtility.Logger = _logger;
             NatUtility.DeviceFound += OnNatUtilityDeviceFound;
             NatUtility.StartDiscovery();
 

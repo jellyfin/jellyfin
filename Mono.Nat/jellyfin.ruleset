@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Rules for Jellyfin.Server" Description="Code analysis rules for Jellyfin.Server.csproj" ToolsVersion="14.0">
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <!-- disable warning SA1202: 'public' members must come before 'private' members -->
+    <Rule Id="SA1202" Action="Info" />
+    <!-- disable warning SA1204: Static members must appear before non-static members -->
+    <Rule Id="SA1204" Action="Info" />
+    <!-- disable warning SA1404: Code analysis suppression should have justification -->
+    <Rule Id="SA1404" Action="Info" />
+
+    <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
+    <Rule Id="SA1009" Action="None" />
+    <!-- disable warning SA1101: Prefix local calls with 'this.' -->
+    <Rule Id="SA1101" Action="None" />
+    <!-- disable warning SA1108: Block statements should not contain embedded comments -->
+    <Rule Id="SA1108" Action="None" />
+    <!-- disable warning SA1128:: Put constructor initializers on their own line -->
+    <Rule Id="SA1128" Action="None" />
+    <!-- disable warning SA1130: Use lambda syntax -->
+    <Rule Id="SA1130" Action="None" />
+    <!-- disable warning SA1200: 'using' directive must appear within a namespace declaration -->
+    <Rule Id="SA1200" Action="None" />
+    <!-- disable warning SA1309: Fields must not begin with an underscore -->
+    <Rule Id="SA1309" Action="None" />
+    <!-- disable warning SA1413: Use trailing comma in multi-line initializers -->
+    <Rule Id="SA1413" Action="None" />
+    <!-- disable warning SA1512: Single-line comments must not be followed by blank line -->
+    <Rule Id="SA1512" Action="None" />
+    <!-- disable warning SA1515: Single-line comment should be preceded by blank line -->
+    <Rule Id="SA1515" Action="None" />
+    <!-- disable warning SA1600: Elements should be documented -->
+    <Rule Id="SA1600" Action="None" />
+    <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
+    <Rule Id="SA1633" Action="None" />
+  </Rules>
+
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- disable warning CA1031: Do not catch general exception types -->
+    <Rule Id="CA1031" Action="Info" />
+    <!-- disable warning CA1032: Implement standard exception constructors -->
+    <Rule Id="CA1032" Action="Info" />
+    <!-- disable warning CA1062: Validate arguments of public methods -->
+    <Rule Id="CA1062" Action="Info" />
+    <!-- disable warning CA1716: Identifiers should not match keywords -->
+    <Rule Id="CA1716" Action="Info" />
+    <!-- disable warning CA1720: Identifiers should not contain type names -->
+    <Rule Id="CA1720" Action="Info" />
+    <!-- disable warning CA1812: internal class that is apparently never instantiated.
+        If so, remove the code from the assembly.
+        If this class is intended to contain only static members, make it static -->
+    <Rule Id="CA1812" Action="Info" />
+    <!-- disable warning CA1822: Member does not access instance data and can be marked as static -->
+    <Rule Id="CA1822" Action="Info" />
+    <!-- disable warning CA2000: Dispose objects before losing scope -->
+    <Rule Id="CA2000" Action="Info" />
+
+    <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
+    <Rule Id="CA1054" Action="None" />
+    <!-- disable warning CA1055: URI return values should not be strings -->
+    <Rule Id="CA1055" Action="None" />
+    <!-- disable warning CA1056: URI properties should not be strings -->
+    <Rule Id="CA1056" Action="None" />
+    <!-- disable warning CA1303: Do not pass literals as localized parameters -->
+    <Rule Id="CA1303" Action="None" />
+    <!-- disable warning CA1308: Normalize strings to uppercase -->
+    <Rule Id="CA1308" Action="None" />
+  </Rules>
+</RuleSet>
