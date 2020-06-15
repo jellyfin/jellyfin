@@ -217,7 +217,6 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
         [ForeignKey("Company_Networks_Id")]
         public virtual ICollection<Company> Networks { get; protected set; }
-
     }
 }
 

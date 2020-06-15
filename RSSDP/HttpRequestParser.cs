@@ -85,6 +85,5 @@ namespace Rssdp.Infrastructure
         }
 
         #endregion
-
     }
 }

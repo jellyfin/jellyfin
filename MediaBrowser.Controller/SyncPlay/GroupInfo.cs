@@ -14,7 +14,7 @@ namespace MediaBrowser.Controller.SyncPlay
     public class GroupInfo
     {
         /// <summary>
-        /// Default ping value used for sessions.
+        /// Gets the default ping value used for sessions.
         /// </summary>
         public long DefaulPing { get; } = 500;
 
@@ -31,13 +31,13 @@ namespace MediaBrowser.Controller.SyncPlay
         public BaseItem PlayingItem { get; set; }
 
         /// <summary>
-        /// Gets or sets whether playback is paused.
+        /// Gets or sets a value indicating whether playback is paused.
         /// </summary>
         /// <value>Playback is paused.</value>
         public bool IsPaused { get; set; }
 
         /// <summary>
-        /// Gets or sets the position ticks.
+        /// Gets or sets a value indicating whether there are position ticks.
         /// </summary>
         /// <value>The position ticks.</value>
         public long PositionTicks { get; set; }

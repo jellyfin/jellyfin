@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
-                    //if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
+                    // if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
                     //{
                     //    return new Series
                     //    {

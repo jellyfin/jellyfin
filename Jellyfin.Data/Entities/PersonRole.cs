@@ -203,7 +203,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("MetadataProviderId_Sources_Id")]
         public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
-
     }
 }
 

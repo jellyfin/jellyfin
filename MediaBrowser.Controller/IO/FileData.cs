@@ -77,7 +77,7 @@ namespace MediaBrowser.Controller.IO
 
                         if (string.IsNullOrEmpty(newPath))
                         {
-                            //invalid shortcut - could be old or target could just be unavailable
+                            // invalid shortcut - could be old or target could just be unavailable
                             logger.LogWarning("Encountered invalid shortcut: " + fullName);
                             continue;
                         }
@@ -118,7 +118,6 @@ namespace MediaBrowser.Controller.IO
             }
             return returnResult;
         }
-
     }
 
 }

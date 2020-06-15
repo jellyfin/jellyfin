@@ -94,7 +94,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             _localization.GetLocalizedString("NameSeasonNumber"),
                             seasonNumber,
                             args.GetLibraryOptions().PreferredMetadataLanguage);
-
                 }
 
                 return season;

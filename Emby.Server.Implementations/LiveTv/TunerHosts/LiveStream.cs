@@ -220,11 +220,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             catch (IOException)
             {
-
             }
             catch (ArgumentException)
             {
-
             }
             catch (Exception ex)
             {

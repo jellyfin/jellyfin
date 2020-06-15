@@ -59,8 +59,8 @@ namespace Emby.Server.Implementations.Services
 
                 ServiceExecGeneral.CreateServiceRunnersFor(requestType, actions);
 
-                //var returnMarker = GetTypeWithGenericTypeDefinitionOf(requestType, typeof(IReturn<>));
-                //var responseType = returnMarker != null ?
+                // var returnMarker = GetTypeWithGenericTypeDefinitionOf(requestType, typeof(IReturn<>));
+                // var responseType = returnMarker != null ?
                 //      GetGenericArguments(returnMarker)[0]
                 //    : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
                 //      mi.ReturnType
@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.Services
                 serviceRequiresContext.Request = req;
             }
 
-            //Executes the service and returns the result
+            // Executes the service and returns the result
             return ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName());
         }
     }

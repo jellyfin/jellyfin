@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     var programsInfo = new List<ProgramInfo>();
                     foreach (ScheduleDirect.Program schedule in dailySchedules.SelectMany(d => d.programs))
                     {
-                        //_logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
+                        // _logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
                         //              " which corresponds to channel " + channelNumber + " and program id " +
                         //              schedule.programID + " which says it has images? " +
                         //              programDict[schedule.programID].hasImageArtwork);
@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                                 programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, true, WideAspect);
 
-                                //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
+                                // programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-LO", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-LOT", false);
@@ -276,7 +276,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 CommunityRating = null,
                 EpisodeTitle = episodeTitle,
                 Audio = audioType,
-                //IsNew = programInfo.@new ?? false,
+                // IsNew = programInfo.@new ?? false,
                 IsRepeat = programInfo.@new == null,
                 IsSeries = string.Equals(details.entityType, "episode", StringComparison.OrdinalIgnoreCase),
                 ImageUrl = details.primaryImage,
@@ -701,7 +701,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 CancellationToken = cancellationToken,
                 LogErrorResponseBody = true
             };
-            //_logger.LogInformation("Obtaining token from Schedules Direct from addres: " + httpOptions.Url + " with body " +
+            // _logger.LogInformation("Obtaining token from Schedules Direct from addres: " + httpOptions.Url + " with body " +
             // httpOptions.RequestContent);
 
             using (var response = await Post(httpOptions, false, null).ConfigureAwait(false))
@@ -1218,7 +1218,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 public string programID { get; set; }
                 public List<ImageData> data { get; set; }
             }
-
         }
     }
 }

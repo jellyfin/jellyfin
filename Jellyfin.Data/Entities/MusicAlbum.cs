@@ -62,7 +62,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Track_Tracks_Id")]
         public virtual ICollection<Track> Tracks { get; protected set; }
-
     }
 }
 

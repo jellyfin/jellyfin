@@ -71,7 +71,6 @@ namespace Emby.Server.Implementations.Images
                     new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending)
                 },
                 IncludeItemTypes = includeItemTypes
-
             });
         }
 

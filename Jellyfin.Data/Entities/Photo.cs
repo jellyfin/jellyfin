@@ -62,7 +62,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Release_Releases_Id")]
         public virtual ICollection<Release> Releases { get; protected set; }
-
     }
 }
 

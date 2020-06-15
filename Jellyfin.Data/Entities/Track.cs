@@ -106,7 +106,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("TrackMetadata_TrackMetadata_Id")]
         public virtual ICollection<TrackMetadata> TrackMetadata { get; protected set; }
-
     }
 }
 

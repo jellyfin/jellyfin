@@ -156,6 +156,7 @@ namespace MediaBrowser.Controller.Net
                     await connection.SendAsync(
                         new WebSocketMessage<TReturnDataType>
                         {
+                            MessageId = Guid.NewGuid(),
                             MessageType = Name,
                             Data = data
                         },
@@ -213,7 +214,7 @@ namespace MediaBrowser.Controller.Net
             }
             catch (ObjectDisposedException)
             {
-                //TODO Investigate and properly fix.
+                // TODO Investigate and properly fix.
             }
 
             lock (_activeConnections)

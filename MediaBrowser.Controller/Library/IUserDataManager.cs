@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
@@ -27,7 +28,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="reason">The reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
-        void SaveUserData(User userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
+        void SaveUserData(User user, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken);
 
         UserItemData GetUserData(User user, BaseItem item);
 
