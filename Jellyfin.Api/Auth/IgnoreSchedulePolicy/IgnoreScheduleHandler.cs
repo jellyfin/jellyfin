@@ -1,24 +1,23 @@
-using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
+﻿using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Api.Auth.RequiresElevationPolicy
+namespace Jellyfin.Api.Auth.IgnoreSchedulePolicy
 {
     /// <summary>
-    /// Authorization handler for requiring elevated privileges.
+    /// Escape schedule controls handler.
     /// </summary>
-    public class RequiresElevationHandler : BaseAuthorizationHandler<RequiresElevationRequirement>
+    public class IgnoreScheduleHandler : BaseAuthorizationHandler<IgnoreScheduleRequirement>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RequiresElevationHandler"/> class.
+        /// Initializes a new instance of the <see cref="IgnoreScheduleHandler"/> class.
         /// </summary>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
-        public RequiresElevationHandler(
+        public IgnoreScheduleHandler(
             IUserManager userManager,
             INetworkManager networkManager,
             IHttpContextAccessor httpContextAccessor)
@@ -27,18 +26,16 @@ namespace Jellyfin.Api.Auth.RequiresElevationPolicy
         }
 
         /// <inheritdoc />
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RequiresElevationRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IgnoreScheduleRequirement requirement)
         {
-            var validated = ValidateClaims(context.User);
-            if (validated && context.User.IsInRole(UserRoles.Administrator))
-            {
-                context.Succeed(requirement);
-            }
-            else
+            var validated = ValidateClaims(context.User, ignoreSchedule: true);
+            if (!validated)
             {
                 context.Fail();
+                return Task.CompletedTask;
             }
 
+            context.Succeed(requirement);
             return Task.CompletedTask;
         }
     }

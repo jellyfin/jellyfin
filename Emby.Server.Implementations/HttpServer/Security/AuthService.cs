@@ -39,9 +39,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _networkManager = networkManager;
         }
 
-        public void Authenticate(IRequest request, IAuthenticationAttributes authAttribtues)
+        public void Authenticate(IRequest request, IAuthenticationAttributes authAttributes)
         {
-            ValidateUser(request, authAttribtues);
+            ValidateUser(request, authAttributes);
         }
 
         public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
@@ -51,17 +51,33 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return user;
         }
 
-        private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
+        public AuthorizationInfo Authenticate(HttpRequest request)
+        {
+            var auth = _authorizationContext.GetAuthorizationInfo(request);
+            if (auth?.User == null)
+            {
+                return null;
+            }
+
+            if (auth.User.HasPermission(PermissionKind.IsDisabled))
+            {
+                throw new SecurityException("User account has been disabled.");
+            }
+
+            return auth;
+        }
+
+        private User ValidateUser(IRequest request, IAuthenticationAttributes authAttributes)
         {
             // This code is executed before the service
             var auth = _authorizationContext.GetAuthorizationInfo(request);
 
-            if (!IsExemptFromAuthenticationToken(authAttribtues, request))
+            if (!IsExemptFromAuthenticationToken(authAttributes, request))
             {
                 ValidateSecurityToken(request, auth.Token);
             }
 
-            if (authAttribtues.AllowLocalOnly && !request.IsLocal)
+            if (authAttributes.AllowLocalOnly && !request.IsLocal)
             {
                 throw new SecurityException("Operation not found.");
             }
@@ -75,14 +91,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (user != null)
             {
-                ValidateUserAccess(user, request, authAttribtues, auth);
+                ValidateUserAccess(user, request, authAttributes);
             }
 
             var info = GetTokenInfo(request);
 
-            if (!IsExemptFromRoles(auth, authAttribtues, request, info))
+            if (!IsExemptFromRoles(auth, authAttributes, request, info))
             {
-                var roles = authAttribtues.GetRoles();
+                var roles = authAttributes.GetRoles();
 
                 ValidateRoles(roles, user);
             }
@@ -106,8 +122,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private void ValidateUserAccess(
             User user,
             IRequest request,
-            IAuthenticationAttributes authAttributes,
-            AuthorizationInfo auth)
+            IAuthenticationAttributes authAttributes)
         {
             if (user.HasPermission(PermissionKind.IsDisabled))
             {
@@ -230,16 +245,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 throw new AuthenticationException("Access token is invalid or expired.");
             }
-
-            //if (!string.IsNullOrEmpty(info.UserId))
-            //{
-            //    var user = _userManager.GetUserById(info.UserId);
-
-            //    if (user == null || user.Configuration.IsDisabled)
-            //    {
-            //        throw new SecurityException("User account has been disabled.");
-            //    }
-            //}
         }
     }
 }
