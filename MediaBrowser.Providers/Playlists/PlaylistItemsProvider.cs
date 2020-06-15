@@ -95,7 +95,7 @@ namespace MediaBrowser.Providers.Playlists
 
         private IEnumerable<LinkedChild> GetM3u8Items(Stream stream)
         {
-            var content = new M3u8Content();
+            var content = new M3uContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild
