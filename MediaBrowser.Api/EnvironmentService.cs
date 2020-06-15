@@ -100,7 +100,6 @@ namespace MediaBrowser.Api
     [Route("/Environment/DefaultDirectoryBrowser", "GET", Summary = "Gets the parent path of a given path")]
     public class GetDefaultDirectoryBrowser : IReturn<DefaultDirectoryBrowserInfo>
     {
-
     }
 
     /// <summary>

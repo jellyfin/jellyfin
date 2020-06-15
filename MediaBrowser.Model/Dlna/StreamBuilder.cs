@@ -109,7 +109,6 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 switch (i.PlayMethod)
@@ -121,7 +120,6 @@ namespace MediaBrowser.Model.Dlna
                     default:
                         return 1;
                 }
-
             }).ThenBy(i =>
             {
                 switch (i.MediaSource.Protocol)
@@ -131,7 +129,6 @@ namespace MediaBrowser.Model.Dlna
                     default:
                         return 1;
                 }
-
             }).ThenBy(i =>
             {
                 if (maxBitrate > 0)
@@ -143,7 +140,6 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 return 0;
-
             }).ThenBy(streams.IndexOf);
         }
 
@@ -781,7 +777,7 @@ namespace MediaBrowser.Model.Dlna
 
                             if (!ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                             {
-                                //LogConditionFailure(options.Profile, "VideoCodecProfile.ApplyConditions", applyCondition, item);
+                                // LogConditionFailure(options.Profile, "VideoCodecProfile.ApplyConditions", applyCondition, item);
                                 applyConditions = false;
                                 break;
                             }
@@ -825,7 +821,7 @@ namespace MediaBrowser.Model.Dlna
 
                             if (!ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, inputAudioBitrate, inputAudioSampleRate, inputAudioBitDepth, audioProfile, isSecondaryAudio))
                             {
-                                //LogConditionFailure(options.Profile, "VideoCodecProfile.ApplyConditions", applyCondition, item);
+                                // LogConditionFailure(options.Profile, "VideoCodecProfile.ApplyConditions", applyCondition, item);
                                 applyConditions = false;
                                 break;
                             }
@@ -1046,7 +1042,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         if (!ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                         {
-                            //LogConditionFailure(profile, "VideoCodecProfile.ApplyConditions", applyCondition, mediaSource);
+                            // LogConditionFailure(profile, "VideoCodecProfile.ApplyConditions", applyCondition, mediaSource);
                             applyConditions = false;
                             break;
                         }
@@ -1092,7 +1088,7 @@ namespace MediaBrowser.Model.Dlna
                         {
                             if (!ConditionProcessor.IsVideoAudioConditionSatisfied(applyCondition, audioChannels, audioBitrate, audioSampleRate, audioBitDepth, audioProfile, isSecondaryAudio))
                             {
-                                //LogConditionFailure(profile, "VideoAudioCodecProfile.ApplyConditions", applyCondition, mediaSource);
+                                // LogConditionFailure(profile, "VideoAudioCodecProfile.ApplyConditions", applyCondition, mediaSource);
                                 applyConditions = false;
                                 break;
                             }

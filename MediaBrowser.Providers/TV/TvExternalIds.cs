@@ -33,7 +33,6 @@ namespace MediaBrowser.Providers.TV
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Series;
-
     }
 
     public class TvdbSeasonExternalId : IExternalId

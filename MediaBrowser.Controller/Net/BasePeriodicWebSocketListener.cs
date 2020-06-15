@@ -214,7 +214,7 @@ namespace MediaBrowser.Controller.Net
             }
             catch (ObjectDisposedException)
             {
-                //TODO Investigate and properly fix.
+                // TODO Investigate and properly fix.
             }
 
             lock (_activeConnections)

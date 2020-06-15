@@ -406,7 +406,6 @@ namespace Emby.Server.Implementations.Dto
                     dto.DateLastMediaAdded = folder.DateLastMediaAdded;
                 }
             }
-
             else
             {
                 if (options.EnableUserData)
@@ -594,7 +593,6 @@ namespace Emby.Server.Implementations.Dto
                         _logger.LogError(ex, "Error getting person {Name}", c);
                         return null;
                     }
-
                 }).Where(i => i != null)
                 .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(x => x.First())
@@ -947,7 +945,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.AlbumPrimaryImageTag = GetTagAndFillBlurhash(dto, albumParent, ImageType.Primary);
                 }
 
-                //if (options.ContainsField(ItemFields.MediaSourceCount))
+                // if (options.ContainsField(ItemFields.MediaSourceCount))
                 //{
                 // Songs always have one
                 //}
@@ -957,13 +955,13 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.Artists = hasArtist.Artists;
 
-                //var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
+                // var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
                 //{
                 //    EnableTotalRecordCount = false,
                 //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
                 //});
 
-                //dto.ArtistItems = artistItems.Items
+                // dto.ArtistItems = artistItems.Items
                 //    .Select(i =>
                 //    {
                 //        var artist = i.Item1;
@@ -976,7 +974,7 @@ namespace Emby.Server.Implementations.Dto
                 //    .ToList();
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
-                //var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
+                // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
                 dto.ArtistItems = hasArtist.Artists
                     //.Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
@@ -1001,7 +999,6 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-
                     }).Where(i => i != null).ToArray();
             }
 
@@ -1010,13 +1007,13 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
 
-                //var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
+                // var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
                 //{
                 //    EnableTotalRecordCount = false,
                 //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
                 //});
 
-                //dto.AlbumArtists = artistItems.Items
+                // dto.AlbumArtists = artistItems.Items
                 //    .Select(i =>
                 //    {
                 //        var artist = i.Item1;
@@ -1052,7 +1049,6 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-
                     }).Where(i => i != null).ToArray();
             }
 
@@ -1166,7 +1162,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // this block will add the series poster for episodes without a poster
                 // TODO maybe remove the if statement entirely
-                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
                     if (episodeSeries != null)
@@ -1212,7 +1208,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // this block will add the series poster for seasons without a poster
                 // TODO maybe remove the if statement entirely
-                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     series = series ?? season.Series;
                     if (series != null)

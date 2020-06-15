@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.Networking
 
                 foreach (var subnet_Match in subnets)
                 {
-                    //logger.LogDebug("subnet_Match:" + subnet_Match);
+                    // logger.LogDebug("subnet_Match:" + subnet_Match);
 
                     if (endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase))
                     {

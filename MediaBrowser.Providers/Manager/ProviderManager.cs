@@ -831,7 +831,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            //_logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
+            // _logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }
@@ -905,7 +905,6 @@ namespace MediaBrowser.Providers.Manager
                         i.UrlFormatString,
                         value)
                 };
-
             }).Where(i => i != null).Concat(item.GetRelatedUrls());
         }
 

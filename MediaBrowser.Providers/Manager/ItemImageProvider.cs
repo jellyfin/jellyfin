@@ -335,7 +335,6 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (FileNotFoundException)
                 {
-
                 }
             }
 
@@ -506,7 +505,7 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            //if (!item.IsSaveLocalMetadataEnabled())
+            // if (!item.IsSaveLocalMetadataEnabled())
             //{
             //    return true;
             //}
@@ -529,7 +528,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 Path = path,
                 Type = imageType
-
             }, newIndex);
         }
 

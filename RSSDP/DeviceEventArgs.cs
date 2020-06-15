@@ -41,6 +41,5 @@ namespace Rssdp
         }
 
         #endregion
-
     }
 }

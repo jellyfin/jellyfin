@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.Devices
         {
             IEnumerable<AuthenticationInfo> sessions = _authRepo.Get(new AuthenticationInfoQuery
             {
-                //UserId = query.UserId
+                // UserId = query.UserId
                 HasUser = true
             }).Items;
 

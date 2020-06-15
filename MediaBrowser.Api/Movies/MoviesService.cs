@@ -161,8 +161,8 @@ namespace MediaBrowser.Api.Movies
                 IncludeItemTypes = new[]
                 {
                     typeof(Movie).Name,
-                    //typeof(Trailer).Name,
-                    //typeof(LiveTvProgram).Name
+                    // typeof(Trailer).Name,
+                    // typeof(LiveTvProgram).Name
                 },
                 // IsMovie = true
                 OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
@@ -194,7 +194,6 @@ namespace MediaBrowser.Api.Movies
                 ParentId = parentIdGuid,
                 Recursive = true,
                 DtoOptions = dtoOptions
-
             });
 
             var mostRecentMovies = recentlyPlayedMovies.Take(6).ToList();
@@ -279,7 +278,6 @@ namespace MediaBrowser.Api.Movies
                     IsMovie = true,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
-
                 }).GroupBy(i => i.GetProviderId(MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
@@ -320,7 +318,6 @@ namespace MediaBrowser.Api.Movies
                     IsMovie = true,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
-
                 }).GroupBy(i => i.GetProviderId(MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
@@ -360,7 +357,6 @@ namespace MediaBrowser.Api.Movies
                     SimilarTo = item,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
-
                 });
 
                 if (similar.Count > 0)

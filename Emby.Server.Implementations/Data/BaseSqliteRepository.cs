@@ -162,7 +162,6 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 return false;
-
             }, ReadTransactionMode);
         }
 

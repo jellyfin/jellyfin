@@ -158,7 +158,6 @@ namespace MediaBrowser.Model.Dlna
 
                     return new MediaFormatProfile[] { ValueOf(string.Format("VC1_TS_HD_DTS{0}", suffix)) };
                 }
-
             }
             else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
             {

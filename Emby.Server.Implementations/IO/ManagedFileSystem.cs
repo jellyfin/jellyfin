@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.IO
             {
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
-                //if (!result.IsDirectory)
+                // if (!result.IsDirectory)
                 //{
                 //    result.IsHidden = (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
                 //}

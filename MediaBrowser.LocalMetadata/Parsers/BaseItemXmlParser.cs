@@ -78,10 +78,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            //Additional Mappings
+            // Additional Mappings
             _validProviderIds.Add("IMDB", "Imdb");
 
-            //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
+            // Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
             Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
         }
 
@@ -255,7 +255,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 }
 
                                 return null;
-
                             }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
                         }
 
@@ -680,7 +679,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         }
 
                         break;
-
                     }
             }
         }
@@ -1260,6 +1258,5 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             return val.Split(separators, options);
         }
-
     }
 }

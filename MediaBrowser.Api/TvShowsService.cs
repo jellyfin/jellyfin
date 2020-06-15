@@ -306,7 +306,6 @@ namespace MediaBrowser.Api
                 ParentId = parentIdGuid,
                 Recursive = true,
                 DtoOptions = options
-
             });
 
             var returnItems = _dtoService.GetBaseItemDtos(itemsResult, options, user);
@@ -390,7 +389,6 @@ namespace MediaBrowser.Api
                 IsMissing = request.IsMissing,
                 IsSpecialSeason = request.IsSpecialSeason,
                 AdjacentTo = request.AdjacentTo
-
             });
 
             var dtoOptions = GetDtoOptions(_authContext, request);

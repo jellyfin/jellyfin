@@ -153,7 +153,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Season_Seasons_Id")]
         public virtual ICollection<Season> Seasons { get; protected set; }
-
     }
 }
 

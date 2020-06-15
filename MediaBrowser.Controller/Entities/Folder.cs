@@ -213,8 +213,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         protected virtual List<BaseItem> LoadChildren()
         {
-            //logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
-            //just load our children from the repo - the library will be validated and maintained in other processes
+            // logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
+            // just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
         }
 
@@ -500,7 +500,6 @@ namespace MediaBrowser.Controller.Entities
             if (series != null)
             {
                 await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-
             }
             await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
         }
@@ -615,7 +614,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     EnableImages = false
                 }
-
             });
 
             return result.TotalRecordCount;
@@ -1223,7 +1221,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException(nameof(user));
             }
 
-            //the true root should return our users root folder children
+            // the true root should return our users root folder children
             if (IsPhysicalRoot)
             {
                 return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren);
@@ -1629,7 +1627,6 @@ namespace MediaBrowser.Controller.Entities
                 Recursive = true,
                 IsFolder = false,
                 EnableTotalRecordCount = false
-
             });
 
             // Sweep through recursively and update status
@@ -1647,7 +1644,6 @@ namespace MediaBrowser.Controller.Entities
                 IsFolder = false,
                 IsVirtualItem = false,
                 EnableTotalRecordCount = false
-
             });
 
             return itemsResult

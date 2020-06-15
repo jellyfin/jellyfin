@@ -297,19 +297,15 @@ namespace Emby.Server.Implementations.SyncPlay
             if (!filterItemId.Equals(Guid.Empty))
             {
                 return _groups.Values.Where(
-                    group => group.GetPlayingItemId().Equals(filterItemId) && HasAccessToItem(user, group.GetPlayingItemId())
-                ).Select(
-                    group => group.GetInfo()
-                ).ToList();
+                    group => group.GetPlayingItemId().Equals(filterItemId) && HasAccessToItem(user, group.GetPlayingItemId())).Select(
+                    group => group.GetInfo()).ToList();
             }
             // Otherwise show all available groups
             else
             {
                 return _groups.Values.Where(
-                    group => HasAccessToItem(user, group.GetPlayingItemId())
-                ).Select(
-                    group => group.GetInfo()
-                ).ToList();
+                    group => HasAccessToItem(user, group.GetPlayingItemId())).Select(
+                    group => group.GetInfo()).ToList();
             }
         }
 

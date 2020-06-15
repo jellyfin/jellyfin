@@ -111,7 +111,6 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
                 {
                     targetResult.People = sourceResult.People;
-
                 }
                 else if (targetResult.People != null && sourceResult.People != null)
                 {

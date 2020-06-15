@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Sorting
 
                 if (val != 0)
                 {
-                    //return val;
+                    // return val;
                 }
             }
 

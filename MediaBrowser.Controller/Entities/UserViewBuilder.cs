@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            //if (query.IncludeItemTypes != null &&
+            // if (query.IncludeItemTypes != null &&
             //    query.IncludeItemTypes.Length == 1 &&
             //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
             //{
@@ -270,7 +270,6 @@ namespace MediaBrowser.Controller.Entities
                         _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
-
                 })
                 .Where(i => i != null)
                 .Select(i => GetUserViewWithName(i.Name, SpecialFolder.MovieGenre, i.SortName, parent));
@@ -347,7 +346,6 @@ namespace MediaBrowser.Controller.Entities
                 Limit = query.Limit,
                 StartIndex = query.StartIndex,
                 UserId = query.User.Id
-
             }, parentFolders, query.DtoOptions);
 
             return result;
@@ -384,7 +382,6 @@ namespace MediaBrowser.Controller.Entities
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 Recursive = true,
                 EnableTotalRecordCount = false
-
             }).Items
                 .SelectMany(i => i.Genres)
                 .DistinctNames()
@@ -399,7 +396,6 @@ namespace MediaBrowser.Controller.Entities
                         _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
-
                 })
                 .Where(i => i != null)
                 .Select(i => GetUserViewWithName(i.Name, SpecialFolder.TvGenre, i.SortName, parent));
@@ -424,7 +420,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return new QueryResult<BaseItem>
             {
-                Items = result.Items, //TODO Fix The co-variant conversion between T[] and BaseItem[], this can generate runtime issues if T is not BaseItem.
+                Items = result.Items, // TODO Fix The co-variant conversion between T[] and BaseItem[], this can generate runtime issues if T is not BaseItem.
                 TotalRecordCount = result.TotalRecordCount
             };
         }

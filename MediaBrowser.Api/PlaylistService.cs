@@ -161,7 +161,6 @@ namespace MediaBrowser.Api
                 ItemIdList = GetGuids(request.Ids),
                 UserId = request.UserId,
                 MediaType = request.MediaType
-
             }).ConfigureAwait(false);
 
             return ToOptimizedResult(result);

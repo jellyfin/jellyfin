@@ -85,7 +85,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         private void ProcessResult(MusicArtist item, Artist result, string preferredLanguage)
         {
-            //item.HomePageUrl = result.strWebsite;
+            // item.HomePageUrl = result.strWebsite;
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {

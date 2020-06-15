@@ -413,7 +413,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
-
             }
             else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
             {
@@ -425,7 +424,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                         Type = PersonType.Writer
                     });
                 }
-
             }
             else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
             {
@@ -562,7 +560,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (string.Equals(streamInfo.CodecName, "mov_text", StringComparison.OrdinalIgnoreCase))
             {
                 // Edit: but these are also sometimes subtitles?
-                //return null;
+                // return null;
             }
 
             var stream = new MediaStream
@@ -684,7 +682,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     stream.BitDepth = streamInfo.BitsPerRawSample;
                 }
 
-                //stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
+                // stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
 
@@ -953,8 +951,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 audio.People = peoples.ToArray();
             }
 
-            //var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
-            //if (!string.IsNullOrWhiteSpace(conductor))
+            // var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
+            // if (!string.IsNullOrWhiteSpace(conductor))
             //{
             //    foreach (var person in Split(conductor, false))
             //    {
@@ -962,8 +960,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             //    }
             //}
 
-            //var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
-            //if (!string.IsNullOrWhiteSpace(lyricist))
+            // var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+            // if (!string.IsNullOrWhiteSpace(lyricist))
             //{
             //    foreach (var person in Split(lyricist, false))
             //    {
@@ -1028,7 +1026,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 audio.AlbumArtists = SplitArtists(albumArtist, _nameDelimiters, true)
                     .DistinctNames()
                     .ToArray();
-
             }
 
             if (audio.AlbumArtists.Length == 0)
