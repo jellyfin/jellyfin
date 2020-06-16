@@ -101,7 +101,7 @@ namespace Jellyfin.Server.Implementations
 
         /// <summary>
         /// Repository for global::Jellyfin.Data.Entities.RatingSource - This is the entity to
-        /// store review ratings, not age ratings
+        /// store review ratings, not age ratings.
         /// </summary>
         public virtual DbSet<RatingSource> RatingSources { get; set; }
 

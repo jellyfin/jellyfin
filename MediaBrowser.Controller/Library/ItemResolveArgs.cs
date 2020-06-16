@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Library
     public class ItemResolveArgs : EventArgs
     {
         /// <summary>
-        /// The _app paths
+        /// The _app paths.
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 

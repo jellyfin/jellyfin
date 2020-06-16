@@ -11,7 +11,7 @@ using MediaBrowser.Model.System;
 namespace MediaBrowser.Controller.MediaEncoding
 {
     /// <summary>
-    /// Interface IMediaEncoder
+    /// Interface IMediaEncoder.
     /// </summary>
     public interface IMediaEncoder : ITranscoderSupport
     {

@@ -7,7 +7,7 @@ using MediaBrowser.Model.Configuration;
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Used to hold information about a user's list of configured virtual folders
+    /// Used to hold information about a user's list of configured virtual folders.
     /// </summary>
     public class VirtualFolderInfo
     {

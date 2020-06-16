@@ -20,7 +20,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
         public Series(Guid urlid, DateTime dateadded)
@@ -47,7 +47,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for AirsDayOfWeek
+        /// Backing field for AirsDayOfWeek.
         /// </summary>
         protected DayOfWeek? _AirsDayOfWeek;
         /// <summary>
@@ -80,7 +80,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for AirsTime
+        /// Backing field for AirsTime.
         /// </summary>
         protected DateTimeOffset? _AirsTime;
         /// <summary>
@@ -93,7 +93,7 @@ namespace Jellyfin.Data.Entities
         partial void GetAirsTime(ref DateTimeOffset? result);
 
         /// <summary>
-        /// The time the show airs, ignore the date portion
+        /// The time the show airs, ignore the date portion.
         /// </summary>
         public DateTimeOffset? AirsTime
         {
@@ -116,7 +116,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for FirstAired
+        /// Backing field for FirstAired.
         /// </summary>
         protected DateTimeOffset? _FirstAired;
         /// <summary>

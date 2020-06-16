@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
     /// <summary>
-    /// Class MovieDbProvider
+    /// Class MovieDbProvider.
     /// </summary>
     public class TmdbMovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
@@ -129,7 +129,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         public string Name => TmdbUtils.ProviderName;
 
         /// <summary>
-        /// The _TMDB settings task
+        /// The _TMDB settings task.
         /// </summary>
         private TmdbSettingsResult _tmdbSettings;
 

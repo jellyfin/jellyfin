@@ -25,7 +25,7 @@ using System.Diagnostics;
 namespace MediaBrowser.MediaEncoding.Encoder
 {
     /// <summary>
-    /// Class MediaEncoder
+    /// Class MediaEncoder.
     /// </summary>
     public class MediaEncoder : IMediaEncoder, IDisposable
     {
@@ -439,7 +439,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
-        /// The us culture
+        /// The us culture.
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 

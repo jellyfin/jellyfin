@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Entities
         public override bool SupportsPlayedStatus => false;
 
         /// <summary>
-        /// The _virtual children
+        /// The _virtual children.
         /// </summary>
         private readonly ConcurrentBag<BaseItem> _virtualChildren = new ConcurrentBag<BaseItem>();
 

@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="title">The title or name of the object</param>
         /// <param name="language">ISO-639-3 3-character language codes</param>
@@ -65,7 +65,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Barcode
+        /// Backing field for Barcode.
         /// </summary>
         protected string _Barcode;
         /// <summary>
@@ -103,7 +103,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for LabelNumber
+        /// Backing field for LabelNumber.
         /// </summary>
         protected string _LabelNumber;
         /// <summary>
@@ -141,7 +141,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Country
+        /// Backing field for Country.
         /// </summary>
         protected string _Country;
         /// <summary>

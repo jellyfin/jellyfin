@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback.Hls
 {
     /// <summary>
-    /// Class GetHlsAudioSegment
+    /// Class GetHlsAudioSegment.
     /// </summary>
     // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
     //[Authenticated]
@@ -37,7 +37,7 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     /// <summary>
-    /// Class GetHlsVideoSegment
+    /// Class GetHlsVideoSegment.
     /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/stream.m3u8", "GET")]
     [Authenticated]
@@ -66,7 +66,7 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     /// <summary>
-    /// Class GetHlsVideoSegment
+    /// Class GetHlsVideoSegment.
     /// </summary>
     // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
     //[Authenticated]

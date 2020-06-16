@@ -4,7 +4,7 @@ using MediaBrowser.Model.Services;
 namespace MediaBrowser.Api.Playback
 {
     /// <summary>
-    /// Class StreamRequest
+    /// Class StreamRequest.
     /// </summary>
     public class StreamRequest : BaseEncodingJobOptions
     {

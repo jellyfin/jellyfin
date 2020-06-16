@@ -31,7 +31,7 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Folder
+    /// Class Folder.
     /// </summary>
     public class Folder : BaseItem
     {
@@ -175,7 +175,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual IEnumerable<BaseItem> Children => LoadChildren();
 
         /// <summary>
-        /// thread-safe access to all recursive children of this folder - without regard to user
+        /// thread-safe access to all recursive children of this folder - without regard to user.
         /// </summary>
         /// <value>The recursive children.</value>
         [JsonIgnore]
@@ -232,7 +232,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Validates that the children of the folder still exist
+        /// Validates that the children of the folder still exist.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -574,7 +574,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Get the children of this folder from the actual file system
+        /// Get the children of this folder from the actual file system.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
@@ -586,7 +586,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Get our children from the repo - stubbed for now
+        /// Get our children from the repo - stubbed for now.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected List<BaseItem> GetCachedChildren()
@@ -1300,7 +1300,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets allowed recursive children of an item
+        /// Gets allowed recursive children of an item.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>

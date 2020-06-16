@@ -23,7 +23,7 @@ namespace MediaBrowser.Model.System
     };
 
     /// <summary>
-    /// Class SystemInfo
+    /// Class SystemInfo.
     /// </summary>
     public class SystemInfo : PublicSystemInfo
     {

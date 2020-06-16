@@ -11,7 +11,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class Audio
+    /// Class Audio.
     /// </summary>
     public class Audio : BaseItem,
         IHasAlbumArtist,

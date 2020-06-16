@@ -17,7 +17,7 @@ using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 namespace MediaBrowser.Controller.Entities.TV
 {
     /// <summary>
-    /// Class Series
+    /// Class Series.
     /// </summary>
     public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
     {
@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
-        /// airdate, dvd or absolute
+        /// airdate, dvd or absolute.
         /// </summary>
         public string DisplayOrder { get; set; }
 

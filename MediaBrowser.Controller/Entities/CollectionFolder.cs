@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// Specialized Folder class that points to a subset of the physical folders in the system.
-    /// It is created from the user-specific folders within the system root
+    /// It is created from the user-specific folders within the system root.
     /// </summary>
     public class CollectionFolder : Folder, ICollectionFolder
     {
@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Allow different display preferences for each collection folder
+        /// Allow different display preferences for each collection folder.
         /// </summary>
         /// <value>The display prefs id.</value>
         [JsonIgnore]

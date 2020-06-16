@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Data
         protected override TempStoreMode TempStore => TempStoreMode.Memory;
 
         /// <summary>
-        /// Opens the connection to the database
+        /// Opens the connection to the database.
         /// </summary>
         public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
         {
@@ -548,7 +548,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Save a standard item in the repo
+        /// Save a standard item in the repo.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1208,7 +1208,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Internal retrieve from items or users table
+        /// Internal retrieve from items or users table.
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
@@ -1988,7 +1988,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Gets chapters for an item
+        /// Gets chapters for an item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable{ChapterInfo}.</returns>
@@ -2016,7 +2016,7 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Gets a single chapter for an item
+        /// Gets a single chapter for an item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="index">The index.</param>

@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Retrieve all user data for the given user
+        /// Retrieve all user data for the given user.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
@@ -188,7 +188,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Converts a UserItemData to a DTOUserItemData
+        /// Converts a UserItemData to a DTOUserItemData.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>

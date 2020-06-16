@@ -24,7 +24,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="path"></param>
         /// <param name="kind"></param>
@@ -64,7 +64,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -77,7 +77,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -102,7 +102,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Path
+        /// Backing field for Path.
         /// </summary>
         protected string _Path;
         /// <summary>
@@ -141,7 +141,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Kind
+        /// Backing field for Kind.
         /// </summary>
         internal Enums.ArtKind _Kind;
         /// <summary>
@@ -154,7 +154,7 @@ namespace Jellyfin.Data.Entities
         partial void GetKind(ref Enums.ArtKind result);
 
         /// <summary>
-        /// Indexed, Required
+        /// Indexed, Required.
         /// </summary>
         [Required]
         public Enums.ArtKind Kind
@@ -178,7 +178,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]

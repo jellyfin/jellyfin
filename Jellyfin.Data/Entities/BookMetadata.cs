@@ -27,7 +27,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="title">The title or name of the object</param>
         /// <param name="language">ISO-639-3 3-character language codes</param>
@@ -64,7 +64,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for ISBN
+        /// Backing field for ISBN.
         /// </summary>
         protected long? _ISBN;
         /// <summary>

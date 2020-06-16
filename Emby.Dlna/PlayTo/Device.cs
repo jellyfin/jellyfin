@@ -233,7 +233,7 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Sets volume on a scale of 0-100
+        /// Sets volume on a scale of 0-100.
         /// </summary>
         public async Task SetVolume(int value, CancellationToken cancellationToken)
         {

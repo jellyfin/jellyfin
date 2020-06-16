@@ -24,7 +24,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="title">The title or name of the object</param>
         /// <param name="language">ISO-639-3 3-character language codes</param>
@@ -50,7 +50,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -63,7 +63,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -89,7 +89,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Title
+        /// Backing field for Title.
         /// </summary>
         protected string _Title;
         /// <summary>
@@ -103,7 +103,7 @@ namespace Jellyfin.Data.Entities
 
         /// <summary>
         /// Required, Max length = 1024
-        /// The title or name of the object
+        /// The title or name of the object.
         /// </summary>
         [Required]
         [MaxLength(1024)]
@@ -129,7 +129,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for OriginalTitle
+        /// Backing field for OriginalTitle.
         /// </summary>
         protected string _OriginalTitle;
         /// <summary>
@@ -167,7 +167,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for SortTitle
+        /// Backing field for SortTitle.
         /// </summary>
         protected string _SortTitle;
         /// <summary>
@@ -205,7 +205,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Language
+        /// Backing field for Language.
         /// </summary>
         protected string _Language;
         /// <summary>
@@ -219,7 +219,7 @@ namespace Jellyfin.Data.Entities
 
         /// <summary>
         /// Required, Min length = 3, Max length = 3
-        /// ISO-639-3 3-character language codes
+        /// ISO-639-3 3-character language codes.
         /// </summary>
         [Required]
         [MinLength(3)]
@@ -246,7 +246,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for ReleaseDate
+        /// Backing field for ReleaseDate.
         /// </summary>
         protected DateTimeOffset? _ReleaseDate;
         /// <summary>
@@ -279,7 +279,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateAdded
+        /// Backing field for DateAdded.
         /// </summary>
         protected DateTime _DateAdded;
         /// <summary>
@@ -292,7 +292,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateAdded(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateAdded
@@ -316,7 +316,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateModified
+        /// Backing field for DateModified.
         /// </summary>
         protected DateTime _DateModified;
         /// <summary>
@@ -329,7 +329,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateModified(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateModified
@@ -353,7 +353,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]

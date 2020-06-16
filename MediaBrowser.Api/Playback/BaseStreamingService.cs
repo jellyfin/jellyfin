@@ -28,7 +28,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback
 {
     /// <summary>
-    /// Class BaseStreamingService
+    /// Class BaseStreamingService.
     /// </summary>
     public abstract class BaseStreamingService : BaseApiService
     {

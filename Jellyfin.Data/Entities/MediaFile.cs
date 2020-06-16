@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="path">Relative to the LibraryRoot</param>
         /// <param name="kind"></param>
@@ -64,7 +64,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -77,7 +77,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -103,7 +103,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Path
+        /// Backing field for Path.
         /// </summary>
         protected string _Path;
         /// <summary>
@@ -117,7 +117,7 @@ namespace Jellyfin.Data.Entities
 
         /// <summary>
         /// Required, Max length = 65535
-        /// Relative to the LibraryRoot
+        /// Relative to the LibraryRoot.
         /// </summary>
         [Required]
         [MaxLength(65535)]
@@ -143,7 +143,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Kind
+        /// Backing field for Kind.
         /// </summary>
         protected Enums.MediaFileKind _Kind;
         /// <summary>
@@ -156,7 +156,7 @@ namespace Jellyfin.Data.Entities
         partial void GetKind(ref Enums.MediaFileKind result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public Enums.MediaFileKind Kind
@@ -180,7 +180,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]

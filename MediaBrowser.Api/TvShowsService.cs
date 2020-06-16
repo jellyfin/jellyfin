@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetNextUpEpisodes
+    /// Class GetNextUpEpisodes.
     /// </summary>
     [Route("/Shows/NextUp", "GET", Summary = "Gets a list of next up episodes")]
     public class GetNextUpEpisodes : IReturn<QueryResult<BaseItemDto>>, IHasDtoOptions
@@ -39,14 +39,14 @@ namespace MediaBrowser.Api
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -100,14 +100,14 @@ namespace MediaBrowser.Api
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -144,7 +144,7 @@ namespace MediaBrowser.Api
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -176,7 +176,7 @@ namespace MediaBrowser.Api
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -212,7 +212,7 @@ namespace MediaBrowser.Api
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -244,18 +244,18 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class TvShowsService
+    /// Class TvShowsService.
     /// </summary>
     [Authenticated]
     public class TvShowsService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 

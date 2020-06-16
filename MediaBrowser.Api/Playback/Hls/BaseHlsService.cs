@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback.Hls
 {
     /// <summary>
-    /// Class BaseHlsService
+    /// Class BaseHlsService.
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {

@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Models.Search
         /// <value>The vote_average.</value>
         public double Vote_Average { get; set; }
         /// <summary>
-        /// For collection search results
+        /// For collection search results.
         /// </summary>
         public string Name { get; set; }
         /// <summary>

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class MusicGenre
+    /// Class MusicGenre.
     /// </summary>
     public class MusicGenre : BaseItem, IItemByName
     {
@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         /// <summary>
         /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
+        /// If the item is a folder, it returns the folder itself.
         /// </summary>
         /// <value>The containing folder path.</value>
         [JsonIgnore]
@@ -100,7 +100,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {

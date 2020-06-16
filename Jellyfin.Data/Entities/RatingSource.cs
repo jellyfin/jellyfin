@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
-    /// This is the entity to store review ratings, not age ratings
+    /// This is the entity to store review ratings, not age ratings.
     /// </summary>
     public partial class RatingSource
     {
@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="maximumvalue"></param>
         /// <param name="minimumvalue"></param>
@@ -62,7 +62,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -75,7 +75,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -101,7 +101,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Name
+        /// Backing field for Name.
         /// </summary>
         protected string _Name;
         /// <summary>
@@ -139,7 +139,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for MaximumValue
+        /// Backing field for MaximumValue.
         /// </summary>
         protected double _MaximumValue;
         /// <summary>
@@ -152,7 +152,7 @@ namespace Jellyfin.Data.Entities
         partial void GetMaximumValue(ref double result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public double MaximumValue
@@ -176,7 +176,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for MinimumValue
+        /// Backing field for MinimumValue.
         /// </summary>
         protected double _MinimumValue;
         /// <summary>
@@ -189,7 +189,7 @@ namespace Jellyfin.Data.Entities
         partial void GetMinimumValue(ref double result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public double MinimumValue
@@ -213,7 +213,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]

@@ -483,7 +483,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Returns the audio stream that will be used
+        /// Returns the audio stream that will be used.
         /// </summary>
         public MediaStream TargetAudioStream
         {
@@ -499,7 +499,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Returns the video stream that will be used
+        /// Returns the video stream that will be used.
         /// </summary>
         public MediaStream TargetVideoStream
         {
@@ -515,7 +515,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetAudioSampleRate
         {
@@ -527,7 +527,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetAudioBitDepth
         {
@@ -550,7 +550,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetVideoBitDepth
         {
@@ -597,7 +597,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public float? TargetFramerate
         {
@@ -611,7 +611,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public double? TargetVideoLevel
         {
@@ -698,7 +698,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetPacketLength
         {
@@ -712,7 +712,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public string TargetVideoProfile
         {
@@ -750,7 +750,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio bitrate that will be in the output stream
+        /// Predicts the audio bitrate that will be in the output stream.
         /// </summary>
         public int? TargetAudioBitrate
         {
@@ -764,7 +764,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio channels that will be in the output stream
+        /// Predicts the audio channels that will be in the output stream.
         /// </summary>
         public int? TargetAudioChannels
         {
@@ -805,7 +805,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio codec that will be in the output stream
+        /// Predicts the audio codec that will be in the output stream.
         /// </summary>
         public string[] TargetAudioCodec
         {
@@ -858,7 +858,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio channels that will be in the output stream
+        /// Predicts the audio channels that will be in the output stream.
         /// </summary>
         public long? TargetSize
         {

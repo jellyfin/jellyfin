@@ -17,7 +17,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
         protected LibraryItem(Guid urlid, DateTime dateadded)
@@ -33,7 +33,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -46,7 +46,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -72,7 +72,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for UrlId
+        /// Backing field for UrlId.
         /// </summary>
         internal Guid _UrlId;
         /// <summary>
@@ -110,7 +110,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateAdded
+        /// Backing field for DateAdded.
         /// </summary>
         protected DateTime _DateAdded;
         /// <summary>
@@ -123,7 +123,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateAdded(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateAdded
@@ -147,7 +147,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -163,7 +163,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [ForeignKey("LibraryRoot_Id")]
         public virtual LibraryRoot LibraryRoot { get; set; }

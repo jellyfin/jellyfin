@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetUsers
+    /// Class GetUsers.
     /// </summary>
     [Route("/Users", "GET", Summary = "Gets a list of users")]
     [Authenticated]
@@ -41,7 +41,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetUser
+    /// Class GetUser.
     /// </summary>
     [Route("/Users/{Id}", "GET", Summary = "Gets a user by Id")]
     [Authenticated(EscapeParentalControl = true)]
@@ -56,7 +56,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class DeleteUser
+    /// Class DeleteUser.
     /// </summary>
     [Route("/Users/{Id}", "DELETE", Summary = "Deletes a user")]
     [Authenticated(Roles = "Admin")]
@@ -71,7 +71,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class AuthenticateUser
+    /// Class AuthenticateUser.
     /// </summary>
     [Route("/Users/{Id}/Authenticate", "POST", Summary = "Authenticates a user")]
     public class AuthenticateUser : IReturn<AuthenticationResult>
@@ -95,7 +95,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class AuthenticateUser
+    /// Class AuthenticateUser.
     /// </summary>
     [Route("/Users/AuthenticateByName", "POST", Summary = "Authenticates a user")]
     public class AuthenticateUserByName : IReturn<AuthenticationResult>
@@ -119,7 +119,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdateUserPassword
+    /// Class UpdateUserPassword.
     /// </summary>
     [Route("/Users/{Id}/Password", "POST", Summary = "Updates a user's password")]
     [Authenticated]
@@ -149,7 +149,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdateUserEasyPassword
+    /// Class UpdateUserEasyPassword.
     /// </summary>
     [Route("/Users/{Id}/EasyPassword", "POST", Summary = "Updates a user's easy password")]
     [Authenticated]
@@ -177,7 +177,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdateUser
+    /// Class UpdateUser.
     /// </summary>
     [Route("/Users/{Id}", "POST", Summary = "Updates a user")]
     [Authenticated]
@@ -186,7 +186,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdateUser
+    /// Class UpdateUser.
     /// </summary>
     [Route("/Users/{Id}/Policy", "POST", Summary = "Updates a user policy")]
     [Authenticated(Roles = "admin")]
@@ -197,7 +197,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdateUser
+    /// Class UpdateUser.
     /// </summary>
     [Route("/Users/{Id}/Configuration", "POST", Summary = "Updates a user configuration")]
     [Authenticated]
@@ -208,7 +208,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class CreateUser
+    /// Class CreateUser.
     /// </summary>
     [Route("/Users/New", "POST", Summary = "Creates a user")]
     [Authenticated(Roles = "Admin")]
@@ -236,7 +236,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UsersService
+    /// Class UsersService.
     /// </summary>
     public class UserService : BaseApiService
     {

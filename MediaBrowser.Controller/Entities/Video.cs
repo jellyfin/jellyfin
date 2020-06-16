@@ -17,7 +17,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Video
+    /// Class Video.
     /// </summary>
     public class Video : BaseItem,
         IHasAspectRatio,

@@ -31,7 +31,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="type"></param>
         /// <param name="_metadata0"></param>
@@ -65,7 +65,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -78,7 +78,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -104,7 +104,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Role
+        /// Backing field for Role.
         /// </summary>
         protected string _Role;
         /// <summary>
@@ -142,7 +142,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Type
+        /// Backing field for Type.
         /// </summary>
         protected Enums.PersonRoleType _Type;
         /// <summary>
@@ -155,7 +155,7 @@ namespace Jellyfin.Data.Entities
         partial void GetType(ref Enums.PersonRoleType result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public Enums.PersonRoleType Type
@@ -179,7 +179,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -195,7 +195,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [ForeignKey("Person_Id")]
 

@@ -7,7 +7,7 @@ using MediaBrowser.Model.Services;
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
-    /// Class PlayRequest
+    /// Class PlayRequest.
     /// </summary>
     public class PlayRequest
     {
@@ -19,7 +19,7 @@ namespace MediaBrowser.Model.Session
         public Guid[] ItemIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the start position ticks that the first item should be played at
+        /// Gets or sets the start position ticks that the first item should be played at.
         /// </summary>
         /// <value>The start position ticks.</value>
         [ApiMember(Name = "StartPositionTicks", Description = "The starting position of the first item.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]

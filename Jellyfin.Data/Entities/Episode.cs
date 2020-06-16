@@ -31,7 +31,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
         /// <param name="_season0"></param>
@@ -66,7 +66,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for EpisodeNumber
+        /// Backing field for EpisodeNumber.
         /// </summary>
         protected int? _EpisodeNumber;
         /// <summary>

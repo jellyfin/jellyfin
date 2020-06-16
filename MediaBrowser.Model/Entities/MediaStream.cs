@@ -13,7 +13,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Class MediaStream
+    /// Class MediaStream.
     /// </summary>
     public class MediaStream
     {

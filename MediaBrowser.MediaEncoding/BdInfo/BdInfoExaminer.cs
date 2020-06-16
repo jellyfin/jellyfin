@@ -9,7 +9,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
     /// <summary>
-    /// Class BdInfoExaminer
+    /// Class BdInfoExaminer.
     /// </summary>
     public class BdInfoExaminer : IBlurayExaminer
     {

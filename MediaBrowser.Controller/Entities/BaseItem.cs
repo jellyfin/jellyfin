@@ -31,12 +31,12 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class BaseItem
+    /// Class BaseItem.
     /// </summary>
     public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>, IEquatable<BaseItem>
     {
         /// <summary>
-        /// The supported image extensions
+        /// The supported image extensions.
         /// </summary>
         public static readonly string[] SupportedImageExtensions
             = new[] { ".png", ".jpg", ".jpeg", ".tbn", ".gif" };
@@ -75,7 +75,7 @@ namespace MediaBrowser.Controller.Entities
         public static char SlugChar = '-';
 
         /// <summary>
-        /// The trailer folder name
+        /// The trailer folder name.
         /// </summary>
         public const string TrailerFolderName = "trailers";
         public const string ThemeSongsFolderName = "theme-music";
@@ -244,7 +244,7 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
+        /// If the item is a folder, it returns the folder itself.
         /// </summary>
         [JsonIgnore]
         public virtual string ContainingFolderPath
@@ -268,7 +268,7 @@ namespace MediaBrowser.Controller.Entities
         public string ServiceName { get; set; }
 
         /// <summary>
-        /// If this content came from an external service, the id of the content on that service
+        /// If this content came from an external service, the id of the content on that service.
         /// </summary>
         [JsonIgnore]
         public string ExternalId { get; set; }
@@ -412,7 +412,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// This is just a helper for convenience
+        /// This is just a helper for convenience.
         /// </summary>
         /// <value>The primary image path.</value>
         [JsonIgnore]
@@ -558,7 +558,7 @@ namespace MediaBrowser.Controller.Entities
         public DateTime DateLastRefreshed { get; set; }
 
         /// <summary>
-        /// The logger
+        /// The logger.
         /// </summary>
         public static ILoggerFactory LoggerFactory { get; set; }
 
@@ -813,7 +813,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Finds a parent of a given type
+        /// Finds a parent of a given type.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
@@ -1367,7 +1367,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Overrides the base implementation to refresh metadata for local trailers
+        /// Overrides the base implementation to refresh metadata for local trailers.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1769,7 +1769,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Determines if a given user has access to this item
+        /// Determines if a given user has access to this item.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if [is parental allowed] [the specified user]; otherwise, <c>false</c>.</returns>
@@ -2075,7 +2075,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool EnableRememberingTrackSelections => true;
 
         /// <summary>
-        /// Adds a studio to the item
+        /// Adds a studio to the item.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -2111,7 +2111,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Adds a genre to the item
+        /// Adds a genre to the item.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -2206,7 +2206,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets an image
+        /// Gets an image.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
@@ -2522,7 +2522,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets the file system path to delete when the item is to be deleted
+        /// Gets the file system path to delete when the item is to be deleted.
         /// </summary>
         /// <returns></returns>
         public virtual IEnumerable<FileSystemMetadata> GetDeletePaths()

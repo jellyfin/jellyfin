@@ -425,7 +425,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public double? TargetVideoLevel
         {
@@ -448,7 +448,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetVideoBitDepth
         {
@@ -483,7 +483,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public float? TargetFramerate
         {
@@ -515,7 +515,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetPacketLength
         {
@@ -531,7 +531,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public string TargetVideoProfile
         {
@@ -687,20 +687,20 @@ namespace MediaBrowser.Controller.MediaEncoding
     }
 
     /// <summary>
-    /// Enum TranscodingJobType
+    /// Enum TranscodingJobType.
     /// </summary>
     public enum TranscodingJobType
     {
         /// <summary>
-        /// The progressive
+        /// The progressive.
         /// </summary>
         Progressive,
         /// <summary>
-        /// The HLS
+        /// The HLS.
         /// </summary>
         Hls,
         /// <summary>
-        /// The dash
+        /// The dash.
         /// </summary>
         Dash
     }

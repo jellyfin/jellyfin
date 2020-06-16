@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stars waiting for the trigger action
+        /// Stars waiting for the trigger action.
         /// </summary>
         /// <param name="lastResult">The last result.</param>
         /// <param name="logger">The logger.</param>
@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops waiting for the trigger action
+        /// Stops waiting for the trigger action.
         /// </summary>
         public void Stop()
         {

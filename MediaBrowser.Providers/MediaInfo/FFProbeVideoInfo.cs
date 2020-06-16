@@ -342,7 +342,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Gets information about the longest playlist on a bdrom
+        /// Gets information about the longest playlist on a bdrom.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoStream.</returns>

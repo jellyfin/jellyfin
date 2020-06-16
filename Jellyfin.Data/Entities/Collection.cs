@@ -9,7 +9,7 @@ namespace Jellyfin.Data.Entities
         partial void Init();
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor.
         /// </summary>
         public Collection()
         {
@@ -23,7 +23,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -36,7 +36,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -62,7 +62,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Name
+        /// Backing field for Name.
         /// </summary>
         protected string _Name;
         /// <summary>
@@ -100,7 +100,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]

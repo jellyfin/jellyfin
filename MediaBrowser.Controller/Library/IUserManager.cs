@@ -11,7 +11,7 @@ using MediaBrowser.Model.Users;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface IUserManager
+    /// Interface IUserManager.
     /// </summary>
     public interface IUserManager
     {

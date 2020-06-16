@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class TaskManager
+    /// Class TaskManager.
     /// </summary>
     public class TaskManager : ITaskManager
     {
@@ -23,13 +23,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
 
         /// <summary>
-        /// Gets the list of Scheduled Tasks
+        /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
         public IScheduledTaskWorker[] ScheduledTasks { get; private set; }
 
         /// <summary>
-        /// The _task queue
+        /// The _task queue.
         /// </summary>
         private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
             new ConcurrentQueue<Tuple<Type, TaskOptions>>();
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Cancels if running
+        /// Cancels if running.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         public void CancelIfRunning<T>()

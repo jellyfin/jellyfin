@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Image types that are only one per item
+        /// Image types that are only one per item.
         /// </summary>
         private readonly ImageType[] _singularImages =
         {
@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Determines if an item already contains the given images
+        /// Determines if an item already contains the given images.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="images">The images.</param>

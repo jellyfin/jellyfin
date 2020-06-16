@@ -592,7 +592,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Get the default CORS headers
+        /// Get the default CORS headers.
         /// </summary>
         /// <param name="req"></param>
         /// <returns></returns>
