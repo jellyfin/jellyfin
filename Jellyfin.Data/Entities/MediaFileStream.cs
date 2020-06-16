@@ -81,6 +81,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -117,6 +118,7 @@ namespace Jellyfin.Data.Entities
                 GetStreamNumber(ref value);
                 return (_StreamNumber = value);
             }
+
             set
             {
                 int oldValue = _StreamNumber;

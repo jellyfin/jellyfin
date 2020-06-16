@@ -173,6 +173,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 {
                     item.ProductionLocations = new string[] { info.Place_Of_Birth };
                 }
+
                 item.Overview = info.Biography;
 
                 if (DateTime.TryParseExact(info.Birthday, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out var date))

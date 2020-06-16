@@ -1357,6 +1357,7 @@ namespace Emby.Dlna.ContentDirectory
     internal class ServerItem
     {
         public BaseItem Item { get; set; }
+
         public StubType? StubType { get; set; }
 
         public ServerItem(BaseItem item)

@@ -59,6 +59,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -96,6 +97,7 @@ namespace Jellyfin.Data.Entities
                 GetUrlId(ref value);
                 return (_UrlId = value);
             }
+
             set
             {
                 Guid oldValue = _UrlId;
@@ -132,6 +134,7 @@ namespace Jellyfin.Data.Entities
                 GetDateAdded(ref value);
                 return (_DateAdded = value);
             }
+
             internal set
             {
                 DateTime oldValue = _DateAdded;

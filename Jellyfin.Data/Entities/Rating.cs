@@ -81,6 +81,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -117,6 +118,7 @@ namespace Jellyfin.Data.Entities
                 GetValue(ref value);
                 return (_Value = value);
             }
+
             set
             {
                 double oldValue = _Value;
@@ -149,6 +151,7 @@ namespace Jellyfin.Data.Entities
                 GetVotes(ref value);
                 return (_Votes = value);
             }
+
             set
             {
                 int? oldValue = _Votes;

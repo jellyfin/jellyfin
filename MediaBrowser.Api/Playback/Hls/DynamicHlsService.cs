@@ -234,6 +234,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         Logger.LogDebug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", requestedIndex - currentTranscodingIndex.Value, segmentGapRequiringTranscodingChange, requestedIndex);
                         startTranscoding = true;
                     }
+
                     if (startTranscoding)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
@@ -518,6 +519,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
                 }
+
                 cancellationToken.ThrowIfCancellationRequested();
             }
             else

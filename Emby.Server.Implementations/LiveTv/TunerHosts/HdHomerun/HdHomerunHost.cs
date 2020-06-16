@@ -170,6 +170,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             _modelCache[cacheKey] = response;
                         }
                     }
+
                     return response;
                 }
 
@@ -201,6 +202,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var name = line.Substring(0, index - 1);
                         var currentChannel = line.Substring(index + 7);
                         if (currentChannel != "none") { status = LiveTvTunerStatus.LiveTv; } else { status = LiveTvTunerStatus.Available; }
+
                         tuners.Add(new LiveTvTunerInfo
                         {
                             Name = name,
@@ -229,11 +231,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     inside = true;
                     continue;
                 }
+
                 if (let == '>')
                 {
                     inside = false;
                     continue;
                 }
+
                 if (!inside)
                 {
                     buffer[bufferIndex] = let;
@@ -331,12 +335,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private class Channels
         {
             public string GuideNumber { get; set; }
+
             public string GuideName { get; set; }
+
             public string VideoCodec { get; set; }
+
             public string AudioCodec { get; set; }
+
             public string URL { get; set; }
+
             public bool Favorite { get; set; }
+
             public bool DRM { get; set; }
+
             public int HD { get; set; }
         }
 
@@ -657,13 +668,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         public class DiscoverResponse
         {
             public string FriendlyName { get; set; }
+
             public string ModelNumber { get; set; }
+
             public string FirmwareName { get; set; }
+
             public string FirmwareVersion { get; set; }
+
             public string DeviceID { get; set; }
+
             public string DeviceAuth { get; set; }
+
             public string BaseURL { get; set; }
+
             public string LineupURL { get; set; }
+
             public int TunerCount { get; set; }
 
             public bool SupportsTranscoding

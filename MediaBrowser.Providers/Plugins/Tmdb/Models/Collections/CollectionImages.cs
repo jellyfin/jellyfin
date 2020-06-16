@@ -6,6 +6,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Models.Collections
     public class CollectionImages
     {
         public List<Backdrop> Backdrops { get; set; }
+
         public List<Poster> Posters { get; set; }
     }
 }

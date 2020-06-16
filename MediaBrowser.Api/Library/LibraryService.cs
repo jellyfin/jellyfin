@@ -285,29 +285,38 @@ namespace MediaBrowser.Api.Library
     public class GetLibraryOptionsInfo : IReturn<LibraryOptionsResult>
     {
         public string LibraryContentType { get; set; }
+
         public bool IsNewLibrary { get; set; }
     }
 
     public class LibraryOptionInfo
     {
         public string Name { get; set; }
+
         public bool DefaultEnabled { get; set; }
     }
 
     public class LibraryOptionsResult
     {
         public LibraryOptionInfo[] MetadataSavers { get; set; }
+
         public LibraryOptionInfo[] MetadataReaders { get; set; }
+
         public LibraryOptionInfo[] SubtitleFetchers { get; set; }
+
         public LibraryTypeOptions[] TypeOptions { get; set; }
     }
 
     public class LibraryTypeOptions
     {
         public string Type { get; set; }
+
         public LibraryOptionInfo[] MetadataFetchers { get; set; }
+
         public LibraryOptionInfo[] ImageFetchers { get; set; }
+
         public ImageType[] SupportedImageTypes { get; set; }
+
         public ImageOption[] DefaultImageOptions { get; set; }
     }
 
@@ -1036,6 +1045,7 @@ namespace MediaBrowser.Api.Library
                 {
                     break;
                 }
+
                 item = parent;
             }
 
@@ -1093,6 +1103,7 @@ namespace MediaBrowser.Api.Library
                 {
                     break;
                 }
+
                 item = parent;
             }
 

@@ -91,6 +91,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -128,6 +129,7 @@ namespace Jellyfin.Data.Entities
                 GetRole(ref value);
                 return (_Role = value);
             }
+
             set
             {
                 string oldValue = _Role;
@@ -164,6 +166,7 @@ namespace Jellyfin.Data.Entities
                 GetType(ref value);
                 return (_Type = value);
             }
+
             set
             {
                 Enums.PersonRoleType oldValue = _Type;

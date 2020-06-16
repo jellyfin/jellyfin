@@ -37,6 +37,7 @@ namespace Emby.Dlna.PlayTo
                 RefreshVolumeIfNeeded().GetAwaiter().GetResult();
                 return _volume;
             }
+
             set => _volume = value;
         }
 
@@ -494,6 +495,7 @@ namespace Emby.Dlna.PlayTo
                         return;
                     }
                 }
+
                 RestartTimerInactive();
             }
         }

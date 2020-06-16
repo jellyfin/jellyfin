@@ -105,6 +105,7 @@ namespace MediaBrowser.Controller.Entities
 
                 return null;
             }
+
             set
             {
                 if (value.HasValue)

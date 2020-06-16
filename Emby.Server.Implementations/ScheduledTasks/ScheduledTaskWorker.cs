@@ -143,12 +143,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
                                 Logger.LogError(ex, "Error deserializing {File}", path);
                             }
                         }
+
                         _readFromFile = true;
                     }
                 }
 
                 return _lastExecutionResult;
             }
+
             private set
             {
                 _lastExecutionResult = value;
@@ -261,6 +263,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 var triggers = InternalTriggers;
                 return triggers.Select(i => i.Item1).ToArray();
             }
+
             set
             {
                 if (value == null)
@@ -640,6 +643,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         Logger.LogError(ex, "Error calling CancellationToken.Cancel();");
                     }
                 }
+
                 var task = _currentTask;
                 if (task != null)
                 {
@@ -675,6 +679,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         Logger.LogError(ex, "Error calling CancellationToken.Dispose();");
                     }
                 }
+
                 if (wassRunning)
                 {
                     OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);

@@ -146,6 +146,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
                 }
+
                 return ResultFactory.GetResult(GetLivePlaylistText(playlist, state.SegmentLength), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
             }
 

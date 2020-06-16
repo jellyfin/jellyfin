@@ -32,14 +32,21 @@ namespace MediaBrowser.Model.Search
         public int? Limit { get; set; }
 
         public bool IncludePeople { get; set; }
+
         public bool IncludeMedia { get; set; }
+
         public bool IncludeGenres { get; set; }
+
         public bool IncludeStudios { get; set; }
+
         public bool IncludeArtists { get; set; }
 
         public string[] MediaTypes { get; set; }
+
         public string[] IncludeItemTypes { get; set; }
+
         public string[] ExcludeItemTypes { get; set; }
+
         public string ParentId { get; set; }
 
         public bool? IsMovie { get; set; }

@@ -579,6 +579,7 @@ namespace Rssdp.Infrastructure
                     return d;
                 }
             }
+
             return null;
         }
 

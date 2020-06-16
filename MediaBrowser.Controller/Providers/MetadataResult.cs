@@ -48,6 +48,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 People = new List<PersonInfo>();
             }
+
             People.Clear();
         }
 

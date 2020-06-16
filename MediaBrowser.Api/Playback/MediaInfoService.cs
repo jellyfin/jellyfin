@@ -551,10 +551,12 @@ namespace MediaBrowser.Api.Playback
                             {
                                 mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                             }
+
                             if (!allowAudioStreamCopy)
                             {
                                 mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                             }
+
                             mediaSource.TranscodingContainer = streamInfo.Container;
                             mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         }

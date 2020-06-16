@@ -23,6 +23,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private long _bytesWritten = 0;
         public long StartPosition { get; set; }
+
         public bool AllowEndOfFile = true;
 
         private readonly IDirectStreamProvider _directStreamProvider;
@@ -105,6 +106,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                             {
                                 eofCount++;
                             }
+
                             await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                         }
                         else

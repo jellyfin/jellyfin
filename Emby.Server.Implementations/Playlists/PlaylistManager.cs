@@ -401,6 +401,7 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         entry.Duration = TimeSpan.FromTicks(child.RunTimeTicks.Value);
                     }
+
                     playlist.PlaylistEntries.Add(entry);
                 }
 

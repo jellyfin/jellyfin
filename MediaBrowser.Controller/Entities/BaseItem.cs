@@ -108,6 +108,7 @@ namespace MediaBrowser.Controller.Entities
         public string PreferredMetadataLanguage { get; set; }
 
         public long? Size { get; set; }
+
         public string Container { get; set; }
 
         [JsonIgnore]
@@ -448,6 +449,7 @@ namespace MediaBrowser.Controller.Entities
                 // hack alert
                 return true;
             }
+
             if (SourceType == SourceType.Channel)
             {
                 // hack alert
@@ -559,15 +561,25 @@ namespace MediaBrowser.Controller.Entities
         /// The logger
         /// </summary>
         public static ILoggerFactory LoggerFactory { get; set; }
+
         public static ILogger<BaseItem> Logger { get; set; }
+
         public static ILibraryManager LibraryManager { get; set; }
+
         public static IServerConfigurationManager ConfigurationManager { get; set; }
+
         public static IProviderManager ProviderManager { get; set; }
+
         public static ILocalizationManager LocalizationManager { get; set; }
+
         public static IItemRepository ItemRepository { get; set; }
+
         public static IFileSystem FileSystem { get; set; }
+
         public static IUserDataManager UserDataManager { get; set; }
+
         public static IChannelManager ChannelManager { get; set; }
+
         public static IMediaSourceManager MediaSourceManager { get; set; }
 
         /// <summary>
@@ -644,8 +656,10 @@ namespace MediaBrowser.Controller.Entities
                         _sortName = CreateSortName();
                     }
                 }
+
                 return _sortName;
             }
+
             set => _sortName = value;
         }
 
@@ -814,6 +828,7 @@ namespace MediaBrowser.Controller.Entities
                     return item;
                 }
             }
+
             return null;
         }
 
@@ -837,6 +852,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return null;
                 }
+
                 return LibraryManager.GetItemById(id);
             }
         }

@@ -40,6 +40,7 @@ namespace MediaBrowser.Controller.Library
 
                 return new DayOfWeek[] { };
             }
+
             return null;
         }
     }

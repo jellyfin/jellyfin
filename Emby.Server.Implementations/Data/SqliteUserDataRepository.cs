@@ -135,10 +135,12 @@ namespace Emby.Server.Implementations.Data
             {
                 throw new ArgumentNullException(nameof(userData));
             }
+
             if (internalUserId <= 0)
             {
                 throw new ArgumentNullException(nameof(internalUserId));
             }
+
             if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentNullException(nameof(key));
@@ -153,6 +155,7 @@ namespace Emby.Server.Implementations.Data
             {
                 throw new ArgumentNullException(nameof(userData));
             }
+
             if (internalUserId <= 0)
             {
                 throw new ArgumentNullException(nameof(internalUserId));

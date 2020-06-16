@@ -150,6 +150,7 @@ namespace Emby.Dlna.Eventing
                 builder.Append("</" + key + ">");
                 builder.Append("</e:property>");
             }
+
             builder.Append("</e:propertyset>");
 
             var options = new HttpRequestOptions

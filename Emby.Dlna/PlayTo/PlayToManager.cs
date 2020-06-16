@@ -132,6 +132,7 @@ namespace Emby.Dlna.PlayTo
                 usn = usn.Substring(index);
                 found = true;
             }
+
             index = usn.IndexOf("::", StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {

@@ -71,6 +71,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 token = httpReq.Headers["X-MediaBrowser-Token"];
             }
+
             if (string.IsNullOrEmpty(token))
             {
                 token = httpReq.QueryString["api_key"];
@@ -160,6 +161,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         _authRepo.Update(tokenInfo);
                     }
                 }
+
                 httpReq.Items["OriginalAuthenticationInfo"] = tokenInfo;
             }
 

@@ -103,6 +103,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -141,6 +142,7 @@ namespace Jellyfin.Data.Entities
                 GetProviderId(ref value);
                 return (_ProviderId = value);
             }
+
             set
             {
                 string oldValue = _ProviderId;

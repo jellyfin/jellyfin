@@ -195,6 +195,7 @@ namespace MediaBrowser.Controller.Entities
                     return child;
                 }
             }
+
             return null;
         }
     }

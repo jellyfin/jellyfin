@@ -167,6 +167,7 @@ namespace Emby.Server.Implementations.Session
                     _logger.LogWarning("Multiple attempts to keep alive single WebSocket {0}", webSocket);
                     return;
                 }
+
                 webSocket.Closed += OnWebSocketClosed;
                 webSocket.LastKeepAliveDate = DateTime.UtcNow;
 

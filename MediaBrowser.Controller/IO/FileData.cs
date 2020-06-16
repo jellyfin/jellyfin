@@ -20,6 +20,7 @@ namespace MediaBrowser.Controller.IO
             {
                 dict[file.FullName] = file;
             }
+
             return dict;
         }
 
@@ -49,6 +50,7 @@ namespace MediaBrowser.Controller.IO
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));
@@ -116,6 +118,7 @@ namespace MediaBrowser.Controller.IO
                 returnResult[index] = value;
                 index++;
             }
+
             return returnResult;
         }
     }

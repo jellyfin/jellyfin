@@ -93,6 +93,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 overview = FFProbeHelpers.GetDictionaryValue(tags, "description");
             }
+
             if (string.IsNullOrWhiteSpace(overview))
             {
                 overview = FFProbeHelpers.GetDictionaryValue(tags, "desc");
@@ -274,10 +275,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subtree = reader.ReadSubtree())
                                         {
                                             ReadFromDictNode(subtree, info);
                                         }
+
                                         break;
                                     default:
                                         reader.Skip();
@@ -319,6 +322,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                             {
                                 ProcessPairs(currentKey, pairs, info);
                             }
+
                             currentKey = reader.ReadElementContentAsString();
                             pairs = new List<NameValuePair>();
                             break;
@@ -332,6 +336,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     Value = value
                                 });
                             }
+
                             break;
                         case "array":
                             if (reader.IsEmptyElement)
@@ -339,6 +344,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                 reader.Read();
                                 continue;
                             }
+
                             using (var subtree = reader.ReadSubtree())
                             {
                                 if (!string.IsNullOrWhiteSpace(currentKey))
@@ -346,6 +352,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     pairs.AddRange(ReadValueArray(subtree));
                                 }
                             }
+
                             break;
                         default:
                             reader.Skip();
@@ -381,6 +388,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                 reader.Read();
                                 continue;
                             }
+
                             using (var subtree = reader.ReadSubtree())
                             {
                                 var dict = GetNameValuePair(subtree);
@@ -389,6 +397,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     pairs.Add(dict);
                                 }
                             }
+
                             break;
                         default:
                             reader.Skip();
@@ -948,6 +957,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
                 }
+
                 audio.People = peoples.ToArray();
             }
 
@@ -979,6 +989,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
                 }
+
                 audio.People = peoples.ToArray();
             }
 
@@ -1012,6 +1023,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album artist");
             }
+
             if (string.IsNullOrWhiteSpace(albumArtist))
             {
                 albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album_artist");
@@ -1175,6 +1187,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         continue;
                     }
+
                     if (info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;

@@ -425,6 +425,7 @@ namespace Emby.Dlna.PlayTo
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
                     return;
                 }
+
                 await SeekAfterTransportChange(newPosition, CancellationToken.None).ConfigureAwait(false);
             }
         }
@@ -713,6 +714,7 @@ namespace Emby.Dlna.PlayTo
 
                             throw new ArgumentException("Volume argument cannot be null");
                         }
+
                     default:
                         return Task.CompletedTask;
                 }
@@ -798,12 +800,15 @@ namespace Emby.Dlna.PlayTo
             public int? SubtitleStreamIndex { get; set; }
 
             public string DeviceProfileId { get; set; }
+
             public string DeviceId { get; set; }
 
             public string MediaSourceId { get; set; }
+
             public string LiveStreamId { get; set; }
 
             public BaseItem Item { get; set; }
+
             private MediaSourceInfo MediaSource;
 
             private IMediaSourceManager _mediaSourceManager;

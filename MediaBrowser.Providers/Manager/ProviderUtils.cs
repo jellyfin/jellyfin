@@ -26,6 +26,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 throw new ArgumentNullException(nameof(source));
             }
+
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));

@@ -453,6 +453,7 @@ namespace Emby.Server.Implementations.HttpServer
                     {
                         httpRes.Headers.Add(key, value);
                     }
+
                     httpRes.ContentType = "text/plain";
                     await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
                     return;

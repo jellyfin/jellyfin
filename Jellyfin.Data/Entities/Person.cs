@@ -85,6 +85,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -121,6 +122,7 @@ namespace Jellyfin.Data.Entities
                 GetUrlId(ref value);
                 return (_UrlId = value);
             }
+
             set
             {
                 Guid oldValue = _UrlId;
@@ -159,6 +161,7 @@ namespace Jellyfin.Data.Entities
                 GetName(ref value);
                 return (_Name = value);
             }
+
             set
             {
                 string oldValue = _Name;
@@ -196,6 +199,7 @@ namespace Jellyfin.Data.Entities
                 GetSourceId(ref value);
                 return (_SourceId = value);
             }
+
             set
             {
                 string oldValue = _SourceId;
@@ -232,6 +236,7 @@ namespace Jellyfin.Data.Entities
                 GetDateAdded(ref value);
                 return (_DateAdded = value);
             }
+
             internal set
             {
                 DateTime oldValue = _DateAdded;
@@ -268,6 +273,7 @@ namespace Jellyfin.Data.Entities
                 GetDateModified(ref value);
                 return (_DateModified = value);
             }
+
             internal set
             {
                 DateTime oldValue = _DateModified;

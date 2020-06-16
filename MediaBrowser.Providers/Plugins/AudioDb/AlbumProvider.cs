@@ -210,42 +210,79 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public class Album
         {
             public string idAlbum { get; set; }
+
             public string idArtist { get; set; }
+
             public string strAlbum { get; set; }
+
             public string strArtist { get; set; }
+
             public string intYearReleased { get; set; }
+
             public string strGenre { get; set; }
+
             public string strSubGenre { get; set; }
+
             public string strReleaseFormat { get; set; }
+
             public string intSales { get; set; }
+
             public string strAlbumThumb { get; set; }
+
             public string strAlbumCDart { get; set; }
+
             public string strDescriptionEN { get; set; }
+
             public string strDescriptionDE { get; set; }
+
             public string strDescriptionFR { get; set; }
+
             public string strDescriptionCN { get; set; }
+
             public string strDescriptionIT { get; set; }
+
             public string strDescriptionJP { get; set; }
+
             public string strDescriptionRU { get; set; }
+
             public string strDescriptionES { get; set; }
+
             public string strDescriptionPT { get; set; }
+
             public string strDescriptionSE { get; set; }
+
             public string strDescriptionNL { get; set; }
+
             public string strDescriptionHU { get; set; }
+
             public string strDescriptionNO { get; set; }
+
             public string strDescriptionIL { get; set; }
+
             public string strDescriptionPL { get; set; }
+
             public object intLoved { get; set; }
+
             public object intScore { get; set; }
+
             public string strReview { get; set; }
+
             public object strMood { get; set; }
+
             public object strTheme { get; set; }
+
             public object strSpeed { get; set; }
+
             public object strLocation { get; set; }
+
             public string strMusicBrainzID { get; set; }
+
             public string strMusicBrainzArtistID { get; set; }
+
             public object strItunesID { get; set; }
+
             public object strAmazonID { get; set; }
+
             public string strLocked { get; set; }
         }
 

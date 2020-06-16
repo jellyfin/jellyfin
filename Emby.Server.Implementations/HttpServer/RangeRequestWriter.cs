@@ -20,15 +20,21 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The source stream.</value>
         private Stream SourceStream { get; set; }
+
         private string RangeHeader { get; set; }
+
         private bool IsHeadRequest { get; set; }
 
         private long RangeStart { get; set; }
+
         private long RangeEnd { get; set; }
+
         private long RangeLength { get; set; }
+
         private long TotalContentLength { get; set; }
 
         public Action OnComplete { get; set; }
+
         private readonly ILogger _logger;
 
         private const int BufferSize = 81920;
@@ -139,6 +145,7 @@ namespace Emby.Server.Implementations.HttpServer
                         {
                             start = long.Parse(vals[0], UsCulture);
                         }
+
                         if (!string.IsNullOrEmpty(vals[1]))
                         {
                             end = long.Parse(vals[1], UsCulture);

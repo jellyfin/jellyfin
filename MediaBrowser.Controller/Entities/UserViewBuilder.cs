@@ -960,6 +960,7 @@ namespace MediaBrowser.Controller.Entities
                     .OfType<Folder>()
                     .Where(UserView.IsEligibleForGrouping);
             }
+
             return _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
                 .OfType<Folder>()
@@ -978,6 +979,7 @@ namespace MediaBrowser.Controller.Entities
                         return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
                     }).ToArray();
             }
+
             return GetMediaFolders(user)
                 .Where(i =>
                 {

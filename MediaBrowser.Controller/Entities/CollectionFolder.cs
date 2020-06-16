@@ -23,7 +23,9 @@ namespace MediaBrowser.Controller.Entities
     public class CollectionFolder : Folder, ICollectionFolder
     {
         public static IXmlSerializer XmlSerializer { get; set; }
+
         public static IJsonSerializer JsonSerializer { get; set; }
+
         public static IServerApplicationHost ApplicationHost { get; set; }
 
         public CollectionFolder()
@@ -155,6 +157,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public string[] PhysicalLocationsList { get; set; }
+
         public Guid[] PhysicalFolderIds { get; set; }
 
         protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)

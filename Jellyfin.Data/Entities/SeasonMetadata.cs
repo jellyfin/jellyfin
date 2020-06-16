@@ -86,6 +86,7 @@ namespace Jellyfin.Data.Entities
                 GetOutline(ref value);
                 return (_Outline = value);
             }
+
             set
             {
                 string oldValue = _Outline;

@@ -404,6 +404,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.ProductionYear = data.ProductionYear;
                 }
             }
+
             if (data.PremiereDate.HasValue)
             {
                 if (!video.PremiereDate.HasValue || isFullRefresh)
@@ -411,6 +412,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.PremiereDate = data.PremiereDate;
                 }
             }
+
             if (data.IndexNumber.HasValue)
             {
                 if (!video.IndexNumber.HasValue || isFullRefresh)
@@ -418,6 +420,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.IndexNumber = data.IndexNumber;
                 }
             }
+
             if (data.ParentIndexNumber.HasValue)
             {
                 if (!video.ParentIndexNumber.HasValue || isFullRefresh)
