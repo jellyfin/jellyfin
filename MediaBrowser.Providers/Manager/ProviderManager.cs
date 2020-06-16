@@ -38,7 +38,7 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
-    /// Class ProviderManager
+    /// Class ProviderManager.
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
@@ -787,6 +787,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 searchInfo.SearchInfo.MetadataLanguage = _configurationManager.Configuration.PreferredMetadataLanguage;
             }
+
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
             {
                 searchInfo.SearchInfo.MetadataCountryCode = _configurationManager.Configuration.MetadataCountryCode;

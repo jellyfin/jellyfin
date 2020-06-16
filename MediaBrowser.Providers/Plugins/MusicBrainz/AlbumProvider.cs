@@ -361,6 +361,7 @@ namespace MediaBrowser.Providers.Music
                                         return ParseReleaseList(subReader).ToList();
                                     }
                                 }
+
                             default:
                                 {
                                     reader.Skip();
@@ -396,6 +397,7 @@ namespace MediaBrowser.Providers.Music
                                         reader.Read();
                                         continue;
                                     }
+
                                     var releaseId = reader.GetAttribute("id");
 
                                     using (var subReader = reader.ReadSubtree())
@@ -406,8 +408,10 @@ namespace MediaBrowser.Providers.Music
                                             yield return release;
                                         }
                                     }
+
                                     break;
                                 }
+
                             default:
                                 {
                                     reader.Skip();
@@ -453,6 +457,7 @@ namespace MediaBrowser.Providers.Music
                                     {
                                         result.Year = date.Year;
                                     }
+
                                     break;
                                 }
                             case "annotation":
@@ -480,6 +485,7 @@ namespace MediaBrowser.Providers.Music
 
                                     break;
                                 }
+
                             default:
                                 {
                                     reader.Skip();
@@ -518,6 +524,7 @@ namespace MediaBrowser.Providers.Music
                                     return ParseArtistNameCredit(subReader);
                                 }
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -556,6 +563,7 @@ namespace MediaBrowser.Providers.Music
                                     return ParseArtistArtistCredit(subReader, id);
                                 }
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -593,6 +601,7 @@ namespace MediaBrowser.Providers.Music
                                 name = reader.ReadElementContentAsString();
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -680,11 +689,13 @@ namespace MediaBrowser.Providers.Music
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subReader = reader.ReadSubtree())
                                         {
                                             return GetFirstReleaseGroupId(subReader);
                                         }
                                     }
+
                                 default:
                                     {
                                         reader.Skip();
@@ -719,6 +730,7 @@ namespace MediaBrowser.Providers.Music
                             {
                                 return reader.GetAttribute("id");
                             }
+
                         default:
                             {
                                 reader.Skip();

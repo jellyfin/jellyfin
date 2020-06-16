@@ -42,14 +42,14 @@ namespace MediaBrowser.Controller.Library
         UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions dto_options);
 
         /// <summary>
-        /// Get all user data for the given user
+        /// Get all user data for the given user.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
         List<UserItemData> GetAllUserData(Guid userId);
 
         /// <summary>
-        /// Save the all provided user data for the given user
+        /// Save the all provided user data for the given user.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="userData"></param>
@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Library
         void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Updates playstate for an item and returns true or false indicating if it was played to completion
+        /// Updates playstate for an item and returns true or false indicating if it was played to completion.
         /// </summary>
         bool UpdatePlayState(BaseItem item, UserItemData data, long? positionTicks);
     }

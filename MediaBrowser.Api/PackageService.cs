@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetPackage
+    /// Class GetPackage.
     /// </summary>
     [Route("/Packages/{Name}", "GET", Summary = "Gets a package, by name or assembly guid")]
     [Authenticated]
@@ -36,7 +36,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetPackages
+    /// Class GetPackages.
     /// </summary>
     [Route("/Packages", "GET", Summary = "Gets available packages")]
     [Authenticated]
@@ -45,7 +45,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class InstallPackage
+    /// Class InstallPackage.
     /// </summary>
     [Route("/Packages/Installed/{Name}", "POST", Summary = "Installs a package")]
     [Authenticated(Roles = "Admin")]
@@ -74,7 +74,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class CancelPackageInstallation
+    /// Class CancelPackageInstallation.
     /// </summary>
     [Route("/Packages/Installing/{Id}", "DELETE", Summary = "Cancels a package installation")]
     [Authenticated(Roles = "Admin")]
@@ -89,7 +89,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class PackageService
+    /// Class PackageService.
     /// </summary>
     public class PackageService : BaseApiService
     {

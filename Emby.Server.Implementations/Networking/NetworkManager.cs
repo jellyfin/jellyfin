@@ -411,7 +411,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <summary>
-        /// Gets a random port number that is currently available
+        /// Gets a random port number that is currently available.
         /// </summary>
         /// <returns>System.Int32.</returns>
         public int GetRandomUnusedTcpPort()

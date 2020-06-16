@@ -692,7 +692,7 @@ namespace Emby.Server.Implementations.HttpServer
 
 
         /// <summary>
-        /// When the browser sends the IfModifiedDate, it's precision is limited to seconds, so this will account for that
+        /// When the browser sends the IfModifiedDate, it's precision is limited to seconds, so this will account for that.
         /// </summary>
         /// <param name="date">The date.</param>
         /// <returns>DateTime.</returns>

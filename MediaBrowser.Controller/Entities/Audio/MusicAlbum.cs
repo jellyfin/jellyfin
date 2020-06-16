@@ -15,7 +15,7 @@ using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class MusicAlbum
+    /// Class MusicAlbum.
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
@@ -56,6 +56,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return LibraryManager.GetArtist(name, options);
             }
+
             return null;
         }
 

@@ -25,7 +25,7 @@ using System.Diagnostics;
 namespace MediaBrowser.MediaEncoding.Encoder
 {
     /// <summary>
-    /// Class MediaEncoder
+    /// Class MediaEncoder.
     /// </summary>
     public class MediaEncoder : IMediaEncoder, IDisposable
     {
@@ -111,6 +111,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 SetAvailableDecoders(validator.GetDecoders());
                 SetAvailableEncoders(validator.GetEncoders());
+                SetAvailableHwaccels(validator.GetHwaccels());
             }
 
             _logger.LogInformation("FFmpeg: {EncoderLocation}: {FfmpegPath}", EncoderLocation, _ffmpegPath ?? string.Empty);
@@ -228,6 +229,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 return inJellyfinPath;
             }
+
             var values = Environment.GetEnvironmentVariable("PATH");
 
             foreach (var path in values.Split(Path.PathSeparator))
@@ -257,6 +259,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // _logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
         }
 
+        private List<string> _hwaccels = new List<string>();
+        public void SetAvailableHwaccels(IEnumerable<string> list)
+        {
+            _hwaccels = list.ToList();
+            //_logger.Info("Supported hwaccels: {0}", string.Join(",", list.ToArray()));
+        }
+
         public bool SupportsEncoder(string encoder)
         {
             return _encoders.Contains(encoder, StringComparer.OrdinalIgnoreCase);
@@ -265,6 +274,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool SupportsDecoder(string decoder)
         {
             return _decoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool SupportsHwaccel(string hwaccel)
+        {
+            return _hwaccels.Contains(hwaccel, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool CanEncodeToAudioCodec(string codec)
@@ -425,7 +439,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
-        /// The us culture
+        /// The us culture.
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 

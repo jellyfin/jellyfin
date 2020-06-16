@@ -99,7 +99,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Fetches data from the tags dictionary
+        /// Fetches data from the tags dictionary.
         /// </summary>
         /// <param name="audio">The audio.</param>
         /// <param name="data">The data.</param>

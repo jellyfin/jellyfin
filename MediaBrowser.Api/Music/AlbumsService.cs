@@ -27,16 +27,16 @@ namespace MediaBrowser.Api.Music
     public class AlbumsService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _user data repository
+        /// The _user data repository.
         /// </summary>
         private readonly IUserDataManager _userDataRepository;
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;

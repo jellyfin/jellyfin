@@ -169,6 +169,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 throw new ArgumentException("user not found");
             }
+
             if (string.IsNullOrEmpty(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));

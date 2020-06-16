@@ -45,6 +45,7 @@ namespace Rssdp
         public DateTimeOffset AsAt
         {
             get { return _AsAt; }
+
             set
             {
                 if (_AsAt != value)
@@ -55,7 +56,7 @@ namespace Rssdp
         }
 
         /// <summary>
-        /// Returns the headers from the SSDP device response message
+        /// Returns the headers from the SSDP device response message.
         /// </summary>
         public HttpHeaders ResponseHeaders { get; set; }
 

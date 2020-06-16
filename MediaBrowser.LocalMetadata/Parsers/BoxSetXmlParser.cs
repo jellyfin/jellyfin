@@ -26,6 +26,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         reader.Read();
                     }
+
                     break;
 
                 default:
@@ -69,6 +70,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();

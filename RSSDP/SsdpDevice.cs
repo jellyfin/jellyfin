@@ -90,6 +90,7 @@ namespace Rssdp
             {
                 return _DeviceType;
             }
+
             set
             {
                 _DeviceType = value;
@@ -111,6 +112,7 @@ namespace Rssdp
             {
                 return _DeviceTypeNamespace;
             }
+
             set
             {
                 _DeviceTypeNamespace = value;
@@ -130,6 +132,7 @@ namespace Rssdp
             {
                 return _DeviceVersion;
             }
+
             set
             {
                 _DeviceVersion = value;
@@ -181,6 +184,7 @@ namespace Rssdp
                 else
                     return _Udn;
             }
+
             set
             {
                 _Udn = value;

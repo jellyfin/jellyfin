@@ -401,6 +401,7 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         entry.Duration = TimeSpan.FromTicks(child.RunTimeTicks.Value);
                     }
+
                     playlist.PlaylistEntries.Add(entry);
                 }
 
@@ -466,7 +467,7 @@ namespace Emby.Server.Implementations.Playlists
                     playlist.PlaylistEntries.Add(entry);
                 }
 
-                string text = new M3u8Content().ToText(playlist);
+                string text = new M3uContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
 

@@ -93,6 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         videoIndex++;
                     }
+
                     if (mediaStream == imageStream)
                     {
                         break;
@@ -132,6 +133,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 return false;
             }
+
             if (!item.IsFileProtocol)
             {
                 return false;

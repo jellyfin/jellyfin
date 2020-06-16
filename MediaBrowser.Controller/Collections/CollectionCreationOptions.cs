@@ -15,6 +15,7 @@ namespace MediaBrowser.Controller.Collections
         public Dictionary<string, string> ProviderIds { get; set; }
 
         public string[] ItemIdList { get; set; }
+
         public Guid[] UserIds { get; set; }
 
         public CollectionCreationOptions()

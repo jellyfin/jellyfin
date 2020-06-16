@@ -5,7 +5,7 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Interface IHasItemFields
+    /// Interface IHasItemFields.
     /// </summary>
     public interface IHasItemFields
     {

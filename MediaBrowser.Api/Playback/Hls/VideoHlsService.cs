@@ -22,7 +22,7 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     /// <summary>
-    /// Class VideoHlsService
+    /// Class VideoHlsService.
     /// </summary>
     [Authenticated]
     public class VideoHlsService : BaseHlsService

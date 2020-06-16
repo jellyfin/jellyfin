@@ -35,6 +35,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     {
                         continue;
                     }
+
                     var subEvent = new SubtitleTrackEvent { Id = line };
                     line = reader.ReadLine();
 
@@ -52,6 +53,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         _logger.LogWarning("Unrecognized line in srt: {0}", line);
                         continue;
                     }
+
                     subEvent.StartPositionTicks = GetTicks(time[0]);
                     var endTime = time[1];
                     var idx = endTime.IndexOf(" ", StringComparison.Ordinal);
@@ -65,8 +67,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             break;
                         }
+
                         multiline.Add(line);
                     }
+
                     subEvent.Text = string.Join(ParserValues.NewLine, multiline);
                     subEvent.Text = subEvent.Text.Replace(@"\N", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, @"\{(?:\\\d?[\w.-]+(?:\([^\)]*\)|&H?[0-9A-Fa-f]+&|))+\}", string.Empty, RegexOptions.IgnoreCase);
@@ -76,6 +80,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     trackEvents.Add(subEvent);
                 }
             }
+
             trackInfo.TrackEvents = trackEvents.ToArray();
             return trackInfo;
         }

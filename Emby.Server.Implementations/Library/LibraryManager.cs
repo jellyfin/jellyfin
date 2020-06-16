@@ -97,13 +97,13 @@ namespace Emby.Server.Implementations.Library
         private IIntroProvider[] IntroProviders { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of entity resolution ignore rules
+        /// Gets or sets the list of entity resolution ignore rules.
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
         private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of currently registered entity resolvers
+        /// Gets or sets the list of currently registered entity resolvers.
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
         private IItemResolver[] EntityResolvers { get; set; }
@@ -209,12 +209,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The _root folder
+        /// The _root folder.
         /// </summary>
         private volatile AggregateFolder _rootFolder;
 
         /// <summary>
-        /// The _root folder sync lock
+        /// The _root folder sync lock.
         /// </summary>
         private readonly object _rootFolderSyncLock = new object();
 
@@ -627,7 +627,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Determines whether a path should be ignored based on its contents - called after the contents have been read
+        /// Determines whether a path should be ignored based on its contents - called after the contents have been read.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
@@ -909,7 +909,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
@@ -990,7 +990,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -2784,10 +2784,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (string.IsNullOrWhiteSpace(from))
             {
                 throw new ArgumentNullException(nameof(from));
             }
+
             if (string.IsNullOrWhiteSpace(to))
             {
                 throw new ArgumentNullException(nameof(to));

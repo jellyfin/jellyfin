@@ -25,7 +25,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="title">The title or name of the object</param>
         /// <param name="language">ISO-639-3 3-character language codes</param>
@@ -61,7 +61,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Outline
+        /// Backing field for Outline.
         /// </summary>
         protected string _Outline;
         /// <summary>
@@ -86,6 +86,7 @@ namespace Jellyfin.Data.Entities
                 GetOutline(ref value);
                 return (_Outline = value);
             }
+
             set
             {
                 string oldValue = _Outline;
