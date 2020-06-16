@@ -24,9 +24,9 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 # https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
-    LC_ALL en_US.UTF-8 \
-    LANG en_US.UTF-8 \
-    LANGUAGE en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
     NVIDIA_DRIVER_CAPABILITIES="compute,video,utility" \
     JELLYFIN_DATA_DIR="/config" \
     JELLYFIN_CACHE_DIR="/cache" \
