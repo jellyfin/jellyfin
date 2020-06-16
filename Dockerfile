@@ -23,10 +23,21 @@ ARG DEBIAN_FRONTEND="noninteractive"
 # http://stackoverflow.com/questions/48162574/ddg#49462622
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 # https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)
-ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
+    LC_ALL en_US.UTF-8 \
+    LANG en_US.UTF-8 \
+    LANGUAGE en_US:en \
+    NVIDIA_DRIVER_CAPABILITIES="compute,video,utility" \
+    JELLYFIN_DATA_DIR="/config" \
+    JELLYFIN_CACHE_DIR="/cache" \
+    JELLYFIN_CONFIG_DIR="/config/config" \
+    JELLYFIN_FFMPEG="/usr/lib/jellyfin-ffmpeg/ffmpeg" \
+    JELLYFIN_LOG_DIR="/config/log" \
+    JELLYFIN_CACHE_DIR="/cache" \
+    JELLYFIN_WEB_DIR="/jellyfin/jellyfin-web"
 
 COPY --from=builder /jellyfin /jellyfin
-COPY --from=web-builder /dist /jellyfin/jellyfin-web
+COPY --from=web-builder /dist ${JELLYFIN_WEB_DIR}
 # Install dependencies:
 #   mesa-va-drivers: needed for AMD VAAPI
 RUN apt-get update \
@@ -43,20 +54,11 @@ RUN apt-get update \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
- && mkdir -p /cache /config /media \
- && chmod 777 /cache /config /media \
+ && mkdir -p ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR} \
+ && chmod 777 ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR} \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV JELLYFIN_DATA_DIR="/config"
-ENV JELLYFIN_CACHE_DIR="/cache"
-
 EXPOSE 8096
-VOLUME /cache /config /media
+VOLUME ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR}
 ENTRYPOINT ["./jellyfin/jellyfin", \
-    "--datadir", "${JELLYFIN_DATA_DIR}", \
-    "--cachedir", "${JELLYFIN_CACHE_DIR}", \
-    "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
+    "--ffmpeg", "${JELLYFIN_FFMPEG}"]
