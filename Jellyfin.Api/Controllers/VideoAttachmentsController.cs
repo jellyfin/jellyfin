@@ -4,6 +4,7 @@ using System;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -17,7 +18,7 @@ namespace Jellyfin.Api.Controllers
     /// Attachments controller.
     /// </summary>
     [Route("Videos")]
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class VideoAttachmentsController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;

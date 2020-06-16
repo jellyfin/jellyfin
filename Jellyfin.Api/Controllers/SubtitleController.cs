@@ -110,7 +110,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Subtitles retrieved.</response>
         /// <returns>An array of <see cref="RemoteSubtitleInfo"/>.</returns>
         [HttpGet("/Items/{id}/RemoteSearch/Subtitles/{language}")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
             [FromRoute] Guid id,
@@ -130,7 +130,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Subtitle downloaded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("/Items/{id}/RemoteSearch/Subtitles/{subtitleId}")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DownloadRemoteSubtitles(
             [FromRoute] Guid id,
@@ -160,7 +160,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileStreamResult"/> with the subtitle file.</returns>
         [HttpGet("/Providers/Subtitles/Subtitles/{id}")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Application.Octet)]
         public async Task<ActionResult> GetRemoteSubtitles([FromRoute] string id)
@@ -250,7 +250,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Subtitle playlist retrieved.</response>
         /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
         [HttpGet("/Videos/{id}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSubtitlePlaylist(
             [FromRoute] Guid id,
