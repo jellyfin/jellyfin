@@ -62,7 +62,7 @@ namespace Jellyfin.Api.Auth
                     new Claim(InternalClaimTypes.Device, authorizationInfo.Device),
                     new Claim(InternalClaimTypes.Client, authorizationInfo.Client),
                     new Claim(InternalClaimTypes.Version, authorizationInfo.Version),
-                    new Claim(InternalClaimTypes.Token, authorizationInfo.Token)
+                    new Claim(InternalClaimTypes.Token, authorizationInfo.Token),
                 };
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);

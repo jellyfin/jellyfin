@@ -38,6 +38,7 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy
             if (!_configurationManager.CommonConfiguration.IsStartupWizardCompleted)
             {
                 context.Succeed(firstTimeSetupOrElevatedRequirement);
+                return Task.CompletedTask;
             }
 
             var validated = ValidateClaims(context.User);
