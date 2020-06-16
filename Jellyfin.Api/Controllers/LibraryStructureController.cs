@@ -1,3 +1,4 @@
+#nullable enable
 #pragma warning disable CA1801
 
 using System;
@@ -73,7 +74,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult AddVirtualFolder(
+        public async Task<ActionResult> AddVirtualFolder(
             [FromQuery] string name,
             [FromQuery] string collectionType,
             [FromQuery] bool refreshLibrary,
@@ -87,7 +88,7 @@ namespace Jellyfin.Api.Controllers
                 libraryOptions.PathInfos = paths.Select(i => new MediaPathInfo { Path = i }).ToArray();
             }
 
-            _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary);
+            await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
 
             return NoContent();
         }
@@ -101,11 +102,11 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RemoveVirtualFolder(
+        public async Task<ActionResult> RemoveVirtualFolder(
             [FromQuery] string name,
             [FromQuery] bool refreshLibrary)
         {
-            _libraryManager.RemoveVirtualFolder(name, refreshLibrary);
+            await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
             return NoContent();
         }
 
