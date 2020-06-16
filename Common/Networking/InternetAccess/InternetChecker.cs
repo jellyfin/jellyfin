@@ -162,10 +162,10 @@ namespace Common.Networking
 
             if (_every == -1)
             {
-                _timer = new Timer(CheckInternetAccess, null, TimeSpan.FromSeconds(0), TimeSpan.FromMinutes(check));
+                _timer = new Timer(CheckInternetAccess, null, TimeSpan.Zero, TimeSpan.FromMinutes(check));
+                _every = check;
             }
-
-            if (check != _every)
+            else if (check != _every)
             {
                 _timer.Change(TimeSpan.FromMinutes(check), TimeSpan.FromMinutes(check));
                 _every = check;

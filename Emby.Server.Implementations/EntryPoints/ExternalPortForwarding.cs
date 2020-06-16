@@ -28,10 +28,12 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly INetworkManager _networkManager;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly object _lock = new object();
 
         private string _configIdentifier;
 
         private bool _disposed = false;
+        private bool _stopped = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.
@@ -103,58 +105,106 @@ namespace Emby.Server.Implementations.EntryPoints
                 return;
             }
 
-            _logger.LogInformation("Starting NAT discovery");
-            NatUtility.Logger = _loggerFactory.CreateLogger("Mono.Nat");
-            NatUtility.DeviceFound += OnNatUtilityDeviceFound;
-            NatUtility.DeviceLost += OnNatUtilityDeviceLost;
-            NatUtility.BeginDiscovery();
-
-            //// _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-            _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
-            _networkManager.NetworkChanged += OnNetworkChanged;
-
-            InternetChecker.Instance.StateChange += ExternalAccessChanged;
+            if (_stopped)
+            {
+                lock (_lock)
+                {
+                    if (_stopped)
+                    {
+                        _stopped = false;
+                        _logger.LogInformation("Starting NAT discovery");
+                        NatUtility.Logger = _loggerFactory.CreateLogger("Mono.Nat");
+                        NatUtility.DeviceFound += OnNatUtilityDeviceFound;
+                        NatUtility.DeviceLost += OnNatUtilityDeviceLost;
+                        NatUtility.BeginDiscovery();
+                        _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
+                        _networkManager.NetworkChanged += OnNetworkChanged;
+                        InternetChecker.Instance.StateChange += ExternalAccessChanged;
+                    }
+                }
+            }
         }
 
         private void Stop()
         {
-            _logger.LogInformation("Stopping NAT discovery");
+            if (!_stopped)
+            {
+                lock (_lock)
+                {
+                    if (!_stopped)
+                    {
+                        _logger.LogInformation("Stopping NAT discovery");
+                        _stopped = true;
+                        NatUtility.FinaliseDiscovery();
+                        NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
+                        NatUtility.DeviceLost -= OnNatUtilityDeviceLost;
 
-            NatUtility.FinaliseDiscovery();
-            NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
-            NatUtility.DeviceLost -= OnNatUtilityDeviceLost;
-
-            _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
-            _networkManager.NetworkChanged -= OnNetworkChanged;
-            InternetChecker.Instance.StateChange -= ExternalAccessChanged;
+                        _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
+                        _networkManager.NetworkChanged -= OnNetworkChanged;
+                        InternetChecker.Instance.StateChange -= ExternalAccessChanged;
+                    }
+                }
+            }
         }
 
         private void ExternalAccessChanged(object sender, InternetState state)
         {
-            if (state == InternetState.Down)
+            if (_disposed)
             {
-                NatUtility.FinaliseDiscovery();
-                NatUtility.BeginDiscovery();
+                return;
+            }
+
+            if (state == InternetState.Down && !_stopped)
+            {
+                lock (_lock)
+                {
+                    if (state == InternetState.Down && !_stopped)
+                    {
+                        NatUtility.FinaliseDiscovery();
+                        NatUtility.BeginDiscovery();
+                    }
+                }
             }
         }
 
         private void OnNetworkChanged(object sender, EventArgs e)
         {
-            if (!_disposed)
+            if (_disposed)
             {
-                // Something changed on the network.
-                NatUtility.FinaliseDiscovery();
-                NatUtility.BeginDiscovery();
+                return;
+            }
+
+            if (!_stopped)
+            {
+                lock (_lock)
+                {
+                    if (!_stopped)
+                    {
+                        // Something changed on the network.
+                        NatUtility.FinaliseDiscovery();
+                        NatUtility.BeginDiscovery();
+                    }
+                }
             }
         }
 
         private void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             NatUtility.Search(e.Argument.LocalIpAddress, NatProtocol.Upnp);
         }
 
         private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             try
             {
                 await CreateRules(e.Device).ConfigureAwait(false);

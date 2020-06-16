@@ -191,7 +191,10 @@ namespace Mono.Nat
             while (!token.IsCancellationRequested)
             {
                 (var localAddress, var data) = await Clients.ReceiveAsync(token).ConfigureAwait(false);
-                await HandleMessageReceived(localAddress, data, token).ConfigureAwait(false);
+                if (!token.IsCancellationRequested)
+                {
+                    await HandleMessageReceived(localAddress, data, token).ConfigureAwait(false);
+                }
             }
         }
 
