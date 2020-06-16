@@ -24,6 +24,9 @@ namespace Jellyfin.Api.Tests.Auth.IgnoreSchedulePolicy
         private readonly Mock<IUserManager> _userManagerMock;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
 
+        /// <summary>
+        /// Globally disallow access.
+        /// </summary>
         private readonly AccessSchedule[] _accessSchedules = { new AccessSchedule(DynamicDayOfWeek.Everyday, 0, 0, Guid.Empty) };
 
         public IgnoreScheduleHandlerTests()
@@ -44,11 +47,10 @@ namespace Jellyfin.Api.Tests.Auth.IgnoreSchedulePolicy
         public async Task ShouldAllowScheduleCorrectly(string role, bool shouldSucceed)
         {
             TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-            var (_, claims) = TestHelpers.SetupUser(
+            var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,
                 role,
-                TestHelpers.InternalIp,
                 _accessSchedules);
 
             var context = new AuthorizationHandlerContext(_requirements, claims, null);

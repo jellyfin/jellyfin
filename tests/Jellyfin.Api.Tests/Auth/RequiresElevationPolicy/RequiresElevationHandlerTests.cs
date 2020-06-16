@@ -39,11 +39,10 @@ namespace Jellyfin.Api.Tests.Auth.RequiresElevationPolicy
         public async Task ShouldHandleRolesCorrectly(string role, bool shouldSucceed)
         {
             TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-            var (_, claims) = TestHelpers.SetupUser(
+            var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,
-                role,
-                TestHelpers.InternalIp);
+                role);
 
             var context = new AuthorizationHandlerContext(_requirements, claims, null);
 

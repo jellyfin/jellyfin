@@ -18,21 +18,10 @@ namespace Jellyfin.Api.Tests
 {
     public static class TestHelpers
     {
-        /// <summary>
-        /// 127.0.0.1.
-        /// </summary>
-        public const long InternalIp = 16777343;
-
-        /// <summary>
-        /// 1.1.1.1.
-        /// </summary>
-        public const long ExternalIp = 16843009;
-
-        public static (User, ClaimsPrincipal) SetupUser(
+        public static ClaimsPrincipal SetupUser(
             Mock<IUserManager> userManagerMock,
             Mock<IHttpContextAccessor> httpContextAccessorMock,
             string role,
-            long ip,
             IEnumerable<AccessSchedule>? accessSchedules = null)
         {
             var user = new User(
@@ -72,9 +61,9 @@ namespace Jellyfin.Api.Tests
 
             httpContextAccessorMock
                 .Setup(h => h.HttpContext.Connection.RemoteIpAddress)
-                .Returns(new IPAddress(ip));
+                .Returns(new IPAddress(0));
 
-            return (user, new ClaimsPrincipal(identity));
+            return new ClaimsPrincipal(identity);
         }
 
         public static void SetupConfigurationManager(in Mock<IConfigurationManager> configurationManagerMock, bool startupWizardCompleted)

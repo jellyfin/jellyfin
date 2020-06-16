@@ -39,11 +39,10 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupOrElevatedPolicy
         public async Task ShouldSucceedIfStartupWizardIncomplete(string userRole)
         {
             TestHelpers.SetupConfigurationManager(_configurationManagerMock, false);
-            var (_, claims) = TestHelpers.SetupUser(
+            var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,
-                userRole,
-                TestHelpers.InternalIp);
+                userRole);
 
             var context = new AuthorizationHandlerContext(_requirements, claims, null);
 
@@ -58,11 +57,10 @@ namespace Jellyfin.Api.Tests.Auth.FirstTimeSetupOrElevatedPolicy
         public async Task ShouldRequireAdministratorIfStartupWizardComplete(string userRole, bool shouldSucceed)
         {
             TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);
-            var (_, claims) = TestHelpers.SetupUser(
+            var claims = TestHelpers.SetupUser(
                 _userManagerMock,
                 _httpContextAccessor,
-                userRole,
-                TestHelpers.InternalIp);
+                userRole);
 
             var context = new AuthorizationHandlerContext(_requirements, claims, null);
 
