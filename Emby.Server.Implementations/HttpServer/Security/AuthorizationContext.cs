@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 token = queryString["ApiKey"];
             }
 
-            // TODO depricate this query parameter.
+            // TODO deprecate this query parameter.
             if (string.IsNullOrEmpty(token))
             {
                 token = queryString["api_key"];
