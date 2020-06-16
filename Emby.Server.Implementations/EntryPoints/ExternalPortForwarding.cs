@@ -1,12 +1,11 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -28,9 +27,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly INetworkManager _networkManager;
-        //// private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
 
-        private Timer _timer;
         private string _configIdentifier;
 
         private bool _disposed = false;
@@ -109,47 +106,10 @@ namespace Emby.Server.Implementations.EntryPoints
             NatUtility.BeginDiscovery();
 
             //// _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-            _timer = new Timer(CheckInboundAccessibility, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
             _networkManager.NetworkChanged += OnNetworkChanged;
-        }
 
-        private void CheckInboundAccessibility(object state)
-        {
-            if (!_disposed)
-            {
-                _ = CheckAccess();
-            }
-        }
-
-        private async Task<bool> CheckInternetAccess()
-        {
-            // This needs to be a call to an external site specifying our own ip address to callback on.
-
-            return false;
-        }
-
-        private async Task CheckAccess(int count = 0)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            bool alive = await CheckInternetAccess().ConfigureAwait(false);
-
-            if (!alive && count < 3)
-            {
-                _logger.LogWarning("Lost inbound internet access.");
-
-                NatUtility.FinaliseDiscovery();
-                NatUtility.BeginDiscovery();
-
-                await Task.Delay(1000).ConfigureAwait(false);
-                _ = CheckAccess(count + 1);
-            }
-
-            _logger.LogError("Inbound internet access is DOWN.");
+            InternetChecker.Instance.StateChange += ExternalAccessChanged;
         }
 
         private void Stop()
@@ -159,10 +119,19 @@ namespace Emby.Server.Implementations.EntryPoints
             NatUtility.FinaliseDiscovery();
             NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
             NatUtility.DeviceLost -= OnNatUtilityDeviceLost;
-            _timer?.Dispose();
 
             _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
             _networkManager.NetworkChanged -= OnNetworkChanged;
+            InternetChecker.Instance.StateChange -= ExternalAccessChanged;
+        }
+
+        private void ExternalAccessChanged(object sender, InternetState state)
+        {
+            if (state == InternetState.Down)
+            {
+                NatUtility.FinaliseDiscovery();
+                NatUtility.BeginDiscovery();
+            }
         }
 
         private void OnNetworkChanged(object sender, EventArgs e)
@@ -320,8 +289,6 @@ namespace Emby.Server.Implementations.EntryPoints
             _config.ConfigurationUpdated -= OnConfigurationUpdated;
 
             Stop();
-
-            _timer = null;
 
             _disposed = true;
         }
