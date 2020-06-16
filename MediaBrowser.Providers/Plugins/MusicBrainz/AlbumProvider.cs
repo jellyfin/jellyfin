@@ -792,7 +792,6 @@ namespace MediaBrowser.Providers.Music
 
                 // We retry a finite number of times, and only whilst MB is indicating 503 (throttling)
             }
-
             while (attempts < MusicBrainzQueryAttempts && response.StatusCode == HttpStatusCode.ServiceUnavailable);
 
             // Log error if unable to query MB database due to throttling
