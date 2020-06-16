@@ -46,6 +46,9 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
     JELLYFIN_WEB_DIR="/jellyfin/jellyfin-web"
 
 COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
+COPY --from=builder /jellyfin /jellyfin
+COPY --from=web-builder /dist ${JELLYFIN_WEB_DIR}
+COPY docker/*.sh /scripts/
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg curl && \
  curl -ks https://repo.jellyfin.org/debian/jellyfin_team.gpg.key | apt-key add - && \
@@ -70,12 +73,10 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR} \
  && chmod 777 ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR} \
- && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
-
-COPY --from=builder /jellyfin /jellyfin
-COPY --from=web-builder /dist ${JELLYFIN_WEB_DIR}
+ && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen \
+ && chmod -R +x /scripts
 
 EXPOSE 8096
 VOLUME ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR}
-ENTRYPOINT ["./jellyfin/jellyfin", \
-    "--ffmpeg", "${JELLYFIN_FFMPEG}"]
+ENTRYPOINT ["/scripts/entrypoint.sh"]
+CMD [ "/scripts/run.sh" ]

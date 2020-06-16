@@ -38,6 +38,7 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
 
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist ${JELLYFIN_WEB_DIR}
+COPY docker/*.sh /scripts/
 # Install dependencies:
 #   mesa-va-drivers: needed for AMD VAAPI
 RUN apt-get update \
@@ -56,9 +57,10 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR} \
  && chmod 777 ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR} \
- && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
+ && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen \
+ && chmod -R +x /scripts
 
 EXPOSE 8096
 VOLUME ${JELLYFIN_CACHE_DIR} ${JELLYFIN_CONFIG_DIR} ${JELLYFIN_DATA_DIR}
-ENTRYPOINT ["./jellyfin/jellyfin", \
-    "--ffmpeg", "${JELLYFIN_FFMPEG}"]
+ENTRYPOINT ["/scripts/entrypoint.sh"]
+CMD [ "/scripts/run.sh" ]
