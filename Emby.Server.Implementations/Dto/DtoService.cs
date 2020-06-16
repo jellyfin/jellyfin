@@ -621,6 +621,7 @@ namespace Emby.Server.Implementations.Dto
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id.ToString("N", CultureInfo.InvariantCulture);
+                    baseItemPerson.ImageBlurHashes = dto.ImageBlurHashes;
                     list.Add(baseItemPerson);
                 }
             }
