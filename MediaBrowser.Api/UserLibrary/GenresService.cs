@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetGenres
+    /// Class GetGenres.
     /// </summary>
     [Route("/Genres", "GET", Summary = "Gets all genres from a given item, folder, or the entire library")]
     public class GetGenres : GetItemsByName
@@ -22,7 +22,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetGenre
+    /// Class GetGenre.
     /// </summary>
     [Route("/Genres/{Name}", "GET", Summary = "Gets a genre, by name")]
     public class GetGenre : IReturn<BaseItemDto>
@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GenresService
+    /// Class GenresService.
     /// </summary>
     [Authenticated]
     public class GenresService : BaseItemsByNameService<Genre>

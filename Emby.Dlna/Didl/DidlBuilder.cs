@@ -6,14 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using Emby.Dlna.Configuration;
 using Emby.Dlna.ContentDirectory;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
@@ -23,6 +22,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
+using XmlAttribute = MediaBrowser.Model.Dlna.XmlAttribute;
 
 namespace Emby.Dlna.Didl
 {
@@ -92,21 +98,21 @@ namespace Emby.Dlna.Didl
             {
                 using (var writer = XmlWriter.Create(builder, settings))
                 {
-                    //writer.WriteStartDocument();
+                    // writer.WriteStartDocument();
 
                     writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
 
                     writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
                     writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
                     writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
-                    //didl.SetAttribute("xmlns:sec", NS_SEC);
+                    // didl.SetAttribute("xmlns:sec", NS_SEC);
 
                     WriteXmlRootAttributes(_profile, writer);
 
                     WriteItemElement(writer, item, user, context, null, deviceId, filter, streamInfo);
 
                     writer.WriteFullEndElement();
-                    //writer.WriteEndDocument();
+                    // writer.WriteEndDocument();
                 }
 
                 return builder.ToString();
@@ -421,7 +427,6 @@ namespace Emby.Dlna.Didl
                     case StubType.FavoriteSeries: return _localization.GetLocalizedString("HeaderFavoriteShows");
                     case StubType.FavoriteEpisodes: return _localization.GetLocalizedString("HeaderFavoriteEpisodes");
                     case StubType.Series: return _localization.GetLocalizedString("Shows");
-                    default: break;
                 }
             }
 
@@ -670,7 +675,7 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            MediaBrowser.Model.Dlna.XmlAttribute secAttribute = null;
+            XmlAttribute secAttribute = null;
             foreach (var attribute in _profile.XmlRootAttributes)
             {
                 if (string.Equals(attribute.Name, "xmlns:sec", StringComparison.OrdinalIgnoreCase))
@@ -700,13 +705,13 @@ namespace Emby.Dlna.Didl
         }
 
         /// <summary>
-        /// Adds fields used by both items and folders
+        /// Adds fields used by both items and folders.
         /// </summary>
         private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
         {
             // Don't filter on dc:title because not all devices will include it in the filter
             // MediaMonkey for example won't display content without a title
-            //if (filter.Contains("dc:title"))
+            // if (filter.Contains("dc:title"))
             {
                 AddValue(writer, "dc", "title", GetDisplayName(item, itemStubType, context), NS_DC);
             }
@@ -745,7 +750,7 @@ namespace Emby.Dlna.Didl
                         AddValue(writer, "dc", "description", desc, NS_DC);
                     }
                 }
-                //if (filter.Contains("upnp:longDescription"))
+                // if (filter.Contains("upnp:longDescription"))
                 //{
                 //    if (!string.IsNullOrWhiteSpace(item.Overview))
                 //    {
@@ -760,6 +765,7 @@ namespace Emby.Dlna.Didl
                 {
                     AddValue(writer, "dc", "rating", item.OfficialRating, NS_DC);
                 }
+
                 if (filter.Contains("upnp:rating"))
                 {
                     AddValue(writer, "upnp", "rating", item.OfficialRating, NS_UPNP);
@@ -995,7 +1001,6 @@ namespace Emby.Dlna.Didl
             }
 
             AddImageResElement(item, writer, 160, 160, "jpg", "JPEG_TN");
-
         }
 
         private void AddImageResElement(
@@ -1048,10 +1053,12 @@ namespace Emby.Dlna.Didl
             {
                 return GetImageInfo(item, ImageType.Primary);
             }
+
             if (item.HasImage(ImageType.Thumb))
             {
                 return GetImageInfo(item, ImageType.Thumb);
             }
+
             if (item.HasImage(ImageType.Backdrop))
             {
                 if (item is Channel)
@@ -1131,25 +1138,24 @@ namespace Emby.Dlna.Didl
 
             if (width == 0 || height == 0)
             {
-                //_imageProcessor.GetImageSize(item, imageInfo);
+                // _imageProcessor.GetImageSize(item, imageInfo);
                 width = null;
                 height = null;
             }
-
             else if (width == -1 || height == -1)
             {
                 width = null;
                 height = null;
             }
 
-            //try
+            // try
             //{
             //    var size = _imageProcessor.GetImageSize(imageInfo);
 
             //    width = size.Width;
             //    height = size.Height;
             //}
-            //catch
+            // catch
             //{
 
             //}

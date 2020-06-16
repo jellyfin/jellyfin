@@ -24,7 +24,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="title">The title or name of the object</param>
         /// <param name="language">ISO-639-3 3-character language codes</param>
@@ -60,7 +60,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Outline
+        /// Backing field for Outline.
         /// </summary>
         protected string _Outline;
         /// <summary>
@@ -85,6 +85,7 @@ namespace Jellyfin.Data.Entities
                 GetOutline(ref value);
                 return (_Outline = value);
             }
+
             set
             {
                 string oldValue = _Outline;
@@ -97,7 +98,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Plot
+        /// Backing field for Plot.
         /// </summary>
         protected string _Plot;
         /// <summary>
@@ -122,6 +123,7 @@ namespace Jellyfin.Data.Entities
                 GetPlot(ref value);
                 return (_Plot = value);
             }
+
             set
             {
                 string oldValue = _Plot;
@@ -134,7 +136,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Tagline
+        /// Backing field for Tagline.
         /// </summary>
         protected string _Tagline;
         /// <summary>
@@ -159,6 +161,7 @@ namespace Jellyfin.Data.Entities
                 GetTagline(ref value);
                 return (_Tagline = value);
             }
+
             set
             {
                 string oldValue = _Tagline;
@@ -173,7 +176,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

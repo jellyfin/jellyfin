@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
@@ -6,7 +7,7 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Controller.Dto
 {
     /// <summary>
-    /// Interface IDtoService
+    /// Interface IDtoService.
     /// </summary>
     public interface IDtoService
     {

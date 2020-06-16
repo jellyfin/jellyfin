@@ -17,7 +17,7 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.Providers.MediaInfo
 {
     /// <summary>
-    /// Uses ffmpeg to create video images
+    /// Uses ffmpeg to create video images.
     /// </summary>
     public class AudioImageProvider : IDynamicImageProvider
     {
@@ -79,7 +79,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 catch
                 {
-
                 }
             }
 
@@ -130,6 +129,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 return false;
             }
+
             if (!item.IsFileProtocol)
             {
                 return false;

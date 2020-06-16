@@ -4,12 +4,12 @@ using DotNet.Globbing;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Glob patterns for files to ignore
+    /// Glob patterns for files to ignore.
     /// </summary>
     public static class IgnorePatterns
     {
         /// <summary>
-        /// Files matching these glob patterns will be ignored
+        /// Files matching these glob patterns will be ignored.
         /// </summary>
         public static readonly string[] Patterns = new string[]
         {
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library
         private static readonly Glob[] _globs = Patterns.Select(p => Glob.Parse(p, _globOptions)).ToArray();
 
         /// <summary>
-        /// Returns true if the supplied path should be ignored
+        /// Returns true if the supplied path should be ignored.
         /// </summary>
         public static bool ShouldIgnore(string path)
         {

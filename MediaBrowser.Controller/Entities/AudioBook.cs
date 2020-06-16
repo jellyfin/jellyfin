@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -24,10 +24,12 @@ namespace MediaBrowser.Controller.Entities
         {
             return SeriesName;
         }
+
         public string FindSeriesName()
         {
             return SeriesName;
         }
+
         public string FindSeriesPresentationUniqueKey()
         {
             return SeriesPresentationUniqueKey;

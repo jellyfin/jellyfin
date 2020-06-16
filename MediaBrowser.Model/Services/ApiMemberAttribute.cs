@@ -58,7 +58,7 @@ namespace MediaBrowser.Model.Services
         public string Route { get; set; }
 
         /// <summary>
-        /// Whether to exclude this property from being included in the ModelSchema
+        /// Whether to exclude this property from being included in the ModelSchema.
         /// </summary>
         public bool ExcludeInSchema { get; set; }
     }

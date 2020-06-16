@@ -17,7 +17,7 @@ namespace MediaBrowser.Providers.MediaInfo
     public class VideoImageProvider : IDynamicImageProvider, IHasOrder
     {
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly ILogger _logger;
+        private readonly ILogger<VideoImageProvider> _logger;
         private readonly IFileSystem _fileSystem;
 
         public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger, IFileSystem fileSystem)
@@ -93,6 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         videoIndex++;
                     }
+
                     if (mediaStream == imageStream)
                     {
                         break;
@@ -132,6 +133,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 return false;
             }
+
             if (!item.IsFileProtocol)
             {
                 return false;

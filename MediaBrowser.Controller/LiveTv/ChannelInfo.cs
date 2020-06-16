@@ -3,7 +3,7 @@ using MediaBrowser.Model.LiveTv;
 namespace MediaBrowser.Controller.LiveTv
 {
     /// <summary>
-    /// Class ChannelInfo
+    /// Class ChannelInfo.
     /// </summary>
     public class ChannelInfo
     {
@@ -44,13 +44,13 @@ namespace MediaBrowser.Controller.LiveTv
         public ChannelType ChannelType { get; set; }
 
         /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system
+        /// Supply the image path if it can be accessed directly from the file system.
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
 
         /// <summary>
-        /// Supply the image url if it can be downloaded
+        /// Supply the image url if it can be downloaded.
         /// </summary>
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }
@@ -67,8 +67,11 @@ namespace MediaBrowser.Controller.LiveTv
         public bool? IsFavorite { get; set; }
 
         public bool? IsHD { get; set; }
+
         public string AudioCodec { get; set; }
+
         public string VideoCodec { get; set; }
+
         public string[] Tags { get; set; }
     }
 }

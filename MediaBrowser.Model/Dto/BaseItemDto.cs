@@ -62,17 +62,23 @@ namespace MediaBrowser.Model.Dto
         public DateTime? DateCreated { get; set; }
 
         public DateTime? DateLastMediaAdded { get; set; }
+
         public string ExtraType { get; set; }
 
         public int? AirsBeforeSeasonNumber { get; set; }
+
         public int? AirsAfterSeasonNumber { get; set; }
+
         public int? AirsBeforeEpisodeNumber { get; set; }
+
         public bool? CanDelete { get; set; }
+
         public bool? CanDownload { get; set; }
 
         public bool? HasSubtitles { get; set; }
 
         public string PreferredMetadataLanguage { get; set; }
+
         public string PreferredMetadataCountryCode { get; set; }
 
         /// <summary>
@@ -87,6 +93,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The name of the sort.</value>
         public string SortName { get; set; }
+
         public string ForcedSortName { get; set; }
 
         /// <summary>
@@ -146,6 +153,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The channel identifier.</value>
         public Guid ChannelId { get; set; }
+
         public string ChannelName { get; set; }
 
         /// <summary>
@@ -213,6 +221,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The number.</value>
         public string Number { get; set; }
+
         public string ChannelNumber { get; set; }
 
         /// <summary>
@@ -308,7 +317,7 @@ namespace MediaBrowser.Model.Dto
         public int? LocalTrailerCount { get; set; }
 
         /// <summary>
-        /// User data for this item based on the user it's being requested for
+        /// User data for this item based on the user it's being requested for.
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
@@ -467,6 +476,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The part count.</value>
         public int? PartCount { get; set; }
+
         public int? MediaSourceCount { get; set; }
 
         /// <summary>
@@ -582,7 +592,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the locked fields.
         /// </summary>
         /// <value>The locked fields.</value>
-        public MetadataFields[] LockedFields { get; set; }
+        public MetadataField[] LockedFields { get; set; }
 
         /// <summary>
         /// Gets or sets the trailer count.
@@ -599,6 +609,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series count.</value>
         public int? SeriesCount { get; set; }
+
         public int? ProgramCount { get; set; }
         /// <summary>
         /// Gets or sets the episode count.
@@ -615,6 +626,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The album count.</value>
         public int? AlbumCount { get; set; }
+
         public int? ArtistCount { get; set; }
         /// <summary>
         /// Gets or sets the music video count.
@@ -629,18 +641,31 @@ namespace MediaBrowser.Model.Dto
         public bool? LockData { get; set; }
 
         public int? Width { get; set; }
+
         public int? Height { get; set; }
+
         public string CameraMake { get; set; }
+
         public string CameraModel { get; set; }
+
         public string Software { get; set; }
+
         public double? ExposureTime { get; set; }
+
         public double? FocalLength { get; set; }
+
         public ImageOrientation? ImageOrientation { get; set; }
+
         public double? Aperture { get; set; }
+
         public double? ShutterSpeed { get; set; }
+
         public double? Latitude { get; set; }
+
         public double? Longitude { get; set; }
+
         public double? Altitude { get; set; }
+
         public int? IsoSpeedRating { get; set; }
 
         /// <summary>

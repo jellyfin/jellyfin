@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Networking
 {
     public class NetworkManager : INetworkManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<NetworkManager> _logger;
 
         private IPAddress[] _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.Networking
 
                 foreach (var subnet_Match in subnets)
                 {
-                    //logger.LogDebug("subnet_Match:" + subnet_Match);
+                    // logger.LogDebug("subnet_Match:" + subnet_Match);
 
                     if (endpoint.StartsWith(subnet_Match + ".", StringComparison.OrdinalIgnoreCase))
                     {
@@ -411,7 +411,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <summary>
-        /// Gets a random port number that is currently available
+        /// Gets a random port number that is currently available.
         /// </summary>
         /// <returns>System.Int32.</returns>
         public int GetRandomUnusedTcpPort()

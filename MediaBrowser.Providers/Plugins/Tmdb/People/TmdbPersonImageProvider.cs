@@ -49,7 +49,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
-            var id = person.GetProviderId(MetadataProviders.Tmdb);
+            var id = person.GetProviderId(MetadataProvider.Tmdb);
 
             if (!string.IsNullOrEmpty(id))
             {
@@ -98,6 +98,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 {
                     return 3;
                 }
+
                 if (!isLanguageEn)
                 {
                     if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
@@ -105,10 +106,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                         return 2;
                     }
                 }
+
                 if (string.IsNullOrEmpty(i.Language))
                 {
                     return isLanguageEn ? 3 : 2;
                 }
+
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)

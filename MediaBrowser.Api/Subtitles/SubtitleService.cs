@@ -97,6 +97,7 @@ namespace MediaBrowser.Api.Subtitles
 
         [ApiMember(Name = "CopyTimestamps", Description = "CopyTimestamps", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool CopyTimestamps { get; set; }
+
         public bool AddVttTimeMap { get; set; }
     }
 
@@ -214,6 +215,7 @@ namespace MediaBrowser.Api.Subtitles
             {
                 request.Format = "json";
             }
+
             if (string.IsNullOrEmpty(request.Format))
             {
                 var item = (Video)_libraryManager.GetItemById(request.Id);

@@ -14,16 +14,17 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     /// <summary>
-    /// Provides a base class for parsing metadata xml
+    /// Provides a base class for parsing metadata xml.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class BaseItemXmlParser<T>
         where T : BaseItem
     {
         /// <summary>
-        /// The logger
+        /// The logger.
         /// </summary>
-        protected ILogger Logger { get; private set; }
+        protected ILogger<BaseItemXmlParser<T>> Logger { get; private set; }
+
         protected IProviderManager ProviderManager { get; private set; }
 
         private Dictionary<string, string> _validProviderIds;
@@ -32,14 +33,14 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public BaseItemXmlParser(ILogger logger, IProviderManager providerManager)
+        public BaseItemXmlParser(ILogger<BaseItemXmlParser<T>> logger, IProviderManager providerManager)
         {
             Logger = logger;
             ProviderManager = providerManager;
         }
 
         /// <summary>
-        /// Fetches metadata for an item from one xml file
+        /// Fetches metadata for an item from one xml file.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="metadataFile">The metadata file.</param>
@@ -78,10 +79,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            //Additional Mappings
+            // Additional Mappings
             _validProviderIds.Add("IMDB", "Imdb");
 
-            //Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
+            // Fetch(item, metadataFile, settings, Encoding.GetEncoding("ISO-8859-1"), cancellationToken);
             Fetch(item, metadataFile, settings, Encoding.UTF8, cancellationToken);
         }
 
@@ -124,7 +125,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         /// <summary>
-        /// Fetches metadata from one Xml Element
+        /// Fetches metadata from one Xml Element.
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="itemResult">The item result.</param>
@@ -150,6 +151,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 Logger.LogWarning("Invalid Added value found: " + val);
                             }
                         }
+
                         break;
                     }
 
@@ -161,6 +163,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             item.OriginalTitle = val;
                         }
+
                         break;
                     }
 
@@ -191,6 +194,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             item.ForcedSortName = val;
                         }
+
                         break;
                     }
 
@@ -249,13 +253,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             item.LockedFields = val.Split('|').Select(i =>
                             {
-                                if (Enum.TryParse(i, true, out MetadataFields field))
+                                if (Enum.TryParse(i, true, out MetadataField field))
                                 {
-                                    return (MetadataFields?)field;
+                                    return (MetadataField?)field;
                                 }
 
                                 return null;
-
                             }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
                         }
 
@@ -275,6 +278,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             reader.Read();
                         }
+
                         break;
                     }
 
@@ -291,6 +295,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             reader.Read();
                         }
+
                         break;
                     }
 
@@ -303,6 +308,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             item.OfficialRating = rating;
                         }
+
                         break;
                     }
 
@@ -314,6 +320,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             item.CustomRating = val;
                         }
+
                         break;
                     }
 
@@ -328,6 +335,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
                         }
+
                         break;
                     }
 
@@ -340,6 +348,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             hasAspectRatio.AspectRatio = val;
                         }
+
                         break;
                     }
 
@@ -351,6 +360,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             item.IsLocked = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                         }
+
                         break;
                     }
 
@@ -362,8 +372,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             {
                                 continue;
                             }
+
                             item.AddStudio(name);
                         }
+
                         break;
                     }
 
@@ -375,8 +387,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             {
                                 continue;
                             }
+
                             itemResult.AddPerson(p);
                         }
+
                         break;
                     }
                 case "Writer":
@@ -387,8 +401,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             {
                                 continue;
                             }
+
                             itemResult.AddPerson(p);
                         }
+
                         break;
                     }
 
@@ -412,9 +428,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     continue;
                                 }
+
                                 itemResult.AddPerson(p);
                             }
                         }
+
                         break;
                     }
 
@@ -426,8 +444,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             {
                                 continue;
                             }
+
                             itemResult.AddPerson(p);
                         }
+
                         break;
                     }
 
@@ -439,6 +459,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             item.AddTrailerUrl(val);
                         }
+
                         break;
                     }
 
@@ -454,6 +475,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 hasDisplayOrder.DisplayOrder = val;
                             }
                         }
+
                         break;
                     }
 
@@ -470,6 +492,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             reader.Read();
                         }
+
                         break;
                     }
 
@@ -502,6 +525,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 item.CommunityRating = val;
                             }
                         }
+
                         break;
                     }
 
@@ -543,8 +567,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     var tmdbCollection = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdbCollection))
                     {
-                        item.SetProviderId(MetadataProviders.TmdbCollection, tmdbCollection);
+                        item.SetProviderId(MetadataProvider.TmdbCollection, tmdbCollection);
                     }
+
                     break;
 
                 case "Genres":
@@ -560,6 +585,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             reader.Read();
                         }
+
                         break;
                     }
 
@@ -576,6 +602,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             reader.Read();
                         }
+
                         break;
                     }
 
@@ -592,6 +619,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             reader.Read();
                         }
+
                         break;
                     }
 
@@ -608,6 +636,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             reader.Read();
                         }
+
                         break;
                     }
 
@@ -628,6 +657,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             reader.Read();
                         }
+
                         break;
                     }
 
@@ -660,6 +690,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 video.Video3DFormat = Video3DFormat.MVC;
                             }
                         }
+
                         break;
                     }
 
@@ -680,10 +711,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         }
 
                         break;
-
                     }
             }
         }
+
         private void FetchFromSharesNode(XmlReader reader, IHasShares item)
         {
             var list = new List<Share>();
@@ -718,6 +749,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -793,6 +825,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
                                 }
+
                                 break;
                             }
 
@@ -833,8 +866,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     item.Tagline = val;
                                 }
+
                                 break;
                             }
+
                         default:
                             reader.Skip();
                             break;
@@ -872,6 +907,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     item.AddGenre(genre);
                                 }
+
                                 break;
                             }
 
@@ -909,6 +945,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     tags.Add(tag);
                                 }
+
                                 break;
                             }
 
@@ -951,6 +988,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                     reader.Read();
                                     continue;
                                 }
+
                                 using (var subtree = reader.ReadSubtree())
                                 {
                                     foreach (var person in GetPersonsFromXmlNode(subtree))
@@ -959,9 +997,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                         {
                                             continue;
                                         }
+
                                         item.AddPerson(person);
                                     }
                                 }
+
                                 break;
                             }
 
@@ -997,6 +1037,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     item.AddTrailerUrl(val);
                                 }
+
                                 break;
                             }
 
@@ -1037,6 +1078,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     item.AddStudio(studio);
                                 }
+
                                 break;
                             }
 
@@ -1086,6 +1128,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     type = val;
                                 }
+
                                 break;
                             }
 
@@ -1097,6 +1140,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 {
                                     role = val;
                                 }
+
                                 break;
                             }
                         case "SortOrder":
@@ -1110,6 +1154,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                         sortOrder = intVal;
                                     }
                                 }
+
                                 break;
                             }
 
@@ -1208,6 +1253,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 item.CanEdit = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -1232,7 +1278,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
 
         /// <summary>
-        /// Used to split names of comma or pipe delimeted genres and people
+        /// Used to split names of comma or pipe delimeted genres and people.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>IEnumerable{System.String}.</returns>
@@ -1260,6 +1306,5 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             return val.Split(separators, options);
         }
-
     }
 }

@@ -26,6 +26,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         reader.Read();
                     }
+
                     break;
 
                 default:
@@ -69,6 +70,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -85,7 +87,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             item.Item.LinkedChildren = list.ToArray();
         }
 
-        public BoxSetXmlParser(ILogger logger, IProviderManager providerManager)
+        public BoxSetXmlParser(ILogger<BoxSetXmlParser> logger, IProviderManager providerManager)
             : base(logger, providerManager)
         {
         }

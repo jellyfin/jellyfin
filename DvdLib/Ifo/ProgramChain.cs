@@ -22,7 +22,9 @@ namespace DvdLib.Ifo
         public readonly List<Cell> Cells;
 
         public DvdTime PlaybackTime { get; private set; }
+
         public UserOperation ProhibitedUserOperations { get; private set; }
+
         public byte[] AudioStreamControl { get; private set; } // 8*2 entries
         public byte[] SubpictureStreamControl { get; private set; } // 32*4 entries
 
@@ -33,9 +35,11 @@ namespace DvdLib.Ifo
         private ushort _goupProgramNumber;
 
         public ProgramPlaybackMode PlaybackMode { get; private set; }
+
         public uint ProgramCount { get; private set; }
 
         public byte StillTime { get; private set; }
+
         public byte[] Palette { get; private set; } // 16*4 entries
 
         private ushort _commandTableOffset;

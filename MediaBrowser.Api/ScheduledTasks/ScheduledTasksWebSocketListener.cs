@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.ScheduledTasks
 {
     /// <summary>
-    /// Class ScheduledTasksWebSocketListener
+    /// Class ScheduledTasksWebSocketListener.
     /// </summary>
     public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<TaskInfo>, WebSocketListenerState>
     {

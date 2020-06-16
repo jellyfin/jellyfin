@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -191,6 +192,5 @@ namespace MediaBrowser.Api.Music
 
             return result;
         }
-
     }
 }
