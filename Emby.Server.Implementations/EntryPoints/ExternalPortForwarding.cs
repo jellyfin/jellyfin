@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
@@ -26,8 +27,8 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ILogger<ExternalPortForwarding> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
-
-        private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
+        private readonly INetworkManager _networkManager;
+        //// private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
 
         private Timer _timer;
         private string _configIdentifier;
@@ -41,15 +42,18 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="appHost">The application host.</param>
         /// <param name="config">The configuration manager.</param>
         /// <param name="deviceDiscovery">The device discovery.</param>
+        /// <param name="networkManager">The network manager.</param>
         public ExternalPortForwarding(
             ILogger<ExternalPortForwarding> logger,
             IServerApplicationHost appHost,
             IServerConfigurationManager config,
-            IDeviceDiscovery deviceDiscovery)
+            IDeviceDiscovery deviceDiscovery,
+            INetworkManager networkManager)
         {
             _logger = logger;
             _appHost = appHost;
             _config = config;
+            _networkManager = networkManager;
             _deviceDiscovery = deviceDiscovery;
         }
 
@@ -101,23 +105,74 @@ namespace Emby.Server.Implementations.EntryPoints
             _logger.LogInformation("Starting NAT discovery");
             NatUtility.Logger = _logger;
             NatUtility.DeviceFound += OnNatUtilityDeviceFound;
-            NatUtility.StartDiscovery();
+            NatUtility.DeviceLost += OnNatUtilityDeviceLost;
+            NatUtility.BeginDiscovery();
 
-            _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-
+            //// _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+            _timer = new Timer(CheckInboundAccessibility, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
+            _networkManager.NetworkChanged += OnNetworkChanged;
+        }
+
+        private void CheckInboundAccessibility(object state)
+        {
+            if (!_disposed)
+            {
+                _ = CheckAccess();
+            }
+        }
+
+        private async Task<bool> CheckInternetAccess()
+        {
+            // This needs to be a call to an external site specifying our own ip address to callback on.
+
+            return false;
+        }
+
+        private async Task CheckAccess(int count = 0)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            bool alive = await CheckInternetAccess().ConfigureAwait(false);
+
+            if (!alive && count < 3)
+            {
+                _logger.LogWarning("Lost inbound internet access.");
+
+                NatUtility.FinaliseDiscovery();
+                NatUtility.BeginDiscovery();
+
+                await Task.Delay(1000).ConfigureAwait(false);
+                _ = CheckAccess(count + 1);
+            }
+
+            _logger.LogError("Inbound internet access is DOWN.");
         }
 
         private void Stop()
         {
             _logger.LogInformation("Stopping NAT discovery");
 
-            NatUtility.StopDiscovery();
+            NatUtility.FinaliseDiscovery();
             NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
-
+            NatUtility.DeviceLost -= OnNatUtilityDeviceLost;
             _timer?.Dispose();
 
             _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
+            _networkManager.NetworkChanged -= OnNetworkChanged;
+        }
+
+        private void OnNetworkChanged(object sender, EventArgs e)
+        {
+            if (!_disposed)
+            {
+                // Something changed on the network.
+                NatUtility.FinaliseDiscovery();
+                NatUtility.BeginDiscovery();
+            }
         }
 
         private void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
@@ -137,6 +192,18 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        private async void OnNatUtilityDeviceLost(object sender, DeviceEventArgs e)
+        {
+            try
+            {
+                await RemoveRules(e.Device).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing port forwarding rules");
+            }
+        }
+
         private Task CreateRules(INatDevice device)
         {
             if (_disposed)
@@ -144,14 +211,24 @@ namespace Emby.Server.Implementations.EntryPoints
                 throw new ObjectDisposedException(GetType().Name);
             }
 
-            // On some systems the device discovered event seems to fire repeatedly
-            // This check will help ensure we're not trying to port map the same device over and over
-            if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
-            {
-                return Task.CompletedTask;
-            }
+            //// On some systems the device discovered event seems to fire repeatedly
+            //// This check will help ensure we're not trying to port map the same device over and over
+            //// if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
+            //// {
+            ////    return Task.CompletedTask;
+            //// }
 
             return Task.WhenAll(CreatePortMaps(device));
+        }
+
+        private Task RemoveRules(INatDevice device)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+
+            return Task.WhenAll(RemovePortMaps(device));
         }
 
         private IEnumerable<Task> CreatePortMaps(INatDevice device)
@@ -161,6 +238,16 @@ namespace Emby.Server.Implementations.EntryPoints
             if (_appHost.ListenWithHttps)
             {
                 yield return CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
+            }
+        }
+
+        private IEnumerable<Task> RemovePortMaps(INatDevice device)
+        {
+            yield return RemovePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+
+            if (_appHost.ListenWithHttps)
+            {
+                yield return RemovePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
             }
         }
 
@@ -182,6 +269,30 @@ namespace Emby.Server.Implementations.EntryPoints
                 _logger.LogError(
                     ex,
                     "Error creating port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}.",
+                    privatePort,
+                    publicPort,
+                    device.DeviceEndpoint);
+            }
+        }
+
+        private async Task RemovePortMap(INatDevice device, int privatePort, int publicPort)
+        {
+            _logger.LogDebug(
+                "Removing port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}",
+                privatePort,
+                publicPort,
+                device.DeviceEndpoint);
+
+            try
+            {
+                var mapping = new Mapping(Protocol.Tcp, privatePort, publicPort, 0, _appHost.Name);
+                await device.DeletePortMapAsync(mapping).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error removing port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}.",
                     privatePort,
                     publicPort,
                     device.DeviceEndpoint);

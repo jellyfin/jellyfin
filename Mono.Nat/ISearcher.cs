@@ -80,8 +80,13 @@ namespace Mono.Nat
         void Stop();
 
         /// <summary>
-        /// Stops and resets the discovery.
+        /// Resets the discovery.
         /// </summary>
-        void Reset();
+        void Begin();
+
+        /// <summary>
+        /// Finishes the discovery, freeing up resources.
+        /// </summary>
+        void Finish();
     }
 }

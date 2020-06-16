@@ -128,6 +128,28 @@ namespace Mono.Nat
         }
 
         /// <summary>
+        /// Re-initialises this object, then periodically send a multicast UDP message to scan for new devices, and begin listening indefinitely for responses.
+        /// </summary>
+        /// <param name="devices">The protocols which should be searched for. An empty array will result in all supported protocols being used.</param>
+        public static void BeginDiscovery(params NatProtocol[] devices)
+        {
+            lock (_locker)
+            {
+                if (devices.Length == 0 || devices.Contains(NatProtocol.Pmp))
+                {
+                    PmpSearcher.Instance.Begin();
+                    _ = PmpSearcher.Instance.SearchAsync().FireAndForget();
+                }
+
+                if (devices.Length == 0 || devices.Contains(NatProtocol.Upnp))
+                {
+                    UpnpSearcher.Instance.Begin();
+                    _ = UpnpSearcher.Instance.SearchAsync().FireAndForget();
+                }
+            }
+        }
+
+        /// <summary>
         /// Stop listening for responses to the search messages, and cancel any pending searches.
         /// </summary>
         public static void StopDiscovery()
@@ -140,14 +162,14 @@ namespace Mono.Nat
         }
 
         /// <summary>
-        /// Stops and resets the discovery.
+        /// Stop listening for responses to the search messages, cancel any pending searches, and frees up resources.
         /// </summary>
-        public static void ResetDiscovery()
+        public static void FinaliseDiscovery()
         {
             lock (_locker)
             {
-                PmpSearcher.Instance.Reset();
-                UpnpSearcher.Instance.Reset();
+                PmpSearcher.Instance.Finish();
+                UpnpSearcher.Instance.Finish();
             }
         }
 

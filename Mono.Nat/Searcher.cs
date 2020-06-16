@@ -41,6 +41,8 @@ namespace Mono.Nat
         /// </summary>
         protected static readonly TimeSpan SearchPeriod = TimeSpan.FromMinutes(5);
 
+        protected bool _empty = false;
+
         /// <summary>
         /// Gets defines the currentSearchCancellation.
         /// </summary>
@@ -154,10 +156,20 @@ namespace Mono.Nat
             SearchTask = null;
         }
 
-        public virtual void Reset()
+        public virtual void Begin()
+        {
+            _empty = false;
+        }
+
+        public virtual void Finish()
         {
             Stop();
-            Devices.Clear();
+            foreach (KeyValuePair<NatDevice, NatDevice> entry in Devices)
+            {
+                RaiseDeviceLost(entry.Key);
+            }
+
+            _empty = true;
         }
 
         /// <summary>

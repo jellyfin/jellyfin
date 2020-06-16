@@ -85,9 +85,15 @@ namespace Mono.Nat.Upnp
         /// </summary>
         internal SemaphoreSlim Locker { get; }
 
-        public override void Reset()
+        public override void Finish()
         {
-            base.Reset();
+            base.Finish();
+            Clients = null;
+        }
+
+        public override void Begin()
+        {
+            base.Begin();
             Clients = new SocketGroup(Initialise(), 1900);
         }
 
