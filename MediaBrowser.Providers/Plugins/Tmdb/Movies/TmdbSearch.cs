@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (results.Count == 0)
             {
-                //try in english if wasn't before
+                // try in english if wasn't before
                 if (!string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {
                     results = await GetSearchResults(name, searchType, year, "en", tmdbImageUrl, cancellationToken).ConfigureAwait(false);
@@ -128,7 +128,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                     if (results.Count == 0 && !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                     {
-                        //one more time, in english
+                        // one more time, in english
                         results = await GetSearchResults(name2, searchType, year, "en", tmdbImageUrl, cancellationToken).ConfigureAwait(false);
                     }
                 }
@@ -203,7 +203,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                             remoteResult.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(_usCulture));
 
                             return remoteResult;
-
                         })
                         .ToList();
                 }
@@ -224,7 +223,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 Url = url3,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)
@@ -256,7 +254,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                             remoteResult.SetProviderId(MetadataProvider.Tmdb, i.Id.ToString(_usCulture));
 
                             return remoteResult;
-
                         })
                         .ToList();
                 }

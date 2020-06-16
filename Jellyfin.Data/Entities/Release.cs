@@ -182,7 +182,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Chapter_Chapters_Id")]
         public virtual ICollection<Chapter> Chapters { get; protected set; }
-
     }
 }
 

@@ -173,7 +173,6 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [ForeignKey("MetadataProvider_Id")]
         public virtual MetadataProvider MetadataProvider { get; set; }
-
     }
 }
 

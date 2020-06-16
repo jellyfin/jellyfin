@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <value>The application paths.</value>
         private IApplicationPaths ApplicationPaths { get; set; }
 
-        private readonly ILogger _logger;
+        private readonly ILogger<DeleteCacheFileTask> _logger;
 
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;

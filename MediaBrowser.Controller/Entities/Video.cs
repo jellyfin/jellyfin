@@ -535,7 +535,6 @@ namespace MediaBrowser.Controller.Entities
             {
                 ItemId = Id,
                 Index = DefaultVideoStreamIndex.Value
-
             }).FirstOrDefault();
         }
 

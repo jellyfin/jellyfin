@@ -181,7 +181,6 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [ForeignKey("RatingSource_RatingType_Id")]
         public virtual RatingSource RatingType { get; set; }
-
     }
 }
 

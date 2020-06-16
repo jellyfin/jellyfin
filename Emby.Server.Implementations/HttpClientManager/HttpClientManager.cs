@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.HttpClientManager
     /// </summary>
     public class HttpClientManager : IHttpClient
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpClientManager> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IApplicationHost _appHost;

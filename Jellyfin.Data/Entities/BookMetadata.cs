@@ -101,7 +101,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Company_Publishers_Id")]
         public virtual ICollection<Company> Publishers { get; protected set; }
-
     }
 }
 

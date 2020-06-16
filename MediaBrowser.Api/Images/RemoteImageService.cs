@@ -152,7 +152,6 @@ namespace MediaBrowser.Api.Images
                 IncludeAllLanguages = request.IncludeAllLanguages,
                 IncludeDisabledProviders = true,
                 ImageType = request.Type
-
             }, CancellationToken.None).ConfigureAwait(false);
 
             var imagesList = images.ToArray();

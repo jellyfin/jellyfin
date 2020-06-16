@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.SocketSharp
         private Dictionary<string, object> _items;
         private string _responseContentType;
 
-        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName, ILogger logger)
+        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName)
         {
             this.OperationName = operationName;
             this.Request = httpRequest;

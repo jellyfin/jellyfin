@@ -15,7 +15,6 @@ namespace MediaBrowser.Model.Dlna
         public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value)
             : this(condition, property, value, false)
         {
-
         }
 
         public ProfileCondition(ProfileConditionType condition, ProfileConditionValue property, string value, bool isRequired)

@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Model.Configuration;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library

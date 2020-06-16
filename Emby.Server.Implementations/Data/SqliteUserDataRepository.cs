@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -346,7 +347,7 @@ namespace Emby.Server.Implementations.Data
             var userData = new UserItemData();
 
             userData.Key = reader[0].ToString();
-            //userData.UserId = reader[1].ReadGuidFromBlob();
+            // userData.UserId = reader[1].ReadGuidFromBlob();
 
             if (reader[2].SQLiteType != SQLiteType.Null)
             {

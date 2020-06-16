@@ -88,7 +88,7 @@ namespace Emby.Dlna.PlayTo
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
                      nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
             {
-                //_logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
+                // _logger.LogDebug("Upnp device {0} does not contain a MediaRenderer device (0).", location);
                 return;
             }
 
@@ -112,7 +112,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {
@@ -184,7 +183,8 @@ namespace Emby.Dlna.PlayTo
                     serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
                 }
 
-                controller = new PlayToController(sessionInfo,
+                controller = new PlayToController(
+                    sessionInfo,
                    _sessionManager,
                    _libraryManager,
                    _logger,
@@ -242,7 +242,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch
             {
-
             }
 
             _sessionLock.Dispose();

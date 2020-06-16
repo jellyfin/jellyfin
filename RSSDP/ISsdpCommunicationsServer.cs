@@ -61,6 +61,5 @@ namespace Rssdp.Infrastructure
         bool IsShared { get; set; }
 
         #endregion
-
     }
 }

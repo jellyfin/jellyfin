@@ -6,14 +6,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -24,12 +24,20 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Person = MediaBrowser.Controller.Entities.Person;
+using Photo = MediaBrowser.Controller.Entities.Photo;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.Dto
 {
     public class DtoService : IDtoService
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<DtoService> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataRepository;
         private readonly IItemRepository _itemRepo;
@@ -384,7 +392,7 @@ namespace Emby.Server.Implementations.Dto
 
                     if (options.ContainsField(ItemFields.ChildCount))
                     {
-                        dto.ChildCount = dto.ChildCount ?? GetChildCount(folder, user);
+                        dto.ChildCount ??= GetChildCount(folder, user);
                     }
                 }
 
@@ -398,7 +406,6 @@ namespace Emby.Server.Implementations.Dto
                     dto.DateLastMediaAdded = folder.DateLastMediaAdded;
                 }
             }
-
             else
             {
                 if (options.EnableUserData)
@@ -414,7 +421,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.BasicSyncInfo))
             {
-                var userCanSync = user != null && user.Policy.EnableContentDownloading;
+                var userCanSync = user != null && user.HasPermission(PermissionKind.EnableContentDownloading);
                 if (userCanSync && item.SupportsExternalTransfer)
                 {
                     dto.SupportsSync = true;
@@ -586,7 +593,6 @@ namespace Emby.Server.Implementations.Dto
                         _logger.LogError(ex, "Error getting person {Name}", c);
                         return null;
                     }
-
                 }).Where(i => i != null)
                 .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(x => x.First())
@@ -939,7 +945,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.AlbumPrimaryImageTag = GetTagAndFillBlurhash(dto, albumParent, ImageType.Primary);
                 }
 
-                //if (options.ContainsField(ItemFields.MediaSourceCount))
+                // if (options.ContainsField(ItemFields.MediaSourceCount))
                 //{
                 // Songs always have one
                 //}
@@ -949,13 +955,13 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.Artists = hasArtist.Artists;
 
-                //var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
+                // var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
                 //{
                 //    EnableTotalRecordCount = false,
                 //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
                 //});
 
-                //dto.ArtistItems = artistItems.Items
+                // dto.ArtistItems = artistItems.Items
                 //    .Select(i =>
                 //    {
                 //        var artist = i.Item1;
@@ -968,7 +974,7 @@ namespace Emby.Server.Implementations.Dto
                 //    .ToList();
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
-                //var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
+                // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
                 dto.ArtistItems = hasArtist.Artists
                     //.Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
@@ -993,7 +999,6 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-
                     }).Where(i => i != null).ToArray();
             }
 
@@ -1002,13 +1007,13 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
 
-                //var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
+                // var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
                 //{
                 //    EnableTotalRecordCount = false,
                 //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
                 //});
 
-                //dto.AlbumArtists = artistItems.Items
+                // dto.AlbumArtists = artistItems.Items
                 //    .Select(i =>
                 //    {
                 //        var artist = i.Item1;
@@ -1044,7 +1049,6 @@ namespace Emby.Server.Implementations.Dto
                         }
 
                         return null;
-
                     }).Where(i => i != null).ToArray();
             }
 
@@ -1158,7 +1162,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // this block will add the series poster for episodes without a poster
                 // TODO maybe remove the if statement entirely
-                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     episodeSeries = episodeSeries ?? episode.Series;
                     if (episodeSeries != null)
@@ -1204,7 +1208,7 @@ namespace Emby.Server.Implementations.Dto
 
                 // this block will add the series poster for seasons without a poster
                 // TODO maybe remove the if statement entirely
-                //if (options.ContainsField(ItemFields.SeriesPrimaryImage))
+                // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
                     series = series ?? season.Series;
                     if (series != null)

@@ -79,7 +79,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 catch
                 {
-
                 }
             }
 

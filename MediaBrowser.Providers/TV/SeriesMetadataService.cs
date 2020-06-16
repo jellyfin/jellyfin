@@ -42,7 +42,8 @@ namespace MediaBrowser.Providers.TV
             await seasonProvider.Run(item, cancellationToken).ConfigureAwait(false);
 
             // TODO why does it not register this itself omg
-            var provider = new MissingEpisodeProvider(Logger,
+            var provider = new MissingEpisodeProvider(
+                Logger,
                 ServerConfigurationManager,
                 LibraryManager,
                 _localization,

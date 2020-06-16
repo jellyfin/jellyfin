@@ -2,7 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Configuration;
+using System.Xml.Serialization;
+using Jellyfin.Data.Enums;
+using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
 
 namespace MediaBrowser.Model.Users
 {
@@ -78,6 +80,8 @@ namespace MediaBrowser.Model.Users
         public string[] BlockedChannels { get; set; }
 
         public int RemoteClientBitrateLimit { get; set; }
+
+        [XmlElement(ElementName = "AuthenticationProviderId")]
         public string AuthenticationProviderId { get; set; }
         public string PasswordResetProviderId { get; set; }
 

@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<TmdbSeriesProvider> _logger;
         private readonly ILocalizationManager _localization;
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;

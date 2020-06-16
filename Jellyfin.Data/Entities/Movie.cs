@@ -63,7 +63,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("MovieMetadata_MovieMetadata_Id")]
         public virtual ICollection<MovieMetadata> MovieMetadata { get; protected set; }
-
     }
 }
 

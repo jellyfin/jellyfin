@@ -1,14 +1,16 @@
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Cryptography;
 
-namespace Emby.Server.Implementations.Library
+namespace Jellyfin.Server.Implementations.Users
 {
     /// <summary>
     /// The default authentication provider.
@@ -47,7 +49,7 @@ namespace Emby.Server.Implementations.Library
         {
             if (resolvedUser == null)
             {
-                throw new AuthenticationException($"Specified user does not exist.");
+                throw new AuthenticationException("Specified user does not exist.");
             }
 
             bool success = false;
@@ -64,7 +66,7 @@ namespace Emby.Server.Implementations.Library
             // Handle the case when the stored password is null, but the user tried to login with a password
             if (resolvedUser.Password != null)
             {
-                byte[] passwordbytes = Encoding.UTF8.GetBytes(password);
+                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
 
                 PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
                 if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id)
@@ -72,7 +74,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     byte[] calculatedHash = _cryptographyProvider.ComputeHash(
                         readyHash.Id,
-                        passwordbytes,
+                        passwordBytes,
                         readyHash.Salt.ToArray());
 
                     if (readyHash.Hash.SequenceEqual(calculatedHash))
@@ -99,7 +101,7 @@ namespace Emby.Server.Implementations.Library
 
         /// <inheritdoc />
         public bool HasPassword(User user)
-            => !string.IsNullOrEmpty(user.Password);
+            => !string.IsNullOrEmpty(user?.Password);
 
         /// <inheritdoc />
         public Task ChangePassword(User user, string newPassword)
@@ -133,7 +135,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <inheritdoc />
-        public string GetEasyPasswordHash(User user)
+        public string? GetEasyPasswordHash(User user)
         {
             return string.IsNullOrEmpty(user.EasyPassword)
                 ? null
