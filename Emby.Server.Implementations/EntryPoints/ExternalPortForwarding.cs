@@ -27,6 +27,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly INetworkManager _networkManager;
+        private readonly ILoggerFactory _loggerFactory;
 
         private string _configIdentifier;
 
@@ -40,18 +41,21 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="config">The configuration manager.</param>
         /// <param name="deviceDiscovery">The device discovery.</param>
         /// <param name="networkManager">The network manager.</param>
+        /// <param name="loggerFactory">Logger Factory.</param>
         public ExternalPortForwarding(
             ILogger<ExternalPortForwarding> logger,
             IServerApplicationHost appHost,
             IServerConfigurationManager config,
             IDeviceDiscovery deviceDiscovery,
-            INetworkManager networkManager)
+            INetworkManager networkManager,
+            ILoggerFactory loggerFactory)
         {
             _logger = logger;
             _appHost = appHost;
             _config = config;
             _networkManager = networkManager;
             _deviceDiscovery = deviceDiscovery;
+            _loggerFactory = loggerFactory;
         }
 
         private string GetConfigIdentifier()
@@ -100,7 +104,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             _logger.LogInformation("Starting NAT discovery");
-            NatUtility.Logger = _logger;
+            NatUtility.Logger = _loggerFactory.CreateLogger("Mono.Nat");
             NatUtility.DeviceFound += OnNatUtilityDeviceFound;
             NatUtility.DeviceLost += OnNatUtilityDeviceLost;
             NatUtility.BeginDiscovery();

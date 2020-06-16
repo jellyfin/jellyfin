@@ -174,18 +174,56 @@ namespace Mono.Nat
         }
 
         /// <summary>
-        /// The Log.
+        /// Logs a debug message.
         /// </summary>
         /// <param name="format">The format.</param>
         /// <param name="args">The args.</param>
-        internal static void Log(string format, params object[] args)
+        internal static void LogDebug(string format, params object[] args)
         {
             ILogger logger = Logger;
+
             if (logger != null)
             {
                 lock (_loggerLocker)
                 {
                     logger.LogDebug(format, args);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Logs a debug message.
+        /// </summary>
+        /// <param name="ex">The exception.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        internal static void LogError(Exception ex, string format, params object[] args)
+        {
+            ILogger logger = Logger;
+
+            if (logger != null)
+            {
+                lock (_loggerLocker)
+                {
+                    logger.LogError(ex, format, args);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Logs a warning message.
+        /// </summary>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        internal static void LogWarning(string format, params object[] args)
+        {
+            ILogger logger = Logger;
+
+            if (logger != null)
+            {
+                lock (_loggerLocker)
+                {
+                    logger.LogWarning(format, args);
                 }
             }
         }

@@ -144,7 +144,7 @@ namespace Mono.Nat.Upnp
             var request = new GetServicesMessage(deviceServiceUri).Encode(out byte[] body);
             if (body.Length > 0)
             {
-                NatUtility.Log("Error: Services Message contained a body");
+                NatUtility.LogDebug("Error: Services Message contained a body");
             }
 
             using (token.Register(() => request.Abort()))
@@ -171,7 +171,7 @@ namespace Mono.Nat.Upnp
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                NatUtility.Log("{0}: Couldn't get services list: {1}", response.ResponseUri, response.StatusCode);
+                NatUtility.LogDebug("{0}: Couldn't get services list: {1}", response.ResponseUri, response.StatusCode);
                 return null; // FIX ME: This the best thing to do??
             }
 
@@ -195,12 +195,12 @@ namespace Mono.Nat.Upnp
                         return null;
                     }
 
-                    NatUtility.Log("{0}: Couldn't parse services list", response.ResponseUri);
+                    NatUtility.LogDebug("{0}: Couldn't parse services list", response.ResponseUri);
                     await Task.Delay(10).ConfigureAwait(false);
                 }
             }
 
-            NatUtility.Log("{0}: Parsed services list", response.ResponseUri);
+            NatUtility.LogDebug("{0}: Parsed services list", response.ResponseUri);
             XmlNamespaceManager ns = new XmlNamespaceManager(xmldoc.NameTable);
             ns.AddNamespace("ns", "urn:schemas-upnp-org:device-1-0");
             XmlNodeList nodes = xmldoc.SelectNodes("//*/ns:serviceList", ns);
@@ -212,7 +212,7 @@ namespace Mono.Nat.Upnp
                 {
                     // If the service is a WANIPConnection, then we have what we want.
                     string serviceType = service["serviceType"].InnerText;
-                    NatUtility.Log("{0}: Found service: {1}", response.ResponseUri, serviceType);
+                    NatUtility.LogDebug("{0}: Found service: {1}", response.ResponseUri, serviceType);
                     StringComparison c = StringComparison.OrdinalIgnoreCase;
                     // TO DO: Add support for version 2 of UPnP.
                     if (serviceType.Equals("urn:schemas-upnp-org:service:WANPPPConnection:1", c) ||
@@ -220,13 +220,13 @@ namespace Mono.Nat.Upnp
                     {
                         var controlUrl = new Uri(service["controlURL"].InnerText, UriKind.RelativeOrAbsolute);
                         IPEndPoint deviceEndpoint = new IPEndPoint(IPAddress.Parse(response.ResponseUri.Host), response.ResponseUri.Port);
-                        NatUtility.Log("{0}: Found upnp service at: {1}", response.ResponseUri, controlUrl.OriginalString);
+                        NatUtility.LogDebug("{0}: Found upnp service at: {1}", response.ResponseUri, controlUrl.OriginalString);
                         try
                         {
                             if (controlUrl.IsAbsoluteUri)
                             {
                                 deviceEndpoint = new IPEndPoint(IPAddress.Parse(controlUrl.Host), controlUrl.Port);
-                                NatUtility.Log("{0}: New control url: {1}", deviceEndpoint, controlUrl);
+                                NatUtility.LogDebug("{0}: New control url: {1}", deviceEndpoint, controlUrl);
                             }
                             else
                             {
@@ -236,10 +236,10 @@ namespace Mono.Nat.Upnp
                         catch
                         {
                             controlUrl = new Uri(deviceServiceUri, controlUrl.OriginalString);
-                            NatUtility.Log("{0}: Assuming control Uri is relative: {1}", deviceEndpoint, controlUrl);
+                            NatUtility.LogDebug("{0}: Assuming control Uri is relative: {1}", deviceEndpoint, controlUrl);
                         }
 
-                        NatUtility.Log("{0}: Handshake Complete", deviceEndpoint);
+                        NatUtility.LogDebug("{0}: Handshake Complete", deviceEndpoint);
                         return new UpnpNatDevice(localAddress, deviceEndpoint, controlUrl, serviceType);
                     }
                 }
@@ -293,7 +293,7 @@ namespace Mono.Nat.Upnp
             {
                 dataString = Encoding.UTF8.GetString(response);
 
-                NatUtility.Log("uPnP Search Response: {0}", dataString);
+                NatUtility.LogDebug("uPnP Search Response: {0}", dataString);
 
                 /* For UPnP Port Mapping we need ot find either WANPPPConnection or WANIPConnection.
                  Any other device type is no good to us for this purpose. See the IGP overview paper
@@ -310,11 +310,11 @@ namespace Mono.Nat.Upnp
                 StringComparison c = StringComparison.OrdinalIgnoreCase;
                 if (dataString.IndexOf("urn:schemas-upnp-org:service:WANIPConnection:", c) != -1)
                 {
-                    NatUtility.Log(log, "urn:schemas-upnp-org:service:WANIPConnection:1");
+                    NatUtility.LogDebug(log, "urn:schemas-upnp-org:service:WANIPConnection:1");
                 }
                 else if (dataString.IndexOf("urn:schemas-upnp-org:service:WANPPPConnection:", c) != -1)
                 {
-                    NatUtility.Log(log, "urn:schemas-upnp-org:service:WANPPPConnection:");
+                    NatUtility.LogDebug(log, "urn:schemas-upnp-org:service:WANPPPConnection:");
                 }
                 else
                 {
@@ -348,7 +348,7 @@ namespace Mono.Nat.Upnp
 
                 // Once we've parsed the information we need, we tell the device to retrieve it's service list
                 // Once we successfully receive the service list, the callback provided will be invoked.
-                NatUtility.Log("Fetching service list: {0}", deviceServiceUri);
+                NatUtility.LogDebug("Fetching service list: {0}", deviceServiceUri);
                 var d = await GetServicesList(localAddress, deviceServiceUri, token).ConfigureAwait(false);
                 if (d != null)
                 {
@@ -357,11 +357,7 @@ namespace Mono.Nat.Upnp
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Unhandled exception when trying to decode a device's response Send me the following data: ");
-                Trace.WriteLine("ErrorMessage:");
-                Trace.WriteLine(ex.Message);
-                Trace.WriteLine("Data string:");
-                Trace.WriteLine(dataString);
+                NatUtility.LogError(ex, "Unhandled exception when trying to decode a device's response Send me the following data: ", dataString);
             }
         }
     }

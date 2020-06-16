@@ -221,13 +221,13 @@ namespace Mono.Nat.Upnp
             // forward a port to a *different* IP address.
             request.ServicePoint.BindIPEndPointDelegate = delegate(ServicePoint servicePoint, IPEndPoint remoteEndPoint, int retryCount)
             {
-                NatUtility.Log($"The WebRequest being sent to {remoteEndPoint} has been bound to local IP address {LocalAddress}");
+                NatUtility.LogDebug($"The WebRequest being sent to {remoteEndPoint} has been bound to local IP address {LocalAddress}");
                 return new IPEndPoint(LocalAddress, 0);
             };
 
             if (NatUtility.Logger != null)
             {
-                NatUtility.Log($"uPnP Request: {Environment.NewLine}{Encoding.UTF8.GetString(body)}");
+                NatUtility.LogDebug($"uPnP Request: {Environment.NewLine}{Encoding.UTF8.GetString(body)}");
             }
 
             if (body.Length > 0)
@@ -298,7 +298,7 @@ namespace Mono.Nat.Upnp
             var dataString = data.ToString();
             if (NatUtility.Logger != null)
             {
-                NatUtility.Log($"uPnP Response: {Environment.NewLine}{dataString}");
+                NatUtility.LogDebug($"uPnP Response: {Environment.NewLine}{dataString}");
             }
 
             return ResponseMessage.Decode(this, dataString);

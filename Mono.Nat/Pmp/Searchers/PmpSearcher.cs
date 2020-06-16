@@ -236,7 +236,7 @@ namespace Mono.Nat.Pmp
             int errorcode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(response, 2));
             if (errorcode != 0)
             {
-                NatUtility.Log("Non zero error: {0}", errorcode);
+                NatUtility.LogWarning("Non zero error: {0}", errorcode);
             }
 
             var publicIp = new IPAddress(new byte[] { response[8], response[9], response[10], response[11] });

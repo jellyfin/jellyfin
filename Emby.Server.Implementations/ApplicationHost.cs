@@ -16,6 +16,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Networking;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
@@ -266,6 +267,8 @@ namespace Emby.Server.Implementations
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             _networkManager.NetworkChanged += OnNetworkChanged;
+
+            InternetChecker.Instance.Initialise(LoggerFactory.CreateLogger<InternetChecker>(), (IServerConfigurationManager)ConfigurationManager);
 
             CertificateInfo = new CertificateInfo
             {

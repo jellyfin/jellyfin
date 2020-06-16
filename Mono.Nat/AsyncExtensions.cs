@@ -1,4 +1,4 @@
-﻿namespace Mono.Nat
+namespace Mono.Nat
 {
     using System;
     using System.Threading;
@@ -38,7 +38,7 @@
             }
             catch (Exception ex)
             {
-                NatUtility.Log("Unhandled exception: {0}{1}", Environment.NewLine, ex);
+                NatUtility.LogError(ex, "Unhandled exception.");
             }
         }
 
@@ -59,7 +59,7 @@
             }
             catch (Exception ex)
             {
-                NatUtility.Log("Unhandled exception: {0}{1}", Environment.NewLine, ex);
+                NatUtility.LogError(ex, "Unhandled exception.");
             }
         }
 
@@ -79,7 +79,7 @@
             }
             catch (Exception ex)
             {
-                NatUtility.Log("Unhandled exception: {0}{1}", Environment.NewLine, ex);
+                NatUtility.LogError(ex, "Unhandled exception.");
             }
         }
 
@@ -91,7 +91,7 @@
             /// <summary>
             /// Defines the semaphore.
             /// </summary>
-            private SemaphoreSlim semaphore;
+            private SemaphoreSlim _semaphore;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="SemaphoreSlimDisposable"/> class.
@@ -99,7 +99,7 @@
             /// <param name="semaphore">The semaphore<see cref="SemaphoreSlim"/>.</param>
             public SemaphoreSlimDisposable(SemaphoreSlim semaphore)
             {
-                this.semaphore = semaphore;
+                this._semaphore = semaphore;
             }
 
             /// <summary>
@@ -119,8 +119,8 @@
             {
                 if (disposing)
                 {
-                    semaphore?.Release();
-                    semaphore = null;
+                    _semaphore?.Release();
+                    _semaphore = null;
                 }
             }
         }

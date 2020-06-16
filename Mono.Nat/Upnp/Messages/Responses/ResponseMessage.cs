@@ -1,4 +1,4 @@
-﻿namespace Mono.Nat.Upnp
+namespace Mono.Nat.Upnp
 {
     using System.Globalization;
     using System.Xml;
@@ -60,8 +60,8 @@
                 return new GetSpecificPortMappingEntryResponseMessage(node);
             }
 
-            NatUtility.Log("Unknown message returned. Please send me back the following XML:");
-            NatUtility.Log(message);
+            NatUtility.LogDebug("Unknown message returned. Please send me back the following XML:");
+            NatUtility.LogDebug(message);
             return null;
         }
     }
