@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.EntryPoints
                         NatUtility.Logger = _loggerFactory.CreateLogger("Mono.Nat");
                         NatUtility.DeviceFound += OnNatUtilityDeviceFound;
                         NatUtility.DeviceLost += OnNatUtilityDeviceLost;
-                        NatUtility.BeginDiscovery();
+                        NatUtility.StartDiscovery();
                         _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
                         _networkManager.NetworkChanged += OnNetworkChanged;
                         InternetChecker.Instance.StateChange += ExternalAccessChanged;
@@ -135,7 +135,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     {
                         _logger.LogInformation("Stopping NAT discovery");
                         _stopped = true;
-                        NatUtility.FinaliseDiscovery();
+                        NatUtility.StopDiscovery();
                         NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
                         NatUtility.DeviceLost -= OnNatUtilityDeviceLost;
 
@@ -160,8 +160,8 @@ namespace Emby.Server.Implementations.EntryPoints
                 {
                     if (state == InternetState.Down && !_stopped)
                     {
-                        NatUtility.FinaliseDiscovery();
-                        NatUtility.BeginDiscovery();
+                        NatUtility.StopDiscovery();
+                        NatUtility.StartDiscovery();
                     }
                 }
             }
@@ -181,8 +181,8 @@ namespace Emby.Server.Implementations.EntryPoints
                     if (!_stopped)
                     {
                         // Something changed on the network.
-                        NatUtility.FinaliseDiscovery();
-                        NatUtility.BeginDiscovery();
+                        NatUtility.StopDiscovery();
+                        NatUtility.StartDiscovery();
                     }
                 }
             }

@@ -94,10 +94,12 @@ namespace Mono.Nat
             {
                 if (type == NatProtocol.Pmp)
                 {
+                    PmpSearcher.Instance.Begin();
                     _ = PmpSearcher.Instance.SearchAsync(gatewayAddress).FireAndForget();
                 }
                 else if (type == NatProtocol.Upnp)
                 {
+                    UpnpSearcher.Instance.Begin();
                     _ = UpnpSearcher.Instance.SearchAsync(gatewayAddress).FireAndForget();
                 }
                 else
@@ -108,30 +110,10 @@ namespace Mono.Nat
         }
 
         /// <summary>
-        /// Periodically send a multicast UDP message to scan for new devices, and begin listening indefinitely for responses.
-        /// </summary>
-        /// <param name="devices">The protocols which should be searched for. An empty array will result in all supported protocols being used.</param>
-        public static void StartDiscovery(params NatProtocol[] devices)
-        {
-            lock (_locker)
-            {
-                if (devices.Length == 0 || devices.Contains(NatProtocol.Pmp))
-                {
-                    _ = PmpSearcher.Instance.SearchAsync().FireAndForget();
-                }
-
-                if (devices.Length == 0 || devices.Contains(NatProtocol.Upnp))
-                {
-                    _ = UpnpSearcher.Instance.SearchAsync().FireAndForget();
-                }
-            }
-        }
-
-        /// <summary>
         /// Re-initialises this object, then periodically send a multicast UDP message to scan for new devices, and begin listening indefinitely for responses.
         /// </summary>
         /// <param name="devices">The protocols which should be searched for. An empty array will result in all supported protocols being used.</param>
-        public static void BeginDiscovery(params NatProtocol[] devices)
+        public static void StartDiscovery(params NatProtocol[] devices)
         {
             lock (_locker)
             {
@@ -150,21 +132,9 @@ namespace Mono.Nat
         }
 
         /// <summary>
-        /// Stop listening for responses to the search messages, and cancel any pending searches.
-        /// </summary>
-        public static void StopDiscovery()
-        {
-            lock (_locker)
-            {
-                PmpSearcher.Instance.Stop();
-                UpnpSearcher.Instance.Stop();
-            }
-        }
-
-        /// <summary>
         /// Stop listening for responses to the search messages, cancel any pending searches, and frees up resources.
         /// </summary>
-        public static void FinaliseDiscovery()
+        public static void StopDiscovery()
         {
             lock (_locker)
             {
