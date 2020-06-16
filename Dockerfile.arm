@@ -68,10 +68,12 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
+ENV JELLYFIN_DATA_DIR="/config"
+ENV JELLYFIN_CACHE_DIR="/cache"
 
 EXPOSE 8096
 VOLUME /cache /config /media
 ENTRYPOINT ["./jellyfin/jellyfin", \
-    "--datadir", "/config", \
-    "--cachedir", "/cache", \
+    "--datadir", "${JELLYFIN_DATA_DIR}", \
+    "--cachedir", "${JELLYFIN_CACHE_DIR}", \
     "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
