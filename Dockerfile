@@ -33,7 +33,6 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
     JELLYFIN_CONFIG_DIR="/config/config" \
     JELLYFIN_FFMPEG="/usr/lib/jellyfin-ffmpeg/ffmpeg" \
     JELLYFIN_LOG_DIR="/config/log" \
-    JELLYFIN_CACHE_DIR="/cache" \
     JELLYFIN_WEB_DIR="/jellyfin/jellyfin-web"
 
 COPY --from=builder /jellyfin /jellyfin

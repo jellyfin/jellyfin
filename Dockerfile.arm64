@@ -41,7 +41,6 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
     JELLYFIN_CONFIG_DIR="/config/config" \
     JELLYFIN_FFMPEG="/usr/bin/ffmpeg" \
     JELLYFIN_LOG_DIR="/config/log" \
-    JELLYFIN_CACHE_DIR="/cache" \
     JELLYFIN_WEB_DIR="/jellyfin/jellyfin-web"
 
 COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
