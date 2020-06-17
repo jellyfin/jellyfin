@@ -547,6 +547,9 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(ServerConfigurationManager);
 
+            serviceCollection.AddSingleton<Func<IReadOnlyCollection<IPasswordResetProvider>>>(() => GetExports<IPasswordResetProvider>());
+            serviceCollection.AddSingleton<Func<IReadOnlyCollection<IAuthenticationProvider>>>(() => GetExports<IAuthenticationProvider>());
+
             serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
@@ -795,7 +798,6 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-            Resolve<IUserManager>().AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
