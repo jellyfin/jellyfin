@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
@@ -13,7 +13,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
-    /// Class Movie
+    /// Class Movie.
     /// </summary>
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {

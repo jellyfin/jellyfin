@@ -276,7 +276,7 @@ namespace Emby.Dlna.Main
 
                 var device = new SsdpRootDevice
                 {
-                    CacheLifetime = TimeSpan.FromSeconds(1800), //How long SSDP clients can cache this info.
+                    CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
                     Address = address,
                     SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
@@ -320,6 +320,7 @@ namespace Emby.Dlna.Main
             {
                 guid = text.GetMD5();
             }
+
             return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
@@ -388,6 +389,7 @@ namespace Emby.Dlna.Main
                     {
                         _logger.LogError(ex, "Error disposing PlayTo manager");
                     }
+
                     _manager = null;
                 }
             }

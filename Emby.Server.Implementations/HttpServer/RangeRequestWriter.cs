@@ -20,31 +20,37 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The source stream.</value>
         private Stream SourceStream { get; set; }
+
         private string RangeHeader { get; set; }
+
         private bool IsHeadRequest { get; set; }
 
         private long RangeStart { get; set; }
+
         private long RangeEnd { get; set; }
+
         private long RangeLength { get; set; }
+
         private long TotalContentLength { get; set; }
 
         public Action OnComplete { get; set; }
+
         private readonly ILogger _logger;
 
         private const int BufferSize = 81920;
 
         /// <summary>
-        /// The _options
+        /// The _options.
         /// </summary>
         private readonly Dictionary<string, string> _options = new Dictionary<string, string>();
 
         /// <summary>
-        /// The us culture
+        /// The us culture.
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
-        /// Additional HTTP Headers
+        /// Additional HTTP Headers.
         /// </summary>
         /// <value>The headers.</value>
         public IDictionary<string, string> Headers => _options;
@@ -110,7 +116,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// The _requested ranges
+        /// The _requested ranges.
         /// </summary>
         private List<KeyValuePair<long, long?>> _requestedRanges;
         /// <summary>
@@ -139,6 +145,7 @@ namespace Emby.Server.Implementations.HttpServer
                         {
                             start = long.Parse(vals[0], UsCulture);
                         }
+
                         if (!string.IsNullOrEmpty(vals[1]))
                         {
                             end = long.Parse(vals[1], UsCulture);

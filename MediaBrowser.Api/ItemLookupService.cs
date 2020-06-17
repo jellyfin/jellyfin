@@ -220,7 +220,7 @@ namespace MediaBrowser.Api
         {
             var item = _libraryManager.GetItemById(new Guid(request.Id));
 
-            //foreach (var key in request.ProviderIds)
+            // foreach (var key in request.ProviderIds)
             //{
             //    var value = key.Value;
 
@@ -233,8 +233,8 @@ namespace MediaBrowser.Api
 
             // Since the refresh process won't erase provider Ids, we need to set this explicitly now.
             item.ProviderIds = request.ProviderIds;
-            //item.ProductionYear = request.ProductionYear;
-            //item.Name = request.Name;
+            // item.ProductionYear = request.ProductionYear;
+            // item.Name = request.Name;
 
             return _providerManager.RefreshFullItem(
                 item,

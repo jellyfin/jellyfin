@@ -31,7 +31,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
         /// <param name="_series0"></param>
@@ -66,7 +66,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for SeasonNumber
+        /// Backing field for SeasonNumber.
         /// </summary>
         protected int? _SeasonNumber;
         /// <summary>
@@ -86,6 +86,7 @@ namespace Jellyfin.Data.Entities
                 GetSeasonNumber(ref value);
                 return (_SeasonNumber = value);
             }
+
             set
             {
                 int? oldValue = _SeasonNumber;
@@ -105,7 +106,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Episode_Episodes_Id")]
         public virtual ICollection<Episode> Episodes { get; protected set; }
-
     }
 }
 

@@ -247,7 +247,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     ProductionYear = firstAired.Year,
                     SearchProviderName = Name,
                     ImageUrl = TvdbUtils.BannerUrl + seriesSearchResult.Banner
-
                 };
 
                 try

@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (ObjectDisposedException)
                 {
-                    //TODO Investigate and properly fix.
+                    // TODO Investigate and properly fix.
                     break;
                 }
             }

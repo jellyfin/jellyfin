@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="providerid"></param>
         /// <param name="_metadata0"></param>
@@ -77,7 +77,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -90,7 +90,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -103,6 +103,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -115,7 +116,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for ProviderId
+        /// Backing field for ProviderId.
         /// </summary>
         protected string _ProviderId;
         /// <summary>
@@ -141,6 +142,7 @@ namespace Jellyfin.Data.Entities
                 GetProviderId(ref value);
                 return (_ProviderId = value);
             }
+
             set
             {
                 string oldValue = _ProviderId;
@@ -153,7 +155,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -169,11 +171,10 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [ForeignKey("MetadataProvider_Id")]
         public virtual MetadataProvider MetadataProvider { get; set; }
-
     }
 }
 

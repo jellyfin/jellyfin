@@ -25,7 +25,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="language">ISO-639-3 3-character language codes</param>
         /// <param name="timestart"></param>
@@ -60,7 +60,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -73,7 +73,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -86,6 +86,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -98,7 +99,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Name
+        /// Backing field for Name.
         /// </summary>
         protected string _Name;
         /// <summary>
@@ -123,6 +124,7 @@ namespace Jellyfin.Data.Entities
                 GetName(ref value);
                 return (_Name = value);
             }
+
             set
             {
                 string oldValue = _Name;
@@ -135,7 +137,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Language
+        /// Backing field for Language.
         /// </summary>
         protected string _Language;
         /// <summary>
@@ -149,7 +151,7 @@ namespace Jellyfin.Data.Entities
 
         /// <summary>
         /// Required, Min length = 3, Max length = 3
-        /// ISO-639-3 3-character language codes
+        /// ISO-639-3 3-character language codes.
         /// </summary>
         [Required]
         [MinLength(3)]
@@ -163,6 +165,7 @@ namespace Jellyfin.Data.Entities
                 GetLanguage(ref value);
                 return (_Language = value);
             }
+
             set
             {
                 string oldValue = _Language;
@@ -175,7 +178,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for TimeStart
+        /// Backing field for TimeStart.
         /// </summary>
         protected long _TimeStart;
         /// <summary>
@@ -188,7 +191,7 @@ namespace Jellyfin.Data.Entities
         partial void GetTimeStart(ref long result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public long TimeStart
@@ -199,6 +202,7 @@ namespace Jellyfin.Data.Entities
                 GetTimeStart(ref value);
                 return (_TimeStart = value);
             }
+
             set
             {
                 long oldValue = _TimeStart;
@@ -211,7 +215,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for TimeEnd
+        /// Backing field for TimeEnd.
         /// </summary>
         protected long? _TimeEnd;
         /// <summary>
@@ -231,6 +235,7 @@ namespace Jellyfin.Data.Entities
                 GetTimeEnd(ref value);
                 return (_TimeEnd = value);
             }
+
             set
             {
                 long? oldValue = _TimeEnd;
@@ -243,7 +248,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -257,7 +262,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

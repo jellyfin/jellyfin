@@ -61,7 +61,6 @@ namespace Emby.Server.Implementations.Security
                         AddColumn(db, "AccessTokens", "UserName", "TEXT", existingColumnNames);
                         AddColumn(db, "AccessTokens", "DateLastActivity", "DATETIME", existingColumnNames);
                         AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
-
                     }, TransactionMode);
 
                     connection.RunQueries(new[]
@@ -107,7 +106,6 @@ namespace Emby.Server.Implementations.Security
 
                         statement.MoveNext();
                     }
-
                 }, TransactionMode);
             }
         }
@@ -367,7 +365,6 @@ namespace Emby.Server.Implementations.Security
 
                         return result;
                     }
-
                 }, ReadTransactionMode);
             }
         }
@@ -398,7 +395,6 @@ namespace Emby.Server.Implementations.Security
 
                         statement.MoveNext();
                     }
-
                 }, TransactionMode);
             }
         }

@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class MusicAlbum
+    /// Class MusicAlbum.
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
@@ -55,6 +56,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return LibraryManager.GetArtist(name, options);
             }
+
             return null;
         }
 
@@ -114,9 +116,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             return list;
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        protected override bool GetBlockUnratedValue(User user)
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Music);
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
         }
 
         public override UnratedItem GetBlockUnratedType()

@@ -51,7 +51,6 @@ namespace Emby.Server.Implementations.Data
                     _libraryManager.DeleteItem(item, new DeleteOptions
                     {
                         DeleteFileLocation = false
-
                     });
                 }
 

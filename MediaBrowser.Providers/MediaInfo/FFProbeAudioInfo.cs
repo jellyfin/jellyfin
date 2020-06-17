@@ -63,7 +63,6 @@ namespace MediaBrowser.Providers.MediaInfo
                         Path = path,
                         Protocol = protocol
                     }
-
                 }, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -91,8 +90,8 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
 
-            //var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
-            //audio.Container = extension;
+            // var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
+            // audio.Container = extension;
 
             FetchDataFromTags(audio, mediaInfo);
 
@@ -100,7 +99,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Fetches data from the tags dictionary
+        /// Fetches data from the tags dictionary.
         /// </summary>
         /// <param name="audio">The audio.</param>
         /// <param name="data">The data.</param>

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -400,21 +401,24 @@ namespace MediaBrowser.Api.Playback
 
             if (item is Audio)
             {
-                Logger.LogInformation("User policy for {0}. EnableAudioPlaybackTranscoding: {1}", user.Name, user.Policy.EnableAudioPlaybackTranscoding);
+                Logger.LogInformation(
+                    "User policy for {0}. EnableAudioPlaybackTranscoding: {1}",
+                    user.Username,
+                    user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
             else
             {
                 Logger.LogInformation("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}",
-                    user.Name,
-                    user.Policy.EnablePlaybackRemuxing,
-                    user.Policy.EnableVideoPlaybackTranscoding,
-                    user.Policy.EnableAudioPlaybackTranscoding);
+                    user.Username,
+                    user.HasPermission(PermissionKind.EnablePlaybackRemuxing),
+                    user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding),
+                    user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
 
             // Beginning of Playback Determination: Attempt DirectPlay first
             if (mediaSource.SupportsDirectPlay)
             {
-                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     mediaSource.SupportsDirectPlay = false;
                 }
@@ -428,14 +432,16 @@ namespace MediaBrowser.Api.Playback
 
                     if (item is Audio)
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding)
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
                         {
                             options.ForceDirectPlay = true;
                         }
                     }
                     else if (item is Video)
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectPlay = true;
                         }
@@ -463,7 +469,7 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
-                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     mediaSource.SupportsDirectStream = false;
                 }
@@ -473,14 +479,16 @@ namespace MediaBrowser.Api.Playback
 
                     if (item is Audio)
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding)
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
                         {
                             options.ForceDirectStream = true;
                         }
                     }
                     else if (item is Video)
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectStream = true;
                         }
@@ -512,7 +520,7 @@ namespace MediaBrowser.Api.Playback
                     ? streamBuilder.BuildAudioItem(options)
                     : streamBuilder.BuildVideoItem(options);
 
-                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     if (streamInfo != null)
                     {
@@ -543,10 +551,12 @@ namespace MediaBrowser.Api.Playback
                             {
                                 mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                             }
+
                             if (!allowAudioStreamCopy)
                             {
                                 mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                             }
+
                             mediaSource.TranscodingContainer = streamInfo.Container;
                             mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         }
@@ -576,10 +586,10 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private long? GetMaxBitrate(long? clientMaxBitrate, User user)
+        private long? GetMaxBitrate(long? clientMaxBitrate, Jellyfin.Data.Entities.User user)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = user?.Policy.RemoteClientBitrateLimit ?? 0;
+            var remoteClientMaxBitrate = user?.RemoteClientBitrateLimit ?? 0;
 
             if (remoteClientMaxBitrate <= 0)
             {
@@ -638,7 +648,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 // Let's assume direct streaming a file is just as desirable as direct playing a remote url
@@ -648,7 +657,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 return i.Protocol switch
@@ -664,7 +672,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(originalList.IndexOf)
             .ToArray();
         }

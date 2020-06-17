@@ -26,6 +26,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 throw new ArgumentNullException(nameof(source));
             }
+
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));
@@ -111,7 +112,6 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
                 {
                     targetResult.People = sourceResult.People;
-
                 }
                 else if (targetResult.People != null && sourceResult.People != null)
                 {

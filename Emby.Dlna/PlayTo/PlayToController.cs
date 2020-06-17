@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -22,6 +23,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -423,6 +425,7 @@ namespace Emby.Dlna.PlayTo
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
                     return;
                 }
+
                 await SeekAfterTransportChange(newPosition, CancellationToken.None).ConfigureAwait(false);
             }
         }
@@ -446,7 +449,13 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
+        private PlaylistItem CreatePlaylistItem(
+            BaseItem item,
+            User user,
+            long startPostionTicks,
+            string mediaSourceId,
+            int? audioStreamIndex,
+            int? subtitleStreamIndex)
         {
             var deviceInfo = _device.Properties;
 
@@ -705,6 +714,7 @@ namespace Emby.Dlna.PlayTo
 
                             throw new ArgumentException("Volume argument cannot be null");
                         }
+
                     default:
                         return Task.CompletedTask;
                 }
@@ -790,12 +800,15 @@ namespace Emby.Dlna.PlayTo
             public int? SubtitleStreamIndex { get; set; }
 
             public string DeviceProfileId { get; set; }
+
             public string DeviceId { get; set; }
 
             public string MediaSourceId { get; set; }
+
             public string LiveStreamId { get; set; }
 
             public BaseItem Item { get; set; }
+
             private MediaSourceInfo MediaSource;
 
             private IMediaSourceManager _mediaSourceManager;

@@ -109,9 +109,10 @@
     "TaskCleanLogs": "Nettoyer le répertoire des journaux",
     "TaskRefreshLibraryDescription": "Analyse votre bibliothèque média pour trouver de nouveaux fichiers et rafraîchit les métadonnées.",
     "TaskRefreshChapterImages": "Extraire les images de chapitre",
-    "TaskRefreshChapterImagesDescription": "Créer des vignettes pour les vidéos qui ont des chapitres",
+    "TaskRefreshChapterImagesDescription": "Créer des vignettes pour les vidéos qui ont des chapitres.",
     "TaskRefreshLibrary": "Analyser la bibliothèque de médias",
     "TaskCleanCache": "Nettoyer le répertoire des fichiers temporaires",
     "TasksApplicationCategory": "Application",
-    "TaskCleanCacheDescription": "Supprime les fichiers temporaires qui ne sont plus nécessaire pour le système."
+    "TaskCleanCacheDescription": "Supprime les fichiers temporaires qui ne sont plus nécessaire pour le système.",
+    "TasksChannelsCategory": "Canaux Internet"
 }

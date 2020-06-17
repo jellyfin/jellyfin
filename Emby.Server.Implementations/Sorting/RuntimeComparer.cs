@@ -6,7 +6,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class RuntimeComparer
+    /// Class RuntimeComparer.
     /// </summary>
     public class RuntimeComparer : IBaseItemComparer
     {

@@ -31,7 +31,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
         /// <param name="_musicalbum0"></param>
@@ -66,7 +66,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for TrackNumber
+        /// Backing field for TrackNumber.
         /// </summary>
         protected int? _TrackNumber;
         /// <summary>
@@ -86,6 +86,7 @@ namespace Jellyfin.Data.Entities
                 GetTrackNumber(ref value);
                 return (_TrackNumber = value);
             }
+
             set
             {
                 int? oldValue = _TrackNumber;
@@ -106,7 +107,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("TrackMetadata_TrackMetadata_Id")]
         public virtual ICollection<TrackMetadata> TrackMetadata { get; protected set; }
-
     }
 }
 

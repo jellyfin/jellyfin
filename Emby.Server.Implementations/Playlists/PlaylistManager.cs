@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -21,6 +22,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 using PlaylistsNET.Models;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace Emby.Server.Implementations.Playlists
 {
@@ -398,6 +401,7 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         entry.Duration = TimeSpan.FromTicks(child.RunTimeTicks.Value);
                     }
+
                     playlist.PlaylistEntries.Add(entry);
                 }
 
@@ -463,7 +467,7 @@ namespace Emby.Server.Implementations.Playlists
                     playlist.PlaylistEntries.Add(entry);
                 }
 
-                string text = new M3u8Content().ToText(playlist);
+                string text = new M3uContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
 

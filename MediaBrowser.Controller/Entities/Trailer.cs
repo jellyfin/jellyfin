@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Trailer
+    /// Class Trailer.
     /// </summary>
     public class Trailer : Video, IHasLookupInfo<TrailerInfo>
     {

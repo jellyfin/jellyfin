@@ -18,18 +18,18 @@ namespace MediaBrowser.Api.Movies
     }
 
     /// <summary>
-    /// Class TrailersService
+    /// Class TrailersService.
     /// </summary>
     [Authenticated]
     public class TrailersService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
@@ -82,7 +82,6 @@ namespace MediaBrowser.Api.Movies
                 _authContext)
             {
                 Request = Request,
-
             }.Get(getItems);
         }
     }

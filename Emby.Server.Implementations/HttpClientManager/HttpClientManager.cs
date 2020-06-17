@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             => SendAsync(options, HttpMethod.Get);
 
         /// <summary>
-        /// Performs a GET request and returns the resulting stream
+        /// Performs a GET request and returns the resulting stream.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task{Stream}.</returns>

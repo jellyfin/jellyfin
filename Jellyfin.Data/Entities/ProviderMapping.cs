@@ -25,7 +25,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="providername"></param>
         /// <param name="providersecrets"></param>
@@ -42,12 +42,6 @@ namespace Jellyfin.Data.Entities
 
             if (string.IsNullOrEmpty(providerdata)) throw new ArgumentNullException(nameof(providerdata));
             this.ProviderData = providerdata;
-
-            if (_user0 == null) throw new ArgumentNullException(nameof(_user0));
-            _user0.ProviderMappings.Add(this);
-
-            if (_group1 == null) throw new ArgumentNullException(nameof(_group1));
-            _group1.ProviderMappings.Add(this);
 
 
             Init();
@@ -71,7 +65,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -103,7 +97,7 @@ namespace Jellyfin.Data.Entities
         public string ProviderData { get; set; }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -117,7 +111,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

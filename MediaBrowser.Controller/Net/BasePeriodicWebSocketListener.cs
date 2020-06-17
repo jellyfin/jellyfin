@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.Net
 {
     /// <summary>
-    /// Starts sending data over a web socket periodically when a message is received, and then stops when a corresponding stop message is received
+    /// Starts sending data over a web socket periodically when a message is received, and then stops when a corresponding stop message is received.
     /// </summary>
     /// <typeparam name="TReturnDataType">The type of the T return data type.</typeparam>
     /// <typeparam name="TStateType">The type of the T state type.</typeparam>
@@ -20,7 +20,7 @@ namespace MediaBrowser.Controller.Net
         where TReturnDataType : class
     {
         /// <summary>
-        /// The _active connections
+        /// The _active connections.
         /// </summary>
         private readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>> _activeConnections =
             new List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>>();
@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Net
         protected abstract Task<TReturnDataType> GetDataToSend();
 
         /// <summary>
-        /// The logger
+        /// The logger.
         /// </summary>
         protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
 
@@ -78,7 +78,7 @@ namespace MediaBrowser.Controller.Net
         }
 
         /// <summary>
-        /// Starts sending messages over a web socket
+        /// Starts sending messages over a web socket.
         /// </summary>
         /// <param name="message">The message.</param>
         private void Start(WebSocketMessageInfo message)
@@ -156,6 +156,7 @@ namespace MediaBrowser.Controller.Net
                     await connection.SendAsync(
                         new WebSocketMessage<TReturnDataType>
                         {
+                            MessageId = Guid.NewGuid(),
                             MessageType = Name,
                             Data = data
                         },
@@ -179,7 +180,7 @@ namespace MediaBrowser.Controller.Net
         }
 
         /// <summary>
-        /// Stops sending messages over a web socket
+        /// Stops sending messages over a web socket.
         /// </summary>
         /// <param name="message">The message.</param>
         private void Stop(WebSocketMessageInfo message)
@@ -213,7 +214,7 @@ namespace MediaBrowser.Controller.Net
             }
             catch (ObjectDisposedException)
             {
-                //TODO Investigate and properly fix.
+                // TODO Investigate and properly fix.
             }
 
             lock (_activeConnections)
@@ -253,7 +254,9 @@ namespace MediaBrowser.Controller.Net
     public class WebSocketListenerState
     {
         public DateTime DateLastSendUtc { get; set; }
+
         public long InitialDelayMs { get; set; }
+
         public long IntervalMs { get; set; }
     }
 }

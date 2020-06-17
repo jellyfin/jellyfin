@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetYears
+    /// Class GetYears.
     /// </summary>
     [Route("/Years", "GET", Summary = "Gets all years from a given item, folder, or the entire library")]
     public class GetYears : GetItemsByName
@@ -21,7 +21,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetYear
+    /// Class GetYear.
     /// </summary>
     [Route("/Years/{Year}", "GET", Summary = "Gets a year")]
     public class GetYear : IReturn<BaseItemDto>
@@ -42,7 +42,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class YearsService
+    /// Class YearsService.
     /// </summary>
     [Authenticated]
     public class YearsService : BaseItemsByNameService<Year>

@@ -108,11 +108,13 @@ namespace MediaBrowser.Providers.Music
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subReader = reader.ReadSubtree())
                                         {
                                             return ParseArtistList(subReader).ToList();
                                         }
                                     }
+
                                 default:
                                     {
                                         reader.Skip();
@@ -150,6 +152,7 @@ namespace MediaBrowser.Providers.Music
                                     reader.Read();
                                     continue;
                                 }
+
                                 var mbzId = reader.GetAttribute("id");
 
                                 using (var subReader = reader.ReadSubtree())
@@ -160,8 +163,10 @@ namespace MediaBrowser.Providers.Music
                                         yield return artist;
                                     }
                                 }
+
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -202,6 +207,7 @@ namespace MediaBrowser.Providers.Music
                                 result.Overview = reader.ReadElementContentAsString();
                                 break;
                             }
+
                         default:
                             {
                                 // there is sort-name if ever needed

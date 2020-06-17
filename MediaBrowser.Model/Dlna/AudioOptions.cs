@@ -47,7 +47,7 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxAudioChannels { get; set; }
 
         /// <summary>
-        /// The application's configured quality setting
+        /// The application's configured quality setting.
         /// </summary>
         public long? MaxBitrate { get; set; }
 
@@ -85,6 +85,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return Profile.MaxStaticMusicBitrate;
                 }
+
                 return Profile.MaxStaticBitrate;
             }
 

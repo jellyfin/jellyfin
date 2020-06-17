@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
     /// <summary>
-    /// Class MovieDbProvider
+    /// Class MovieDbProvider.
     /// </summary>
     public class TmdbMovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
@@ -129,7 +129,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         public string Name => TmdbUtils.ProviderName;
 
         /// <summary>
-        /// The _TMDB settings task
+        /// The _TMDB settings task.
         /// </summary>
         private TmdbSettingsResult _tmdbSettings;
 
@@ -149,7 +149,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 Url = string.Format(TmdbConfigUrl, TmdbUtils.ApiKey),
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (Stream json = response.Content)
@@ -344,7 +343,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     AcceptHeader = TmdbUtils.AcceptHeader,
                     CacheMode = cacheMode,
                     CacheLength = cacheLength
-
                 }).ConfigureAwait(false))
                 {
                     using (var json = response.Content)
@@ -389,7 +387,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     AcceptHeader = TmdbUtils.AcceptHeader,
                     CacheMode = cacheMode,
                     CacheLength = cacheLength
-
                 }).ConfigureAwait(false))
                 {
                     using (var json = response.Content)
