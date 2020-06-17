@@ -11,7 +11,7 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.LocalMetadata.Images
 {
     /// <summary>
-    /// Episode local local local image provider.
+    /// Episode local image provider.
     /// </summary>
     public class EpisodeLocalImageProvider : ILocalImageProvider, IHasOrder
     {
