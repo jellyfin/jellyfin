@@ -1,6 +1,6 @@
-#pragma warning disable CS1591
+﻿#pragma warning disable CS1591
 
-namespace MediaBrowser.Model.Configuration
+namespace Jellyfin.Data.Enums
 {
     public enum SubtitlePlaybackMode
     {
