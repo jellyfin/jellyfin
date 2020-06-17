@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Library
     public class ItemResolveArgs : EventArgs
     {
         /// <summary>
-        /// The _app paths
+        /// The _app paths.
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
@@ -129,6 +129,7 @@ namespace MediaBrowser.Controller.Library
 
                 return item != null;
             }
+
             return false;
         }
 
@@ -256,6 +257,7 @@ namespace MediaBrowser.Controller.Library
                 if (args.Path == null && Path == null) return true;
                 return args.Path != null && BaseItem.FileSystem.AreEqual(args.Path, Path);
             }
+
             return false;
         }
 

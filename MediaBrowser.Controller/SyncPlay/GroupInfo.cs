@@ -122,6 +122,7 @@ namespace MediaBrowser.Controller.SyncPlay
             {
                 max = Math.Max(max, session.Ping);
             }
+
             return max;
         }
 

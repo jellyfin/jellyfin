@@ -135,6 +135,7 @@ namespace Rssdp.Infrastructure
 
                 ParseHeader(line, headers, contentHeaders);
             }
+
             return lineIndex;
         }
 

@@ -13,7 +13,7 @@ using MediaBrowser.Model.Globalization;
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
-    /// Deletes old cache files
+    /// Deletes old cache files.
     /// </summary>
     public class DeleteCacheFileTask : IScheduledTask, IConfigurableScheduledTask
     {
@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
 
         /// <summary>
-        /// Deletes the cache files from directory with a last write time less than a given date
+        /// Deletes the cache files from directory with a last write time less than a given date.
         /// </summary>
         /// <param name="cancellationToken">The task cancellation token.</param>
         /// <param name="directory">The directory.</param>

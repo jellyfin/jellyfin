@@ -24,19 +24,19 @@ using Season = MediaBrowser.Controller.Entities.TV.Season;
 namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
-    /// Class ImageSaver
+    /// Class ImageSaver.
     /// </summary>
     public class ImageSaver
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
-        /// The _config
+        /// The _config.
         /// </summary>
         private readonly IServerConfigurationManager _config;
 
         /// <summary>
-        /// The _directory watchers
+        /// The _directory watchers.
         /// </summary>
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
@@ -104,6 +104,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
+
             if (saveLocallyWithMedia.HasValue && !saveLocallyWithMedia.Value)
             {
                 saveLocally = saveLocallyWithMedia.Value;
@@ -147,6 +148,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         retryPath = retryPaths[currentPathIndex];
                     }
+
                     var savedPath = await SaveImageToLocation(source, path, retryPath, cancellationToken).ConfigureAwait(false);
                     savedPaths.Add(savedPath);
                     currentPathIndex++;
@@ -460,6 +462,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     filename = folderName;
                 }
+
                 path = Path.Combine(item.GetInternalMetadataPath(), filename + extension);
             }
 
@@ -551,6 +554,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     list.Add(Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension));
                 }
+
                 return list.ToArray();
             }
 
@@ -619,6 +623,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 imageFilename = "poster";
             }
+
             var folder = Path.GetDirectoryName(item.Path);
 
             return Path.Combine(folder, Path.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename + extension);

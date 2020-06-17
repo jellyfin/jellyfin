@@ -7,7 +7,7 @@ using Jellyfin.Data.Enums;
 namespace MediaBrowser.Model.Configuration
 {
     /// <summary>
-    /// Class UserConfiguration
+    /// Class UserConfiguration.
     /// </summary>
     public class UserConfiguration
     {
@@ -34,6 +34,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] GroupedFolders { get; set; }
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }
+
         public bool DisplayCollectionsView { get; set; }
 
         public bool EnableLocalPassword { get; set; }
@@ -41,12 +42,15 @@ namespace MediaBrowser.Model.Configuration
         public string[] OrderedViews { get; set; }
 
         public string[] LatestItemsExcludes { get; set; }
+
         public string[] MyMediaExcludes { get; set; }
 
         public bool HidePlayedInLatest { get; set; }
 
         public bool RememberAudioSelections { get; set; }
+
         public bool RememberSubtitleSelections { get; set; }
+
         public bool EnableNextEpisodeAutoPlay { get; set; }
 
         /// <summary>

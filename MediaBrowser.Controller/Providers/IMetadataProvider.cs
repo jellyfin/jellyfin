@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.Providers
 {
     /// <summary>
-    /// Marker interface
+    /// Marker interface.
     /// </summary>
     public interface IMetadataProvider
     {

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetStudios
+    /// Class GetStudios.
     /// </summary>
     [Route("/Studios", "GET", Summary = "Gets all studios from a given item, folder, or the entire library")]
     public class GetStudios : GetItemsByName
@@ -21,7 +21,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetStudio
+    /// Class GetStudio.
     /// </summary>
     [Route("/Studios/{Name}", "GET", Summary = "Gets a studio, by name")]
     public class GetStudio : IReturn<BaseItemDto>
@@ -42,7 +42,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class StudiosService
+    /// Class StudiosService.
     /// </summary>
     [Authenticated]
     public class StudiosService : BaseItemsByNameService<Studio>

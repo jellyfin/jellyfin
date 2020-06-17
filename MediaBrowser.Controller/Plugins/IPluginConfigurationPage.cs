@@ -4,7 +4,7 @@ using MediaBrowser.Common.Plugins;
 namespace MediaBrowser.Controller.Plugins
 {
     /// <summary>
-    /// Interface IConfigurationPage
+    /// Interface IConfigurationPage.
     /// </summary>
     public interface IPluginConfigurationPage
     {
@@ -34,16 +34,16 @@ namespace MediaBrowser.Controller.Plugins
     }
 
     /// <summary>
-    /// Enum ConfigurationPageType
+    /// Enum ConfigurationPageType.
     /// </summary>
     public enum ConfigurationPageType
     {
         /// <summary>
-        /// The plugin configuration
+        /// The plugin configuration.
         /// </summary>
         PluginConfiguration,
         /// <summary>
-        /// The none
+        /// The none.
         /// </summary>
         None
     }

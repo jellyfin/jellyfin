@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback.Hls
 {
     /// <summary>
-    /// Class BaseHlsService
+    /// Class BaseHlsService.
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
@@ -146,6 +146,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
                 }
+
                 return ResultFactory.GetResult(GetLivePlaylistText(playlist, state.SegmentLength), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
             }
 

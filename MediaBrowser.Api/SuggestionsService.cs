@@ -18,10 +18,15 @@ namespace MediaBrowser.Api
     public class GetSuggestedItems : IReturn<QueryResult<BaseItemDto>>
     {
         public string MediaType { get; set; }
+
         public string Type { get; set; }
+
         public Guid UserId { get; set; }
+
         public bool EnableTotalRecordCount { get; set; }
+
         public int? StartIndex { get; set; }
+
         public int? Limit { get; set; }
 
         public string[] GetMediaTypes()

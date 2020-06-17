@@ -105,6 +105,7 @@ namespace MediaBrowser.Model.Session
         public RepeatMode RepeatMode { get; set; }
 
         public QueueItem[] NowPlayingQueue { get; set; }
+
         public string PlaylistItemId { get; set; }
     }
 
@@ -118,6 +119,7 @@ namespace MediaBrowser.Model.Session
     public class QueueItem
     {
         public Guid Id { get; set; }
+
         public string PlaylistItemId { get; set; }
     }
 }

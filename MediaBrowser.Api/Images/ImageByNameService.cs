@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Images
 {
     /// <summary>
-    /// Class GetGeneralImage
+    /// Class GetGeneralImage.
     /// </summary>
     [Route("/Images/General/{Name}/{Type}", "GET", Summary = "Gets a general image by name")]
     public class GetGeneralImage
@@ -33,7 +33,7 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class GetRatingImage
+    /// Class GetRatingImage.
     /// </summary>
     [Route("/Images/Ratings/{Theme}/{Name}", "GET", Summary = "Gets a rating image by name")]
     public class GetRatingImage
@@ -54,7 +54,7 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class GetMediaInfoImage
+    /// Class GetMediaInfoImage.
     /// </summary>
     [Route("/Images/MediaInfo/{Theme}/{Name}", "GET", Summary = "Gets a media info image by name")]
     public class GetMediaInfoImage
@@ -93,12 +93,12 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class ImageByNameService
+    /// Class ImageByNameService.
     /// </summary>
     public class ImageByNameService : BaseApiService
     {
         /// <summary>
-        /// The _app paths
+        /// The _app paths.
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 

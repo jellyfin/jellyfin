@@ -33,7 +33,7 @@ namespace MediaBrowser.Api.Images
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]

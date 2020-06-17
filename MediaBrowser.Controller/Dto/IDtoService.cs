@@ -7,7 +7,7 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Controller.Dto
 {
     /// <summary>
-    /// Interface IDtoService
+    /// Interface IDtoService.
     /// </summary>
     public interface IDtoService
     {

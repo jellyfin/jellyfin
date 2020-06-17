@@ -25,7 +25,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="streamnumber"></param>
         /// <param name="_mediafile0"></param>
@@ -55,7 +55,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -68,7 +68,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -81,6 +81,7 @@ namespace Jellyfin.Data.Entities
                 GetId(ref value);
                 return (_Id = value);
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -93,7 +94,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for StreamNumber
+        /// Backing field for StreamNumber.
         /// </summary>
         protected int _StreamNumber;
         /// <summary>
@@ -106,7 +107,7 @@ namespace Jellyfin.Data.Entities
         partial void GetStreamNumber(ref int result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public int StreamNumber
@@ -117,6 +118,7 @@ namespace Jellyfin.Data.Entities
                 GetStreamNumber(ref value);
                 return (_StreamNumber = value);
             }
+
             set
             {
                 int oldValue = _StreamNumber;
@@ -129,7 +131,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
