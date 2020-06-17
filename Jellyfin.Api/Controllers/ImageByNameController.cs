@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Jellyfin.Api.Controllers.Images
+namespace Jellyfin.Api.Controllers
 {
     /// <summary>
     ///     Images By Name Controller.
@@ -81,7 +81,7 @@ namespace Jellyfin.Api.Controllers.Images
             }
 
             var contentType = MimeTypes.GetMimeType(path);
-            return new FileStreamResult(System.IO.File.OpenRead(path), contentType);
+            return File(System.IO.File.OpenRead(path), contentType);
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Jellyfin.Api.Controllers.Images
                 if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
                 {
                     var contentType = MimeTypes.GetMimeType(path);
-                    return new FileStreamResult(System.IO.File.OpenRead(path), contentType);
+                    return File(System.IO.File.OpenRead(path), contentType);
                 }
             }
 
@@ -181,7 +181,7 @@ namespace Jellyfin.Api.Controllers.Images
                 if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
                 {
                     var contentType = MimeTypes.GetMimeType(path);
-                    return new FileStreamResult(System.IO.File.OpenRead(path), contentType);
+                    return File(System.IO.File.OpenRead(path), contentType);
                 }
             }
 
