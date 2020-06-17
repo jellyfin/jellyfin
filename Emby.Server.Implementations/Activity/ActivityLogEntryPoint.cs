@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Activity
     /// </summary>
     public sealed class ActivityLogEntryPoint : IServerEntryPoint
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ActivityLogEntryPoint> _logger;
         private readonly IInstallationManager _installationManager;
         private readonly ISessionManager _sessionManager;
         private readonly ITaskManager _taskManager;
@@ -38,14 +38,12 @@ namespace Emby.Server.Implementations.Activity
         private readonly ILocalizationManager _localization;
         private readonly ISubtitleManager _subManager;
         private readonly IUserManager _userManager;
-        private readonly IDeviceManager _deviceManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityLogEntryPoint"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
-        /// <param name="deviceManager">The device manager.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="activityManager">The activity manager.</param>
         /// <param name="localization">The localization manager.</param>
@@ -55,7 +53,6 @@ namespace Emby.Server.Implementations.Activity
         public ActivityLogEntryPoint(
             ILogger<ActivityLogEntryPoint> logger,
             ISessionManager sessionManager,
-            IDeviceManager deviceManager,
             ITaskManager taskManager,
             IActivityManager activityManager,
             ILocalizationManager localization,
@@ -65,7 +62,6 @@ namespace Emby.Server.Implementations.Activity
         {
             _logger = logger;
             _sessionManager = sessionManager;
-            _deviceManager = deviceManager;
             _taskManager = taskManager;
             _activityManager = activityManager;
             _localization = localization;
@@ -99,52 +95,43 @@ namespace Emby.Server.Implementations.Activity
             _userManager.UserPolicyUpdated += OnUserPolicyUpdated;
             _userManager.UserLockedOut += OnUserLockedOut;
 
-            _deviceManager.CameraImageUploaded += OnCameraImageUploaded;
-
             return Task.CompletedTask;
         }
 
-        private async void OnCameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
+        private void OnCameraImageUploaded(object sender, GenericEventArgs<CameraImageUploadInfo> e)
         {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
+            CreateLogEntry(new ActivityLogEntry
+            {
+                Name = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("CameraImageUploadedFrom"),
                     e.Argument.Device.Name),
-                NotificationType.CameraImageUploaded.ToString(),
-                Guid.Empty,
-                DateTime.UtcNow,
-                LogLevel.Trace))
-                .ConfigureAwait(false);
+                Type = NotificationType.CameraImageUploaded.ToString()
+            });
         }
 
-        private async void OnUserLockedOut(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
+        private void OnUserLockedOut(object sender, GenericEventArgs<User> e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserLockedOutWithName"),
                     e.Argument.Name),
-                NotificationType.UserLockedOut.ToString(),
-                e.Argument.Id,
-                DateTime.UtcNow,
-                LogLevel.Trace))
-                .ConfigureAwait(false);
+                Type = NotificationType.UserLockedOut.ToString(),
+                UserId = e.Argument.Id
+            });
         }
 
-        private async void OnSubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
+        private void OnSubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
         {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
+            CreateLogEntry(new ActivityLogEntry
+            {
+                Name = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
                     e.Provider,
                     Emby.Notifications.NotificationEntryPoint.GetItemName(e.Item)),
-                "SubtitleDownloadFailure",
-                Guid.Empty,
-                DateTime.UtcNow,
-                LogLevel.Trace)
-            {
+                Type = "SubtitleDownloadFailure",
                 ItemId = e.Item.Id.ToString("N", CultureInfo.InvariantCulture),
                 ShortOverview = e.Exception.Message
             }).ConfigureAwait(false);
@@ -180,11 +167,9 @@ namespace Emby.Server.Implementations.Activity
                     user.Name,
                     GetItemName(item),
                     e.DeviceName),
-                GetPlaybackStoppedNotificationType(item.MediaType),
-                user.Id,
-                DateTime.UtcNow,
-                LogLevel.Trace))
-                .ConfigureAwait(false);
+                Type = GetPlaybackStoppedNotificationType(item.MediaType),
+                UserId = user.Id
+            });
         }
 
         private async void OnPlaybackStart(object sender, PlaybackProgressEventArgs e)
@@ -217,11 +202,9 @@ namespace Emby.Server.Implementations.Activity
                     user.Name,
                     GetItemName(item),
                     e.DeviceName),
-                GetPlaybackNotificationType(item.MediaType),
-                user.Id,
-                DateTime.UtcNow,
-                LogLevel.Trace))
-                .ConfigureAwait(false);
+                Type = GetPlaybackNotificationType(item.MediaType),
+                UserId = user.Id
+            });
         }
 
         private static string GetItemName(BaseItemDto item)
@@ -273,34 +256,22 @@ namespace Emby.Server.Implementations.Activity
 
         private async void OnSessionEnded(object sender, SessionEventArgs e)
         {
-            string name;
             var session = e.SessionInfo;
 
             if (string.IsNullOrEmpty(session.UserName))
             {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("DeviceOfflineWithName"),
-                    session.DeviceName);
-
-                // Causing too much spam for now
                 return;
             }
-            else
-            {
-                name = string.Format(
+
+            await CreateLogEntry(new ActivityLog(
+                string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserOfflineFromDevice"),
                     session.UserName,
                     session.DeviceName);
             }
 
-            await CreateLogEntry(new ActivityLog(
-                name,
-                "SessionEnded",
-                session.UserId,
-                DateTime.UtcNow,
-                LogLevel.Trace)
+            CreateLogEntry(new ActivityLogEntry
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
@@ -318,11 +289,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("AuthenticationSucceededWithUserName"),
                     user.Name),
-                "AuthenticationSucceeded",
-                user.Id,
-                DateTime.UtcNow,
-                LogLevel.Trace)
-            {
+                Type = "AuthenticationSucceeded",
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("LabelIpAddressValue"),
@@ -337,11 +304,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("FailedLoginAttemptWithUserName"),
                     e.Argument.Username),
-                "AuthenticationFailed",
-                Guid.Empty,
-                DateTime.UtcNow,
-                LogLevel.Error)
-            {
+                Type = "AuthenticationFailed",
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("LabelIpAddressValue"),
@@ -356,11 +319,9 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserPolicyUpdatedWithName"),
                     e.Argument.Name),
-                "UserPolicyUpdated",
-                e.Argument.Id,
-                DateTime.UtcNow,
-                LogLevel.Trace))
-                .ConfigureAwait(false);
+                Type = "UserPolicyUpdated",
+                UserId = e.Argument.Id
+            });
         }
 
         private async void OnUserDeleted(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
@@ -370,11 +331,8 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserDeletedWithName"),
                     e.Argument.Name),
-                "UserDeleted",
-                Guid.Empty,
-                DateTime.UtcNow,
-                LogLevel.Trace))
-                .ConfigureAwait(false);
+                Type = "UserDeleted"
+            });
         }
 
         private async void OnUserPasswordChanged(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
@@ -384,10 +342,9 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserPasswordChangedWithName"),
                     e.Argument.Name),
-                "UserPasswordChanged",
-                e.Argument.Id,
-                DateTime.UtcNow,
-                LogLevel.Trace)).ConfigureAwait(false);
+                Type = "UserPasswordChanged",
+                UserId = e.Argument.Id
+            });
         }
 
         private async void OnUserCreated(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
@@ -397,43 +354,29 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserCreatedWithName"),
                     e.Argument.Name),
-                "UserCreated",
-                e.Argument.Id,
-                DateTime.UtcNow,
-                LogLevel.Trace))
-                .ConfigureAwait(false);
+                Type = "UserCreated",
+                UserId = e.Argument.Id
+            });
         }
 
         private async void OnSessionStarted(object sender, SessionEventArgs e)
         {
-            string name;
             var session = e.SessionInfo;
 
             if (string.IsNullOrEmpty(session.UserName))
             {
-                name = string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("DeviceOnlineWithName"),
-                    session.DeviceName);
-
-                // Causing too much spam for now
                 return;
             }
-            else
-            {
-                name = string.Format(
+
+            await CreateLogEntry(new ActivityLog(
+                string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserOnlineFromDevice"),
                     session.UserName,
                     session.DeviceName);
             }
 
-            await CreateLogEntry(new ActivityLog(
-                name,
-                "SessionStarted",
-                session.UserId,
-                DateTime.UtcNow,
-                LogLevel.Trace)
+            CreateLogEntry(new ActivityLogEntry
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
@@ -449,11 +392,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginUpdatedWithName"),
                     e.Argument.Item1.Name),
-                NotificationType.PluginUpdateInstalled.ToString(),
-                Guid.Empty,
-                DateTime.UtcNow,
-                LogLevel.Trace)
-            {
+                Type = NotificationType.PluginUpdateInstalled.ToString(),
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
@@ -469,11 +408,8 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginUninstalledWithName"),
                     e.Argument.Name),
-                NotificationType.PluginUninstalled.ToString(),
-                Guid.Empty,
-                DateTime.UtcNow,
-                LogLevel.Trace))
-                .ConfigureAwait(false);
+                Type = NotificationType.PluginUninstalled.ToString()
+            });
         }
 
         private async void OnPluginInstalled(object sender, GenericEventArgs<VersionInfo> e)
@@ -483,11 +419,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginInstalledWithName"),
                     e.Argument.name),
-                NotificationType.PluginInstalled.ToString(),
-                Guid.Empty,
-                DateTime.UtcNow,
-                LogLevel.Trace)
-            {
+                Type = NotificationType.PluginInstalled.ToString(),
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
@@ -504,11 +436,7 @@ namespace Emby.Server.Implementations.Activity
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("NameInstallFailed"),
                     installationInfo.Name),
-                NotificationType.InstallationFailed.ToString(),
-                Guid.Empty,
-                DateTime.UtcNow,
-                LogLevel.Trace)
-            {
+                Type = NotificationType.InstallationFailed.ToString(),
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
@@ -548,13 +476,13 @@ namespace Emby.Server.Implementations.Activity
                     vals.Add(e.Result.LongErrorMessage);
                 }
 
-                await CreateLogEntry(new ActivityLog(
-                    string.Format(CultureInfo.InvariantCulture, _localization.GetLocalizedString("ScheduledTaskFailedWithName"), task.Name),
-                    NotificationType.TaskFailed.ToString(),
-                    Guid.Empty,
-                    DateTime.UtcNow,
-                    LogLevel.Error)
+                CreateLogEntry(new ActivityLogEntry
                 {
+                    Name = string.Format(
+                        CultureInfo.InvariantCulture,
+                        _localization.GetLocalizedString("ScheduledTaskFailedWithName"),
+                        task.Name),
+                    Type = NotificationType.TaskFailed.ToString(),
                     Overview = string.Join(Environment.NewLine, vals),
                     ShortOverview = runningTime
                 }).ConfigureAwait(false);
@@ -589,8 +517,6 @@ namespace Emby.Server.Implementations.Activity
             _userManager.UserDeleted -= OnUserDeleted;
             _userManager.UserPolicyUpdated -= OnUserPolicyUpdated;
             _userManager.UserLockedOut -= OnUserLockedOut;
-
-            _deviceManager.CameraImageUploaded -= OnCameraImageUploaded;
         }
 
         /// <summary>
@@ -610,7 +536,7 @@ namespace Emby.Server.Implementations.Activity
             {
                 int years = days / DaysInYear;
                 values.Add(CreateValueString(years, "year"));
-                days = days % DaysInYear;
+                days %= DaysInYear;
             }
 
             // Number of months

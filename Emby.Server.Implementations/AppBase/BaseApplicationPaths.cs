@@ -15,6 +15,11 @@ namespace Emby.Server.Implementations.AppBase
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
+        /// <param name="programDataPath">The program data path.</param>
+        /// <param name="logDirectoryPath">The log directory path.</param>
+        /// <param name="configurationDirectoryPath">The configuration directory path.</param>
+        /// <param name="cacheDirectoryPath">The cache directory path.</param>
+        /// <param name="webDirectoryPath">The web directory path.</param>
         protected BaseApplicationPaths(
             string programDataPath,
             string logDirectoryPath,

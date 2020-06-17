@@ -319,11 +319,14 @@ namespace MediaBrowser.Api.Library
         private readonly ILocalizationManager _localization;
         private readonly ILibraryMonitor _libraryMonitor;
 
+        private readonly ILogger<MoviesService> _moviesServiceLogger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(
             ILogger<LibraryService> logger,
+            ILogger<MoviesService> moviesServiceLogger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IProviderManager providerManager,
@@ -344,6 +347,7 @@ namespace MediaBrowser.Api.Library
             _activityManager = activityManager;
             _localization = localization;
             _libraryMonitor = libraryMonitor;
+            _moviesServiceLogger = moviesServiceLogger;
         }
 
         private string[] GetRepresentativeItemTypes(string contentType)
@@ -543,7 +547,7 @@ namespace MediaBrowser.Api.Library
             if (item is Movie || (program != null && program.IsMovie) || item is Trailer)
             {
                 return new MoviesService(
-                    Logger,
+                    _moviesServiceLogger,
                     ServerConfigurationManager,
                     ResultFactory,
                     _userManager,

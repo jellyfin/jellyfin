@@ -18,6 +18,11 @@ namespace MediaBrowser.Model.Activity
 
         QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit);
 
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? x, int? y);
+        QueryResult<ActivityLogEntry> GetPagedResult(int? startIndex, int? limit);
+
+        QueryResult<ActivityLogEntry> GetPagedResult(
+            Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>> func,
+            int? startIndex,
+            int? limit);
     }
 }

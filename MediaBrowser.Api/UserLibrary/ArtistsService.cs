@@ -51,7 +51,7 @@ namespace MediaBrowser.Api.UserLibrary
     public class ArtistsService : BaseItemsByNameService<MusicArtist>
     {
         public ArtistsService(
-            ILogger<GenresService> logger,
+            ILogger<ArtistsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
