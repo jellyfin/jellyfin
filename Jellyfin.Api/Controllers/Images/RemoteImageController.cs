@@ -191,7 +191,7 @@ namespace Jellyfin.Api.Controllers.Images
             }
 
             var contentType = MimeTypes.GetMimeType(contentPath);
-            return new FileStreamResult(System.IO.File.OpenRead(contentPath), contentType);
+            return File(System.IO.File.OpenRead(contentPath), contentType);
         }
 
         /// <summary>
