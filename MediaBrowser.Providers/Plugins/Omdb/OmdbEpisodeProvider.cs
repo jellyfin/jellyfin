@@ -11,13 +11,10 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
-    public class OmdbEpisodeProvider :
-            IRemoteMetadataProvider<Episode, EpisodeInfo>,
-            IHasOrder
+    public class OmdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
@@ -26,15 +23,26 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IApplicationHost _appHost;
 
-        public OmdbEpisodeProvider(IJsonSerializer jsonSerializer, IApplicationHost appHost, IHttpClient httpClient, ILogger logger, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbEpisodeProvider(
+            IJsonSerializer jsonSerializer,
+            IApplicationHost appHost,
+            IHttpClient httpClient,
+            ILibraryManager libraryManager,
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _appHost = appHost;
-            _itemProvider = new OmdbItemProvider(jsonSerializer, _appHost, httpClient, logger, libraryManager, fileSystem, configurationManager);
+            _itemProvider = new OmdbItemProvider(jsonSerializer, _appHost, httpClient, libraryManager, fileSystem, configurationManager);
         }
+
+        // After TheTvDb
+        public int Order => 1;
+
+        public string Name => "The Open Movie Database";
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -66,10 +74,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             return result;
         }
-        // After TheTvDb
-        public int Order => 1;
-
-        public string Name => "The Open Movie Database";
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {

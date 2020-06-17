@@ -81,7 +81,7 @@ namespace MediaBrowser.Api.Playback
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
         protected BaseStreamingService(
-            ILogger logger,
+            ILogger<BaseStreamingService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -321,7 +321,7 @@ namespace MediaBrowser.Api.Playback
             var encodingOptions = ServerConfigurationManager.GetEncodingOptions();
 
             // enable throttling when NOT using hardware acceleration
-            if (encodingOptions.HardwareAccelerationType == string.Empty)
+            if (string.IsNullOrEmpty(encodingOptions.HardwareAccelerationType))
             {
                 return state.InputProtocol == MediaProtocol.File &&
                        state.RunTimeTicks.HasValue &&
@@ -331,6 +331,7 @@ namespace MediaBrowser.Api.Playback
                        !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
                //        string.Equals(GetVideoEncoder(state), "libx264", StringComparison.OrdinalIgnoreCase);
             }
+
             return false;
         }
 
