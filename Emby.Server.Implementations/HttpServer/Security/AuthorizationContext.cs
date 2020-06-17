@@ -89,11 +89,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (string.IsNullOrEmpty(token))
             {
-                token = headers["X-Jellyfin-Token"];
-            }
-
-            if (string.IsNullOrEmpty(token))
-            {
                 token = headers["X-Emby-Token"];
             }
 
@@ -210,11 +205,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private Dictionary<string, string> GetAuthorizationDictionary(IRequest httpReq)
         {
-            var auth = httpReq.Headers["X-Jellyfin-Authorization"];
-            if (string.IsNullOrEmpty(auth))
-            {
-                auth = httpReq.Headers["X-Emby-Authorization"];
-            }
+            var auth = httpReq.Headers["X-Emby-Authorization"];
 
             if (string.IsNullOrEmpty(auth))
             {
@@ -231,11 +222,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private Dictionary<string, string> GetAuthorizationDictionary(HttpRequest httpReq)
         {
-            var auth = httpReq.Headers["X-Jellyfin-Authorization"];
-            if (string.IsNullOrEmpty(auth))
-            {
-                auth = httpReq.Headers["X-Emby-Authorization"];
-            }
+            var auth = httpReq.Headers["X-Emby-Authorization"];
 
             if (string.IsNullOrEmpty(auth))
             {
@@ -265,7 +252,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return null;
             }
 
-            var acceptedNames = new[] { "MediaBrowser", "Emby", "Jellyfin" };
+            var acceptedNames = new[] { "MediaBrowser", "Emby" };
 
             // It has to be a digest request
             if (!acceptedNames.Contains(parts[0], StringComparer.OrdinalIgnoreCase))
