@@ -117,9 +117,11 @@ namespace Emby.Server.Implementations.EntryPoints
                         NatUtility.DeviceFound += OnNatUtilityDeviceFound;
                         NatUtility.DeviceLost += OnNatUtilityDeviceLost;
                         NatUtility.StartDiscovery();
+
                         _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
-                        _networkManager.NetworkChanged += OnNetworkChanged;
-                        InternetChecker.Instance.StateChange += ExternalAccessChanged;
+                        _networkManager.NetworkChanged += OnChange;
+                        InternetChecker.Instance.OnStateChange += OnChange;
+                        InternetChecker.Instance.OnGatewayFailure += OnChange;
                     }
                 }
             }
@@ -139,35 +141,18 @@ namespace Emby.Server.Implementations.EntryPoints
                         NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
                         NatUtility.DeviceLost -= OnNatUtilityDeviceLost;
 
-                        _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
-                        _networkManager.NetworkChanged -= OnNetworkChanged;
-                        InternetChecker.Instance.StateChange -= ExternalAccessChanged;
+                        InternetChecker.Instance.ResetGateways();
+
+                        _deviceDiscovery.DeviceDiscovered -= OnChange;
+                        _networkManager.NetworkChanged -= OnChange;
+                        InternetChecker.Instance.OnStateChange -= OnChange;
+                        InternetChecker.Instance.OnGatewayFailure -= OnChange;
                     }
                 }
             }
         }
 
-        private void ExternalAccessChanged(object sender, InternetState state)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (state == InternetState.Down && !_stopped)
-            {
-                lock (_lock)
-                {
-                    if (state == InternetState.Down && !_stopped)
-                    {
-                        NatUtility.StopDiscovery();
-                        NatUtility.StartDiscovery();
-                    }
-                }
-            }
-        }
-
-        private void OnNetworkChanged(object sender, EventArgs e)
+        private void OnChange(object sender, EventArgs e)
         {
             if (_disposed)
             {
@@ -180,8 +165,8 @@ namespace Emby.Server.Implementations.EntryPoints
                 {
                     if (!_stopped)
                     {
-                        // Something changed on the network.
                         NatUtility.StopDiscovery();
+                        InternetChecker.Instance.ResetGateways();
                         NatUtility.StartDiscovery();
                     }
                 }
@@ -286,6 +271,8 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 var mapping = new Mapping(Protocol.Tcp, privatePort, publicPort, 0, _appHost.Name);
                 await device.CreatePortMapAsync(mapping).ConfigureAwait(false);
+
+                InternetChecker.Instance.AddGateway(device.DeviceEndpoint.Address);
             }
             catch (Exception ex)
             {
