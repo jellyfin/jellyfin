@@ -159,10 +159,10 @@ namespace Jellyfin.Api.Controllers
                 ? null
                 : _userManager.GetUserById(userId.Value);
 
-            if (string.Equals(includeItemTypes, nameof(BoxSet), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(includeItemTypes, nameof(Playlist), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(includeItemTypes, nameof(Trailer), StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(includeItemTypes, "Program", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(includeItemTypes, nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(includeItemTypes, nameof(Playlist), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(includeItemTypes, nameof(Trailer), StringComparison.OrdinalIgnoreCase)
+                || string.Equals(includeItemTypes, "Program", StringComparison.OrdinalIgnoreCase))
             {
                 parentItem = null;
             }
