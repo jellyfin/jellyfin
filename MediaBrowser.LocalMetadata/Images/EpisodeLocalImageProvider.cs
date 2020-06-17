@@ -75,6 +75,7 @@ namespace MediaBrowser.LocalMetadata.Images
                     }
                 }
             }
+
             return list;
         }
     }

@@ -156,6 +156,7 @@ namespace Rssdp.Infrastructure
         public bool SupportPnpRootDevice
         {
             get { return _SupportPnpRootDevice; }
+
             set
             {
                 _SupportPnpRootDevice = value;
@@ -564,7 +565,9 @@ namespace Rssdp.Infrastructure
         private class SearchRequest
         {
             public IPEndPoint EndPoint { get; set; }
+
             public DateTime Received { get; set; }
+
             public string SearchTarget { get; set; }
 
             public string Key

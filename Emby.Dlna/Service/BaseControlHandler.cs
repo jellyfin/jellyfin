@@ -18,6 +18,7 @@ namespace Emby.Dlna.Service
         private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
 
         protected IServerConfigurationManager Config { get; }
+
         protected ILogger Logger { get; }
 
         protected BaseControlHandler(IServerConfigurationManager config, ILogger logger)
@@ -135,6 +136,7 @@ namespace Emby.Dlna.Service
 
                                 break;
                             }
+
                         default:
                             {
                                 await reader.SkipAsync().ConfigureAwait(false);
@@ -211,7 +213,9 @@ namespace Emby.Dlna.Service
         private class ControlRequestInfo
         {
             public string LocalName { get; set; }
+
             public string NamespaceURI { get; set; }
+
             public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 

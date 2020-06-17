@@ -104,6 +104,7 @@ namespace MediaBrowser.Providers.Subtitles
                         _logger.LogError(ex, "Error downloading subtitles from {Provider}", provider.Name);
                     }
                 }
+
                 return Array.Empty<RemoteSubtitleInfo>();
             }
 

@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.System
 {
     /// <summary>
-    /// Class GetSystemInfo
+    /// Class GetSystemInfo.
     /// </summary>
     [Route("/System/Info", "GET", Summary = "Gets information about the server")]
     [Authenticated(EscapeParentalControl = true, AllowBeforeStartupWizard = true)]
@@ -38,7 +38,7 @@ namespace MediaBrowser.Api.System
     }
 
     /// <summary>
-    /// Class RestartApplication
+    /// Class RestartApplication.
     /// </summary>
     [Route("/System/Restart", "POST", Summary = "Restarts the application, if needed")]
     [Authenticated(Roles = "Admin", AllowLocal = true)]
@@ -83,12 +83,12 @@ namespace MediaBrowser.Api.System
     }
 
     /// <summary>
-    /// Class SystemInfoService
+    /// Class SystemInfoService.
     /// </summary>
     public class SystemService : BaseApiService
     {
         /// <summary>
-        /// The _app host
+        /// The _app host.
         /// </summary>
         private readonly IServerApplicationHost _appHost;
         private readonly IApplicationPaths _appPaths;

@@ -64,6 +64,7 @@ namespace Emby.Naming.AudioBook
                 {
                     result.ChapterNumber = int.Parse(matches[0].Groups[0].Value);
                 }
+
                 if (matches.Count > 1)
                 {
                     result.PartNumber = int.Parse(matches[matches.Count - 1].Groups[0].Value);

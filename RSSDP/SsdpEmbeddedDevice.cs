@@ -33,6 +33,7 @@ namespace Rssdp
             {
                 return _RootDevice;
             }
+
             internal set
             {
                 _RootDevice = value;

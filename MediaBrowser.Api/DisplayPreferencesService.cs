@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class UpdateDisplayPreferences
+    /// Class UpdateDisplayPreferences.
     /// </summary>
     [Route("/DisplayPreferences/{DisplayPreferencesId}", "POST", Summary = "Updates a user's display preferences for an item")]
     public class UpdateDisplayPreferences : DisplayPreferences, IReturnVoid
@@ -44,17 +44,17 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class DisplayPreferencesService
+    /// Class DisplayPreferencesService.
     /// </summary>
     [Authenticated]
     public class DisplayPreferencesService : BaseApiService
     {
         /// <summary>
-        /// The _display preferences manager
+        /// The _display preferences manager.
         /// </summary>
         private readonly IDisplayPreferencesRepository _displayPreferencesManager;
         /// <summary>
-        /// The _json serializer
+        /// The _json serializer.
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 

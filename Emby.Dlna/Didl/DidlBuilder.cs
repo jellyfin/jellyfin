@@ -705,7 +705,7 @@ namespace Emby.Dlna.Didl
         }
 
         /// <summary>
-        /// Adds fields used by both items and folders
+        /// Adds fields used by both items and folders.
         /// </summary>
         private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
         {
@@ -765,6 +765,7 @@ namespace Emby.Dlna.Didl
                 {
                     AddValue(writer, "dc", "rating", item.OfficialRating, NS_DC);
                 }
+
                 if (filter.Contains("upnp:rating"))
                 {
                     AddValue(writer, "upnp", "rating", item.OfficialRating, NS_UPNP);
@@ -1052,10 +1053,12 @@ namespace Emby.Dlna.Didl
             {
                 return GetImageInfo(item, ImageType.Primary);
             }
+
             if (item.HasImage(ImageType.Thumb))
             {
                 return GetImageInfo(item, ImageType.Thumb);
             }
+
             if (item.HasImage(ImageType.Backdrop))
             {
                 if (item is Channel)

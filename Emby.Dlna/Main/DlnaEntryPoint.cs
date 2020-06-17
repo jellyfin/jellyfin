@@ -320,6 +320,7 @@ namespace Emby.Dlna.Main
             {
                 guid = text.GetMD5();
             }
+
             return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
@@ -388,6 +389,7 @@ namespace Emby.Dlna.Main
                     {
                         _logger.LogError(ex, "Error disposing PlayTo manager");
                     }
+
                     _manager = null;
                 }
             }

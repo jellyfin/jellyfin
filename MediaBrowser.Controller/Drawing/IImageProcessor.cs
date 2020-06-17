@@ -10,7 +10,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Drawing
 {
     /// <summary>
-    /// Interface IImageProcessor
+    /// Interface IImageProcessor.
     /// </summary>
     public interface IImageProcessor
     {

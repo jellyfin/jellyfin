@@ -256,6 +256,7 @@ namespace Emby.Server.Implementations.TV
             {
                 items = items.Skip(query.StartIndex.Value);
             }
+
             if (query.Limit.HasValue)
             {
                 items = items.Take(query.Limit.Value);

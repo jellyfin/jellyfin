@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Channels
     public class ChannelQuery
     {
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.Channels
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }

@@ -438,6 +438,7 @@ namespace Emby.Dlna
             {
                 throw new ArgumentException("Profile is missing Id");
             }
+
             if (string.IsNullOrEmpty(profile.Name))
             {
                 throw new ArgumentException("Profile is missing Name");
@@ -463,6 +464,7 @@ namespace Emby.Dlna
             {
                 _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
             }
+
             SerializeToXml(profile, path);
         }
 
@@ -473,7 +475,7 @@ namespace Emby.Dlna
 
         /// <summary>
         /// Recreates the object using serialization, to ensure it's not a subclass.
-        /// If it's a subclass it may not serlialize properly to xml (different root element tag name)
+        /// If it's a subclass it may not serlialize properly to xml (different root element tag name).
         /// </summary>
         /// <param name="profile"></param>
         /// <returns></returns>
@@ -492,6 +494,7 @@ namespace Emby.Dlna
         class InternalProfileInfo
         {
             internal DeviceProfileInfo Info { get; set; }
+
             internal string Path { get; set; }
         }
 

@@ -28,10 +28,12 @@ namespace MediaBrowser.Providers.Movies
             {
                 return false;
             }
+
             if (!item.ProductionYear.HasValue)
             {
                 return false;
             }
+
             return base.IsFullLocalMetadata(item);
         }
 

@@ -62,7 +62,9 @@ namespace Emby.Server.Implementations.Services
         public string Path => this.restPath;
 
         public string Summary { get; private set; }
+
         public string Description { get; private set; }
+
         public bool IsHidden { get; private set; }
 
         public static string[] GetPathPartsForMatching(string pathInfo)
@@ -159,6 +161,7 @@ namespace Emby.Server.Implementations.Services
                         this.isWildcard[i] = true;
                         variableName = variableName.Substring(0, variableName.Length - 1);
                     }
+
                     this.variablesNames[i] = variableName;
                     this.VariableArgsCount++;
                 }

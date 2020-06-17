@@ -69,6 +69,7 @@ namespace MediaBrowser.Model.Dlna
         public Guid ItemId { get; set; }
 
         public PlayMethod PlayMethod { get; set; }
+
         public EncodingContext Context { get; set; }
 
         public DlnaProfileType MediaType { get; set; }
@@ -80,15 +81,23 @@ namespace MediaBrowser.Model.Dlna
         public long StartPositionTicks { get; set; }
 
         public int? SegmentLength { get; set; }
+
         public int? MinSegments { get; set; }
+
         public bool BreakOnNonKeyFrames { get; set; }
 
         public bool RequireAvc { get; set; }
+
         public bool RequireNonAnamorphic { get; set; }
+
         public bool CopyTimestamps { get; set; }
+
         public bool EnableMpegtsM2TsMode { get; set; }
+
         public bool EnableSubtitlesInManifest { get; set; }
+
         public string[] AudioCodecs { get; set; }
+
         public string[] VideoCodecs { get; set; }
 
         public int? AudioStreamIndex { get; set; }
@@ -96,6 +105,7 @@ namespace MediaBrowser.Model.Dlna
         public int? SubtitleStreamIndex { get; set; }
 
         public int? TranscodingMaxAudioChannels { get; set; }
+
         public int? GlobalMaxAudioChannels { get; set; }
 
         public int? AudioBitrate { get; set; }
@@ -103,12 +113,15 @@ namespace MediaBrowser.Model.Dlna
         public int? VideoBitrate { get; set; }
 
         public int? MaxWidth { get; set; }
+
         public int? MaxHeight { get; set; }
 
         public float? MaxFramerate { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
+
         public string DeviceProfileId { get; set; }
+
         public string DeviceId { get; set; }
 
         public long? RunTimeTicks { get; set; }
@@ -120,10 +133,13 @@ namespace MediaBrowser.Model.Dlna
         public MediaSourceInfo MediaSource { get; set; }
 
         public string[] SubtitleCodecs { get; set; }
+
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
+
         public string SubtitleFormat { get; set; }
 
         public string PlaySessionId { get; set; }
+
         public TranscodeReason[] TranscodeReasons { get; set; }
 
         public Dictionary<string, string> StreamOptions { get; private set; }
@@ -160,11 +176,13 @@ namespace MediaBrowser.Model.Dlna
                 {
                     continue;
                 }
+
                 if (string.Equals(pair.Name, "SubtitleStreamIndex", StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(pair.Value, "-1", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
+
                 if (string.Equals(pair.Name, "Static", StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(pair.Value, "false", StringComparison.OrdinalIgnoreCase))
                 {
@@ -465,7 +483,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Returns the audio stream that will be used
+        /// Returns the audio stream that will be used.
         /// </summary>
         public MediaStream TargetAudioStream
         {
@@ -481,7 +499,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Returns the video stream that will be used
+        /// Returns the video stream that will be used.
         /// </summary>
         public MediaStream TargetVideoStream
         {
@@ -497,7 +515,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetAudioSampleRate
         {
@@ -509,7 +527,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetAudioBitDepth
         {
@@ -532,7 +550,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetVideoBitDepth
         {
@@ -579,7 +597,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public float? TargetFramerate
         {
@@ -593,7 +611,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public double? TargetVideoLevel
         {
@@ -680,7 +698,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetPacketLength
         {
@@ -694,7 +712,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public string TargetVideoProfile
         {
@@ -732,7 +750,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio bitrate that will be in the output stream
+        /// Predicts the audio bitrate that will be in the output stream.
         /// </summary>
         public int? TargetAudioBitrate
         {
@@ -746,7 +764,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio channels that will be in the output stream
+        /// Predicts the audio channels that will be in the output stream.
         /// </summary>
         public int? TargetAudioChannels
         {
@@ -787,7 +805,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio codec that will be in the output stream
+        /// Predicts the audio codec that will be in the output stream.
         /// </summary>
         public string[] TargetAudioCodec
         {
@@ -840,7 +858,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Predicts the audio channels that will be in the output stream
+        /// Predicts the audio channels that will be in the output stream.
         /// </summary>
         public long? TargetSize
         {
@@ -993,6 +1011,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
                 }
+
                 return GetMediaStreamCount(MediaStreamType.Video, 1);
             }
         }
@@ -1005,6 +1024,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
                 }
+
                 return GetMediaStreamCount(MediaStreamType.Audio, 1);
             }
         }

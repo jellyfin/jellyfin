@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.Udp
     public sealed class UdpServer : IDisposable
     {
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
