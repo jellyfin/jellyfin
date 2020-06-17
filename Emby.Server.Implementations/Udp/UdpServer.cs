@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Udp
     /// <summary>
     /// Provides a Udp Server.
     /// </summary>
-    public sealed class UdpServer : IDisposable
+    public sealed class UdpServer
     {
         /// <summary>
         /// The _logger.
@@ -32,8 +32,6 @@ namespace Emby.Server.Implementations.Udp
         private Socket _udpSocket;
         private IPEndPoint _endpoint;
         private readonly byte[] _receiveBuffer = new byte[8192];
-
-        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
@@ -86,7 +84,7 @@ namespace Emby.Server.Implementations.Udp
         /// </summary>
         /// <param name="port">The port.</param>
         /// <param name="cancellationToken"></param>
-        public void Start(int port, CancellationToken cancellationToken)
+        public async void Start(int port, CancellationToken cancellationToken)
         {
             _endpoint = new IPEndPoint(IPAddress.Any, port);
 
@@ -94,7 +92,7 @@ namespace Emby.Server.Implementations.Udp
             _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _udpSocket.Bind(_endpoint);
 
-            _ = Task.Run(async () => await BeginReceiveAsync(cancellationToken).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
+            await BeginReceiveAsync(cancellationToken).ConfigureAwait(false);
         }
 
         private async Task BeginReceiveAsync(CancellationToken cancellationToken)
@@ -122,19 +120,6 @@ namespace Emby.Server.Implementations.Udp
                     // Don't throw
                 }
             }
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _udpSocket?.Dispose();
-
-            GC.SuppressFinalize(this);
         }
     }
 }

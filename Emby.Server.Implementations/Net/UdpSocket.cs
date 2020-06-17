@@ -248,7 +248,7 @@ namespace Emby.Server.Implementations.Net
                 return;
             }
 
-            _socket?.Dispose();
+            // _socket?.Dispose();
             _currentReceiveTaskCompletionSource?.TrySetCanceled();
             _currentSendTaskCompletionSource?.TrySetCanceled();
 

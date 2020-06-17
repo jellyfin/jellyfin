@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             _cancellationTokenSource.Cancel();
-            _udpServer.Dispose();
+            // _udpServer.Dispose();
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = null;
             _udpServer = null;
