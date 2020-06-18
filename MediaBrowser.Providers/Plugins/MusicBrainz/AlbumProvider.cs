@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Music
 
         private readonly IHttpClient _httpClient;
         private readonly IApplicationHost _appHost;
-        private readonly ILogger _logger;
+        private readonly ILogger<MusicBrainzAlbumProvider> _logger;
 
         private readonly string _musicBrainzBaseUrl;
 
@@ -163,17 +163,17 @@ namespace MediaBrowser.Providers.Music
                                 Name = i.Artists[0].Item1
                             };
 
-                            result.AlbumArtist.SetProviderId(MetadataProviders.MusicBrainzArtist, i.Artists[0].Item2);
+                            result.AlbumArtist.SetProviderId(MetadataProvider.MusicBrainzArtist, i.Artists[0].Item2);
                         }
 
                         if (!string.IsNullOrWhiteSpace(i.ReleaseId))
                         {
-                            result.SetProviderId(MetadataProviders.MusicBrainzAlbum, i.ReleaseId);
+                            result.SetProviderId(MetadataProvider.MusicBrainzAlbum, i.ReleaseId);
                         }
 
                         if (!string.IsNullOrWhiteSpace(i.ReleaseGroupId))
                         {
-                            result.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, i.ReleaseGroupId);
+                            result.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, i.ReleaseGroupId);
                         }
 
                         return result;
@@ -247,12 +247,12 @@ namespace MediaBrowser.Providers.Music
             {
                 if (!string.IsNullOrEmpty(releaseId))
                 {
-                    result.Item.SetProviderId(MetadataProviders.MusicBrainzAlbum, releaseId);
+                    result.Item.SetProviderId(MetadataProvider.MusicBrainzAlbum, releaseId);
                 }
 
                 if (!string.IsNullOrEmpty(releaseGroupId))
                 {
-                    result.Item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, releaseGroupId);
+                    result.Item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, releaseGroupId);
                 }
             }
 
@@ -361,6 +361,7 @@ namespace MediaBrowser.Providers.Music
                                         return ParseReleaseList(subReader).ToList();
                                     }
                                 }
+
                             default:
                                 {
                                     reader.Skip();
@@ -396,6 +397,7 @@ namespace MediaBrowser.Providers.Music
                                         reader.Read();
                                         continue;
                                     }
+
                                     var releaseId = reader.GetAttribute("id");
 
                                     using (var subReader = reader.ReadSubtree())
@@ -406,8 +408,10 @@ namespace MediaBrowser.Providers.Music
                                             yield return release;
                                         }
                                     }
+
                                     break;
                                 }
+
                             default:
                                 {
                                     reader.Skip();
@@ -453,6 +457,7 @@ namespace MediaBrowser.Providers.Music
                                     {
                                         result.Year = date.Year;
                                     }
+
                                     break;
                                 }
                             case "annotation":
@@ -480,6 +485,7 @@ namespace MediaBrowser.Providers.Music
 
                                     break;
                                 }
+
                             default:
                                 {
                                     reader.Skip();
@@ -518,6 +524,7 @@ namespace MediaBrowser.Providers.Music
                                     return ParseArtistNameCredit(subReader);
                                 }
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -556,6 +563,7 @@ namespace MediaBrowser.Providers.Music
                                     return ParseArtistArtistCredit(subReader, id);
                                 }
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -593,6 +601,7 @@ namespace MediaBrowser.Providers.Music
                                 name = reader.ReadElementContentAsString();
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -680,11 +689,13 @@ namespace MediaBrowser.Providers.Music
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subReader = reader.ReadSubtree())
                                         {
                                             return GetFirstReleaseGroupId(subReader);
                                         }
                                     }
+
                                 default:
                                     {
                                         reader.Skip();
@@ -719,6 +730,7 @@ namespace MediaBrowser.Providers.Music
                             {
                                 return reader.GetAttribute("id");
                             }
+
                         default:
                             {
                                 reader.Skip();

@@ -34,9 +34,10 @@ namespace Emby.Dlna.PlayTo
         {
             get
             {
-                RefreshVolumeIfNeeded();
+                RefreshVolumeIfNeeded().GetAwaiter().GetResult();
                 return _volume;
             }
+
             set => _volume = value;
         }
 
@@ -76,24 +77,24 @@ namespace Emby.Dlna.PlayTo
 
         private DateTime _lastVolumeRefresh;
         private bool _volumeRefreshActive;
-        private void RefreshVolumeIfNeeded()
+        private Task RefreshVolumeIfNeeded()
         {
-            if (!_volumeRefreshActive)
-            {
-                return;
-            }
-
-            if (DateTime.UtcNow >= _lastVolumeRefresh.AddSeconds(5))
+            if (_volumeRefreshActive
+                && DateTime.UtcNow >= _lastVolumeRefresh.AddSeconds(5))
             {
                 _lastVolumeRefresh = DateTime.UtcNow;
-                RefreshVolume(CancellationToken.None);
+                return RefreshVolume();
             }
+
+            return Task.CompletedTask;
         }
 
-        private async void RefreshVolume(CancellationToken cancellationToken)
+        private async Task RefreshVolume(CancellationToken cancellationToken = default)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             try
             {
@@ -232,7 +233,7 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Sets volume on a scale of 0-100
+        /// Sets volume on a scale of 0-100.
         /// </summary>
         public async Task SetVolume(int value, CancellationToken cancellationToken)
         {
@@ -494,6 +495,7 @@ namespace Emby.Dlna.PlayTo
                         return;
                     }
                 }
+
                 RestartTimerInactive();
             }
         }
@@ -750,7 +752,7 @@ namespace Emby.Dlna.PlayTo
 
             if (track == null)
             {
-                //If track is null, some vendors do this, use GetMediaInfo instead
+                // If track is null, some vendors do this, use GetMediaInfo instead
                 return (true, null);
             }
 
@@ -794,7 +796,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch (XmlException)
             {
-
             }
 
             // first try to add a root node with a dlna namesapce
@@ -806,7 +807,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch (XmlException)
             {
-
             }
 
             // some devices send back invalid xml
@@ -816,7 +816,6 @@ namespace Emby.Dlna.PlayTo
             }
             catch (XmlException)
             {
-
             }
 
             return null;

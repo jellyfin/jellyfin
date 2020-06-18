@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations
 {
@@ -21,8 +20,6 @@ namespace Jellyfin.Server.Migrations
         /// <summary>
         /// Execute the migration routine.
         /// </summary>
-        /// <param name="host">Host that hosts current version.</param>
-        /// <param name="logger">Host logger.</param>
-        public void Perform(CoreAppHost host, ILogger logger);
+        public void Perform();
     }
 }

@@ -220,7 +220,7 @@ namespace MediaBrowser.Api
         {
             var item = _libraryManager.GetItemById(new Guid(request.Id));
 
-            //foreach (var key in request.ProviderIds)
+            // foreach (var key in request.ProviderIds)
             //{
             //    var value = key.Value;
 
@@ -233,8 +233,8 @@ namespace MediaBrowser.Api
 
             // Since the refresh process won't erase provider Ids, we need to set this explicitly now.
             item.ProviderIds = request.ProviderIds;
-            //item.ProductionYear = request.ProductionYear;
-            //item.Name = request.Name;
+            // item.ProductionYear = request.ProductionYear;
+            // item.Name = request.Name;
 
             return _providerManager.RefreshFullItem(
                 item,
@@ -299,22 +299,26 @@ namespace MediaBrowser.Api
         {
             var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
 
-            var ext = result.ContentType.Split('/').Last();
+            var ext = result.ContentType.Split('/')[^1];
 
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-            using (var stream = result.Content)
+            var stream = result.Content;
+
+            await using (stream.ConfigureAwait(false))
             {
-                using var fileStream = new FileStream(
+                var fileStream = new FileStream(
                     fullCachePath,
                     FileMode.Create,
                     FileAccess.Write,
                     FileShare.Read,
                     IODefaults.FileStreamBufferSize,
                     true);
-
-                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                await using (fileStream.ConfigureAwait(false))
+                {
+                    await stream.CopyToAsync(fileStream).ConfigureAwait(false);
+                }
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));

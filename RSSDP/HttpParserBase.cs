@@ -46,7 +46,7 @@ namespace Rssdp.Infrastructure
             {
                 var lines = data.Split(LineTerminators, StringSplitOptions.None);
 
-                //First line is the 'request' line containing http protocol details like method, uri, http version etc.
+                // First line is the 'request' line containing http protocol details like method, uri, http version etc.
                 ParseStatusLine(lines[0], message);
 
                 ParseHeaders(headers, retVal.Headers, lines);
@@ -93,16 +93,16 @@ namespace Rssdp.Infrastructure
         /// <param name="contentHeaders">A reference to a <see cref="System.Net.Http.Headers.HttpHeaders"/> collection for the message content, to which the parsed header will be added.</param>
         private void ParseHeader(string line, System.Net.Http.Headers.HttpHeaders headers, System.Net.Http.Headers.HttpHeaders contentHeaders)
         {
-            //Header format is
-            //name: value
+            // Header format is
+            // name: value
             var headerKeySeparatorIndex = line.IndexOf(":", StringComparison.OrdinalIgnoreCase);
             var headerName = line.Substring(0, headerKeySeparatorIndex).Trim();
             var headerValue = line.Substring(headerKeySeparatorIndex + 1).Trim();
 
-            //Not sure how to determine where request headers and and content headers begin,
-            //at least not without a known set of headers (general headers first the content headers)
-            //which seems like a bad way of doing it. So we'll assume if it's a known content header put it there
-            //else use request headers.
+            // Not sure how to determine where request headers and and content headers begin,
+            // at least not without a known set of headers (general headers first the content headers)
+            // which seems like a bad way of doing it. So we'll assume if it's a known content header put it there
+            // else use request headers.
 
             var values = ParseValues(headerValue);
             var headersToAddTo = IsContentHeader(headerName) ? contentHeaders : headers;
@@ -115,13 +115,13 @@ namespace Rssdp.Infrastructure
 
         private int ParseHeaders(System.Net.Http.Headers.HttpHeaders headers, System.Net.Http.Headers.HttpHeaders contentHeaders, string[] lines)
         {
-            //Blank line separates headers from content, so read headers until we find blank line.
+            // Blank line separates headers from content, so read headers until we find blank line.
             int lineIndex = 1;
             string line = null, nextLine = null;
             while (lineIndex + 1 < lines.Length && !String.IsNullOrEmpty((line = lines[lineIndex++])))
             {
-                //If the following line starts with space or tab (or any whitespace), it is really part of this header but split for human readability.
-                //Combine these lines into a single comma separated style header for easier parsing.
+                // If the following line starts with space or tab (or any whitespace), it is really part of this header but split for human readability.
+                // Combine these lines into a single comma separated style header for easier parsing.
                 while (lineIndex < lines.Length && !String.IsNullOrEmpty((nextLine = lines[lineIndex])))
                 {
                     if (nextLine.Length > 0 && Char.IsWhiteSpace(nextLine[0]))
@@ -135,6 +135,7 @@ namespace Rssdp.Infrastructure
 
                 ParseHeader(line, headers, contentHeaders);
             }
+
             return lineIndex;
         }
 

@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.AppBase
             CommonApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
-            Logger = loggerFactory.CreateLogger(GetType().Name);
+            Logger = loggerFactory.CreateLogger<BaseConfigurationManager>();
 
             UpdateCachePath();
         }
@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Gets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        protected ILogger Logger { get; private set; }
+        protected ILogger<BaseConfigurationManager> Logger { get; private set; }
 
         /// <summary>
         /// Gets the XML serializer.

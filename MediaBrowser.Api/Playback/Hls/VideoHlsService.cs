@@ -22,7 +22,7 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     /// <summary>
-    /// Class VideoHlsService
+    /// Class VideoHlsService.
     /// </summary>
     [Authenticated]
     public class VideoHlsService : BaseHlsService
@@ -72,7 +72,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var codec = EncodingHelper.GetAudioEncoder(state);
 
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(codec))
             {
                 return "-codec:a:0 copy";
             }

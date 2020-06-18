@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,8 +17,8 @@ namespace Emby.Server.Implementations.Security
 {
     public class AuthenticationRepository : BaseSqliteRepository, IAuthenticationRepository
     {
-        public AuthenticationRepository(ILoggerFactory loggerFactory, IServerConfigurationManager config)
-            : base(loggerFactory.CreateLogger(nameof(AuthenticationRepository)))
+        public AuthenticationRepository(ILogger<AuthenticationRepository> logger, IServerConfigurationManager config)
+            : base(logger)
         {
             DbFilePath = Path.Combine(config.ApplicationPaths.DataPath, "authentication.db");
         }
@@ -59,7 +61,6 @@ namespace Emby.Server.Implementations.Security
                         AddColumn(db, "AccessTokens", "UserName", "TEXT", existingColumnNames);
                         AddColumn(db, "AccessTokens", "DateLastActivity", "DATETIME", existingColumnNames);
                         AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
-
                     }, TransactionMode);
 
                     connection.RunQueries(new[]
@@ -105,7 +106,6 @@ namespace Emby.Server.Implementations.Security
 
                         statement.MoveNext();
                     }
-
                 }, TransactionMode);
             }
         }
@@ -365,7 +365,6 @@ namespace Emby.Server.Implementations.Security
 
                         return result;
                     }
-
                 }, ReadTransactionMode);
             }
         }
@@ -396,7 +395,6 @@ namespace Emby.Server.Implementations.Security
 
                         statement.MoveNext();
                     }
-
                 }, TransactionMode);
             }
         }

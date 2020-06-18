@@ -5,23 +5,23 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class Profiler
+    /// Class Profiler.
     /// </summary>
     public class Profiler : IDisposable
     {
         /// <summary>
-        /// The name
+        /// The name.
         /// </summary>
         readonly string _name;
         /// <summary>
-        /// The stopwatch
+        /// The stopwatch.
         /// </summary>
         readonly Stopwatch _stopwatch;
 
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<Profiler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Profiler" /> class.
@@ -67,6 +67,7 @@ namespace MediaBrowser.Controller.Library
                     message = string.Format("{0} took {1} seconds.",
                         _name, ((float)_stopwatch.ElapsedMilliseconds / 1000).ToString("#0.000"));
                 }
+
                 _logger.LogInformation(message);
             }
         }

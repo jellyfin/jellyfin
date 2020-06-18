@@ -26,7 +26,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<XmlTvListingsProvider> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IZipClient _zipClient;
 
@@ -224,6 +224,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     uniqueString = "-" + programInfo.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
+
                 if (programInfo.EpisodeNumber.HasValue)
                 {
                     uniqueString = "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);

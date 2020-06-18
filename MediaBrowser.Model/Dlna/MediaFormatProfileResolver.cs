@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -21,13 +22,13 @@ namespace MediaBrowser.Model.Dlna
             if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
             {
                 MediaFormatProfile? val = ResolveVideoASFFormat(videoCodec, audioCodec, width, height);
-                return val.HasValue ? new MediaFormatProfile[] { val.Value } : new MediaFormatProfile[] { };
+                return val.HasValue ? new MediaFormatProfile[] { val.Value } : Array.Empty<MediaFormatProfile>();
             }
 
             if (string.Equals(container, "mp4", StringComparison.OrdinalIgnoreCase))
             {
                 MediaFormatProfile? val = ResolveVideoMP4Format(videoCodec, audioCodec, width, height);
-                return val.HasValue ? new MediaFormatProfile[] { val.Value } : new MediaFormatProfile[] { };
+                return val.HasValue ? new MediaFormatProfile[] { val.Value } : Array.Empty<MediaFormatProfile>();
             }
 
             if (string.Equals(container, "avi", StringComparison.OrdinalIgnoreCase))
@@ -61,18 +62,18 @@ namespace MediaBrowser.Model.Dlna
             if (string.Equals(container, "3gp", StringComparison.OrdinalIgnoreCase))
             {
                 MediaFormatProfile? val = ResolveVideo3GPFormat(videoCodec, audioCodec);
-                return val.HasValue ? new MediaFormatProfile[] { val.Value } : new MediaFormatProfile[] { };
+                return val.HasValue ? new MediaFormatProfile[] { val.Value } : Array.Empty<MediaFormatProfile>();
             }
 
             if (string.Equals(container, "ogv", StringComparison.OrdinalIgnoreCase) || string.Equals(container, "ogg", StringComparison.OrdinalIgnoreCase))
                 return new MediaFormatProfile[] { MediaFormatProfile.OGV };
 
-            return new MediaFormatProfile[] { };
+            return Array.Empty<MediaFormatProfile>();
         }
 
         private MediaFormatProfile[] ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
-            string suffix = "";
+            string suffix = string.Empty;
 
             switch (timestampType)
             {
@@ -92,18 +93,21 @@ namespace MediaBrowser.Model.Dlna
 
             if (string.Equals(videoCodec, "mpeg2video", StringComparison.OrdinalIgnoreCase))
             {
-                var list = new List<MediaFormatProfile>();
-
-                list.Add(ValueOf("MPEG_TS_SD_NA" + suffix));
-                list.Add(ValueOf("MPEG_TS_SD_EU" + suffix));
-                list.Add(ValueOf("MPEG_TS_SD_KO" + suffix));
+                var list = new List<MediaFormatProfile>
+                {
+                    ValueOf("MPEG_TS_SD_NA" + suffix),
+                    ValueOf("MPEG_TS_SD_EU" + suffix),
+                    ValueOf("MPEG_TS_SD_KO" + suffix)
+                };
 
                 if ((timestampType == TransportStreamTimestamp.Valid) && string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase))
                 {
                     list.Add(MediaFormatProfile.MPEG_TS_JP_T);
                 }
+
                 return list.ToArray();
             }
+
             if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
             {
                 if (string.Equals(audioCodec, "lpcm", StringComparison.OrdinalIgnoreCase))
@@ -115,6 +119,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         return new MediaFormatProfile[] { MediaFormatProfile.AVC_TS_HD_DTS_ISO };
                     }
+
                     return new MediaFormatProfile[] { MediaFormatProfile.AVC_TS_HD_DTS_T };
                 }
 
@@ -146,15 +151,16 @@ namespace MediaBrowser.Model.Dlna
                     {
                         return new MediaFormatProfile[] { MediaFormatProfile.VC1_TS_AP_L2_AC3_ISO };
                     }
+
                     return new MediaFormatProfile[] { MediaFormatProfile.VC1_TS_AP_L1_AC3_ISO };
                 }
+
                 if (string.Equals(audioCodec, "dts", StringComparison.OrdinalIgnoreCase))
                 {
                     suffix = string.Equals(suffix, "_ISO", StringComparison.OrdinalIgnoreCase) ? suffix : "_T";
 
                     return new MediaFormatProfile[] { ValueOf(string.Format("VC1_TS_HD_DTS{0}", suffix)) };
                 }
-
             }
             else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
             {
@@ -187,10 +193,12 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return MediaFormatProfile.AVC_MP4_MP_SD_AC3;
                 }
+
                 if (string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
                 {
                     return MediaFormatProfile.AVC_MP4_MP_SD_MPEG1_L3;
                 }
+
                 if (width.HasValue && height.HasValue)
                 {
                     if ((width.Value <= 720) && (height.Value <= 576))
@@ -274,6 +282,7 @@ namespace MediaBrowser.Model.Dlna
                         {
                             return MediaFormatProfile.WMVMED_FULL;
                         }
+
                         return MediaFormatProfile.WMVMED_PRO;
                     }
                 }
@@ -282,6 +291,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return MediaFormatProfile.WMVHIGH_FULL;
                 }
+
                 return MediaFormatProfile.WMVHIGH_PRO;
             }
 
@@ -339,6 +349,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 return MediaFormatProfile.WMA_BASE;
             }
+
             return MediaFormatProfile.WMA_FULL;
         }
 
@@ -350,14 +361,17 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return MediaFormatProfile.LPCM16_44_MONO;
                 }
+
                 if (frequency.Value == 44100 && channels.Value == 2)
                 {
                     return MediaFormatProfile.LPCM16_44_STEREO;
                 }
+
                 if (frequency.Value == 48000 && channels.Value == 1)
                 {
                     return MediaFormatProfile.LPCM16_48_MONO;
                 }
+
                 if (frequency.Value == 48000 && channels.Value == 2)
                 {
                     return MediaFormatProfile.LPCM16_48_STEREO;
@@ -375,6 +389,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 return MediaFormatProfile.AAC_ISO_320;
             }
+
             return MediaFormatProfile.AAC_ISO;
         }
 
@@ -384,6 +399,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 return MediaFormatProfile.AAC_ADTS_320;
             }
+
             return MediaFormatProfile.AAC_ADTS;
         }
 

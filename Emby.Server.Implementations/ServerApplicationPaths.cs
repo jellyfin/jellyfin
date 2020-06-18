@@ -9,8 +9,6 @@ namespace Emby.Server.Implementations
     /// </summary>
     public class ServerApplicationPaths : BaseApplicationPaths, IServerApplicationPaths
     {
-        private string _internalMetadataPath;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerApplicationPaths" /> class.
         /// </summary>
@@ -27,6 +25,7 @@ namespace Emby.Server.Implementations
                 cacheDirectoryPath,
                 webDirectoryPath)
         {
+            InternalMetadataPath = DefaultInternalMetadataPath;
         }
 
         /// <summary>
@@ -98,12 +97,11 @@ namespace Emby.Server.Implementations
         /// <value>The user configuration directory path.</value>
         public string UserConfigurationDirectoryPath => Path.Combine(ConfigurationDirectoryPath, "users");
 
+        /// <inheritdoc/>
+        public string DefaultInternalMetadataPath => Path.Combine(ProgramDataPath, "metadata");
+
         /// <inheritdoc />
-        public string InternalMetadataPath
-        {
-            get => _internalMetadataPath ?? (_internalMetadataPath = Path.Combine(DataPath, "metadata"));
-            set => _internalMetadataPath = value;
-        }
+        public string InternalMetadataPath { get; set; }
 
         /// <inheritdoc />
         public string VirtualInternalMetadataPath { get; } = "%MetadataPath%";

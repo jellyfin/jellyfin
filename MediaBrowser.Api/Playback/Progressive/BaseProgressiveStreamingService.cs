@@ -21,14 +21,14 @@ using Microsoft.Net.Http.Headers;
 namespace MediaBrowser.Api.Playback.Progressive
 {
     /// <summary>
-    /// Class BaseProgressiveStreamingService
+    /// Class BaseProgressiveStreamingService.
     /// </summary>
     public abstract class BaseProgressiveStreamingService : BaseStreamingService
     {
         protected IHttpClient HttpClient { get; private set; }
 
         public BaseProgressiveStreamingService(
-            ILogger logger,
+            ILogger<BaseProgressiveStreamingService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IHttpClient httpClient,
@@ -88,14 +88,17 @@ namespace MediaBrowser.Api.Playback.Progressive
                 {
                     return ".ts";
                 }
+
                 if (string.Equals(videoCodec, "theora", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".ogv";
                 }
+
                 if (string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".webm";
                 }
+
                 if (string.Equals(videoCodec, "wmv", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".asf";
@@ -111,14 +114,17 @@ namespace MediaBrowser.Api.Playback.Progressive
                 {
                     return ".aac";
                 }
+
                 if (string.Equals("mp3", audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
                     return ".mp3";
                 }
+
                 if (string.Equals("vorbis", audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
                     return ".ogg";
                 }
+
                 if (string.Equals("wma", audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
                     return ".wma";
@@ -231,7 +237,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             //// Not static but transcode cache file exists
-            //if (isTranscodeCached && state.VideoRequest == null)
+            // if (isTranscodeCached && state.VideoRequest == null)
             //{
             //    var contentType = state.GetMimeType(outputPath);
 

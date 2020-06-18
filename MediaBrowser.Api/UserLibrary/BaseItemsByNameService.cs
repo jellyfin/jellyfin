@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class BaseItemsByNameService
+    /// Class BaseItemsByNameService.
     /// </summary>
     /// <typeparam name="TItemType">The type of the T item type.</typeparam>
     public abstract class BaseItemsByNameService<TItemType> : BaseApiService
@@ -28,7 +29,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="dtoService">The dto service.</param>
         protected BaseItemsByNameService(
-            ILogger logger,
+            ILogger<BaseItemsByNameService<TItemType>> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -51,7 +52,7 @@ namespace MediaBrowser.Api.UserLibrary
         protected IUserManager UserManager { get; }
 
         /// <summary>
-        /// Gets the library manager
+        /// Gets the library manager.
         /// </summary>
         protected ILibraryManager LibraryManager { get; }
 
@@ -209,6 +210,7 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     SetItemCounts(dto, i.Item2);
                 }
+
                 return dto;
             });
 
@@ -321,7 +323,6 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     ibnItems = ibnItems.Take(request.Limit.Value);
                 }
-
             }
 
             var tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, new List<BaseItem>()));
@@ -375,7 +376,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetItemsByName
+    /// Class GetItemsByName.
     /// </summary>
     public class GetItemsByName : BaseItemsRequest, IReturn<QueryResult<BaseItemDto>>
     {

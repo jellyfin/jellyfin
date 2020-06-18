@@ -20,12 +20,12 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback.Hls
 {
     /// <summary>
-    /// Class BaseHlsService
+    /// Class BaseHlsService.
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
         public BaseHlsService(
-            ILogger logger,
+            ILogger<BaseHlsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -146,6 +146,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
                 }
+
                 return ResultFactory.GetResult(GetLivePlaylistText(playlist, state.SegmentLength), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
             }
 
@@ -178,7 +179,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(CultureInfo.InvariantCulture);
 
             text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
-            //text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+            // text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(CultureInfo.InvariantCulture), newDuration, StringComparison.OrdinalIgnoreCase);
 
             return text;
         }
@@ -209,24 +210,28 @@ namespace MediaBrowser.Api.Playback.Hls
                 try
                 {
                     // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-                    using var fileStream = GetPlaylistFileStream(playlist);
-                    using var reader = new StreamReader(fileStream);
-                    var count = 0;
-
-                    while (!reader.EndOfStream)
+                    var fileStream = GetPlaylistFileStream(playlist);
+                    await using (fileStream.ConfigureAwait(false))
                     {
-                        var line = reader.ReadLine();
+                        using var reader = new StreamReader(fileStream);
+                        var count = 0;
 
-                        if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
+                        while (!reader.EndOfStream)
                         {
-                            count++;
-                            if (count >= segmentCount)
+                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                            if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                             {
-                                Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
-                                return;
+                                count++;
+                                if (count >= segmentCount)
+                                {
+                                    Logger.LogDebug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                    return;
+                                }
                             }
                         }
                     }
+
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
                 catch (IOException)

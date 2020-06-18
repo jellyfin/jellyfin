@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 
 namespace MediaBrowser.Model.Updates
@@ -8,10 +9,10 @@ namespace MediaBrowser.Model.Updates
     public class InstallationInfo
     {
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets or sets the guid.
         /// </summary>
-        /// <value>The id.</value>
-        public Guid Id { get; set; }
+        /// <value>The guid.</value>
+        public Guid Guid { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -20,21 +21,27 @@ namespace MediaBrowser.Model.Updates
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly guid.
-        /// </summary>
-        /// <value>The guid of the assembly.</value>
-        public string AssemblyGuid { get; set; }
-
-        /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
-        public string Version { get; set; }
+        public Version Version { get; set; }
 
         /// <summary>
-        /// Gets or sets the update class.
+        /// Gets or sets the changelog for this version.
         /// </summary>
-        /// <value>The update class.</value>
-        public PackageVersionClass UpdateClass { get; set; }
+        /// <value>The changelog.</value>
+        public string Changelog { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source URL.
+        /// </summary>
+        /// <value>The source URL.</value>
+        public string SourceUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a checksum for the binary.
+        /// </summary>
+        /// <value>The checksum.</value>
+        public string Checksum { get; set; }
     }
 }

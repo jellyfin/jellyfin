@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -13,6 +14,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
+using Book = MediaBrowser.Controller.Entities.Book;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -26,27 +28,26 @@ namespace Emby.Server.Implementations.Library
         private readonly ConcurrentDictionary<string, UserItemData> _userData =
             new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ILogger _logger;
+        private readonly ILogger<UserDataManager> _logger;
         private readonly IServerConfigurationManager _config;
+        private readonly IUserManager _userManager;
+        private readonly IUserDataRepository _repository;
 
-        private Func<IUserManager> _userManager;
-
-        public UserDataManager(ILoggerFactory loggerFactory, IServerConfigurationManager config, Func<IUserManager> userManager)
+        public UserDataManager(
+            ILogger<UserDataManager> logger,
+            IServerConfigurationManager config,
+            IUserManager userManager,
+            IUserDataRepository repository)
         {
+            _logger = logger;
             _config = config;
-            _logger = loggerFactory.CreateLogger(GetType().Name);
             _userManager = userManager;
+            _repository = repository;
         }
-
-        /// <summary>
-        /// Gets or sets the repository.
-        /// </summary>
-        /// <value>The repository.</value>
-        public IUserDataRepository Repository { get; set; }
 
         public void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
-            var user = _userManager().GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
             SaveUserData(user, item, userData, reason, cancellationToken);
         }
@@ -71,7 +72,7 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var key in keys)
             {
-                Repository.SaveUserData(userId, key, userData, cancellationToken);
+                _repository.SaveUserData(userId, key, userData, cancellationToken);
             }
 
             var cacheKey = GetCacheKey(userId, item.Id);
@@ -96,26 +97,26 @@ namespace Emby.Server.Implementations.Library
         /// <returns></returns>
         public void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
-            var user = _userManager().GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
-            Repository.SaveAllUserData(user.InternalId, userData, cancellationToken);
+            _repository.SaveAllUserData(user.InternalId, userData, cancellationToken);
         }
 
         /// <summary>
-        /// Retrieve all user data for the given user
+        /// Retrieve all user data for the given user.
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
         public List<UserItemData> GetAllUserData(Guid userId)
         {
-            var user = _userManager().GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
-            return Repository.GetAllUserData(user.InternalId);
+            return _repository.GetAllUserData(user.InternalId);
         }
 
         public UserItemData GetUserData(Guid userId, Guid itemId, List<string> keys)
         {
-            var user = _userManager().GetUserById(userId);
+            var user = _userManager.GetUserById(userId);
 
             return GetUserData(user, itemId, keys);
         }
@@ -131,7 +132,7 @@ namespace Emby.Server.Implementations.Library
 
         private UserItemData GetUserDataInternal(long internalUserId, List<string> keys)
         {
-            var userData = Repository.GetUserData(internalUserId, keys);
+            var userData = _repository.GetUserData(internalUserId, keys);
 
             if (userData != null)
             {
@@ -187,7 +188,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Converts a UserItemData to a DTOUserItemData
+        /// Converts a UserItemData to a DTOUserItemData.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
@@ -241,7 +242,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Enforce MinResumeDuration
                     var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
+                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds && !(item is Book))
                     {
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;

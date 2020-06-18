@@ -19,14 +19,13 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
     /// <summary>
-    /// Class MediaEncoder
+    /// Class MediaEncoder.
     /// </summary>
     public class MediaEncoder : IMediaEncoder, IDisposable
     {
@@ -35,20 +34,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         internal const int DefaultImageExtractionTimeout = 5000;
 
-        private readonly ILogger _logger;
+        private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
-        private readonly Func<ISubtitleEncoder> _subtitleEncoder;
-        private readonly IConfiguration _configuration;
+        private readonly Lazy<EncodingHelper> _encodingHelperFactory;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
 
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
-
-        private EncodingHelper _encodingHelper;
 
         private string _ffmpegPath;
         private string _ffprobePath;
@@ -58,23 +54,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             ILocalizationManager localization,
-            Func<ISubtitleEncoder> subtitleEncoder,
-            IConfiguration configuration,
+            Lazy<EncodingHelper> encodingHelperFactory,
             string startupOptionsFFmpegPath)
         {
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
+            _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = startupOptionsFFmpegPath;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
         }
 
-        private EncodingHelper EncodingHelper
-            => LazyInitializer.EnsureInitialized(
-                ref _encodingHelper,
-                () => new EncodingHelper(this, _fileSystem, _subtitleEncoder(), _configuration));
+        private EncodingHelper EncodingHelper => _encodingHelperFactory.Value;
 
         /// <inheritdoc />
         public string EncoderPath => _ffmpegPath;
@@ -120,9 +111,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 SetAvailableDecoders(validator.GetDecoders());
                 SetAvailableEncoders(validator.GetEncoders());
+                SetAvailableHwaccels(validator.GetHwaccels());
             }
 
-            _logger.LogInformation("FFmpeg: {0}: {1}", EncoderLocation, _ffmpegPath ?? string.Empty);
+            _logger.LogInformation("FFmpeg: {EncoderLocation}: {FfmpegPath}", EncoderLocation, _ffmpegPath ?? string.Empty);
         }
 
         /// <summary>
@@ -135,7 +127,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             string newPath;
 
-            _logger.LogInformation("Attempting to update encoder path to {0}. pathType: {1}", path ?? string.Empty, pathType ?? string.Empty);
+            _logger.LogInformation("Attempting to update encoder path to {Path}. pathType: {PathType}", path ?? string.Empty, pathType ?? string.Empty);
 
             if (!string.Equals(pathType, "custom", StringComparison.OrdinalIgnoreCase))
             {
@@ -189,7 +181,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     if (!rc)
                     {
-                        _logger.LogWarning("FFmpeg: {0}: Failed version check: {1}", location, path);
+                        _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
                     }
 
                     // ToDo - Enable the ffmpeg validator.  At the moment any version can be used.
@@ -200,18 +192,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 else
                 {
-                    _logger.LogWarning("FFmpeg: {0}: File not found: {1}", location, path);
+                    _logger.LogWarning("FFmpeg: {Location}: File not found: {Path}", location, path);
                 }
             }
 
             return rc;
         }
 
-        private string GetEncoderPathFromDirectory(string path, string filename)
+        private string GetEncoderPathFromDirectory(string path, string filename, bool recursive = false)
         {
             try
             {
-                var files = _fileSystem.GetFilePaths(path);
+                var files = _fileSystem.GetFilePaths(path, recursive);
 
                 var excludeExtensions = new[] { ".c" };
 
@@ -232,11 +224,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns></returns>
         private string ExistsOnSystemPath(string fileName)
         {
-            string inJellyfinPath = GetEncoderPathFromDirectory(System.AppContext.BaseDirectory, fileName);
+            var inJellyfinPath = GetEncoderPathFromDirectory(AppContext.BaseDirectory, fileName, recursive: true);
             if (!string.IsNullOrEmpty(inJellyfinPath))
             {
                 return inJellyfinPath;
             }
+
             var values = Environment.GetEnvironmentVariable("PATH");
 
             foreach (var path in values.Split(Path.PathSeparator))
@@ -256,14 +249,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public void SetAvailableEncoders(IEnumerable<string> list)
         {
             _encoders = list.ToList();
-            //_logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
+            // _logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
         }
 
         private List<string> _decoders = new List<string>();
         public void SetAvailableDecoders(IEnumerable<string> list)
         {
             _decoders = list.ToList();
-            //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
+            // _logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
+        }
+
+        private List<string> _hwaccels = new List<string>();
+        public void SetAvailableHwaccels(IEnumerable<string> list)
+        {
+            _hwaccels = list.ToList();
+            //_logger.Info("Supported hwaccels: {0}", string.Join(",", list.ToArray()));
         }
 
         public bool SupportsEncoder(string encoder)
@@ -274,6 +274,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool SupportsDecoder(string decoder)
         {
             return _decoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool SupportsHwaccel(string hwaccel)
+        {
+            return _hwaccels.Contains(hwaccel, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool CanEncodeToAudioCodec(string codec)
@@ -434,7 +439,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
-        /// The us culture
+        /// The us culture.
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -478,7 +483,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "I-frame image extraction failed, will attempt standard way. Input: {arguments}", inputArgument);
+                    _logger.LogError(ex, "I-frame image extraction failed, will attempt standard way. Input: {Arguments}", inputArgument);
                 }
             }
 
@@ -509,11 +514,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         break;
                     case Video3DFormat.FullSideBySide:
                         vf = "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
-                        //fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to 600.
+                        // fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to 600.
                         break;
                     case Video3DFormat.HalfTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
-                        //htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
+                        // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
                         break;
                     case Video3DFormat.FullTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
@@ -901,7 +906,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     return minSizeVobs.Count == 0 ? vobs.Select(i => i.FullName) : minSizeVobs.Select(i => i.FullName);
                 }
 
-                _logger.LogWarning("Could not determine vob file list for {0} using DvdLib. Will scan using file sizes.", path);
+                _logger.LogWarning("Could not determine vob file list for {Path} using DvdLib. Will scan using file sizes.", path);
             }
 
             var files = allVobs
@@ -929,7 +934,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         var fileParts = _fileSystem.GetFileNameWithoutExtension(f).Split('_');
 
                         return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
-
                     }).ToList();
 
                     // If this resulted in not getting any vobs, just take them all
@@ -969,7 +973,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             public int? ExitCode { get; private set; }
 
-            void OnProcessExited(object sender, EventArgs e)
+            private void OnProcessExited(object sender, EventArgs e)
             {
                 var process = (Process)sender;
 

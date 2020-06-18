@@ -130,11 +130,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
 
-                //if (header.Length > 0)
-                //subtitle.Header = header.ToString();
+                // if (header.Length > 0)
+                // subtitle.Header = header.ToString();
 
-                //subtitle.Renumber(1);
+                // subtitle.Renumber(1);
             }
+
             trackInfo.TrackEvents = trackEvents.ToArray();
             return trackInfo;
         }
@@ -261,7 +262,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         text += "</font>";
                     }
                 }
-
             }
 
             text = text.Replace(@"{\i1}", "<i>");
@@ -303,6 +303,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     return count;
                 index = text.IndexOf(tag, index + 1);
             }
+
             return count;
         }
 
@@ -330,6 +331,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             rest = string.Empty;
                         }
+
                         extraTags += " size=\"" + fontSize.Substring(2) + "\"";
                     }
                     else if (rest.StartsWith("fn") && rest.Length > 2)
@@ -345,6 +347,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             rest = string.Empty;
                         }
+
                         extraTags += " face=\"" + fontName.Substring(2) + "\"";
                     }
                     else if (rest.StartsWith("c") && rest.Length > 2)

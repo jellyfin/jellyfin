@@ -93,6 +93,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 overview = FFProbeHelpers.GetDictionaryValue(tags, "description");
             }
+
             if (string.IsNullOrWhiteSpace(overview))
             {
                 overview = FFProbeHelpers.GetDictionaryValue(tags, "desc");
@@ -274,10 +275,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subtree = reader.ReadSubtree())
                                         {
                                             ReadFromDictNode(subtree, info);
                                         }
+
                                         break;
                                     default:
                                         reader.Skip();
@@ -319,6 +322,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                             {
                                 ProcessPairs(currentKey, pairs, info);
                             }
+
                             currentKey = reader.ReadElementContentAsString();
                             pairs = new List<NameValuePair>();
                             break;
@@ -332,6 +336,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     Value = value
                                 });
                             }
+
                             break;
                         case "array":
                             if (reader.IsEmptyElement)
@@ -339,6 +344,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                 reader.Read();
                                 continue;
                             }
+
                             using (var subtree = reader.ReadSubtree())
                             {
                                 if (!string.IsNullOrWhiteSpace(currentKey))
@@ -346,6 +352,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     pairs.AddRange(ReadValueArray(subtree));
                                 }
                             }
+
                             break;
                         default:
                             reader.Skip();
@@ -381,6 +388,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                 reader.Read();
                                 continue;
                             }
+
                             using (var subtree = reader.ReadSubtree())
                             {
                                 var dict = GetNameValuePair(subtree);
@@ -389,6 +397,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     pairs.Add(dict);
                                 }
                             }
+
                             break;
                         default:
                             reader.Skip();
@@ -413,7 +422,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray();
-
             }
             else if (string.Equals(key, "screenwriters", StringComparison.OrdinalIgnoreCase))
             {
@@ -425,7 +433,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                         Type = PersonType.Writer
                     });
                 }
-
             }
             else if (string.Equals(key, "producers", StringComparison.OrdinalIgnoreCase))
             {
@@ -517,7 +524,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts ffprobe stream info to our MediaAttachment class
+        /// Converts ffprobe stream info to our MediaAttachment class.
         /// </summary>
         /// <param name="streamInfo">The stream info.</param>
         /// <returns>MediaAttachments.</returns>
@@ -550,7 +557,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts ffprobe stream info to our MediaStream class
+        /// Converts ffprobe stream info to our MediaStream class.
         /// </summary>
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
@@ -562,7 +569,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (string.Equals(streamInfo.CodecName, "mov_text", StringComparison.OrdinalIgnoreCase))
             {
                 // Edit: but these are also sometimes subtitles?
-                //return null;
+                // return null;
             }
 
             var stream = new MediaStream
@@ -684,7 +691,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     stream.BitDepth = streamInfo.BitsPerRawSample;
                 }
 
-                //stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
+                // stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
 
@@ -694,6 +701,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (streamInfo.Refs > 0)
                 {
                     stream.RefFrames = streamInfo.Refs;
+                }
+
+                if (!string.IsNullOrEmpty(streamInfo.ColorTransfer))
+                {
+                    stream.ColorTransfer = streamInfo.ColorTransfer;
+                }
+
+                if (!string.IsNullOrEmpty(streamInfo.ColorPrimaries))
+                {
+                    stream.ColorPrimaries = streamInfo.ColorPrimaries;
                 }
             }
             else
@@ -759,7 +776,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets a string from an FFProbeResult tags dictionary
+        /// Gets a string from an FFProbeResult tags dictionary.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
@@ -940,11 +957,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
                 }
+
                 audio.People = peoples.ToArray();
             }
 
-            //var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
-            //if (!string.IsNullOrWhiteSpace(conductor))
+            // var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
+            // if (!string.IsNullOrWhiteSpace(conductor))
             //{
             //    foreach (var person in Split(conductor, false))
             //    {
@@ -952,8 +970,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             //    }
             //}
 
-            //var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
-            //if (!string.IsNullOrWhiteSpace(lyricist))
+            // var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+            // if (!string.IsNullOrWhiteSpace(lyricist))
             //{
             //    foreach (var person in Split(lyricist, false))
             //    {
@@ -971,6 +989,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
                 }
+
                 audio.People = peoples.ToArray();
             }
 
@@ -1004,6 +1023,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album artist");
             }
+
             if (string.IsNullOrWhiteSpace(albumArtist))
             {
                 albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album_artist");
@@ -1018,7 +1038,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 audio.AlbumArtists = SplitArtists(albumArtist, _nameDelimiters, true)
                     .DistinctNames()
                     .ToArray();
-
             }
 
             if (audio.AlbumArtists.Length == 0)
@@ -1047,23 +1066,23 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These support mulitple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
             if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
-            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, mb);
+            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
 
         private string GetMultipleMusicBrainzId(string value)
@@ -1147,7 +1166,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the studios from the tags collection
+        /// Gets the studios from the tags collection.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <param name="tags">The tags.</param>
@@ -1168,6 +1187,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         continue;
                     }
+
                     if (info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
@@ -1184,7 +1204,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the genres from the tags collection
+        /// Gets the genres from the tags collection.
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="tags">The tags.</param>
