@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +19,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Jellyfin.Api.Controllers.Images
+namespace Jellyfin.Api.Controllers
 {
     /// <summary>
     /// Remote Images Controller.

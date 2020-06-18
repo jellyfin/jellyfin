@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace Jellyfin.Api.Models.ConfigurationDtos
 {
     /// <summary>
