@@ -1,11 +1,15 @@
-﻿using System;
+﻿#nullable enable
+#pragma warning disable CA1801
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Models.UserDtos;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
@@ -13,9 +17,11 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -65,51 +71,60 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isHidden">Optional filter by IsHidden=true or false.</param>
         /// <param name="isDisabled">Optional filter by IsDisabled=true or false.</param>
         /// <param name="isGuest">Optional filter by IsGuest=true or false.</param>
-        /// <returns></returns>
+        /// <response code="200">Users returned.</response>
+        /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the users.</returns>
         [HttpGet]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<UserDto>> GetUsers(
             [FromQuery] bool? isHidden,
             [FromQuery] bool? isDisabled,
             [FromQuery] bool? isGuest)
         {
-            return Ok(Get(isHidden, isDisabled, isGuest, false, false));
+            var users = Get(isHidden, isDisabled, false, false);
+            return Ok(users);
         }
 
         /// <summary>
         /// Gets a list of publicly visible users for display on a login screen.
         /// </summary>
-        /// <returns></returns>
+        /// <response code="200">Public users returned.</response>
+        /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the public users.</returns>
         [HttpGet("Public")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<UserDto>> GetPublicUsers()
         {
             // If the startup wizard hasn't been completed then just return all users
             if (!_config.Configuration.IsStartupWizardCompleted)
             {
-                return GetUsers(null, false, null);
+                return Ok(GetUsers(false, false, false).Value);
             }
 
-            return Ok(Get(false, false, false, true, true));
+            return Ok(Get(false, false, true, true));
         }
 
         /// <summary>
         /// Gets a user by Id.
         /// </summary>
         /// <param name="id">The user id.</param>
-        /// <returns></returns>
+        /// <response code="200">User returned.</response>
+        /// <response code="404">User not found.</response>
+        /// <returns>An <see cref="UserDto"/> with information about the user or a <see cref="NotFoundResult"/> if the user was not found.</returns>
         [HttpGet("{id}")]
         // TODO: authorize escapeParentalControl
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<UserDto> GetUserById([FromRoute] Guid id)
         {
             var user = _userManager.GetUserById(id);
 
             if (user == null)
             {
-                throw new ResourceNotFoundException("User not found");
+                return NotFound("User not found");
             }
 
             var result = _userManager.GetUserDto(user, HttpContext.Connection.RemoteIpAddress.ToString());
-
             return Ok(result);
         }
 
@@ -117,16 +132,20 @@ namespace Jellyfin.Api.Controllers
         /// Deletes a user.
         /// </summary>
         /// <param name="id">The user id.</param>
-        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <response code="200">User deleted.</response>
+        /// <response code="404">User not found.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="NotFoundResult"/> if the user was not found.</returns>
         [HttpDelete("{id}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult DeleteUser([FromRoute] Guid id)
         {
             var user = _userManager.GetUserById(id);
 
             if (user == null)
             {
-                throw new ResourceNotFoundException("User not found");
+                return NotFound("User not found");
             }
 
             _sessionManager.RevokeUserTokens(user.Id, null);
@@ -138,10 +157,16 @@ namespace Jellyfin.Api.Controllers
         /// Authenticates a user.
         /// </summary>
         /// <param name="id">The user id.</param>
-        /// <param name="pw"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+        /// <param name="pw">The password as plain text.</param>
+        /// <param name="password">The password sha1-hash.</param>
+        /// <response code="200">User authenticated.</response>
+        /// <response code="403">Sha1-hashed password only is not allowed.</response>
+        /// <response code="404">User not found.</response>
+        /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationResult"/>.</returns>
         [HttpPost("{id}/Authenticate")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
             [FromRoute, Required] Guid id,
             [FromQuery, BindRequired] string pw,
@@ -156,25 +181,22 @@ namespace Jellyfin.Api.Controllers
 
             if (!string.IsNullOrEmpty(password) && string.IsNullOrEmpty(pw))
             {
-                throw new MethodNotAllowedException();
+                return Forbid("Only sha1 password is not allowed.");
             }
 
             // Password should always be null
-            return await AuthenticateUserByName(user.Username, null, pw).ConfigureAwait(false);
+            return await AuthenticateUserByName(user.Username, pw, password).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Authenticates a user by name.
         /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="pw"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
+        /// <param name="request">The <see cref="AuthenticateUserByName"/> request.</param>
+        /// <response code="200">User authenticated.</response>
+        /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
         [HttpPost("AuthenticateByName")]
-        public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName(
-            [FromQuery, BindRequired] string username,
-            [FromQuery, BindRequired] string pw,
-            [FromQuery, BindRequired] string password)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, BindRequired] AuthenticateUserByName request)
         {
             var auth = _authContext.GetAuthorizationInfo(Request);
 
@@ -186,10 +208,10 @@ namespace Jellyfin.Api.Controllers
                     AppVersion = auth.Version,
                     DeviceId = auth.DeviceId,
                     DeviceName = auth.Device,
-                    Password = pw,
-                    PasswordSha1 = password,
+                    Password = request.Pw,
+                    PasswordSha1 = request.Password,
                     RemoteEndPoint = HttpContext.Connection.RemoteIpAddress.ToString(),
-                    Username = username
+                    Username = request.Username
                 }).ConfigureAwait(false);
 
                 return Ok(result);
@@ -204,22 +226,31 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a user's password.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="currentPassword"></param>
-        /// <param name="currentPw"></param>
-        /// <param name="newPw"></param>
+        /// <param name="id">The user id.</param>
+        /// <param name="currentPassword">The current password sha1-hash.</param>
+        /// <param name="currentPw">The current password as plain text.</param>
+        /// <param name="newPw">The new password in plain text.</param>
         /// <param name="resetPassword">Whether to reset the password.</param>
-        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <response code="200">Password successfully reset.</response>
+        /// <response code="403">User is not allowed to update the password.</response>
+        /// <response code="404">User not found.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
         [HttpPost("{id}/Password")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateUserPassword(
             [FromRoute] Guid id,
-            [FromQuery] string currentPassword,
-            [FromQuery] string currentPw,
-            [FromQuery] string newPw,
-            [FromQuery] bool resetPassword)
+            [FromBody] string currentPassword,
+            [FromBody] string currentPw,
+            [FromBody] string newPw,
+            [FromBody] bool resetPassword)
         {
-            AssertCanUpdateUser(_authContext, _userManager, id, true);
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, true))
+            {
+                return Forbid("User is not allowed to update the password.");
+            }
 
             var user = _userManager.GetUserById(id);
 
@@ -243,7 +274,7 @@ namespace Jellyfin.Api.Controllers
 
                 if (success == null)
                 {
-                    throw new ArgumentException("Invalid user or password entered.");
+                    return Forbid("Invalid user or password entered.");
                 }
 
                 await _userManager.ChangePassword(user, newPw).ConfigureAwait(false);
@@ -259,20 +290,29 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a user's easy password.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="newPassword"></param>
-        /// <param name="newPw"></param>
-        /// <param name="resetPassword"></param>
-        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <param name="id">The user id.</param>
+        /// <param name="newPassword">The new password sha1-hash.</param>
+        /// <param name="newPw">The new password in plain text.</param>
+        /// <param name="resetPassword">Whether to reset the password.</param>
+        /// <response code="200">Password successfully reset.</response>
+        /// <response code="403">User is not allowed to update the password.</response>
+        /// <response code="404">User not found.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
         [HttpPost("{id}/EasyPassword")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateUserEasyPassword(
             [FromRoute] Guid id,
-            [FromQuery] string newPassword,
-            [FromQuery] string newPw,
-            [FromQuery] bool resetPassword)
+            [FromBody] string newPassword,
+            [FromBody] string newPw,
+            [FromBody] bool resetPassword)
         {
-            AssertCanUpdateUser(_authContext, _userManager, id, true);
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, true))
+            {
+                return Forbid("User is not allowed to update the easy password.");
+            }
 
             var user = _userManager.GetUserById(id);
 
@@ -296,36 +336,128 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a user.
         /// </summary>
-        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <param name="id">The user id.</param>
+        /// <param name="updateUser">The updated user model.</param>
+        /// <response code="204">User updated.</response>
+        /// <response code="400">User information was not supplied.</response>
+        /// <response code="403">User update forbidden.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure.</returns>
         [HttpPost("{id}")]
         [Authorize]
-        public ActionResult UpdateUser() // TODO: missing UserDto
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult> UpdateUser(
+            [FromRoute] Guid id,
+            [FromBody] UserDto updateUser)
         {
-            throw new NotImplementedException();
+            if (updateUser == null)
+            {
+                return BadRequest();
+            }
+
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, false))
+            {
+                return Forbid("User update not allowed.");
+            }
+
+            var user = _userManager.GetUserById(id);
+
+            if (string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
+            {
+                await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
+                _userManager.UpdateConfiguration(user.Id, updateUser.Configuration);
+            }
+            else
+            {
+                await _userManager.RenameUser(user, updateUser.Name).ConfigureAwait(false);
+                _userManager.UpdateConfiguration(updateUser.Id, updateUser.Configuration);
+            }
+
+            return NoContent();
         }
 
         /// <summary>
         /// Updates a user policy.
         /// </summary>
         /// <param name="id">The user id.</param>
-        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <param name="newPolicy">The new user policy.</param>
+        /// <response code="204">User policy updated.</response>
+        /// <response code="400">User policy was not supplied.</response>
+        /// <response code="403">User policy update forbidden.</response>
+        /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure..</returns>
         [HttpPost("{id}/Policy")]
         [Authorize]
-        public ActionResult UpdateUserPolicy([FromRoute] Guid id) // TODO: missing UserPolicy
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public ActionResult UpdateUserPolicy(
+            [FromRoute] Guid id,
+            [FromBody] UserPolicy newPolicy)
         {
-            throw new NotImplementedException();
+            if (newPolicy == null)
+            {
+                return BadRequest();
+            }
+
+            var user = _userManager.GetUserById(id);
+
+            // If removing admin access
+            if (!(newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator)))
+            {
+                if (_userManager.Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
+                {
+                    return Forbid("There must be at least one user in the system with administrative access.");
+                }
+            }
+
+            // If disabling
+            if (newPolicy.IsDisabled && user.HasPermission(PermissionKind.IsAdministrator))
+            {
+                return Forbid("Administrators cannot be disabled.");
+            }
+
+            // If disabling
+            if (newPolicy.IsDisabled && !user.HasPermission(PermissionKind.IsDisabled))
+            {
+                if (_userManager.Users.Count(i => !i.HasPermission(PermissionKind.IsDisabled)) == 1)
+                {
+                    return Forbid("There must be at least one enabled user in the system.");
+                }
+
+                var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
+                _sessionManager.RevokeUserTokens(user.Id, currentToken);
+            }
+
+            _userManager.UpdatePolicy(id, newPolicy);
+
+            return NoContent();
         }
 
         /// <summary>
         /// Updates a user configuration.
         /// </summary>
         /// <param name="id">The user id.</param>
+        /// <param name="userConfig">The new user configuration.</param>
+        /// <response code="204">User configuration updated.</response>
+        /// <response code="403">User configuration update forbidden.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{id}/Configuration")]
         [Authorize]
-        public ActionResult UpdateUserConfiguration([FromRoute] Guid id) // TODO: missing UserConfiguration
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public ActionResult UpdateUserConfiguration(
+            [FromRoute] Guid id,
+            [FromBody] UserConfiguration userConfig)
         {
-            throw new NotImplementedException();
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, false))
+            {
+                return Forbid("User configuration update not allowed");
+            }
+
+            _userManager.UpdateConfiguration(id, userConfig);
+
+            return NoContent();
         }
 
         /// <summary>
@@ -333,10 +465,12 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="name">The username.</param>
         /// <param name="password">The password.</param>
-        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <response code="200">User created.</response>
+        /// <returns>An <see cref="UserDto"/> of the new user.</returns>
         [HttpPost("/Users/New")]
         [Authorize(Policy = Policies.RequiresElevation)]
-        public async Task<ActionResult> CreateUserByName(
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<UserDto>> CreateUserByName(
             [FromBody] string name,
             [FromBody] string password)
         {
@@ -357,8 +491,10 @@ namespace Jellyfin.Api.Controllers
         /// Initiates the forgot password process for a local user.
         /// </summary>
         /// <param name="enteredUsername">The entered username.</param>
-        /// <returns></returns>
+        /// <response code="200">Password reset process started.</response>
+        /// <returns>A <see cref="Task"/> containing a <see cref="ForgotPasswordResult"/>.</returns>
         [HttpPost("ForgotPassword")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string enteredUsername)
         {
             var isLocal = HttpContext.Connection.RemoteIpAddress.Equals(HttpContext.Connection.LocalIpAddress)
@@ -373,15 +509,17 @@ namespace Jellyfin.Api.Controllers
         /// Redeems a forgot password pin.
         /// </summary>
         /// <param name="pin">The pin.</param>
-        /// <returns></returns>
+        /// <response code="200">Pin reset process started.</response>
+        /// <returns>A <see cref="Task"/> containing a <see cref="PinRedeemResult"/>.</returns>
         [HttpPost("ForgotPassword/Pin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string pin)
         {
             var result = await _userManager.RedeemPasswordResetPin(pin).ConfigureAwait(false);
             return Ok(result);
         }
 
-        private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool? isGuest, bool filterByDevice, bool filterByNetwork)
+        private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
         {
             var users = _userManager.Users;
 
