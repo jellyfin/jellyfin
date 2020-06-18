@@ -1,9 +1,23 @@
 ﻿namespace Jellyfin.Api.Models.UserDtos
 {
+    /// <summary>
+    /// The authenticate user by name request body.
+    /// </summary>
     public class AuthenticateUserByName
     {
-        public string Username { get; set; }
-        public string Pw { get; set; }
-        public string Password { get; set; }
+        /// <summary>
+        /// Gets or sets the username.
+        /// </summary>
+        public string? Username { get; set; }
+
+        /// <summary>
+        /// Gets or sets the plain text password.
+        /// </summary>
+        public string? Pw { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sha1-hashed password.
+        /// </summary>
+        public string? Password { get; set; }
     }
 }

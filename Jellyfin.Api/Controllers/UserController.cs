@@ -111,8 +111,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">User not found.</response>
         /// <returns>An <see cref="UserDto"/> with information about the user or a <see cref="NotFoundResult"/> if the user was not found.</returns>
         [HttpGet("{id}")]
-        // TODO: authorize escapeParentalControl
-        [Authorize]
+        [Authorize(Policy = Policies.IgnoreSchedule)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<UserDto> GetUserById([FromRoute] Guid id)
@@ -185,7 +184,13 @@ namespace Jellyfin.Api.Controllers
             }
 
             // Password should always be null
-            return await AuthenticateUserByName(user.Username, pw, password).ConfigureAwait(false);
+            AuthenticateUserByName request = new AuthenticateUserByName
+            {
+                Username = user.Username,
+                Password = null,
+                Pw = pw
+            };
+            return await AuthenticateUserByName(request).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -227,10 +232,7 @@ namespace Jellyfin.Api.Controllers
         /// Updates a user's password.
         /// </summary>
         /// <param name="id">The user id.</param>
-        /// <param name="currentPassword">The current password sha1-hash.</param>
-        /// <param name="currentPw">The current password as plain text.</param>
-        /// <param name="newPw">The new password in plain text.</param>
-        /// <param name="resetPassword">Whether to reset the password.</param>
+        /// <param name="request">The <see cref="UpdateUserPassword"/> request.</param>
         /// <response code="200">Password successfully reset.</response>
         /// <response code="403">User is not allowed to update the password.</response>
         /// <response code="404">User not found.</response>
@@ -242,10 +244,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateUserPassword(
             [FromRoute] Guid id,
-            [FromBody] string currentPassword,
-            [FromBody] string currentPw,
-            [FromBody] string newPw,
-            [FromBody] bool resetPassword)
+            [FromBody] UpdateUserPassword request)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, true))
             {
@@ -259,7 +258,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound("User not found");
             }
 
-            if (resetPassword)
+            if (request.ResetPassword)
             {
                 await _userManager.ResetPassword(user).ConfigureAwait(false);
             }
@@ -267,8 +266,8 @@ namespace Jellyfin.Api.Controllers
             {
                 var success = await _userManager.AuthenticateUser(
                     user.Username,
-                    currentPw,
-                    currentPassword,
+                    request.CurrentPw,
+                    request.CurrentPw,
                     HttpContext.Connection.RemoteIpAddress.ToString(),
                     false).ConfigureAwait(false);
 
@@ -277,7 +276,7 @@ namespace Jellyfin.Api.Controllers
                     return Forbid("Invalid user or password entered.");
                 }
 
-                await _userManager.ChangePassword(user, newPw).ConfigureAwait(false);
+                await _userManager.ChangePassword(user, request.NewPw).ConfigureAwait(false);
 
                 var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
 
@@ -291,9 +290,7 @@ namespace Jellyfin.Api.Controllers
         /// Updates a user's easy password.
         /// </summary>
         /// <param name="id">The user id.</param>
-        /// <param name="newPassword">The new password sha1-hash.</param>
-        /// <param name="newPw">The new password in plain text.</param>
-        /// <param name="resetPassword">Whether to reset the password.</param>
+        /// <param name="request">The <see cref="UpdateUserEasyPassword"/> request.</param>
         /// <response code="200">Password successfully reset.</response>
         /// <response code="403">User is not allowed to update the password.</response>
         /// <response code="404">User not found.</response>
@@ -305,9 +302,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateUserEasyPassword(
             [FromRoute] Guid id,
-            [FromBody] string newPassword,
-            [FromBody] string newPw,
-            [FromBody] bool resetPassword)
+            [FromBody] UpdateUserEasyPassword request)
         {
             if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, true))
             {
@@ -321,13 +316,13 @@ namespace Jellyfin.Api.Controllers
                 return NotFound("User not found");
             }
 
-            if (resetPassword)
+            if (request.ResetPassword)
             {
                 _userManager.ResetEasyPassword(user);
             }
             else
             {
-                _userManager.ChangeEasyPassword(user, newPw, newPassword);
+                _userManager.ChangeEasyPassword(user, request.NewPw, request.NewPassword);
             }
 
             return NoContent();
@@ -463,23 +458,20 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Creates a user.
         /// </summary>
-        /// <param name="name">The username.</param>
-        /// <param name="password">The password.</param>
+        /// <param name="request">The create user by name request body.</param>
         /// <response code="200">User created.</response>
         /// <returns>An <see cref="UserDto"/> of the new user.</returns>
         [HttpPost("/Users/New")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<UserDto>> CreateUserByName(
-            [FromBody] string name,
-            [FromBody] string password)
+        public async Task<ActionResult<UserDto>> CreateUserByName([FromBody] CreateUserByName request)
         {
-            var newUser = _userManager.CreateUser(name);
+            var newUser = _userManager.CreateUser(request.Name);
 
             // no need to authenticate password for new user
-            if (password != null)
+            if (request.Password != null)
             {
-                await _userManager.ChangePassword(newUser, password).ConfigureAwait(false);
+                await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
             }
 
             var result = _userManager.GetUserDto(newUser, HttpContext.Connection.RemoteIpAddress.ToString());
