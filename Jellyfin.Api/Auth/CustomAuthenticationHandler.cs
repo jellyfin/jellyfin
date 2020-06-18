@@ -1,3 +1,6 @@
+#nullable enable
+
+using System.Globalization;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
@@ -39,15 +42,10 @@ namespace Jellyfin.Api.Auth
         /// <inheritdoc />
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var authenticatedAttribute = new AuthenticatedAttribute
-            {
-                IgnoreLegacyAuth = true
-            };
-
             try
             {
-                var user = _authService.Authenticate(Request, authenticatedAttribute);
-                if (user == null)
+                var authorizationInfo = _authService.Authenticate(Request);
+                if (authorizationInfo == null)
                 {
                     return Task.FromResult(AuthenticateResult.NoResult());
                     // TODO return when legacy API is removed.
@@ -57,11 +55,16 @@ namespace Jellyfin.Api.Auth
 
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(
-                        ClaimTypes.Role,
-                        value: user.HasPermission(PermissionKind.IsAdministrator) ? UserRoles.Administrator : UserRoles.User)
+                    new Claim(ClaimTypes.Name, authorizationInfo.User.Username),
+                    new Claim(ClaimTypes.Role, value: authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator) ? UserRoles.Administrator : UserRoles.User),
+                    new Claim(InternalClaimTypes.UserId, authorizationInfo.UserId.ToString("N", CultureInfo.InvariantCulture)),
+                    new Claim(InternalClaimTypes.DeviceId, authorizationInfo.DeviceId),
+                    new Claim(InternalClaimTypes.Device, authorizationInfo.Device),
+                    new Claim(InternalClaimTypes.Client, authorizationInfo.Client),
+                    new Claim(InternalClaimTypes.Version, authorizationInfo.Version),
+                    new Claim(InternalClaimTypes.Token, authorizationInfo.Token),
                 };
+
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);
                 var ticket = new AuthenticationTicket(principal, Scheme.Name);

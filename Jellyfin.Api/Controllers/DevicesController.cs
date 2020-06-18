@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Devices;
@@ -17,7 +15,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Devices Controller.
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class DevicesController : BaseJellyfinApiController
     {
         private readonly IDeviceManager _deviceManager;

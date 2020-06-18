@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Jellyfin.Api.Models.PluginDtos
+﻿namespace Jellyfin.Api.Models.PluginDtos
 {
     /// <summary>
     /// Plugin security info.

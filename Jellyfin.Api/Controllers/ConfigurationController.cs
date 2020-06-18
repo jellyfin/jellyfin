@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -18,7 +16,7 @@ namespace Jellyfin.Api.Controllers
     /// Configuration Controller.
     /// </summary>
     [Route("System")]
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ConfigurationController : BaseJellyfinApiController
     {
         private readonly IServerConfigurationManager _configurationManager;
