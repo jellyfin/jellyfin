@@ -26,9 +26,9 @@ namespace MediaBrowser.Controller.QuickConnect
         public QuickConnectState State { get; }
 
         /// <summary>
-        /// Gets or sets the time (in minutes) before a pending request will expire.
+        /// Gets or sets the time (in minutes) before quick connect will automatically deactivate.
         /// </summary>
-        public int RequestExpiry { get; set; }
+        public int Timeout { get; set; }
 
         /// <summary>
         /// Assert that quick connect is currently active and throws an exception if it is not.
@@ -77,9 +77,9 @@ namespace MediaBrowser.Controller.QuickConnect
         /// Authorizes a quick connect request to connect as the calling user.
         /// </summary>
         /// <param name="request">HTTP request object.</param>
-        /// <param name="lookup">Public request lookup value.</param>
+        /// <param name="lookup">Identifying code for the request..</param>
         /// <returns>A boolean indicating if the authorization completed successfully.</returns>
-        bool AuthorizeRequest(IRequest request, string lookup);
+        bool AuthorizeRequest(IRequest request, string code);
 
         /// <summary>
         /// Deletes all quick connect access tokens for the provided user.

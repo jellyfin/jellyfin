@@ -18,11 +18,6 @@ namespace MediaBrowser.Model.QuickConnect
         public string? Secret { get; set; }
 
         /// <summary>
-        /// Gets or sets the public value used to uniquely identify this request. Can only be used to authorize the request.
-        /// </summary>
-        public string? Lookup { get; set; }
-
-        /// <summary>
         /// Gets or sets the user facing code used so the user can quickly differentiate this request from others.
         /// </summary>
         public string? Code { get; set; }

@@ -11,7 +11,9 @@ using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.QuickConnect;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Common;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Common.Extensions;
 
 namespace Emby.Server.Implementations.QuickConnect
 {
@@ -64,9 +66,7 @@ namespace Emby.Server.Implementations.QuickConnect
         public QuickConnectState State { get; private set; } = QuickConnectState.Unavailable;
 
         /// <inheritdoc/>
-        public int RequestExpiry { get; set; } = 30;
-
-        private bool TemporaryActivation { get; set; } = false;
+        public int Timeout { get; set; } = 5;
 
         private DateTime DateActivated { get; set; }
 
@@ -82,10 +82,9 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <inheritdoc/>
         public QuickConnectResult Activate()
         {
-            // This should not call SetEnabled since that would persist the "temporary" activation to the configuration file
-            State = QuickConnectState.Active;
+            SetEnabled(QuickConnectState.Active);
+
             DateActivated = DateTime.Now;
-            TemporaryActivation = true;
 
             return new QuickConnectResult();
         }
@@ -96,12 +95,10 @@ namespace Emby.Server.Implementations.QuickConnect
             _logger.LogDebug("Changed quick connect state from {0} to {1}", State, newState);
 
             ExpireRequests(true);
-            State = newState;
 
-            _config.SaveConfiguration("quickconnect", new QuickConnectConfiguration()
-            {
-                State = State
-            });
+            State = newState;
+            _config.Configuration.QuickConnectAvailable = newState == QuickConnectState.Available || newState == QuickConnectState.Active;
+            _config.SaveConfiguration();
 
             _logger.LogDebug("Configuration saved");
         }
@@ -123,17 +120,16 @@ namespace Emby.Server.Implementations.QuickConnect
 
             _logger.LogDebug("Got new quick connect request from {friendlyName}", friendlyName);
 
-            var lookup = GenerateSecureRandom();
+            var code = GenerateCode();
             var result = new QuickConnectResult()
             {
-                Lookup = lookup,
                 Secret = GenerateSecureRandom(),
                 FriendlyName = friendlyName,
                 DateAdded = DateTime.Now,
-                Code = GenerateCode()
+                Code = code
             };
 
-            _currentRequests[lookup] = result;
+            _currentRequests[code] = result;
             return result;
         }
 
@@ -143,17 +139,16 @@ namespace Emby.Server.Implementations.QuickConnect
             ExpireRequests();
             AssertActive();
 
-            string lookup = _currentRequests.Where(x => x.Value.Secret == secret).Select(x => x.Value.Lookup).DefaultIfEmpty(string.Empty).First();
+            string code = _currentRequests.Where(x => x.Value.Secret == secret).Select(x => x.Value.Code).DefaultIfEmpty(string.Empty).First();
 
-            if (!_currentRequests.TryGetValue(lookup, out QuickConnectResult result))
+            if (!_currentRequests.TryGetValue(code, out QuickConnectResult result))
             {
-                throw new KeyNotFoundException("Unable to find request with provided identifier");
+                throw new ResourceNotFoundException("Unable to find request with provided secret");
             }
 
             return result;
         }
 
-        /// <inheritdoc/>
         public List<QuickConnectResultDto> GetCurrentRequests()
         {
             return GetCurrentRequestsInternal().Select(x => (QuickConnectResultDto)x).ToList();
@@ -186,16 +181,16 @@ namespace Emby.Server.Implementations.QuickConnect
         }
 
         /// <inheritdoc/>
-        public bool AuthorizeRequest(IRequest request, string lookup)
+        public bool AuthorizeRequest(IRequest request, string code)
         {
             ExpireRequests();
             AssertActive();
 
             var auth = _authContext.GetAuthorizationInfo(request);
 
-            if (!_currentRequests.TryGetValue(lookup, out QuickConnectResult result))
+            if (!_currentRequests.TryGetValue(code, out QuickConnectResult result))
             {
-                throw new KeyNotFoundException("Unable to find request");
+                throw new ResourceNotFoundException("Unable to find request");
             }
 
             if (result.Authenticated)
@@ -205,9 +200,9 @@ namespace Emby.Server.Implementations.QuickConnect
 
             result.Authentication = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
-            // Advance the time on the request so it expires sooner as the client will pick up the changes in a few seconds
-            var added = result.DateAdded ?? DateTime.Now.Subtract(new TimeSpan(0, RequestExpiry, 0));
-            result.DateAdded = added.Subtract(new TimeSpan(0, RequestExpiry - 1, 0));
+            // Change the time on the request so it expires one minute into the future. It can't expire immediately as otherwise some clients wouldn't ever see that they have been authenticated.
+            var added = result.DateAdded ?? DateTime.Now.Subtract(new TimeSpan(0, Timeout, 0));
+            result.DateAdded = added.Subtract(new TimeSpan(0, Timeout - 1, 0));
 
             _authenticationRepository.Create(new AuthenticationInfo
             {
@@ -271,7 +266,7 @@ namespace Emby.Server.Implementations.QuickConnect
             var bytes = new byte[length];
             _rng.GetBytes(bytes);
 
-            return string.Join(string.Empty, bytes.Select(x => x.ToString("x2", CultureInfo.InvariantCulture)));
+            return Hex.Encode(bytes);
         }
 
         /// <summary>
@@ -281,12 +276,11 @@ namespace Emby.Server.Implementations.QuickConnect
         private void ExpireRequests(bool expireAll = false)
         {
             // Check if quick connect should be deactivated
-            if (TemporaryActivation && DateTime.Now > DateActivated.AddMinutes(10) && State == QuickConnectState.Active && !expireAll)
+            if (State == QuickConnectState.Active && DateTime.Now > DateActivated.AddMinutes(Timeout) && !expireAll)
             {
                 _logger.LogDebug("Quick connect time expired, deactivating");
                 SetEnabled(QuickConnectState.Available);
                 expireAll = true;
-                TemporaryActivation = false;
             }
 
             // Expire stale connection requests
@@ -296,28 +290,28 @@ namespace Emby.Server.Implementations.QuickConnect
             for (int i = 0; i < values.Count; i++)
             {
                 var added = values[i].DateAdded ?? DateTime.UnixEpoch;
-                if (DateTime.Now > added.AddMinutes(RequestExpiry) || expireAll)
+                if (DateTime.Now > added.AddMinutes(Timeout) || expireAll)
                 {
-                    delete.Add(values[i].Lookup);
+                    delete.Add(values[i].Code);
                 }
             }
 
-            foreach (var lookup in delete)
+            foreach (var code in delete)
             {
-                _logger.LogDebug("Removing expired request {lookup}", lookup);
+                _logger.LogDebug("Removing expired request {code}", code);
 
-                if (!_currentRequests.TryRemove(lookup, out _))
+                if (!_currentRequests.TryRemove(code, out _))
                 {
-                    _logger.LogWarning("Request {lookup} already expired", lookup);
+                    _logger.LogWarning("Request {code} already expired", code);
                 }
             }
         }
 
         private void ReloadConfiguration()
         {
-            var config = _config.GetQuickConnectConfiguration();
+            var available = _config.Configuration.QuickConnectAvailable;
 
-            State = config.State;
+            State = available ? QuickConnectState.Available : QuickConnectState.Unavailable;
         }
     }
 }
