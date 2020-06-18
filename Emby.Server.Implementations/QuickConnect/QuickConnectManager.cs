@@ -75,18 +75,15 @@ namespace Emby.Server.Implementations.QuickConnect
         {
             if (State != QuickConnectState.Active)
             {
-                throw new InvalidOperationException("Quick connect is not active on this server");
+                throw new ArgumentException("Quick connect is not active on this server");
             }
         }
 
         /// <inheritdoc/>
-        public QuickConnectResult Activate()
+        public void Activate()
         {
-            SetEnabled(QuickConnectState.Active);
-
             DateActivated = DateTime.Now;
-
-            return new QuickConnectResult();
+            SetEnabled(QuickConnectState.Active);
         }
 
         /// <inheritdoc/>
@@ -149,19 +146,6 @@ namespace Emby.Server.Implementations.QuickConnect
             return result;
         }
 
-        public List<QuickConnectResultDto> GetCurrentRequests()
-        {
-            return GetCurrentRequestsInternal().Select(x => (QuickConnectResultDto)x).ToList();
-        }
-
-        /// <inheritdoc/>
-        public List<QuickConnectResult> GetCurrentRequestsInternal()
-        {
-            ExpireRequests();
-            AssertActive();
-            return _currentRequests.Values.ToList();
-        }
-
         /// <inheritdoc/>
         public string GenerateCode()
         {
@@ -215,7 +199,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 UserId = auth.UserId
             });
 
-            _logger.LogInformation("Allowing device {0} to login as user {1} with quick connect code {2}", result.FriendlyName, auth.User.Name, result.Code);
+            _logger.LogInformation("Allowing device {0} to login as user {1} with quick connect code {2}", result.FriendlyName, auth.User.Username, result.Code);
 
             return true;
         }
@@ -269,11 +253,8 @@ namespace Emby.Server.Implementations.QuickConnect
             return Hex.Encode(bytes);
         }
 
-        /// <summary>
-        /// Expire quick connect requests that are over the time limit. If <paramref name="expireAll"/> is true, all requests are unconditionally expired.
-        /// </summary>
-        /// <param name="expireAll">If true, all requests will be expired.</param>
-        private void ExpireRequests(bool expireAll = false)
+        /// <inheritdoc/>
+        public void ExpireRequests(bool expireAll = false)
         {
             // Check if quick connect should be deactivated
             if (State == QuickConnectState.Active && DateTime.Now > DateActivated.AddMinutes(Timeout) && !expireAll)
@@ -309,9 +290,7 @@ namespace Emby.Server.Implementations.QuickConnect
 
         private void ReloadConfiguration()
         {
-            var available = _config.Configuration.QuickConnectAvailable;
-
-            State = available ? QuickConnectState.Available : QuickConnectState.Unavailable;
+            State = _config.Configuration.QuickConnectAvailable ? QuickConnectState.Available : QuickConnectState.Unavailable;
         }
     }
 }

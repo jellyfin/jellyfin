@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -24,18 +23,12 @@ namespace MediaBrowser.Api.QuickConnect
         public string Secret { get; set; }
     }
 
-    [Route("/QuickConnect/List", "GET", Summary = "Lists all quick connect requests")]
-    [Authenticated]
-    public class QuickConnectList : IReturn<List<QuickConnectResultDto>>
-    {
-    }
-
     [Route("/QuickConnect/Authorize", "POST", Summary = "Authorizes a pending quick connect request")]
     [Authenticated]
-    public class Authorize : IReturn<QuickConnectResultDto>
+    public class Authorize : IReturn<bool>
     {
-        [ApiMember(Name = "Lookup", Description = "Quick connect public lookup", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string Lookup { get; set; }
+        [ApiMember(Name = "Code", Description = "Quick connect identifying code", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Code { get; set; }
     }
 
     [Route("/QuickConnect/Deauthorize", "POST", Summary = "Deletes all quick connect authorization tokens for the current user")]
@@ -62,8 +55,9 @@ namespace MediaBrowser.Api.QuickConnect
 
     [Route("/QuickConnect/Activate", "POST", Summary = "Temporarily activates quick connect for the time period defined in the server configuration")]
     [Authenticated]
-    public class Activate : IReturn<QuickConnectState>
+    public class Activate : IReturn<bool>
     {
+
     }
 
     public class QuickConnectService : BaseApiService
@@ -96,18 +90,9 @@ namespace MediaBrowser.Api.QuickConnect
             return _quickConnect.CheckRequestStatus(request.Secret);
         }
 
-        public object Get(QuickConnectList request)
-        {
-            if(_quickConnect.State != QuickConnectState.Active)
-            {
-                return Array.Empty<QuickConnectResultDto>();
-            }
-
-            return _quickConnect.GetCurrentRequests();
-        }
-
         public object Get(QuickConnectStatus request)
         {
+            _quickConnect.ExpireRequests();
             return _quickConnect.State;
         }
 
@@ -120,55 +105,27 @@ namespace MediaBrowser.Api.QuickConnect
 
         public object Post(Authorize request)
         {
-            bool result = _quickConnect.AuthorizeRequest(Request, request.Lookup);
-
-            Logger.LogInformation("Result of authorizing quick connect {0}: {1}", request.Lookup[..10], result);
-
-            return result;
+            return _quickConnect.AuthorizeRequest(Request, request.Code);
         }
 
         public object Post(Activate request)
         {
-            string name = _authContext.GetAuthorizationInfo(Request).User.Name;
-
             if(_quickConnect.State == QuickConnectState.Unavailable)
             {
-                return new QuickConnectResult()
-                {
-                    Error = "Quick connect is not enabled on this server"
-                };
+                return false;
             }
 
-            else if(_quickConnect.State == QuickConnectState.Available)
-            {
-                var result = _quickConnect.Activate();
+            string name = _authContext.GetAuthorizationInfo(Request).User.Username;
 
-                if (string.IsNullOrEmpty(result.Error))
-                {
-                    Logger.LogInformation("{name} temporarily activated quick connect", name);
-                }
+            Logger.LogInformation("{name} temporarily activated quick connect", name);
+            _quickConnect.Activate();
 
-                return result;
-            }
-
-            else if(_quickConnect.State == QuickConnectState.Active)
-            {
-                return new QuickConnectResult()
-                {
-                    Error = ""
-                };
-            }
-
-            return new QuickConnectResult()
-            {
-                Error = "Unknown current state"
-            };
+            return true;
         }
 
         public object Post(Available request)
         {
             _quickConnect.SetEnabled(request.Status);
-
             return _quickConnect.State;
         }
     }

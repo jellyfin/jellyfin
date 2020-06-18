@@ -38,8 +38,7 @@ namespace MediaBrowser.Controller.QuickConnect
         /// <summary>
         /// Temporarily activates quick connect for a short amount of time.
         /// </summary>
-        /// <returns>A quick connect result object indicating success.</returns>
-        QuickConnectResult Activate();
+        void Activate();
 
         /// <summary>
         /// Changes the status of quick connect.
@@ -62,24 +61,18 @@ namespace MediaBrowser.Controller.QuickConnect
         QuickConnectResult CheckRequestStatus(string secret);
 
         /// <summary>
-        /// Returns all current quick connect requests as DTOs. Does not include sensitive information.
-        /// </summary>
-        /// <returns>List of all quick connect results.</returns>
-        List<QuickConnectResultDto> GetCurrentRequests();
-
-        /// <summary>
-        /// Returns all current quick connect requests (including sensitive information).
-        /// </summary>
-        /// <returns>List of all quick connect results.</returns>
-        List<QuickConnectResult> GetCurrentRequestsInternal();
-
-        /// <summary>
         /// Authorizes a quick connect request to connect as the calling user.
         /// </summary>
         /// <param name="request">HTTP request object.</param>
-        /// <param name="lookup">Identifying code for the request..</param>
+        /// <param name="code">Identifying code for the request.</param>
         /// <returns>A boolean indicating if the authorization completed successfully.</returns>
         bool AuthorizeRequest(IRequest request, string code);
+
+        /// <summary>
+        /// Expire quick connect requests that are over the time limit. If <paramref name="expireAll"/> is true, all requests are unconditionally expired.
+        /// </summary>
+        /// <param name="expireAll">If true, all requests will be expired.</param>
+        public void ExpireRequests(bool expireAll = false);
 
         /// <summary>
         /// Deletes all quick connect access tokens for the provided user.
