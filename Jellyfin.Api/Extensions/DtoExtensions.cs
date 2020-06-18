@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Linq;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Dto;
