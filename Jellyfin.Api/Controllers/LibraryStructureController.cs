@@ -1,4 +1,3 @@
-#nullable enable
 #pragma warning disable CA1801
 
 using System;
@@ -175,20 +174,18 @@ namespace Jellyfin.Api.Controllers
             {
                 CollectionFolder.OnCollectionFolderChange();
 
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
                     // No need to start if scanning the library because it will handle it
                     if (refreshLibrary)
                     {
-                        _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
+                        await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
                     }
                     else
                     {
                         // Need to add a delay here or directory watchers may still pick up the changes
-                        var task = Task.Delay(1000);
                         // Have to block here to allow exceptions to bubble
-                        Task.WaitAll(task);
-
+                        await Task.Delay(1000).ConfigureAwait(false);
                         _libraryMonitor.Start();
                     }
                 });
@@ -230,20 +227,18 @@ namespace Jellyfin.Api.Controllers
             }
             finally
             {
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
                     // No need to start if scanning the library because it will handle it
                     if (refreshLibrary)
                     {
-                        _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
+                        await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
                     }
                     else
                     {
                         // Need to add a delay here or directory watchers may still pick up the changes
-                        var task = Task.Delay(1000);
                         // Have to block here to allow exceptions to bubble
-                        Task.WaitAll(task);
-
+                        await Task.Delay(1000).ConfigureAwait(false);
                         _libraryMonitor.Start();
                     }
                 });
@@ -304,20 +299,18 @@ namespace Jellyfin.Api.Controllers
             }
             finally
             {
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
                     // No need to start if scanning the library because it will handle it
                     if (refreshLibrary)
                     {
-                        _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None);
+                        await _libraryManager.ValidateMediaLibrary(new SimpleProgress<double>(), CancellationToken.None).ConfigureAwait(false);
                     }
                     else
                     {
                         // Need to add a delay here or directory watchers may still pick up the changes
-                        var task = Task.Delay(1000);
                         // Have to block here to allow exceptions to bubble
-                        Task.WaitAll(task);
-
+                        await Task.Delay(1000).ConfigureAwait(false);
                         _libraryMonitor.Start();
                     }
                 });

@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Devices;

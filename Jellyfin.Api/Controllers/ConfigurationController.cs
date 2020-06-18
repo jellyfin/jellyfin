@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
