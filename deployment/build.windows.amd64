@@ -15,7 +15,11 @@ FFMPEG_URL="https://ffmpeg.zeranoe.com/builds/win64/static/${FFMPEG_VERSION}.zip
 pushd ${SOURCE_DIR}
 
 # Get version
-version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
+if [[ ${IS_UNSTABLE} == 'yes' ]]; then
+    version="${BUILD_ID}"
+else
+    version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
+fi
 
 output_dir="dist/jellyfin-server_${version}"
 
