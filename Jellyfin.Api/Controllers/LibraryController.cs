@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
@@ -690,23 +691,7 @@ namespace Jellyfin.Api.Controllers
                 : _libraryManager.GetItemById(itemId);
 
             var program = item as IHasProgramAttributes;
-            if (item is MediaBrowser.Controller.Entities.Movies.Movie || (program != null && program.IsMovie) || item is Trailer)
-            {
-                /*
-                 * // TODO
-                return new MoviesService(
-                    _moviesServiceLogger,
-                    ServerConfigurationManager,
-                    ResultFactory,
-                    _userManager,
-                    _libraryManager,
-                    _dtoService,
-                    _authContext)
-                {
-                    Request = Request,
-                }.GetSimilarItemsResult(request);*/
-            }
-
+            var isMovie = item is MediaBrowser.Controller.Entities.Movies.Movie || (program != null && program.IsMovie) || item is Trailer;
             if (program != null && program.IsSeries)
             {
                 return GetSimilarItemsResult(
@@ -715,7 +700,8 @@ namespace Jellyfin.Api.Controllers
                     userId,
                     limit,
                     fields,
-                    new[] { nameof(Series) });
+                    new[] { nameof(Series) },
+                    false);
             }
 
             if (item is MediaBrowser.Controller.Entities.TV.Episode || (item is IItemByName && !(item is MusicArtist)))
@@ -729,7 +715,8 @@ namespace Jellyfin.Api.Controllers
                 userId,
                 limit,
                 fields,
-                new[] { item.GetType().Name });
+                new[] { item.GetType().Name },
+                isMovie);
         }
 
         /// <summary>
@@ -885,7 +872,8 @@ namespace Jellyfin.Api.Controllers
             Guid userId,
             int? limit,
             string fields,
-            string[] includeItemTypes)
+            string[] includeItemTypes,
+            bool isMovie)
         {
             var user = !userId.Equals(Guid.Empty) ? _userManager.GetUserById(userId) : null;
             var dtoOptions = new DtoOptions()
@@ -896,9 +884,11 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 IncludeItemTypes = includeItemTypes,
+                IsMovie = isMovie,
                 SimilarTo = item,
                 DtoOptions = dtoOptions,
-                EnableTotalRecordCount = false
+                EnableTotalRecordCount = !isMovie,
+                EnableGroupByMetadataKey = isMovie
             };
 
             // ExcludeArtistIds
@@ -909,7 +899,19 @@ namespace Jellyfin.Api.Controllers
 
             List<BaseItem> itemsResult;
 
-            if (item is MusicArtist)
+            if (isMovie)
+            {
+                var itemTypes = new List<string> { nameof(MediaBrowser.Controller.Entities.Movies.Movie) };
+                if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
+                {
+                    itemTypes.Add(nameof(Trailer));
+                    itemTypes.Add(nameof(LiveTvProgram));
+                }
+
+                query.IncludeItemTypes = itemTypes.ToArray();
+                itemsResult = _libraryManager.GetArtists(query).Items.Select(i => i.Item1).ToList();
+            }
+            else if (item is MusicArtist)
             {
                 query.IncludeItemTypes = Array.Empty<string>();
 
