@@ -79,7 +79,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -116,7 +116,7 @@ namespace Jellyfin.Data.Entities
             {
                 double value = _Value;
                 GetValue(ref value);
-                return (_Value = value);
+                return _Value = value;
             }
 
             set
@@ -149,7 +149,7 @@ namespace Jellyfin.Data.Entities
             {
                 int? value = _Votes;
                 GetVotes(ref value);
-                return (_Votes = value);
+                return _Votes = value;
             }
 
             set

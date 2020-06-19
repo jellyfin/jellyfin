@@ -88,7 +88,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Barcode;
                 GetBarcode(ref value);
-                return (_Barcode = value);
+                return _Barcode = value;
             }
 
             set
@@ -126,7 +126,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _LabelNumber;
                 GetLabelNumber(ref value);
-                return (_LabelNumber = value);
+                return _LabelNumber = value;
             }
 
             set
@@ -164,7 +164,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Country;
                 GetCountry(ref value);
-                return (_Country = value);
+                return _Country = value;
             }
 
             set

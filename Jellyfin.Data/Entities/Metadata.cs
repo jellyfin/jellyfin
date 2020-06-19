@@ -74,7 +74,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -114,7 +114,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Title;
                 GetTitle(ref value);
-                return (_Title = value);
+                return _Title = value;
             }
 
             set
@@ -152,7 +152,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _OriginalTitle;
                 GetOriginalTitle(ref value);
-                return (_OriginalTitle = value);
+                return _OriginalTitle = value;
             }
 
             set
@@ -190,7 +190,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _SortTitle;
                 GetSortTitle(ref value);
-                return (_SortTitle = value);
+                return _SortTitle = value;
             }
 
             set
@@ -231,7 +231,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Language;
                 GetLanguage(ref value);
-                return (_Language = value);
+                return _Language = value;
             }
 
             set
@@ -264,7 +264,7 @@ namespace Jellyfin.Data.Entities
             {
                 DateTimeOffset? value = _ReleaseDate;
                 GetReleaseDate(ref value);
-                return (_ReleaseDate = value);
+                return _ReleaseDate = value;
             }
 
             set
@@ -301,7 +301,7 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateAdded;
                 GetDateAdded(ref value);
-                return (_DateAdded = value);
+                return _DateAdded = value;
             }
 
             internal set
@@ -338,7 +338,7 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateModified;
                 GetDateModified(ref value);
-                return (_DateModified = value);
+                return _DateModified = value;
             }
 
             internal set

@@ -84,7 +84,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -122,7 +122,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
 
             set
@@ -163,7 +163,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Language;
                 GetLanguage(ref value);
-                return (_Language = value);
+                return _Language = value;
             }
 
             set
@@ -200,7 +200,7 @@ namespace Jellyfin.Data.Entities
             {
                 long value = _TimeStart;
                 GetTimeStart(ref value);
-                return (_TimeStart = value);
+                return _TimeStart = value;
             }
 
             set
@@ -233,7 +233,7 @@ namespace Jellyfin.Data.Entities
             {
                 long? value = _TimeEnd;
                 GetTimeEnd(ref value);
-                return (_TimeEnd = value);
+                return _TimeEnd = value;
             }
 
             set

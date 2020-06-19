@@ -84,7 +84,7 @@ namespace Jellyfin.Data.Entities
             {
                 int? value = _SeasonNumber;
                 GetSeasonNumber(ref value);
-                return (_SeasonNumber = value);
+                return _SeasonNumber = value;
             }
 
             set

@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Library
 
         public LibraryOptions GetLibraryOptions()
         {
-            return LibraryOptions ?? (LibraryOptions = (Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent)));
+            return LibraryOptions ?? (LibraryOptions = Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent));
         }
 
         /// <summary>

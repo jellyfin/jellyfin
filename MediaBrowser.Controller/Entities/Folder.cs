@@ -480,7 +480,7 @@ namespace MediaBrowser.Controller.Entities
                 innerProgress.RegisterAction(p =>
                 {
                     double innerPercent = currentInnerPercent;
-                    innerPercent += p / (count);
+                    innerPercent += p / count;
                     progress.Report(innerPercent);
                 });
 
@@ -556,7 +556,7 @@ namespace MediaBrowser.Controller.Entities
                 innerProgress.RegisterAction(p =>
                 {
                     double innerPercent = currentInnerPercent;
-                    innerPercent += p / (count);
+                    innerPercent += p / count;
                     progress.Report(innerPercent);
                 });
 

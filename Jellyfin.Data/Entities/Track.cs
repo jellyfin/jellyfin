@@ -84,7 +84,7 @@ namespace Jellyfin.Data.Entities
             {
                 int? value = _TrackNumber;
                 GetTrackNumber(ref value);
-                return (_TrackNumber = value);
+                return _TrackNumber = value;
             }
 
             set

@@ -86,7 +86,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -124,7 +124,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
 
             set
@@ -161,7 +161,7 @@ namespace Jellyfin.Data.Entities
             {
                 double value = _MaximumValue;
                 GetMaximumValue(ref value);
-                return (_MaximumValue = value);
+                return _MaximumValue = value;
             }
 
             set
@@ -198,7 +198,7 @@ namespace Jellyfin.Data.Entities
             {
                 double value = _MinimumValue;
                 GetMinimumValue(ref value);
-                return (_MinimumValue = value);
+                return _MinimumValue = value;
             }
 
             set

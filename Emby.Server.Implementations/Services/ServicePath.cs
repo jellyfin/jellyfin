@@ -302,9 +302,9 @@ namespace Emby.Server.Implementations.Services
             }
 
             // Routes with least wildcard matches get the highest score
-            var score = Math.Max((100 - wildcardMatchCount), 1) * 1000
+            var score = Math.Max(100 - wildcardMatchCount, 1) * 1000
                         // Routes with less variable (and more literal) matches
-                        + Math.Max((10 - VariableArgsCount), 1) * 100;
+                        + Math.Max(10 - VariableArgsCount, 1) * 100;
 
             // Exact verb match is better than ANY
             if (Verbs.Length == 1 && string.Equals(httpMethod, Verbs[0], StringComparison.OrdinalIgnoreCase))

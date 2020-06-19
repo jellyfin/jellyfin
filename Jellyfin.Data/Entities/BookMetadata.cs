@@ -82,7 +82,7 @@ namespace Jellyfin.Data.Entities
             {
                 long? value = _ISBN;
                 GetISBN(ref value);
-                return (_ISBN = value);
+                return _ISBN = value;
             }
 
             set

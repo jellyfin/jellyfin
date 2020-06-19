@@ -79,7 +79,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -116,7 +116,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _StreamNumber;
                 GetStreamNumber(ref value);
-                return (_StreamNumber = value);
+                return _StreamNumber = value;
             }
 
             set

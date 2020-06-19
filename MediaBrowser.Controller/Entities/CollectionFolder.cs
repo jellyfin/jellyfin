@@ -225,7 +225,7 @@ namespace MediaBrowser.Controller.Entities
                 return null;
             }
 
-            return (totalProgresses / foldersWithProgress);
+            return totalProgresses / foldersWithProgress;
         }
 
         protected override bool RefreshLinkedChildren(IEnumerable<FileSystemMetadata> fileSystemChildren)

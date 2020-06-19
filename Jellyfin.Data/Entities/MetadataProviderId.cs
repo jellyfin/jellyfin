@@ -101,7 +101,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -140,7 +140,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _ProviderId;
                 GetProviderId(ref value);
-                return (_ProviderId = value);
+                return _ProviderId = value;
             }
 
             set

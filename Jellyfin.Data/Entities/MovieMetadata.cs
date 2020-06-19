@@ -88,7 +88,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Outline;
                 GetOutline(ref value);
-                return (_Outline = value);
+                return _Outline = value;
             }
 
             set
@@ -126,7 +126,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Plot;
                 GetPlot(ref value);
-                return (_Plot = value);
+                return _Plot = value;
             }
 
             set
@@ -164,7 +164,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Tagline;
                 GetTagline(ref value);
-                return (_Tagline = value);
+                return _Tagline = value;
             }
 
             set
@@ -202,7 +202,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Country;
                 GetCountry(ref value);
-                return (_Country = value);
+                return _Country = value;
             }
 
             set
