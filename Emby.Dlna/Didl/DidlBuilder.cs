@@ -6,14 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using Emby.Dlna.Configuration;
 using Emby.Dlna.ContentDirectory;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
@@ -23,6 +22,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
+using XmlAttribute = MediaBrowser.Model.Dlna.XmlAttribute;
 
 namespace Emby.Dlna.Didl
 {
@@ -421,7 +427,6 @@ namespace Emby.Dlna.Didl
                     case StubType.FavoriteSeries: return _localization.GetLocalizedString("HeaderFavoriteShows");
                     case StubType.FavoriteEpisodes: return _localization.GetLocalizedString("HeaderFavoriteEpisodes");
                     case StubType.Series: return _localization.GetLocalizedString("Shows");
-                    default: break;
                 }
             }
 
@@ -670,7 +675,7 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            MediaBrowser.Model.Dlna.XmlAttribute secAttribute = null;
+            XmlAttribute secAttribute = null;
             foreach (var attribute in _profile.XmlRootAttributes)
             {
                 if (string.Equals(attribute.Name, "xmlns:sec", StringComparison.OrdinalIgnoreCase))
@@ -995,7 +1000,6 @@ namespace Emby.Dlna.Didl
             }
 
             AddImageResElement(item, writer, 160, 160, "jpg", "JPEG_TN");
-
         }
 
         private void AddImageResElement(

@@ -43,12 +43,6 @@ namespace Jellyfin.Data.Entities
             if (string.IsNullOrEmpty(providerdata)) throw new ArgumentNullException(nameof(providerdata));
             this.ProviderData = providerdata;
 
-            if (_user0 == null) throw new ArgumentNullException(nameof(_user0));
-            _user0.ProviderMappings.Add(this);
-
-            if (_group1 == null) throw new ArgumentNullException(nameof(_group1));
-            _group1.ProviderMappings.Add(this);
-
 
             Init();
         }

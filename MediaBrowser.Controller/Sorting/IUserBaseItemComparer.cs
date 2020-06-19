@@ -1,4 +1,3 @@
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Sorting
@@ -12,7 +11,7 @@ namespace MediaBrowser.Controller.Sorting
         /// Gets or sets the user.
         /// </summary>
         /// <value>The user.</value>
-        User User { get; set; }
+        Jellyfin.Data.Entities.User User { get; set; }
 
         /// <summary>
         /// Gets or sets the user manager.

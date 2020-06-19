@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
@@ -111,7 +112,7 @@ namespace MediaBrowser.Controller.Entities
 
         private static string[] UserSpecificViewTypes = new string[]
             {
-                MediaBrowser.Model.Entities.CollectionType.Playlists
+                Model.Entities.CollectionType.Playlists
             };
 
         public static bool IsUserSpecific(Folder folder)
@@ -140,8 +141,8 @@ namespace MediaBrowser.Controller.Entities
 
         private static string[] ViewTypesEligibleForGrouping = new string[]
             {
-                MediaBrowser.Model.Entities.CollectionType.Movies,
-                MediaBrowser.Model.Entities.CollectionType.TvShows,
+                Model.Entities.CollectionType.Movies,
+                Model.Entities.CollectionType.TvShows,
                 string.Empty
             };
 
@@ -152,12 +153,12 @@ namespace MediaBrowser.Controller.Entities
 
         private static string[] OriginalFolderViewTypes = new string[]
             {
-                MediaBrowser.Model.Entities.CollectionType.Books,
-                MediaBrowser.Model.Entities.CollectionType.MusicVideos,
-                MediaBrowser.Model.Entities.CollectionType.HomeVideos,
-                MediaBrowser.Model.Entities.CollectionType.Photos,
-                MediaBrowser.Model.Entities.CollectionType.Music,
-                MediaBrowser.Model.Entities.CollectionType.BoxSets
+                Model.Entities.CollectionType.Books,
+                Model.Entities.CollectionType.MusicVideos,
+                Model.Entities.CollectionType.HomeVideos,
+                Model.Entities.CollectionType.Photos,
+                Model.Entities.CollectionType.Music,
+                Model.Entities.CollectionType.BoxSets
             };
 
         public static bool EnableOriginalFolder(string viewType)
