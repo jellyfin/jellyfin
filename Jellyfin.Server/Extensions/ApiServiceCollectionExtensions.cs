@@ -215,6 +215,19 @@ namespace Jellyfin.Server.Extensions
                             Format = "string"
                         })
                 });
+
+            options.MapType<Dictionary<ImageType, Dictionary<string, string>>>(() =>
+                new OpenApiSchema
+                {
+                    Type = "object",
+                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
+                        name => name,
+                        name => new OpenApiSchema
+                        {
+                            Type = "string",
+                            Format = "string"
+                        })
+                });
         }
     }
 }
