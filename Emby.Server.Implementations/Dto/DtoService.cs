@@ -6,14 +6,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -24,6 +24,14 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Person = MediaBrowser.Controller.Entities.Person;
+using Photo = MediaBrowser.Controller.Entities.Photo;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.Dto
 {
@@ -384,7 +392,7 @@ namespace Emby.Server.Implementations.Dto
 
                     if (options.ContainsField(ItemFields.ChildCount))
                     {
-                        dto.ChildCount = dto.ChildCount ?? GetChildCount(folder, user);
+                        dto.ChildCount ??= GetChildCount(folder, user);
                     }
                 }
 
@@ -414,7 +422,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (options.ContainsField(ItemFields.BasicSyncInfo))
             {
-                var userCanSync = user != null && user.Policy.EnableContentDownloading;
+                var userCanSync = user != null && user.HasPermission(PermissionKind.EnableContentDownloading);
                 if (userCanSync && item.SupportsExternalTransfer)
                 {
                     dto.SupportsSync = true;

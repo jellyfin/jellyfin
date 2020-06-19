@@ -1,5 +1,3 @@
-#nullable enable
-
 using MediaBrowser.Model.Notifications;
 
 namespace Jellyfin.Api.Models.NotificationDtos

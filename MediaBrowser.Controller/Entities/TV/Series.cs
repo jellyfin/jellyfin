@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Users;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -119,7 +120,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] { typeof(Season).Name },
+                IncludeItemTypes = new[] { nameof(Season) },
                 IsVirtualItem = false,
                 Limit = 0,
                 DtoOptions = new DtoOptions(false)
@@ -205,14 +206,9 @@ namespace MediaBrowser.Controller.Entities.TV
             query.IncludeItemTypes = new[] { typeof(Season).Name };
             query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
 
-            if (user != null)
+            if (user != null && !user.DisplayMissingEpisodes)
             {
-                var config = user.Configuration;
-
-                if (!config.DisplayMissingEpisodes)
-                {
-                    query.IsMissing = false;
-                }
+                query.IsMissing = false;
             }
         }
 
@@ -257,8 +253,8 @@ namespace MediaBrowser.Controller.Entities.TV
                 OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
                 DtoOptions = options
             };
-            var config = user.Configuration;
-            if (!config.DisplayMissingEpisodes)
+
+            if (!user.DisplayMissingEpisodes)
             {
                 query.IsMissing = false;
             }
@@ -311,7 +307,7 @@ namespace MediaBrowser.Controller.Entities.TV
             // Refresh episodes and other children
             foreach (var item in items)
             {
-                if ((item is Season))
+                if (item is Season)
                 {
                     continue;
                 }
@@ -370,8 +366,7 @@ namespace MediaBrowser.Controller.Entities.TV
             };
             if (user != null)
             {
-                var config = user.Configuration;
-                if (!config.DisplayMissingEpisodes)
+                if (!user.DisplayMissingEpisodes)
                 {
                     query.IsMissing = false;
                 }
@@ -452,9 +447,9 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        protected override bool GetBlockUnratedValue(User user)
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Series);
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Series.ToString());
         }
 
         public override UnratedItem GetBlockUnratedType()

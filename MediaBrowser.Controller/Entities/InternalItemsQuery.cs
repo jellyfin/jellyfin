@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities
@@ -223,15 +224,16 @@ namespace MediaBrowser.Controller.Entities
         {
             if (user != null)
             {
-                var policy = user.Policy;
-                MaxParentalRating = policy.MaxParentalRating;
+                MaxParentalRating = user.MaxParentalAgeRating;
 
-                if (policy.MaxParentalRating.HasValue)
+                if (MaxParentalRating.HasValue)
                 {
-                    BlockUnratedItems = policy.BlockUnratedItems.Where(i => i != UnratedItem.Other).ToArray();
+                    BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
+                        .Where(i => i != UnratedItem.Other.ToString())
+                        .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
                 }
 
-                ExcludeInheritedTags = policy.BlockedTags;
+                ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
 
                 User = user;
             }

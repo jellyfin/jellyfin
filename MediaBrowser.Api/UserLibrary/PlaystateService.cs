@@ -1,8 +1,8 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
