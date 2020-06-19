@@ -66,11 +66,11 @@ jobs:
 
   strategy:
     matrix:
-      Docker.amd64:
+      amd64:
         BuildConfiguration: amd64
-      Docker.arm64:
+      arm64:
         BuildConfiguration: arm64
-      Docker.armhf:
+      armhf:
         BuildConfiguration: armhf
 
   pool:
