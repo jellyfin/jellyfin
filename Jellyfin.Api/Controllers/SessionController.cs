@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -27,7 +28,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IDeviceManager _deviceManager;
-        private readonly ISessionContext _sessionContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionController"/> class.
@@ -36,19 +36,16 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userManager">Instance of <see cref="IUserManager"/> interface.</param>
         /// <param name="authContext">Instance of <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
-        /// <param name="sessionContext">Instance of <see cref="ISessionContext"/> interface.</param>
         public SessionController(
             ISessionManager sessionManager,
             IUserManager userManager,
             IAuthorizationContext authContext,
-            IDeviceManager deviceManager,
-            ISessionContext sessionContext)
+            IDeviceManager deviceManager)
         {
             _sessionManager = sessionManager;
             _userManager = userManager;
             _authContext = authContext;
             _deviceManager = deviceManager;
-            _sessionContext = sessionContext;
         }
 
         /// <summary>
@@ -80,12 +77,12 @@ namespace Jellyfin.Api.Controllers
 
                 var user = _userManager.GetUserById(controllableByUserId);
 
-                if (!user.Policy.EnableRemoteControlOfOtherUsers)
+                if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
                 {
                     result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(controllableByUserId));
                 }
 
-                if (!user.Policy.EnableSharedDeviceControl)
+                if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
                 {
                     result = result.Where(i => !i.UserId.Equals(Guid.Empty));
                 }
@@ -138,7 +135,7 @@ namespace Jellyfin.Api.Controllers
             };
 
             _sessionManager.SendBrowseCommand(
-                RequestHelpers.GetSession(_sessionContext).Id,
+                RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
                 id,
                 command,
                 CancellationToken.None);
@@ -175,7 +172,7 @@ namespace Jellyfin.Api.Controllers
             playRequest.PlayCommand = playCommand;
 
             _sessionManager.SendPlayCommand(
-                RequestHelpers.GetSession(_sessionContext).Id,
+                RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
                 id,
                 playRequest,
                 CancellationToken.None);
@@ -197,7 +194,7 @@ namespace Jellyfin.Api.Controllers
             [FromBody] PlaystateRequest playstateRequest)
         {
             _sessionManager.SendPlaystateCommand(
-                RequestHelpers.GetSession(_sessionContext).Id,
+                RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
                 id,
                 playstateRequest,
                 CancellationToken.None);
@@ -224,7 +221,7 @@ namespace Jellyfin.Api.Controllers
                 name = commandType.ToString();
             }
 
-            var currentSession = RequestHelpers.GetSession(_sessionContext);
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
             var generalCommand = new GeneralCommand
             {
                 Name = name,
@@ -249,7 +246,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] string id,
             [FromRoute] string command)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionContext);
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
 
             var generalCommand = new GeneralCommand
             {
@@ -275,7 +272,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] string id,
             [FromBody, Required] GeneralCommand command)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionContext);
+            var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
 
             if (command == null)
             {
@@ -317,7 +314,7 @@ namespace Jellyfin.Api.Controllers
                 Text = text
             };
 
-            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionContext).Id, id, command, CancellationToken.None);
+            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, id, command, CancellationToken.None);
 
             return NoContent();
         }
@@ -379,7 +376,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                id = RequestHelpers.GetSession(_sessionContext).Id;
+                id = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
             }
 
             _sessionManager.ReportCapabilities(id, new ClientCapabilities
@@ -408,7 +405,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                id = RequestHelpers.GetSession(_sessionContext).Id;
+                id = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
             }
 
             _sessionManager.ReportCapabilities(id, capabilities);
@@ -429,7 +426,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string sessionId,
             [FromQuery] string itemId)
         {
-            string session = RequestHelpers.GetSession(_sessionContext).Id;
+            string session = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
 
             _sessionManager.ReportNowViewingItem(session, itemId);
             return NoContent();
@@ -444,7 +441,6 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult ReportSessionEnded()
         {
-            // TODO: how do we get AuthorizationInfo without an IRequest?
             AuthorizationInfo auth = _authContext.GetAuthorizationInfo(Request);
 
             _sessionManager.Logout(auth.Token);
