@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Networking
     /// </summary>
     public class NetworkManager : INetworkManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<NetworkManager> _logger;
         private readonly object _localIpAddressSyncLock = new object();
         private readonly object _subnetLookupLock = new object();
         private readonly Dictionary<string, List<string>> _subnetLookup = new Dictionary<string, List<string>>(StringComparer.Ordinal);
