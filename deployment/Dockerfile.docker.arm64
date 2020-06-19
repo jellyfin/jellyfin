@@ -4,6 +4,8 @@ ARG ARTIFACT_DIR=/jellyfin
 
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster as builder
 
+RUN mkdir ${SOURCE_DIR}
+
 WORKDIR ${SOURCE_DIR}
 COPY . .
 
