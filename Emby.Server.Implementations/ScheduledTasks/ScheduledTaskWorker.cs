@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -20,29 +22,37 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
-        /// <summary>
-        /// The _last execution result sync lock.
-        /// </summary>
-        private readonly object _lastExecutionResultSyncLock = new object();
-
-        private bool _readFromFile = false;
+        public event EventHandler<GenericEventArgs<double>> TaskProgress;
 
         /// <summary>
-        /// The last execution result.
+        /// Gets the scheduled task.
         /// </summary>
-        private TaskResult _lastExecutionResult;
-
-        private Task _currentTask;
-
-        /// <summary>
-        /// The _id.
-        /// </summary>
-        private string _id;
+        /// <value>The scheduled task.</value>
+        public IScheduledTask ScheduledTask { get; private set; }
 
         /// <summary>
-        /// The _triggers.
+        /// Gets or sets the json serializer.
         /// </summary>
-        private Tuple<TaskTriggerInfo, ITaskTrigger>[] _triggers;
+        /// <value>The json serializer.</value>
+        private IJsonSerializer JsonSerializer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the application paths.
+        /// </summary>
+        /// <value>The application paths.</value>
+        private IApplicationPaths ApplicationPaths { get; set; }
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        private ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Gets the task manager.
+        /// </summary>
+        /// <value>The task manager.</value>
+        private ITaskManager TaskManager { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
@@ -61,28 +71,53 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// or
         /// jsonSerializer
         /// or
-        /// logger.
+        /// logger
         /// </exception>
         public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
         {
-            ScheduledTask = scheduledTask ?? throw new ArgumentNullException(nameof(scheduledTask));
-            ApplicationPaths = applicationPaths ?? throw new ArgumentNullException(nameof(applicationPaths));
-            TaskManager = taskManager ?? throw new ArgumentNullException(nameof(taskManager));
-            JsonSerializer = jsonSerializer ?? throw new ArgumentNullException(nameof(jsonSerializer));
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            if (scheduledTask == null)
+            {
+                throw new ArgumentNullException(nameof(scheduledTask));
+            }
+
+            if (applicationPaths == null)
+            {
+                throw new ArgumentNullException(nameof(applicationPaths));
+            }
+
+            if (taskManager == null)
+            {
+                throw new ArgumentNullException(nameof(taskManager));
+            }
+
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException(nameof(jsonSerializer));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            ScheduledTask = scheduledTask;
+            ApplicationPaths = applicationPaths;
+            TaskManager = taskManager;
+            JsonSerializer = jsonSerializer;
+            Logger = logger;
 
             InitTriggerEvents();
         }
 
-        /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<double>> TaskProgress;
-
+        private bool _readFromFile = false;
         /// <summary>
-        /// Gets the scheduled task.
+        /// The _last execution result.
         /// </summary>
-        /// <value>The scheduled task.</value>
-        public IScheduledTask ScheduledTask { get; private set; }
-
+        private TaskResult _lastExecutionResult;
+        /// <summary>
+        /// The _last execution result sync lock.
+        /// </summary>
+        private readonly object _lastExecutionResultSyncLock = new object();
         /// <summary>
         /// Gets the last execution result.
         /// </summary>
@@ -149,6 +184,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public string Category => ScheduledTask.Category;
 
         /// <summary>
+        /// Gets the current cancellation token.
+        /// </summary>
+        /// <value>The current cancellation token source.</value>
+        private CancellationTokenSource CurrentCancellationTokenSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current execution start time.
+        /// </summary>
+        /// <value>The current execution start time.</value>
+        private DateTime CurrentExecutionStartTime { get; set; }
+
+        /// <summary>
         /// Gets the state.
         /// </summary>
         /// <value>The state.</value>
@@ -168,97 +215,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Gets or sets the triggers that define when the task will run.
-        /// </summary>
-        /// <value>The triggers.</value>
-        /// <exception cref="ArgumentNullException">value.</exception>
-#pragma warning disable CA1819 // Properties should not return arrays
-        public TaskTriggerInfo[] Triggers
-#pragma warning restore CA1819 // Properties should not return arrays
-        {
-            get
-            {
-                var triggers = InternalTriggers;
-                return triggers.Select(i => i.Item1).ToArray();
-            }
-
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
-                var triggerList = value.Where(i => i != null).ToArray();
-
-                SaveTriggers(triggerList);
-
-                InternalTriggers = triggerList.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
-            }
-        }
-
-        /// <summary>
         /// Gets the current progress.
         /// </summary>
         /// <value>The current progress.</value>
         public double? CurrentProgress { get; private set; }
 
         /// <summary>
-        /// Gets the unique id.
+        /// The _triggers.
         /// </summary>
-        /// <value>The unique id.</value>
-        public string Id
-        {
-            get
-            {
-                if (_id == null)
-                {
-                    _id = ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                }
-
-                return _id;
-            }
-        }
+        private Tuple<TaskTriggerInfo, ITaskTrigger>[] _triggers;
 
         /// <summary>
-        /// Gets or sets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
-        private IJsonSerializer JsonSerializer { get; set; }
-
-        /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        private IApplicationPaths ApplicationPaths { get; set; }
-
-        /// <summary>
-        /// Gets or sets the logger.
-        /// </summary>
-        /// <value>The logger.</value>
-        private ILogger Logger { get; set; }
-
-        /// <summary>
-        /// Gets or sets the task manager.
-        /// </summary>
-        /// <value>The task manager.</value>
-        private ITaskManager TaskManager { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current cancellation token.
-        /// </summary>
-        /// <value>The current cancellation token source.</value>
-        private CancellationTokenSource CurrentCancellationTokenSource { get; set; }
-
-        /// <summary>
-        /// Gets or sets the current execution start time.
-        /// </summary>
-        /// <value>The current execution start time.</value>
-        private DateTime CurrentExecutionStartTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the triggers that define when the task will run.
+        /// Gets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
         private Tuple<TaskTriggerInfo, ITaskTrigger>[] InternalTriggers
@@ -283,44 +251,121 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the triggers that define when the task will run.
+        /// </summary>
+        /// <value>The triggers.</value>
+        /// <exception cref="ArgumentNullException">value</exception>
+        public TaskTriggerInfo[] Triggers
+        {
+            get
+            {
+                var triggers = InternalTriggers;
+                return triggers.Select(i => i.Item1).ToArray();
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
+                var triggerList = value.Where(i => i != null).ToArray();
+
+                SaveTriggers(triggerList);
+
+                InternalTriggers = triggerList.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
+            }
+        }
+
+        /// <summary>
+        /// The _id.
+        /// </summary>
+        private string _id;
+
+        /// <summary>
+        /// Gets the unique id.
+        /// </summary>
+        /// <value>The unique id.</value>
+        public string Id
+        {
+            get
+            {
+                if (_id == null)
+                {
+                    _id = ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                }
+
+                return _id;
+            }
+        }
+
+        private void InitTriggerEvents()
+        {
+            _triggers = LoadTriggers();
+            ReloadTriggerEvents(true);
+        }
+
         public void ReloadTriggerEvents()
         {
             ReloadTriggerEvents(false);
         }
 
         /// <summary>
-        /// Stops the task if it is currently executing.
+        /// Reloads the trigger events.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
-        public void Cancel()
+        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
+        private void ReloadTriggerEvents(bool isApplicationStartup)
         {
-            if (State != TaskState.Running)
+            foreach (var triggerInfo in InternalTriggers)
             {
-                throw new InvalidOperationException("Cannot cancel a Task unless it is in the Running state.");
-            }
+                var trigger = triggerInfo.Item2;
 
-            CancelIfRunning();
+                trigger.Stop();
+
+                trigger.Triggered -= trigger_Triggered;
+                trigger.Triggered += trigger_Triggered;
+                trigger.Start(LastExecutionResult, Logger, Name, isApplicationStartup);
+            }
         }
 
         /// <summary>
-        /// Cancels if running.
+        /// Handles the Triggered event of the trigger control.
         /// </summary>
-        public void CancelIfRunning()
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        async void trigger_Triggered(object sender, EventArgs e)
         {
-            if (State == TaskState.Running)
+            var trigger = (ITaskTrigger)sender;
+
+            var configurableTask = ScheduledTask as IConfigurableScheduledTask;
+
+            if (configurableTask != null && !configurableTask.IsEnabled)
             {
-                Logger.LogInformation("Attempting to cancel Scheduled Task {0}", Name);
-                CurrentCancellationTokenSource.Cancel();
+                return;
             }
+
+            Logger.LogInformation("{0} fired for task: {1}", trigger.GetType().Name, Name);
+
+            trigger.Stop();
+
+            TaskManager.QueueScheduledTask(ScheduledTask, trigger.TaskOptions);
+
+            await Task.Delay(1000).ConfigureAwait(false);
+
+            trigger.Start(LastExecutionResult, Logger, Name, false);
         }
+
+        private Task _currentTask;
 
         /// <summary>
         /// Executes the task.
         /// </summary>
         /// <param name="options">Task options.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running.</exception>
+        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running</exception>
         public async Task Execute(TaskOptions options)
         {
             var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));
@@ -336,134 +381,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 _currentTask = null;
                 GC.Collect();
             }
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                DisposeTriggers();
-
-                var wassRunning = State == TaskState.Running;
-                var startTime = CurrentExecutionStartTime;
-
-                var token = CurrentCancellationTokenSource;
-                if (token != null)
-                {
-                    try
-                    {
-                        Logger.LogInformation(Name + ": Cancelling");
-                        token.Cancel();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error calling CancellationToken.Cancel();");
-                    }
-                }
-
-                var task = _currentTask;
-                if (task != null)
-                {
-                    try
-                    {
-                        Logger.LogInformation(Name + ": Waiting on Task");
-                        var exited = Task.WaitAll(new[] { task }, 2000);
-
-                        if (exited)
-                        {
-                            Logger.LogInformation(Name + ": Task exited");
-                        }
-                        else
-                        {
-                            Logger.LogInformation(Name + ": Timed out waiting for task to stop");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error calling Task.WaitAll();");
-                    }
-                }
-
-                if (token != null)
-                {
-                    try
-                    {
-                        Logger.LogDebug(Name + ": Disposing CancellationToken");
-                        token.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Error calling CancellationToken.Dispose();");
-                    }
-                }
-
-                if (wassRunning)
-                {
-                    OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
-                }
-            }
-        }
-
-        private void InitTriggerEvents()
-        {
-            _triggers = LoadTriggers();
-            ReloadTriggerEvents(true);
-        }
-
-        /// <summary>
-        /// Reloads the trigger events.
-        /// </summary>
-        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        private void ReloadTriggerEvents(bool isApplicationStartup)
-        {
-            foreach (var triggerInfo in InternalTriggers)
-            {
-                var trigger = triggerInfo.Item2;
-
-                trigger.Stop();
-
-                trigger.Triggered -= Trigger_Triggered;
-                trigger.Triggered += Trigger_Triggered;
-                trigger.Start(LastExecutionResult, Logger, Name, isApplicationStartup);
-            }
-        }
-
-        /// <summary>
-        /// Handles the Triggered event of the trigger control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private async void Trigger_Triggered(object sender, EventArgs e)
-        {
-            var trigger = (ITaskTrigger)sender;
-
-            if (ScheduledTask is IConfigurableScheduledTask configurableTask && !configurableTask.IsEnabled)
-            {
-                return;
-            }
-
-            Logger.LogInformation("{0} fired for task: {1}", trigger.GetType().Name, Name);
-
-            trigger.Stop();
-
-            TaskManager.QueueScheduledTask(ScheduledTask, trigger.TaskOptions);
-
-            await Task.Delay(1000).ConfigureAwait(false);
-
-            trigger.Start(LastExecutionResult, Logger, Name, false);
         }
 
         private async Task ExecuteInternal(TaskOptions options)
@@ -536,6 +453,32 @@ namespace Emby.Server.Implementations.ScheduledTasks
             CurrentProgress = e;
 
             TaskProgress?.Invoke(this, new GenericEventArgs<double>(e));
+        }
+
+        /// <summary>
+        /// Stops the task if it is currently executing.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
+        public void Cancel()
+        {
+            if (State != TaskState.Running)
+            {
+                throw new InvalidOperationException("Cannot cancel a Task unless it is in the Running state.");
+            }
+
+            CancelIfRunning();
+        }
+
+        /// <summary>
+        /// Cancels if running.
+        /// </summary>
+        public void CancelIfRunning()
+        {
+            if (State == TaskState.Running)
+            {
+                Logger.LogInformation("Attempting to cancel Scheduled Task {0}", Name);
+                CurrentCancellationTokenSource.Cancel();
+            }
         }
 
         /// <summary>
@@ -667,11 +610,90 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                DisposeTriggers();
+
+                var wassRunning = State == TaskState.Running;
+                var startTime = CurrentExecutionStartTime;
+
+                var token = CurrentCancellationTokenSource;
+                if (token != null)
+                {
+                    try
+                    {
+                        Logger.LogInformation(Name + ": Cancelling");
+                        token.Cancel();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error calling CancellationToken.Cancel();");
+                    }
+                }
+
+                var task = _currentTask;
+                if (task != null)
+                {
+                    try
+                    {
+                        Logger.LogInformation(Name + ": Waiting on Task");
+                        var exited = Task.WaitAll(new[] { task }, 2000);
+
+                        if (exited)
+                        {
+                            Logger.LogInformation(Name + ": Task exited");
+                        }
+                        else
+                        {
+                            Logger.LogInformation(Name + ": Timed out waiting for task to stop");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error calling Task.WaitAll();");
+                    }
+                }
+
+                if (token != null)
+                {
+                    try
+                    {
+                        Logger.LogDebug(Name + ": Disposing CancellationToken");
+                        token.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error calling CancellationToken.Dispose();");
+                    }
+                }
+
+                if (wassRunning)
+                {
+                    OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
+                }
+            }
+        }
+
+        /// <summary>
         /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>BaseTaskTrigger.</returns>
-        /// <exception cref="ArgumentException">Invalid trigger type:  + info.Type.</exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException">Invalid trigger type:  + info.Type</exception>
         private ITaskTrigger GetTrigger(TaskTriggerInfo info)
         {
             var options = new TaskOptions
@@ -743,7 +765,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             foreach (var triggerInfo in InternalTriggers)
             {
                 var trigger = triggerInfo.Item2;
-                trigger.Triggered -= Trigger_Triggered;
+                trigger.Triggered -= trigger_Triggered;
                 trigger.Stop();
             }
         }
