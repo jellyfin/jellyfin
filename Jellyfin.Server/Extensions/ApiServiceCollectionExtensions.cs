@@ -6,6 +6,7 @@ using System.Reflection;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
+using Jellyfin.Api.Auth.DownloadPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.IgnoreSchedulePolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
@@ -39,6 +40,7 @@ namespace Jellyfin.Server.Extensions
         public static IServiceCollection AddJellyfinApiAuthorization(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, DownloadHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreScheduleHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
@@ -51,6 +53,13 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new DefaultAuthorizationRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.Download,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new DownloadRequirement());
                     });
                 options.AddPolicy(
                     Policies.FirstTimeSetupOrElevated,

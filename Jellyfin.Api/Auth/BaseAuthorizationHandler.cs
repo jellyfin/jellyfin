@@ -44,11 +44,13 @@ namespace Jellyfin.Api.Auth
         /// <param name="claimsPrincipal">Request claims.</param>
         /// <param name="ignoreSchedule">Whether to ignore parental control.</param>
         /// <param name="localAccessOnly">Whether access is to be allowed locally only.</param>
+        /// <param name="requiredDownloadPermission">Whether validation requires download permission.</param>
         /// <returns>Validated claim status.</returns>
         protected bool ValidateClaims(
             ClaimsPrincipal claimsPrincipal,
             bool ignoreSchedule = false,
-            bool localAccessOnly = false)
+            bool localAccessOnly = false,
+            bool requiredDownloadPermission = false)
         {
             // Ensure claim has userId.
             var userId = ClaimHelpers.GetUserId(claimsPrincipal);
@@ -87,6 +89,13 @@ namespace Jellyfin.Api.Auth
             if (!ignoreSchedule
                 && !user.HasPermission(PermissionKind.IsAdministrator)
                 && !user.IsParentalScheduleAllowed())
+            {
+                return false;
+            }
+
+            // User attempting to download without permission.
+            if (requiredDownloadPermission
+                && !user.HasPermission(PermissionKind.EnableContentDownloading))
             {
                 return false;
             }

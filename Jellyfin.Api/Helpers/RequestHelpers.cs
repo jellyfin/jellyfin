@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Jellyfin.Api.Helpers
 {
@@ -24,6 +25,23 @@ namespace Jellyfin.Api.Helpers
             return removeEmpty
                 ? value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
                 : value.Split(separator);
+        }
+
+        /// <summary>
+        /// Splits a comma delimited string and parses Guids.
+        /// </summary>
+        /// <param name="value">Input value.</param>
+        /// <returns>Parsed Guids.</returns>
+        public static Guid[] GetGuids(string value)
+        {
+            if (value == null)
+            {
+                return Array.Empty<Guid>();
+            }
+
+            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(i => new Guid(i))
+                .ToArray();
         }
     }
 }
