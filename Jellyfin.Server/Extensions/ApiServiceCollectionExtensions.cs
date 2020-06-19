@@ -216,6 +216,9 @@ namespace Jellyfin.Server.Extensions
                         })
                 });
 
+            /*
+             * Support BlurHash dictionary
+             */
             options.MapType<Dictionary<ImageType, Dictionary<string, string>>>(() =>
                 new OpenApiSchema
                 {
@@ -224,8 +227,17 @@ namespace Jellyfin.Server.Extensions
                         name => name,
                         name => new OpenApiSchema
                         {
-                            Type = "string",
-                            Format = "string"
+                            Type = "object", Properties = new Dictionary<string, OpenApiSchema>
+                            {
+                                {
+                                    "string",
+                                    new OpenApiSchema
+                                    {
+                                        Type = "string",
+                                        Format = "string"
+                                    }
+                                }
+                            }
                         })
                 });
         }
