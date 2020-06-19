@@ -11,21 +11,16 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.SyncPlay
 {
-    [Route("/SyncPlay/{SessionId}/NewGroup", "POST", Summary = "Create a new SyncPlay group")]
+    [Route("/SyncPlay/NewGroup", "POST", Summary = "Create a new SyncPlay group")]
     [Authenticated]
     public class SyncPlayNewGroup : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
     }
 
-    [Route("/SyncPlay/{SessionId}/JoinGroup", "POST", Summary = "Join an existing SyncPlay group")]
+    [Route("/SyncPlay/JoinGroup", "POST", Summary = "Join an existing SyncPlay group")]
     [Authenticated]
     public class SyncPlayJoinGroup : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
-
         /// <summary>
         /// Gets or sets the Group id.
         /// </summary>
@@ -41,63 +36,48 @@ namespace MediaBrowser.Api.SyncPlay
         public string PlayingItemId { get; set; }
     }
 
-    [Route("/SyncPlay/{SessionId}/LeaveGroup", "POST", Summary = "Leave joined SyncPlay group")]
+    [Route("/SyncPlay/LeaveGroup", "POST", Summary = "Leave joined SyncPlay group")]
     [Authenticated]
     public class SyncPlayLeaveGroup : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
     }
 
-    [Route("/SyncPlay/{SessionId}/ListGroups", "POST", Summary = "List SyncPlay groups")]
+    [Route("/SyncPlay/ListGroups", "GET", Summary = "List SyncPlay groups")]
     [Authenticated]
     public class SyncPlayListGroups : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
-
         /// <summary>
         /// Gets or sets the filter item id.
         /// </summary>
         /// <value>The filter item id.</value>
-        [ApiMember(Name = "FilterItemId", Description = "Filter by item id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        [ApiMember(Name = "FilterItemId", Description = "Filter by item id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string FilterItemId { get; set; }
     }
 
-    [Route("/SyncPlay/{SessionId}/PlayRequest", "POST", Summary = "Request play in SyncPlay group")]
+    [Route("/SyncPlay/PlayRequest", "POST", Summary = "Request play in SyncPlay group")]
     [Authenticated]
     public class SyncPlayPlayRequest : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
     }
 
-    [Route("/SyncPlay/{SessionId}/PauseRequest", "POST", Summary = "Request pause in SyncPlay group")]
+    [Route("/SyncPlay/PauseRequest", "POST", Summary = "Request pause in SyncPlay group")]
     [Authenticated]
     public class SyncPlayPauseRequest : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
     }
 
-    [Route("/SyncPlay/{SessionId}/SeekRequest", "POST", Summary = "Request seek in SyncPlay group")]
+    [Route("/SyncPlay/SeekRequest", "POST", Summary = "Request seek in SyncPlay group")]
     [Authenticated]
     public class SyncPlaySeekRequest : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
-
         [ApiMember(Name = "PositionTicks", IsRequired = true, DataType = "long", ParameterType = "query", Verb = "POST")]
         public long PositionTicks { get; set; }
     }
 
-    [Route("/SyncPlay/{SessionId}/BufferingRequest", "POST", Summary = "Request group wait in SyncPlay group while buffering")]
+    [Route("/SyncPlay/BufferingRequest", "POST", Summary = "Request group wait in SyncPlay group while buffering")]
     [Authenticated]
     public class SyncPlayBufferingRequest : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
-
         /// <summary>
         /// Gets or sets the date used to pin PositionTicks in time.
         /// </summary>
@@ -116,13 +96,10 @@ namespace MediaBrowser.Api.SyncPlay
         public bool BufferingDone { get; set; }
     }
 
-    [Route("/SyncPlay/{SessionId}/UpdatePing", "POST", Summary = "Update session ping")]
+    [Route("/SyncPlay/UpdatePing", "POST", Summary = "Update session ping")]
     [Authenticated]
     public class SyncPlayUpdatePing : IReturnVoid
     {
-        [ApiMember(Name = "SessionId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string SessionId { get; set; }
-
         [ApiMember(Name = "Ping", IsRequired = true, DataType = "double", ParameterType = "query", Verb = "POST")]
         public double Ping { get; set; }
     }
