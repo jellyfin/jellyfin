@@ -178,7 +178,7 @@ namespace Emby.Dlna.Main
                     var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
                                                    OperatingSystem.Id == OperatingSystemId.Linux;
 
-                    _communicationsServer = new SsdpCommunicationsServer(_config, _socketFactory, _networkManager, _logger, enableMultiSocketBinding)
+                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
                         IsShared = true
                     };
