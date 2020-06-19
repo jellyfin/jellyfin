@@ -1,6 +1,6 @@
 ARG DOTNET_VERSION=3.1
 
-FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster as builder
+FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster
 
 ARG SOURCE_DIR=/src
 ARG ARTIFACT_DIR=/jellyfin
