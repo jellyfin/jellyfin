@@ -64,6 +64,15 @@ jobs:
 - job: BuildDocker
   displayName: 'Build Docker'
 
+  strategy:
+    matrix:
+      Docker.amd64:
+        BuildConfiguration: amd64
+      Docker.arm64:
+        BuildConfiguration: arm64
+      Docker.armhf:
+        BuildConfiguration: armhf
+
   pool:
     vmImage: 'ubuntu-latest'
 
@@ -75,11 +84,11 @@ jobs:
       repository: 'jellyfin/jellyfin-server'
       command: buildAndPush
       buildContext: '.'
-      Dockerfile: 'deployment/Dockerfile.docker'
+      Dockerfile: 'deployment/Dockerfile.docker.$(BuildConfiguration)'
       containerRegistry: Docker Hub
       tags: |
-        unstable-$(Build.BuildNumber)
-        unstable
+        unstable-$(Build.BuildNumber)-$(BuildConfiguration)
+        unstable-$(BuildConfiguration)
 
   - task: Docker@2
     displayName: 'Push Stable Image'
@@ -88,11 +97,11 @@ jobs:
       repository: 'jellyfin/jellyfin-server'
       command: buildAndPush
       buildContext: '.'
-      Dockerfile: 'deployment/Dockerfile.docker'
+      Dockerfile: 'deployment/Dockerfile.docker.$(BuildConfiguration)'
       containerRegistry: Docker Hub
       tags: |
-        stable-$(Build.BuildNumber)
-        stable
+        stable-$(Build.BuildNumber)-$(BuildConfiguration)
+        stable-$(BuildConfiguration)
 
 - job: CollectArtifacts
   displayName: 'Collect Artifacts'
