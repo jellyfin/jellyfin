@@ -27,7 +27,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="path">Absolute Path</param>
+        /// <param name="path">Absolute Path.</param>
         public LibraryRoot(string path)
         {
             if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
@@ -40,7 +40,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="path">Absolute Path</param>
+        /// <param name="path">Absolute Path.</param>
         public static LibraryRoot Create(string path)
         {
             return new LibraryRoot(path);

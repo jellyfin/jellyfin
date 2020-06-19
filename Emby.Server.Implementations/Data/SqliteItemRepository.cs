@@ -6308,7 +6308,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         /// Gets the attachment.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <returns>MediaAttachment</returns>
+        /// <returns>MediaAttachment.</returns>
         private MediaAttachment GetMediaAttachment(IReadOnlyList<IResultSetValue> reader)
         {
             var item = new MediaAttachment

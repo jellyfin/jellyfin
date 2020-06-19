@@ -166,7 +166,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Validates the supplied FQPN to ensure it is a ffmpeg utility.
         /// If checks pass, global variable FFmpegPath and EncoderLocation are updated.
         /// </summary>
-        /// <param name="path">FQPN to test</param>
+        /// <param name="path">FQPN to test.</param>
         /// <param name="location">Location (External, Custom, System) of tool</param>
         /// <returns></returns>
         private bool ValidatePath(string path, FFmpegLocation location)

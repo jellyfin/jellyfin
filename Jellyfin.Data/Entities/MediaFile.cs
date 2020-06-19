@@ -30,7 +30,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="path">Relative to the LibraryRoot</param>
+        /// <param name="path">Relative to the LibraryRoot.</param>
         /// <param name="kind"></param>
         /// <param name="_release0"></param>
         public MediaFile(string path, Enums.MediaFileKind kind, Release _release0)
@@ -51,7 +51,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="path">Relative to the LibraryRoot</param>
+        /// <param name="path">Relative to the LibraryRoot.</param>
         /// <param name="kind"></param>
         /// <param name="_release0"></param>
         public static MediaFile Create(string path, Enums.MediaFileKind kind, Release _release0)

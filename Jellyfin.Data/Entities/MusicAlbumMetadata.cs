@@ -30,8 +30,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_musicalbum0"></param>
         public MusicAlbumMetadata(string title, string language, DateTime dateadded, DateTime datemodified, MusicAlbum _musicalbum0)
         {
@@ -52,8 +52,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_musicalbum0"></param>
         public static MusicAlbumMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, MusicAlbum _musicalbum0)
         {

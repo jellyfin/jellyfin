@@ -312,7 +312,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <param name="id">The id.</param>
         /// <param name="isTmdbId">if set to <c>true</c> [is TMDB identifier].</param>
         /// <param name="language">The language.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{CompleteMovieData}.</returns>
         internal async Task<MovieResult> FetchMainResult(string id, bool isTmdbId, string language, CancellationToken cancellationToken)
         {

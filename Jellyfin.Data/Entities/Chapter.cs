@@ -27,7 +27,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="timestart"></param>
         /// <param name="_release0"></param>
         public Chapter(string language, long timestart, Release _release0)
@@ -47,7 +47,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="timestart"></param>
         /// <param name="_release0"></param>
         public static Chapter Create(string language, long timestart, Release _release0)

@@ -26,8 +26,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         protected Metadata(string title, string language, DateTime dateadded, DateTime datemodified)
         {
             if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
