@@ -164,44 +164,6 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class DeleteUserImage
-    /// </summary>
-    [Route("/Users/{Id}/Images/{Type}", "DELETE")]
-    [Route("/Users/{Id}/Images/{Type}/{Index}", "DELETE")]
-    [Authenticated]
-    public class DeleteUserImage : DeleteImageRequest, IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
-    }
-
-    /// <summary>
-    /// Class PostUserImage
-    /// </summary>
-    [Route("/Users/{Id}/Images/{Type}", "POST")]
-    [Route("/Users/{Id}/Images/{Type}/{Index}", "POST")]
-    [Authenticated]
-    public class PostUserImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
-    }
-
-    /// <summary>
     /// Class PostItemImage
     /// </summary>
     [Route("/Items/{Id}/Images/{Type}", "POST")]
@@ -442,23 +404,6 @@ namespace MediaBrowser.Api.Images
         /// Posts the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public Task Post(PostUserImage request)
-        {
-            var id = Guid.Parse(GetPathValue(1));
-
-            AssertCanUpdateUser(_authContext, _userManager, id, true);
-
-            request.Type = Enum.Parse<ImageType>(GetPathValue(3).ToString(), true);
-
-            var user = _userManager.GetUserById(id);
-
-            return PostImage(user, request.RequestStream, Request.ContentType);
-        }
-
-        /// <summary>
-        /// Posts the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
         public Task Post(PostItemImage request)
         {
             var id = Guid.Parse(GetPathValue(1));
@@ -468,28 +413,6 @@ namespace MediaBrowser.Api.Images
             var item = _libraryManager.GetItemById(id);
 
             return PostImage(item, request.RequestStream, request.Type, Request.ContentType);
-        }
-
-        /// <summary>
-        /// Deletes the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        public void Delete(DeleteUserImage request)
-        {
-            var userId = request.Id;
-            AssertCanUpdateUser(_authContext, _userManager, userId, true);
-
-            var user = _userManager.GetUserById(userId);
-            try
-            {
-                File.Delete(user.ProfileImage.Path);
-            }
-            catch (IOException e)
-            {
-                Logger.LogError(e, "Error deleting user profile image:");
-            }
-
-            _userManager.ClearProfileImage(user);
         }
 
         /// <summary>
