@@ -60,7 +60,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Information retrieved.</response>
         /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
         [HttpGet("Info")]
-        // TODO: Authorize EscapeParentalControl
+        [Authorize(Policy = Policies.IgnoreSchedule)]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<SystemInfo>> GetSystemInfo()
@@ -99,7 +99,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Server restarted.</response>
         /// <returns>No content. Server restarted.</returns>
         [HttpPost("Restart")]
-        // TODO: Authorize AllowLocal = true
+        [Authorize(Policy = Policies.LocalAccessOnly)]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RestartApplication()
