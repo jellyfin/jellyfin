@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -106,7 +107,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             //OpenedMediaSource.Path = tempFile;
             //OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
 
             //OpenedMediaSource.Path = TempFilePath;
@@ -118,6 +119,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             //OpenedMediaSource.SupportsDirectStream = true;
             //OpenedMediaSource.SupportsTranscoding = true;
             await taskCompletionSource.Task.ConfigureAwait(false);
+            if (taskCompletionSource.Task.Exception != null)
+            {
+                // Error happened while opening the stream so raise the exception again to inform the caller
+                throw taskCompletionSource.Task.Exception;
+            }
+
+            if (!taskCompletionSource.Task.Result)
+            {
+                Logger.LogWarning("Zero bytes copied from stream {0} to {1} but no exception raised", GetType().Name, TempFilePath);
+                throw new EndOfStreamException(String.Format(CultureInfo.InvariantCulture, "Zero bytes copied from stream {0}", GetType().Name));
+            }
         }
 
         private Task StartStreaming(HttpResponseInfo response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -139,13 +151,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                             cancellationToken).ConfigureAwait(false);
                     }
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException ex)
                 {
+                    Logger.LogInformation("Copying of {0} to {1} was canceled", GetType().Name, TempFilePath);
+                    openTaskCompletionSource.TrySetException(ex);
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error copying live stream.");
+                    Logger.LogError(ex, "Error copying live stream {0} to {1}.", GetType().Name, TempFilePath);
+                    openTaskCompletionSource.TrySetException(ex);
                 }
+
+                openTaskCompletionSource.TrySetResult(false);
 
                 EnableStreamSharing = false;
                 await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);

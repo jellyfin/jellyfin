@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -21,13 +22,13 @@ namespace MediaBrowser.Model.Dlna
             if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
             {
                 MediaFormatProfile? val = ResolveVideoASFFormat(videoCodec, audioCodec, width, height);
-                return val.HasValue ? new MediaFormatProfile[] { val.Value } : new MediaFormatProfile[] { };
+                return val.HasValue ? new MediaFormatProfile[] { val.Value } : Array.Empty<MediaFormatProfile>();
             }
 
             if (string.Equals(container, "mp4", StringComparison.OrdinalIgnoreCase))
             {
                 MediaFormatProfile? val = ResolveVideoMP4Format(videoCodec, audioCodec, width, height);
-                return val.HasValue ? new MediaFormatProfile[] { val.Value } : new MediaFormatProfile[] { };
+                return val.HasValue ? new MediaFormatProfile[] { val.Value } : Array.Empty<MediaFormatProfile>();
             }
 
             if (string.Equals(container, "avi", StringComparison.OrdinalIgnoreCase))
@@ -61,18 +62,18 @@ namespace MediaBrowser.Model.Dlna
             if (string.Equals(container, "3gp", StringComparison.OrdinalIgnoreCase))
             {
                 MediaFormatProfile? val = ResolveVideo3GPFormat(videoCodec, audioCodec);
-                return val.HasValue ? new MediaFormatProfile[] { val.Value } : new MediaFormatProfile[] { };
+                return val.HasValue ? new MediaFormatProfile[] { val.Value } : Array.Empty<MediaFormatProfile>();
             }
 
             if (string.Equals(container, "ogv", StringComparison.OrdinalIgnoreCase) || string.Equals(container, "ogg", StringComparison.OrdinalIgnoreCase))
                 return new MediaFormatProfile[] { MediaFormatProfile.OGV };
 
-            return new MediaFormatProfile[] { };
+            return Array.Empty<MediaFormatProfile>();
         }
 
         private MediaFormatProfile[] ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
-            string suffix = "";
+            string suffix = string.Empty;
 
             switch (timestampType)
             {
@@ -92,16 +93,18 @@ namespace MediaBrowser.Model.Dlna
 
             if (string.Equals(videoCodec, "mpeg2video", StringComparison.OrdinalIgnoreCase))
             {
-                var list = new List<MediaFormatProfile>();
-
-                list.Add(ValueOf("MPEG_TS_SD_NA" + suffix));
-                list.Add(ValueOf("MPEG_TS_SD_EU" + suffix));
-                list.Add(ValueOf("MPEG_TS_SD_KO" + suffix));
+                var list = new List<MediaFormatProfile>
+                {
+                    ValueOf("MPEG_TS_SD_NA" + suffix),
+                    ValueOf("MPEG_TS_SD_EU" + suffix),
+                    ValueOf("MPEG_TS_SD_KO" + suffix)
+                };
 
                 if ((timestampType == TransportStreamTimestamp.Valid) && string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase))
                 {
                     list.Add(MediaFormatProfile.MPEG_TS_JP_T);
                 }
+
                 return list.ToArray();
             }
             if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
@@ -115,6 +118,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         return new MediaFormatProfile[] { MediaFormatProfile.AVC_TS_HD_DTS_ISO };
                     }
+
                     return new MediaFormatProfile[] { MediaFormatProfile.AVC_TS_HD_DTS_T };
                 }
 

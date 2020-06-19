@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.MusicGenres
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<MusicGenre> source, MetadataResult<MusicGenre> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<MusicGenre> source, MetadataResult<MusicGenre> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

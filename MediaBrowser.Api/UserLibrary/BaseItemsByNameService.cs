@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="dtoService">The dto service.</param>
         protected BaseItemsByNameService(
-            ILogger logger,
+            ILogger<BaseItemsByNameService<TItemType>> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,

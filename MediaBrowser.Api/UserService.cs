@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
@@ -300,12 +301,12 @@ namespace MediaBrowser.Api
 
             if (request.IsDisabled.HasValue)
             {
-                users = users.Where(i => i.Policy.IsDisabled == request.IsDisabled.Value);
+                users = users.Where(i => i.HasPermission(PermissionKind.IsDisabled) == request.IsDisabled.Value);
             }
 
             if (request.IsHidden.HasValue)
             {
-                users = users.Where(i => i.Policy.IsHidden == request.IsHidden.Value);
+                users = users.Where(i => i.HasPermission(PermissionKind.IsHidden) == request.IsHidden.Value);
             }
 
             if (filterByDevice)
@@ -322,12 +323,12 @@ namespace MediaBrowser.Api
             {
                 if (!_networkManager.IsInLocalNetwork(Request.RemoteIp))
                 {
-                    users = users.Where(i => i.Policy.EnableRemoteAccess);
+                    users = users.Where(i => i.HasPermission(PermissionKind.EnableRemoteAccess));
                 }
             }
 
             var result = users
-                .OrderBy(u => u.Name)
+                .OrderBy(u => u.Username)
                 .Select(i => _userManager.GetUserDto(i, Request.RemoteIp))
                 .ToArray();
 
@@ -397,7 +398,7 @@ namespace MediaBrowser.Api
             // Password should always be null
             return Post(new AuthenticateUserByName
             {
-                Username = user.Name,
+                Username = user.Username,
                 Password = null,
                 Pw = request.Pw
             });
@@ -426,7 +427,7 @@ namespace MediaBrowser.Api
             catch (SecurityException e)
             {
                 // rethrow adding IP address to message
-                throw new SecurityException($"[{Request.RemoteIp}] {e.Message}");
+                throw new SecurityException($"[{Request.RemoteIp}] {e.Message}", e);
             }
         }
 
@@ -456,7 +457,12 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var success = await _userManager.AuthenticateUser(user.Name, request.CurrentPw, request.CurrentPassword, Request.RemoteIp, false).ConfigureAwait(false);
+                var success = await _userManager.AuthenticateUser(
+                    user.Username,
+                    request.CurrentPw,
+                    request.CurrentPassword,
+                    Request.RemoteIp,
+                    false).ConfigureAwait(false);
 
                 if (success == null)
                 {
@@ -506,10 +512,10 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(id);
 
-            if (string.Equals(user.Name, dtoUser.Name, StringComparison.Ordinal))
+            if (string.Equals(user.Username, dtoUser.Name, StringComparison.Ordinal))
             {
-                _userManager.UpdateUser(user);
-                _userManager.UpdateConfiguration(user, dtoUser.Configuration);
+                await _userManager.UpdateUserAsync(user);
+                _userManager.UpdateConfiguration(user.Id, dtoUser.Configuration);
             }
             else
             {
@@ -560,7 +566,6 @@ namespace MediaBrowser.Api
             AssertCanUpdateUser(_authContext, _userManager, request.Id, false);
 
             _userManager.UpdateConfiguration(request.Id, request);
-
         }
 
         public void Post(UpdateUserPolicy request)
@@ -568,24 +573,24 @@ namespace MediaBrowser.Api
             var user = _userManager.GetUserById(request.Id);
 
             // If removing admin access
-            if (!request.IsAdministrator && user.Policy.IsAdministrator)
+            if (!request.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator))
             {
-                if (_userManager.Users.Count(i => i.Policy.IsAdministrator) == 1)
+                if (_userManager.Users.Count(i => i.HasPermission(PermissionKind.IsAdministrator)) == 1)
                 {
                     throw new ArgumentException("There must be at least one user in the system with administrative access.");
                 }
             }
 
             // If disabling
-            if (request.IsDisabled && user.Policy.IsAdministrator)
+            if (request.IsDisabled && user.HasPermission(PermissionKind.IsAdministrator))
             {
                 throw new ArgumentException("Administrators cannot be disabled.");
             }
 
             // If disabling
-            if (request.IsDisabled && !user.Policy.IsDisabled)
+            if (request.IsDisabled && !user.HasPermission(PermissionKind.IsDisabled))
             {
-                if (_userManager.Users.Count(i => !i.Policy.IsDisabled) == 1)
+                if (_userManager.Users.Count(i => !i.HasPermission(PermissionKind.IsDisabled)) == 1)
                 {
                     throw new ArgumentException("There must be at least one enabled user in the system.");
                 }
@@ -594,7 +599,7 @@ namespace MediaBrowser.Api
                 _sessionMananger.RevokeUserTokens(user.Id, currentToken);
             }
 
-            _userManager.UpdateUserPolicy(request.Id, request);
+            _userManager.UpdatePolicy(request.Id, request);
         }
     }
 }

@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Authentication

@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Users;
 using Microsoft.Extensions.Logging;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -76,11 +77,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         public override int GetChildCount(User user)
         {
-            if (IsAccessedByName)
-            {
-                return 0;
-            }
-            return base.GetChildCount(user);
+            return IsAccessedByName ? 0 : base.GetChildCount(user);
         }
 
         public override bool IsSaveLocalMetadataEnabled()
@@ -128,7 +125,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         private static List<string> GetUserDataKeys(MusicArtist item)
         {
             var list = new List<string>();
-            var id = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
+            var id = item.GetProviderId(MetadataProvider.MusicBrainzArtist);
 
             if (!string.IsNullOrEmpty(id))
             {
@@ -142,9 +139,10 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
         }
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+
+        protected override bool GetBlockUnratedValue(User user)
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Music);
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
         }
 
         public override UnratedItem GetBlockUnratedType()

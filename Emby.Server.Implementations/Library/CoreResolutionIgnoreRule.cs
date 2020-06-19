@@ -1,7 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -15,32 +13,6 @@ namespace Emby.Server.Implementations.Library
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
         private readonly ILibraryManager _libraryManager;
-
-        /// <summary>
-        /// Any folder named in this list will be ignored
-        /// </summary>
-        private static readonly string[] _ignoreFolders =
-        {
-                "metadata",
-                "ps3_update",
-                "ps3_vprm",
-                "extrafanart",
-                "extrathumbs",
-                ".actors",
-                ".wd_tv",
-
-                // Synology
-                "@eaDir",
-                "eaDir",
-                "#recycle",
-
-                // Qnap
-                "@Recycle",
-                ".@__thumb",
-                "$RECYCLE.BIN",
-                "System Volume Information",
-                ".grab",
-        };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CoreResolutionIgnoreRule"/> class.
@@ -60,23 +32,15 @@ namespace Emby.Server.Implementations.Library
                 return false;
             }
 
-            var filename = fileInfo.Name;
-
-            // Ignore hidden files on UNIX
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT
-                && filename[0] == '.')
+            if (IgnorePatterns.ShouldIgnore(fileInfo.FullName))
             {
                 return true;
             }
 
+            var filename = fileInfo.Name;
+
             if (fileInfo.IsDirectory)
             {
-                // Ignore any folders in our list
-                if (_ignoreFolders.Contains(filename, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
                 if (parent != null)
                 {
                     // Ignore trailer folders but allow it at the collection level
@@ -109,11 +73,6 @@ namespace Emby.Server.Implementations.Library
                         return true;
                     }
                 }
-
-                // Ignore samples
-                Match m = Regex.Match(filename, @"\bsample\b", RegexOptions.IgnoreCase);
-
-                return m.Success;
             }
 
             return false;

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -51,7 +53,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <value>The task manager.</value>
         private ITaskManager TaskManager { get; set; }
-        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
@@ -72,24 +73,28 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// or
         /// logger
         /// </exception>
-        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger, IFileSystem fileSystem)
+        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
         {
             if (scheduledTask == null)
             {
                 throw new ArgumentNullException(nameof(scheduledTask));
             }
+
             if (applicationPaths == null)
             {
                 throw new ArgumentNullException(nameof(applicationPaths));
             }
+
             if (taskManager == null)
             {
                 throw new ArgumentNullException(nameof(taskManager));
             }
+
             if (jsonSerializer == null)
             {
                 throw new ArgumentNullException(nameof(jsonSerializer));
             }
+
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -100,7 +105,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             TaskManager = taskManager;
             JsonSerializer = jsonSerializer;
             Logger = logger;
-            _fileSystem = fileSystem;
 
             InitTriggerEvents();
         }
@@ -392,7 +396,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             ((TaskManager)TaskManager).OnTaskExecuting(this);
 
-            progress.ProgressChanged += progress_ProgressChanged;
+            progress.ProgressChanged += OnProgressChanged;
 
             TaskCompletionStatus status;
             CurrentExecutionStartTime = DateTime.UtcNow;
@@ -426,7 +430,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             var startTime = CurrentExecutionStartTime;
             var endTime = DateTime.UtcNow;
 
-            progress.ProgressChanged -= progress_ProgressChanged;
+            progress.ProgressChanged -= OnProgressChanged;
             CurrentCancellationTokenSource.Dispose();
             CurrentCancellationTokenSource = null;
             CurrentProgress = null;
@@ -439,16 +443,13 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void progress_ProgressChanged(object sender, double e)
+        private void OnProgressChanged(object sender, double e)
         {
             e = Math.Min(e, 100);
 
             CurrentProgress = e;
 
-            TaskProgress?.Invoke(this, new GenericEventArgs<double>
-            {
-                Argument = e
-            });
+            TaskProgress?.Invoke(this, new GenericEventArgs<double>(e));
         }
 
         /// <summary>
@@ -576,6 +577,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="startTime">The start time.</param>
         /// <param name="endTime">The end time.</param>
         /// <param name="status">The status.</param>
+        /// <param name="ex">The exception.</param>
         private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status, Exception ex)
         {
             var elapsedTime = endTime - startTime;

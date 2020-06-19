@@ -7,7 +7,8 @@ namespace Jellyfin.Common.Tests
     public class PasswordHashTests
     {
         [Theory]
-        [InlineData("$PBKDF2$iterations=1000$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D",
+        [InlineData(
+            "$PBKDF2$iterations=1000$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D",
             "PBKDF2",
             "",
             "62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D")]

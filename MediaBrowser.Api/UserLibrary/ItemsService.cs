@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
@@ -14,6 +15,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -59,7 +61,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="localization">The localization.</param>
         /// <param name="dtoService">The dto service.</param>
         public ItemsService(
-            ILogger logger,
+            ILogger<ItemsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -86,7 +88,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var ancestorIds = Array.Empty<Guid>();
 
-            var excludeFolderIds = user.Configuration.LatestItemsExcludes;
+            var excludeFolderIds = user.GetPreference(PreferenceKind.LatestItemExcludes);
             if (parentIdGuid.Equals(Guid.Empty) && excludeFolderIds.Length > 0)
             {
                 ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
@@ -211,14 +213,14 @@ namespace MediaBrowser.Api.UserLibrary
                 request.IncludeItemTypes = "Playlist";
             }
 
-            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id)
+            bool isInEnabledFolder = user.GetPreference(PreferenceKind.EnabledFolders).Any(i => new Guid(i) == item.Id)
                     // Assume all folders inside an EnabledChannel are enabled
-                    || user.Policy.EnabledChannels.Any(i => new Guid(i) == item.Id);
+                    || user.GetPreference(PreferenceKind.EnabledChannels).Any(i => new Guid(i) == item.Id);
 
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
             {
-                if (user.Policy.EnabledFolders.Contains(
+                if (user.GetPreference(PreferenceKind.EnabledFolders).Contains(
                     collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
                     StringComparer.OrdinalIgnoreCase))
                 {
@@ -226,9 +228,12 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
-            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder && !user.Policy.EnableAllChannels)
+            if (!(item is UserRootFolder)
+                && !isInEnabledFolder
+                && !user.HasPermission(PermissionKind.EnableAllFolders)
+                && !user.HasPermission(PermissionKind.EnableAllChannels))
             {
-                Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name, item.Name);
+                Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
                 return new QueryResult<BaseItem>
                 {
                     Items = Array.Empty<BaseItem>(),

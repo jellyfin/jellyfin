@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// The _logger
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<Profiler> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Profiler" /> class.

@@ -1,7 +1,10 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Configuration;
+using System.Xml.Serialization;
+using Jellyfin.Data.Enums;
+using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
 
 namespace MediaBrowser.Model.Users
 {
@@ -77,8 +80,16 @@ namespace MediaBrowser.Model.Users
         public string[] BlockedChannels { get; set; }
 
         public int RemoteClientBitrateLimit { get; set; }
+
+        [XmlElement(ElementName = "AuthenticationProviderId")]
         public string AuthenticationProviderId { get; set; }
         public string PasswordResetProviderId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating what SyncPlay features the user can access.
+        /// </summary>
+        /// <value>Access level to SyncPlay features.</value>
+        public SyncPlayAccess SyncPlayAccess { get; set; }
 
         public UserPolicy()
         {
@@ -125,6 +136,7 @@ namespace MediaBrowser.Model.Users
             EnableContentDownloading = true;
             EnablePublicSharing = true;
             EnableRemoteAccess = true;
+            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
         }
     }
 }
