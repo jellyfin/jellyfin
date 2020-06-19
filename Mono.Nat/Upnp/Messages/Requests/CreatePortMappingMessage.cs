@@ -1,7 +1,9 @@
 // Authors:
 //   Alan McGovern alan.mcgovern@gmail.com
+//   Ben Motmans <ben.motmans@gmail.com>
 //
 // Copyright (C) 2006 Alan McGovern
+// Copyright (C) 2007 Ben Motmans
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -78,7 +80,7 @@ namespace Mono.Nat.Upnp
         /// <returns>The <see cref="string"/>.</returns>
         internal static string CreateDefaultDescription(Mapping mapping)
         {
-            string executableName = null;
+            string executableName = string.Empty;
             try
             {
                 executableName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;

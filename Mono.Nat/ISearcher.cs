@@ -78,15 +78,5 @@ namespace Mono.Nat
         /// The searcher will no longer listen for new devices.
         /// </summary>
         void Stop();
-
-        /// <summary>
-        /// Resets the discovery.
-        /// </summary>
-        void Begin();
-
-        /// <summary>
-        /// Finishes the discovery, freeing up resources.
-        /// </summary>
-        void Finish();
     }
 }

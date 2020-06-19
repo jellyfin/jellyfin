@@ -268,8 +268,6 @@ namespace Emby.Server.Implementations
 
             _networkManager.NetworkChanged += OnNetworkChanged;
 
-            InternetChecker.Instance.Initialise(LoggerFactory.CreateLogger<InternetChecker>(), (IServerConfigurationManager)ConfigurationManager);
-
             CertificateInfo = new CertificateInfo
             {
                 Path = ServerConfigurationManager.Configuration.CertificatePath,
@@ -516,6 +514,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddMemoryCache();
 
             serviceCollection.AddSingleton(ConfigurationManager);
+            serviceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
+
             serviceCollection.AddSingleton<IApplicationHost>(this);
 
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);

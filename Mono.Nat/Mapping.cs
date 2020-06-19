@@ -52,7 +52,7 @@ namespace Mono.Nat
         /// <param name="publicPort">Traffic sent to this public/WAN port is forwarded to the <paramref name="privatePort"/> on the LAN device.</param>
         /// <param name="lifetime">The lifetime of the port mapping in seconds. If a lifetime of '0' is specified then the protocol default lifetime is used. uPnP defaults to 'indefinite' whereas NAT-PMP defaults to 7,200 seconds.</param>
         /// <param name="description">The text description for the port mapping.</param>
-        public Mapping(Protocol protocol, int privatePort, int publicPort, int lifetime, string description)
+        public Mapping(Protocol protocol, int privatePort, int publicPort, int lifetime, string? description)
         {
             Protocol = protocol;
             PrivatePort = privatePort;
@@ -78,7 +78,7 @@ namespace Mono.Nat
         /// Gets the Description
         /// The text description for the port mapping..
         /// </summary>
-        public string Description { get; }
+        public string? Description { get; }
 
         /// <summary>
         /// Gets the Expiration

@@ -30,6 +30,7 @@ namespace Mono.Nat
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Defines the <see cref="Searcher" />.
@@ -41,44 +42,48 @@ namespace Mono.Nat
         /// </summary>
         protected static readonly TimeSpan SearchPeriod = TimeSpan.FromMinutes(5);
 
-        protected bool _empty = false;
-
         /// <summary>
-        /// Gets defines the currentSearchCancellation.
+        /// Gets or sets defines the currentSearchCancellation.
         /// </summary>
 #pragma warning disable SA1401 // Fields should be private
-        protected CancellationTokenSource _currentSearchCancellation;
+        protected CancellationTokenSource _currentSearchCancellation = null!;
 #pragma warning restore SA1401 // Fields should be private
 
         /// <summary>
         /// Defines the cancellation.
         /// </summary>
-        private CancellationTokenSource _cancellation;
+        private CancellationTokenSource _cancellation = null!;
 
         /// <summary>
         /// Defines the overallSearchCancellation.
         /// </summary>
-        private CancellationTokenSource _overallSearchCancellation;
+        private CancellationTokenSource _overallSearchCancellation = null!;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Searcher"/> class.
         /// </summary>
-        /// <param name="clients">The clients<see cref="SocketGroup"/>.</param>
-        protected Searcher(SocketGroup clients)
+        /// <param name="logger">ILogger object.</param>
+        public Searcher(ILogger<ISearcher> logger)
         {
-            Clients = clients;
+            Logger = logger;
+            Clients = null!;
             Devices = new Dictionary<NatDevice, NatDevice>();
         }
 
         /// <summary>
         /// Defines the DeviceFound.
         /// </summary>
-        public event EventHandler<DeviceEventArgs> DeviceFound;
+        public event EventHandler<DeviceEventArgs>? DeviceFound;
 
         /// <summary>
         /// Defines the DeviceLost.
         /// </summary>
-        public event EventHandler<DeviceEventArgs> DeviceLost;
+        public event EventHandler<DeviceEventArgs>? DeviceLost;
+
+        /// <summary>
+        /// Gets the Logging object.
+        /// </summary>
+        public ILogger<ISearcher> Logger { get; }
 
         /// <summary>
         /// Gets a value indicating whether Listening.
@@ -93,12 +98,12 @@ namespace Mono.Nat
         /// <summary>
         /// Gets or sets the SearchTask.
         /// </summary>
-        internal Task SearchTask { get; set; }
+        internal Task? SearchTask { get; set; }
 
         /// <summary>
         /// Gets or sets the Clients.
         /// </summary>
-        protected SocketGroup Clients { get; set; }
+        internal SocketGroup Clients { get; set; }
 
         /// <summary>
         /// Gets the Devices.
@@ -108,7 +113,7 @@ namespace Mono.Nat
         /// <summary>
         /// Gets or sets the ListeningTask.
         /// </summary>
-        private Task ListeningTask { get; set; }
+        private Task? ListeningTask { get; set; }
 
         /// <summary>
         /// The SearchAsync.
@@ -116,11 +121,12 @@ namespace Mono.Nat
         /// <returns>The <see cref="Task"/>.</returns>
         public async Task SearchAsync()
         {
+            Begin();
             // Cancel any existing continuous search operation.
             _overallSearchCancellation?.Cancel();
             if (SearchTask != null)
             {
-                await SearchTask.CatchExceptions().ConfigureAwait(false);
+                await SearchTask.CatchExceptions(Logger).ConfigureAwait(false);
             }
 
             // Create a CancellationTokenSource for the search we're about to perform.
@@ -136,8 +142,9 @@ namespace Mono.Nat
         /// </summary>
         /// <param name="gatewayAddress">The gatewayAddress.</param>
         /// <returns>A Task.</returns>
-        public async Task SearchAsync(IPAddress gatewayAddress)
+        public async Task SearchAsync(IPAddress? gatewayAddress)
         {
+            Begin();
             BeginListening();
             await SearchAsync(gatewayAddress, null, _cancellation.Token).ConfigureAwait(false);
         }
@@ -145,31 +152,16 @@ namespace Mono.Nat
         /// <summary>
         /// The Stop.
         /// </summary>
-        public void Stop()
+        public virtual void Stop()
         {
             _cancellation?.Cancel();
-            ListeningTask?.WaitAndForget();
-            SearchTask?.WaitAndForget();
+            ListeningTask?.WaitAndForget(Logger);
+            SearchTask?.WaitAndForget(Logger);
 
-            _cancellation = null;
-            ListeningTask = null;
-            SearchTask = null;
-        }
-
-        public virtual void Begin()
-        {
-            _empty = false;
-        }
-
-        public virtual void Finish()
-        {
-            Stop();
             foreach (KeyValuePair<NatDevice, NatDevice> entry in Devices)
             {
                 RaiseDeviceLost(entry.Key);
             }
-
-            _empty = true;
         }
 
         /// <summary>
@@ -205,7 +197,9 @@ namespace Mono.Nat
         /// <param name="repeatInterval">The repeatInterval.</param>
         /// <param name="token">The token<see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        protected abstract Task SearchAsync(IPAddress gatewayAddress, TimeSpan? repeatInterval, CancellationToken token);
+        protected abstract Task SearchAsync(IPAddress? gatewayAddress, TimeSpan? repeatInterval, CancellationToken token);
+
+        protected abstract void Begin();
 
         /// <summary>
         /// The RaiseDeviceFound.
@@ -252,8 +246,8 @@ namespace Mono.Nat
             _currentSearchCancellation?.Dispose();
             _cancellation?.Dispose();
             _overallSearchCancellation?.Dispose();
-            Devices.Clear();
-            Clients = null;
+
+            Clients.Dispose();
         }
 
         /// <summary>

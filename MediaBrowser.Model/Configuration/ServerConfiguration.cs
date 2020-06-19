@@ -58,6 +58,11 @@ namespace MediaBrowser.Model.Configuration
         /// </remarks>
         public bool EnableHttps { get; set; }
 
+        /// <summary>
+        /// Gets or sets the time between the pings of SSDP gateway monitor. (In seconds)
+        /// </summary>
+        public int GatewayMonitorPeriod { get; set; }
+
         public bool EnableNormalizedItemByNameIds { get; set; }
 
         /// <summary>
@@ -285,6 +290,8 @@ namespace MediaBrowser.Model.Configuration
             EnableUPnP = false;
             MinResumePct = 5;
             MaxResumePct = 90;
+
+            GatewayMonitorPeriod = 30; // seconds.
 
             // 5 minutes
             MinResumeDurationSeconds = 300;

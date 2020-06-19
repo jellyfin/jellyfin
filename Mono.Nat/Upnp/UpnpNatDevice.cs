@@ -32,12 +32,15 @@ namespace Mono.Nat.Upnp
     using System.Net;
     using System.Text;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Defines the <see cref="UpnpNatDevice" />.
     /// </summary>
     internal sealed class UpnpNatDevice : NatDevice, IEquatable<UpnpNatDevice>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UpnpNatDevice"/> class.
         /// </summary>
@@ -45,12 +48,14 @@ namespace Mono.Nat.Upnp
         /// <param name="deviceEndpoint">The deviceEndpoint<see cref="IPEndPoint"/>.</param>
         /// <param name="deviceControlUri">The deviceControlUri<see cref="Uri"/>.</param>
         /// <param name="serviceType">The serviceType<see cref="string"/>.</param>
-        internal UpnpNatDevice(IPAddress localAddress, IPEndPoint deviceEndpoint, Uri deviceControlUri, string serviceType)
+        /// <param name="logger">Ilogger instance.</param>
+        internal UpnpNatDevice(IPAddress localAddress, IPEndPoint deviceEndpoint, Uri deviceControlUri, string serviceType, ILogger logger)
             : base(deviceEndpoint, NatProtocol.Upnp)
         {
             LocalAddress = localAddress;
             DeviceControlUri = deviceControlUri;
             ServiceType = serviceType;
+            _logger = logger;
         }
 
         /// <summary>
@@ -188,7 +193,7 @@ namespace Mono.Nat.Upnp
         /// </summary>
         /// <param name="other">The other<see cref="UpnpNatDevice"/>.</param>
         /// <returns>The <see cref="bool"/>.</returns>
-        public bool Equals(UpnpNatDevice other)
+        public bool Equals(UpnpNatDevice? other)
             => other != null && DeviceControlUri == other.DeviceControlUri;
 
         /// <summary>
@@ -212,7 +217,7 @@ namespace Mono.Nat.Upnp
         /// </summary>
         /// <param name="message">The message<see cref="RequestMessage"/>.</param>
         /// <returns>The <see cref="Task{ResponseMessage}"/>.</returns>
-        internal async Task<ResponseMessage> SendMessageAsync(RequestMessage message)
+        internal async Task<ResponseMessage?> SendMessageAsync(RequestMessage message)
         {
             HttpWebRequest request = message.Encode(out byte[] body);
             // If this device has multiple active network devices, ensure the web request is sent from the network device which
@@ -221,14 +226,11 @@ namespace Mono.Nat.Upnp
             // forward a port to a *different* IP address.
             request.ServicePoint.BindIPEndPointDelegate = delegate(ServicePoint servicePoint, IPEndPoint remoteEndPoint, int retryCount)
             {
-                NatUtility.LogDebug($"The WebRequest being sent to {remoteEndPoint} has been bound to local IP address {LocalAddress}");
+                _logger.LogDebug($"The WebRequest being sent to {remoteEndPoint} has been bound to local IP address {LocalAddress}");
                 return new IPEndPoint(LocalAddress, 0);
             };
 
-            if (NatUtility.Logger != null)
-            {
-                NatUtility.LogDebug($"uPnP Request: {Environment.NewLine}{Encoding.UTF8.GetString(body)}");
-            }
+            _logger.LogDebug($"uPnP Request: {Environment.NewLine}{Encoding.UTF8.GetString(body)}");
 
             if (body.Length > 0)
             {
@@ -269,7 +271,7 @@ namespace Mono.Nat.Upnp
         /// <param name="s">The s<see cref="Stream"/>.</param>
         /// <param name="length">The length<see cref="int"/>.</param>
         /// <returns>The <see cref="Task{ResponseMessage}"/>.</returns>
-        internal async Task<ResponseMessage> DecodeMessageFromResponse(Stream s, int length)
+        internal async Task<ResponseMessage?> DecodeMessageFromResponse(Stream s, int length)
         {
             StringBuilder data = new StringBuilder();
             int bytesRead;
@@ -296,12 +298,8 @@ namespace Mono.Nat.Upnp
             // Once we have our content, we need to see what kind of message it is. If we received
             // an error message we will immediately throw a MappingException.
             var dataString = data.ToString();
-            if (NatUtility.Logger != null)
-            {
-                NatUtility.LogDebug($"uPnP Response: {Environment.NewLine}{dataString}");
-            }
-
-            return ResponseMessage.Decode(this, dataString);
+            _logger.LogDebug($"uPnP Response: {Environment.NewLine}{dataString}");
+            return ResponseMessage.Decode(this, dataString, _logger);
         }
     }
 }

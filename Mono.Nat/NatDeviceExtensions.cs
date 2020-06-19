@@ -1,4 +1,6 @@
-﻿namespace Mono.Nat
+#pragma warning disable CA1063
+
+namespace Mono.Nat
 {
     using System;
     using System.Net;

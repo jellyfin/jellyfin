@@ -28,8 +28,10 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly INetworkManager _networkManager;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IGatewayMonitor _gatewayMonitor;
         private readonly object _lock = new object();
 
+        private NatUtility _natUtility;
         private string _configIdentifier;
 
         private bool _disposed = false;
@@ -44,13 +46,15 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="deviceDiscovery">The device discovery.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="loggerFactory">Logger Factory.</param>
+        /// <param name="gwMonitor">Gateway Monitor.</param>
         public ExternalPortForwarding(
             ILogger<ExternalPortForwarding> logger,
             IServerApplicationHost appHost,
             IServerConfigurationManager config,
             IDeviceDiscovery deviceDiscovery,
             INetworkManager networkManager,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IGatewayMonitor gwMonitor)
         {
             _logger = logger;
             _appHost = appHost;
@@ -58,6 +62,40 @@ namespace Emby.Server.Implementations.EntryPoints
             _networkManager = networkManager;
             _deviceDiscovery = deviceDiscovery;
             _loggerFactory = loggerFactory;
+            _gatewayMonitor = gwMonitor;
+        }
+
+        /// <inheritdoc />
+        public Task RunAsync()
+        {
+            Start();
+            _config.ConfigurationUpdated += OnConfigurationUpdated;
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _config.ConfigurationUpdated -= OnConfigurationUpdated;
+
+            Stop();
+
+            _disposed = true;
         }
 
         private string GetConfigIdentifier()
@@ -88,16 +126,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        /// <inheritdoc />
-        public Task RunAsync()
-        {
-            Start();
-
-            _config.ConfigurationUpdated += OnConfigurationUpdated;
-
-            return Task.CompletedTask;
-        }
-
         private void Start()
         {
             if (!_config.Configuration.EnableUPnP || !_config.Configuration.EnableRemoteAccess)
@@ -113,15 +141,15 @@ namespace Emby.Server.Implementations.EntryPoints
                     {
                         _stopped = false;
                         _logger.LogInformation("Starting NAT discovery");
-                        NatUtility.Logger = _loggerFactory.CreateLogger("Mono.Nat");
-                        NatUtility.DeviceFound += OnNatUtilityDeviceFound;
-                        NatUtility.DeviceLost += OnNatUtilityDeviceLost;
-                        NatUtility.StartDiscovery();
+                        _natUtility = new NatUtility(_loggerFactory);
+                        _natUtility.DeviceFound += OnNatUtilityDeviceFound;
+                        _natUtility.DeviceLost += OnNatUtilityDeviceLost;
+                        _natUtility.StartDiscovery();
 
-                        _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
+                        // _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
                         _networkManager.NetworkChanged += OnChange;
-                        InternetChecker.Instance.OnStateChange += OnChange;
-                        InternetChecker.Instance.OnGatewayFailure += OnChange;
+
+                        _gatewayMonitor.OnGatewayFailure += OnChange;
                     }
                 }
             }
@@ -137,16 +165,17 @@ namespace Emby.Server.Implementations.EntryPoints
                     {
                         _logger.LogInformation("Stopping NAT discovery");
                         _stopped = true;
-                        NatUtility.StopDiscovery();
-                        NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
-                        NatUtility.DeviceLost -= OnNatUtilityDeviceLost;
 
-                        InternetChecker.Instance.ResetGateways();
+                        _natUtility.StopDiscovery();
+                        _natUtility.DeviceFound -= OnNatUtilityDeviceFound;
+                        _natUtility.DeviceLost -= OnNatUtilityDeviceLost;
+                        _natUtility.Dispose();
+
+                        _gatewayMonitor.ResetGateways();
+                        _gatewayMonitor.OnGatewayFailure -= OnChange;
 
                         _deviceDiscovery.DeviceDiscovered -= OnChange;
                         _networkManager.NetworkChanged -= OnChange;
-                        InternetChecker.Instance.OnStateChange -= OnChange;
-                        InternetChecker.Instance.OnGatewayFailure -= OnChange;
                     }
                 }
             }
@@ -165,9 +194,9 @@ namespace Emby.Server.Implementations.EntryPoints
                 {
                     if (!_stopped)
                     {
-                        NatUtility.StopDiscovery();
-                        InternetChecker.Instance.ResetGateways();
-                        NatUtility.StartDiscovery();
+                        _natUtility.StopDiscovery();
+                        _gatewayMonitor.ResetGateways();
+                        _natUtility.StartDiscovery();
                     }
                 }
             }
@@ -180,7 +209,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return;
             }
 
-            NatUtility.Search(e.Argument.LocalIpAddress, NatProtocol.Upnp);
+            _natUtility.Search(e.Argument.LocalIpAddress, NatProtocol.Upnp);
         }
 
         private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)
@@ -192,6 +221,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
+                _logger.LogInformation("Attempting to create rules.");
                 await CreateRules(e.Device).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -204,6 +234,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             try
             {
+                _logger.LogInformation("Attempting to remove rules.");
                 await RemoveRules(e.Device).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -261,7 +292,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private async Task CreatePortMap(INatDevice device, int privatePort, int publicPort)
         {
-            _logger.LogDebug(
+            _logger.LogInformation(
                 "Creating port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}",
                 privatePort,
                 publicPort,
@@ -272,7 +303,8 @@ namespace Emby.Server.Implementations.EntryPoints
                 var mapping = new Mapping(Protocol.Tcp, privatePort, publicPort, 0, _appHost.Name);
                 await device.CreatePortMapAsync(mapping).ConfigureAwait(false);
 
-                InternetChecker.Instance.AddGateway(device.DeviceEndpoint.Address);
+                // Add to the monitoring..
+                _ = _gatewayMonitor.AddGateway(device.DeviceEndpoint.Address);
             }
             catch (Exception ex)
             {
@@ -287,7 +319,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private async Task RemovePortMap(INatDevice device, int privatePort, int publicPort)
         {
-            _logger.LogDebug(
+            _logger.LogInformation(
                 "Removing port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}",
                 privatePort,
                 publicPort,
@@ -307,31 +339,6 @@ namespace Emby.Server.Implementations.EntryPoints
                     publicPort,
                     device.DeviceEndpoint);
             }
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _config.ConfigurationUpdated -= OnConfigurationUpdated;
-
-            Stop();
-
-            _disposed = true;
         }
     }
 }

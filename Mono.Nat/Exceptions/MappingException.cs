@@ -50,6 +50,7 @@ namespace Mono.Nat
         /// </summary>
         public MappingException()
         {
+            ErrorText = string.Empty;
         }
 
         /// <summary>
@@ -59,6 +60,7 @@ namespace Mono.Nat
         public MappingException(string message)
             : base(message)
         {
+            ErrorText = string.Empty;
         }
 
         /// <summary>
@@ -69,6 +71,7 @@ namespace Mono.Nat
         public MappingException(string message, Exception innerException)
             : base(message, innerException)
         {
+            ErrorText = string.Empty;
         }
 
         /// <summary>
@@ -79,6 +82,7 @@ namespace Mono.Nat
         protected MappingException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
             : base(info, context)
         {
+            ErrorText = string.Empty;
         }
 
         /// <summary>

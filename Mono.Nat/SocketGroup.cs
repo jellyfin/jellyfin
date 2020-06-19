@@ -1,4 +1,4 @@
-﻿namespace Mono.Nat
+namespace Mono.Nat
 {
     using System;
     using System.Collections.Generic;
@@ -10,7 +10,7 @@
     /// <summary>
     /// Defines the <see cref="SocketGroup" />.
     /// </summary>
-    internal class SocketGroup
+    internal class SocketGroup : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SocketGroup"/> class.
@@ -78,7 +78,7 @@
         /// <param name="gatewayAddress">The gatewayAddress<see cref="IPAddress"/>.</param>
         /// <param name="token">The token<see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        public async Task SendAsync(byte[] buffer, IPAddress gatewayAddress, CancellationToken token)
+        public async Task SendAsync(byte[] buffer, IPAddress? gatewayAddress, CancellationToken token)
         {
             using (await SocketSendLocker.DisposableWaitAsync(token).ConfigureAwait(false))
             {
@@ -104,6 +104,24 @@
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Rests this instance to empty.
+        /// </summary>
+        public void Reset()
+        {
+            foreach (var keypair in Sockets)
+            {
+                keypair.Key.Dispose();
+            }
+
+            Sockets.Clear();
+        }
+
+        public void Dispose()
+        {
+            Reset();
         }
     }
 }

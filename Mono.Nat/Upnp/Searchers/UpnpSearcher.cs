@@ -30,7 +30,6 @@ namespace Mono.Nat.Upnp
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -40,6 +39,7 @@ namespace Mono.Nat.Upnp
     using System.Threading;
     using System.Threading.Tasks;
     using System.Xml;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Defines the <see cref="UpnpSearcher" />.
@@ -47,28 +47,15 @@ namespace Mono.Nat.Upnp
     internal class UpnpSearcher : Searcher
     {
         /// <summary>
-        /// Initializes static members of the <see cref="UpnpSearcher"/> class.
+        /// Initializes a new instance of the <see cref="UpnpSearcher"/> class.
         /// </summary>
-        static UpnpSearcher()
-        {
-            Instance = new UpnpSearcher(new SocketGroup(Initialise(), 1900));
-        }
-
-        /// <summary>
-        /// Prevents a default instance of the <see cref="UpnpSearcher"/> class from being created.
-        /// </summary>
-        /// <param name="sockets">The sockets<see cref="SocketGroup"/>.</param>
-        private UpnpSearcher(SocketGroup sockets)
-            : base(sockets)
+        /// <param name="logger">Ilogger instance.</param>
+        public UpnpSearcher(ILogger<ISearcher> logger)
+            : base(logger)
         {
             LastFetched = new Dictionary<Uri, DateTime>();
             Locker = new SemaphoreSlim(1, 1);
         }
-
-        /// <summary>
-        /// Gets the Instance.
-        /// </summary>
-        public static ISearcher Instance { get; }
 
         /// <summary>
         /// Gets the Protocol.
@@ -85,16 +72,11 @@ namespace Mono.Nat.Upnp
         /// </summary>
         internal SemaphoreSlim Locker { get; }
 
-        public override void Finish()
+        /// <inheritdoc/>
+        public override void Stop()
         {
-            base.Finish();
-            Clients = null;
-        }
-
-        public override void Begin()
-        {
-            base.Begin();
-            Clients = new SocketGroup(Initialise(), 1900);
+            base.Stop();
+            Clients.Reset();
         }
 
         internal static Dictionary<UdpClient, List<IPAddress>> Initialise()
@@ -138,13 +120,13 @@ namespace Mono.Nat.Upnp
         /// <param name="deviceServiceUri">The deviceServiceUri<see cref="Uri"/>.</param>
         /// <param name="token">The token<see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="Task{UpnpNatDevice}"/>.</returns>
-        internal async Task<UpnpNatDevice> GetServicesList(IPAddress localAddress, Uri deviceServiceUri, CancellationToken token)
+        internal async Task<UpnpNatDevice?> GetServicesList(IPAddress localAddress, Uri deviceServiceUri, CancellationToken token)
         {
             // Create a HTTPWebRequest to download the list of services the device offers
             var request = new GetServicesMessage(deviceServiceUri).Encode(out byte[] body);
             if (body.Length > 0)
             {
-                NatUtility.LogDebug("Error: Services Message contained a body");
+                Logger.LogDebug("Error: Services Message contained a body");
             }
 
             using (token.Register(() => request.Abort()))
@@ -161,7 +143,7 @@ namespace Mono.Nat.Upnp
         /// <param name="deviceServiceUri">The deviceServiceUri<see cref="Uri"/>.</param>
         /// <param name="response">The response<see cref="HttpWebResponse"/>.</param>
         /// <returns>The <see cref="Task{UpnpNatDevice}"/>.</returns>
-        internal async Task<UpnpNatDevice> ServicesReceived(IPAddress localAddress, Uri deviceServiceUri, HttpWebResponse response)
+        internal async Task<UpnpNatDevice?> ServicesReceived(IPAddress localAddress, Uri deviceServiceUri, HttpWebResponse response)
         {
             int abortCount = 0;
             byte[] buffer = new byte[10240];
@@ -171,7 +153,7 @@ namespace Mono.Nat.Upnp
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                NatUtility.LogDebug("{0}: Couldn't get services list: {1}", response.ResponseUri, response.StatusCode);
+                Logger.LogDebug("{0}: Couldn't get services list: {1}", response.ResponseUri, response.StatusCode);
                 return null; // FIX ME: This the best thing to do??
             }
 
@@ -195,12 +177,12 @@ namespace Mono.Nat.Upnp
                         return null;
                     }
 
-                    NatUtility.LogDebug("{0}: Couldn't parse services list", response.ResponseUri);
+                    Logger.LogDebug("{0}: Couldn't parse services list", response.ResponseUri);
                     await Task.Delay(10).ConfigureAwait(false);
                 }
             }
 
-            NatUtility.LogDebug("{0}: Parsed services list", response.ResponseUri);
+            Logger.LogDebug("{0}: Parsed services list", response.ResponseUri);
             XmlNamespaceManager ns = new XmlNamespaceManager(xmldoc.NameTable);
             ns.AddNamespace("ns", "urn:schemas-upnp-org:device-1-0");
             XmlNodeList nodes = xmldoc.SelectNodes("//*/ns:serviceList", ns);
@@ -212,21 +194,24 @@ namespace Mono.Nat.Upnp
                 {
                     // If the service is a WANIPConnection, then we have what we want.
                     string serviceType = service["serviceType"].InnerText;
-                    NatUtility.LogDebug("{0}: Found service: {1}", response.ResponseUri, serviceType);
-                    StringComparison c = StringComparison.OrdinalIgnoreCase;
-                    // TO DO: Add support for version 2 of UPnP.
-                    if (serviceType.Equals("urn:schemas-upnp-org:service:WANPPPConnection:1", c) ||
-                        serviceType.Equals("urn:schemas-upnp-org:service:WANIPConnection:1", c))
+
+                    Logger.LogDebug("{0}: Found service: {1}", response.ResponseUri, serviceType);
+
+                    if (serviceType.Equals("urn:schemas-upnp-org:service:WANPPPConnection:1", StringComparison.OrdinalIgnoreCase) ||
+                        serviceType.Equals("urn:schemas-upnp-org:service:WANIPConnection:1", StringComparison.OrdinalIgnoreCase) ||
+                        serviceType.Equals("urn:schemas-upnp-org:service:WANPPPConnection:2", StringComparison.OrdinalIgnoreCase) ||
+                        serviceType.Equals("urn:schemas-upnp-org:service:WANIPConnection:2", StringComparison.OrdinalIgnoreCase))
+
                     {
                         var controlUrl = new Uri(service["controlURL"].InnerText, UriKind.RelativeOrAbsolute);
                         IPEndPoint deviceEndpoint = new IPEndPoint(IPAddress.Parse(response.ResponseUri.Host), response.ResponseUri.Port);
-                        NatUtility.LogDebug("{0}: Found upnp service at: {1}", response.ResponseUri, controlUrl.OriginalString);
+                        Logger.LogDebug("{0}: Found upnp service at: {1}", response.ResponseUri, controlUrl.OriginalString);
                         try
                         {
                             if (controlUrl.IsAbsoluteUri)
                             {
                                 deviceEndpoint = new IPEndPoint(IPAddress.Parse(controlUrl.Host), controlUrl.Port);
-                                NatUtility.LogDebug("{0}: New control url: {1}", deviceEndpoint, controlUrl);
+                                Logger.LogDebug("{0}: New control url: {1}", deviceEndpoint, controlUrl);
                             }
                             else
                             {
@@ -236,11 +221,12 @@ namespace Mono.Nat.Upnp
                         catch
                         {
                             controlUrl = new Uri(deviceServiceUri, controlUrl.OriginalString);
-                            NatUtility.LogDebug("{0}: Assuming control Uri is relative: {1}", deviceEndpoint, controlUrl);
+                            Logger.LogDebug("{0}: Assuming control Uri is relative: {1}", deviceEndpoint, controlUrl);
                         }
 
-                        NatUtility.LogDebug("{0}: Handshake Complete", deviceEndpoint);
-                        return new UpnpNatDevice(localAddress, deviceEndpoint, controlUrl, serviceType);
+                        Logger.LogDebug("{0}: Handshake Complete", deviceEndpoint);
+
+                        return new UpnpNatDevice(localAddress, deviceEndpoint, controlUrl, serviceType, Logger);
                     }
                 }
             }
@@ -250,6 +236,12 @@ namespace Mono.Nat.Upnp
             return null;
         }
 
+        /// <inheritdoc/>
+        protected override void Begin()
+        {
+            Clients = new SocketGroup(Initialise(), 1900);
+        }
+
         /// <summary>
         /// The SearchAsync.
         /// </summary>
@@ -257,19 +249,37 @@ namespace Mono.Nat.Upnp
         /// <param name="repeatInterval">The repeatInterval.</param>
         /// <param name="token">The token<see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        protected override async Task SearchAsync(IPAddress gatewayAddress, TimeSpan? repeatInterval, CancellationToken token)
+        protected override async Task SearchAsync(IPAddress? gatewayAddress, TimeSpan? repeatInterval, CancellationToken token)
         {
-            var buffer = gatewayAddress == null ? DiscoverDeviceMessage.EncodeSSDP() : DiscoverDeviceMessage.EncodeUnicast(gatewayAddress);
+            string[] serviceTypes = new[] { "urn:schemas-upnp-org:device:InternetGatewayDevice:1", "urn:schemas-upnp-org:device:InternetGatewayDevice:2" };
 
+            // Send specific individual requests. Original Mono.NAT sent an ssdp:all.
+            // Not all routers respond with the InternetGatewayDevice to ssdp-all requests.
+            // Mine responds primarily with urn:schemas-wifialliance-org:device:WFADevice:1 as it's also a wifi accesspoint.
+            string buffer = gatewayAddress == null ? DiscoverDeviceMessage.EncodeSSDPEmpty() : DiscoverDeviceMessage.EncodeUnicastEmpty(gatewayAddress);
             do
             {
-                await Clients.SendAsync(buffer, gatewayAddress, token).ConfigureAwait(false);
+                foreach (string service in serviceTypes)
+                {
+                    await Clients.SendAsync(
+                        Encoding.ASCII.GetBytes(
+                            buffer.Replace(
+                                "{0}",
+                                service,
+                                StringComparison.OrdinalIgnoreCase)),
+                        gatewayAddress,
+                        token).ConfigureAwait(false);
+                }
+
                 if (!repeatInterval.HasValue)
                 {
                     break;
                 }
 
-                await Task.Delay(repeatInterval.Value, token).ConfigureAwait(false);
+                if (repeatInterval != null)
+                {
+                  await Task.Delay(repeatInterval.Value, token).ConfigureAwait(false);
+                }
             }
             while (true);
         }
@@ -284,7 +294,7 @@ namespace Mono.Nat.Upnp
         protected override async Task HandleMessageReceived(IPAddress localAddress, UdpReceiveResult result, CancellationToken token)
         {
             // Convert it to a string for easy parsing
-            string dataString = null;
+            string dataString = string.Empty;
             var response = result.Buffer;
 
             // No matter what, this method should never throw an exception. If something goes wrong
@@ -293,9 +303,9 @@ namespace Mono.Nat.Upnp
             {
                 dataString = Encoding.UTF8.GetString(response);
 
-                NatUtility.LogDebug("uPnP Search Response: {0}", dataString);
+                Logger.LogDebug("uPnP Search Response: {0}", dataString);
 
-                /* For UPnP Port Mapping we need ot find either WANPPPConnection or WANIPConnection.
+                /* For UPnP Port Mapping we need to find either WANPPPConnection or WANIPConnection.
                  Any other device type is no good to us for this purpose. See the IGP overview paper
                  page 5 for an overview of device types and their hierarchy.
                  http://upnp.org/specs/gw/UPnP-gw-InternetGatewayDevice-v1-Device.pdf */
@@ -307,14 +317,18 @@ namespace Mono.Nat.Upnp
                  prefix. */
 
                 string log = "uPnP Search Response: Router advertised a '{0}' service";
-                StringComparison c = StringComparison.OrdinalIgnoreCase;
-                if (dataString.IndexOf("urn:schemas-upnp-org:service:WANIPConnection:", c) != -1)
+
+                if (dataString.IndexOf("urn:schemas-upnp-org:service:WANIPConnection:", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    NatUtility.LogDebug(log, "urn:schemas-upnp-org:service:WANIPConnection:1");
+                    Logger.LogDebug(log, "urn:schemas-upnp-org:service:WANIPConnection:");
                 }
-                else if (dataString.IndexOf("urn:schemas-upnp-org:service:WANPPPConnection:", c) != -1)
+                else if (dataString.IndexOf("urn:schemas-upnp-org:service:WANPPPConnection:", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    NatUtility.LogDebug(log, "urn:schemas-upnp-org:service:WANPPPConnection:");
+                    Logger.LogDebug(log, "urn:schemas-upnp-org:service:WANPPPConnection:", StringComparison.OrdinalIgnoreCase);
+                }
+                else if (dataString.IndexOf("urn:schemas-upnp-org:device:InternetGatewayDevice:", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    Logger.LogDebug(log, "urn:schemas-upnp-org:device:InternetGatewayDevice:");
                 }
                 else
                 {
@@ -348,7 +362,7 @@ namespace Mono.Nat.Upnp
 
                 // Once we've parsed the information we need, we tell the device to retrieve it's service list
                 // Once we successfully receive the service list, the callback provided will be invoked.
-                NatUtility.LogDebug("Fetching service list: {0}", deviceServiceUri);
+                Logger.LogDebug("Fetching service list: {0}", deviceServiceUri);
                 var d = await GetServicesList(localAddress, deviceServiceUri, token).ConfigureAwait(false);
                 if (d != null)
                 {
@@ -357,7 +371,7 @@ namespace Mono.Nat.Upnp
             }
             catch (Exception ex)
             {
-                NatUtility.LogError(ex, "Unhandled exception when trying to decode a device's response Send me the following data: ", dataString);
+                Logger.LogError(ex, "Unhandled exception when trying to decode a device's response Send me the following data: ", dataString);
             }
         }
     }

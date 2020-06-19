@@ -36,51 +36,66 @@ namespace Mono.Nat
     /// <summary>
     /// Defines the <see cref="NatUtility" />.
     /// </summary>
-    public static class NatUtility
+    public sealed class NatUtility : IDisposable
     {
-        /// <summary>
-        /// Defines the LoggerLocker.
-        /// </summary>
-        private static readonly object _loggerLocker = new object();
-
         /// <summary>
         /// Defines the Locker.
         /// </summary>
-        private static readonly object _locker = new object();
+        private readonly object _locker = new object();
+
+        private readonly ILogger<ISearcher> _logger;
+
+        private readonly PmpSearcher _pmpSeacher;
+
+        private readonly UpnpSearcher _upnpSearcher;
 
         /// <summary>
-        /// Initializes static members of the <see cref="NatUtility"/> class.
+        /// Initializes a new instance of the <see cref="NatUtility"/> class.
         /// </summary>
-        static NatUtility()
+        /// <param name="loggerFactory">ILoggerFactory instance.</param>
+        public NatUtility(ILoggerFactory loggerFactory)
         {
-            foreach (var searcher in new ISearcher[] { UpnpSearcher.Instance, PmpSearcher.Instance })
-            {
-                searcher.DeviceFound += (o, e) => DeviceFound?.Invoke(null, e);
-                searcher.DeviceLost += (o, e) => DeviceLost?.Invoke(null, e);
-            }
+            _logger = loggerFactory.CreateLogger<ISearcher>();
+
+            _upnpSearcher = new UpnpSearcher(_logger);
+            _upnpSearcher.DeviceFound += (o, e) => DeviceFound?.Invoke(null, e);
+            _upnpSearcher.DeviceLost += (o, e) => DeviceLost?.Invoke(null, e);
+
+            _pmpSeacher = new PmpSearcher(_logger);
+            _pmpSeacher.DeviceFound += (o, e) => DeviceFound?.Invoke(null, e);
+            _pmpSeacher.DeviceLost += (o, e) => DeviceLost?.Invoke(null, e);
         }
 
         /// <summary>
         /// Defines the DeviceFound.
         /// </summary>
-        public static event EventHandler<DeviceEventArgs> DeviceFound;
+        public event EventHandler<DeviceEventArgs>? DeviceFound;
 
         /// <summary>
         /// Defines the DeviceLost.
         /// </summary>
-        public static event EventHandler<DeviceEventArgs> DeviceLost;
-
-        /// <summary>
-        /// Gets or sets the Logger.
-        /// </summary>
-#pragma warning disable CS3003 // Type is not CLS-compliant
-        public static ILogger Logger { get; set; }
-#pragma warning restore CS3003 // Type is not CLS-compliant
+        public event EventHandler<DeviceEventArgs>? DeviceLost;
 
         /// <summary>
         /// Gets a value indicating whether IsSearching.
         /// </summary>
-        public static bool IsSearching => PmpSearcher.Instance.Listening || UpnpSearcher.Instance.Listening;
+        public bool IsSearching
+        {
+            get
+            {
+                if (_pmpSeacher != null)
+                {
+                    if (_upnpSearcher != null)
+                    {
+                        return _upnpSearcher.Listening || _pmpSeacher.Listening;
+                    }
+
+                    return _pmpSeacher.Listening;
+                }
+
+                return _upnpSearcher != null && _upnpSearcher.Listening;
+            }
+        }
 
         /// <summary>
         /// Sends a single (non-periodic) message to the specified IP address to see if it supports the
@@ -88,19 +103,17 @@ namespace Mono.Nat
         /// </summary>
         /// <param name="gatewayAddress">The IP address.</param>
         /// <param name="type">.</param>
-        public static void Search(IPAddress gatewayAddress, NatProtocol type)
+        public void Search(IPAddress gatewayAddress, NatProtocol type)
         {
             lock (_locker)
             {
                 if (type == NatProtocol.Pmp)
                 {
-                    PmpSearcher.Instance.Begin();
-                    _ = PmpSearcher.Instance.SearchAsync(gatewayAddress).FireAndForget();
+                    _ = _pmpSeacher.SearchAsync(gatewayAddress).FireAndForget(_logger);
                 }
                 else if (type == NatProtocol.Upnp)
                 {
-                    UpnpSearcher.Instance.Begin();
-                    _ = UpnpSearcher.Instance.SearchAsync(gatewayAddress).FireAndForget();
+                    _ = _upnpSearcher.SearchAsync(gatewayAddress).FireAndForget(_logger);
                 }
                 else
                 {
@@ -113,20 +126,18 @@ namespace Mono.Nat
         /// Re-initialises this object, then periodically send a multicast UDP message to scan for new devices, and begin listening indefinitely for responses.
         /// </summary>
         /// <param name="devices">The protocols which should be searched for. An empty array will result in all supported protocols being used.</param>
-        public static void StartDiscovery(params NatProtocol[] devices)
+        public void StartDiscovery(params NatProtocol[] devices)
         {
             lock (_locker)
             {
                 if (devices.Length == 0 || devices.Contains(NatProtocol.Pmp))
                 {
-                    PmpSearcher.Instance.Begin();
-                    _ = PmpSearcher.Instance.SearchAsync().FireAndForget();
+                    _ = _pmpSeacher.SearchAsync().FireAndForget(_logger);
                 }
 
                 if (devices.Length == 0 || devices.Contains(NatProtocol.Upnp))
                 {
-                    UpnpSearcher.Instance.Begin();
-                    _ = UpnpSearcher.Instance.SearchAsync().FireAndForget();
+                    _ = _upnpSearcher.SearchAsync().FireAndForget(_logger);
                 }
             }
         }
@@ -134,68 +145,20 @@ namespace Mono.Nat
         /// <summary>
         /// Stop listening for responses to the search messages, cancel any pending searches, and frees up resources.
         /// </summary>
-        public static void StopDiscovery()
+        public void StopDiscovery()
         {
             lock (_locker)
             {
-                PmpSearcher.Instance.Finish();
-                UpnpSearcher.Instance.Finish();
+                _pmpSeacher.Stop();
+                _upnpSearcher.Stop();
             }
         }
 
-        /// <summary>
-        /// Logs a debug message.
-        /// </summary>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The args.</param>
-        internal static void LogDebug(string format, params object[] args)
+        /// <inheritdoc/>
+        public void Dispose()
         {
-            ILogger logger = Logger;
-
-            if (logger != null)
-            {
-                lock (_loggerLocker)
-                {
-                    logger.LogDebug(format, args);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Logs a debug message.
-        /// </summary>
-        /// <param name="ex">The exception.</param>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The args.</param>
-        internal static void LogError(Exception ex, string format, params object[] args)
-        {
-            ILogger logger = Logger;
-
-            if (logger != null)
-            {
-                lock (_loggerLocker)
-                {
-                    logger.LogError(ex, format, args);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Logs a warning message.
-        /// </summary>
-        /// <param name="format">The format.</param>
-        /// <param name="args">The args.</param>
-        internal static void LogWarning(string format, params object[] args)
-        {
-            ILogger logger = Logger;
-
-            if (logger != null)
-            {
-                lock (_loggerLocker)
-                {
-                    logger.LogWarning(format, args);
-                }
-            }
+            StopDiscovery();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -122,6 +122,15 @@ namespace Mono.Nat.Pmp
             => Equals(obj as PmpNatDevice);
 
         /// <summary>
+        /// Overridden.
+        /// </summary>
+        /// <returns>.</returns>
+        public override string ToString()
+        {
+            return $"PmpNatDevice - Local Address: {DeviceEndpoint}, Public IP: {PublicAddress}, Last Seen: {LastSeen}";
+        }
+
+        /// <summary>
         /// The SendMessageAsync.
         /// </summary>
         /// <param name="deviceEndpoint">The deviceEndpoint<see cref="IPEndPoint"/>.</param>
@@ -160,15 +169,6 @@ namespace Mono.Nat.Pmp
             var message = ResponseMessage.Decode(receiveResult.Buffer);
 
             return message;
-        }
-
-        /// <summary>
-        /// Overridden.
-        /// </summary>
-        /// <returns>.</returns>
-        public override string ToString()
-        {
-            return $"PmpNatDevice - Local Address: {DeviceEndpoint}, Public IP: {PublicAddress}, Last Seen: {LastSeen}";
         }
     }
 }

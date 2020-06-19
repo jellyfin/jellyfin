@@ -3,6 +3,7 @@ namespace Mono.Nat
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Defines the <see cref="AsyncExtensions" />.
@@ -25,8 +26,9 @@ namespace Mono.Nat
         /// The CatchExceptions.
         /// </summary>
         /// <param name="task">The task<see cref="Task"/>.</param>
+        /// <param name="logger">Ilogger instance.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        public static async Task CatchExceptions(this Task task)
+        public static async Task CatchExceptions(this Task task, ILogger logger)
         {
             try
             {
@@ -38,7 +40,7 @@ namespace Mono.Nat
             }
             catch (Exception ex)
             {
-                NatUtility.LogError(ex, "Unhandled exception.");
+                logger.LogError(ex, "Unhandled exception.");
             }
         }
 
@@ -46,8 +48,9 @@ namespace Mono.Nat
         /// The FireAndForget.
         /// </summary>
         /// <param name="task">The task<see cref="Task"/>.</param>
+        /// <param name="logger">Ilogger instance.</param>
         /// <returns>A Task.</returns>
-        public static async Task FireAndForget(this Task task)
+        public static async Task FireAndForget(this Task task, ILogger logger)
         {
             try
             {
@@ -59,7 +62,7 @@ namespace Mono.Nat
             }
             catch (Exception ex)
             {
-                NatUtility.LogError(ex, "Unhandled exception.");
+                logger.LogError(ex, "Unhandled exception.");
             }
         }
 
@@ -67,7 +70,8 @@ namespace Mono.Nat
         /// The WaitAndForget.
         /// </summary>
         /// <param name="task">The task<see cref="Task"/>.</param>
-        public static void WaitAndForget(this Task task)
+        /// <param name="logger">ILogger instance.</param>
+        public static void WaitAndForget(this Task task, ILogger logger)
         {
             try
             {
@@ -79,7 +83,7 @@ namespace Mono.Nat
             }
             catch (Exception ex)
             {
-                NatUtility.LogError(ex, "Unhandled exception.");
+                logger.LogError(ex, "Unhandled exception.");
             }
         }
 
@@ -91,7 +95,7 @@ namespace Mono.Nat
             /// <summary>
             /// Defines the semaphore.
             /// </summary>
-            private SemaphoreSlim _semaphore;
+            private readonly SemaphoreSlim _semaphore;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="SemaphoreSlimDisposable"/> class.
@@ -120,7 +124,6 @@ namespace Mono.Nat
                 if (disposing)
                 {
                     _semaphore?.Release();
-                    _semaphore = null;
                 }
             }
         }

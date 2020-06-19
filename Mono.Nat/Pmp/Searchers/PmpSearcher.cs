@@ -35,6 +35,7 @@ namespace Mono.Nat.Pmp
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Defines the <see cref="PmpSearcher" />.
@@ -42,33 +43,26 @@ namespace Mono.Nat.Pmp
     internal class PmpSearcher : Searcher
     {
         /// <summary>
-        /// Initializes static members of the <see cref="PmpSearcher"/> class.
-        /// </summary>
-        static PmpSearcher()
-        {
-            Instance = new PmpSearcher(new SocketGroup(Initialise(), PmpConstants.ServerPort));
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="PmpSearcher"/> class.
         /// </summary>
-        /// <param name="sockets">The sockets<see cref="SocketGroup"/>.</param>
-        private PmpSearcher(SocketGroup sockets)
-            : base(sockets)
+        /// <param name="logger">ILogger instane.</param>
+        public PmpSearcher(ILogger<ISearcher> logger)
+            : base(logger)
         {
         }
-
-        /// <summary>
-        /// Gets the Instance.
-        /// </summary>
-        public static ISearcher Instance { get; }
 
         /// <summary>
         /// Gets the Protocol.
         /// </summary>
         public override NatProtocol Protocol => NatProtocol.Pmp;
 
-        public static Dictionary<UdpClient, List<IPAddress>> Initialise()
+        public override void Stop()
+        {
+            base.Stop();
+            Clients.Reset();
+        }
+
+        internal static Dictionary<UdpClient, List<IPAddress>> Initialise()
         {
             var clients = new Dictionary<UdpClient, List<IPAddress>>();
 
@@ -141,26 +135,13 @@ namespace Mono.Nat.Pmp
             return clients;
         }
 
-        public override void Finish()
-        {
-            base.Finish();
-            Clients = null;
-        }
-
-        public override void Begin()
-        {
-            base.Begin();
-            Clients = new SocketGroup(Initialise(), PmpConstants.ServerPort);
-        }
-
-
         /// <summary>
         /// The SearchOnce.
         /// </summary>
         /// <param name="gatewayAddress">The gatewayAddress<see cref="IPAddress"/>.</param>
         /// <param name="token">The token<see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        internal async Task SearchOnce(IPAddress gatewayAddress, CancellationToken token)
+        internal async Task SearchOnce(IPAddress? gatewayAddress, CancellationToken token)
         {
             var buffer = new[] { PmpConstants.Version, PmpConstants.OperationCode };
             var delay = PmpConstants.RetryDelay;
@@ -173,6 +154,11 @@ namespace Mono.Nat.Pmp
             }
         }
 
+        protected override void Begin()
+        {
+            Clients = new SocketGroup(Initialise(), PmpConstants.ServerPort);
+        }
+
         /// <summary>
         /// The SearchAsync.
         /// </summary>
@@ -180,7 +166,7 @@ namespace Mono.Nat.Pmp
         /// <param name="repeatInterval">The repeatInterval.</param>
         /// <param name="token">The token<see cref="CancellationToken"/>.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        protected override async Task SearchAsync(IPAddress gatewayAddress, TimeSpan? repeatInterval, CancellationToken token)
+        protected override async Task SearchAsync(IPAddress? gatewayAddress, TimeSpan? repeatInterval, CancellationToken token)
         {
             do
             {
@@ -236,7 +222,7 @@ namespace Mono.Nat.Pmp
             int errorcode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(response, 2));
             if (errorcode != 0)
             {
-                NatUtility.LogWarning("Non zero error: {0}", errorcode);
+                Logger.LogWarning("Non zero error: {0}", errorcode);
             }
 
             var publicIp = new IPAddress(new byte[] { response[8], response[9], response[10], response[11] });
