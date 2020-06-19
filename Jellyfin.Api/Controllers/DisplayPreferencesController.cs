@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using MediaBrowser.Controller.Persistence;
