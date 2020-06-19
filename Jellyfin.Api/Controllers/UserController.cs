@@ -1,9 +1,7 @@
-﻿#nullable enable
-#pragma warning disable CA1801
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -76,6 +74,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isGuest", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<UserDto>> GetUsers(
             [FromQuery] bool? isHidden,
             [FromQuery] bool? isDisabled,
@@ -97,7 +96,7 @@ namespace Jellyfin.Api.Controllers
             // If the startup wizard hasn't been completed then just return all users
             if (!_config.Configuration.IsStartupWizardCompleted)
             {
-                return Ok(GetUsers(false, false, false).Value);
+                return Ok(Get(false, false, false, false));
             }
 
             return Ok(Get(false, false, true, true));
@@ -124,7 +123,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var result = _userManager.GetUserDto(user, HttpContext.Connection.RemoteIpAddress.ToString());
-            return Ok(result);
+            return result;
         }
 
         /// <summary>
@@ -219,7 +218,7 @@ namespace Jellyfin.Api.Controllers
                     Username = request.Username
                 }).ConfigureAwait(false);
 
-                return Ok(result);
+                return result;
             }
             catch (SecurityException e)
             {
@@ -476,7 +475,7 @@ namespace Jellyfin.Api.Controllers
 
             var result = _userManager.GetUserDto(newUser, HttpContext.Connection.RemoteIpAddress.ToString());
 
-            return Ok(result);
+            return result;
         }
 
         /// <summary>
@@ -494,7 +493,7 @@ namespace Jellyfin.Api.Controllers
 
             var result = await _userManager.StartForgotPasswordProcess(enteredUsername, isLocal).ConfigureAwait(false);
 
-            return Ok(result);
+            return result;
         }
 
         /// <summary>
@@ -508,7 +507,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string pin)
         {
             var result = await _userManager.RedeemPasswordResetPin(pin).ConfigureAwait(false);
-            return Ok(result);
+            return result;
         }
 
         private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
@@ -545,8 +544,7 @@ namespace Jellyfin.Api.Controllers
 
             var result = users
                 .OrderBy(u => u.Username)
-                .Select(i => _userManager.GetUserDto(i, HttpContext.Connection.RemoteIpAddress.ToString()))
-                .ToArray();
+                .Select(i => _userManager.GetUserDto(i, HttpContext.Connection.RemoteIpAddress.ToString()));
 
             return result;
         }
