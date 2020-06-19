@@ -1,10 +1,9 @@
 ARG DOTNET_VERSION=3.1
-ARG SOURCE_DIR=/src
-ARG ARTIFACT_DIR=/jellyfin
 
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNET_VERSION}-buster as builder
 
-RUN mkdir ${SOURCE_DIR}
+ARG SOURCE_DIR=/src
+ARG ARTIFACT_DIR=/jellyfin
 
 WORKDIR ${SOURCE_DIR}
 COPY . .
