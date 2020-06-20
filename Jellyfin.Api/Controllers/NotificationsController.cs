@@ -1,7 +1,6 @@
-#pragma warning disable CA1801
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Models.NotificationDtos;
@@ -45,6 +44,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing a list of notifications.</returns>
         [HttpGet("{UserID}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isRead", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "startIndex", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "limit", Justification = "Imported from ServiceStack")]
         public ActionResult<NotificationResultDto> GetNotifications(
             [FromRoute] string userId,
             [FromQuery] bool? isRead,
@@ -62,6 +65,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <cref see="OkResult"/> containing a summary of the users notifications.</returns>
         [HttpGet("{UserID}/Summary")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
         public ActionResult<NotificationsSummaryDto> GetNotificationsSummary(
             [FromRoute] string userId)
         {
@@ -136,6 +140,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("{UserID}/Read")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "ids", Justification = "Imported from ServiceStack")]
         public ActionResult SetRead(
             [FromRoute] string userId,
             [FromQuery] string ids)
@@ -152,6 +158,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("{UserID}/Unread")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "ids", Justification = "Imported from ServiceStack")]
         public ActionResult SetUnread(
             [FromRoute] string userId,
             [FromQuery] string ids)

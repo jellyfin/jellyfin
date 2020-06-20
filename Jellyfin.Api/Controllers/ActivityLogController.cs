@@ -1,6 +1,5 @@
-#pragma warning disable CA1801
-
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
@@ -41,6 +40,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{ActivityLogEntry}"/> containing the log entries.</returns>
         [HttpGet("Entries")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "hasUserId", Justification = "Imported from ServiceStack")]
         public ActionResult<QueryResult<ActivityLogEntry>> GetLogEntries(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
