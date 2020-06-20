@@ -54,17 +54,13 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="appHost">The application host.</param>
         /// <param name="imageProcessor">The image processor.</param>
         /// <param name="logger">The logger.</param>
-        /// <param name="passwordResetProviders">A function that returns available password reset providers.</param>
-        /// <param name="authenticationProviders">A function that returns available authentication providers.</param>
         public UserManager(
             JellyfinDbProvider dbProvider,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
             IApplicationHost appHost,
             IImageProcessor imageProcessor,
-            ILogger<UserManager> logger,
-            Func<IReadOnlyCollection<IPasswordResetProvider>> passwordResetProviders,
-            Func<IReadOnlyCollection<IAuthenticationProvider>> authenticationProviders)
+            ILogger<UserManager> logger)
         {
             _dbProvider = dbProvider;
             _cryptoProvider = cryptoProvider;
@@ -73,8 +69,8 @@ namespace Jellyfin.Server.Implementations.Users
             _imageProcessor = imageProcessor;
             _logger = logger;
 
-            _passwordResetProviders = passwordResetProviders.Invoke();
-            _authenticationProviders = authenticationProviders.Invoke();
+            _passwordResetProviders = appHost.GetExports<IPasswordResetProvider>();
+            _authenticationProviders = appHost.GetExports<IAuthenticationProvider>();
 
             _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
             _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
@@ -537,7 +533,12 @@ namespace Jellyfin.Server.Implementations.Users
             if (user != null && isInNetwork)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
-                return await passwordResetProvider.StartForgotPasswordProcess(user, isInNetwork).ConfigureAwait(false);
+                var result = await passwordResetProvider
+                    .StartForgotPasswordProcess(user, isInNetwork)
+                    .ConfigureAwait(false);
+
+                await UpdateUserAsync(user).ConfigureAwait(false);
+                return result;
             }
 
             return new ForgotPasswordResult

@@ -547,9 +547,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton(ServerConfigurationManager);
 
-            serviceCollection.AddSingleton<Func<IReadOnlyCollection<IPasswordResetProvider>>>(() => GetExports<IPasswordResetProvider>());
-            serviceCollection.AddSingleton<Func<IReadOnlyCollection<IAuthenticationProvider>>>(() => GetExports<IAuthenticationProvider>());
-
             serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
