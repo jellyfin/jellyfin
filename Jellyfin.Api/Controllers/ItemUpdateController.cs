@@ -64,7 +64,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Item not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
         [HttpPost("/Items/{itemId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateItem([FromRoute] Guid itemId, [FromBody, BindRequired] BaseItemDto request)
         {
@@ -191,6 +191,8 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Item not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
         [HttpPost("/Items/{itemId}/ContentType")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateItemContentType([FromRoute] Guid itemId, [FromQuery, BindRequired] string contentType)
         {
             var item = _libraryManager.GetItemById(itemId);
