@@ -1,8 +1,7 @@
-#pragma warning disable CA1801
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -251,9 +250,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Videos/{id}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetSubtitlePlaylist(
             [FromRoute] Guid id,
-            // TODO: 'int index' is never used: CA1801 is disabled
             [FromRoute] int index,
             [FromRoute] string mediaSourceId,
             [FromQuery, Required] int segmentLength)

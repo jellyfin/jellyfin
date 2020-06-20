@@ -1,4 +1,5 @@
 ﻿using System;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +28,30 @@ namespace Jellyfin.Api.Helpers
             return removeEmpty
                 ? value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
                 : value.Split(separator);
+        }
+
+        /// <summary>
+        /// Checks if the user can update an entry.
+        /// </summary>
+        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
+        /// <param name="requestContext">The <see cref="HttpRequest"/>.</param>
+        /// <param name="userId">The user id.</param>
+        /// <param name="restrictUserPreferences">Whether to restrict the user preferences.</param>
+        /// <returns>A <see cref="bool"/> whether the user can update the entry.</returns>
+        internal static bool AssertCanUpdateUser(IAuthorizationContext authContext, HttpRequest requestContext, Guid userId, bool restrictUserPreferences)
+        {
+            var auth = authContext.GetAuthorizationInfo(requestContext);
+
+            var authenticatedUser = auth.User;
+
+            // If they're going to update the record of another user, they must be an administrator
+            if ((!userId.Equals(auth.UserId) && !authenticatedUser.HasPermission(PermissionKind.IsAdministrator))
+                || (restrictUserPreferences && !authenticatedUser.EnableUserPreferenceAccess))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         internal static SessionInfo GetSession(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)

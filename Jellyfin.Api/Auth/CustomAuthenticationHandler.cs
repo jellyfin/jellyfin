@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Globalization;
 using System.Security.Authentication;
 using System.Security.Claims;
