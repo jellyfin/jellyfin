@@ -60,9 +60,9 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="request">The new item properties.</param>
-        /// <response code="200">Item updated.</response>
+        /// <response code="204">Item updated.</response>
         /// <response code="404">Item not found.</response>
-        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
+        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
         [HttpPost("/Items/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Controllers
                     RefreshPriority.High);
             }
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -187,9 +187,9 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="contentType">The content type of the item.</param>
-        /// <response code="200">Item content type updated.</response>
+        /// <response code="204">Item content type updated.</response>
         /// <response code="404">Item not found.</response>
-        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
+        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
         [HttpPost("/Items/{itemId}/ContentType")]
         public ActionResult UpdateItemContentType([FromRoute] Guid itemId, [FromQuery, BindRequired] string contentType)
         {
@@ -217,7 +217,7 @@ namespace Jellyfin.Api.Controllers
 
             _serverConfigurationManager.Configuration.ContentTypes = types.ToArray();
             _serverConfigurationManager.SaveConfiguration();
-            return Ok();
+            return NoContent();
         }
 
         private void UpdateItem(BaseItemDto request, BaseItem item)
