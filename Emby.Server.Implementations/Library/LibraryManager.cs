@@ -17,6 +17,8 @@ using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -25,7 +27,6 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -46,6 +47,9 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
 
@@ -56,7 +60,7 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryManager> _logger;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -93,13 +97,13 @@ namespace Emby.Server.Implementations.Library
         private IIntroProvider[] IntroProviders { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of entity resolution ignore rules
+        /// Gets or sets the list of entity resolution ignore rules.
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
         private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of currently registered entity resolvers
+        /// Gets or sets the list of currently registered entity resolvers.
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
         private IItemResolver[] EntityResolvers { get; set; }
@@ -205,12 +209,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The _root folder
+        /// The _root folder.
         /// </summary>
         private volatile AggregateFolder _rootFolder;
 
         /// <summary>
-        /// The _root folder sync lock
+        /// The _root folder sync lock.
         /// </summary>
         private readonly object _rootFolderSyncLock = new object();
 
@@ -623,7 +627,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Determines whether a path should be ignored based on its contents - called after the contents have been read
+        /// Determines whether a path should be ignored based on its contents - called after the contents have been read.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
@@ -905,7 +909,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
@@ -986,7 +990,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1539,7 +1543,8 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // Handle grouping
-                if (user != null && !string.IsNullOrEmpty(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType) && user.Configuration.GroupedFolders.Length > 0)
+                if (user != null && !string.IsNullOrEmpty(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType)
+                    && user.GetPreference(PreferenceKind.GroupedFolders).Length > 0)
                 {
                     return GetUserRootFolder()
                         .GetChildren(user, true)
@@ -2590,7 +2595,7 @@ namespace Emby.Server.Implementations.Library
                     Anime series don't generally have a season in their file name, however,
                     tvdb needs a season to correctly get the metadata.
                     Hence, a null season needs to be filled with something. */
-                    //FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
+                    // FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
                     episode.ParentIndexNumber = 1;
                 }
 
@@ -2779,10 +2784,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (string.IsNullOrWhiteSpace(from))
             {
                 throw new ArgumentNullException(nameof(from));
             }
+
             if (string.IsNullOrWhiteSpace(to))
             {
                 throw new ArgumentNullException(nameof(to));
@@ -2856,7 +2863,6 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error getting person");
                     return null;
                 }
-
             }).Where(i => i != null).ToList();
         }
 
@@ -2986,7 +2992,7 @@ namespace Emby.Server.Implementations.Library
 
         private static bool ValidateNetworkPath(string path)
         {
-            //if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            // if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             //{
             //    // We can't validate protocol-based paths, so just allow them
             //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)

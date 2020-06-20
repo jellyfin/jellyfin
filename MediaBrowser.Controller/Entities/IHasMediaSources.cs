@@ -13,7 +13,9 @@ namespace MediaBrowser.Controller.Entities
         List<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution);
         List<MediaStream> GetMediaStreams();
         Guid Id { get; set; }
+
         long? RunTimeTicks { get; set; }
+
         string Path { get; }
     }
 }

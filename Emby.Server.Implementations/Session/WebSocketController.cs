@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Session
 {
     public sealed class WebSocketController : ISessionController, IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<WebSocketController> _logger;
         private readonly ISessionManager _sessionManager;
         private readonly SessionInfo _session;
 

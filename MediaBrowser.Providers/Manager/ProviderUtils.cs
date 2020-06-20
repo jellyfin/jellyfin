@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Manager
         public static void MergeBaseItemData<T>(
             MetadataResult<T> sourceResult,
             MetadataResult<T> targetResult,
-            MetadataFields[] lockedFields,
+            MetadataField[] lockedFields,
             bool replaceData,
             bool mergeMetadataSettings)
             where T : BaseItem
@@ -26,12 +26,13 @@ namespace MediaBrowser.Providers.Manager
             {
                 throw new ArgumentNullException(nameof(source));
             }
+
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));
             }
 
-            if (!lockedFields.Contains(MetadataFields.Name))
+            if (!lockedFields.Contains(MetadataField.Name))
             {
                 if (replaceData || string.IsNullOrEmpty(target.Name))
                 {
@@ -62,7 +63,7 @@ namespace MediaBrowser.Providers.Manager
                 target.EndDate = source.EndDate;
             }
 
-            if (!lockedFields.Contains(MetadataFields.Genres))
+            if (!lockedFields.Contains(MetadataField.Genres))
             {
                 if (replaceData || target.Genres.Length == 0)
                 {
@@ -75,7 +76,7 @@ namespace MediaBrowser.Providers.Manager
                 target.IndexNumber = source.IndexNumber;
             }
 
-            if (!lockedFields.Contains(MetadataFields.OfficialRating))
+            if (!lockedFields.Contains(MetadataField.OfficialRating))
             {
                 if (replaceData || string.IsNullOrEmpty(target.OfficialRating))
                 {
@@ -93,7 +94,7 @@ namespace MediaBrowser.Providers.Manager
                 target.Tagline = source.Tagline;
             }
 
-            if (!lockedFields.Contains(MetadataFields.Overview))
+            if (!lockedFields.Contains(MetadataField.Overview))
             {
                 if (replaceData || string.IsNullOrEmpty(target.Overview))
                 {
@@ -106,12 +107,11 @@ namespace MediaBrowser.Providers.Manager
                 target.ParentIndexNumber = source.ParentIndexNumber;
             }
 
-            if (!lockedFields.Contains(MetadataFields.Cast))
+            if (!lockedFields.Contains(MetadataField.Cast))
             {
                 if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
                 {
                     targetResult.People = sourceResult.People;
-
                 }
                 else if (targetResult.People != null && sourceResult.People != null)
                 {
@@ -129,7 +129,7 @@ namespace MediaBrowser.Providers.Manager
                 target.ProductionYear = source.ProductionYear;
             }
 
-            if (!lockedFields.Contains(MetadataFields.Runtime))
+            if (!lockedFields.Contains(MetadataField.Runtime))
             {
                 if (replaceData || !target.RunTimeTicks.HasValue)
                 {
@@ -140,7 +140,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (!lockedFields.Contains(MetadataFields.Studios))
+            if (!lockedFields.Contains(MetadataField.Studios))
             {
                 if (replaceData || target.Studios.Length == 0)
                 {
@@ -148,7 +148,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (!lockedFields.Contains(MetadataFields.Tags))
+            if (!lockedFields.Contains(MetadataField.Tags))
             {
                 if (replaceData || target.Tags.Length == 0)
                 {
@@ -156,7 +156,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (!lockedFields.Contains(MetadataFields.ProductionLocations))
+            if (!lockedFields.Contains(MetadataField.ProductionLocations))
             {
                 if (replaceData || target.ProductionLocations.Length == 0)
                 {

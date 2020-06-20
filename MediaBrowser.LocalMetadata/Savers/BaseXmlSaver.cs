@@ -17,11 +17,26 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
+    /// <inheritdoc />
     public abstract class BaseXmlSaver : IMetadataFileSaver
     {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        /// <summary>
+        /// Gets the date added format.
+        /// </summary>
+        public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
-        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger)
+        private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BaseXmlSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{BaseXmlSaver}"/> interface.</param>
+        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<BaseXmlSaver> logger)
         {
             FileSystem = fileSystem;
             ConfigurationManager = configurationManager;
@@ -31,15 +46,40 @@ namespace MediaBrowser.LocalMetadata.Savers
             Logger = logger;
         }
 
+        /// <summary>
+        /// Gets the file system.
+        /// </summary>
         protected IFileSystem FileSystem { get; private set; }
-        protected IServerConfigurationManager ConfigurationManager { get; private set; }
-        protected ILibraryManager LibraryManager { get; private set; }
-        protected IUserManager UserManager { get; private set; }
-        protected IUserDataManager UserDataManager { get; private set; }
-        protected ILogger Logger { get; private set; }
 
+        /// <summary>
+        /// Gets the configuration manager.
+        /// </summary>
+        protected IServerConfigurationManager ConfigurationManager { get; private set; }
+
+        /// <summary>
+        /// Gets the library manager.
+        /// </summary>
+        protected ILibraryManager LibraryManager { get; private set; }
+
+        /// <summary>
+        /// Gets the user manager.
+        /// </summary>
+        protected IUserManager UserManager { get; private set; }
+
+        /// <summary>
+        /// Gets the user data manager.
+        /// </summary>
+        protected IUserDataManager UserDataManager { get; private set; }
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        protected ILogger<BaseXmlSaver> Logger { get; private set; }
+
+        /// <inheritdoc />
         public string Name => XmlProviderUtils.Name;
 
+        /// <inheritdoc />
         public string GetSavePath(BaseItem item)
         {
             return GetLocalSavePath(item);
@@ -70,20 +110,19 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
         public abstract bool IsEnabledFor(BaseItem item, ItemUpdateType updateType);
 
+        /// <inheritdoc />
         public void Save(BaseItem item, CancellationToken cancellationToken)
         {
             var path = GetSavePath(item);
 
-            using (var memoryStream = new MemoryStream())
-            {
-                Save(item, memoryStream, path);
+            using var memoryStream = new MemoryStream();
+            Save(item, memoryStream);
 
-                memoryStream.Position = 0;
+            memoryStream.Position = 0;
 
-                cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-                SaveToFile(memoryStream, path);
-            }
+            SaveToFile(memoryStream, path);
         }
 
         private void SaveToFile(Stream stream, string path)
@@ -115,7 +154,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
         }
 
-        private void Save(BaseItem item, Stream stream, string xmlPath)
+        private void Save(BaseItem item, Stream stream)
         {
             var settings = new XmlWriterSettings
             {
@@ -136,7 +175,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                 if (baseItem != null)
                 {
-                    AddCommonNodes(baseItem, writer, LibraryManager, UserManager, UserDataManager, FileSystem, ConfigurationManager);
+                    AddCommonNodes(baseItem, writer, LibraryManager);
                 }
 
                 WriteCustomElements(item, writer);
@@ -147,22 +186,27 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
         }
 
+        /// <summary>
+        /// Write custom elements.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="writer">The xml writer.</param>
         protected abstract void WriteCustomElements(BaseItem item, XmlWriter writer);
-
-        public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
         /// <summary>
         /// Adds the common nodes.
         /// </summary>
-        /// <returns>Task.</returns>
-        public static void AddCommonNodes(BaseItem item, XmlWriter writer, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepo, IFileSystem fileSystem, IServerConfigurationManager config)
+        /// <param name="item">The item.</param>
+        /// <param name="writer">The xml writer.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        public static void AddCommonNodes(BaseItem item, XmlWriter writer, ILibraryManager libraryManager)
         {
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
                 writer.WriteElementString("ContentRating", item.OfficialRating);
             }
 
-            writer.WriteElementString("Added", item.DateCreated.ToLocalTime().ToString("G"));
+            writer.WriteElementString("Added", item.DateCreated.ToLocalTime().ToString("G", CultureInfo.InvariantCulture));
 
             writer.WriteElementString("LockData", item.IsLocked.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
@@ -173,7 +217,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item.CriticRating.HasValue)
             {
-                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(UsCulture));
+                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(_usCulture));
             }
 
             if (!string.IsNullOrEmpty(item.Overview))
@@ -185,6 +229,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 writer.WriteElementString("OriginalTitle", item.OriginalTitle);
             }
+
             if (!string.IsNullOrEmpty(item.CustomRating))
             {
                 writer.WriteElementString("CustomRating", item.CustomRating);
@@ -205,11 +250,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 if (item is Person)
                 {
-                    writer.WriteElementString("BirthDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd"));
+                    writer.WriteElementString("BirthDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
                 else if (!(item is Episode))
                 {
-                    writer.WriteElementString("PremiereDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd"));
+                    writer.WriteElementString("PremiereDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
             }
 
@@ -217,11 +262,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 if (item is Person)
                 {
-                    writer.WriteElementString("DeathDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd"));
+                    writer.WriteElementString("DeathDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
                 else if (!(item is Episode))
                 {
-                    writer.WriteElementString("EndDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd"));
+                    writer.WriteElementString("EndDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
             }
 
@@ -257,12 +302,12 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item.CommunityRating.HasValue)
             {
-                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(UsCulture));
+                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(_usCulture));
             }
 
             if (item.ProductionYear.HasValue && !(item is Person))
             {
-                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(UsCulture));
+                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(_usCulture));
             }
 
             var hasAspectRatio = item as IHasAspectRatio;
@@ -278,6 +323,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 writer.WriteElementString("Language", item.PreferredMetadataLanguage);
             }
+
             if (!string.IsNullOrEmpty(item.PreferredMetadataCountryCode))
             {
                 writer.WriteElementString("CountryCode", item.PreferredMetadataCountryCode);
@@ -288,9 +334,9 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (runTimeTicks.HasValue)
             {
-                var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
+                var timespan = TimeSpan.FromTicks(runTimeTicks!.Value);
 
-                writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(UsCulture));
+                writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(_usCulture));
             }
 
             if (item.ProviderIds != null)
@@ -363,7 +409,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     if (person.SortOrder.HasValue)
                     {
-                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(UsCulture));
+                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(_usCulture));
                     }
 
                     writer.WriteEndElement();
@@ -393,6 +439,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             AddMediaInfo(item, writer);
         }
 
+        /// <summary>
+        /// Add shares.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="writer">The xml writer.</param>
         public static void AddShares(IHasShares item, XmlWriter writer)
         {
             writer.WriteStartElement("Shares");
@@ -415,13 +466,13 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <summary>
         /// Appends the media info.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="item">The item.</param>
+        /// <param name="writer">The xml writer.</param>
+        /// <typeparam name="T">Type of item.</typeparam>
         public static void AddMediaInfo<T>(T item, XmlWriter writer)
             where T : BaseItem
         {
-            var video = item as Video;
-
-            if (video != null)
+            if (item is Video video)
             {
                 if (video.Video3DFormat.HasValue)
                 {
@@ -447,6 +498,13 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
         }
 
+        /// <summary>
+        /// ADd linked children.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="writer">The xml writer.</param>
+        /// <param name="pluralNodeName">The plural node name.</param>
+        /// <param name="singularNodeName">The singular node name.</param>
         public static void AddLinkedChildren(Folder item, XmlWriter writer, string pluralNodeName, string singularNodeName)
         {
             var items = item.LinkedChildren

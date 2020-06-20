@@ -33,6 +33,13 @@ jobs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
 
+      - task: DotNetCoreCLI@2
+        displayName: 'Install ABI CompatibilityChecker tool'
+        inputs:
+          command: custom
+          custom: tool
+          arguments: 'update compatibilitychecker -g'
+
       - task: DownloadPipelineArtifact@2
         displayName: "Download New Assembly Build Artifact"
         inputs:
@@ -72,25 +79,11 @@ jobs:
           overWrite: true
           flattenFolders: true
 
-      - task: DownloadGitHubRelease@0
-        displayName: "Download ABI Compatibility Check Tool"
-        inputs:
-          connection: Jellyfin Release Download
-          userRepository: EraYaN/dotnet-compatibility
-          defaultVersionType: "latest"
-          itemPattern: "**-ci.zip"
-          downloadPath: "$(System.ArtifactsDirectory)"
-
-      - task: ExtractFiles@1
-        displayName: "Extract ABI Compatibility Check Tool"
-        inputs:
-          archiveFilePatterns: "$(System.ArtifactsDirectory)/*-ci.zip"
-          destinationFolder: $(System.ArtifactsDirectory)/tools
-          cleanDestinationFolder: true
-
       # The `--warnings-only` switch will swallow the return code and not emit any errors.
-      - task: CmdLine@2
-        displayName: "Execute ABI Compatibility Check Tool"
+      - task: DotNetCoreCLI@2
+        displayName: 'Execute ABI Compatibility Check Tool'
         inputs:
-          script: "dotnet tools/CompatibilityCheckerCLI.dll current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines --warnings-only"
+          command: custom
+          custom: compat
+          arguments: 'current-release/$(AssemblyFileName) new-release/$(AssemblyFileName) --azure-pipelines --warnings-only'
           workingDirectory: $(System.ArtifactsDirectory)

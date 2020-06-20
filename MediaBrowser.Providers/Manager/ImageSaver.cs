@@ -5,34 +5,38 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Person = MediaBrowser.Controller.Entities.Person;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
 
 namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
-    /// Class ImageSaver
+    /// Class ImageSaver.
     /// </summary>
     public class ImageSaver
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         /// <summary>
-        /// The _config
+        /// The _config.
         /// </summary>
         private readonly IServerConfigurationManager _config;
 
         /// <summary>
-        /// The _directory watchers
+        /// The _directory watchers.
         /// </summary>
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
@@ -78,11 +82,6 @@ namespace MediaBrowser.Providers.Manager
 
             var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && !(item is Audio);
 
-            if (item is User)
-            {
-                saveLocally = true;
-            }
-
             if (type != ImageType.Primary && item is Episode)
             {
                 saveLocally = false;
@@ -105,6 +104,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
+
             if (saveLocallyWithMedia.HasValue && !saveLocallyWithMedia.Value)
             {
                 saveLocally = saveLocallyWithMedia.Value;
@@ -132,11 +132,11 @@ namespace MediaBrowser.Providers.Manager
 
             var currentImage = GetCurrentImage(item, type, index);
             var currentImageIsLocalFile = currentImage != null && currentImage.IsLocalFile;
-            var currentImagePath = currentImage == null ? null : currentImage.Path;
+            var currentImagePath = currentImage?.Path;
 
             var savedPaths = new List<string>();
 
-            using (source)
+            await using (source)
             {
                 var currentPathIndex = 0;
 
@@ -148,6 +148,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         retryPath = retryPaths[currentPathIndex];
                     }
+
                     var savedPath = await SaveImageToLocation(source, path, retryPath, cancellationToken).ConfigureAwait(false);
                     savedPaths.Add(savedPath);
                     currentPathIndex++;
@@ -172,13 +173,17 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (FileNotFoundException)
                 {
-
                 }
                 finally
                 {
                     _libraryMonitor.ReportFileSystemChangeComplete(currentPath, false);
                 }
             }
+        }
+
+        public async Task SaveImage(User user, Stream source, string path)
+        {
+            await SaveImageToLocation(source, path, path, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task<string> SaveImageToLocation(Stream source, string path, string retryPath, CancellationToken cancellationToken)
@@ -244,7 +249,7 @@ namespace MediaBrowser.Providers.Manager
 
                 _fileSystem.SetAttributes(path, false, false);
 
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
                 {
                     await source.CopyToAsync(fs, IODefaults.CopyToBufferSize, cancellationToken).ConfigureAwait(false);
                 }
@@ -439,7 +444,6 @@ namespace MediaBrowser.Providers.Manager
                 {
                     path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
                 }
-
                 else if (item.IsInMixedFolder)
                 {
                     path = GetSavePathForItemInMixedFolder(item, type, filename, extension);
@@ -458,6 +462,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     filename = folderName;
                 }
+
                 path = Path.Combine(item.GetInternalMetadataPath(), filename + extension);
             }
 
@@ -549,6 +554,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     list.Add(Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension));
                 }
+
                 return list.ToArray();
             }
 
@@ -617,6 +623,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 imageFilename = "poster";
             }
+
             var folder = Path.GetDirectoryName(item.Path);
 
             return Path.Combine(folder, Path.GetFileNameWithoutExtension(item.Path) + "-" + imageFilename + extension);

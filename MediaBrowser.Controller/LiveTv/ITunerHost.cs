@@ -50,6 +50,7 @@ namespace MediaBrowser.Controller.LiveTv
             get;
         }
     }
+
     public interface IConfigurableTunerHost
     {
         /// <summary>

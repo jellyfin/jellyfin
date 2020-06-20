@@ -11,13 +11,12 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetConfiguration
+    /// Class GetConfiguration.
     /// </summary>
     [Route("/System/Configuration", "GET", Summary = "Gets application configuration")]
     [Authenticated]
     public class GetConfiguration : IReturn<ServerConfiguration>
     {
-
     }
 
     [Route("/System/Configuration/{Key}", "GET", Summary = "Gets a named configuration")]
@@ -29,7 +28,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdateConfiguration
+    /// Class UpdateConfiguration.
     /// </summary>
     [Route("/System/Configuration", "POST", Summary = "Updates application configuration")]
     [Authenticated(Roles = "Admin")]
@@ -51,7 +50,6 @@ namespace MediaBrowser.Api
     [Authenticated(Roles = "Admin")]
     public class GetDefaultMetadataOptions : IReturn<MetadataOptions>
     {
-
     }
 
     [Route("/System/MediaEncoder/Path", "POST", Summary = "Updates the path to the media encoder")]
@@ -67,12 +65,12 @@ namespace MediaBrowser.Api
     public class ConfigurationService : BaseApiService
     {
         /// <summary>
-        /// The _json serializer
+        /// The _json serializer.
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// The _configuration manager
+        /// The _configuration manager.
         /// </summary>
         private readonly IServerConfigurationManager _configurationManager;
 

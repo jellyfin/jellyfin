@@ -350,7 +350,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                     if (!string.IsNullOrWhiteSpace(tmdbid))
                     {
-                        item.SetProviderId(MetadataProviders.Tmdb, tmdbid);
+                        item.SetProviderId(MetadataProvider.Tmdb, tmdbid);
                     }
                 }
 
@@ -361,7 +361,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                     if (!string.IsNullOrWhiteSpace(imdbid))
                     {
-                        item.SetProviderId(MetadataProviders.Imdb, imdbid);
+                        item.SetProviderId(MetadataProvider.Imdb, imdbid);
                     }
                 }
             }

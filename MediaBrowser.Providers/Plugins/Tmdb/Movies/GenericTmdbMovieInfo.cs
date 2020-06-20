@@ -38,8 +38,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public async Task<MetadataResult<T>> GetMetadata(ItemLookupInfo itemId, CancellationToken cancellationToken)
         {
-            var tmdbId = itemId.GetProviderId(MetadataProviders.Tmdb);
-            var imdbId = itemId.GetProviderId(MetadataProviders.Imdb);
+            var tmdbId = itemId.GetProviderId(MetadataProvider.Tmdb);
+            var imdbId = itemId.GetProviderId(MetadataProvider.Imdb);
 
             // Don't search for music video id's because it is very easy to misidentify.
             if (string.IsNullOrEmpty(tmdbId) && string.IsNullOrEmpty(imdbId) && typeof(T) != typeof(MusicVideo))
@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                 if (searchResult != null)
                 {
-                    tmdbId = searchResult.GetProviderId(MetadataProviders.Tmdb);
+                    tmdbId = searchResult.GetProviderId(MetadataProvider.Tmdb);
                 }
             }
 
@@ -131,7 +131,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             movie.Overview = string.IsNullOrWhiteSpace(movieData.Overview) ? null : WebUtility.HtmlDecode(movieData.Overview);
             movie.Overview = movie.Overview != null ? movie.Overview.Replace("\n\n", "\n") : null;
 
-            //movie.HomePageUrl = movieData.homepage;
+            // movie.HomePageUrl = movieData.homepage;
 
             if (!string.IsNullOrEmpty(movieData.Tagline))
             {
@@ -146,12 +146,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     .ToArray();
             }
 
-            movie.SetProviderId(MetadataProviders.Tmdb, movieData.Id.ToString(_usCulture));
-            movie.SetProviderId(MetadataProviders.Imdb, movieData.Imdb_Id);
+            movie.SetProviderId(MetadataProvider.Tmdb, movieData.Id.ToString(_usCulture));
+            movie.SetProviderId(MetadataProvider.Imdb, movieData.Imdb_Id);
 
             if (movieData.Belongs_To_Collection != null)
             {
-                movie.SetProviderId(MetadataProviders.TmdbCollection,
+                movie.SetProviderId(MetadataProvider.TmdbCollection,
                                     movieData.Belongs_To_Collection.Id.ToString(CultureInfo.InvariantCulture));
 
                 if (movie is Movie movieItem)
@@ -167,7 +167,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 movie.CommunityRating = rating;
             }
 
-            //movie.VoteCount = movieData.vote_count;
+            // movie.VoteCount = movieData.vote_count;
 
             if (movieData.Releases != null && movieData.Releases.Countries != null)
             {
@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
             }
 
-            //studios
+            // studios
             if (movieData.Production_Companies != null)
             {
                 movie.SetStudios(movieData.Production_Companies.Select(c => c.Name));
@@ -219,8 +219,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             resultItem.ResetPeople();
             var tmdbImageUrl = settings.images.GetImageUrl("original");
 
-            //Actors, Directors, Writers - all in People
-            //actors come from cast
+            // Actors, Directors, Writers - all in People
+            // actors come from cast
             if (movieData.Casts != null && movieData.Casts.Cast != null)
             {
                 foreach (var actor in movieData.Casts.Cast.OrderBy(a => a.Order))
@@ -240,14 +240,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                     if (actor.Id > 0)
                     {
-                        personInfo.SetProviderId(MetadataProviders.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
                     }
 
                     resultItem.AddPerson(personInfo);
                 }
             }
 
-            //and the rest from crew
+            // and the rest from crew
             if (movieData.Casts?.Crew != null)
             {
                 var keepTypes = new[]
@@ -282,14 +282,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                     if (person.Id > 0)
                     {
-                        personInfo.SetProviderId(MetadataProviders.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
                     }
 
                     resultItem.AddPerson(personInfo);
                 }
             }
 
-            //if (movieData.keywords != null && movieData.keywords.keywords != null)
+            // if (movieData.keywords != null && movieData.keywords.keywords != null)
             //{
             //    movie.Keywords = movieData.keywords.keywords.Select(i => i.name).ToList();
             //}
@@ -304,6 +304,5 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }).ToArray();
             }
         }
-
     }
 }

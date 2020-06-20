@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class ScheduledTaskWorker
+    /// Class ScheduledTaskWorker.
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
@@ -111,11 +111,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private bool _readFromFile = false;
         /// <summary>
-        /// The _last execution result
+        /// The _last execution result.
         /// </summary>
         private TaskResult _lastExecutionResult;
         /// <summary>
-        /// The _last execution result sync lock
+        /// The _last execution result sync lock.
         /// </summary>
         private readonly object _lastExecutionResultSyncLock = new object();
         /// <summary>
@@ -143,12 +143,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
                                 Logger.LogError(ex, "Error deserializing {File}", path);
                             }
                         }
+
                         _readFromFile = true;
                     }
                 }
 
                 return _lastExecutionResult;
             }
+
             private set
             {
                 _lastExecutionResult = value;
@@ -182,7 +184,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public string Category => ScheduledTask.Category;
 
         /// <summary>
-        /// Gets the current cancellation token
+        /// Gets the current cancellation token.
         /// </summary>
         /// <value>The current cancellation token source.</value>
         private CancellationTokenSource CurrentCancellationTokenSource { get; set; }
@@ -261,6 +263,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 var triggers = InternalTriggers;
                 return triggers.Select(i => i.Item1).ToArray();
             }
+
             set
             {
                 if (value == null)
@@ -278,7 +281,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// The _id
+        /// The _id.
         /// </summary>
         private string _id;
 
@@ -358,7 +361,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private Task _currentTask;
 
         /// <summary>
-        /// Executes the task
+        /// Executes the task.
         /// </summary>
         /// <param name="options">Task options.</param>
         /// <returns>Task.</returns>
@@ -453,7 +456,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops the task if it is currently executing
+        /// Stops the task if it is currently executing.
         /// </summary>
         /// <exception cref="InvalidOperationException">Cannot cancel a Task unless it is in the Running state.</exception>
         public void Cancel()
@@ -640,6 +643,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         Logger.LogError(ex, "Error calling CancellationToken.Cancel();");
                     }
                 }
+
                 var task = _currentTask;
                 if (task != null)
                 {
@@ -675,6 +679,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         Logger.LogError(ex, "Error calling CancellationToken.Dispose();");
                     }
                 }
+
                 if (wassRunning)
                 {
                     OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
@@ -683,7 +688,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger
+        /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>BaseTaskTrigger.</returns>
@@ -753,7 +758,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Disposes each trigger
+        /// Disposes each trigger.
         /// </summary>
         private void DisposeTriggers()
         {

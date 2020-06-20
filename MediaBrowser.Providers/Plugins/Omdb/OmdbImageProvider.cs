@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = item.GetProviderId(MetadataProvider.Imdb);
 
             var list = new List<RemoteImageInfo>();
 

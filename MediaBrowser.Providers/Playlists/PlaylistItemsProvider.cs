@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.Playlists
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private ILogger _logger;
+        private readonly ILogger<PlaylistItemsProvider> _logger;
         private IFileSystem _fileSystem;
 
         public PlaylistItemsProvider(IFileSystem fileSystem, ILogger<PlaylistItemsProvider> logger)
@@ -61,18 +61,22 @@ namespace MediaBrowser.Providers.Playlists
             {
                 return GetWplItems(stream);
             }
+
             if (string.Equals(".zpl", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetZplItems(stream);
             }
+
             if (string.Equals(".m3u", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetM3uItems(stream);
             }
+
             if (string.Equals(".m3u8", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetM3u8Items(stream);
             }
+
             if (string.Equals(".pls", extension, StringComparison.OrdinalIgnoreCase))
             {
                 return GetPlsItems(stream);
@@ -95,7 +99,7 @@ namespace MediaBrowser.Providers.Playlists
 
         private IEnumerable<LinkedChild> GetM3u8Items(Stream stream)
         {
-            var content = new M3u8Content();
+            var content = new M3uContent();
             var playlist = content.GetFromStream(stream);
 
             return playlist.PlaylistEntries.Select(i => new LinkedChild

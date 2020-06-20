@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<WebSocketConnection> _logger;
 
         /// <summary>
         /// The json serializer options.
@@ -234,10 +234,12 @@ namespace Emby.Server.Implementations.HttpServer
         private Task SendKeepAliveResponse()
         {
             LastKeepAliveDate = DateTime.UtcNow;
-            return SendAsync(new WebSocketMessage<string>
-            {
-                MessageType = "KeepAlive"
-            }, CancellationToken.None);
+            return SendAsync(
+                new WebSocketMessage<string>
+                {
+                    MessageId = Guid.NewGuid(),
+                    MessageType = "KeepAlive"
+                }, CancellationToken.None);
         }
 
         /// <inheritdoc />

@@ -24,7 +24,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="title">The title or name of the object</param>
         /// <param name="language">ISO-639-3 3-character language codes</param>
@@ -60,7 +60,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Description
+        /// Backing field for Description.
         /// </summary>
         protected string _Description;
         /// <summary>
@@ -85,6 +85,7 @@ namespace Jellyfin.Data.Entities
                 GetDescription(ref value);
                 return (_Description = value);
             }
+
             set
             {
                 string oldValue = _Description;
@@ -97,7 +98,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Headquarters
+        /// Backing field for Headquarters.
         /// </summary>
         protected string _Headquarters;
         /// <summary>
@@ -122,6 +123,7 @@ namespace Jellyfin.Data.Entities
                 GetHeadquarters(ref value);
                 return (_Headquarters = value);
             }
+
             set
             {
                 string oldValue = _Headquarters;
@@ -134,7 +136,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Country
+        /// Backing field for Country.
         /// </summary>
         protected string _Country;
         /// <summary>
@@ -159,6 +161,7 @@ namespace Jellyfin.Data.Entities
                 GetCountry(ref value);
                 return (_Country = value);
             }
+
             set
             {
                 string oldValue = _Country;
@@ -171,7 +174,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Homepage
+        /// Backing field for Homepage.
         /// </summary>
         protected string _Homepage;
         /// <summary>
@@ -196,6 +199,7 @@ namespace Jellyfin.Data.Entities
                 GetHomepage(ref value);
                 return (_Homepage = value);
             }
+
             set
             {
                 string oldValue = _Homepage;
@@ -210,7 +214,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

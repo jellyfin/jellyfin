@@ -25,7 +25,7 @@ namespace MediaBrowser.Providers.Subtitles
 {
     public class SubtitleManager : ISubtitleManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SubtitleManager> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _monitor;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -104,6 +104,7 @@ namespace MediaBrowser.Providers.Subtitles
                         _logger.LogError(ex, "Error downloading subtitles from {Provider}", provider.Name);
                     }
                 }
+
                 return Array.Empty<RemoteSubtitleInfo>();
             }
 
@@ -311,7 +312,6 @@ namespace MediaBrowser.Providers.Subtitles
                 Index = index,
                 ItemId = item.Id,
                 Type = MediaStreamType.Subtitle
-
             }).First();
 
             var path = stream.Path;
@@ -365,9 +365,7 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Name = i.Name,
                     Id = GetProviderId(i.Name)
-
                 }).ToArray();
         }
-
     }
 }

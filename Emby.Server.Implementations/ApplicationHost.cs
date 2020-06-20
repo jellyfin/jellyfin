@@ -175,7 +175,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the logger.
         /// </summary>
-        protected ILogger Logger { get; }
+        protected ILogger<ApplicationHost> Logger { get; }
 
         private IPlugin[] _plugins;
 
@@ -564,11 +564,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
 
-            serviceCollection.AddSingleton<IUserRepository, SqliteUserRepository>();
-
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
-            serviceCollection.AddSingleton<IUserManager, UserManager>();
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             // TODO: Add StartupOptions.FFmpegPath to IConfiguration and remove this custom activation
@@ -662,15 +659,11 @@ namespace Emby.Server.Implementations
 
             ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
-            ((SqliteUserRepository)Resolve<IUserRepository>()).Initialize();
 
             SetStaticProperties();
 
-            var userManager = (UserManager)Resolve<IUserManager>();
-            userManager.Initialize();
-
             var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
-            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, userManager);
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, Resolve<IUserManager>());
 
             FindParts();
         }
@@ -753,7 +746,6 @@ namespace Emby.Server.Implementations
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
             BaseItem.ItemRepository = Resolve<IItemRepository>();
-            User.UserManager = Resolve<IUserManager>();
             BaseItem.FileSystem = _fileSystemManager;
             BaseItem.UserDataManager = Resolve<IUserDataManager>();
             BaseItem.ChannelManager = Resolve<IChannelManager>();
@@ -967,7 +959,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Notifies that the kernel that a change has been made that requires a restart
+        /// Notifies that the kernel that a change has been made that requires a restart.
         /// </summary>
         public void NotifyPendingRestart()
         {

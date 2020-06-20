@@ -234,6 +234,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         Logger.LogDebug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", requestedIndex - currentTranscodingIndex.Value, segmentGapRequiringTranscodingChange, requestedIndex);
                         startTranscoding = true;
                     }
+
                     if (startTranscoding)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
@@ -257,7 +258,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        //await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                        // await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                     else
                     {
@@ -277,8 +278,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
             }
 
-            //Logger.LogInformation("waiting for {0}", segmentPath);
-            //while (!File.Exists(segmentPath))
+            // Logger.LogInformation("waiting for {0}", segmentPath);
+            // while (!File.Exists(segmentPath))
             //{
             //    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             //}
@@ -518,6 +519,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
                 }
+
                 cancellationToken.ThrowIfCancellationRequested();
             }
             else
@@ -717,7 +719,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             // Having problems in android
             return false;
-            //return state.VideoRequest.VideoBitRate.HasValue;
+            // return state.VideoRequest.VideoBitRate.HasValue;
         }
 
         /// <summary>
@@ -972,7 +974,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
-            //if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
+            // if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
             //{
             //    queryString = string.Empty;
             //}
@@ -1100,7 +1102,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                 }
 
-                //args += " -flags -global_header";
+                // args += " -flags -global_header";
             }
             else
             {
@@ -1142,7 +1144,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " " + keyFrameArg + gopArg;
                 }
 
-                //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
+                // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
@@ -1164,7 +1166,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " -start_at_zero";
                 }
 
-                //args += " -flags -global_header";
+                // args += " -flags -global_header";
             }
 
             if (!string.IsNullOrEmpty(state.OutputVideoSync))

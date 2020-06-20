@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace MediaBrowser.Controller.Extensions
 {
     /// <summary>
-    /// Class BaseExtensions
+    /// Class BaseExtensions.
     /// </summary>
     public static class StringExtensions
     {

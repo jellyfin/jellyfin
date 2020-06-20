@@ -33,7 +33,7 @@ namespace Emby.Dlna.Main
     public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
         private readonly IServerConfigurationManager _config;
-        private readonly ILogger _logger;
+        private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
 
         private PlayToManager _manager;
@@ -65,7 +65,8 @@ namespace Emby.Dlna.Main
 
         public static DlnaEntryPoint Current;
 
-        public DlnaEntryPoint(IServerConfigurationManager config,
+        public DlnaEntryPoint(
+            IServerConfigurationManager config,
             ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
@@ -99,7 +100,7 @@ namespace Emby.Dlna.Main
             _mediaEncoder = mediaEncoder;
             _socketFactory = socketFactory;
             _networkManager = networkManager;
-            _logger = loggerFactory.CreateLogger("Dlna");
+            _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
             ContentDirectory = new ContentDirectory.ContentDirectory(
                 dlnaManager,
@@ -275,7 +276,7 @@ namespace Emby.Dlna.Main
 
                 var device = new SsdpRootDevice
                 {
-                    CacheLifetime = TimeSpan.FromSeconds(1800), //How long SSDP clients can cache this info.
+                    CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
                     Location = uri, // Must point to the URL that serves your devices UPnP description document.
                     Address = address,
                     SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
@@ -319,6 +320,7 @@ namespace Emby.Dlna.Main
             {
                 guid = text.GetMD5();
             }
+
             return guid.ToString("N", CultureInfo.InvariantCulture);
         }
 
@@ -347,7 +349,8 @@ namespace Emby.Dlna.Main
 
                 try
                 {
-                    _manager = new PlayToManager(_logger,
+                    _manager = new PlayToManager(
+                        _logger,
                         _sessionManager,
                         _libraryManager,
                         _userManager,
@@ -386,6 +389,7 @@ namespace Emby.Dlna.Main
                     {
                         _logger.LogError(ex, "Error disposing PlayTo manager");
                     }
+
                     _manager = null;
                 }
             }

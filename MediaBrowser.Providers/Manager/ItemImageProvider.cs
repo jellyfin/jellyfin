@@ -58,6 +58,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 ClearImages(item, ImageType.Backdrop);
             }
+
             if (refreshOptions.IsReplacingImage(ImageType.Screenshot))
             {
                 ClearImages(item, ImageType.Screenshot);
@@ -168,7 +169,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Image types that are only one per item
+        /// Image types that are only one per item.
         /// </summary>
         private readonly ImageType[] _singularImages =
         {
@@ -189,7 +190,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Determines if an item already contains the given images
+        /// Determines if an item already contains the given images.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="images">The images.</param>
@@ -335,7 +336,6 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (FileNotFoundException)
                 {
-
                 }
             }
 
@@ -473,6 +473,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         continue;
                     }
+
                     break;
                 }
             }
@@ -506,7 +507,7 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            //if (!item.IsSaveLocalMetadataEnabled())
+            // if (!item.IsSaveLocalMetadataEnabled())
             //{
             //    return true;
             //}
@@ -529,7 +530,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 Path = path,
                 Type = imageType
-
             }, newIndex);
         }
 
@@ -587,6 +587,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         continue;
                     }
+
                     break;
                 }
             }

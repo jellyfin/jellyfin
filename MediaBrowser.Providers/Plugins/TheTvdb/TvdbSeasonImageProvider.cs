@@ -19,7 +19,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbSeasonImageProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
         public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger<TvdbSeasonImageProvider> logger, TvdbClientManager tvdbClientManager)
@@ -58,7 +58,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 return Array.Empty<RemoteImageInfo>();
             }
 
-            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb));
+            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProvider.Tvdb));
             var seasonNumber = season.IndexNumber.Value;
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();

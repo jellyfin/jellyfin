@@ -18,7 +18,7 @@ namespace Jellyfin.Server.Implementations
         public JellyfinDbProvider(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            serviceProvider.GetService<JellyfinDb>().Database.Migrate();
+            serviceProvider.GetRequiredService<JellyfinDb>().Database.Migrate();
         }
 
         /// <summary>

@@ -3,28 +3,28 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Enum MetadataProviders
+    /// Enum MetadataProviders.
     /// </summary>
-    public enum MetadataProviders
+    public enum MetadataProvider
     {
         /// <summary>
-        /// The imdb
+        /// The imdb.
         /// </summary>
         Imdb = 2,
         /// <summary>
-        /// The TMDB
+        /// The TMDB.
         /// </summary>
         Tmdb = 3,
         /// <summary>
-        /// The TVDB
+        /// The TVDB.
         /// </summary>
         Tvdb = 4,
         /// <summary>
-        /// The tvcom
+        /// The tvcom.
         /// </summary>
         Tvcom = 5,
         /// <summary>
-        /// Tmdb Collection Id
+        /// Tmdb Collection Id.
         /// </summary>
         TmdbCollection = 7,
         MusicBrainzAlbum = 8,

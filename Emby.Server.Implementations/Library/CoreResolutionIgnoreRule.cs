@@ -8,7 +8,7 @@ using MediaBrowser.Model.IO;
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Provides the core resolver ignore rules
+    /// Provides the core resolver ignore rules.
     /// </summary>
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {

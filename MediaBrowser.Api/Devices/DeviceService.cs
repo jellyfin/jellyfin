@@ -92,7 +92,6 @@ namespace MediaBrowser.Api.Devices
             var sessions = _authRepo.Get(new AuthenticationInfoQuery
             {
                 DeviceId = request.Id
-
             }).Items;
 
             foreach (var session in sessions)

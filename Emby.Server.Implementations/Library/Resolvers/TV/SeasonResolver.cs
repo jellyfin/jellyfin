@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
-        private readonly ILogger _logger;
+        private readonly ILogger<SeasonResolver> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
@@ -94,7 +94,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             _localization.GetLocalizedString("NameSeasonNumber"),
                             seasonNumber,
                             args.GetLibraryOptions().PreferredMetadataLanguage);
-
                 }
 
                 return season;

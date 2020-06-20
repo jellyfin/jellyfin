@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             // Args points to an album if parent is an Artist folder or it directly contains music
             if (args.IsDirectory)
             {
-                // if (args.Parent is MusicArtist) return true;  //saves us from testing children twice
+                // if (args.Parent is MusicArtist) return true;  // saves us from testing children twice
                 if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _fileSystem, _libraryManager))
                 {
                     return true;
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             IEnumerable<FileSystemMetadata> list,
             bool allowSubfolders,
             IDirectoryService directoryService,
-            ILogger logger,
+            ILogger<MusicAlbumResolver> logger,
             IFileSystem fileSystem,
             ILibraryManager libraryManager)
         {

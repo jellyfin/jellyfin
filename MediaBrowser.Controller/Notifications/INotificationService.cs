@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Controller.Notifications
 {
