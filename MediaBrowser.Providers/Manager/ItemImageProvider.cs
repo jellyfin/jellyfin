@@ -113,7 +113,10 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var imageType in images)
                 {
-                    if (!IsEnabled(savedOptions, imageType, item)) continue;
+                    if (!IsEnabled(savedOptions, imageType, item))
+                    {
+                        continue;
+                    }
 
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {

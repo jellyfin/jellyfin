@@ -27,17 +27,25 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="timestart"></param>
         /// <param name="_release0"></param>
         public Chapter(string language, long timestart, Release _release0)
         {
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
             this.TimeStart = timestart;
 
-            if (_release0 == null) throw new ArgumentNullException(nameof(_release0));
+            if (_release0 == null)
+            {
+                throw new ArgumentNullException(nameof(_release0));
+            }
+
             _release0.Chapters.Add(this);
 
 
@@ -47,7 +55,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="timestart"></param>
         /// <param name="_release0"></param>
         public static Chapter Create(string language, long timestart, Release _release0)
@@ -84,7 +92,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -122,7 +130,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
 
             set
@@ -163,7 +171,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Language;
                 GetLanguage(ref value);
-                return (_Language = value);
+                return _Language = value;
             }
 
             set
@@ -200,7 +208,7 @@ namespace Jellyfin.Data.Entities
             {
                 long value = _TimeStart;
                 GetTimeStart(ref value);
-                return (_TimeStart = value);
+                return _TimeStart = value;
             }
 
             set
@@ -233,7 +241,7 @@ namespace Jellyfin.Data.Entities
             {
                 long? value = _TimeEnd;
                 GetTimeEnd(ref value);
-                return (_TimeEnd = value);
+                return _TimeEnd = value;
             }
 
             set

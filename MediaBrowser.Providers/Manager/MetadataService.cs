@@ -391,7 +391,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (!child.IsFolder)
                     {
-                        ticks += (child.RunTimeTicks ?? 0);
+                        ticks += child.RunTimeTicks ?? 0;
                     }
                 }
 

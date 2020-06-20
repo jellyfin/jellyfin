@@ -37,7 +37,6 @@ namespace MediaBrowser.Controller.Library
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
         }
-        #region IDisposable Members
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
@@ -71,7 +70,5 @@ namespace MediaBrowser.Controller.Library
                 _logger.LogInformation(message);
             }
         }
-
-        #endregion
     }
 }

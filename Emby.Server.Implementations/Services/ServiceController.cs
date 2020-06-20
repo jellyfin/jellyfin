@@ -144,7 +144,10 @@ namespace Emby.Server.Implementations.Services
             var yieldedWildcardMatches = RestPath.GetFirstMatchWildCardHashKeys(matchUsingPathParts);
             foreach (var potentialHashMatch in yieldedWildcardMatches)
             {
-                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
+                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches))
+                {
+                    continue;
+                }
 
                 var bestScore = -1;
                 RestPath bestMatch = null;

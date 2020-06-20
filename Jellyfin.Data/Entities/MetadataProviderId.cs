@@ -40,21 +40,40 @@ namespace Jellyfin.Data.Entities
             // NOTE: This class has one-to-one associations with MetadataProviderId.
             // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
 
-            if (string.IsNullOrEmpty(providerid)) throw new ArgumentNullException(nameof(providerid));
+            if (string.IsNullOrEmpty(providerid))
+            {
+                throw new ArgumentNullException(nameof(providerid));
+            }
+
             this.ProviderId = providerid;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
+
             _metadata0.Sources.Add(this);
 
-            if (_person1 == null) throw new ArgumentNullException(nameof(_person1));
+            if (_person1 == null)
+            {
+                throw new ArgumentNullException(nameof(_person1));
+            }
+
             _person1.Sources.Add(this);
 
-            if (_personrole2 == null) throw new ArgumentNullException(nameof(_personrole2));
+            if (_personrole2 == null)
+            {
+                throw new ArgumentNullException(nameof(_personrole2));
+            }
+
             _personrole2.Sources.Add(this);
 
-            if (_ratingsource3 == null) throw new ArgumentNullException(nameof(_ratingsource3));
-            _ratingsource3.Source = this;
+            if (_ratingsource3 == null)
+            {
+                throw new ArgumentNullException(nameof(_ratingsource3));
+            }
 
+            _ratingsource3.Source = this;
 
             Init();
         }
@@ -101,7 +120,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -140,7 +159,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _ProviderId;
                 GetProviderId(ref value);
-                return (_ProviderId = value);
+                return _ProviderId = value;
             }
 
             set

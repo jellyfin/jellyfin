@@ -19,10 +19,14 @@ namespace Emby.Server.Implementations.Sorting
         public int Compare(BaseItem x, BaseItem y)
         {
             if (x == null)
+            {
                 throw new ArgumentNullException(nameof(x));
+            }
 
             if (y == null)
+            {
                 throw new ArgumentNullException(nameof(y));
+            }
 
             return string.Compare(x.SortName, y.SortName, StringComparison.CurrentCultureIgnoreCase);
         }

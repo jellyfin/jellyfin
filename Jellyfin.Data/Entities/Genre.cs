@@ -31,12 +31,19 @@ namespace Jellyfin.Data.Entities
         /// <param name="_metadata0"></param>
         public Genre(string name, Metadata _metadata0)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             this.Name = name;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
-            _metadata0.Genres.Add(this);
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
 
+            _metadata0.Genres.Add(this);
 
             Init();
         }
@@ -80,7 +87,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -119,7 +126,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
 
             set

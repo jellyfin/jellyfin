@@ -30,7 +30,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the dimensions of the image.
         /// </summary>
         /// <param name="path">Path to the image file.</param>
-        /// <returns>ImageDimensions</returns>
+        /// <returns>ImageDimensions.</returns>
         ImageDimensions GetImageDimensions(string path);
 
         /// <summary>
@@ -38,14 +38,14 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="item">The base item.</param>
         /// <param name="info">The information.</param>
-        /// <returns>ImageDimensions</returns>
+        /// <returns>ImageDimensions.</returns>
         ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info);
 
         /// <summary>
         /// Gets the blurhash of the image.
         /// </summary>
         /// <param name="path">Path to the image file.</param>
-        /// <returns>BlurHash</returns>
+        /// <returns>BlurHash.</returns>
         string GetImageBlurHash(string path);
 
         /// <summary>

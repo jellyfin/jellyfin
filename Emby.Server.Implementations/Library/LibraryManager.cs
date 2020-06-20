@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
-        /// <param name="appHost">The application host</param>
+        /// <param name="appHost">The application host.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
@@ -1793,7 +1793,7 @@ namespace Emby.Server.Implementations.Library
         /// Creates the items.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <param name="parent">The parent item</param>
+        /// <param name="parent">The parent item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {

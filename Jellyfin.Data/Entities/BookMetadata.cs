@@ -29,18 +29,30 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_book0"></param>
         public BookMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Book _book0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_book0 == null) throw new ArgumentNullException(nameof(_book0));
+            if (_book0 == null)
+            {
+                throw new ArgumentNullException(nameof(_book0));
+            }
+
             _book0.BookMetadata.Add(this);
 
             this.Publishers = new HashSet<Company>();
@@ -51,8 +63,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_book0"></param>
         public static BookMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Book _book0)
         {
@@ -82,7 +94,7 @@ namespace Jellyfin.Data.Entities
             {
                 long? value = _ISBN;
                 GetISBN(ref value);
-                return (_ISBN = value);
+                return _ISBN = value;
             }
 
             set
