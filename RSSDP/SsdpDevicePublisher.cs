@@ -402,7 +402,9 @@ namespace Rssdp.Infrastructure
                         _RecentSearchRequests[newRequest.Key] = newRequest;
                     }
                     else
+                    {
                         isDuplicateRequest = true;
+                    }
                 }
                 else
                 {
@@ -613,7 +615,9 @@ namespace Rssdp.Infrastructure
                 WriteTrace(text + " " + device.DeviceType + " - " + device.Uuid + " - " + rootDevice.Location);
             }
             else
+            {
                 WriteTrace(text + " " + device.DeviceType + " - " + device.Uuid);
+            }
         }
 
         private void CommsServer_RequestReceived(object sender, RequestReceivedEventArgs e)

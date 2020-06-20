@@ -140,7 +140,9 @@ namespace Rssdp.Infrastructure
                         lineIndex++;
                     }
                     else
+                    {
                         break;
+                    }
                 }
 
                 ParseHeader(line, headers, contentHeaders);
@@ -184,7 +186,9 @@ namespace Rssdp.Infrastructure
                     }
                 }
                 else
+                {
                     values.AddRange(segments);
+                }
             }
 
             return values;
@@ -218,7 +222,9 @@ namespace Rssdp.Infrastructure
                 return trimmedSegment.Substring(1, trimmedSegment.Length - 2);
             }
             else
+            {
                 return trimmedSegment;
+            }
         }
     }
 }

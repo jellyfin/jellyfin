@@ -2955,7 +2955,9 @@ namespace MediaBrowser.Controller.Entities
                 return ((IHasTrailers)this).LocalTrailerIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
             }
             else
+            {
                 return Array.Empty<BaseItem>();
+            }
         }
 
         public virtual bool IsHD => Height >= 720;

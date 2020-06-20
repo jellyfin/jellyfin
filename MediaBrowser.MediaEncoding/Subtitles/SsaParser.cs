@@ -207,7 +207,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                             text = text.Insert(start, "<font face=\"" + fontName + "\"" + extraTags + "><i>");
                         }
                         else
+                        {
                             text = text.Insert(start, "<font face=\"" + fontName + "\"" + extraTags + ">");
+                        }
 
                         int indexOfEndTag = text.IndexOf("{\\fn}", start);
                         if (indexOfEndTag > 0)
@@ -215,7 +217,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                             text = text.Remove(indexOfEndTag, "{\\fn}".Length).Insert(indexOfEndTag, "</font>");
                         }
                         else
+                        {
                             text += "</font>";
+                        }
                     }
                 }
 
@@ -236,7 +240,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                                 text = text.Insert(start, "<font size=\"" + fontSize + "\"" + extraTags + "><i>");
                             }
                             else
+                            {
                                 text = text.Insert(start, "<font size=\"" + fontSize + "\"" + extraTags + ">");
+                            }
 
                             int indexOfEndTag = text.IndexOf("{\\fs}", start);
                             if (indexOfEndTag > 0)
@@ -244,7 +250,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                                 text = text.Remove(indexOfEndTag, "{\\fs}".Length).Insert(indexOfEndTag, "</font>");
                             }
                             else
+                            {
                                 text += "</font>";
+                            }
                         }
                     }
                 }
@@ -272,14 +280,18 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + "><i>");
                         }
                         else
+                        {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
+                        }
                         int indexOfEndTag = text.IndexOf("{\\c}", start);
                         if (indexOfEndTag > 0)
                         {
                             text = text.Remove(indexOfEndTag, "{\\c}".Length).Insert(indexOfEndTag, "</font>");
                         }
                         else
+                        {
                             text += "</font>";
+                        }
                     }
                 }
 
@@ -306,7 +318,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + "><i>");
                         }
                         else
+                        {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
+                        }
                         text += "</font>";
                     }
                 }

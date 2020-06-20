@@ -1384,14 +1384,18 @@ namespace MediaBrowser.MediaEncoding.Probing
                             description = string.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
                         }
                         else
+                        {
                             throw new Exception(); // Switch to default parsing
+                        }
                     }
                     catch // Default parsing
                     {
                         if (subtitle.Contains(".")) // skip the comment, keep the subtitle
                             description = string.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
                         else
+                        {
                             description = subtitle.Trim(); // Clean up whitespaces and save it
+                        }
                     }
                 }
             }

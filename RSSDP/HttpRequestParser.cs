@@ -70,7 +70,9 @@ namespace Rssdp.Infrastructure
                 message.RequestUri = requestUri;
             }
             else
+            {
                 System.Diagnostics.Debug.WriteLine(parts[1]);
+            }
 
             if (parts.Length >= 3)
             {

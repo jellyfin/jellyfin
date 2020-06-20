@@ -590,7 +590,9 @@ namespace Rssdp.Infrastructure
                 return OneSecond;
             }
             else
+            {
                 return searchWaitTime.Subtract(OneSecond);
+            }
         }
 
         private DiscoveredSsdpDevice FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)

@@ -169,7 +169,9 @@ namespace Rssdp
                     return "uuid:" + this.Uuid;
                 }
                 else
+                {
                     return _Udn;
+                }
             }
 
             set
