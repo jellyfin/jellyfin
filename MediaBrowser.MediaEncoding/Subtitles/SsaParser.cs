@@ -345,6 +345,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return true;
             }
+
             return false;
         }
 
@@ -359,6 +360,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     return count;
                 }
+
                 index = text.IndexOf(tag, index + 1);
             }
 

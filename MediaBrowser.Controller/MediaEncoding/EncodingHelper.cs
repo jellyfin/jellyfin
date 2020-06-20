@@ -2603,6 +2603,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             {
                                 return "-c:v vp8_qsv";
                             }
+
                             break;
                         case "vp9":
                             if (_mediaEncoder.SupportsDecoder("vp9_qsv") && encodingOptions.HardwareDecodingCodecs.Contains("vp9", StringComparer.OrdinalIgnoreCase))
@@ -2610,6 +2611,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return (isColorDepth10 &&
                                     !encodingOptions.EnableDecodingColorDepth10Vp9) ? null : "-c:v vp9_qsv";
                             }
+
                             break;
                     }
                 }
@@ -2667,6 +2669,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             {
                                 return "-c:v vp8_cuvid";
                             }
+
                             break;
                         case "vp9":
                             if (_mediaEncoder.SupportsDecoder("vp9_cuvid") && encodingOptions.HardwareDecodingCodecs.Contains("vp9", StringComparer.OrdinalIgnoreCase))
@@ -2674,6 +2677,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return (isColorDepth10 &&
                                     !encodingOptions.EnableDecodingColorDepth10Vp9) ? null : "-c:v vp9_cuvid";
                             }
+
                             break;
                     }
                 }
@@ -2818,6 +2822,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             {
                                 return "-c:v h264_opencl";
                             }
+
                             break;
                         case "hevc":
                         case "h265":
@@ -2826,30 +2831,35 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return (isColorDepth10 &&
                                     !encodingOptions.EnableDecodingColorDepth10Hevc) ? null : "-c:v hevc_opencl";
                             }
+
                             break;
                         case "mpeg2video":
                             if (_mediaEncoder.SupportsDecoder("mpeg2_opencl") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg2video", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v mpeg2_opencl";
                             }
+
                             break;
                         case "mpeg4":
                             if (_mediaEncoder.SupportsDecoder("mpeg4_opencl") && encodingOptions.HardwareDecodingCodecs.Contains("mpeg4", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v mpeg4_opencl";
                             }
+
                             break;
                         case "vc1":
                             if (_mediaEncoder.SupportsDecoder("vc1_opencl") && encodingOptions.HardwareDecodingCodecs.Contains("vc1", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v vc1_opencl";
                             }
+
                             break;
                         case "vp8":
                             if (_mediaEncoder.SupportsDecoder("vp8_opencl") && encodingOptions.HardwareDecodingCodecs.Contains("vc1", StringComparer.OrdinalIgnoreCase))
                             {
                                 return "-c:v vp8_opencl";
                             }
+
                             break;
                         case "vp9":
                             if (_mediaEncoder.SupportsDecoder("vp9_opencl") && encodingOptions.HardwareDecodingCodecs.Contains("vc1", StringComparer.OrdinalIgnoreCase))
@@ -2857,6 +2867,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 return (isColorDepth10 &&
                                     !encodingOptions.EnableDecodingColorDepth10Vp9) ? null : "-c:v vp9_opencl";
                             }
+
                             break;
                     }
                 }

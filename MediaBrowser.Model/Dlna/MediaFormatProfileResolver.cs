@@ -222,6 +222,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return MediaFormatProfile.AVC_MP4_LPCM;
                 }
+
                 if (string.IsNullOrEmpty(audioCodec) ||
                     string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
                 {
@@ -267,6 +268,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         return MediaFormatProfile.MPEG4_P2_MP4_ASP_AAC;
                     }
+
                     if (string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase) || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
                     {
                         return MediaFormatProfile.MPEG4_P2_MP4_NDSD;
