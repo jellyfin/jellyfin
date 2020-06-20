@@ -6,7 +6,6 @@ using Common.Networking;
 using Emby.Server.Implementations.SocketSharp;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
