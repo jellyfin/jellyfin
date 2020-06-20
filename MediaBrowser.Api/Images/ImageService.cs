@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -15,7 +14,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -26,21 +24,6 @@ using User = Jellyfin.Data.Entities.User;
 
 namespace MediaBrowser.Api.Images
 {
-    /// <summary>
-    /// Class GetItemImage.
-    /// </summary>
-    [Route("/Items/{Id}/Images", "GET", Summary = "Gets information about an item's images")]
-    [Authenticated]
-    public class GetItemImageInfos : IReturn<List<ImageInfo>>
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-    }
-
     [Route("/Items/{Id}/Images/{Type}", "GET")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "GET")]
     [Route("/Items/{Id}/Images/{Type}", "HEAD")]
@@ -55,42 +38,6 @@ namespace MediaBrowser.Api.Images
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path")]
         public Guid Id { get; set; }
-    }
-
-    /// <summary>
-    /// Class UpdateItemImageIndex
-    /// </summary>
-    [Route("/Items/{Id}/Images/{Type}/{Index}/Index", "POST", Summary = "Updates the index for an item image")]
-    [Authenticated(Roles = "admin")]
-    public class UpdateItemImageIndex : IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the image.
-        /// </summary>
-        /// <value>The type of the image.</value>
-        [ApiMember(Name = "Type", Description = "Image Type", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public ImageType Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the index.
-        /// </summary>
-        /// <value>The index.</value>
-        [ApiMember(Name = "Index", Description = "Image Index", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
-        public int Index { get; set; }
-
-        /// <summary>
-        /// Gets or sets the new index.
-        /// </summary>
-        /// <value>The new index.</value>
-        [ApiMember(Name = "NewIndex", Description = "The new image index", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public int NewIndex { get; set; }
     }
 
     /// <summary>
@@ -148,44 +95,6 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class DeleteItemImage
-    /// </summary>
-    [Route("/Items/{Id}/Images/{Type}", "DELETE")]
-    [Route("/Items/{Id}/Images/{Type}/{Index}", "DELETE")]
-    [Authenticated(Roles = "admin")]
-    public class DeleteItemImage : DeleteImageRequest, IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
-    }
-
-    /// <summary>
-    /// Class PostItemImage
-    /// </summary>
-    [Route("/Items/{Id}/Images/{Type}", "POST")]
-    [Route("/Items/{Id}/Images/{Type}/{Index}", "POST")]
-    [Authenticated(Roles = "admin")]
-    public class PostItemImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
-
-        /// <summary>
-        /// The raw Http Request Input Stream
-        /// </summary>
-        /// <value>The request stream.</value>
-        public Stream RequestStream { get; set; }
-    }
-
-    /// <summary>
     /// Class ImageService
     /// </summary>
     public class ImageService : BaseApiService
@@ -221,126 +130,6 @@ namespace MediaBrowser.Api.Images
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
             _authContext = authContext;
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetItemImageInfos request)
-        {
-            var item = _libraryManager.GetItemById(request.Id);
-
-            var result = GetItemImageInfos(item);
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the item image infos.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>Task{List{ImageInfo}}.</returns>
-        public List<ImageInfo> GetItemImageInfos(BaseItem item)
-        {
-            var list = new List<ImageInfo>();
-            var itemImages = item.ImageInfos;
-
-            if (itemImages.Length == 0)
-            {
-                // short-circuit
-                return list;
-            }
-
-            _libraryManager.UpdateImages(item); // this makes sure dimensions and hashes are correct
-
-            foreach (var image in itemImages)
-            {
-                if (!item.AllowsMultipleImages(image.Type))
-                {
-                    var info = GetImageInfo(item, image, null);
-
-                    if (info != null)
-                    {
-                        list.Add(info);
-                    }
-                }
-            }
-
-            foreach (var imageType in itemImages.Select(i => i.Type).Distinct().Where(item.AllowsMultipleImages))
-            {
-                var index = 0;
-
-                // Prevent implicitly captured closure
-                var currentImageType = imageType;
-
-                foreach (var image in itemImages.Where(i => i.Type == currentImageType))
-                {
-                    var info = GetImageInfo(item, image, index);
-
-                    if (info != null)
-                    {
-                        list.Add(info);
-                    }
-
-                    index++;
-                }
-            }
-
-            return list;
-        }
-
-        private ImageInfo GetImageInfo(BaseItem item, ItemImageInfo info, int? imageIndex)
-        {
-            int? width = null;
-            int? height = null;
-            string blurhash = null;
-            long length = 0;
-
-            try
-            {
-                if (info.IsLocalFile)
-                {
-                    var fileInfo = _fileSystem.GetFileInfo(info.Path);
-                    length = fileInfo.Length;
-
-                    blurhash = info.BlurHash;
-                    width = info.Width;
-                    height = info.Height;
-
-                    if (width <= 0 || height <= 0)
-                    {
-                        width = null;
-                        height = null;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error getting image information for {Item}", item.Name);
-            }
-
-            try
-            {
-                return new ImageInfo
-                {
-                    Path = info.Path,
-                    ImageIndex = imageIndex,
-                    ImageType = info.Type,
-                    ImageTag = _imageProcessor.GetImageCacheTag(item, info),
-                    Size = length,
-                    BlurHash = blurhash,
-                    Width = width,
-                    Height = height
-                };
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error getting image information for {Path}", info.Path);
-
-                return null;
-            }
         }
 
         /// <summary>
@@ -398,56 +187,6 @@ namespace MediaBrowser.Api.Images
             var item = GetItemByName(request.Name, type, _libraryManager, new DtoOptions(false));
 
             return GetImage(request, item.Id, item, true);
-        }
-
-        /// <summary>
-        /// Posts the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        public Task Post(PostItemImage request)
-        {
-            var id = Guid.Parse(GetPathValue(1));
-
-            request.Type = Enum.Parse<ImageType>(GetPathValue(3).ToString(), true);
-
-            var item = _libraryManager.GetItemById(id);
-
-            return PostImage(item, request.RequestStream, request.Type, Request.ContentType);
-        }
-
-        /// <summary>
-        /// Deletes the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        public void Delete(DeleteItemImage request)
-        {
-            var item = _libraryManager.GetItemById(request.Id);
-
-            item.DeleteImage(request.Type, request.Index ?? 0);
-        }
-
-        /// <summary>
-        /// Posts the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        public void Post(UpdateItemImageIndex request)
-        {
-            var item = _libraryManager.GetItemById(request.Id);
-
-            UpdateItemIndex(item, request.Type, request.Index, request.NewIndex);
-        }
-
-        /// <summary>
-        /// Updates the index of the item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="currentIndex">Index of the current.</param>
-        /// <param name="newIndex">The new index.</param>
-        /// <returns>Task.</returns>
-        private void UpdateItemIndex(BaseItem item, ImageType type, int currentIndex, int newIndex)
-        {
-            item.SwapImages(type, currentIndex, newIndex);
         }
 
         /// <summary>
