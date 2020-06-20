@@ -63,7 +63,10 @@ namespace Emby.Server.Implementations.Services
         {
             foreach (var actionCtx in actions)
             {
-                if (execMap.ContainsKey(actionCtx.Id)) continue;
+                if (execMap.ContainsKey(actionCtx.Id))
+                {
+                    continue;
+                }
 
                 execMap[actionCtx.Id] = actionCtx;
             }

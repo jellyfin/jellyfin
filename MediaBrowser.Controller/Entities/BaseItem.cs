@@ -690,7 +690,10 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
-            if (Name == null) return null; // some items may not have name filled in properly
+            if (Name == null)
+            {
+                return null; // some items may not have name filled in properly
+            }
 
             if (!EnableAlphaNumericSorting)
             {

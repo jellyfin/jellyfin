@@ -31,15 +31,26 @@ namespace Jellyfin.Data.Entities
         /// <param name="_photo0"></param>
         public PhotoMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Photo _photo0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_photo0 == null) throw new ArgumentNullException(nameof(_photo0));
-            _photo0.PhotoMetadata.Add(this);
+            if (_photo0 == null)
+            {
+                throw new ArgumentNullException(nameof(_photo0));
+            }
 
+            _photo0.PhotoMetadata.Add(this);
 
             Init();
         }

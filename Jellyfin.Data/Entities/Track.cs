@@ -42,7 +42,11 @@ namespace Jellyfin.Data.Entities
 
             this.UrlId = urlid;
 
-            if (_musicalbum0 == null) throw new ArgumentNullException(nameof(_musicalbum0));
+            if (_musicalbum0 == null)
+            {
+                throw new ArgumentNullException(nameof(_musicalbum0));
+            }
+
             _musicalbum0.Tracks.Add(this);
 
             this.Releases = new HashSet<Release>();

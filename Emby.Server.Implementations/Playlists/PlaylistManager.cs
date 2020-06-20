@@ -539,13 +539,21 @@ namespace Emby.Server.Implementations.Playlists
 
         private static string UnEscape(string content)
         {
-            if (content == null) return content;
+            if (content == null)
+            {
+                return content;
+            }
+
             return content.Replace("&amp;", "&").Replace("&apos;", "'").Replace("&quot;", "\"").Replace("&gt;", ">").Replace("&lt;", "<");
         }
 
         private static string Escape(string content)
         {
-            if (content == null) return null;
+            if (content == null)
+            {
+                return null;
+            }
+
             return content.Replace("&", "&amp;").Replace("'", "&apos;").Replace("\"", "&quot;").Replace(">", "&gt;").Replace("<", "&lt;");
         }
 

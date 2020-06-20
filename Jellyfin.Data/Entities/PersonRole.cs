@@ -42,7 +42,11 @@ namespace Jellyfin.Data.Entities
 
             this.Type = type;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
+
             _metadata0.PersonRoles.Add(this);
 
             this.Sources = new HashSet<MetadataProviderId>();

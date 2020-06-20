@@ -194,7 +194,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         {
             var mainResult = await FetchMainResult(id, true, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
 
-            if (mainResult == null) return;
+            if (mainResult == null)
+            {
+                return;
+            }
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 

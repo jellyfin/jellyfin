@@ -35,12 +35,20 @@ namespace Jellyfin.Data.Entities
         /// <param name="_release0"></param>
         public MediaFile(string path, Enums.MediaFileKind kind, Release _release0)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             this.Path = path;
 
             this.Kind = kind;
 
-            if (_release0 == null) throw new ArgumentNullException(nameof(_release0));
+            if (_release0 == null)
+            {
+                throw new ArgumentNullException(nameof(_release0));
+            }
+
             _release0.MediaFiles.Add(this);
 
             this.MediaFileStreams = new HashSet<MediaFileStream>();

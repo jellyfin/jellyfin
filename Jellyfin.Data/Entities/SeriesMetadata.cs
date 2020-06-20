@@ -35,13 +35,25 @@ namespace Jellyfin.Data.Entities
         /// <param name="_series0"></param>
         public SeriesMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Series _series0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_series0 == null) throw new ArgumentNullException(nameof(_series0));
+            if (_series0 == null)
+            {
+                throw new ArgumentNullException(nameof(_series0));
+            }
+
             _series0.SeriesMetadata.Add(this);
 
             this.Networks = new HashSet<Company>();

@@ -35,13 +35,25 @@ namespace Jellyfin.Data.Entities
         /// <param name="_musicalbum0"></param>
         public MusicAlbumMetadata(string title, string language, DateTime dateadded, DateTime datemodified, MusicAlbum _musicalbum0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_musicalbum0 == null) throw new ArgumentNullException(nameof(_musicalbum0));
+            if (_musicalbum0 == null)
+            {
+                throw new ArgumentNullException(nameof(_musicalbum0));
+            }
+
             _musicalbum0.MusicAlbumMetadata.Add(this);
 
             this.Labels = new HashSet<Company>();

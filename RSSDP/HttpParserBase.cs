@@ -31,9 +31,20 @@ namespace Rssdp.Infrastructure
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Honestly, it's fine. MemoryStream doesn't mind.")]
         protected virtual void Parse(T message, System.Net.Http.Headers.HttpHeaders headers, string data)
         {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-            if (data.Length == 0) throw new ArgumentException("data cannot be an empty string.", nameof(data));
-            if (!LineTerminators.Any(data.Contains)) throw new ArgumentException("data is not a valid request, it does not contain any CRLF/LF terminators.", nameof(data));
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            if (data.Length == 0)
+            {
+                throw new ArgumentException("data cannot be an empty string.", nameof(data));
+            }
+
+            if (!LineTerminators.Any(data.Contains))
+            {
+                throw new ArgumentException("data is not a valid request, it does not contain any CRLF/LF terminators.", nameof(data));
+            }
 
             using (var retVal = new ByteArrayContent(Array.Empty<byte>()))
             {
@@ -66,10 +77,16 @@ namespace Rssdp.Infrastructure
         /// <returns>A <see cref="Version"/> object containing the parsed version data.</returns>
         protected Version ParseHttpVersion(string versionData)
         {
-            if (versionData == null) throw new ArgumentNullException(nameof(versionData));
+            if (versionData == null)
+            {
+                throw new ArgumentNullException(nameof(versionData));
+            }
 
             var versionSeparatorIndex = versionData.IndexOf('/');
-            if (versionSeparatorIndex <= 0 || versionSeparatorIndex == versionData.Length) throw new ArgumentException("request header line is invalid. Http Version not supplied or incorrect format.", nameof(versionData));
+            if (versionSeparatorIndex <= 0 || versionSeparatorIndex == versionData.Length)
+            {
+                throw new ArgumentException("request header line is invalid. Http Version not supplied or incorrect format.", nameof(versionData));
+            }
 
             return Version.Parse(versionData.Substring(versionSeparatorIndex + 1));
         }

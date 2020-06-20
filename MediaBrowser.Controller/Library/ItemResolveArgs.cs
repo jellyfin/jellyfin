@@ -252,7 +252,11 @@ namespace MediaBrowser.Controller.Library
         {
             if (args != null)
             {
-                if (args.Path == null && Path == null) return true;
+                if (args.Path == null && Path == null)
+                {
+                    return true;
+                }
+
                 return args.Path != null && BaseItem.FileSystem.AreEqual(args.Path, Path);
             }
 

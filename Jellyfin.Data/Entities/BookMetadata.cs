@@ -34,13 +34,25 @@ namespace Jellyfin.Data.Entities
         /// <param name="_book0"></param>
         public BookMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Book _book0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_book0 == null) throw new ArgumentNullException(nameof(_book0));
+            if (_book0 == null)
+            {
+                throw new ArgumentNullException(nameof(_book0));
+            }
+
             _book0.BookMetadata.Add(this);
 
             this.Publishers = new HashSet<Company>();

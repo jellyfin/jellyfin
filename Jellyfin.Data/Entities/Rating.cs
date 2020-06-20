@@ -33,9 +33,12 @@ namespace Jellyfin.Data.Entities
         {
             this.Value = value;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
-            _metadata0.Ratings.Add(this);
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
 
+            _metadata0.Ratings.Add(this);
 
             Init();
         }

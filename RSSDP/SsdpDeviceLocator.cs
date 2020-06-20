@@ -27,7 +27,10 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer)
         {
-            if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
+            if (communicationsServer == null)
+            {
+                throw new ArgumentNullException(nameof(communicationsServer));
+            }
 
             _CommunicationsServer = communicationsServer;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
@@ -140,10 +143,25 @@ namespace Rssdp.Infrastructure
 
         private Task SearchAsync(string searchTarget, TimeSpan searchWaitTime, CancellationToken cancellationToken)
         {
-            if (searchTarget == null) throw new ArgumentNullException(nameof(searchTarget));
-            if (searchTarget.Length == 0) throw new ArgumentException("searchTarget cannot be an empty string.", nameof(searchTarget));
-            if (searchWaitTime.TotalSeconds < 0) throw new ArgumentException("searchWaitTime must be a positive time.");
-            if (searchWaitTime.TotalSeconds > 0 && searchWaitTime.TotalSeconds <= 1) throw new ArgumentException("searchWaitTime must be zero (if you are not using the result and relying entirely in the events), or greater than one second.");
+            if (searchTarget == null)
+            {
+                throw new ArgumentNullException(nameof(searchTarget));
+            }
+
+            if (searchTarget.Length == 0)
+            {
+                throw new ArgumentException("searchTarget cannot be an empty string.", nameof(searchTarget));
+            }
+
+            if (searchWaitTime.TotalSeconds < 0)
+            {
+                throw new ArgumentException("searchWaitTime must be a positive time.");
+            }
+
+            if (searchWaitTime.TotalSeconds > 0 && searchWaitTime.TotalSeconds <= 1)
+            {
+                throw new ArgumentException("searchWaitTime must be zero (if you are not using the result and relying entirely in the events), or greater than one second.");
+            }
 
             ThrowIfDisposed();
 
@@ -192,7 +210,10 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="DeviceAvailable"/>
         protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress localIpAddress)
         {
-            if (this.IsDisposed) return;
+            if (this.IsDisposed)
+            {
+                return;
+            }
 
             var handlers = this.DeviceAvailable;
             if (handlers != null)
@@ -210,11 +231,16 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="DeviceUnavailable"/>
         protected virtual void OnDeviceUnavailable(DiscoveredSsdpDevice device, bool expired)
         {
-            if (this.IsDisposed) return;
+            if (this.IsDisposed)
+            {
+                return;
+            }
 
             var handlers = this.DeviceUnavailable;
             if (handlers != null)
+            {
                 handlers(this, new DeviceUnavailableEventArgs(device, expired));
+            }
         }
 
         /// <summary>
@@ -281,7 +307,10 @@ namespace Rssdp.Infrastructure
 
         private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress localIpAddress)
         {
-            if (!NotificationTypeMatchesFilter(device)) return;
+            if (!NotificationTypeMatchesFilter(device))
+            {
+                return;
+            }
 
             OnDeviceAvailable(device, isNewDevice, localIpAddress);
         }
@@ -318,7 +347,10 @@ namespace Rssdp.Infrastructure
 
         private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress localIpAddress)
         {
-            if (!message.IsSuccessStatusCode) return;
+            if (!message.IsSuccessStatusCode)
+            {
+                return;
+            }
 
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)
@@ -339,13 +371,20 @@ namespace Rssdp.Infrastructure
 
         private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress localIpAddress)
         {
-            if (String.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0) return;
+            if (String.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                return;
+            }
 
             var notificationType = GetFirstHeaderStringValue("NTS", message);
             if (String.Compare(notificationType, SsdpConstants.SsdpKeepAliveNotification, StringComparison.OrdinalIgnoreCase) == 0)
+            {
                 ProcessAliveNotification(message, localIpAddress);
+            }
             else if (String.Compare(notificationType, SsdpConstants.SsdpByeByeNotification, StringComparison.OrdinalIgnoreCase) == 0)
+            {
                 ProcessByeByeNotification(message);
+            }
         }
 
         private void ProcessAliveNotification(HttpRequestMessage message, IPAddress localIpAddress)
@@ -454,14 +493,20 @@ namespace Rssdp.Infrastructure
 
         private TimeSpan CacheAgeFromHeader(System.Net.Http.Headers.CacheControlHeaderValue headerValue)
         {
-            if (headerValue == null) return TimeSpan.Zero;
+            if (headerValue == null)
+            {
+                return TimeSpan.Zero;
+            }
 
             return (TimeSpan)(headerValue.MaxAge ?? headerValue.SharedMaxAge ?? TimeSpan.Zero);
         }
 
         private void RemoveExpiredDevicesFromCache()
         {
-            if (this.IsDisposed) return;
+            if (this.IsDisposed)
+            {
+                return;
+            }
 
             DiscoveredSsdpDevice[] expiredDevices = null;
             lock (_Devices)
@@ -470,7 +515,10 @@ namespace Rssdp.Infrastructure
 
                 foreach (var device in expiredDevices)
                 {
-                    if (this.IsDisposed) return;
+                    if (this.IsDisposed)
+                    {
+                        return;
+                    }
 
                     _Devices.Remove(device);
                 }
@@ -481,7 +529,10 @@ namespace Rssdp.Infrastructure
             // problems.
             foreach (var expiredUsn in (from expiredDevice in expiredDevices select expiredDevice.Usn).Distinct())
             {
-                if (this.IsDisposed) return;
+                if (this.IsDisposed)
+                {
+                    return;
+                }
 
                 DeviceDied(expiredUsn, true);
             }
@@ -495,7 +546,10 @@ namespace Rssdp.Infrastructure
                 existingDevices = FindExistingDeviceNotifications(_Devices, deviceUsn);
                 foreach (var existingDevice in existingDevices)
                 {
-                    if (this.IsDisposed) return true;
+                    if (this.IsDisposed)
+                    {
+                        return true;
+                    }
 
                     _Devices.Remove(existingDevice);
                 }

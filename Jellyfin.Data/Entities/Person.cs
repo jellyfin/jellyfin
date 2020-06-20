@@ -36,7 +36,11 @@ namespace Jellyfin.Data.Entities
         {
             this.UrlId = urlid;
 
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             this.Name = name;
 
             this.Sources = new HashSet<MetadataProviderId>();

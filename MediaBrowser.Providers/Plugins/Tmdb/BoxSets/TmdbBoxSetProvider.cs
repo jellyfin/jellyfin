@@ -159,7 +159,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         {
             var mainResult = await FetchMainResult(tmdbId, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
 
-            if (mainResult == null) return;
+            if (mainResult == null)
+            {
+                return;
+            }
 
             var dataFilePath = GetDataFilePath(_config.ApplicationPaths, tmdbId, preferredMetadataLanguage);
 

@@ -30,10 +30,18 @@ namespace Jellyfin.Data.Entities
         /// <param name="language">ISO-639-3 3-character language codes.</param>
         protected Metadata(string title, string language, DateTime dateadded, DateTime datemodified)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
             this.PersonRoles = new HashSet<PersonRole>();

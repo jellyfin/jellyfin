@@ -32,15 +32,26 @@ namespace Jellyfin.Data.Entities
         /// <param name="_season0"></param>
         public SeasonMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Season _season0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_season0 == null) throw new ArgumentNullException(nameof(_season0));
-            _season0.SeasonMetadata.Add(this);
+            if (_season0 == null)
+            {
+                throw new ArgumentNullException(nameof(_season0));
+            }
 
+            _season0.SeasonMetadata.Add(this);
 
             Init();
         }

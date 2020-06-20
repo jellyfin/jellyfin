@@ -124,7 +124,10 @@ namespace Emby.Server.Implementations.Services
             var hasSeparators = new List<bool>();
             foreach (var component in this.restPath.Split(PathSeperatorChar))
             {
-                if (string.IsNullOrEmpty(component)) continue;
+                if (string.IsNullOrEmpty(component))
+                {
+                    continue;
+                }
 
                 if (component.IndexOf(VariablePrefix, StringComparison.OrdinalIgnoreCase) != -1
                     && component.IndexOf(ComponentSeperator) != -1)

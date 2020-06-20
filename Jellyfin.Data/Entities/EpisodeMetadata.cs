@@ -31,15 +31,26 @@ namespace Jellyfin.Data.Entities
         /// <param name="_episode0"></param>
         public EpisodeMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Episode _episode0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_episode0 == null) throw new ArgumentNullException(nameof(_episode0));
-            _episode0.EpisodeMetadata.Add(this);
+            if (_episode0 == null)
+            {
+                throw new ArgumentNullException(nameof(_episode0));
+            }
 
+            _episode0.EpisodeMetadata.Add(this);
 
             Init();
         }

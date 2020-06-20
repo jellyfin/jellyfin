@@ -31,15 +31,26 @@ namespace Jellyfin.Data.Entities
         /// <param name="_track0"></param>
         public TrackMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Track _track0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_track0 == null) throw new ArgumentNullException(nameof(_track0));
-            _track0.TrackMetadata.Add(this);
+            if (_track0 == null)
+            {
+                throw new ArgumentNullException(nameof(_track0));
+            }
 
+            _track0.TrackMetadata.Add(this);
 
             Init();
         }

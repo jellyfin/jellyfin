@@ -32,12 +32,20 @@ namespace Jellyfin.Data.Entities
         /// <param name="_release0"></param>
         public Chapter(string language, long timestart, Release _release0)
         {
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
             this.TimeStart = timestart;
 
-            if (_release0 == null) throw new ArgumentNullException(nameof(_release0));
+            if (_release0 == null)
+            {
+                throw new ArgumentNullException(nameof(_release0));
+            }
+
             _release0.Chapters.Add(this);
 
 

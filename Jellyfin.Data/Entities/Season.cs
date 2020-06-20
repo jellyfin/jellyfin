@@ -42,7 +42,11 @@ namespace Jellyfin.Data.Entities
 
             this.UrlId = urlid;
 
-            if (_series0 == null) throw new ArgumentNullException(nameof(_series0));
+            if (_series0 == null)
+            {
+                throw new ArgumentNullException(nameof(_series0));
+            }
+
             _series0.Seasons.Add(this);
 
             this.SeasonMetadata = new HashSet<SeasonMetadata>();

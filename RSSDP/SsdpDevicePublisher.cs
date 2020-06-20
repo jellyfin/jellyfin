@@ -40,12 +40,35 @@ namespace Rssdp.Infrastructure
         public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, INetworkManager networkManager,
             string osName, string osVersion, bool sendOnlyMatchedHost)
         {
-            if (communicationsServer == null) throw new ArgumentNullException(nameof(communicationsServer));
-            if (networkManager == null) throw new ArgumentNullException(nameof(networkManager));
-            if (osName == null) throw new ArgumentNullException(nameof(osName));
-            if (osName.Length == 0) throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
-            if (osVersion == null) throw new ArgumentNullException(nameof(osVersion));
-            if (osVersion.Length == 0) throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
+            if (communicationsServer == null)
+            {
+                throw new ArgumentNullException(nameof(communicationsServer));
+            }
+
+            if (networkManager == null)
+            {
+                throw new ArgumentNullException(nameof(networkManager));
+            }
+
+            if (osName == null)
+            {
+                throw new ArgumentNullException(nameof(osName));
+            }
+
+            if (osName.Length == 0)
+            {
+                throw new ArgumentException("osName cannot be an empty string.", nameof(osName));
+            }
+
+            if (osVersion == null)
+            {
+                throw new ArgumentNullException(nameof(osVersion));
+            }
+
+            if (osVersion.Length == 0)
+            {
+                throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
+            }
 
             _SupportPnpRootDevice = true;
             _Devices = new List<SsdpRootDevice>();
@@ -82,7 +105,10 @@ namespace Rssdp.Infrastructure
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capture task to local variable supresses compiler warning, but task is not really needed.")]
         public void AddDevice(SsdpRootDevice device)
         {
-            if (device == null) throw new ArgumentNullException(nameof(device));
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
 
             ThrowIfDisposed();
 
@@ -115,7 +141,10 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
         public async Task RemoveDevice(SsdpRootDevice device)
         {
-            if (device == null) throw new ArgumentNullException(nameof(device));
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
 
             bool wasRemoved = false;
             lock (_Devices)
@@ -227,10 +256,15 @@ namespace Rssdp.Infrastructure
                 // return;
             }
 
-            if (!Int32.TryParse(mx, out maxWaitInterval) || maxWaitInterval <= 0) return;
+            if (!Int32.TryParse(mx, out maxWaitInterval) || maxWaitInterval <= 0)
+            {
+                return;
+            }
 
             if (maxWaitInterval > 120)
+            {
                 maxWaitInterval = _Random.Next(0, 120);
+            }
 
             // Do not block synchronously as that may tie up a threadpool thread for several seconds.
             Task.Delay(_Random.Next(16, (maxWaitInterval * 1000))).ContinueWith((parentTask) =>
@@ -240,13 +274,21 @@ namespace Rssdp.Infrastructure
                 lock (_Devices)
                 {
                     if (String.Compare(SsdpConstants.SsdpDiscoverAllSTHeader, searchTarget, StringComparison.OrdinalIgnoreCase) == 0)
+                    {
                         devices = GetAllDevicesAsFlatEnumerable().ToArray();
+                    }
                     else if (String.Compare(SsdpConstants.UpnpDeviceTypeRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) == 0 || (this.SupportPnpRootDevice && String.Compare(SsdpConstants.PnpDeviceTypeRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) == 0))
+                    {
                         devices = _Devices.ToArray();
+                    }
                     else if (searchTarget.Trim().StartsWith("uuid:", StringComparison.OrdinalIgnoreCase))
+                    {
                         devices = (from device in GetAllDevicesAsFlatEnumerable() where String.Compare(device.Uuid, searchTarget.Substring(5), StringComparison.OrdinalIgnoreCase) == 0 select device).ToArray();
+                    }
                     else if (searchTarget.StartsWith("urn:", StringComparison.OrdinalIgnoreCase))
+                    {
                         devices = (from device in GetAllDevicesAsFlatEnumerable() where String.Compare(device.FullDeviceType, searchTarget, StringComparison.OrdinalIgnoreCase) == 0 select device).ToArray();
+                    }
                 }
 
                 if (devices != null)
@@ -382,7 +424,10 @@ namespace Rssdp.Infrastructure
         {
             try
             {
-                if (IsDisposed) return;
+                if (IsDisposed)
+                {
+                    return;
+                }
 
                 // WriteTrace("Begin Sending Alive Notifications For All Devices");
 
@@ -394,7 +439,10 @@ namespace Rssdp.Infrastructure
 
                 foreach (var device in devices)
                 {
-                    if (IsDisposed) return;
+                    if (IsDisposed)
+                    {
+                        return;
+                    }
 
                     SendAliveNotifications(device, true, CancellationToken.None);
                 }
@@ -547,7 +595,10 @@ namespace Rssdp.Infrastructure
 
         private void CommsServer_RequestReceived(object sender, RequestReceivedEventArgs e)
         {
-            if (this.IsDisposed) return;
+            if (this.IsDisposed)
+            {
+                return;
+            }
 
             if (string.Equals(e.Message.Method.Method, SsdpConstants.MSearchMethod, StringComparison.OrdinalIgnoreCase))
             {

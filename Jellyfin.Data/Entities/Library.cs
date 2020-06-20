@@ -30,9 +30,12 @@ namespace Jellyfin.Data.Entities
         /// <param name="name"></param>
         public Library(string name)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            this.Name = name;
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
 
+            this.Name = name;
 
             Init();
         }

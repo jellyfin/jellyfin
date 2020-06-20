@@ -201,7 +201,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var index = line.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
                         var name = line.Substring(0, index - 1);
                         var currentChannel = line.Substring(index + 7);
-                        if (currentChannel != "none") { status = LiveTvTunerStatus.LiveTv; } else { status = LiveTvTunerStatus.Available; }
+                        if (currentChannel != "none")
+                        {
+                            status = LiveTvTunerStatus.LiveTv;
+                        }
+                        else
+                        {
+                            status = LiveTvTunerStatus.Available;
+                        }
 
                         tuners.Add(new LiveTvTunerInfo
                         {

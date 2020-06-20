@@ -31,15 +31,26 @@ namespace Jellyfin.Data.Entities
         /// <param name="_company0"></param>
         public CompanyMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Company _company0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_company0 == null) throw new ArgumentNullException(nameof(_company0));
-            _company0.CompanyMetadata.Add(this);
+            if (_company0 == null)
+            {
+                throw new ArgumentNullException(nameof(_company0));
+            }
 
+            _company0.CompanyMetadata.Add(this);
 
             Init();
         }

@@ -39,9 +39,12 @@ namespace Jellyfin.Data.Entities
 
             this.MinimumValue = minimumvalue;
 
-            if (_rating0 == null) throw new ArgumentNullException(nameof(_rating0));
-            _rating0.RatingType = this;
+            if (_rating0 == null)
+            {
+                throw new ArgumentNullException(nameof(_rating0));
+            }
 
+            _rating0.RatingType = this;
 
             Init();
         }

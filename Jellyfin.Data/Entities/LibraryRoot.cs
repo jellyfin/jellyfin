@@ -30,9 +30,12 @@ namespace Jellyfin.Data.Entities
         /// <param name="path">Absolute Path.</param>
         public LibraryRoot(string path)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
-            this.Path = path;
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
 
+            this.Path = path;
 
             Init();
         }

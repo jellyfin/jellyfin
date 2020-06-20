@@ -80,8 +80,15 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
         public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
         {
-            if (socketFactory == null) throw new ArgumentNullException(nameof(socketFactory));
-            if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
+            if (socketFactory == null)
+            {
+                throw new ArgumentNullException(nameof(socketFactory));
+            }
+
+            if (multicastTimeToLive <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
+            }
 
             _BroadcastListenSocketSynchroniser = new object();
             _SendSocketSynchroniser = new object();
@@ -151,7 +158,10 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public async Task SendMessage(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
-            if (messageData == null) throw new ArgumentNullException(nameof(messageData));
+            if (messageData == null)
+            {
+                throw new ArgumentNullException(nameof(messageData));
+            }
 
             ThrowIfDisposed();
 
@@ -234,7 +244,10 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public async Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
-            if (message == null) throw new ArgumentNullException(nameof(message));
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
 
             byte[] messageData = Encoding.UTF8.GetBytes(message);
 
