@@ -224,8 +224,6 @@ namespace MediaBrowser.Controller.Library
 
         public string CollectionType { get; set; }
 
-        #region Equality Overrides
-
         /// <summary>
         /// Determines whether the specified <see cref="object" /> is equal to this instance.
         /// </summary>
@@ -260,8 +258,5 @@ namespace MediaBrowser.Controller.Library
 
             return false;
         }
-
-        #endregion
     }
-
 }

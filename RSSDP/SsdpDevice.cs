@@ -15,19 +15,12 @@ namespace Rssdp
     /// <seealso cref="SsdpEmbeddedDevice"/>
     public abstract class SsdpDevice
     {
-
-        #region Fields
-
         private string _Udn;
         private string _DeviceType;
         private string _DeviceTypeNamespace;
         private int _DeviceVersion;
 
         private IList<SsdpDevice> _Devices;
-
-        #endregion
-
-        #region Events
 
         /// <summary>
         /// Raised when a new child device is added.
@@ -43,10 +36,6 @@ namespace Rssdp
         /// <seealso cref="DeviceRemoved"/>
         public event EventHandler<DeviceEventArgs> DeviceRemoved;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Derived type constructor, allows constructing a device with no parent. Should only be used from derived types that are or inherit from <see cref="SsdpRootDevice"/>.
         /// </summary>
@@ -60,8 +49,6 @@ namespace Rssdp
             this.Devices = new ReadOnlyCollection<SsdpDevice>(_Devices);
         }
 
-        #endregion
-
         public SsdpRootDevice ToRootDevice()
         {
             var device = this;
@@ -72,10 +59,6 @@ namespace Rssdp
 
             return rootDevice;
         }
-
-        #region Public Properties
-
-        #region UPnP Device Description Properties
 
         /// <summary>
         /// Sets or returns the core device type (not including namespace, version etc.). Required.
@@ -252,8 +235,6 @@ namespace Rssdp
         /// </remarks>
         public Uri PresentationUrl { get; set; }
 
-        #endregion
-
         /// <summary>
         /// Returns a read-only enumerable set of <see cref="SsdpDevice"/> objects representing children of this device. Child devices are optional.
         /// </summary>
@@ -264,10 +245,6 @@ namespace Rssdp
             get;
             private set;
         }
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Adds a child device to the <see cref="Devices"/> collection.
@@ -351,7 +328,5 @@ namespace Rssdp
             if (handlers != null)
                 handlers(this, new DeviceEventArgs(device));
         }
-
-        #endregion
     }
 }

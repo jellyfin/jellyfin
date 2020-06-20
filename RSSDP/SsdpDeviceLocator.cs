@@ -13,9 +13,6 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public class SsdpDeviceLocator : DisposableManagedObjectBase
     {
-
-        #region Fields & Constants
-
         private List<DiscoveredSsdpDevice> _Devices;
         private ISsdpCommunicationsServer _CommunicationsServer;
 
@@ -24,10 +21,6 @@ namespace Rssdp.Infrastructure
 
         private readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
         private readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Default constructor.
@@ -41,10 +34,6 @@ namespace Rssdp.Infrastructure
 
             _Devices = new List<DiscoveredSsdpDevice>();
         }
-
-        #endregion
-
-        #region Events
 
         /// <summary>
         /// Raised for when
@@ -75,12 +64,6 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="StartListeningForNotifications"/>
         /// <seealso cref="StopListeningForNotifications"/>
         public event EventHandler<DeviceUnavailableEventArgs> DeviceUnavailable;
-
-        #endregion
-
-        #region Public Methods
-
-        #region Search Overloads
 
         public void RestartBroadcastTimer(TimeSpan dueTime, TimeSpan period)
         {
@@ -167,8 +150,6 @@ namespace Rssdp.Infrastructure
             return BroadcastDiscoverMessage(searchTarget, SearchTimeToMXValue(searchWaitTime), cancellationToken);
         }
 
-        #endregion
-
         /// <summary>
         /// Starts listening for broadcast notifications of service availability.
         /// </summary>
@@ -236,10 +217,6 @@ namespace Rssdp.Infrastructure
                 handlers(this, new DeviceUnavailableEventArgs(device, expired));
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
         /// Sets or returns a string containing the filter for notifications. Notifications not matching the filter will not raise the <see cref="ISsdpDeviceLocator.DeviceAvailable"/> or <see cref="ISsdpDeviceLocator.DeviceUnavailable"/> events.
         /// </summary>
@@ -261,10 +238,6 @@ namespace Rssdp.Infrastructure
             set;
         }
 
-        #endregion
-
-        #region Overrides
-
         /// <summary>
         /// Disposes this object and all internal resources. Stops listening for all network messages.
         /// </summary>
@@ -284,12 +257,6 @@ namespace Rssdp.Infrastructure
                 }
             }
         }
-
-        #endregion
-
-        #region Private Methods
-
-        #region Discovery/Device Add
 
         private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress localIpAddress)
         {
@@ -325,10 +292,6 @@ namespace Rssdp.Infrastructure
                 || this.NotificationFilter == SsdpConstants.SsdpDiscoverAllSTHeader
                 || device.NotificationType == this.NotificationFilter;
         }
-
-        #endregion
-
-        #region Network Message Processing
 
         private Task BroadcastDiscoverMessage(string serviceType, TimeSpan mxValue, CancellationToken cancellationToken)
         {
@@ -429,8 +392,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        #region Header/Message Processing Utilities
-
         private string GetFirstHeaderStringValue(string headerName, HttpResponseMessage message)
         {
             string retVal = null;
@@ -498,12 +459,6 @@ namespace Rssdp.Infrastructure
             return (TimeSpan)(headerValue.MaxAge ?? headerValue.SharedMaxAge ?? TimeSpan.Zero);
         }
 
-        #endregion
-
-        #endregion
-
-        #region Expiry and Device Removal
-
         private void RemoveExpiredDevicesFromCache()
         {
             if (this.IsDisposed) return;
@@ -560,8 +515,6 @@ namespace Rssdp.Infrastructure
             return false;
         }
 
-        #endregion
-
         private TimeSpan SearchTimeToMXValue(TimeSpan searchWaitTime)
         {
             if (searchWaitTime.TotalSeconds < 2 || searchWaitTime == TimeSpan.Zero)
@@ -598,10 +551,6 @@ namespace Rssdp.Infrastructure
             return list;
         }
 
-        #endregion
-
-        #region Event Handlers
-
         private void CommsServer_ResponseReceived(object sender, ResponseReceivedEventArgs e)
         {
             ProcessSearchResponseMessage(e.Message, e.LocalIpAddress);
@@ -611,7 +560,5 @@ namespace Rssdp.Infrastructure
         {
             ProcessNotificationMessage(e.Message, e.LocalIpAddress);
         }
-
-        #endregion
     }
 }

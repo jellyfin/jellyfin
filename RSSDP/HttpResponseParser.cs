@@ -10,17 +10,10 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public sealed class HttpResponseParser : HttpParserBase<HttpResponseMessage>
     {
-
-        #region Fields & Constants
-
         private readonly string[] ContentHeaderNames = new string[]
-                {
-                    "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
-                };
-
-        #endregion
-
-        #region Public Methods
+        {
+            "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
+        };
 
         /// <summary>
         /// Parses the specified data into a <see cref="HttpResponseMessage"/> instance.
@@ -46,10 +39,6 @@ namespace Rssdp.Infrastructure
                 throw;
             }
         }
-
-        #endregion
-
-        #region Overrides Methods
 
         /// <summary>
         /// Returns a boolean indicating whether the specified HTTP header name represents a content header (true), or a message header (false).
@@ -87,7 +76,5 @@ namespace Rssdp.Infrastructure
                 message.ReasonPhrase = parts[2].Trim();
             }
         }
-
-        #endregion
     }
 }

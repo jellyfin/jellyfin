@@ -7,14 +7,7 @@ namespace Rssdp
     /// </summary>
     public sealed class DeviceEventArgs : EventArgs
     {
-
-        #region Fields
-
         private readonly SsdpDevice _Device;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Constructs a new instance for the specified <see cref="SsdpDevice"/>.
@@ -28,10 +21,6 @@ namespace Rssdp
             _Device = device;
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
         /// Returns the <see cref="SsdpDevice"/> instance the event being raised for.
         /// </summary>
@@ -39,7 +28,5 @@ namespace Rssdp
         {
             get { return _Device; }
         }
-
-        #endregion
     }
 }

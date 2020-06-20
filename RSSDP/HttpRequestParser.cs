@@ -9,17 +9,10 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public sealed class HttpRequestParser : HttpParserBase<HttpRequestMessage>
     {
-
-        #region Fields & Constants
-
         private readonly string[] ContentHeaderNames = new string[]
-                {
-                    "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
-                };
-
-        #endregion
-
-        #region Public Methods
+        {
+            "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
+        };
 
         /// <summary>
         /// Parses the specified data into a <see cref="HttpRequestMessage"/> instance.
@@ -44,10 +37,6 @@ namespace Rssdp.Infrastructure
                     retVal.Dispose();
             }
         }
-
-        #endregion
-
-        #region Overrides
 
         /// <summary>
         /// Used to parse the first line of an HTTP request or response and assign the values to the appropriate properties on the <paramref name="message"/>.
@@ -83,7 +72,5 @@ namespace Rssdp.Infrastructure
         {
             return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
         }
-
-        #endregion
     }
 }

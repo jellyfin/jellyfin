@@ -11,15 +11,8 @@ namespace Rssdp.Infrastructure
     /// <typeparam name="T"></typeparam>
     public abstract class HttpParserBase<T> where T : new()
     {
-
-        #region Fields
-
         private readonly string[] LineTerminators = new string[] { "\r\n", "\n" };
         private readonly char[] SeparatorCharacters = new char[] { ',', ';' };
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Parses the <paramref name="data"/> provided into either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
@@ -80,10 +73,6 @@ namespace Rssdp.Infrastructure
 
             return Version.Parse(versionData.Substring(versionSeparatorIndex + 1));
         }
-
-        #endregion
-
-        #region Private Methods
 
         /// <summary>
         /// Parses a line from an HTTP request or response message containing a header name and value pair.
@@ -202,8 +191,5 @@ namespace Rssdp.Infrastructure
             else
                 return trimmedSegment;
         }
-
-        #endregion
-
     }
 }

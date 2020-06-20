@@ -19,8 +19,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class Device : IDisposable
     {
-        #region Fields & Properties
-
         private Timer _timer;
 
         public DeviceInfo Properties { get; set; }
@@ -53,10 +51,10 @@ namespace Emby.Dlna.PlayTo
 
         public bool IsStopped => TransportState == TRANSPORTSTATE.STOPPED;
 
-        #endregion
-
         private readonly IHttpClient _httpClient;
+
         private readonly ILogger _logger;
+
         private readonly IServerConfigurationManager _config;
 
         public Action OnDeviceUnavailable { get; set; }
@@ -141,8 +139,6 @@ namespace Emby.Dlna.PlayTo
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
         }
-
-        #region Commanding
 
         public Task VolumeDown(CancellationToken cancellationToken)
         {
@@ -402,11 +398,8 @@ namespace Emby.Dlna.PlayTo
             RestartTimer(true);
         }
 
-        #endregion
-
-        #region Get data
-
         private int _connectFailureCount;
+
         private async void TimerCallback(object sender)
         {
             if (_disposed)
@@ -870,10 +863,6 @@ namespace Emby.Dlna.PlayTo
             return new string[4];
         }
 
-        #endregion
-
-        #region From XML
-
         private async Task<TransportCommands> GetAVProtocolAsync(CancellationToken cancellationToken)
         {
             if (AvCommands != null)
@@ -1068,8 +1057,6 @@ namespace Emby.Dlna.PlayTo
             return new Device(deviceProperties, httpClient, logger, config);
         }
 
-        #endregion
-
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         private static DeviceIcon CreateIcon(XElement element)
         {
@@ -1193,8 +1180,6 @@ namespace Emby.Dlna.PlayTo
             });
         }
 
-        #region IDisposable
-
         bool _disposed;
 
         public void Dispose()
@@ -1220,8 +1205,6 @@ namespace Emby.Dlna.PlayTo
 
             _disposed = true;
         }
-
-        #endregion
 
         public override string ToString()
         {
