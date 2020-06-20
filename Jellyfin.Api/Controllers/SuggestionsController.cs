@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Jellyfin.Api.Extensions;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -64,8 +65,8 @@ namespace Jellyfin.Api.Controllers
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 OrderBy = new[] { ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
-                MediaTypes = (mediaType ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
-                IncludeItemTypes = (type ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+                MediaTypes = RequestHelpers.Split(mediaType!, ',', true),
+                IncludeItemTypes = RequestHelpers.Split(type!, ',', true),
                 IsVirtualItem = false,
                 StartIndex = startIndex,
                 Limit = limit,
