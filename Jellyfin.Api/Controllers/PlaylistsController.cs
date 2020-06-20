@@ -1,7 +1,4 @@
-﻿#nullable enable
-#pragma warning disable CA1801
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
@@ -124,7 +121,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RemoveFromPlaylist([FromRoute] string playlistId, [FromQuery] string entryIds)
         {
-            _playlistManager.RemoveFromPlaylist(playlistId, entryIds.Split(','));
+            _playlistManager.RemoveFromPlaylist(playlistId, RequestHelpers.Split(entryIds, ',', true));
             return NoContent();
         }
 
