@@ -92,7 +92,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpPost("Running/{taskId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult StartTask([FromRoute] string taskId)
         {
@@ -116,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpDelete("Running/{taskId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult StopTask([FromRoute] string taskId)
         {
@@ -141,7 +141,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpPost("{taskId}/Triggers")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateTask(
             [FromRoute] string taskId,
