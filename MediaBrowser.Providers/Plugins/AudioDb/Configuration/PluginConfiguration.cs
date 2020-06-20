@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.Plugins;
+﻿#pragma warning disable CS1591
+
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
