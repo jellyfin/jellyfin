@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 
 namespace Jellyfin.Api.Models.PlaylistDtos
 {
