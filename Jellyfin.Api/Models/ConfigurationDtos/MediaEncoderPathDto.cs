@@ -8,11 +8,11 @@ namespace Jellyfin.Api.Models.ConfigurationDtos
         /// <summary>
         /// Gets or sets media encoder path.
         /// </summary>
-        public string Path { get; set; }
+        public string Path { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets media encoder path type.
         /// </summary>
-        public string PathType { get; set; }
+        public string PathType { get; set; } = null!;
     }
 }

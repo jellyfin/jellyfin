@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,7 +15,7 @@ namespace Emby.Server.Implementations.Services
 
     public class ServiceController
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ServiceController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceController"/> class.

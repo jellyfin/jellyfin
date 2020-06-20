@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -22,6 +23,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -146,11 +148,14 @@ namespace Emby.Dlna.PlayTo
                 {
                     var positionTicks = GetProgressPositionTicks(streamInfo);
 
-                    ReportPlaybackStopped(streamInfo, positionTicks);
+                    await ReportPlaybackStopped(streamInfo, positionTicks).ConfigureAwait(false);
                 }
 
                 streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager, _mediaSourceManager);
-                if (streamInfo.Item == null) return;
+                if (streamInfo.Item == null)
+                {
+                    return;
+                }
 
                 var newItemProgress = GetProgressInfo(streamInfo);
 
@@ -173,11 +178,14 @@ namespace Emby.Dlna.PlayTo
             {
                 var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager);
 
-                if (streamInfo.Item == null) return;
+                if (streamInfo.Item == null)
+                {
+                    return;
+                }
 
                 var positionTicks = GetProgressPositionTicks(streamInfo);
 
-                ReportPlaybackStopped(streamInfo, positionTicks);
+                await ReportPlaybackStopped(streamInfo, positionTicks).ConfigureAwait(false);
 
                 var mediaSource = await streamInfo.GetMediaSource(CancellationToken.None).ConfigureAwait(false);
 
@@ -185,7 +193,7 @@ namespace Emby.Dlna.PlayTo
                     (_device.Duration == null ? (long?)null : _device.Duration.Value.Ticks) :
                     mediaSource.RunTimeTicks;
 
-                var playedToCompletion = (positionTicks.HasValue && positionTicks.Value == 0);
+                var playedToCompletion = positionTicks.HasValue && positionTicks.Value == 0;
 
                 if (!playedToCompletion && duration.HasValue && positionTicks.HasValue)
                 {
@@ -210,7 +218,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void ReportPlaybackStopped(StreamParams streamInfo, long? positionTicks)
+        private async Task ReportPlaybackStopped(StreamParams streamInfo, long? positionTicks)
         {
             try
             {
@@ -220,7 +228,6 @@ namespace Emby.Dlna.PlayTo
                     SessionId = _session.Id,
                     PositionTicks = positionTicks,
                     MediaSourceId = streamInfo.MediaSourceId
-
                 }).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -441,7 +448,13 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
+        private PlaylistItem CreatePlaylistItem(
+            BaseItem item,
+            User user,
+            long startPostionTicks,
+            string mediaSourceId,
+            int? audioStreamIndex,
+            int? subtitleStreamIndex)
         {
             var deviceInfo = _device.Properties;
 
@@ -908,7 +921,8 @@ namespace Emby.Dlna.PlayTo
             return 0;
         }
 
-        public Task SendMessage<T>(string name, string messageId, T data, ISessionController[] allControllers, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Task SendMessage<T>(string name, Guid messageId, T data, CancellationToken cancellationToken)
         {
             if (_disposed)
             {
@@ -924,10 +938,12 @@ namespace Emby.Dlna.PlayTo
             {
                 return SendPlayCommand(data as PlayRequest, cancellationToken);
             }
+
             if (string.Equals(name, "PlayState", StringComparison.OrdinalIgnoreCase))
             {
                 return SendPlaystateCommand(data as PlaystateRequest, cancellationToken);
             }
+
             if (string.Equals(name, "GeneralCommand", StringComparison.OrdinalIgnoreCase))
             {
                 return SendGeneralCommand(data as GeneralCommand, cancellationToken);

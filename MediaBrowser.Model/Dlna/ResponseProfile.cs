@@ -1,5 +1,7 @@
+#nullable disable
 #pragma warning disable CS1591
 
+using System;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
@@ -28,7 +30,7 @@ namespace MediaBrowser.Model.Dlna
 
         public ResponseProfile()
         {
-            Conditions = new ProfileCondition[] { };
+            Conditions = Array.Empty<ProfileCondition>();
         }
 
         public string[] GetContainers()

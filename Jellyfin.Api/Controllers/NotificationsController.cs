@@ -1,11 +1,10 @@
-#nullable enable
-#pragma warning disable CA1801
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Models.NotificationDtos;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Dto;
@@ -45,6 +44,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing a list of notifications.</returns>
         [HttpGet("{UserID}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isRead", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "startIndex", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "limit", Justification = "Imported from ServiceStack")]
         public ActionResult<NotificationResultDto> GetNotifications(
             [FromRoute] string userId,
             [FromQuery] bool? isRead,
@@ -62,6 +65,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <cref see="OkResult"/> containing a summary of the users notifications.</returns>
         [HttpGet("{UserID}/Summary")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
         public ActionResult<NotificationsSummaryDto> GetNotificationsSummary(
             [FromRoute] string userId)
         {
@@ -99,10 +103,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="description">The description of the notification.</param>
         /// <param name="url">The URL of the notification.</param>
         /// <param name="level">The level of the notification.</param>
-        /// <response code="200">Notification sent.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
+        /// <response code="204">Notification sent.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("Admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CreateAdminNotification(
             [FromQuery] string name,
             [FromQuery] string description,
@@ -115,13 +119,16 @@ namespace Jellyfin.Api.Controllers
                 Description = description,
                 Url = url,
                 Level = level ?? NotificationLevel.Normal,
-                UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray(),
+                UserIds = _userManager.Users
+                    .Where(user => user.HasPermission(PermissionKind.IsAdministrator))
+                    .Select(user => user.Id)
+                    .ToArray(),
                 Date = DateTime.UtcNow,
             };
 
             _notificationManager.SendNotification(notification, CancellationToken.None);
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -129,15 +136,17 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
-        /// <response code="200">Notifications set as read.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
+        /// <response code="204">Notifications set as read.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("{UserID}/Read")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "ids", Justification = "Imported from ServiceStack")]
         public ActionResult SetRead(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -145,15 +154,17 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">The userID.</param>
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
-        /// <response code="200">Notifications set as unread.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
+        /// <response code="204">Notifications set as unread.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("{UserID}/Unread")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "ids", Justification = "Imported from ServiceStack")]
         public ActionResult SetUnread(
             [FromRoute] string userId,
             [FromQuery] string ids)
         {
-            return Ok();
+            return NoContent();
         }
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
@@ -8,6 +10,12 @@ namespace Emby.Server.Implementations.Sorting
 {
     public class StartDateComparer : IBaseItemComparer
     {
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.StartDate;
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
@@ -26,19 +34,12 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private static DateTime GetDate(BaseItem x)
         {
-            var hasStartDate = x as LiveTvProgram;
-
-            if (hasStartDate != null)
+            if (x is LiveTvProgram hasStartDate)
             {
                 return hasStartDate.StartDate;
             }
+
             return DateTime.MinValue;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.StartDate;
     }
 }

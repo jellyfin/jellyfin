@@ -23,11 +23,6 @@ namespace Emby.Naming.Common
         {
         }
 
-        public EpisodeExpression()
-            : this(null)
-        {
-        }
-
         public string Expression
         {
             get => _expression;
@@ -48,6 +43,6 @@ namespace Emby.Naming.Common
 
         public string[] DateTimeFormats { get; set; }
 
-        public Regex Regex => _regex ?? (_regex = new Regex(Expression, RegexOptions.IgnoreCase | RegexOptions.Compiled));
+        public Regex Regex => _regex ??= new Regex(Expression, RegexOptions.IgnoreCase | RegexOptions.Compiled);
     }
 }

@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -15,13 +17,16 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -177,19 +182,22 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder && !(this is BasePluginFolder))
             {
-                if (user.Policy.BlockedMediaFolders != null)
+                var blockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders);
+                if (blockedMediaFolders.Length > 0)
                 {
-                    if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
+                    if (blockedMediaFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
 
                         // Backwards compatibility
-                        user.Policy.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                        blockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
                 }
                 else
                 {
-                    if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                    if (!user.HasPermission(PermissionKind.EnableAllFolders)
+                        && !user.GetPreference(PreferenceKind.EnabledFolders)
+                            .Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -340,6 +348,11 @@ namespace MediaBrowser.Controller.Entities
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
                             currentChild.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
+                        }
+                        else
+                        {
+                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
+                            LibraryManager.UpdateImages(currentChild);
                         }
 
                         continue;
@@ -877,7 +890,7 @@ namespace MediaBrowser.Controller.Entities
                 try
                 {
                     query.Parent = this;
-                    query.ChannelIds = new Guid[] { ChannelId };
+                    query.ChannelIds = new[] { ChannelId };
 
                     // Don't blow up here because it could cause parent screens with other content to fail
                     return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).Result;
@@ -947,11 +960,13 @@ namespace MediaBrowser.Controller.Entities
             return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
         }
 
-        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(IEnumerable<BaseItem> items,
+        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(
+            IEnumerable<BaseItem> items,
             InternalItemsQuery query,
             BaseItem queryParent,
             User user,
-            IServerConfigurationManager configurationManager, ICollectionManager collectionManager)
+            IServerConfigurationManager configurationManager,
+            ICollectionManager collectionManager)
         {
             if (items == null)
             {
@@ -1577,7 +1592,7 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false
             };
 
-            if (!user.Configuration.DisplayMissingEpisodes)
+            if (!user.DisplayMissingEpisodes)
             {
                 query.IsVirtualItem = false;
             }

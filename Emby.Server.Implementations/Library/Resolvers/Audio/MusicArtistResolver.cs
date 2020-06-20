@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
     /// </summary>
     public class MusicArtistResolver : ItemResolver<MusicArtist>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<MusicAlbumResolver> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
@@ -23,12 +23,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Initializes a new instance of the <see cref="MusicArtistResolver"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
+        /// <param name="logger">The logger for the created <see cref="MusicAlbumResolver"/> instances.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="config">The configuration manager.</param>
         public MusicArtistResolver(
-            ILogger<MusicArtistResolver> logger,
+            ILogger<MusicAlbumResolver> logger,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
             IServerConfigurationManager config)

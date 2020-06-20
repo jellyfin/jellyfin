@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -12,21 +13,22 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
 using Microsoft.Extensions.Logging;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace Emby.Server.Implementations.Library
 {
     public class SearchEngine : ISearchEngine
     {
+        private readonly ILogger<SearchEngine> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly ILogger _logger;
 
-        public SearchEngine(ILoggerFactory loggerFactory, ILibraryManager libraryManager, IUserManager userManager)
+        public SearchEngine(ILogger<SearchEngine> logger, ILibraryManager libraryManager, IUserManager userManager)
         {
+            _logger = logger;
             _libraryManager = libraryManager;
             _userManager = userManager;
-
-            _logger = loggerFactory.CreateLogger("SearchEngine");
         }
 
         public QueryResult<SearchHintInfo> GetSearchHints(SearchQuery query)
