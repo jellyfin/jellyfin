@@ -88,9 +88,9 @@ namespace Jellyfin.Api.Controllers
         /// Start specified task.
         /// </summary>
         /// <param name="taskId">Task Id.</param>
-        /// <response code="200">Task started.</response>
+        /// <response code="204">Task started.</response>
         /// <response code="404">Task not found.</response>
-        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
+        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpPost("Running/{taskId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -105,14 +105,14 @@ namespace Jellyfin.Api.Controllers
             }
 
             _taskManager.Execute(task, new TaskOptions());
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
         /// Stop specified task.
         /// </summary>
         /// <param name="taskId">Task Id.</param>
-        /// <response code="200">Task stopped.</response>
+        /// <response code="204">Task stopped.</response>
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpDelete("Running/{taskId}")]
@@ -129,7 +129,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             _taskManager.Cancel(task);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="taskId">Task Id.</param>
         /// <param name="triggerInfos">Triggers.</param>
-        /// <response code="200">Task triggers updated.</response>
+        /// <response code="204">Task triggers updated.</response>
         /// <response code="404">Task not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpPost("{taskId}/Triggers")]
@@ -155,7 +155,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             task.Triggers = triggerInfos;
-            return Ok();
+            return NoContent();
         }
     }
 }
