@@ -1,6 +1,5 @@
-#pragma warning disable CA1801
-
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
@@ -54,6 +53,7 @@ namespace Jellyfin.Api.Controllers
         [Description("Refreshes metadata for an item.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "recursive", Justification = "Imported from ServiceStack")]
         public ActionResult Post(
             [FromRoute] string id,
             [FromQuery] MetadataRefreshMode metadataRefreshMode = MetadataRefreshMode.None,

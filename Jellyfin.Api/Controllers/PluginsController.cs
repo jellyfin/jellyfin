@@ -1,7 +1,6 @@
-﻿#pragma warning disable CA1801
-
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -46,6 +45,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Installed plugins returned.</response>
         /// <returns>List of currently installed plugins.</returns>
         [HttpGet]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isAppStoreEnabled", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<PluginInfo>> GetPlugins([FromRoute] bool? isAppStoreEnabled)
         {
             return Ok(_appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()));

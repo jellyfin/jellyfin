@@ -1,7 +1,6 @@
-#pragma warning disable CA1801
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -56,6 +55,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="IEnumerable{VirtualFolderInfo}"/> with the virtual folders.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<VirtualFolderInfo>> GetVirtualFolders([FromQuery] string userId)
         {
             return _libraryManager.GetVirtualFolders(true);

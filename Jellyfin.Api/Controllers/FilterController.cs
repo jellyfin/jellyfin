@@ -1,6 +1,5 @@
-﻿#pragma warning disable CA1801
-
-using System;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -137,6 +136,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Query filters.</returns>
         [HttpGet("/Items/Filters2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "mediaTypes", Justification = "Imported from ServiceStack")]
         public ActionResult<QueryFilters> GetQueryFilters(
             [FromQuery] Guid? userId,
             [FromQuery] string? parentId,
