@@ -1,6 +1,7 @@
 ﻿using System;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Session;
 using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Helpers
@@ -51,6 +52,26 @@ namespace Jellyfin.Api.Helpers
             }
 
             return true;
+        }
+
+        internal static SessionInfo GetSession(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
+        {
+            var authorization = authContext.GetAuthorizationInfo(request);
+            var user = authorization.User;
+            var session = sessionManager.LogSessionActivity(
+                authorization.Client,
+                authorization.Version,
+                authorization.DeviceId,
+                authorization.Device,
+                request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                user);
+
+            if (session == null)
+            {
+                throw new ArgumentException("Session not found.");
+            }
+
+            return session;
         }
     }
 }
