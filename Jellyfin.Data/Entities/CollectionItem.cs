@@ -137,7 +137,6 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [ForeignKey("CollectionItem_Previous_Id")]
         public virtual CollectionItem Previous { get; set; }
-
     }
 }
 

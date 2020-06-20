@@ -194,7 +194,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("MediaFileStream_MediaFileStreams_Id")]
         public virtual ICollection<MediaFileStream> MediaFileStreams { get; protected set; }
-
     }
 }
 

@@ -306,7 +306,6 @@ namespace MediaBrowser.Api
                 ParentId = parentIdGuid,
                 Recursive = true,
                 DtoOptions = options
-
             });
 
             var returnItems = _dtoService.GetBaseItemDtos(itemsResult, options, user);
@@ -378,7 +377,7 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.GetUserById(request.UserId);
 
-            var series = GetSeries(request.Id, user);
+            var series = GetSeries(request.Id);
 
             if (series == null)
             {
@@ -390,7 +389,6 @@ namespace MediaBrowser.Api
                 IsMissing = request.IsMissing,
                 IsSpecialSeason = request.IsSpecialSeason,
                 AdjacentTo = request.AdjacentTo
-
             });
 
             var dtoOptions = GetDtoOptions(_authContext, request);
@@ -404,7 +402,7 @@ namespace MediaBrowser.Api
             };
         }
 
-        private Series GetSeries(string seriesId, User user)
+        private Series GetSeries(string seriesId)
         {
             if (!string.IsNullOrWhiteSpace(seriesId))
             {
@@ -433,7 +431,7 @@ namespace MediaBrowser.Api
             }
             else if (request.Season.HasValue)
             {
-                var series = GetSeries(request.Id, user);
+                var series = GetSeries(request.Id);
 
                 if (series == null)
                 {
@@ -446,7 +444,7 @@ namespace MediaBrowser.Api
             }
             else
             {
-                var series = GetSeries(request.Id, user);
+                var series = GetSeries(request.Id);
 
                 if (series == null)
                 {

@@ -9,20 +9,6 @@ namespace Jellyfin.MediaEncoding.Tests
 {
     public class EncoderValidatorTests
     {
-        private class GetFFmpegVersionTestData : IEnumerable<object?[]>
-        {
-            public IEnumerator<object?[]> GetEnumerator()
-            {
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput, null };
-            }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        }
-
         [Theory]
         [ClassData(typeof(GetFFmpegVersionTestData))]
         public void GetFFmpegVersionTest(string versionOutput, Version? version)
@@ -40,6 +26,20 @@ namespace Jellyfin.MediaEncoding.Tests
         {
             var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>());
             Assert.Equal(valid, val.ValidateVersionInternal(versionOutput));
+        }
+
+        private class GetFFmpegVersionTestData : IEnumerable<object?[]>
+        {
+            public IEnumerator<object?[]> GetEnumerator()
+            {
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4) };
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput, null };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

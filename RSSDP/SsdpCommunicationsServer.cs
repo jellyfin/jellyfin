@@ -259,11 +259,9 @@ namespace Rssdp.Infrastructure
             }
             catch (ObjectDisposedException)
             {
-
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (SocketException ex)
             {
@@ -644,9 +642,9 @@ namespace Rssdp.Infrastructure
         /// <param name="receivedOnLocalIpAddress">The receivedOnLocalIpAddress<see cref="IPAddress"/>.</param>
         private void OnRequestReceived(HttpRequestMessage data, IPEndPoint remoteEndPoint, IPAddress receivedOnLocalIpAddress)
         {
-            //SSDP specification says only * is currently used but other uri's might
-            //be implemented in the future and should be ignored unless understood.
-            //Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
+            // SSDP specification says only * is currently used but other uri's might
+            // be implemented in the future and should be ignored unless understood.
+            // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
             if (data.RequestUri.ToString() != "*")
             {
                 return;

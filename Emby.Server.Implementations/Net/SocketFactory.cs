@@ -190,6 +190,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch (SocketException)
             {
+
             }
 
             try
@@ -200,6 +201,7 @@ namespace Emby.Server.Implementations.Net
             }
             catch (SocketException)
             {
+
             }
 
             try

@@ -63,5 +63,11 @@ namespace Rssdp.Infrastructure
         /// UPnP Basic Device type. Value is Basic.
         /// </summary>
         public const string UpnpDeviceTypeBasicDevice = "Basic";
+
+        internal const string SsdpKeepAliveNotification = "ssdp:alive";
+        internal const string SsdpByeByeNotification = "ssdp:byebye";
+
+        internal const int UdpResendCount = 3;
+
     }
 }

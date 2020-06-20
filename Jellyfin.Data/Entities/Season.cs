@@ -105,7 +105,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Episode_Episodes_Id")]
         public virtual ICollection<Episode> Episodes { get; protected set; }
-
     }
 }
 

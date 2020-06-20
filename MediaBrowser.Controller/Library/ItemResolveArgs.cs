@@ -89,7 +89,6 @@ namespace MediaBrowser.Controller.Library
 
                 return parentDir.Length > _appPaths.RootFolderPath.Length
                        && parentDir.StartsWith(_appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
-
             }
         }
 
@@ -129,7 +128,6 @@ namespace MediaBrowser.Controller.Library
                 }
 
                 return item != null;
-
             }
             return false;
         }

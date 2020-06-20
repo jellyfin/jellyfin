@@ -260,7 +260,6 @@ namespace MediaBrowser.Api.Playback
                 UserId = request.UserId,
                 DeviceProfile = deviceProfile,
                 MediaSourceId = request.MediaSourceId
-
             }).ConfigureAwait(false);
 
             var mediaSource = playbackInfoResult.MediaSources[0];

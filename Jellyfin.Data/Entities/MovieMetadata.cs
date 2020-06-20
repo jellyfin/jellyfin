@@ -217,7 +217,6 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
         [ForeignKey("Company_Studios_Id")]
         public virtual ICollection<Company> Studios { get; protected set; }
-
     }
 }
 

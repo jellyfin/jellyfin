@@ -311,7 +311,6 @@ namespace MediaBrowser.Providers.Subtitles
                 Index = index,
                 ItemId = item.Id,
                 Type = MediaStreamType.Subtitle
-
             }).First();
 
             var path = stream.Path;
@@ -365,9 +364,7 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Name = i.Name,
                     Id = GetProviderId(i.Name)
-
                 }).ToArray();
         }
-
     }
 }

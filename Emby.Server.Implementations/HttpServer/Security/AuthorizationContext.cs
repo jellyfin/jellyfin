@@ -116,7 +116,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     {
                         info.Device = tokenInfo.DeviceName;
                     }
-
                     else if (!string.Equals(info.Device, tokenInfo.DeviceName, StringComparison.OrdinalIgnoreCase))
                     {
                         if (allowTokenInfoUpdate)
@@ -149,9 +148,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     {
                         info.User = _userManager.GetUserById(tokenInfo.UserId);
 
-                        if (info.User != null && !string.Equals(info.User.Name, tokenInfo.UserName, StringComparison.OrdinalIgnoreCase))
+                        if (info.User != null && !string.Equals(info.User.Username, tokenInfo.UserName, StringComparison.OrdinalIgnoreCase))
                         {
-                            tokenInfo.UserName = info.User.Name;
+                            tokenInfo.UserName = info.User.Username;
                             updateToken = true;
                         }
                     }

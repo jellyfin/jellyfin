@@ -218,6 +218,5 @@ namespace MediaBrowser.Api
 
             return points;
         }
-
     }
 }

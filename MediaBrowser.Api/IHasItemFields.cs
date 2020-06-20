@@ -43,7 +43,6 @@ namespace MediaBrowser.Api
                 }
 
                 return null;
-
             }).Where(i => i.HasValue).Select(i => i.Value).ToArray();
         }
     }

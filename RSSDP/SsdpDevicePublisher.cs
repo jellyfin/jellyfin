@@ -252,11 +252,11 @@ namespace Rssdp.Infrastructure
                 return;
             }
 
-            //WriteTrace(String.Format("Search Request Received From {0}, Target = {1}", remoteEndPoint.ToString(), searchTarget));
+            // WriteTrace(String.Format("Search Request Received From {0}, Target = {1}", remoteEndPoint.ToString(), searchTarget));
 
             if (IsDuplicateSearchRequest(searchTarget, remoteEndPoint))
             {
-                //WriteTrace("Search Request is Duplicate, ignoring.");
+                // WriteTrace("Search Request is Duplicate, ignoring.");
                 return;
             }
 
@@ -273,11 +273,11 @@ namespace Rssdp.Infrastructure
             int maxWaitInterval = 0;
             if (String.IsNullOrEmpty(mx))
             {
-                //Windows Explorer is poorly behaved and doesn't supply an MX header value.
-                //if (this.SupportPnpRootDevice)
+                // Windows Explorer is poorly behaved and doesn't supply an MX header value.
+                // if (this.SupportPnpRootDevice)
                 mx = "1";
-                //else
-                //return;
+                // else
+                // return;
             }
 
             if (!Int32.TryParse(mx, out maxWaitInterval) || maxWaitInterval <= 0) return;
@@ -285,23 +285,22 @@ namespace Rssdp.Infrastructure
             if (maxWaitInterval > 120)
                 maxWaitInterval = _Random.Next(0, 120);
 
-            //Do not block synchronously as that may tie up a threadpool thread for several seconds.
-            Task.Delay(_Random.Next(16, maxWaitInterval * 1000))
-                .ContinueWith((parentTask) =>
-              {
-                  //Copying devices to local array here to avoid threading issues/enumerator exceptions.
-                  IEnumerable<SsdpDevice> devices = null;
-                  lock (_Devices)
-                  {
-                      if (String.Compare(SsdpConstants.SsdpDiscoverAllSTHeader, searchTarget, StringComparison.OrdinalIgnoreCase) == 0)
-                          devices = GetAllDevicesAsFlatEnumerable().ToArray();
-                      else if (String.Compare(SsdpConstants.UpnpDeviceTypeRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) == 0 || (this.SupportPnpRootDevice && String.Compare(SsdpConstants.PnpDeviceTypeRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) == 0))
-                          devices = _Devices.ToArray();
-                      else if (searchTarget.Trim().StartsWith("uuid:", StringComparison.OrdinalIgnoreCase))
-                          devices = (from device in GetAllDevicesAsFlatEnumerable() where string.Compare(device.Uuid, searchTarget.Substring(5), StringComparison.OrdinalIgnoreCase) == 0 select device).ToArray();
-                      else if (searchTarget.StartsWith("urn:", StringComparison.OrdinalIgnoreCase))
-                          devices = (from device in GetAllDevicesAsFlatEnumerable() where string.Compare(device.FullDeviceType, searchTarget, StringComparison.OrdinalIgnoreCase) == 0 select device).ToArray();
-                  }
+            // Do not block synchronously as that may tie up a threadpool thread for several seconds.
+            Task.Delay(_Random.Next(16, (maxWaitInterval * 1000))).ContinueWith((parentTask) =>
+            {
+                // Copying devices to local array here to avoid threading issues/enumerator exceptions.
+                IEnumerable<SsdpDevice> devices = null;
+                lock (_Devices)
+                {
+                    if (String.Compare(SsdpConstants.SsdpDiscoverAllSTHeader, searchTarget, StringComparison.OrdinalIgnoreCase) == 0)
+                        devices = GetAllDevicesAsFlatEnumerable().ToArray();
+                    else if (String.Compare(SsdpConstants.UpnpDeviceTypeRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) == 0 || (this.SupportPnpRootDevice && String.Compare(SsdpConstants.PnpDeviceTypeRootDevice, searchTarget, StringComparison.OrdinalIgnoreCase) == 0))
+                        devices = _Devices.ToArray();
+                    else if (searchTarget.Trim().StartsWith("uuid:", StringComparison.OrdinalIgnoreCase))
+                        devices = (from device in GetAllDevicesAsFlatEnumerable() where String.Compare(device.Uuid, searchTarget.Substring(5), StringComparison.OrdinalIgnoreCase) == 0 select device).ToArray();
+                    else if (searchTarget.StartsWith("urn:", StringComparison.OrdinalIgnoreCase))
+                        devices = (from device in GetAllDevicesAsFlatEnumerable() where String.Compare(device.FullDeviceType, searchTarget, StringComparison.OrdinalIgnoreCase) == 0 select device).ToArray();
+                }
 
                   if (devices != null)
                   {
@@ -391,7 +390,7 @@ namespace Rssdp.Infrastructure
         {
             var rootDevice = device.ToRootDevice();
 
-            //var additionalheaders = FormatCustomHeadersForResponse(device);
+            // var additionalheaders = FormatCustomHeadersForResponse(device);
 
             const string header = "HTTP/1.1 200 OK";
 
@@ -419,7 +418,6 @@ namespace Rssdp.Infrastructure
             }
             catch (Exception)
             {
-
             }
 
             _logger.LogInformation("Sent search response to {0} : {1}", endPoint, device);
@@ -698,11 +696,11 @@ namespace Rssdp.Infrastructure
 
             if (string.Equals(e.Message.Method.Method, SsdpConstants.MSearchMethod, StringComparison.OrdinalIgnoreCase))
             {
-                //According to SSDP/UPnP spec, ignore message if missing these headers.
+                // According to SSDP/UPnP spec, ignore message if missing these headers.
                 // Edit: But some devices do it anyway
-                //if (!e.Message.Headers.Contains("MX"))
+                // if (!e.Message.Headers.Contains("MX"))
                 //    WriteTrace("Ignoring search request - missing MX header.");
-                //else if (!e.Message.Headers.Contains("MAN"))
+                // else if (!e.Message.Headers.Contains("MAN"))
                 //    WriteTrace("Ignoring search request - missing MAN header.");
                 //else
 

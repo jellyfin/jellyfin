@@ -126,7 +126,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             using (var stream = await new M3uParser(Logger, _httpClient, _appHost).GetListingsStream(info.Url, CancellationToken.None).ConfigureAwait(false))
             {
-
             }
         }
 

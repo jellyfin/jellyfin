@@ -355,6 +355,5 @@ namespace Rssdp
                 handlers(this, new DeviceEventArgs(device));
         }
         #endregion
-
     }
 }

@@ -640,7 +640,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
                 catch (FileNotFoundException)
                 {
-
                 }
                 catch (IOException ex)
                 {

@@ -114,7 +114,7 @@ namespace MediaBrowser.Model.Entities
             {
                 if (Type == MediaStreamType.Audio)
                 {
-                    //if (!string.IsNullOrEmpty(Title))
+                    // if (!string.IsNullOrEmpty(Title))
                     //{
                     //    return AddLanguageIfNeeded(Title);
                     //}
@@ -208,7 +208,6 @@ namespace MediaBrowser.Model.Entities
 
                 if (Type == MediaStreamType.Video)
                 {
-
                 }
 
                 return null;

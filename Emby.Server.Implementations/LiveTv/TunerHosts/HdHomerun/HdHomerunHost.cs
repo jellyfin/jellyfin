@@ -112,7 +112,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 ChannelType = ChannelType.TV,
                 IsLegacyTuner = (i.URL ?? string.Empty).StartsWith("hdhomerun", StringComparison.OrdinalIgnoreCase),
                 Path = i.URL
-
             }).Cast<ChannelInfo>().ToList();
         }
 
@@ -482,7 +481,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 Height = height,
                                 BitRate = videoBitrate,
                                 NalLengthSize = nal
-
                             },
                             new MediaStream
                             {
@@ -503,8 +501,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 SupportsTranscoding = true,
                 IsInfiniteStream = true,
                 IgnoreDts = true,
-                //IgnoreIndex = true,
-                //ReadAtNativeFramerate = true
+                // IgnoreIndex = true,
+                // ReadAtNativeFramerate = true
             };
 
             mediaSource.InferTotalBitrate();
@@ -734,7 +732,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             }
                         }
                     }
-
                 }
                 catch (OperationCanceledException)
                 {

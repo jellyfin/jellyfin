@@ -374,7 +374,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("PersonRole_PersonRoles_Id")]
         public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
-
     }
 }
 

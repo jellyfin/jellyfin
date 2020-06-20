@@ -21,8 +21,6 @@
 
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
-    <Compile Remove="Migrations\20200430214405_InitialSchema.cs" />
-    <Compile Remove="Migrations\20200430214405_InitialSchema.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

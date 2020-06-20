@@ -114,7 +114,6 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
         [ForeignKey("CollectionItem_CollectionItem_Id")]
         public virtual ICollection<CollectionItem> CollectionItem { get; protected set; }
-
     }
 }
 

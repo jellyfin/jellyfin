@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Api.Movies;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -14,7 +15,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
@@ -27,6 +27,12 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Api.Library
 {
@@ -350,6 +356,7 @@ namespace MediaBrowser.Api.Library
             _moviesServiceLogger = moviesServiceLogger;
         }
 
+        // Content Types available for each Library
         private string[] GetRepresentativeItemTypes(string contentType)
         {
             return contentType switch
@@ -359,7 +366,7 @@ namespace MediaBrowser.Api.Library
                 CollectionType.Movies => new[] {"Movie"},
                 CollectionType.TvShows => new[] {"Series", "Season", "Episode"},
                 CollectionType.Books => new[] {"Book"},
-                CollectionType.Music => new[] {"MusicAlbum", "MusicArtist", "Audio", "MusicVideo"},
+                CollectionType.Music => new[] {"MusicArtist", "MusicAlbum", "Audio", "MusicVideo"},
                 CollectionType.HomeVideos => new[] {"Video", "Photo"},
                 CollectionType.Photos => new[] {"Video", "Photo"},
                 CollectionType.MusicVideos => new[] {"MusicVideo"},
@@ -425,7 +432,6 @@ namespace MediaBrowser.Api.Library
                 return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase);
             }
 
@@ -556,7 +562,6 @@ namespace MediaBrowser.Api.Library
                     _authContext)
                 {
                     Request = Request,
-
                 }.GetSimilarItemsResult(request);
             }
 
@@ -654,7 +659,6 @@ namespace MediaBrowser.Api.Library
                 {
                     EnableImages = false
                 }
-
             }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProvider.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             foreach (var item in series)
@@ -683,7 +687,6 @@ namespace MediaBrowser.Api.Library
                 {
                     EnableImages = false
                 }
-
             });
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))
@@ -763,8 +766,8 @@ namespace MediaBrowser.Api.Library
         {
             try
             {
-                _activityManager.Create(new Jellyfin.Data.Entities.ActivityLog(
-                    string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
+                _activityManager.Create(new ActivityLog(
+                    string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
                     "UserDownloadingContent",
                     auth.UserId)
                 {

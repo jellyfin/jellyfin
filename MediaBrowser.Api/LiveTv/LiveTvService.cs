@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Api.UserLibrary;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -678,7 +679,6 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated]
     public class GetTunerHostTypes : IReturn<List<NameIdPair>>
     {
-
     }
 
     [Route("/LiveTv/Tuners/Discvover", "GET")]
@@ -825,7 +825,6 @@ namespace MediaBrowser.Api.LiveTv
                 {
                     Name = i.Name,
                     Id = i.Id
-
                 }).ToList(),
 
                 Mappings = mappings,
@@ -844,7 +843,6 @@ namespace MediaBrowser.Api.LiveTv
             {
                 Url = "https://json.schedulesdirect.org/20141201/available/countries",
                 BufferContent = false
-
             }).ConfigureAwait(false);
 
             return ResultFactory.GetResult(Request, response, "application/json");
@@ -859,7 +857,7 @@ namespace MediaBrowser.Api.LiveTv
                 throw new SecurityException("Anonymous live tv management is not allowed.");
             }
 
-            if (!user.Policy.EnableLiveTvManagement)
+            if (!user.HasPermission(PermissionKind.EnableLiveTvManagement))
             {
                 throw new SecurityException("The current user does not have permission to manage live tv.");
             }
@@ -957,7 +955,6 @@ namespace MediaBrowser.Api.LiveTv
                 SortBy = request.GetOrderBy(),
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
                 AddCurrentProgram = request.AddCurrentProgram
-
             }, options, CancellationToken.None);
 
             var user = request.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(request.UserId);
@@ -1112,7 +1109,6 @@ namespace MediaBrowser.Api.LiveTv
                 Fields = request.GetItemFields(),
                 ImageTypeLimit = request.ImageTypeLimit,
                 EnableImages = request.EnableImages
-
             }, options);
 
             return ToOptimizedResult(result);
@@ -1151,7 +1147,6 @@ namespace MediaBrowser.Api.LiveTv
                 SeriesTimerId = request.SeriesTimerId,
                 IsActive = request.IsActive,
                 IsScheduled = request.IsScheduled
-
             }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
@@ -1187,7 +1182,6 @@ namespace MediaBrowser.Api.LiveTv
             {
                 SortOrder = request.SortOrder,
                 SortBy = request.SortBy
-
             }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);

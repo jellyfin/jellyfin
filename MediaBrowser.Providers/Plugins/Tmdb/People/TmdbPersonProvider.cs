@@ -167,7 +167,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 // TODO: This should go in PersonMetadataService, not each person provider
                 item.Name = id.Name;
 
-                //item.HomePageUrl = info.homepage;
+                // item.HomePageUrl = info.homepage;
 
                 if (!string.IsNullOrWhiteSpace(info.Place_Of_Birth))
                 {
@@ -232,7 +232,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 Url = url,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)
