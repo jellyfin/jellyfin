@@ -37,19 +37,39 @@ namespace Jellyfin.Data.Entities
         /// <param name="_company4"></param>
         public Company(MovieMetadata _moviemetadata0, SeriesMetadata _seriesmetadata1, MusicAlbumMetadata _musicalbummetadata2, BookMetadata _bookmetadata3, Company _company4)
         {
-            if (_moviemetadata0 == null) throw new ArgumentNullException(nameof(_moviemetadata0));
+            if (_moviemetadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_moviemetadata0));
+            }
+
             _moviemetadata0.Studios.Add(this);
 
-            if (_seriesmetadata1 == null) throw new ArgumentNullException(nameof(_seriesmetadata1));
+            if (_seriesmetadata1 == null)
+            {
+                throw new ArgumentNullException(nameof(_seriesmetadata1));
+            }
+
             _seriesmetadata1.Networks.Add(this);
 
-            if (_musicalbummetadata2 == null) throw new ArgumentNullException(nameof(_musicalbummetadata2));
+            if (_musicalbummetadata2 == null)
+            {
+                throw new ArgumentNullException(nameof(_musicalbummetadata2));
+            }
+
             _musicalbummetadata2.Labels.Add(this);
 
-            if (_bookmetadata3 == null) throw new ArgumentNullException(nameof(_bookmetadata3));
+            if (_bookmetadata3 == null)
+            {
+                throw new ArgumentNullException(nameof(_bookmetadata3));
+            }
+
             _bookmetadata3.Publishers.Add(this);
 
-            if (_company4 == null) throw new ArgumentNullException(nameof(_company4));
+            if (_company4 == null)
+            {
+                throw new ArgumentNullException(nameof(_company4));
+            }
+
             _company4.Parent = this;
 
             this.CompanyMetadata = new HashSet<CompanyMetadata>();
@@ -99,7 +119,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set

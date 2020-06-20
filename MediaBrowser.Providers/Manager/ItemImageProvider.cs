@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -113,7 +115,10 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var imageType in images)
                 {
-                    if (!IsEnabled(savedOptions, imageType, item)) continue;
+                    if (!IsEnabled(savedOptions, imageType, item))
+                    {
+                        continue;
+                    }
 
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
@@ -222,6 +227,7 @@ namespace MediaBrowser.Providers.Manager
         /// Refreshes from provider.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="libraryOptions">The library options.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>

@@ -13,19 +13,71 @@ using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
+    /// <summary>
+    /// Local image provider.
+    /// </summary>
     public class LocalImageProvider : ILocalImageProvider, IHasOrder
     {
+        private static readonly string[] _commonImageFileNames =
+        {
+            "poster",
+            "folder",
+            "cover",
+            "default"
+        };
+
+        private static readonly string[] _musicImageFileNames =
+        {
+            "folder",
+            "poster",
+            "cover",
+            "default"
+        };
+
+        private static readonly string[] _personImageFileNames =
+        {
+            "folder",
+            "poster"
+        };
+
+        private static readonly string[] _seriesImageFileNames =
+        {
+            "poster",
+            "folder",
+            "cover",
+            "default",
+            "show"
+        };
+
+        private static readonly string[] _videoImageFileNames =
+        {
+            "poster",
+            "folder",
+            "cover",
+            "default",
+            "movie"
+        };
+
         private readonly IFileSystem _fileSystem;
 
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalImageProvider"/> class.
+        /// </summary>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         public LocalImageProvider(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
         }
 
+        /// <inheritdoc />
         public string Name => "Local Images";
 
+        /// <inheritdoc />
         public int Order => 0;
 
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             if (item.SupportsLocalMetadata)
@@ -42,15 +94,10 @@ namespace MediaBrowser.LocalMetadata.Images
             if (item.LocationType == LocationType.Virtual)
             {
                 var season = item as Season;
-
-                if (season != null)
+                var series = season?.Series;
+                if (series != null && series.IsFileProtocol)
                 {
-                    var series = season.Series;
-
-                    if (series != null && series.IsFileProtocol)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -85,6 +132,7 @@ namespace MediaBrowser.LocalMetadata.Images
                 .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
         }
 
+        /// <inheritdoc />
         public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var files = GetFiles(item, true, directoryService).ToList();
@@ -96,12 +144,26 @@ namespace MediaBrowser.LocalMetadata.Images
             return list;
         }
 
-        public List<LocalImageInfo> GetImages(BaseItem item, string path, bool isPathInMediaFolder, IDirectoryService directoryService)
+        /// <summary>
+        /// Get images for item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="path">The images path.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        /// <returns>The local image info.</returns>
+        public List<LocalImageInfo> GetImages(BaseItem item, string path, IDirectoryService directoryService)
         {
-            return GetImages(item, new[] { path }, isPathInMediaFolder, directoryService);
+            return GetImages(item, new[] { path }, directoryService);
         }
 
-        public List<LocalImageInfo> GetImages(BaseItem item, IEnumerable<string> paths, bool arePathsInMediaFolders, IDirectoryService directoryService)
+        /// <summary>
+        /// Get images for item from multiple paths.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="paths">The image paths.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        /// <returns>The local image info.</returns>
+        public List<LocalImageInfo> GetImages(BaseItem item, IEnumerable<string> paths, IDirectoryService directoryService)
         {
             IEnumerable<FileSystemMetadata> files = paths.SelectMany(i => _fileSystem.GetFiles(i, BaseItem.SupportedImageExtensions, true, false));
 
@@ -196,7 +258,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             if (!isEpisode && !isSong && !isPerson)
             {
-                PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder, directoryService);
+                PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder);
             }
 
             if (item is IHasScreenshots)
@@ -205,46 +267,6 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        private static readonly string[] CommonImageFileNames = new[]
-        {
-            "poster",
-            "folder",
-            "cover",
-            "default"
-        };
-
-        private static readonly string[] MusicImageFileNames = new[]
-        {
-            "folder",
-            "poster",
-            "cover",
-            "default"
-        };
-
-        private static readonly string[] PersonImageFileNames = new[]
-        {
-            "folder",
-            "poster"
-        };
-
-        private static readonly string[] SeriesImageFileNames = new[]
-        {
-            "poster",
-            "folder",
-            "cover",
-            "default",
-            "show"
-        };
-
-        private static readonly string[] VideoImageFileNames = new[]
-        {
-            "poster",
-            "folder",
-            "cover",
-            "default",
-            "movie"
-        };
-
         private void PopulatePrimaryImages(BaseItem item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
         {
             string[] imageFileNames;
@@ -252,24 +274,24 @@ namespace MediaBrowser.LocalMetadata.Images
             if (item is MusicAlbum || item is MusicArtist || item is PhotoAlbum)
             {
                 // these prefer folder
-                imageFileNames = MusicImageFileNames;
+                imageFileNames = _musicImageFileNames;
             }
             else if (item is Person)
             {
                 // these prefer folder
-                imageFileNames = PersonImageFileNames;
+                imageFileNames = _personImageFileNames;
             }
             else if (item is Series)
             {
-                imageFileNames = SeriesImageFileNames;
+                imageFileNames = _seriesImageFileNames;
             }
             else if (item is Video && !(item is Episode))
             {
-                imageFileNames = VideoImageFileNames;
+                imageFileNames = _videoImageFileNames;
             }
             else
             {
-                imageFileNames = CommonImageFileNames;
+                imageFileNames = _commonImageFileNames;
             }
 
             var fileNameWithoutExtension = item.FileNameWithoutExtension;
@@ -301,7 +323,7 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        private void PopulateBackdrops(BaseItem item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder, IDirectoryService directoryService)
+        private void PopulateBackdrops(BaseItem item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
         {
             if (!string.IsNullOrEmpty(item.Path))
             {
@@ -328,13 +350,13 @@ namespace MediaBrowser.LocalMetadata.Images
 
             if (extraFanartFolder != null)
             {
-                PopulateBackdropsFromExtraFanart(extraFanartFolder.FullName, images, directoryService);
+                PopulateBackdropsFromExtraFanart(extraFanartFolder.FullName, images);
             }
 
             PopulateBackdrops(images, files, imagePrefix, "backdrop", "backdrop", isInMixedFolder, ImageType.Backdrop);
         }
 
-        private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images, IDirectoryService directoryService)
+        private void PopulateBackdropsFromExtraFanart(string path, List<LocalImageInfo> images)
         {
             var imageFiles = _fileSystem.GetFiles(path, BaseItem.SupportedImageExtensions, false, false);
 
@@ -395,8 +417,6 @@ namespace MediaBrowser.LocalMetadata.Images
             }
         }
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         private void PopulateSeasonImagesFromSeriesFolder(Season season, List<LocalImageInfo> images, IDirectoryService directoryService)
         {
             var seasonNumber = season.IndexNumber;
@@ -410,7 +430,7 @@ namespace MediaBrowser.LocalMetadata.Images
             var seriesFiles = GetFiles(series, false, directoryService).ToList();
 
             // Try using the season name
-            var prefix = season.Name.ToLowerInvariant().Replace(" ", string.Empty);
+            var prefix = season.Name.Replace(" ", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
 
             var filenamePrefixes = new List<string> { prefix };
 

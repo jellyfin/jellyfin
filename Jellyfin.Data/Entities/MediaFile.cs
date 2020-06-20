@@ -30,17 +30,25 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="path">Relative to the LibraryRoot</param>
+        /// <param name="path">Relative to the LibraryRoot.</param>
         /// <param name="kind"></param>
         /// <param name="_release0"></param>
         public MediaFile(string path, Enums.MediaFileKind kind, Release _release0)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             this.Path = path;
 
             this.Kind = kind;
 
-            if (_release0 == null) throw new ArgumentNullException(nameof(_release0));
+            if (_release0 == null)
+            {
+                throw new ArgumentNullException(nameof(_release0));
+            }
+
             _release0.MediaFiles.Add(this);
 
             this.MediaFileStreams = new HashSet<MediaFileStream>();
@@ -51,7 +59,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="path">Relative to the LibraryRoot</param>
+        /// <param name="path">Relative to the LibraryRoot.</param>
         /// <param name="kind"></param>
         /// <param name="_release0"></param>
         public static MediaFile Create(string path, Enums.MediaFileKind kind, Release _release0)
@@ -88,7 +96,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -128,7 +136,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Path;
                 GetPath(ref value);
-                return (_Path = value);
+                return _Path = value;
             }
 
             set
@@ -165,7 +173,7 @@ namespace Jellyfin.Data.Entities
             {
                 Enums.MediaFileKind value = _Kind;
                 GetKind(ref value);
-                return (_Kind = value);
+                return _Kind = value;
             }
 
             set

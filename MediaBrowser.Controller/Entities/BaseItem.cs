@@ -690,7 +690,10 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>System.String.</returns>
         protected virtual string CreateSortName()
         {
-            if (Name == null) return null; // some items may not have name filled in properly
+            if (Name == null)
+            {
+                return null; // some items may not have name filled in properly
+            }
 
             if (!EnableAlphaNumericSorting)
             {
@@ -1371,7 +1374,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>true if a provider reports we changed</returns>
+        /// <returns>true if a provider reports we changed.</returns>
         public async Task<ItemUpdateType> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             TriggerOnRefreshStart();
@@ -2948,9 +2951,13 @@ namespace MediaBrowser.Controller.Entities
         public IEnumerable<BaseItem> GetTrailers()
         {
             if (this is IHasTrailers)
+            {
                 return ((IHasTrailers)this).LocalTrailerIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
+            }
             else
+            {
                 return Array.Empty<BaseItem>();
+            }
         }
 
         public virtual bool IsHD => Height >= 720;

@@ -426,7 +426,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private object GetCachedResult(IRequest requestContext, IDictionary<string, string> responseHeaders, StaticResultOptions options)
         {
-            bool noCache = (requestContext.Headers[HeaderNames.CacheControl].ToString()).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
+            bool noCache = requestContext.Headers[HeaderNames.CacheControl].ToString().IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
             AddCachingHeaders(responseHeaders, options.CacheDuration, noCache, options.DateLastModified);
 
             if (!noCache)

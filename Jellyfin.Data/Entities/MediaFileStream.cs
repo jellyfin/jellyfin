@@ -33,9 +33,12 @@ namespace Jellyfin.Data.Entities
         {
             this.StreamNumber = streamnumber;
 
-            if (_mediafile0 == null) throw new ArgumentNullException(nameof(_mediafile0));
-            _mediafile0.MediaFileStreams.Add(this);
+            if (_mediafile0 == null)
+            {
+                throw new ArgumentNullException(nameof(_mediafile0));
+            }
 
+            _mediafile0.MediaFileStreams.Add(this);
 
             Init();
         }
@@ -79,7 +82,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -116,7 +119,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _StreamNumber;
                 GetStreamNumber(ref value);
-                return (_StreamNumber = value);
+                return _StreamNumber = value;
             }
 
             set

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -391,7 +393,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (!child.IsFolder)
                     {
-                        ticks += (child.RunTimeTicks ?? 0);
+                        ticks += child.RunTimeTicks ?? 0;
                     }
                 }
 

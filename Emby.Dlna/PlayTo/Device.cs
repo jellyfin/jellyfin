@@ -19,8 +19,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class Device : IDisposable
     {
-        #region Fields & Properties
-
         private Timer _timer;
 
         public DeviceInfo Properties { get; set; }
@@ -53,10 +51,10 @@ namespace Emby.Dlna.PlayTo
 
         public bool IsStopped => TransportState == TRANSPORTSTATE.STOPPED;
 
-        #endregion
-
         private readonly IHttpClient _httpClient;
+
         private readonly ILogger _logger;
+
         private readonly IServerConfigurationManager _config;
 
         public Action OnDeviceUnavailable { get; set; }
@@ -142,8 +140,6 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        #region Commanding
-
         public Task VolumeDown(CancellationToken cancellationToken)
         {
             var sendVolume = Math.Max(Volume - 5, 0);
@@ -212,7 +208,9 @@ namespace Emby.Dlna.PlayTo
 
             var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetMute");
             if (command == null)
+            {
                 return false;
+            }
 
             var service = GetServiceRenderingControl();
 
@@ -241,7 +239,9 @@ namespace Emby.Dlna.PlayTo
 
             var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetVolume");
             if (command == null)
+            {
                 return;
+            }
 
             var service = GetServiceRenderingControl();
 
@@ -264,7 +264,9 @@ namespace Emby.Dlna.PlayTo
 
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Seek");
             if (command == null)
+            {
                 return;
+            }
 
             var service = GetAvTransportService();
 
@@ -289,7 +291,9 @@ namespace Emby.Dlna.PlayTo
 
             var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
+            {
                 return;
+            }
 
             var dictionary = new Dictionary<string, string>
             {
@@ -402,11 +406,8 @@ namespace Emby.Dlna.PlayTo
             RestartTimer(true);
         }
 
-        #endregion
-
-        #region Get data
-
         private int _connectFailureCount;
+
         private async void TimerCallback(object sender)
         {
             if (_disposed)
@@ -459,7 +460,9 @@ namespace Emby.Dlna.PlayTo
                     _connectFailureCount = 0;
 
                     if (_disposed)
+                    {
                         return;
+                    }
 
                     // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
                     if (transportState.Value == TRANSPORTSTATE.STOPPED)
@@ -479,7 +482,9 @@ namespace Emby.Dlna.PlayTo
             catch (Exception ex)
             {
                 if (_disposed)
+                {
                     return;
+                }
 
                 _logger.LogError(ex, "Error updating device info for {DeviceName}", Properties.Name);
 
@@ -580,7 +585,9 @@ namespace Emby.Dlna.PlayTo
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (result == null || result.Document == null)
+            {
                 return;
+            }
 
             var valueNode = result.Document.Descendants(uPnpNamespaces.RenderingControl + "GetMuteResponse")
                                             .Select(i => i.Element("CurrentMute"))
@@ -870,10 +877,6 @@ namespace Emby.Dlna.PlayTo
             return new string[4];
         }
 
-        #endregion
-
-        #region From XML
-
         private async Task<TransportCommands> GetAVProtocolAsync(CancellationToken cancellationToken)
         {
             if (AvCommands != null)
@@ -1068,8 +1071,6 @@ namespace Emby.Dlna.PlayTo
             return new Device(deviceProperties, httpClient, logger, config);
         }
 
-        #endregion
-
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         private static DeviceIcon CreateIcon(XElement element)
         {
@@ -1193,8 +1194,6 @@ namespace Emby.Dlna.PlayTo
             });
         }
 
-        #region IDisposable
-
         bool _disposed;
 
         public void Dispose()
@@ -1220,8 +1219,6 @@ namespace Emby.Dlna.PlayTo
 
             _disposed = true;
         }
-
-        #endregion
 
         public override string ToString()
         {

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,7 +21,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    class FFProbeAudioInfo
+    public class FFProbeAudioInfo
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;

@@ -78,9 +78,15 @@ namespace Emby.Dlna.PlayTo
 
             var info = e.Argument;
 
-            if (!info.Headers.TryGetValue("USN", out string usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out string usn))
+            {
+                usn = string.Empty;
+            }
 
-            if (!info.Headers.TryGetValue("NT", out string nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out string nt))
+            {
+                nt = string.Empty;
+            }
 
             string location = info.Location.ToString();
 
