@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -34,13 +35,21 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The studios.</value>
         public string[] Studios { get; set; }
+
         public string[] Genres { get; set; }
+
         public string ShowName { get; set; }
+
         public int? IndexNumber { get; set; }
+
         public int? ParentIndexNumber { get; set; }
+
         public int? ProductionYear { get; set; }
+
         public DateTime? PremiereDate { get; set; }
+
         public BaseItemPerson[] People { get; set; }
+
         public Dictionary<string, string> ProviderIds { get; set; }
 
         /// <summary>

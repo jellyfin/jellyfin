@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -108,11 +110,13 @@ namespace MediaBrowser.Providers.Music
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subReader = reader.ReadSubtree())
                                         {
                                             return ParseArtistList(subReader).ToList();
                                         }
                                     }
+
                                 default:
                                     {
                                         reader.Skip();
@@ -150,6 +154,7 @@ namespace MediaBrowser.Providers.Music
                                     reader.Read();
                                     continue;
                                 }
+
                                 var mbzId = reader.GetAttribute("id");
 
                                 using (var subReader = reader.ReadSubtree())
@@ -160,8 +165,10 @@ namespace MediaBrowser.Providers.Music
                                         yield return artist;
                                     }
                                 }
+
                                 break;
                             }
+
                         default:
                             {
                                 reader.Skip();
@@ -202,6 +209,7 @@ namespace MediaBrowser.Providers.Music
                                 result.Overview = reader.ReadElementContentAsString();
                                 break;
                             }
+
                         default:
                             {
                                 // there is sort-name if ever needed
@@ -216,7 +224,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            result.SetProviderId(MetadataProviders.MusicBrainzArtist, artistId);
+            result.SetProviderId(MetadataProvider.MusicBrainzArtist, artistId);
 
             if (string.IsNullOrWhiteSpace(artistId) || string.IsNullOrWhiteSpace(result.Name))
             {
@@ -249,7 +257,7 @@ namespace MediaBrowser.Providers.Music
 
                 if (singleResult != null)
                 {
-                    musicBrainzId = singleResult.GetProviderId(MetadataProviders.MusicBrainzArtist);
+                    musicBrainzId = singleResult.GetProviderId(MetadataProvider.MusicBrainzArtist);
                     result.Item.Overview = singleResult.Overview;
 
                     if (Plugin.Instance.Configuration.ReplaceArtistName)
@@ -262,7 +270,7 @@ namespace MediaBrowser.Providers.Music
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
                 result.HasMetadata = true;
-                result.Item.SetProviderId(MetadataProviders.MusicBrainzArtist, musicBrainzId);
+                result.Item.SetProviderId(MetadataProvider.MusicBrainzArtist, musicBrainzId);
             }
 
             return result;

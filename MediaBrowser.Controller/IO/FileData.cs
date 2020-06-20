@@ -20,6 +20,7 @@ namespace MediaBrowser.Controller.IO
             {
                 dict[file.FullName] = file;
             }
+
             return dict;
         }
 
@@ -35,7 +36,8 @@ namespace MediaBrowser.Controller.IO
         /// <param name="resolveShortcuts">if set to <c>true</c> [resolve shortcuts].</param>
         /// <returns>Dictionary{System.StringFileSystemInfo}.</returns>
         /// <exception cref="ArgumentNullException">path</exception>
-        public static FileSystemMetadata[] GetFilteredFileSystemEntries(IDirectoryService directoryService,
+        public static FileSystemMetadata[] GetFilteredFileSystemEntries(
+            IDirectoryService directoryService,
             string path,
             IFileSystem fileSystem,
             IServerApplicationHost appHost,
@@ -48,6 +50,7 @@ namespace MediaBrowser.Controller.IO
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));
@@ -76,7 +79,7 @@ namespace MediaBrowser.Controller.IO
 
                         if (string.IsNullOrEmpty(newPath))
                         {
-                            //invalid shortcut - could be old or target could just be unavailable
+                            // invalid shortcut - could be old or target could just be unavailable
                             logger.LogWarning("Encountered invalid shortcut: " + fullName);
                             continue;
                         }
@@ -115,9 +118,9 @@ namespace MediaBrowser.Controller.IO
                 returnResult[index] = value;
                 index++;
             }
+
             return returnResult;
         }
-
     }
 
 }

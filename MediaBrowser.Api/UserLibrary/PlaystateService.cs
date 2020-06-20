@@ -1,8 +1,8 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class MarkPlayedItem
+    /// Class MarkPlayedItem.
     /// </summary>
     [Route("/Users/{UserId}/PlayedItems/{Id}", "POST", Summary = "Marks an item as played")]
     public class MarkPlayedItem : IReturn<UserItemDataDto>
@@ -38,7 +38,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class MarkUnplayedItem
+    /// Class MarkUnplayedItem.
     /// </summary>
     [Route("/Users/{UserId}/PlayedItems/{Id}", "DELETE", Summary = "Marks an item as unplayed")]
     public class MarkUnplayedItem : IReturn<UserItemDataDto>
@@ -81,7 +81,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class OnPlaybackStart
+    /// Class OnPlaybackStart.
     /// </summary>
     [Route("/Users/{UserId}/PlayingItems/{Id}", "POST", Summary = "Reports that a user has begun playing an item")]
     public class OnPlaybackStart : IReturnVoid
@@ -123,7 +123,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class OnPlaybackProgress
+    /// Class OnPlaybackProgress.
     /// </summary>
     [Route("/Users/{UserId}/PlayingItems/{Id}/Progress", "POST", Summary = "Reports a user's playback progress")]
     public class OnPlaybackProgress : IReturnVoid
@@ -181,7 +181,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class OnPlaybackStopped
+    /// Class OnPlaybackStopped.
     /// </summary>
     [Route("/Users/{UserId}/PlayingItems/{Id}", "DELETE", Summary = "Reports that a user has stopped playing an item")]
     public class OnPlaybackStopped : IReturnVoid

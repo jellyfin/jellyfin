@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -15,18 +17,21 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Folder
+    /// Class Folder.
     /// </summary>
     public class Folder : BaseItem
     {
@@ -121,10 +126,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (this is UserView)
             {
                 return false;
             }
+
             return true;
         }
 
@@ -151,6 +158,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 item.DateCreated = DateTime.UtcNow;
             }
+
             if (item.DateModified == DateTime.MinValue)
             {
                 item.DateModified = DateTime.UtcNow;
@@ -167,7 +175,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual IEnumerable<BaseItem> Children => LoadChildren();
 
         /// <summary>
-        /// thread-safe access to all recursive children of this folder - without regard to user
+        /// thread-safe access to all recursive children of this folder - without regard to user.
         /// </summary>
         /// <value>The recursive children.</value>
         [JsonIgnore]
@@ -177,19 +185,22 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder && !(this is BasePluginFolder))
             {
-                if (user.Policy.BlockedMediaFolders != null)
+                var blockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders);
+                if (blockedMediaFolders.Length > 0)
                 {
-                    if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
+                    if (blockedMediaFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase) ||
 
                         // Backwards compatibility
-                        user.Policy.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                        blockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
                 }
                 else
                 {
-                    if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                    if (!user.HasPermission(PermissionKind.EnableAllFolders)
+                        && !user.GetPreference(PreferenceKind.EnabledFolders)
+                            .Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -205,8 +216,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         protected virtual List<BaseItem> LoadChildren()
         {
-            //logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
-            //just load our children from the repo - the library will be validated and maintained in other processes
+            // logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
+            // just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
         }
 
@@ -221,7 +232,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Validates that the children of the folder still exist
+        /// Validates that the children of the folder still exist.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -340,6 +351,11 @@ namespace MediaBrowser.Controller.Entities
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
                             currentChild.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
+                        }
+                        else
+                        {
+                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
+                            LibraryManager.UpdateImages(currentChild);
                         }
 
                         continue;
@@ -464,7 +480,7 @@ namespace MediaBrowser.Controller.Entities
                 innerProgress.RegisterAction(p =>
                 {
                     double innerPercent = currentInnerPercent;
-                    innerPercent += p / (count);
+                    innerPercent += p / count;
                     progress.Report(innerPercent);
                 });
 
@@ -487,8 +503,8 @@ namespace MediaBrowser.Controller.Entities
             if (series != null)
             {
                 await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-
             }
+
             await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
         }
 
@@ -540,7 +556,7 @@ namespace MediaBrowser.Controller.Entities
                 innerProgress.RegisterAction(p =>
                 {
                     double innerPercent = currentInnerPercent;
-                    innerPercent += p / (count);
+                    innerPercent += p / count;
                     progress.Report(innerPercent);
                 });
 
@@ -558,7 +574,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Get the children of this folder from the actual file system
+        /// Get the children of this folder from the actual file system.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
@@ -570,7 +586,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Get our children from the repo - stubbed for now
+        /// Get our children from the repo - stubbed for now.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected List<BaseItem> GetCachedChildren()
@@ -602,7 +618,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     EnableImages = false
                 }
-
             });
 
             return result.TotalRecordCount;
@@ -877,7 +892,7 @@ namespace MediaBrowser.Controller.Entities
                 try
                 {
                     query.Parent = this;
-                    query.ChannelIds = new Guid[] { ChannelId };
+                    query.ChannelIds = new[] { ChannelId };
 
                     // Don't blow up here because it could cause parent screens with other content to fail
                     return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).Result;
@@ -928,6 +943,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
             }
+
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
                 items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
@@ -947,11 +963,13 @@ namespace MediaBrowser.Controller.Entities
             return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
         }
 
-        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(IEnumerable<BaseItem> items,
+        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(
+            IEnumerable<BaseItem> items,
             InternalItemsQuery query,
             BaseItem queryParent,
             User user,
-            IServerConfigurationManager configurationManager, ICollectionManager collectionManager)
+            IServerConfigurationManager configurationManager,
+            ICollectionManager collectionManager)
         {
             if (items == null)
             {
@@ -976,18 +994,22 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (queryParent is Series)
             {
                 return false;
             }
+
             if (queryParent is Season)
             {
                 return false;
             }
+
             if (queryParent is MusicAlbum)
             {
                 return false;
             }
+
             if (queryParent is MusicArtist)
             {
                 return false;
@@ -1017,22 +1039,27 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (request.IsFavoriteOrLiked.HasValue)
             {
                 return false;
             }
+
             if (request.IsLiked.HasValue)
             {
                 return false;
             }
+
             if (request.IsPlayed.HasValue)
             {
                 return false;
             }
+
             if (request.IsResumable.HasValue)
             {
                 return false;
             }
+
             if (request.IsFolder.HasValue)
             {
                 return false;
@@ -1208,7 +1235,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException(nameof(user));
             }
 
-            //the true root should return our users root folder children
+            // the true root should return our users root folder children
             if (IsPhysicalRoot)
             {
                 return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren);
@@ -1273,7 +1300,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets allowed recursive children of an item
+        /// Gets allowed recursive children of an item.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
@@ -1378,6 +1405,7 @@ namespace MediaBrowser.Controller.Entities
                     list.Add(child);
                 }
             }
+
             return list;
         }
 
@@ -1400,6 +1428,7 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -1577,7 +1606,7 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false
             };
 
-            if (!user.Configuration.DisplayMissingEpisodes)
+            if (!user.DisplayMissingEpisodes)
             {
                 query.IsVirtualItem = false;
             }
@@ -1614,7 +1643,6 @@ namespace MediaBrowser.Controller.Entities
                 Recursive = true,
                 IsFolder = false,
                 EnableTotalRecordCount = false
-
             });
 
             // Sweep through recursively and update status
@@ -1632,7 +1660,6 @@ namespace MediaBrowser.Controller.Entities
                 IsFolder = false,
                 IsVirtualItem = false,
                 EnableTotalRecordCount = false
-
             });
 
             return itemsResult
@@ -1654,22 +1681,27 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+
                 if (this is UserView)
                 {
                     return false;
                 }
+
                 if (this is UserRootFolder)
                 {
                     return false;
                 }
+
                 if (this is Channel)
                 {
                     return false;
                 }
+
                 if (SourceType != SourceType.Library)
                 {
                     return false;
                 }
+
                 var iItemByName = this as IItemByName;
                 if (iItemByName != null)
                 {

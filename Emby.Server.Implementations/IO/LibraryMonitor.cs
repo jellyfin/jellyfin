@@ -11,13 +11,14 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.IO;
+using Emby.Server.Implementations.Library;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
     public class LibraryMonitor : ILibraryMonitor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryMonitor> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
@@ -36,38 +37,6 @@ namespace Emby.Server.Implementations.IO
         /// A dynamic list of paths that should be ignored.  Added to during our own file system modifications.
         /// </summary>
         private readonly ConcurrentDictionary<string, string> _tempIgnoredPaths = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Any file name ending in any of these will be ignored by the watchers.
-        /// </summary>
-        private static readonly HashSet<string> _alwaysIgnoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "small.jpg",
-            "albumart.jpg",
-
-            // WMC temp recording directories that will constantly be written to
-            "TempRec",
-            "TempSBE"
-        };
-
-        private static readonly string[] _alwaysIgnoreSubstrings = new string[]
-        {
-            // Synology
-            "eaDir",
-            "#recycle",
-            ".wd_tv",
-            ".actors"
-        };
-
-        private static readonly HashSet<string> _alwaysIgnoreExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            // thumbs.db
-            ".db",
-
-            // bts sync files
-            ".bts",
-            ".sync"
-        };
 
         /// <summary>
         /// Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
@@ -297,7 +266,6 @@ namespace Emby.Server.Implementations.IO
                     {
                         DisposeWatcher(newWatcher, false);
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -395,12 +363,7 @@ namespace Emby.Server.Implementations.IO
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var filename = Path.GetFileName(path);
-
-            var monitorPath = !string.IsNullOrEmpty(filename) &&
-                !_alwaysIgnoreFiles.Contains(filename) &&
-                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path)) &&
-                _alwaysIgnoreSubstrings.All(i => path.IndexOf(i, StringComparison.OrdinalIgnoreCase) == -1);
+            var monitorPath = !IgnorePatterns.ShouldIgnore(path);
 
             // Ignore certain files
             var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();
@@ -429,7 +392,6 @@ namespace Emby.Server.Implementations.IO
                 }
 
                 return false;
-
             }))
             {
                 monitorPath = false;

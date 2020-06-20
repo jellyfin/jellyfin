@@ -1,12 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using Emby.Drawing;
 using Emby.Server.Implementations;
 using Jellyfin.Drawing.Skia;
+using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -56,6 +63,18 @@ namespace Jellyfin.Server
                 Logger.LogWarning($"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
             }
 
+            // TODO: Set up scoping and use AddDbContextPool
+            serviceCollection.AddDbContext<JellyfinDb>(
+                options => options
+                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}")
+                    .UseLazyLoadingProxies(),
+                ServiceLifetime.Transient);
+
+            serviceCollection.AddSingleton<JellyfinDbProvider>();
+
+            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
+            serviceCollection.AddSingleton<IUserManager, UserManager>();
+
             base.RegisterServices(serviceCollection);
         }
 
@@ -65,7 +84,11 @@ namespace Jellyfin.Server
         /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
         {
+            // Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
+
+            // Jellyfin.Server.Implementations
+            yield return typeof(JellyfinDb).Assembly;
         }
 
         /// <inheritdoc />

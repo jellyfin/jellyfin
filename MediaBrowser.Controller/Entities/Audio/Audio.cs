@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class Audio
+    /// Class Audio.
     /// </summary>
     public class Audio : BaseItem,
         IHasAlbumArtist,
@@ -93,6 +93,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
             }
+
             songKey += Name;
 
             if (!string.IsNullOrEmpty(Album))
@@ -117,6 +118,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return UnratedItem.Music;
             }
+
             return base.GetBlockUnratedType();
         }
 

@@ -6,12 +6,12 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Represents a task trigger that fires on a weekly basis
+    /// Represents a task trigger that fires on a weekly basis.
     /// </summary>
     public class WeeklyTrigger : ITaskTrigger
     {
         /// <summary>
-        /// Get the time of day to trigger the task to run
+        /// Get the time of day to trigger the task to run.
         /// </summary>
         /// <value>The time of day.</value>
         public TimeSpan TimeOfDay { get; set; }
@@ -34,9 +34,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private Timer Timer { get; set; }
 
         /// <summary>
-        /// Stars waiting for the trigger action
+        /// Stars waiting for the trigger action.
         /// </summary>
         /// <param name="lastResult">The last result.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="taskName">The name of the task.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
         public void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
@@ -75,7 +77,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops waiting for the trigger action
+        /// Stops waiting for the trigger action.
         /// </summary>
         public void Stop()
         {

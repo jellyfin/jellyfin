@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,11 +42,15 @@ namespace Emby.Server.Implementations.Services
                 }
 
                 if (mi.GetParameters().Length != 1)
+                {
                     continue;
+                }
 
                 var actionName = mi.Name;
                 if (!AllVerbs.Contains(actionName, StringComparer.OrdinalIgnoreCase))
+                {
                     continue;
+                }
 
                 list.Add(mi);
             }
@@ -61,7 +67,10 @@ namespace Emby.Server.Implementations.Services
         {
             foreach (var actionCtx in actions)
             {
-                if (execMap.ContainsKey(actionCtx.Id)) continue;
+                if (execMap.ContainsKey(actionCtx.Id))
+                {
+                    continue;
+                }
 
                 execMap[actionCtx.Id] = actionCtx;
             }

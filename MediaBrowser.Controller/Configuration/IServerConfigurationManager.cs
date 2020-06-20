@@ -4,7 +4,7 @@ using MediaBrowser.Model.Configuration;
 namespace MediaBrowser.Controller.Configuration
 {
     /// <summary>
-    /// Interface IServerConfigurationManager
+    /// Interface IServerConfigurationManager.
     /// </summary>
     public interface IServerConfigurationManager : IConfigurationManager
     {

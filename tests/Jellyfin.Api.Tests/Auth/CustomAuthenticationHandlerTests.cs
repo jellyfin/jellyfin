@@ -7,6 +7,8 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Authentication;
@@ -124,7 +126,7 @@ namespace Jellyfin.Api.Tests.Auth
             var user = SetupUser();
             var authenticateResult = await _sut.AuthenticateAsync();
 
-            Assert.True(authenticateResult.Principal.HasClaim(ClaimTypes.Name, user.Name));
+            Assert.True(authenticateResult.Principal.HasClaim(ClaimTypes.Name, user.Username));
         }
 
         [Theory]
@@ -135,7 +137,7 @@ namespace Jellyfin.Api.Tests.Auth
             var user = SetupUser(isAdmin);
             var authenticateResult = await _sut.AuthenticateAsync();
 
-            var expectedRole = user.Policy.IsAdministrator ? UserRoles.Administrator : UserRoles.User;
+            var expectedRole = user.HasPermission(PermissionKind.IsAdministrator) ? UserRoles.Administrator : UserRoles.User;
             Assert.True(authenticateResult.Principal.HasClaim(ClaimTypes.Role, expectedRole));
         }
 
@@ -151,7 +153,7 @@ namespace Jellyfin.Api.Tests.Auth
         private User SetupUser(bool isAdmin = false)
         {
             var user = _fixture.Create<User>();
-            user.Policy.IsAdministrator = isAdmin;
+            user.SetPermission(PermissionKind.IsAdministrator, isAdmin);
 
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(

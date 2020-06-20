@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback.Progressive
 {
     /// <summary>
-    /// Class GetAudioStream
+    /// Class GetAudioStream.
     /// </summary>
     [Route("/Audio/{Id}/stream.{Container}", "GET", Summary = "Gets an audio stream")]
     [Route("/Audio/{Id}/stream", "GET", Summary = "Gets an audio stream")]
@@ -26,14 +26,14 @@ namespace MediaBrowser.Api.Playback.Progressive
     }
 
     /// <summary>
-    /// Class AudioService
+    /// Class AudioService.
     /// </summary>
     // TODO: In order to autheneticate this in the future, Dlna playback will require updating
     //[Authenticated]
     public class AudioService : BaseProgressiveStreamingService
     {
         public AudioService(
-            ILogger logger,
+            ILogger<AudioService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IHttpClient httpClient,

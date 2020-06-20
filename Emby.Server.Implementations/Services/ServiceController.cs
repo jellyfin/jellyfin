@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,7 +15,7 @@ namespace Emby.Server.Implementations.Services
 
     public class ServiceController
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ServiceController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceController"/> class.
@@ -57,8 +59,8 @@ namespace Emby.Server.Implementations.Services
 
                 ServiceExecGeneral.CreateServiceRunnersFor(requestType, actions);
 
-                //var returnMarker = GetTypeWithGenericTypeDefinitionOf(requestType, typeof(IReturn<>));
-                //var responseType = returnMarker != null ?
+                // var returnMarker = GetTypeWithGenericTypeDefinitionOf(requestType, typeof(IReturn<>));
+                // var responseType = returnMarker != null ?
                 //      GetGenericArguments(returnMarker)[0]
                 //    : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
                 //      mi.ReturnType
@@ -142,7 +144,10 @@ namespace Emby.Server.Implementations.Services
             var yieldedWildcardMatches = RestPath.GetFirstMatchWildCardHashKeys(matchUsingPathParts);
             foreach (var potentialHashMatch in yieldedWildcardMatches)
             {
-                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
+                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches))
+                {
+                    continue;
+                }
 
                 var bestScore = -1;
                 RestPath bestMatch = null;
@@ -180,7 +185,7 @@ namespace Emby.Server.Implementations.Services
                 serviceRequiresContext.Request = req;
             }
 
-            //Executes the service and returns the result
+            // Executes the service and returns the result
             return ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName());
         }
     }

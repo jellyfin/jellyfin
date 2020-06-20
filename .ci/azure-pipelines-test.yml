@@ -45,6 +45,7 @@ jobs:
       - task: SonarCloudPrepare@1
         displayName: 'Prepare analysis on SonarCloud'
         condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
         inputs:
           SonarCloud: 'Sonarcloud for Jellyfin'
           organization: 'jellyfin'
@@ -63,14 +64,17 @@ jobs:
       - task: SonarCloudAnalyze@1
         displayName: 'Run Code Analysis'
         condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
 
       - task: SonarCloudPublish@1
         displayName: 'Publish Quality Gate Result'
         condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
 
       - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
         displayName: 'Run ReportGenerator'
+        enabled: false
         inputs:
           reports: "$(Agent.TempDirectory)/**/coverage.cobertura.xml"
           targetdir: "$(Agent.TempDirectory)/merged/"
@@ -80,10 +84,10 @@ jobs:
       - task: PublishCodeCoverageResults@1
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
         displayName: 'Publish Code Coverage'
+        enabled: false
         inputs:
           codeCoverageTool: "cobertura"
           #summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml' # !!THIS IS FOR V2
           summaryFileLocation: "$(Agent.TempDirectory)/merged/**.xml"
           pathToSources: $(Build.SourcesDirectory)
           failIfCoverageEmpty: true
-

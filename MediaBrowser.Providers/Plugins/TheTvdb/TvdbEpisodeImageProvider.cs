@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -17,7 +19,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbEpisodeImageProvider : IRemoteImageProvider
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbEpisodeImageProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
         public TvdbEpisodeImageProvider(IHttpClient httpClient, ILogger<TvdbEpisodeImageProvider> logger, TvdbClientManager tvdbClientManager)
@@ -68,7 +70,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                             "Episode {SeasonNumber}x{EpisodeNumber} not found for series {SeriesTvdbId}",
                             episodeInfo.ParentIndexNumber,
                             episodeInfo.IndexNumber,
-                            series.GetProviderId(MetadataProviders.Tvdb));
+                            series.GetProviderId(MetadataProvider.Tvdb));
                         return imageResult;
                     }
 
@@ -85,7 +87,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 }
                 catch (TvDbServerException e)
                 {
-                    _logger.LogError(e, "Failed to retrieve episode images for series {TvDbId}", series.GetProviderId(MetadataProviders.Tvdb));
+                    _logger.LogError(e, "Failed to retrieve episode images for series {TvDbId}", series.GetProviderId(MetadataProvider.Tvdb));
                 }
             }
 

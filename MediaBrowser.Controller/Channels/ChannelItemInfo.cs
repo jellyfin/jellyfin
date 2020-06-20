@@ -24,7 +24,9 @@ namespace MediaBrowser.Controller.Channels
         public string Overview { get; set; }
 
         public List<string> Genres { get; set; }
+
         public List<string> Studios { get; set; }
+
         public List<string> Tags { get; set; }
 
         public List<PersonInfo> People { get; set; }
@@ -34,26 +36,33 @@ namespace MediaBrowser.Controller.Channels
         public long? RunTimeTicks { get; set; }
 
         public string ImageUrl { get; set; }
+
         public string OriginalTitle { get; set; }
 
         public ChannelMediaType MediaType { get; set; }
+
         public ChannelFolderType FolderType { get; set; }
 
         public ChannelMediaContentType ContentType { get; set; }
+
         public ExtraType ExtraType { get; set; }
+
         public List<TrailerType> TrailerTypes { get; set; }
 
         public Dictionary<string, string> ProviderIds { get; set; }
 
         public DateTime? PremiereDate { get; set; }
+
         public int? ProductionYear { get; set; }
 
         public DateTime? DateCreated { get; set; }
 
         public DateTime? StartDate { get; set; }
+
         public DateTime? EndDate { get; set; }
 
         public int? IndexNumber { get; set; }
+
         public int? ParentIndexNumber { get; set; }
 
         public List<MediaSourceInfo> MediaSources { get; set; }
@@ -63,7 +72,9 @@ namespace MediaBrowser.Controller.Channels
         public List<string> Artists { get; set; }
 
         public List<string> AlbumArtists { get; set; }
+
         public bool IsLiveStream { get; set; }
+
         public string Etag { get; set; }
 
         public ChannelItemInfo()

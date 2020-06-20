@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -32,7 +34,7 @@ namespace Emby.Server.Implementations.Sorting
 
                 if (val != 0)
                 {
-                    //return val;
+                    // return val;
                 }
             }
 

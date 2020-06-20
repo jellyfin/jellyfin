@@ -6,7 +6,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class UserDataSaveEventArgs
+    /// Class UserDataSaveEventArgs.
     /// </summary>
     public class UserDataSaveEventArgs : EventArgs
     {

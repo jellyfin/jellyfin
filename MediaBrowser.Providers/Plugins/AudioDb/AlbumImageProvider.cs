@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,7 +47,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var id = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+            var id = item.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
 
             if (!string.IsNullOrWhiteSpace(id))
             {

@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<ArtistsValidator> _logger;
         private readonly IItemRepository _itemRepo;
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="itemRepo">The item repository.</param>
-        public ArtistsValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
+        public ArtistsValidator(ILibraryManager libraryManager, ILogger<ArtistsValidator> logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -98,7 +98,6 @@ namespace Emby.Server.Implementations.Library.Validators
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {
                     DeleteFileLocation = false
-
                 }, false);
             }
 

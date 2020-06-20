@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -13,14 +14,17 @@ namespace Emby.Server.Implementations.HttpServer
     /// </summary>
     public class ResponseFilter
     {
+        private readonly IHttpServer _server;
         private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResponseFilter"/> class.
         /// </summary>
+        /// <param name="server">The HTTP server.</param>
         /// <param name="logger">The logger.</param>
-        public ResponseFilter(ILogger logger)
+        public ResponseFilter(IHttpServer server, ILogger logger)
         {
+            _server = server;
             _logger = logger;
         }
 
@@ -32,10 +36,16 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="dto">The dto.</param>
         public void FilterResponse(IRequest req, HttpResponse res, object dto)
         {
+            foreach(var (key, value) in _server.GetDefaultCorsHeaders(req))
+            {
+                res.Headers.Add(key, value);
+            }
             // Try to prevent compatibility view
-            res.Headers.Add("Access-Control-Allow-Headers", "Accept, Accept-Language, Authorization, Cache-Control, Content-Disposition, Content-Encoding, Content-Language, Content-Length, Content-MD5, Content-Range, Content-Type, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, X-Emby-Authorization");
-            res.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-            res.Headers.Add("Access-Control-Allow-Origin", "*");
+            res.Headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Authorization, Cache-Control, " +
+                "Content-Disposition, Content-Encoding, Content-Language, Content-Length, Content-MD5, Content-Range, " +
+                "Content-Type, Cookie, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, " +
+                "Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, " +
+                "X-Emby-Authorization";
 
             if (dto is Exception exception)
             {
@@ -81,6 +91,10 @@ namespace Emby.Server.Implementations.HttpServer
             if (inString == null)
             {
                 return null;
+            }
+            else if (inString.Length == 0)
+            {
+                return inString;
             }
 
             var newString = new StringBuilder(inString.Length);

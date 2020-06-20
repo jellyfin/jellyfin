@@ -8,17 +8,17 @@ using MediaBrowser.Model.Services;
 namespace MediaBrowser.Api.Playback
 {
     /// <summary>
-    /// Class StaticRemoteStreamWriter
+    /// Class StaticRemoteStreamWriter.
     /// </summary>
     public class StaticRemoteStreamWriter : IAsyncStreamWriter, IHasHeaders
     {
         /// <summary>
-        /// The _input stream
+        /// The _input stream.
         /// </summary>
         private readonly HttpResponseInfo _response;
 
         /// <summary>
-        /// The _options
+        /// The _options.
         /// </summary>
         private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
 

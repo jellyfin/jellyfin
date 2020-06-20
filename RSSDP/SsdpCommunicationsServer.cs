@@ -18,9 +18,6 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public sealed class SsdpCommunicationsServer : DisposableManagedObjectBase, ISsdpCommunicationsServer
     {
-
-        #region Fields
-
         /* We could technically use one socket listening on port 1900 for everything.
          * This should get both multicast (notifications) and unicast (search response) messages, however
          * this often doesn't work under Windows because the MS SSDP service is running. If that service
@@ -53,10 +50,6 @@ namespace Rssdp.Infrastructure
         private bool _IsShared;
         private readonly bool _enableMultiSocketBinding;
 
-        #endregion
-
-        #region Events
-
         /// <summary>
         /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
         /// </summary>
@@ -66,10 +59,6 @@ namespace Rssdp.Infrastructure
         /// Raised when an HTTPU response message is received by a socket (unicast or multicast).
         /// </summary>
         public event EventHandler<ResponseReceivedEventArgs> ResponseReceived;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Minimum constructor.
@@ -89,8 +78,15 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
         public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
         {
-            if (socketFactory == null) throw new ArgumentNullException(nameof(socketFactory));
-            if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
+            if (socketFactory == null)
+            {
+                throw new ArgumentNullException(nameof(socketFactory));
+            }
+
+            if (multicastTimeToLive <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
+            }
 
             _BroadcastListenSocketSynchroniser = new object();
             _SendSocketSynchroniser = new object();
@@ -106,10 +102,6 @@ namespace Rssdp.Infrastructure
             _logger = logger;
             _enableMultiSocketBinding = enableMultiSocketBinding;
         }
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Causes the server to begin listening for multicast messages, being SSDP search requests and notifications.
@@ -164,7 +156,10 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public async Task SendMessage(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
-            if (messageData == null) throw new ArgumentNullException(nameof(messageData));
+            if (messageData == null)
+            {
+                throw new ArgumentNullException(nameof(messageData));
+            }
 
             ThrowIfDisposed();
 
@@ -193,11 +188,9 @@ namespace Rssdp.Infrastructure
             }
             catch (ObjectDisposedException)
             {
-
             }
             catch (OperationCanceledException)
             {
-
             }
             catch (Exception ex)
             {
@@ -249,7 +242,10 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public async Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
-            if (message == null) throw new ArgumentNullException(nameof(message));
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
 
             byte[] messageData = Encoding.UTF8.GetBytes(message);
 
@@ -298,10 +294,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
         /// Gets or sets a boolean value indicating whether or not this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
         /// </summary>
@@ -311,12 +303,9 @@ namespace Rssdp.Infrastructure
         public bool IsShared
         {
             get { return _IsShared; }
+
             set { _IsShared = value; }
         }
-
-        #endregion
-
-        #region Overrides
 
         /// <summary>
         /// Stops listening for requests, disposes this instance and all internal resources.
@@ -331,10 +320,6 @@ namespace Rssdp.Infrastructure
                 StopListeningForResponses();
             }
         }
-
-        #endregion
-
-        #region Private Methods
 
         private Task SendMessageIfSocketNotDisposed(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
@@ -483,9 +468,9 @@ namespace Rssdp.Infrastructure
 
         private void OnRequestReceived(HttpRequestMessage data, IPEndPoint remoteEndPoint, IPAddress receivedOnLocalIpAddress)
         {
-            //SSDP specification says only * is currently used but other uri's might
-            //be implemented in the future and should be ignored unless understood.
-            //Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
+            // SSDP specification says only * is currently used but other uri's might
+            // be implemented in the future and should be ignored unless understood.
+            // Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
             if (data.RequestUri.ToString() != "*")
             {
                 return;
@@ -493,20 +478,21 @@ namespace Rssdp.Infrastructure
 
             var handlers = this.RequestReceived;
             if (handlers != null)
+            {
                 handlers(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnLocalIpAddress));
+            }
         }
 
         private void OnResponseReceived(HttpResponseMessage data, IPEndPoint endPoint, IPAddress localIpAddress)
         {
             var handlers = this.ResponseReceived;
             if (handlers != null)
+            {
                 handlers(this, new ResponseReceivedEventArgs(data, endPoint)
                 {
                     LocalIpAddress = localIpAddress
                 });
+            }
         }
-
-        #endregion
-
     }
 }

@@ -21,7 +21,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
 {
     public class AttachmentExtractor : IAttachmentExtractor, IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<AttachmentExtractor> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaEncoder _mediaEncoder;
@@ -269,7 +269,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             if (disposing)
             {
-
             }
 
             _disposed = true;
