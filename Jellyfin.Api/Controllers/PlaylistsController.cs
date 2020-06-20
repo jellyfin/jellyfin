@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaylistDtos;
 using MediaBrowser.Controller.Dto;
@@ -80,17 +81,17 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playlistId">The playlist id.</param>
         /// <param name="ids">Item id, comma delimited.</param>
         /// <param name="userId">The userId.</param>
-        /// <response code="200">Items added to playlist.</response>
-        /// <returns>An <see cref="OkResult"/> on success.</returns>
+        /// <response code="204">Items added to playlist.</response>
+        /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpPost("{playlistId}/Items")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddToPlaylist(
             [FromRoute] string playlistId,
             [FromQuery] string ids,
             [FromQuery] Guid userId)
         {
             _playlistManager.AddToPlaylist(playlistId, RequestHelpers.GetGuids(ids), userId);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -99,17 +100,17 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playlistId">The playlist id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="newIndex">The new index.</param>
-        /// <response code="200">Item moved to new index.</response>
-        /// <returns>An <see cref="OkResult"/> on success.</returns>
+        /// <response code="204">Item moved to new index.</response>
+        /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpPost("{playlistId}/Items/{itemId}/Move/{newIndex}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult MoveItem(
             [FromRoute] string playlistId,
             [FromRoute] string itemId,
             [FromRoute] int newIndex)
         {
             _playlistManager.MoveItem(playlistId, itemId, newIndex);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -117,14 +118,14 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="playlistId">The playlist id.</param>
         /// <param name="entryIds">The item ids, comma delimited.</param>
-        /// <response code="200">Items removed.</response>
-        /// <returns>An <see cref="OkResult"/> on success.</returns>
+        /// <response code="204">Items removed.</response>
+        /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpDelete("{playlistId}/Items")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RemoveFromPlaylist([FromRoute] string playlistId, [FromQuery] string entryIds)
         {
             _playlistManager.RemoveFromPlaylist(playlistId, entryIds.Split(','));
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -151,7 +152,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] string fields,
             [FromRoute] bool? enableImages,
             [FromRoute] bool? enableUserData,
-            [FromRoute] bool? imageTypeLimit,
+            [FromRoute] int? imageTypeLimit,
             [FromRoute] string enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
@@ -176,8 +177,10 @@ namespace Jellyfin.Api.Controllers
                 items = items.Take(limit.Value).ToArray();
             }
 
-            // TODO var dtoOptions = GetDtoOptions(_authContext, request);
-            var dtoOptions = new DtoOptions();
+            var dtoOptions = new DtoOptions()
+                .AddItemFields(fields)
+                .AddClientFields(Request)
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var dtos = _dtoService.GetBaseItemDtos(items.Select(i => i.Item2).ToList(), dtoOptions, user);
 

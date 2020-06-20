@@ -122,7 +122,7 @@ namespace Jellyfin.Api.Extensions
         /// <param name="enableImageTypes">Enable image types.</param>
         /// <returns>Modified DtoOptions object.</returns>
         internal static DtoOptions AddAdditionalDtoOptions(
-            in DtoOptions dtoOptions,
+            this DtoOptions dtoOptions,
             bool? enableImages,
             bool? enableUserData,
             int? imageTypeLimit,
