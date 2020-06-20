@@ -55,7 +55,9 @@ namespace Rssdp
 
             var rootDevice = device as SsdpRootDevice;
             if (rootDevice == null)
+            {
                 rootDevice = ((SsdpEmbeddedDevice)device).RootDevice;
+            }
 
             return rootDevice;
         }
@@ -163,7 +165,9 @@ namespace Rssdp
             get
             {
                 if (String.IsNullOrEmpty(_Udn) && !String.IsNullOrEmpty(this.Uuid))
+                {
                     return "uuid:" + this.Uuid;
+                }
                 else
                     return _Udn;
             }
@@ -283,7 +287,9 @@ namespace Rssdp
             }
 
             if (wasAdded)
+            {
                 OnDeviceAdded(device);
+            }
         }
 
         /// <summary>
@@ -314,7 +320,9 @@ namespace Rssdp
             }
 
             if (wasRemoved)
+            {
                 OnDeviceRemoved(device);
+            }
         }
 
         /// <summary>
@@ -327,7 +335,9 @@ namespace Rssdp
         {
             var handlers = this.DeviceAdded;
             if (handlers != null)
+            {
                 handlers(this, new DeviceEventArgs(device));
+            }
         }
 
         /// <summary>
@@ -340,7 +350,9 @@ namespace Rssdp
         {
             var handlers = this.DeviceRemoved;
             if (handlers != null)
+            {
                 handlers(this, new DeviceEventArgs(device));
+            }
         }
     }
 }

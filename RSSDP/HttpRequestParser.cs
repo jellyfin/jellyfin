@@ -34,7 +34,9 @@ namespace Rssdp.Infrastructure
             finally
             {
                 if (retVal != null)
+                {
                     retVal.Dispose();
+                }
             }
         }
 
@@ -64,7 +66,9 @@ namespace Rssdp.Infrastructure
             message.Method = new HttpMethod(parts[0].Trim());
             Uri requestUri;
             if (Uri.TryCreate(parts[1].Trim(), UriKind.RelativeOrAbsolute, out requestUri))
+            {
                 message.RequestUri = requestUri;
+            }
             else
                 System.Diagnostics.Debug.WriteLine(parts[1]);
 

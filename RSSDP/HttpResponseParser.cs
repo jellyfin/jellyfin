@@ -34,7 +34,9 @@ namespace Rssdp.Infrastructure
             catch
             {
                 if (retVal != null)
+                {
                     retVal.Dispose();
+                }
 
                 throw;
             }
@@ -77,7 +79,9 @@ namespace Rssdp.Infrastructure
 
             int statusCode = -1;
             if (!Int32.TryParse(parts[1].Trim(), out statusCode))
+            {
                 throw new ArgumentException("data status line is invalid. Status code is not a valid integer.", nameof(data));
+            }
 
             message.StatusCode = (HttpStatusCode)statusCode;
 

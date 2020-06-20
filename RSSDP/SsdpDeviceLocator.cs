@@ -217,10 +217,12 @@ namespace Rssdp.Infrastructure
 
             var handlers = this.DeviceAvailable;
             if (handlers != null)
+            {
                 handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
                 {
                     LocalIpAddress = localIpAddress
                 });
+            }
         }
 
         /// <summary>
@@ -426,7 +428,9 @@ namespace Rssdp.Infrastructure
                     };
 
                     if (NotificationTypeMatchesFilter(deadDevice))
+                    {
                         OnDeviceUnavailable(deadDevice, false);
+                    }
                 }
             }
         }
@@ -439,7 +443,9 @@ namespace Rssdp.Infrastructure
             {
                 message.Headers.TryGetValues(headerName, out values);
                 if (values != null)
+                {
                     retVal = values.FirstOrDefault();
+                }
             }
 
             return retVal;
@@ -453,7 +459,9 @@ namespace Rssdp.Infrastructure
             {
                 message.Headers.TryGetValues(headerName, out values);
                 if (values != null)
+                {
                     retVal = values.FirstOrDefault();
+                }
             }
 
             return retVal;
@@ -467,7 +475,9 @@ namespace Rssdp.Infrastructure
             {
                 request.Headers.TryGetValues(headerName, out values);
                 if (values != null)
+                {
                     value = values.FirstOrDefault();
+                }
             }
 
             Uri retVal;
@@ -483,7 +493,9 @@ namespace Rssdp.Infrastructure
             {
                 response.Headers.TryGetValues(headerName, out values);
                 if (values != null)
+                {
                     value = values.FirstOrDefault();
+                }
             }
 
             Uri retVal;
@@ -560,7 +572,9 @@ namespace Rssdp.Infrastructure
                 foreach (var removedDevice in existingDevices)
                 {
                     if (NotificationTypeMatchesFilter(removedDevice))
+                    {
                         OnDeviceUnavailable(removedDevice, expired);
+                    }
                 }
 
                 return true;
@@ -572,7 +586,9 @@ namespace Rssdp.Infrastructure
         private TimeSpan SearchTimeToMXValue(TimeSpan searchWaitTime)
         {
             if (searchWaitTime.TotalSeconds < 2 || searchWaitTime == TimeSpan.Zero)
+            {
                 return OneSecond;
+            }
             else
                 return searchWaitTime.Subtract(OneSecond);
         }

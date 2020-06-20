@@ -445,12 +445,14 @@ namespace Emby.Server.Implementations.Services
                     && requestComponents.Length >= this.TotalComponentsCount - this.wildcardCount;
 
                 if (!isValidWildCardPath)
+                {
                     throw new ArgumentException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Path Mismatch: Request Path '{0}' has invalid number of components compared to: '{1}'",
                             pathInfo,
                             this.restPath));
+                }
             }
 
             var requestKeyValuesMap = new Dictionary<string, string>();

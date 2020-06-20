@@ -114,9 +114,13 @@ namespace Rssdp.Infrastructure
             var headersToAddTo = IsContentHeader(headerName) ? contentHeaders : headers;
 
             if (values.Count > 1)
+            {
                 headersToAddTo.TryAddWithoutValidation(headerName, values);
+            }
             else
+            {
                 headersToAddTo.TryAddWithoutValidation(headerName, values.First());
+            }
         }
 
         private int ParseHeaders(System.Net.Http.Headers.HttpHeaders headers, System.Net.Http.Headers.HttpHeaders contentHeaders, string[] lines)
@@ -160,7 +164,9 @@ namespace Rssdp.Infrastructure
 
             var indexOfSeparator = headerValue.IndexOfAny(SeparatorCharacters);
             if (indexOfSeparator <= 0)
+            {
                 values.Add(headerValue);
+            }
             else
             {
                 var segments = headerValue.Split(SeparatorCharacters);
@@ -170,7 +176,9 @@ namespace Rssdp.Infrastructure
                     {
                         var segment = segments[segmentIndex];
                         if (segment.Trim().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
+                        {
                             segment = CombineQuotedSegments(segments, ref segmentIndex, segment);
+                        }
 
                         values.Add(segment);
                     }
@@ -199,12 +207,16 @@ namespace Rssdp.Infrastructure
                 }
 
                 if (index + 1 < segments.Length)
+                {
                     trimmedSegment += "," + segments[index + 1].TrimEnd();
+                }
             }
 
             segmentIndex = segments.Length;
             if (trimmedSegment.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && trimmedSegment.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
                 return trimmedSegment.Substring(1, trimmedSegment.Length - 2);
+            }
             else
                 return trimmedSegment;
         }

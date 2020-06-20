@@ -480,17 +480,21 @@ namespace Rssdp.Infrastructure
 
             var handlers = this.RequestReceived;
             if (handlers != null)
+            {
                 handlers(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnLocalIpAddress));
+            }
         }
 
         private void OnResponseReceived(HttpResponseMessage data, IPEndPoint endPoint, IPAddress localIpAddress)
         {
             var handlers = this.ResponseReceived;
             if (handlers != null)
+            {
                 handlers(this, new ResponseReceivedEventArgs(data, endPoint)
                 {
                     LocalIpAddress = localIpAddress
                 });
+            }
         }
     }
 }

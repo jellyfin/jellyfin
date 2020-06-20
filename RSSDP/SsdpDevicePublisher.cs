@@ -215,7 +215,9 @@ namespace Rssdp.Infrastructure
                 if (commsServer != null)
                 {
                     if (!commsServer.IsShared)
+                    {
                         commsServer.Dispose();
+                    }
                 }
 
                 _RecentSearchRequests = null;
@@ -328,7 +330,9 @@ namespace Rssdp.Infrastructure
             {
                 SendSearchResponse(SsdpConstants.UpnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress, cancellationToken);
                 if (this.SupportPnpRootDevice)
+                {
                     SendSearchResponse(SsdpConstants.PnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress, cancellationToken);
+                }
             }
 
             SendSearchResponse(device.Udn, device, device.Udn, endPoint, receivedOnlocalIpAddress, cancellationToken);
@@ -394,7 +398,9 @@ namespace Rssdp.Infrastructure
                 {
                     var lastRequest = _RecentSearchRequests[newRequest.Key];
                     if (lastRequest.IsOld())
+                    {
                         _RecentSearchRequests[newRequest.Key] = newRequest;
+                    }
                     else
                         isDuplicateRequest = true;
                 }
@@ -402,7 +408,9 @@ namespace Rssdp.Infrastructure
                 {
                     _RecentSearchRequests.Add(newRequest.Key, newRequest);
                     if (_RecentSearchRequests.Count > 10)
+                    {
                         CleanUpRecentSearchRequestsAsync();
+                    }
                 }
             }
 
@@ -462,7 +470,9 @@ namespace Rssdp.Infrastructure
             {
                 SendAliveNotification(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), cancellationToken);
                 if (this.SupportPnpRootDevice)
+                {
                     SendAliveNotification(device, SsdpConstants.PnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), cancellationToken);
+                }
             }
 
             SendAliveNotification(device, device.Udn, device.Udn, cancellationToken);
@@ -506,7 +516,9 @@ namespace Rssdp.Infrastructure
             {
                 tasks.Add(SendByeByeNotification(device, SsdpConstants.UpnpDeviceTypeRootDevice, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), cancellationToken));
                 if (this.SupportPnpRootDevice)
+                {
                     tasks.Add(SendByeByeNotification(device, "pnp:rootdevice", GetUsn(device.Udn, "pnp:rootdevice"), cancellationToken));
+                }
             }
 
             tasks.Add(SendByeByeNotification(device, device.Udn, device.Udn, cancellationToken));
@@ -547,20 +559,27 @@ namespace Rssdp.Infrastructure
             var timer = _RebroadcastAliveNotificationsTimer;
             _RebroadcastAliveNotificationsTimer = null;
             if (timer != null)
+            {
                 timer.Dispose();
+            }
         }
 
         private TimeSpan GetMinimumNonZeroCacheLifetime()
         {
-            var nonzeroCacheLifetimesQuery = (from device
-                                                                                in _Devices
-                                              where device.CacheLifetime != TimeSpan.Zero
-                                              select device.CacheLifetime).ToList();
+            var nonzeroCacheLifetimesQuery = (
+                from device
+                in _Devices
+                where device.CacheLifetime != TimeSpan.Zero
+                select device.CacheLifetime).ToList();
 
             if (nonzeroCacheLifetimesQuery.Any())
+            {
                 return nonzeroCacheLifetimesQuery.Min();
+            }
             else
+            {
                 return TimeSpan.Zero;
+            }
         }
 
         private string GetFirstHeaderValue(System.Net.Http.Headers.HttpRequestHeaders httpRequestHeaders, string headerName)
@@ -568,7 +587,9 @@ namespace Rssdp.Infrastructure
             string retVal = null;
             IEnumerable<String> values = null;
             if (httpRequestHeaders.TryGetValues(headerName, out values) && values != null)
+            {
                 retVal = values.FirstOrDefault();
+            }
 
             return retVal;
         }
@@ -588,7 +609,9 @@ namespace Rssdp.Infrastructure
         {
             var rootDevice = device as SsdpRootDevice;
             if (rootDevice != null)
+            {
                 WriteTrace(text + " " + device.DeviceType + " - " + device.Uuid + " - " + rootDevice.Location);
+            }
             else
                 WriteTrace(text + " " + device.DeviceType + " - " + device.Uuid);
         }

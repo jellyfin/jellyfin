@@ -2951,7 +2951,9 @@ namespace MediaBrowser.Controller.Entities
         public IEnumerable<BaseItem> GetTrailers()
         {
             if (this is IHasTrailers)
+            {
                 return ((IHasTrailers)this).LocalTrailerIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
+            }
             else
                 return Array.Empty<BaseItem>();
         }

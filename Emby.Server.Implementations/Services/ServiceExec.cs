@@ -42,11 +42,15 @@ namespace Emby.Server.Implementations.Services
                 }
 
                 if (mi.GetParameters().Length != 1)
+                {
                     continue;
+                }
 
                 var actionName = mi.Name;
                 if (!AllVerbs.Contains(actionName, StringComparer.OrdinalIgnoreCase))
+                {
                     continue;
+                }
 
                 list.Add(mi);
             }
