@@ -1040,11 +1040,16 @@ namespace Emby.Server.Implementations
                 return 0;
             }
 
-            // Build version into a string. 1.2.3.4 => 001002003004 (max 999999999999).
+            // Build version into a string. 1.2.3.4 => 001002003004, 2.1 -> 200100000000.
             string res = string.Empty;
             for (int x = start; x < version.Length; x++)
             {
-                res += version[x].PadLeft(4 - version[x].Length, '0');
+                res += version[x].PadLeft(3, '0');
+            }
+
+            if (res.Length < 12)
+            {
+                res = res.PadRight(12, '0');
             }
 
             return long.Parse(res, CultureInfo.InvariantCulture);
@@ -1083,11 +1088,11 @@ namespace Emby.Server.Implementations
             var versions = new List<Tuple<long, string, string>>();
 
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly).ToList();
-            
+
             // Only add the latest version of the folder into the list.
             foreach (var dir in directories)
             {
-                string[] parts = dir.Split(".");
+                string[] parts = dir.Replace('_', '.').Split(".");
 
                 if (parts.Length == 1)
                 {
