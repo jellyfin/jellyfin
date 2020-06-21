@@ -259,12 +259,12 @@ namespace Jellyfin.Api.Controllers
 
         private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages(IPlugin plugin)
         {
-            if (!(plugin is IHasWebPages))
+            if (!(plugin is IHasWebPages hasWebPages))
             {
                 return new List<Tuple<PluginPageInfo, IPlugin>>();
             }
 
-            return (plugin as IHasWebPages)!.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin));
+            return hasWebPages.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin));
         }
 
         private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages()
