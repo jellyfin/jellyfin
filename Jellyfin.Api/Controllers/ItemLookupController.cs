@@ -286,10 +286,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <param name="searchResult">The remote search result.</param>
         /// <param name="replaceAllImages">Optional. Whether or not to replace all images. Default: True.</param>
-        /// <response code="200">Item metadata refreshed.</response>
+        /// <response code="204">Item metadata refreshed.</response>
         /// <returns>
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
-        /// The task result contains an <see cref="OkResult"/>.
+        /// The task result contains an <see cref="NoContentResult"/>.
         /// </returns>
         [HttpPost("/Items/RemoteSearch/Apply/{id}")]
         [Authorize(Policy = Policies.RequiresElevation)]
@@ -318,7 +318,7 @@ namespace Jellyfin.Api.Controllers
                     SearchResult = searchResult
                 }, CancellationToken.None).ConfigureAwait(false);
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
