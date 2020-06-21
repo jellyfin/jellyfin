@@ -49,7 +49,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="recursive">(Unused) Indicates if the refresh should occur recursively.</param>
         /// <response code="204">Item metadata refresh queued.</response>
         /// <response code="404">Item to refresh not found.</response>
-        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
+        /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
         [HttpPost("{itemId}/Refresh")]
         [Description("Refreshes metadata for an item.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
