@@ -97,7 +97,6 @@ using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.TheTvdb;
 using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -1036,9 +1035,6 @@ namespace Emby.Server.Implementations
 
             // Include composable parts in the Api assembly
             yield return typeof(ApiEntryPoint).Assembly;
-
-            // Include composable parts in the Dashboard assembly
-            yield return typeof(DashboardService).Assembly;
 
             // Include composable parts in the Model assembly
             yield return typeof(SystemInfo).Assembly;
