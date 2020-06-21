@@ -1083,8 +1083,7 @@ namespace Emby.Server.Implementations
             var versions = new List<Tuple<long, string, string>>();
 
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly).ToList();
-            var folder = string.Empty;
-
+            
             // Only add the latest version of the folder into the list.
             foreach (var dir in directories)
             {
@@ -1110,11 +1109,10 @@ namespace Emby.Server.Implementations
                 // The first item will be the latest version.
                 for (int x = versions.Count - 1; x > 0; x--)
                 {
-                    folder = versions[x].Item2;
-                    if (!string.Equals(lastName, folder, StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(lastName, versions[x].Item2, StringComparison.OrdinalIgnoreCase))
                     {
-                        dllList.AddRange(Directory.EnumerateFiles(folder, "*.dll", SearchOption.AllDirectories));
-                        lastName = folder;
+                        dllList.AddRange(Directory.EnumerateFiles(versions[x].Item3, "*.dll", SearchOption.AllDirectories));
+                        lastName = versions[x].Item2;
                         continue;
                     }
 
@@ -1123,8 +1121,8 @@ namespace Emby.Server.Implementations
                         // Attempt a cleanup of old folders.
                         try
                         {
-                            Logger.LogDebug("Attempting to delete {0}", folder);
-                            Directory.Delete(folder);
+                            Logger.LogDebug("Attempting to delete {0}", versions[x].Item3);
+                            Directory.Delete(versions[x].Item3);
                         }
                         catch
                         {
@@ -1133,10 +1131,9 @@ namespace Emby.Server.Implementations
                     }
                 }
 
-                folder = versions[0].Item2;
-                if (!string.Equals(lastName, folder, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(lastName, versions[0].Item2, StringComparison.OrdinalIgnoreCase))
                 {
-                    dllList.AddRange(Directory.EnumerateFiles(folder, "*.dll", SearchOption.AllDirectories));
+                    dllList.AddRange(Directory.EnumerateFiles(versions[0].Item3, "*.dll", SearchOption.AllDirectories));
                 }
             }
 
