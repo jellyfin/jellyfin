@@ -16,6 +16,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Common.System;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
@@ -23,6 +24,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -384,9 +386,19 @@ namespace Emby.Server.Implementations.Updates
                     throw new InvalidDataException("The checksum of the received data doesn't match.");
                 }
 
+                // Version folder as they cannot be overwritten in Windows.
+                targetDir += package.Version.ToString();
+
                 if (Directory.Exists(targetDir))
                 {
-                    Directory.Delete(targetDir, true);
+                    try
+                    {
+                        Directory.Delete(targetDir, true);
+                    }
+                    catch
+                    {
+                        // Ignore any exceptions.
+                    }
                 }
 
                 stream.Position = 0;
@@ -425,15 +437,22 @@ namespace Emby.Server.Implementations.Updates
                 path = file;
             }
 
-            if (isDirectory)
+            try
             {
-                _logger.LogInformation("Deleting plugin directory {0}", path);
-                Directory.Delete(path, true);
+                if (isDirectory)
+                {
+                    _logger.LogInformation("Deleting plugin directory {0}", path);
+                    Directory.Delete(path, true);
+                }
+                else
+                {
+                    _logger.LogInformation("Deleting plugin file {0}", path);
+                    _fileSystem.DeleteFile(path);
+                }
             }
-            else
+            catch
             {
-                _logger.LogInformation("Deleting plugin file {0}", path);
-                _fileSystem.DeleteFile(path);
+                // Ignore file errors.
             }
 
             var list = _config.Configuration.UninstalledPlugins.ToList();

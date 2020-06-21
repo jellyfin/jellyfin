@@ -1009,6 +1009,102 @@ namespace Emby.Server.Implementations
         protected abstract void RestartInternal();
 
         /// <summary>
+        /// Converts an string array to a number.
+        /// Element 0 is the filename.
+        /// </summary>
+        /// <param name="version">Parts of the filename.</param>
+        /// <returns>Long representing the version of the file.</returns>
+        private long StrToVersion(string[] version)
+        {
+            if (version.Length > 4)
+            {
+                Logger.LogError("Plugin version number too complex : {0}.", version[0]);
+                return -1;
+            }
+
+            // Build version into a string. 1.2.3.4 => 001002003004 (max 999999999999
+            string res = string.Empty;
+            for (int x = 1; x <= version.Length; x++)
+            {
+                res += version[1].PadLeft(3 - version[1].Length, '0');
+            }
+
+            return long.Parse(res, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Only loads the latest version of each assembly based upon the folder name.
+        /// eg. MyAssembly 11.9.3.6  - will be ignored.
+        ///     MyAssembly 12.2.3.6  - will be loaded.
+        /// </summary>
+        /// <param name="path">Path to enumerate.</param>
+        /// <param name="cleanup">Set to true, to try and clean up earlier versions.</param>
+        /// <returns>IEnumerable{string} of filenames.</returns>
+        protected IEnumerable<string> GetLatestDLLVersion(string path, bool cleanup = false)
+        {
+            var dllList = new List<string>();
+            var versions = new SortedList<long, string>();
+            var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly).ToList();
+            var folder = string.Empty;
+
+            // Only add the latest version of the folder into the list.
+            foreach (var dir in directories)
+            {
+                string[] parts = dir.Split(".");
+
+                if (parts.Length == 1)
+                {
+                    dllList.AddRange(Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories).ToList());
+                }
+                else
+                {
+                    // Add for version comparison later.
+                    versions.Add(StrToVersion(parts), parts[0]);
+                }
+            }
+
+            if (versions.Count > 0)
+            {
+                string lastName = string.Empty;
+
+                // Traverse backwards through the list.
+                // The first item will be the latest version.
+                for (int x = versions.Count - 1; x > 0; x--)
+                {
+                    folder = versions.Values[x];
+                    if (!string.Equals(lastName, folder, StringComparison.OrdinalIgnoreCase))
+                    {
+                        dllList.AddRange(Directory.EnumerateFiles(path + "\\" + folder, "*.dll", SearchOption.AllDirectories));
+                        lastName = folder;
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(lastName) && cleanup)
+                    {
+                        // Attempt a cleanup of old folders.
+                        try
+                        {
+                            Logger.LogDebug("Attempting to delete {0}", path + "\\" + folder);
+                            Directory.Delete(path + "\\" + folder);
+                        }
+                        catch
+                        {
+                            // Ignore errors.
+                        }
+                    }
+                }
+
+                folder = versions.Values[0];
+                if (!string.Equals(lastName, folder, StringComparison.OrdinalIgnoreCase))
+                {
+                    dllList.AddRange(Directory.EnumerateFiles(path + "\\" + folder, "*.dll", SearchOption.AllDirectories));
+                }
+            }
+
+            return dllList;
+        }
+
+        /// <summary>
         /// Gets the composable part assemblies.
         /// </summary>
         /// <returns>IEnumerable{Assembly}.</returns>
@@ -1016,7 +1112,7 @@ namespace Emby.Server.Implementations
         {
             if (Directory.Exists(ApplicationPaths.PluginsPath))
             {
-                foreach (var file in Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.AllDirectories))
+                foreach (var file in GetLatestDLLVersion(ApplicationPaths.PluginsPath))
                 {
                     Assembly plugAss;
                     try
