@@ -53,7 +53,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="client">Client.</param>
         /// <param name="displayPreferences">New Display Preferences object.</param>
         /// <response code="204">Display preferences updated.</response>
-        /// <returns>An <see cref="OkResult"/> on success.</returns>
+        /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpPost("{displayPreferencesId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
