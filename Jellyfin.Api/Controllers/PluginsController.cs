@@ -11,6 +11,7 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -45,6 +46,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Installed plugins returned.</response>
         /// <returns>List of currently installed plugins.</returns>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isAppStoreEnabled", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<PluginInfo>> GetPlugins([FromRoute] bool? isAppStoreEnabled)
         {
@@ -55,11 +57,13 @@ namespace Jellyfin.Api.Controllers
         /// Uninstalls a plugin.
         /// </summary>
         /// <param name="pluginId">Plugin id.</param>
-        /// <response code="200">Plugin uninstalled.</response>
+        /// <response code="204">Plugin uninstalled.</response>
         /// <response code="404">Plugin not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the file could not be found.</returns>
         [HttpDelete("{pluginId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UninstallPlugin([FromRoute] Guid pluginId)
         {
             var plugin = _appHost.Plugins.FirstOrDefault(p => p.Id == pluginId);
@@ -69,7 +73,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             _installationManager.UninstallPlugin(plugin);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -80,6 +84,8 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Plugin not found or plugin configuration not found.</response>
         /// <returns>Plugin configuration.</returns>
         [HttpGet("{pluginId}/Configuration")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<BasePluginConfiguration> GetPluginConfiguration([FromRoute] Guid pluginId)
         {
             if (!(_appHost.Plugins.FirstOrDefault(p => p.Id == pluginId) is IHasPluginConfiguration plugin))
@@ -97,14 +103,16 @@ namespace Jellyfin.Api.Controllers
         /// Accepts plugin configuration as JSON body.
         /// </remarks>
         /// <param name="pluginId">Plugin id.</param>
-        /// <response code="200">Plugin configuration updated.</response>
-        /// <response code="200">Plugin not found or plugin does not have configuration.</response>
+        /// <response code="204">Plugin configuration updated.</response>
+        /// <response code="404">Plugin not found or plugin does not have configuration.</response>
         /// <returns>
         /// A <see cref="Task" /> that represents the asynchronous operation to update plugin configuration.
         ///    The task result contains an <see cref="OkResult"/> indicating success, or <see cref="NotFoundResult"/>
         ///    when plugin not found or plugin doesn't have configuration.
         /// </returns>
         [HttpPost("{pluginId}/Configuration")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdatePluginConfiguration([FromRoute] Guid pluginId)
         {
             if (!(_appHost.Plugins.FirstOrDefault(p => p.Id == pluginId) is IHasPluginConfiguration plugin))
@@ -116,7 +124,7 @@ namespace Jellyfin.Api.Controllers
                 .ConfigureAwait(false);
 
             plugin.UpdateConfiguration(configuration);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -126,6 +134,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Plugin security info.</returns>
         [Obsolete("This endpoint should not be used.")]
         [HttpGet("SecurityInfo")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<PluginSecurityInfo> GetPluginSecurityInfo()
         {
             return new PluginSecurityInfo
@@ -139,14 +148,15 @@ namespace Jellyfin.Api.Controllers
         /// Updates plugin security info.
         /// </summary>
         /// <param name="pluginSecurityInfo">Plugin security info.</param>
-        /// <response code="200">Plugin security info updated.</response>
-        /// <returns>An <see cref="OkResult"/>.</returns>
+        /// <response code="204">Plugin security info updated.</response>
+        /// <returns>An <see cref="NoContentResult"/>.</returns>
         [Obsolete("This endpoint should not be used.")]
         [HttpPost("SecurityInfo")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdatePluginSecurityInfo([FromBody, BindRequired] PluginSecurityInfo pluginSecurityInfo)
         {
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -157,6 +167,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Mb registration record.</returns>
         [Obsolete("This endpoint should not be used.")]
         [HttpPost("RegistrationRecords/{name}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<MBRegistrationRecord> GetRegistrationStatus([FromRoute] string name)
         {
             return new MBRegistrationRecord
@@ -178,6 +189,7 @@ namespace Jellyfin.Api.Controllers
         /// <exception cref="NotImplementedException">This endpoint is not implemented.</exception>
         [Obsolete("Paid plugins are not supported")]
         [HttpGet("/Registrations/{name}")]
+        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
         public ActionResult GetRegistration([FromRoute] string name)
         {
             // TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,

@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Controller.Library;
@@ -40,29 +41,29 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Refreshes metadata for an item.
         /// </summary>
-        /// <param name="id">Item id.</param>
+        /// <param name="itemId">Item id.</param>
         /// <param name="metadataRefreshMode">(Optional) Specifies the metadata refresh mode.</param>
         /// <param name="imageRefreshMode">(Optional) Specifies the image refresh mode.</param>
         /// <param name="replaceAllMetadata">(Optional) Determines if metadata should be replaced. Only applicable if mode is FullRefresh.</param>
         /// <param name="replaceAllImages">(Optional) Determines if images should be replaced. Only applicable if mode is FullRefresh.</param>
         /// <param name="recursive">(Unused) Indicates if the refresh should occur recursively.</param>
-        /// <response code="200">Item metadata refresh queued.</response>
+        /// <response code="204">Item metadata refresh queued.</response>
         /// <response code="404">Item to refresh not found.</response>
         /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
-        [HttpPost("{Id}/Refresh")]
+        [HttpPost("{itemId}/Refresh")]
         [Description("Refreshes metadata for an item.")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "recursive", Justification = "Imported from ServiceStack")]
         public ActionResult Post(
-            [FromRoute] string id,
+            [FromRoute] Guid itemId,
             [FromQuery] MetadataRefreshMode metadataRefreshMode = MetadataRefreshMode.None,
             [FromQuery] MetadataRefreshMode imageRefreshMode = MetadataRefreshMode.None,
             [FromQuery] bool replaceAllMetadata = false,
             [FromQuery] bool replaceAllImages = false,
             [FromQuery] bool recursive = false)
         {
-            var item = _libraryManager.GetItemById(id);
+            var item = _libraryManager.GetItemById(itemId);
             if (item == null)
             {
                 return NotFound();
@@ -82,7 +83,7 @@ namespace Jellyfin.Api.Controllers
             };
 
             _providerManager.QueueRefresh(item.Id, refreshOptions, RefreshPriority.High);
-            return Ok();
+            return NoContent();
         }
     }
 }

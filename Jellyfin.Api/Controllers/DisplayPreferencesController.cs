@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -34,9 +35,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="client">Client.</param>
         /// <response code="200">Display preferences retrieved.</response>
         /// <returns>An <see cref="OkResult"/> containing the display preferences on success, or a <see cref="NotFoundResult"/> if the display preferences could not be found.</returns>
-        [HttpGet("{DisplayPreferencesId}")]
+        [HttpGet("{displayPreferencesId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<DisplayPreferences> GetDisplayPreferences(
             [FromRoute] string displayPreferencesId,
             [FromQuery] [Required] string userId,
@@ -52,30 +52,24 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">User Id.</param>
         /// <param name="client">Client.</param>
         /// <param name="displayPreferences">New Display Preferences object.</param>
-        /// <response code="200">Display preferences updated.</response>
-        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the display preferences could not be found.</returns>
-        [HttpPost("{DisplayPreferencesId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ModelStateDictionary), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        /// <response code="204">Display preferences updated.</response>
+        /// <returns>An <see cref="OkResult"/> on success.</returns>
+        [HttpPost("{displayPreferencesId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
         public ActionResult UpdateDisplayPreferences(
             [FromRoute] string displayPreferencesId,
             [FromQuery, BindRequired] string userId,
             [FromQuery, BindRequired] string client,
             [FromBody, BindRequired] DisplayPreferences displayPreferences)
         {
-            if (displayPreferencesId == null)
-            {
-                // TODO - refactor so parameter doesn't exist or is actually used.
-            }
-
             _displayPreferencesRepository.SaveDisplayPreferences(
                 displayPreferences,
                 userId,
                 client,
                 CancellationToken.None);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

@@ -113,16 +113,16 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Instructs a session to browse to an item or view.
         /// </summary>
-        /// <param name="id">The session Id.</param>
+        /// <param name="sessionId">The session Id.</param>
         /// <param name="itemType">The type of item to browse to.</param>
         /// <param name="itemId">The Id of the item.</param>
         /// <param name="itemName">The name of the item.</param>
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{id}/Viewing")]
+        [HttpPost("/Sessions/{sessionId}/Viewing")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult DisplayContent(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromQuery] string itemType,
             [FromQuery] string itemId,
             [FromQuery] string itemName)
@@ -136,7 +136,7 @@ namespace Jellyfin.Api.Controllers
 
             _sessionManager.SendBrowseCommand(
                 RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
-                id,
+                sessionId,
                 command,
                 CancellationToken.None);
 
@@ -146,17 +146,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Instructs a session to play an item.
         /// </summary>
-        /// <param name="id">The session id.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="itemIds">The ids of the items to play, comma delimited.</param>
         /// <param name="startPositionTicks">The starting position of the first item.</param>
         /// <param name="playCommand">The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.</param>
         /// <param name="playRequest">The <see cref="PlayRequest"/>.</param>
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{id}/Playing")]
+        [HttpPost("/Sessions/{sessionId}/Playing")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromQuery] Guid[] itemIds,
             [FromQuery] long? startPositionTicks,
             [FromQuery] PlayCommand playCommand,
@@ -173,7 +173,7 @@ namespace Jellyfin.Api.Controllers
 
             _sessionManager.SendPlayCommand(
                 RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
-                id,
+                sessionId,
                 playRequest,
                 CancellationToken.None);
 
@@ -183,19 +183,19 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Issues a playstate command to a client.
         /// </summary>
-        /// <param name="id">The session id.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="playstateRequest">The <see cref="PlaystateRequest"/>.</param>
         /// <response code="204">Playstate command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{id}/Playing/{command}")]
+        [HttpPost("/Sessions/{sessionId}/Playing/{command}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendPlaystateCommand(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromBody] PlaystateRequest playstateRequest)
         {
             _sessionManager.SendPlaystateCommand(
                 RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
-                id,
+                sessionId,
                 playstateRequest,
                 CancellationToken.None);
 
@@ -205,14 +205,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Issues a system command to a client.
         /// </summary>
-        /// <param name="id">The session id.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="command">The command to send.</param>
         /// <response code="204">System command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{id}/System/{Command}")]
+        [HttpPost("/Sessions/{sessionId}/System/{command}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendSystemCommand(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromRoute] string command)
         {
             var name = command;
@@ -228,7 +228,7 @@ namespace Jellyfin.Api.Controllers
                 ControllingUserId = currentSession.UserId
             };
 
-            _sessionManager.SendGeneralCommand(currentSession.Id, id, generalCommand, CancellationToken.None);
+            _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None);
 
             return NoContent();
         }
@@ -236,14 +236,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Issues a general command to a client.
         /// </summary>
-        /// <param name="id">The session id.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="command">The command to send.</param>
         /// <response code="204">General command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{id}/Command/{Command}")]
+        [HttpPost("/Sessions/{sessionId}/Command/{Command}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendGeneralCommand(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromRoute] string command)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
@@ -254,7 +254,7 @@ namespace Jellyfin.Api.Controllers
                 ControllingUserId = currentSession.UserId
             };
 
-            _sessionManager.SendGeneralCommand(currentSession.Id, id, generalCommand, CancellationToken.None);
+            _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None);
 
             return NoContent();
         }
@@ -262,14 +262,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Issues a full general command to a client.
         /// </summary>
-        /// <param name="id">The session id.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="command">The <see cref="GeneralCommand"/>.</param>
         /// <response code="204">Full general command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{id}/Command")]
+        [HttpPost("/Sessions/{sessionId}/Command")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendFullGeneralCommand(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromBody, Required] GeneralCommand command)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
@@ -283,7 +283,7 @@ namespace Jellyfin.Api.Controllers
 
             _sessionManager.SendGeneralCommand(
                 currentSession.Id,
-                id,
+                sessionId,
                 command,
                 CancellationToken.None);
 
@@ -293,16 +293,16 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Issues a command to a client to display a message to the user.
         /// </summary>
-        /// <param name="id">The session id.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="text">The message test.</param>
         /// <param name="header">The message header.</param>
         /// <param name="timeoutMs">The message timeout. If omitted the user will have to confirm viewing the message.</param>
         /// <response code="204">Message sent.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{id}/Message")]
+        [HttpPost("/Sessions/{sessionId}/Message")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendMessageCommand(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromQuery] string text,
             [FromQuery] string header,
             [FromQuery] long? timeoutMs)
@@ -314,7 +314,7 @@ namespace Jellyfin.Api.Controllers
                 Text = text
             };
 
-            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, id, command, CancellationToken.None);
+            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, command, CancellationToken.None);
 
             return NoContent();
         }
@@ -322,34 +322,34 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Adds an additional user to a session.
         /// </summary>
-        /// <param name="id">The session id.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="userId">The user id.</param>
         /// <response code="204">User added to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{id}/User/{userId}")]
+        [HttpPost("/Sessions/{sessionId}/User/{userId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddUserToSession(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromRoute] Guid userId)
         {
-            _sessionManager.AddAdditionalUser(id, userId);
+            _sessionManager.AddAdditionalUser(sessionId, userId);
             return NoContent();
         }
 
         /// <summary>
         /// Removes an additional user from a session.
         /// </summary>
-        /// <param name="id">The session id.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="userId">The user id.</param>
         /// <response code="204">User removed from session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpDelete("/Sessions/{id}/User/{userId}")]
+        [HttpDelete("/Sessions/{sessionId}/User/{userId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RemoveUserFromSession(
-            [FromRoute] string id,
+            [FromRoute] string sessionId,
             [FromRoute] Guid userId)
         {
-            _sessionManager.RemoveAdditionalUser(id, userId);
+            _sessionManager.RemoveAdditionalUser(sessionId, userId);
             return NoContent();
         }
 

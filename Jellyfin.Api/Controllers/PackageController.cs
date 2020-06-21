@@ -35,9 +35,10 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="name">The name of the package.</param>
         /// <param name="assemblyGuid">The GUID of the associated assembly.</param>
+        /// <response code="200">Package retrieved.</response>
         /// <returns>A <see cref="PackageInfo"/> containing package information.</returns>
-        [HttpGet("/{Name}")]
-        [ProducesResponseType(typeof(PackageInfo), StatusCodes.Status200OK)]
+        [HttpGet("/{name}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PackageInfo>> GetPackageInfo(
             [FromRoute] [Required] string name,
             [FromQuery] string? assemblyGuid)
@@ -54,9 +55,10 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets available packages.
         /// </summary>
+        /// <response code="200">Available packages returned.</response>
         /// <returns>An <see cref="PackageInfo"/> containing available packages information.</returns>
         [HttpGet]
-        [ProducesResponseType(typeof(PackageInfo[]), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IEnumerable<PackageInfo>> GetPackages()
         {
             IEnumerable<PackageInfo> packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
@@ -73,7 +75,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Package found.</response>
         /// <response code="404">Package not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the package could not be found.</returns>
-        [HttpPost("/Installed/{Name}")]
+        [HttpPost("/Installed/{name}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = Policies.RequiresElevation)]
@@ -102,17 +104,16 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Cancels a package installation.
         /// </summary>
-        /// <param name="id">Installation Id.</param>
+        /// <param name="packageId">Installation Id.</param>
         /// <response code="204">Installation cancelled.</response>
         /// <returns>A <see cref="NoContentResult"/> on successfully cancelling a package installation.</returns>
-        [HttpDelete("/Installing/{id}")]
+        [HttpDelete("/Installing/{packageId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public IActionResult CancelPackageInstallation(
-            [FromRoute] [Required] string id)
+            [FromRoute] [Required] Guid packageId)
         {
-            _installationManager.CancelInstallation(new Guid(id));
-
+            _installationManager.CancelInstallation(packageId);
             return NoContent();
         }
     }
