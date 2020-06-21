@@ -14,6 +14,7 @@ using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -22,6 +23,7 @@ namespace Jellyfin.Api.Controllers
     /// </summary>
     public class DashboardController : BaseJellyfinApiController
     {
+        private readonly ILogger<DashboardController> _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _appConfig;
         private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -30,16 +32,19 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardController"/> class.
         /// </summary>
+        /// <param name="logger">Instance of <see cref="ILogger{DashboardController}"/> interface.</param>
         /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
         /// <param name="appConfig">Instance of <see cref="IConfiguration"/> interface.</param>
         /// <param name="resourceFileManager">Instance of <see cref="IResourceFileManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of <see cref="IServerConfigurationManager"/> interface.</param>
         public DashboardController(
+            ILogger<DashboardController> logger,
             IServerApplicationHost appHost,
             IConfiguration appConfig,
             IResourceFileManager resourceFileManager,
             IServerConfigurationManager serverConfigurationManager)
         {
+            _logger = logger;
             _appHost = appHost;
             _appConfig = appConfig;
             _resourceFileManager = resourceFileManager;
@@ -63,7 +68,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/web/ConfigurationPages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ConfigurationPageInfo>> GetConfigurationPages(
+        public ActionResult<IEnumerable<ConfigurationPageInfo?>> GetConfigurationPages(
             [FromQuery] bool? enableInMainMenu,
             [FromQuery] ConfigurationPageType? pageType)
         {
@@ -79,7 +84,15 @@ namespace Jellyfin.Api.Controllers
             // Don't allow a failing plugin to fail them all
             var configPages = pages.Select(p =>
                 {
-                    return new ConfigurationPageInfo(p);
+                    try
+                    {
+                        return new ConfigurationPageInfo(p);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error getting plugin information from {Plugin}", p.GetType().Name);
+                        return null;
+                    }
                 })
                 .Where(i => i != null)
                 .ToList();
@@ -88,12 +101,12 @@ namespace Jellyfin.Api.Controllers
 
             if (pageType.HasValue)
             {
-                configPages = configPages.Where(p => p.ConfigurationPageType == pageType).ToList();
+                configPages = configPages.Where(p => p!.ConfigurationPageType == pageType).ToList();
             }
 
             if (enableInMainMenu.HasValue)
             {
-                configPages = configPages.Where(p => p.EnableInMainMenu == enableInMainMenu.Value).ToList();
+                configPages = configPages.Where(p => p!.EnableInMainMenu == enableInMainMenu.Value).ToList();
             }
 
             return configPages;
