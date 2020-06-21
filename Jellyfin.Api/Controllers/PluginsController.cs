@@ -107,7 +107,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Plugin not found or plugin does not have configuration.</response>
         /// <returns>
         /// A <see cref="Task" /> that represents the asynchronous operation to update plugin configuration.
-        ///    The task result contains an <see cref="OkResult"/> indicating success, or <see cref="NotFoundResult"/>
+        ///    The task result contains an <see cref="NoContentResult"/> indicating success, or <see cref="NotFoundResult"/>
         ///    when plugin not found or plugin doesn't have configuration.
         /// </returns>
         [HttpPost("{pluginId}/Configuration")]
