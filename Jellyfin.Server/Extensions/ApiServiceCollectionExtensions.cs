@@ -224,6 +224,31 @@ namespace Jellyfin.Server.Extensions
                             Format = "string"
                         })
                 });
+
+            /*
+             * Support BlurHash dictionary
+             */
+            options.MapType<Dictionary<ImageType, Dictionary<string, string>>>(() =>
+                new OpenApiSchema
+                {
+                    Type = "object",
+                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
+                        name => name,
+                        name => new OpenApiSchema
+                        {
+                            Type = "object", Properties = new Dictionary<string, OpenApiSchema>
+                            {
+                                {
+                                    "string",
+                                    new OpenApiSchema
+                                    {
+                                        Type = "string",
+                                        Format = "string"
+                                    }
+                                }
+                            }
+                        })
+                });
         }
     }
 }

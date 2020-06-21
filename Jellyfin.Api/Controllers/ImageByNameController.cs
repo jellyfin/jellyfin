@@ -58,7 +58,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Image stream retrieved.</response>
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
-        [HttpGet("General/{Name}/{Type}")]
+        [HttpGet("General/{name}/{type}")]
         [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -103,7 +103,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Image stream retrieved.</response>
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
-        [HttpGet("Ratings/{Theme}/{Name}")]
+        [HttpGet("Ratings/{theme}/{name}")]
         [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -136,7 +136,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Image stream retrieved.</response>
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
-        [HttpGet("MediaInfo/{Theme}/{Name}")]
+        [HttpGet("MediaInfo/{theme}/{name}")]
         [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]

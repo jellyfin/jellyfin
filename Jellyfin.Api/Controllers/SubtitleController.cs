@@ -1,8 +1,7 @@
-#pragma warning disable CA1801
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -76,20 +75,20 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Deletes an external subtitle file.
         /// </summary>
-        /// <param name="id">The item id.</param>
+        /// <param name="itemId">The item id.</param>
         /// <param name="index">The index of the subtitle file.</param>
         /// <response code="204">Subtitle deleted.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpDelete("/Videos/{id}/Subtitles/{index}")]
+        [HttpDelete("/Videos/{itemId}/Subtitles/{index}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<Task> DeleteSubtitle(
-            [FromRoute] Guid id,
+            [FromRoute] Guid itemId,
             [FromRoute] int index)
         {
-            var item = _libraryManager.GetItemById(id);
+            var item = _libraryManager.GetItemById(itemId);
 
             if (item == null)
             {
@@ -103,20 +102,20 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Search remote subtitles.
         /// </summary>
-        /// <param name="id">The item id.</param>
+        /// <param name="itemId">The item id.</param>
         /// <param name="language">The language of the subtitles.</param>
         /// <param name="isPerfectMatch">Optional. Only show subtitles which are a perfect match.</param>
         /// <response code="200">Subtitles retrieved.</response>
         /// <returns>An array of <see cref="RemoteSubtitleInfo"/>.</returns>
-        [HttpGet("/Items/{id}/RemoteSearch/Subtitles/{language}")]
+        [HttpGet("/Items/{itemId}/RemoteSearch/Subtitles/{language}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
-            [FromRoute] Guid id,
+            [FromRoute] Guid itemId,
             [FromRoute] string language,
             [FromQuery] bool? isPerfectMatch)
         {
-            var video = (Video)_libraryManager.GetItemById(id);
+            var video = (Video)_libraryManager.GetItemById(itemId);
 
             return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, CancellationToken.None).ConfigureAwait(false);
         }
@@ -124,18 +123,18 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Downloads a remote subtitle.
         /// </summary>
-        /// <param name="id">The item id.</param>
+        /// <param name="itemId">The item id.</param>
         /// <param name="subtitleId">The subtitle id.</param>
         /// <response code="204">Subtitle downloaded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Items/{id}/RemoteSearch/Subtitles/{subtitleId}")]
+        [HttpPost("/Items/{itemId}/RemoteSearch/Subtitles/{subtitleId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DownloadRemoteSubtitles(
-            [FromRoute] Guid id,
+            [FromRoute] Guid itemId,
             [FromRoute] string subtitleId)
         {
-            var video = (Video)_libraryManager.GetItemById(id);
+            var video = (Video)_libraryManager.GetItemById(itemId);
 
             try
             {
@@ -172,28 +171,28 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets subtitles in a specified format.
         /// </summary>
-        /// <param name="id">The item id.</param>
+        /// <param name="itemId">The item id.</param>
         /// <param name="mediaSourceId">The media source id.</param>
         /// <param name="index">The subtitle stream index.</param>
         /// <param name="format">The format of the returned subtitle.</param>
-        /// <param name="startPositionTicks">Optional. The start position of the subtitle in ticks.</param>
         /// <param name="endPositionTicks">Optional. The end position of the subtitle in ticks.</param>
         /// <param name="copyTimestamps">Optional. Whether to copy the timestamps.</param>
         /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
+        /// <param name="startPositionTicks">Optional. The start position of the subtitle in ticks.</param>
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
-        [HttpGet("/Videos/{id}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
-        [HttpGet("/Videos/{id}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks}/Stream.{format}")]
+        [HttpGet("/Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
+        [HttpGet("/Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks?}/Stream.{format}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSubtitle(
-            [FromRoute, Required] Guid id,
+            [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string mediaSourceId,
             [FromRoute, Required] int index,
             [FromRoute, Required] string format,
-            [FromRoute] long startPositionTicks,
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps,
-            [FromQuery] bool addVttTimeMap)
+            [FromQuery] bool addVttTimeMap,
+            [FromRoute] long startPositionTicks = 0)
         {
             if (string.Equals(format, "js", StringComparison.OrdinalIgnoreCase))
             {
@@ -202,9 +201,9 @@ namespace Jellyfin.Api.Controllers
 
             if (string.IsNullOrEmpty(format))
             {
-                var item = (Video)_libraryManager.GetItemById(id);
+                var item = (Video)_libraryManager.GetItemById(itemId);
 
-                var idString = id.ToString("N", CultureInfo.InvariantCulture);
+                var idString = itemId.ToString("N", CultureInfo.InvariantCulture);
                 var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
                     .First(i => string.Equals(i.Id, mediaSourceId ?? idString, StringComparison.Ordinal));
 
@@ -217,7 +216,7 @@ namespace Jellyfin.Api.Controllers
 
             if (string.Equals(format, "vtt", StringComparison.OrdinalIgnoreCase) && addVttTimeMap)
             {
-                await using Stream stream = await EncodeSubtitles(id, mediaSourceId, index, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
+                await using Stream stream = await EncodeSubtitles(itemId, mediaSourceId, index, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
                 using var reader = new StreamReader(stream);
 
                 var text = await reader.ReadToEndAsync().ConfigureAwait(false);
@@ -229,7 +228,7 @@ namespace Jellyfin.Api.Controllers
 
             return File(
                 await EncodeSubtitles(
-                    id,
+                    itemId,
                     mediaSourceId,
                     index,
                     format,
@@ -242,23 +241,23 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets an HLS subtitle playlist.
         /// </summary>
-        /// <param name="id">The item id.</param>
+        /// <param name="itemId">The item id.</param>
         /// <param name="index">The subtitle stream index.</param>
         /// <param name="mediaSourceId">The media source id.</param>
         /// <param name="segmentLength">The subtitle segment length.</param>
         /// <response code="200">Subtitle playlist retrieved.</response>
         /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
-        [HttpGet("/Videos/{id}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
+        [HttpGet("/Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetSubtitlePlaylist(
-            [FromRoute] Guid id,
-            // TODO: 'int index' is never used: CA1801 is disabled
+            [FromRoute] Guid itemId,
             [FromRoute] int index,
             [FromRoute] string mediaSourceId,
             [FromQuery, Required] int segmentLength)
         {
-            var item = (Video)_libraryManager.GetItemById(id);
+            var item = (Video)_libraryManager.GetItemById(itemId);
 
             var mediaSource = await _mediaSourceManager.GetMediaSource(item, mediaSourceId, null, false, CancellationToken.None).ConfigureAwait(false);
 
