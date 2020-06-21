@@ -1057,7 +1057,7 @@ namespace Emby.Server.Implementations
 
         private static int VersionCompare(Tuple<long, string, string> a, Tuple<long, string, string> b)
         {
-            int compare = string.Compare(a.Item2, b.Item2, false, CultureInfo.InvariantCulture);
+            int compare = string.Compare(a.Item2, b.Item2, true, CultureInfo.InvariantCulture);
 
             if (compare == 0)
             {
