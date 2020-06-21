@@ -42,7 +42,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">An optional limit on the number of notifications returned.</param>
         /// <response code="200">Notifications returned.</response>
         /// <returns>An <see cref="OkResult"/> containing a list of notifications.</returns>
-        [HttpGet("{UserID}")]
+        [HttpGet("{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isRead", Justification = "Imported from ServiceStack")]
@@ -63,7 +63,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user's ID.</param>
         /// <response code="200">Summary of user's notifications returned.</response>
         /// <returns>An <cref see="OkResult"/> containing a summary of the users notifications.</returns>
-        [HttpGet("{UserID}/Summary")]
+        [HttpGet("{userId}/Summary")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
         public ActionResult<NotificationsSummaryDto> GetNotificationsSummary(
@@ -138,7 +138,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
         /// <response code="204">Notifications set as read.</response>
         /// <returns>A <cref see="NoContentResult"/>.</returns>
-        [HttpPost("{UserID}/Read")]
+        [HttpPost("{userId}/Read")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "ids", Justification = "Imported from ServiceStack")]
@@ -156,7 +156,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
         /// <response code="204">Notifications set as unread.</response>
         /// <returns>A <cref see="NoContentResult"/>.</returns>
-        [HttpPost("{UserID}/Unread")]
+        [HttpPost("{userId}/Unread")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "ids", Justification = "Imported from ServiceStack")]

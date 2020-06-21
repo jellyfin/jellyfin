@@ -55,7 +55,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets available remote images for an item.
         /// </summary>
-        /// <param name="id">Item Id.</param>
+        /// <param name="itemId">Item Id.</param>
         /// <param name="type">The image type.</param>
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
@@ -64,18 +64,18 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Remote Images returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>Remote Image Result.</returns>
-        [HttpGet("{Id}/RemoteImages")]
+        [HttpGet("{itemId}/RemoteImages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<RemoteImageResult>> GetRemoteImages(
-            [FromRoute] string id,
+            [FromRoute] Guid itemId,
             [FromQuery] ImageType? type,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string providerName,
             [FromQuery] bool includeAllLanguages)
         {
-            var item = _libraryManager.GetItemById(id);
+            var item = _libraryManager.GetItemById(itemId);
             if (item == null)
             {
                 return NotFound();
@@ -123,16 +123,16 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets available remote image providers for an item.
         /// </summary>
-        /// <param name="id">Item Id.</param>
+        /// <param name="itemId">Item Id.</param>
         /// <response code="200">Returned remote image providers.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>List of remote image providers.</returns>
-        [HttpGet("{Id}/RemoteImages/Providers")]
+        [HttpGet("{itemId}/RemoteImages/Providers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute] string id)
+        public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute] Guid itemId)
         {
-            var item = _libraryManager.GetItemById(id);
+            var item = _libraryManager.GetItemById(itemId);
             if (item == null)
             {
                 return NotFound();
@@ -195,21 +195,21 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Downloads a remote image for an item.
         /// </summary>
-        /// <param name="id">Item Id.</param>
+        /// <param name="itemId">Item Id.</param>
         /// <param name="type">The image type.</param>
         /// <param name="imageUrl">The image url.</param>
-        /// <response code="200">Remote image downloaded.</response>
+        /// <response code="204">Remote image downloaded.</response>
         /// <response code="404">Remote image not found.</response>
         /// <returns>Download status.</returns>
-        [HttpPost("{Id}/RemoteImages/Download")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpPost("{itemId}/RemoteImages/Download")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DownloadRemoteImage(
-            [FromRoute] string id,
+            [FromRoute] Guid itemId,
             [FromQuery, BindRequired] ImageType type,
             [FromQuery] string imageUrl)
         {
-            var item = _libraryManager.GetItemById(id);
+            var item = _libraryManager.GetItemById(itemId);
             if (item == null)
             {
                 return NotFound();
@@ -219,7 +219,7 @@ namespace Jellyfin.Api.Controllers
                 .ConfigureAwait(false);
 
             item.UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
