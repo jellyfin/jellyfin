@@ -86,7 +86,7 @@ namespace Jellyfin.Api.Controllers
 
             configPages.AddRange(_appHost.Plugins.SelectMany(GetConfigPages));
 
-            if (pageType != null)
+            if (pageType.HasValue)
             {
                 configPages = configPages.Where(p => p.ConfigurationPageType == pageType).ToList();
             }
@@ -246,14 +246,12 @@ namespace Jellyfin.Api.Controllers
 
         private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages(IPlugin plugin)
         {
-            var hasConfig = plugin as IHasWebPages;
-
-            if (hasConfig == null)
+            if (!(plugin is IHasWebPages))
             {
                 return new List<Tuple<PluginPageInfo, IPlugin>>();
             }
 
-            return hasConfig.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin));
+            return (plugin as IHasWebPages)!.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin));
         }
 
         private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages()
