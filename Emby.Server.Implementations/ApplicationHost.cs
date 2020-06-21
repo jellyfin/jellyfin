@@ -1013,23 +1013,60 @@ namespace Emby.Server.Implementations
         /// Element 0 is the filename.
         /// </summary>
         /// <param name="version">Parts of the filename.</param>
+        /// <param name="foldername">Returns the folder name including any periods. eg. vs</param>
         /// <returns>Long representing the version of the file.</returns>
-        private long StrToVersion(string[] version)
+        private long StrToVersion(string[] version, out string foldername)
         {
-            if (version.Length > 4)
+            if (version.Length > 5)
             {
                 Logger.LogError("Plugin version number too complex : {0}.", version[0]);
-                return -1;
+                foldername = string.Join('.', version);
+                return 0;
             }
 
-            // Build version into a string. 1.2.3.4 => 001002003004 (max 999999999999
-            string res = string.Empty;
-            for (int x = 1; x <= version.Length; x++)
+            foldername = string.Empty;
+            int start = 0;
+            do
             {
-                res += version[1].PadLeft(3 - version[1].Length, '0');
+                foldername += "." + version[start];
+                start++;
+            }
+            while (start < version.Length && !int.TryParse(version[start], out _));
+            foldername = foldername.TrimStart('.');
+
+            if (start == version.Length)
+            {
+                // No valid version number.
+                return 0;
+            }
+
+            // Build version into a string. 1.2.3.4 => 001002003004 (max 999999999999).
+            string res = string.Empty;
+            for (int x = start; x < version.Length; x++)
+            {
+                res += version[x].PadLeft(4 - version[x].Length, '0');
             }
 
             return long.Parse(res, CultureInfo.InvariantCulture);
+        }
+
+        private static int VersionCompare(Tuple<long, string, string> a, Tuple<long, string, string> b)
+        {
+            int compare = string.Compare(a.Item2, b.Item2, false, CultureInfo.InvariantCulture);
+
+            if (compare == 0)
+            {
+                if (a.Item1 > b.Item1)
+                {
+                    return 1;
+                }
+
+                return -1;
+
+            }
+
+            return compare;
+
         }
 
         /// <summary>
@@ -1043,7 +1080,8 @@ namespace Emby.Server.Implementations
         protected IEnumerable<string> GetLatestDLLVersion(string path, bool cleanup = false)
         {
             var dllList = new List<string>();
-            var versions = new SortedList<long, string>();
+            var versions = new List<Tuple<long, string, string>>();
+
             var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly).ToList();
             var folder = string.Empty;
 
@@ -1058,23 +1096,24 @@ namespace Emby.Server.Implementations
                 }
                 else
                 {
+                    long id = StrToVersion(parts, out string foldername);
                     // Add for version comparison later.
-                    versions.Add(StrToVersion(parts), parts[0]);
+                    versions.Add(Tuple.Create(id, foldername, dir));
                 }
             }
 
             if (versions.Count > 0)
             {
                 string lastName = string.Empty;
-
+                versions.Sort(VersionCompare);
                 // Traverse backwards through the list.
                 // The first item will be the latest version.
                 for (int x = versions.Count - 1; x > 0; x--)
                 {
-                    folder = versions.Values[x];
+                    folder = versions[x].Item2;
                     if (!string.Equals(lastName, folder, StringComparison.OrdinalIgnoreCase))
                     {
-                        dllList.AddRange(Directory.EnumerateFiles(path + "\\" + folder, "*.dll", SearchOption.AllDirectories));
+                        dllList.AddRange(Directory.EnumerateFiles(folder, "*.dll", SearchOption.AllDirectories));
                         lastName = folder;
                         continue;
                     }
@@ -1084,8 +1123,8 @@ namespace Emby.Server.Implementations
                         // Attempt a cleanup of old folders.
                         try
                         {
-                            Logger.LogDebug("Attempting to delete {0}", path + "\\" + folder);
-                            Directory.Delete(path + "\\" + folder);
+                            Logger.LogDebug("Attempting to delete {0}", folder);
+                            Directory.Delete(folder);
                         }
                         catch
                         {
@@ -1094,10 +1133,10 @@ namespace Emby.Server.Implementations
                     }
                 }
 
-                folder = versions.Values[0];
+                folder = versions[0].Item2;
                 if (!string.Equals(lastName, folder, StringComparison.OrdinalIgnoreCase))
                 {
-                    dllList.AddRange(Directory.EnumerateFiles(path + "\\" + folder, "*.dll", SearchOption.AllDirectories));
+                    dllList.AddRange(Directory.EnumerateFiles(folder, "*.dll", SearchOption.AllDirectories));
                 }
             }
 
