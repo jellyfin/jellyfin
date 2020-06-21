@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -21,6 +23,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -302,16 +305,172 @@ namespace Jellyfin.Api.Controllers
             return list;
         }
 
+        /// <summary>
+        /// Gets the item's image.
+        /// </summary>
+        /// <param name="itemId">Item id.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
+        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
+        /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
+        /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <param name="imageIndex">Image index.</param>
+        /// <param name="enableImageEnhancers">Enable or disable image enhancers such as cover art.</param>
+        /// <response code="200">Image stream returned.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>
+        /// A <see cref="FileStreamResult"/> containing the file stream on success,
+        /// or a <see cref="NotFoundResult"/> if item not found.
+        /// </returns>
+        [HttpGet("/Items/{itemId}/Images/{imageType}")]
+        [HttpHead("/Items/{itemId}/Images/{imageType}")]
+        [HttpGet("/Items/{itemId}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("/Items/{itemId}/Images/{imageType}/{imageIndex?}")]
+        public async Task<ActionResult> GetItemImage(
+            [FromRoute] Guid itemId,
+            [FromRoute] ImageType imageType,
+            [FromRoute] int? maxWidth,
+            [FromRoute] int? maxHeight,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] string tag,
+            [FromQuery] bool? cropWhitespace,
+            [FromQuery] string format,
+            [FromQuery] bool addPlayedIndicator,
+            [FromQuery] double? percentPlayed,
+            [FromQuery] int? unplayedCount,
+            [FromQuery] int? blur,
+            [FromQuery] string backgroundColor,
+            [FromQuery] string foregroundLayer,
+            [FromRoute] int? imageIndex = null,
+            [FromQuery] bool enableImageEnhancers = true)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return await GetImageInternal(
+                    itemId,
+                    imageType,
+                    imageIndex,
+                    tag,
+                    format,
+                    maxWidth,
+                    maxHeight,
+                    percentPlayed,
+                    unplayedCount,
+                    width,
+                    height,
+                    quality,
+                    cropWhitespace,
+                    addPlayedIndicator,
+                    blur,
+                    backgroundColor,
+                    foregroundLayer,
+                    enableImageEnhancers,
+                    item,
+                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                .ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets the item's image.
+        /// </summary>
+        /// <param name="itemId">Item id.</param>
+        /// <param name="imageType">Image type.</param>
+        /// <param name="imageIndex">Image index.</param>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="percentPlayed">Optional. Percent to render for the percent played overlay.</param>
+        /// <param name="unplayedCount">Optional. Unplayed count overlay to render.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
+        /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <param name="enableImageEnhancers">Enable or disable image enhancers such as cover art.</param>
+        /// <response code="200">Image stream returned.</response>
+        /// <response code="404">Item not found.</response>
+        /// <returns>
+        /// A <see cref="FileStreamResult"/> containing the file stream on success,
+        /// or a <see cref="NotFoundResult"/> if item not found.
+        /// </returns>
+        [HttpGet("/Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}")]
+        [HttpHead("/Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}")]
+        public ActionResult<object> GetItemImage(
+            [FromRoute] Guid itemId,
+            [FromRoute] ImageType imageType,
+            [FromRoute] int? imageIndex,
+            [FromRoute] string tag,
+            [FromRoute] string format,
+            [FromRoute] int? maxWidth,
+            [FromRoute] int? maxHeight,
+            [FromRoute] double? percentPlayed,
+            [FromRoute] int? unplayedCount,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] bool? cropWhitespace,
+            [FromQuery] bool addPlayedIndicator,
+            [FromQuery] int? blur,
+            [FromQuery] string backgroundColor,
+            [FromQuery] string foregroundLayer,
+            [FromQuery] bool enableImageEnhancers = true)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            return GetImageInternal(
+                itemId,
+                imageType,
+                imageIndex,
+                tag,
+                format,
+                maxWidth,
+                maxHeight,
+                percentPlayed,
+                unplayedCount,
+                width,
+                height,
+                quality,
+                cropWhitespace,
+                addPlayedIndicator,
+                blur,
+                backgroundColor,
+                foregroundLayer,
+                enableImageEnhancers,
+                item,
+                Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase));
+        }
+
         private static async Task<MemoryStream> GetMemoryStream(Stream inputStream)
         {
             using var reader = new StreamReader(inputStream);
             var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
             var bytes = Convert.FromBase64String(text);
-            return new MemoryStream(bytes)
-            {
-                Position = 0
-            };
+            return new MemoryStream(bytes) {Position = 0};
         }
 
         private ImageInfo? GetImageInfo(BaseItem item, ItemImageInfo info, int? imageIndex)
@@ -364,6 +523,240 @@ namespace Jellyfin.Api.Controllers
 
                 return null;
             }
+        }
+
+        private async Task<ActionResult> GetImageInternal(
+            Guid itemId,
+            ImageType imageType,
+            int? imageIndex,
+            string tag,
+            string format,
+            int? maxWidth,
+            int? maxHeight,
+            double? percentPlayed,
+            int? unplayedCount,
+            int? width,
+            int? height,
+            int? quality,
+            bool? cropWhitespace,
+            bool addPlayedIndicator,
+            int? blur,
+            string backgroundColor,
+            string foregroundLayer,
+            bool enableImageEnhancers,
+            BaseItem item,
+            bool isHeadRequest)
+        {
+            if (percentPlayed.HasValue)
+            {
+                if (percentPlayed.Value <= 0)
+                {
+                    percentPlayed = null;
+                }
+                else if (percentPlayed.Value >= 100)
+                {
+                    percentPlayed = null;
+                    addPlayedIndicator = true;
+                }
+            }
+
+            if (percentPlayed.HasValue)
+            {
+                unplayedCount = null;
+            }
+
+            if (unplayedCount.HasValue
+                && unplayedCount.Value <= 0)
+            {
+                unplayedCount = null;
+            }
+
+            var imageInfo = item.GetImageInfo(imageType, imageIndex ?? 0);
+            if (imageInfo == null)
+            {
+                return NotFound(string.Format(NumberFormatInfo.InvariantInfo, "{0} does not have an image of type {1}", item.Name, imageType));
+            }
+
+            if (!cropWhitespace.HasValue)
+            {
+                cropWhitespace = imageType == ImageType.Logo || imageType == ImageType.Art;
+            }
+
+            var outputFormats = GetOutputFormats(format);
+
+            TimeSpan? cacheDuration = null;
+
+            if (!string.IsNullOrEmpty(tag))
+            {
+                cacheDuration = TimeSpan.FromDays(365);
+            }
+
+            var responseHeaders = new Dictionary<string, string> {{"transferMode.dlna.org", "Interactive"}, {"realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*"}};
+
+            return await GetImageResult(
+                item,
+                itemId,
+                imageIndex,
+                height,
+                maxHeight,
+                maxWidth,
+                quality,
+                width,
+                addPlayedIndicator,
+                percentPlayed,
+                unplayedCount,
+                blur,
+                backgroundColor,
+                foregroundLayer,
+                imageInfo,
+                cropWhitespace.Value,
+                outputFormats,
+                cacheDuration,
+                responseHeaders,
+                isHeadRequest).ConfigureAwait(false);
+        }
+
+        private ImageFormat[] GetOutputFormats(string format)
+        {
+            if (!string.IsNullOrWhiteSpace(format)
+                && Enum.TryParse(format, true, out ImageFormat parsedFormat))
+            {
+                return new[] {parsedFormat};
+            }
+
+            return GetClientSupportedFormats();
+        }
+
+        private ImageFormat[] GetClientSupportedFormats()
+        {
+            var acceptTypes = Request.Headers[HeaderNames.Accept];
+            var supportedFormats = new List<string>();
+            if (acceptTypes.Count > 0)
+            {
+                foreach (var type in acceptTypes)
+                {
+                    int index = type.IndexOf(';', StringComparison.Ordinal);
+                    if (index != -1)
+                    {
+                        supportedFormats.Add(type.Substring(0, index));
+                    }
+                }
+            }
+
+            var acceptParam = Request.Query[HeaderNames.Accept];
+
+            var supportsWebP = SupportsFormat(supportedFormats, acceptParam, "webp", false);
+
+            if (!supportsWebP)
+            {
+                var userAgent = Request.Headers[HeaderNames.UserAgent].ToString();
+                if (userAgent.IndexOf("crosswalk", StringComparison.OrdinalIgnoreCase) != -1 &&
+                    userAgent.IndexOf("android", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    supportsWebP = true;
+                }
+            }
+
+            var formats = new List<ImageFormat>(4);
+
+            if (supportsWebP)
+            {
+                formats.Add(ImageFormat.Webp);
+            }
+
+            formats.Add(ImageFormat.Jpg);
+            formats.Add(ImageFormat.Png);
+
+            if (SupportsFormat(supportedFormats, acceptParam, "gif", true))
+            {
+                formats.Add(ImageFormat.Gif);
+            }
+
+            return formats.ToArray();
+        }
+
+        private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, string format, bool acceptAll)
+        {
+            var mimeType = "image/" + format;
+
+            if (requestAcceptTypes.Contains(mimeType))
+            {
+                return true;
+            }
+
+            if (acceptAll && requestAcceptTypes.Contains("*/*"))
+            {
+                return true;
+            }
+
+            return string.Equals(acceptParam, format, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private async Task<ActionResult> GetImageResult(
+            BaseItem item,
+            Guid itemId,
+            int? index,
+            int? height,
+            int? maxHeight,
+            int? maxWidth,
+            int? quality,
+            int? width,
+            bool addPlayedIndicator,
+            double? percentPlayed,
+            int? unplayedCount,
+            int? blur,
+            string backgroundColor,
+            string foregroundLayer,
+            ItemImageInfo imageInfo,
+            bool cropWhitespace,
+            IReadOnlyCollection<ImageFormat> supportedFormats,
+            TimeSpan? cacheDuration,
+            IDictionary<string, string> headers,
+            bool isHeadRequest)
+        {
+            if (!imageInfo.IsLocalFile)
+            {
+                imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, index ?? 0).ConfigureAwait(false);
+            }
+
+            var options = new ImageProcessingOptions
+            {
+                CropWhiteSpace = cropWhitespace,
+                Height = height,
+                ImageIndex = index ?? 0,
+                Image = imageInfo,
+                Item = item,
+                ItemId = itemId,
+                MaxHeight = maxHeight,
+                MaxWidth = maxWidth,
+                Quality = quality ?? 100,
+                Width = width,
+                AddPlayedIndicator = addPlayedIndicator,
+                PercentPlayed = percentPlayed ?? 0,
+                UnplayedCount = unplayedCount,
+                Blur = blur,
+                BackgroundColor = backgroundColor,
+                ForegroundLayer = foregroundLayer,
+                SupportedOutputFormats = supportedFormats
+            };
+
+            var imageResult = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
+
+            headers[HeaderNames.Vary] = HeaderNames.Accept;
+            /*
+             // TODO
+            return _resultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            {
+                CacheDuration = cacheDuration,
+                ResponseHeaders = headers,
+                ContentType = imageResult.Item2,
+                DateLastModified = imageResult.Item3,
+                IsHeadRequest = isHeadRequest,
+                Path = imageResult.Item1,
+                FileShare = FileShare.Read
+            });
+            */
+            return NoContent();
         }
     }
 }
