@@ -1009,7 +1009,7 @@ namespace Emby.Server.Implementations
         protected abstract void RestartInternal();
 
         /// <summary>
-        /// Comparison function used in <<see cref="GetLatestDLLVersion" />.
+        /// Comparison function used in <see cref="GetLatestDLLVersion" />.
         /// </summary>
         private static int VersionCompare(Tuple<Version, string, string> a, Tuple<Version, string, string> b)
         {
