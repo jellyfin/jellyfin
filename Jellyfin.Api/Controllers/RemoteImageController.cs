@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -25,7 +26,7 @@ namespace Jellyfin.Api.Controllers
     /// Remote Images Controller.
     /// </summary>
     [Route("Images")]
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class RemoteImageController : BaseJellyfinApiController
     {
         private readonly IProviderManager _providerManager;

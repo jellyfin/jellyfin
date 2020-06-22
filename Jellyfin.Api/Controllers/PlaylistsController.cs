@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaylistDtos;
@@ -20,7 +21,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Playlists controller.
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class PlaylistsController : BaseJellyfinApiController
     {
         private readonly IPlaylistManager _playlistManager;

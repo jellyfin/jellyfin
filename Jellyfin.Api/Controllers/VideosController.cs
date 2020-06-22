@@ -51,7 +51,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Additional parts returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the parts.</returns>
         [HttpGet("{itemId}/AdditionalParts")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute] Guid itemId, [FromQuery] Guid userId)
         {

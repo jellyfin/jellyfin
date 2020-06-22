@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -43,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Retrieved list of images.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("General")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetGeneralImages()
         {
@@ -88,7 +89,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Retrieved list of images.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("Ratings")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetRatingImages()
         {
@@ -121,7 +122,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Image list retrieved.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("MediaInfo")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetMediaInfoImages()
         {

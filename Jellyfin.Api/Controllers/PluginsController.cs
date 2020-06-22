@@ -20,7 +20,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Plugins controller.
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class PluginsController : BaseJellyfinApiController
     {
         private readonly IApplicationHost _appHost;
