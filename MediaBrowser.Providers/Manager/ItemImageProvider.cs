@@ -475,7 +475,8 @@ namespace MediaBrowser.Providers.Manager
                 catch (HttpException ex)
                 {
                     // Sometimes providers send back bad url's. Just move to the next image
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    if (ex.StatusCode.HasValue
+                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         continue;
                     }
@@ -589,7 +590,8 @@ namespace MediaBrowser.Providers.Manager
                 catch (HttpException ex)
                 {
                     // Sometimes providers send back bad urls. Just move onto the next image
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    if (ex.StatusCode.HasValue
+                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         continue;
                     }
