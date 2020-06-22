@@ -173,7 +173,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Information retrieved.</response>
         /// <returns><see cref="EndPointInfo"/> with information about the endpoint.</returns>
         [HttpGet("Endpoint")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<EndPointInfo> GetEndpointInfo()
         {
@@ -211,7 +211,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Information retrieved.</response>
         /// <returns>An <see cref="IEnumerable{WakeOnLanInfo}"/> with the WakeOnLan infos.</returns>
         [HttpGet("WakeOnLanInfo")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()
         {
