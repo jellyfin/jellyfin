@@ -43,7 +43,7 @@
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.5" />
-    <PackageReference Include="prometheus-net" Version="3.5.0" />
+    <PackageReference Include="prometheus-net" Version="3.6.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="3.5.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
