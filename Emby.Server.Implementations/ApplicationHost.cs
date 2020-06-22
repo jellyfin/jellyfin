@@ -1009,136 +1009,74 @@ namespace Emby.Server.Implementations
         protected abstract void RestartInternal();
 
         /// <summary>
-        /// Converts an string array to a number.
-        /// Element 0 is the filename.
+        /// Comparison function used in <<see cref="GetLatestDLLVersion" />.
         /// </summary>
-        /// <param name="version">Parts of the filename.</param>
-        /// <param name="foldername">Returns the folder name including any periods. eg. vs</param>
-        /// <returns>Long representing the version of the file.</returns>
-        private long StrToVersion(string[] version, out string foldername)
-        {
-            if (version.Length > 5)
-            {
-                Logger.LogError("Plugin version number too complex : {0}.", version[0]);
-                foldername = string.Join('.', version);
-                return 0;
-            }
-
-            foldername = string.Empty;
-            int start = 0;
-            do
-            {
-                foldername += "." + version[start];
-                start++;
-            }
-            while (start < version.Length && !int.TryParse(version[start], out _));
-            foldername = foldername.TrimStart('.');
-
-            if (start == version.Length)
-            {
-                // No valid version number.
-                return 0;
-            }
-
-            // Build version into a string. 1.2.3.4 => 001002003004, 2.1 -> 200100000000.
-            string res = string.Empty;
-            for (int x = start; x < version.Length; x++)
-            {
-                res += version[x].PadLeft(3, '0');
-            }
-
-            if (res.Length < 12)
-            {
-                res = res.PadRight(12, '0');
-            }
-
-            return long.Parse(res, CultureInfo.InvariantCulture);
-        }
-
-        private static int VersionCompare(Tuple<long, string, string> a, Tuple<long, string, string> b)
+        private static int VersionCompare(Tuple<Version, string, string> a, Tuple<Version, string, string> b)
         {
             int compare = string.Compare(a.Item2, b.Item2, true, CultureInfo.InvariantCulture);
 
             if (compare == 0)
             {
-                if (a.Item1 > b.Item1)
-                {
-                    return 1;
-                }
-
-                return -1;
-
+                return a.Item1.CompareTo(b.Item1);
             }
 
             return compare;
-
         }
 
         /// <summary>
         /// Only loads the latest version of each assembly based upon the folder name.
-        /// eg. MyAssembly 11.9.3.6  - will be ignored.
-        ///     MyAssembly 12.2.3.6  - will be loaded.
+        /// eg. MyAssembly_11.9.3.6  - will be ignored.
+        ///     MyAssembly_12.2.3.6  - will be loaded.
         /// </summary>
         /// <param name="path">Path to enumerate.</param>
         /// <param name="cleanup">Set to true, to try and clean up earlier versions.</param>
         /// <returns>IEnumerable{string} of filenames.</returns>
-        protected IEnumerable<string> GetLatestDLLVersion(string path, bool cleanup = false)
+        protected IEnumerable<string> GetLatestDLLVersion(string path, bool cleanup = true)
         {
             var dllList = new List<string>();
-            var versions = new List<Tuple<long, string, string>>();
+            var versions = new List<Tuple<Version, string, string>>();
+            var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly);
 
-            var directories = Directory.EnumerateDirectories(path, "*.*", SearchOption.TopDirectoryOnly).ToList();
-
-            // Only add the latest version of the folder into the list.
             foreach (var dir in directories)
             {
-                string[] parts = dir.Replace('_', '.').Split(".");
-
-                if (parts.Length == 1)
+                int p = dir.LastIndexOf('_');
+                if (p != -1 && Version.TryParse(dir.Substring(p + 1), out Version ver))
                 {
-                    dllList.AddRange(Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories).ToList());
+                    // Versioned folder.
+                    versions.Add(Tuple.Create(ver, dir.Substring(0, p), dir));
                 }
                 else
                 {
-                    long id = StrToVersion(parts, out string foldername);
-                    // Add for version comparison later.
-                    versions.Add(Tuple.Create(id, foldername, dir));
+                    // Un-versioned folder.
+                    versions.Add(Tuple.Create(new Version(), dir, dir));
                 }
             }
 
-            if (versions.Count > 0)
+            string lastName = string.Empty;
+            versions.Sort(VersionCompare);
+            // Traverse backwards through the list.
+            // The first item will be the latest version.
+            for (int x = versions.Count - 1; x >= 0; x--)
             {
-                string lastName = string.Empty;
-                versions.Sort(VersionCompare);
-                // Traverse backwards through the list.
-                // The first item will be the latest version.
-                for (int x = versions.Count - 1; x > 0; x--)
+                if (!string.Equals(lastName, versions[x].Item2, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!string.Equals(lastName, versions[x].Item2, StringComparison.OrdinalIgnoreCase))
-                    {
-                        dllList.AddRange(Directory.EnumerateFiles(versions[x].Item3, "*.dll", SearchOption.AllDirectories));
-                        lastName = versions[x].Item2;
-                        continue;
-                    }
-
-                    if (!string.IsNullOrEmpty(lastName) && cleanup)
-                    {
-                        // Attempt a cleanup of old folders.
-                        try
-                        {
-                            Logger.LogDebug("Attempting to delete {0}", versions[x].Item3);
-                            Directory.Delete(versions[x].Item3);
-                        }
-                        catch
-                        {
-                            // Ignore errors.
-                        }
-                    }
+                    dllList.AddRange(Directory.EnumerateFiles(versions[x].Item3, "*.dll", SearchOption.AllDirectories));
+                    lastName = versions[x].Item2;
+                    continue;
                 }
 
-                if (!string.Equals(lastName, versions[0].Item2, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(lastName) && cleanup)
                 {
-                    dllList.AddRange(Directory.EnumerateFiles(versions[0].Item3, "*.dll", SearchOption.AllDirectories));
+                    // Attempt a cleanup of old folders.
+                    try
+                    {
+                        Logger.LogDebug("Attempting to delete {0}", versions[x].Item3);
+                        Directory.Delete(versions[x].Item3, true);
+                    }
+                    catch
+                    {
+                        // Ignore errors.
+                    }
                 }
             }
 
