@@ -53,9 +53,8 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets a value indicating whether the plugin can be uninstalled.
         /// </summary>
-        public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath).Equals(
-            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-            StringComparison.InvariantCulture);
+        public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath)
+            .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.InvariantCulture);
 
         /// <summary>
         /// Gets the plugin info.
