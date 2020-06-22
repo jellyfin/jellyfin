@@ -18,120 +18,6 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
-    /// <summary>
-    /// Class GetNextUpEpisodes
-    /// </summary>
-    [Route("/Shows/NextUp", "GET", Summary = "Gets a list of next up episodes")]
-    public class GetNextUpEpisodes : IReturn<QueryResult<BaseItemDto>>, IHasDtoOptions
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
-        /// </summary>
-        /// <value>The start index.</value>
-        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? StartIndex { get; set; }
-
-        /// <summary>
-        /// The maximum number of items to return
-        /// </summary>
-        /// <value>The limit.</value>
-        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? Limit { get; set; }
-
-        /// <summary>
-        /// Fields to return within the items, in addition to basic information
-        /// </summary>
-        /// <value>The fields.</value>
-        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string Fields { get; set; }
-
-        [ApiMember(Name = "SeriesId", Description = "Optional. Filter by series id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string SeriesId { get; set; }
-
-        /// <summary>
-        /// Specify this to localize the search to a specific item or folder. Omit to use the root.
-        /// </summary>
-        /// <value>The parent id.</value>
-        [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ParentId { get; set; }
-
-        [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? EnableImages { get; set; }
-
-        [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? ImageTypeLimit { get; set; }
-
-        [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string EnableImageTypes { get; set; }
-
-        [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? EnableUserData { get; set; }
-        public bool EnableTotalRecordCount { get; set; }
-
-        public GetNextUpEpisodes()
-        {
-            EnableTotalRecordCount = true;
-        }
-    }
-
-    [Route("/Shows/Upcoming", "GET", Summary = "Gets a list of upcoming episodes")]
-    public class GetUpcomingEpisodes : IReturn<QueryResult<BaseItemDto>>, IHasDtoOptions
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid UserId { get; set; }
-
-        /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
-        /// </summary>
-        /// <value>The start index.</value>
-        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? StartIndex { get; set; }
-
-        /// <summary>
-        /// The maximum number of items to return
-        /// </summary>
-        /// <value>The limit.</value>
-        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? Limit { get; set; }
-
-        /// <summary>
-        /// Fields to return within the items, in addition to basic information
-        /// </summary>
-        /// <value>The fields.</value>
-        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string Fields { get; set; }
-
-        /// <summary>
-        /// Specify this to localize the search to a specific item or folder. Omit to use the root.
-        /// </summary>
-        /// <value>The parent id.</value>
-        [ApiMember(Name = "ParentId", Description = "Specify this to localize the search to a specific item or folder. Omit to use the root", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ParentId { get; set; }
-
-        [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? EnableImages { get; set; }
-
-        [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
-        public int? ImageTypeLimit { get; set; }
-
-        [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string EnableImageTypes { get; set; }
-
-        [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
-        public bool? EnableUserData { get; set; }
-    }
-
     [Route("/Shows/{Id}/Episodes", "GET", Summary = "Gets episodes for a tv season")]
     public class GetEpisodes : IReturn<QueryResult<BaseItemDto>>, IHasItemFields, IHasDtoOptions
     {
@@ -248,18 +134,9 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class TvShowsService : BaseApiService
     {
-        /// <summary>
-        /// The _user manager
-        /// </summary>
         private readonly IUserManager _userManager;
-
-        /// <summary>
-        /// The _library manager
-        /// </summary>
         private readonly ILibraryManager _libraryManager;
-
         private readonly IDtoService _dtoService;
-        private readonly ITVSeriesManager _tvSeriesManager;
         private readonly IAuthorizationContext _authContext;
 
         /// <summary>
@@ -275,79 +152,13 @@ namespace MediaBrowser.Api
             IUserManager userManager,
             ILibraryManager libraryManager,
             IDtoService dtoService,
-            ITVSeriesManager tvSeriesManager,
             IAuthorizationContext authContext)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
-            _tvSeriesManager = tvSeriesManager;
             _authContext = authContext;
-        }
-
-        public object Get(GetUpcomingEpisodes request)
-        {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
-
-            var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? Guid.Empty : new Guid(request.ParentId);
-
-            var options = GetDtoOptions(_authContext, request);
-
-            var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
-            {
-                IncludeItemTypes = new[] { typeof(Episode).Name },
-                OrderBy = new[] { ItemSortBy.PremiereDate, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
-                MinPremiereDate = minPremiereDate,
-                StartIndex = request.StartIndex,
-                Limit = request.Limit,
-                ParentId = parentIdGuid,
-                Recursive = true,
-                DtoOptions = options
-
-            });
-
-            var returnItems = _dtoService.GetBaseItemDtos(itemsResult, options, user);
-
-            var result = new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = itemsResult.Count,
-                Items = returnItems
-            };
-
-            return ToOptimizedResult(result);
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetNextUpEpisodes request)
-        {
-            var options = GetDtoOptions(_authContext, request);
-
-            var result = _tvSeriesManager.GetNextUp(new NextUpQuery
-            {
-                Limit = request.Limit,
-                ParentId = request.ParentId,
-                SeriesId = request.SeriesId,
-                StartIndex = request.StartIndex,
-                UserId = request.UserId,
-                EnableTotalRecordCount = request.EnableTotalRecordCount
-            }, options);
-
-            var user = _userManager.GetUserById(request.UserId);
-
-            var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user);
-
-            return ToOptimizedResult(new QueryResult<BaseItemDto>
-            {
-                TotalRecordCount = result.TotalRecordCount,
-                Items = returnItems
-            });
         }
 
         /// <summary>
