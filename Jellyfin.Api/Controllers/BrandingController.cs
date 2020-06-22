@@ -51,12 +51,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<string> GetBrandingCss()
         {
             var options = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-            if (string.IsNullOrEmpty(options.CustomCss))
-            {
-                return NoContent();
-            }
-
-            return options.CustomCss;
+            return options.CustomCss ?? string.Empty;
         }
     }
 }
