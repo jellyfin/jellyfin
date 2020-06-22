@@ -406,6 +406,12 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="plugin">The plugin.</param>
         public void UninstallPlugin(IPlugin plugin)
         {
+            if (!plugin.CanUninstall)
+            {
+                _logger.LogWarning("Attempt to delete non removable plugin {0}, ignoring request", plugin.Name);
+                return;
+            }
+
             plugin.OnUninstalling();
 
             // Remove it the quick way for now
