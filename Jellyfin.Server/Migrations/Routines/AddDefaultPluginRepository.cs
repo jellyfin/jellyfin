@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public Guid Id => Guid.Parse("EB58EBEE-9514-4B9B-8225-12E1A40020DF");
 
         /// <inheritdoc/>
-        public string Name => "CreateDefaultPluginRepository";
+        public string Name => "AddDefaultPluginRepository";
 
         /// <inheritdoc/>
         public void Perform()
