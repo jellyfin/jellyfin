@@ -2,7 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -228,6 +230,8 @@ namespace MediaBrowser.Model.Configuration
         public string[] LocalNetworkAddresses { get; set; }
 
         public string[] CodecsUsed { get; set; }
+
+        public List<RepositoryInfo> PluginRepositories { get; set; }
 
         public bool IgnoreVirtualInterfaces { get; set; }
 
