@@ -42,7 +42,11 @@ namespace Jellyfin.Data.Entities
 
             this.Type = type;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
+
             _metadata0.PersonRoles.Add(this);
 
             this.Sources = new HashSet<MetadataProviderId>();
@@ -89,7 +93,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -127,7 +131,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Role;
                 GetRole(ref value);
-                return (_Role = value);
+                return _Role = value;
             }
 
             set
@@ -164,7 +168,7 @@ namespace Jellyfin.Data.Entities
             {
                 Enums.PersonRoleType value = _Type;
                 GetType(ref value);
-                return (_Type = value);
+                return _Type = value;
             }
 
             set

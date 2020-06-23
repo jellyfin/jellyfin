@@ -58,7 +58,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var endTime = time[1];
                     var idx = endTime.IndexOf(" ", StringComparison.Ordinal);
                     if (idx > 0)
+                    {
                         endTime = endTime.Substring(0, idx);
+                    }
+
                     subEvent.EndPositionTicks = GetTicks(endTime);
                     var multiline = new List<string>();
                     while ((line = reader.ReadLine()) != null)

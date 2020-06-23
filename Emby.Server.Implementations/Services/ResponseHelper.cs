@@ -40,7 +40,9 @@ namespace Emby.Server.Implementations.Services
             if (httpResult != null)
             {
                 if (httpResult.RequestContext == null)
+                {
                     httpResult.RequestContext = request;
+                }
 
                 response.StatusCode = httpResult.Status;
             }

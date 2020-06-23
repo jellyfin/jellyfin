@@ -26,14 +26,22 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         protected Metadata(string title, string language, DateTime dateadded, DateTime datemodified)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
             this.PersonRoles = new HashSet<PersonRole>();
@@ -74,7 +82,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -114,7 +122,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Title;
                 GetTitle(ref value);
-                return (_Title = value);
+                return _Title = value;
             }
 
             set
@@ -152,7 +160,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _OriginalTitle;
                 GetOriginalTitle(ref value);
-                return (_OriginalTitle = value);
+                return _OriginalTitle = value;
             }
 
             set
@@ -190,7 +198,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _SortTitle;
                 GetSortTitle(ref value);
-                return (_SortTitle = value);
+                return _SortTitle = value;
             }
 
             set
@@ -231,7 +239,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Language;
                 GetLanguage(ref value);
-                return (_Language = value);
+                return _Language = value;
             }
 
             set
@@ -264,7 +272,7 @@ namespace Jellyfin.Data.Entities
             {
                 DateTimeOffset? value = _ReleaseDate;
                 GetReleaseDate(ref value);
-                return (_ReleaseDate = value);
+                return _ReleaseDate = value;
             }
 
             set
@@ -301,7 +309,7 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateAdded;
                 GetDateAdded(ref value);
-                return (_DateAdded = value);
+                return _DateAdded = value;
             }
 
             internal set
@@ -338,7 +346,7 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateModified;
                 GetDateModified(ref value);
-                return (_DateModified = value);
+                return _DateModified = value;
             }
 
             internal set

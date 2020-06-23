@@ -41,6 +41,14 @@ namespace MediaBrowser.Common.Updates
         IEnumerable<InstallationInfo> CompletedInstallations { get; }
 
         /// <summary>
+        /// Parses a plugin manifest at the supplied URL.
+        /// </summary>
+        /// <param name="manifest">The URL to query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
+        Task<IEnumerable<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets all available packages.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>

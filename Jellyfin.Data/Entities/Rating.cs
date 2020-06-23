@@ -33,9 +33,12 @@ namespace Jellyfin.Data.Entities
         {
             this.Value = value;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
-            _metadata0.Ratings.Add(this);
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
 
+            _metadata0.Ratings.Add(this);
 
             Init();
         }
@@ -79,7 +82,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -116,7 +119,7 @@ namespace Jellyfin.Data.Entities
             {
                 double value = _Value;
                 GetValue(ref value);
-                return (_Value = value);
+                return _Value = value;
             }
 
             set
@@ -149,7 +152,7 @@ namespace Jellyfin.Data.Entities
             {
                 int? value = _Votes;
                 GetVotes(ref value);
-                return (_Votes = value);
+                return _Votes = value;
             }
 
             set

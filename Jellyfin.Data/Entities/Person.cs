@@ -36,7 +36,11 @@ namespace Jellyfin.Data.Entities
         {
             this.UrlId = urlid;
 
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             this.Name = name;
 
             this.Sources = new HashSet<MetadataProviderId>();
@@ -83,7 +87,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -120,7 +124,7 @@ namespace Jellyfin.Data.Entities
             {
                 Guid value = _UrlId;
                 GetUrlId(ref value);
-                return (_UrlId = value);
+                return _UrlId = value;
             }
 
             set
@@ -159,7 +163,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
 
             set
@@ -197,7 +201,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _SourceId;
                 GetSourceId(ref value);
-                return (_SourceId = value);
+                return _SourceId = value;
             }
 
             set
@@ -234,7 +238,7 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateAdded;
                 GetDateAdded(ref value);
-                return (_DateAdded = value);
+                return _DateAdded = value;
             }
 
             internal set
@@ -271,7 +275,7 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateModified;
                 GetDateModified(ref value);
-                return (_DateModified = value);
+                return _DateModified = value;
             }
 
             internal set

@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Queues the scheduled task.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="options">Task options</param>
+        /// <param name="options">Task options.</param>
         public void QueueScheduledTask<T>(TaskOptions options)
             where T : IScheduledTask
         {

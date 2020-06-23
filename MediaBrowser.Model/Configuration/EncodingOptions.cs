@@ -36,8 +36,11 @@ namespace MediaBrowser.Model.Configuration
         public string EncoderPreset { get; set; }
 
         public string DeinterlaceMethod { get; set; }
+
         public bool EnableDecodingColorDepth10Hevc { get; set; }
+
         public bool EnableDecodingColorDepth10Vp9 { get; set; }
+
         public bool EnableHardwareEncoding { get; set; }
 
         public bool EnableSubtitleExtraction { get; set; }
