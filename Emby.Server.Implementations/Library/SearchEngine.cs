@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.Library
 {
     public class SearchEngine : ISearchEngine
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SearchEngine> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
 
@@ -194,6 +194,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     searchQuery.AncestorIds = new[] { searchQuery.ParentId };
                 }
+
                 searchQuery.ParentId = Guid.Empty;
                 searchQuery.IncludeItemsByName = true;
                 searchQuery.IncludeItemTypes = Array.Empty<string>();
@@ -207,7 +208,6 @@ namespace Emby.Server.Implementations.Library
             return mediaItems.Select(i => new SearchHintInfo
             {
                 Item = i
-
             }).ToList();
         }
     }

@@ -11,6 +11,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 using Season = MediaBrowser.Controller.Entities.TV.Season;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
@@ -21,7 +22,7 @@ namespace MediaBrowser.Controller.Entities
     {
         private readonly IUserViewManager _userViewManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<UserViewBuilder> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly IServerConfigurationManager _config;
@@ -29,7 +30,7 @@ namespace MediaBrowser.Controller.Entities
         public UserViewBuilder(
             IUserViewManager userViewManager,
             ILibraryManager libraryManager,
-            ILogger logger,
+            ILogger<UserViewBuilder> logger,
             IUserDataManager userDataManager,
             ITVSeriesManager tvSeriesManager,
             IServerConfigurationManager config)
@@ -46,7 +47,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            //if (query.IncludeItemTypes != null &&
+            // if (query.IncludeItemTypes != null &&
             //    query.IncludeItemTypes.Length == 1 &&
             //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
             //{
@@ -269,7 +270,6 @@ namespace MediaBrowser.Controller.Entities
                         _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
-
                 })
                 .Where(i => i != null)
                 .Select(i => GetUserViewWithName(i.Name, SpecialFolder.MovieGenre, i.SortName, parent));
@@ -346,7 +346,6 @@ namespace MediaBrowser.Controller.Entities
                 Limit = query.Limit,
                 StartIndex = query.StartIndex,
                 UserId = query.User.Id
-
             }, parentFolders, query.DtoOptions);
 
             return result;
@@ -383,7 +382,6 @@ namespace MediaBrowser.Controller.Entities
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 Recursive = true,
                 EnableTotalRecordCount = false
-
             }).Items
                 .SelectMany(i => i.Genres)
                 .DistinctNames()
@@ -398,7 +396,6 @@ namespace MediaBrowser.Controller.Entities
                         _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
-
                 })
                 .Where(i => i != null)
                 .Select(i => GetUserViewWithName(i.Name, SpecialFolder.TvGenre, i.SortName, parent));
@@ -423,7 +420,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return new QueryResult<BaseItem>
             {
-                Items = result.Items, //TODO Fix The co-variant conversion between T[] and BaseItem[], this can generate runtime issues if T is not BaseItem.
+                Items = result.Items, // TODO Fix The co-variant conversion between T[] and BaseItem[], this can generate runtime issues if T is not BaseItem.
                 TotalRecordCount = result.TotalRecordCount
             };
         }
@@ -623,7 +620,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasImdbId.Value;
 
-                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Imdb));
+                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProvider.Imdb));
 
                 if (hasValue != filterValue)
                 {
@@ -635,7 +632,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasTmdbId.Value;
 
-                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tmdb));
+                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProvider.Tmdb));
 
                 if (hasValue != filterValue)
                 {
@@ -647,7 +644,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasTvdbId.Value;
 
-                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProviders.Tvdb));
+                var hasValue = !string.IsNullOrEmpty(item.GetProviderId(MetadataProvider.Tvdb));
 
                 if (hasValue != filterValue)
                 {
@@ -963,6 +960,7 @@ namespace MediaBrowser.Controller.Entities
                     .OfType<Folder>()
                     .Where(UserView.IsEligibleForGrouping);
             }
+
             return _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
                 .OfType<Folder>()
@@ -981,6 +979,7 @@ namespace MediaBrowser.Controller.Entities
                         return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
                     }).ToArray();
             }
+
             return GetMediaFolders(user)
                 .Where(i =>
                 {

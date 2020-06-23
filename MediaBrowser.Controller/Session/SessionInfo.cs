@@ -61,6 +61,7 @@ namespace MediaBrowser.Controller.Session
                 {
                     return Array.Empty<string>();
                 }
+
                 return Capabilities.PlayableMediaTypes;
             }
         }
@@ -154,6 +155,7 @@ namespace MediaBrowser.Controller.Session
                         return true;
                     }
                 }
+
                 if (controllers.Length > 0)
                 {
                     return false;
@@ -255,6 +257,7 @@ namespace MediaBrowser.Controller.Session
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -292,6 +295,7 @@ namespace MediaBrowser.Controller.Session
             {
                 return;
             }
+
             if (progressInfo.IsPaused)
             {
                 return;
@@ -334,6 +338,7 @@ namespace MediaBrowser.Controller.Session
                     _progressTimer.Dispose();
                     _progressTimer = null;
                 }
+
                 _lastProgressInfo = null;
             }
         }

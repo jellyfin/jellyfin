@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryManager> _logger;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -97,13 +97,13 @@ namespace Emby.Server.Implementations.Library
         private IIntroProvider[] IntroProviders { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of entity resolution ignore rules
+        /// Gets or sets the list of entity resolution ignore rules.
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
         private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of currently registered entity resolvers
+        /// Gets or sets the list of currently registered entity resolvers.
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
         private IItemResolver[] EntityResolvers { get; set; }
@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
-        /// <param name="appHost">The application host</param>
+        /// <param name="appHost">The application host.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
@@ -209,12 +209,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The _root folder
+        /// The _root folder.
         /// </summary>
         private volatile AggregateFolder _rootFolder;
 
         /// <summary>
-        /// The _root folder sync lock
+        /// The _root folder sync lock.
         /// </summary>
         private readonly object _rootFolderSyncLock = new object();
 
@@ -514,8 +514,8 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null)
-            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent);
+        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null, bool allowIgnorePath = true)
+            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent, allowIgnorePath: allowIgnorePath);
 
         private BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
@@ -523,7 +523,8 @@ namespace Emby.Server.Implementations.Library
             IItemResolver[] resolvers,
             Folder parent = null,
             string collectionType = null,
-            LibraryOptions libraryOptions = null)
+            LibraryOptions libraryOptions = null,
+            bool allowIgnorePath = true)
         {
             if (fileInfo == null)
             {
@@ -547,7 +548,7 @@ namespace Emby.Server.Implementations.Library
             };
 
             // Return null if ignore rules deem that we should do so
-            if (IgnoreFile(args.FileInfo, args.Parent))
+            if (allowIgnorePath && IgnoreFile(args.FileInfo, args.Parent))
             {
                 return null;
             }
@@ -626,7 +627,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Determines whether a path should be ignored based on its contents - called after the contents have been read
+        /// Determines whether a path should be ignored based on its contents - called after the contents have been read.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
@@ -711,7 +712,9 @@ namespace Emby.Server.Implementations.Library
 
             Directory.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder, AggregateFolder>();
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
+                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath), allowIgnorePath: false))
+                             .DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
             if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
@@ -792,7 +795,7 @@ namespace Emby.Server.Implementations.Library
                         if (tmpItem == null)
                         {
                             _logger.LogDebug("Creating new userRootFolder with DeepCopy");
-                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
+                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath), allowIgnorePath: false)).DeepCopy<Folder, UserRootFolder>();
                         }
 
                         // In case program data folder was moved
@@ -906,7 +909,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
@@ -987,7 +990,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1790,7 +1793,7 @@ namespace Emby.Server.Implementations.Library
         /// Creates the items.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <param name="parent">The parent item</param>
+        /// <param name="parent">The parent item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
@@ -2592,7 +2595,7 @@ namespace Emby.Server.Implementations.Library
                     Anime series don't generally have a season in their file name, however,
                     tvdb needs a season to correctly get the metadata.
                     Hence, a null season needs to be filled with something. */
-                    //FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
+                    // FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
                     episode.ParentIndexNumber = 1;
                 }
 
@@ -2781,10 +2784,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (string.IsNullOrWhiteSpace(from))
             {
                 throw new ArgumentNullException(nameof(from));
             }
+
             if (string.IsNullOrWhiteSpace(to))
             {
                 throw new ArgumentNullException(nameof(to));
@@ -2858,7 +2863,6 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error getting person");
                     return null;
                 }
-
             }).Where(i => i != null).ToList();
         }
 
@@ -2893,7 +2897,8 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (HttpException ex)
                 {
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    if (ex.StatusCode.HasValue
+                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         continue;
                     }
@@ -2988,7 +2993,7 @@ namespace Emby.Server.Implementations.Library
 
         private static bool ValidateNetworkPath(string path)
         {
-            //if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            // if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             //{
             //    // We can't validate protocol-based paths, so just allow them
             //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)

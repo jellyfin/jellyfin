@@ -1,4 +1,5 @@
-﻿#pragma warning disable CA1307
+﻿#nullable enable
+#pragma warning disable CA1307
 
 using System;
 using System.Collections.Generic;
@@ -37,11 +38,11 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly IImageProcessor _imageProcessor;
         private readonly ILogger<UserManager> _logger;
 
-        private IAuthenticationProvider[] _authenticationProviders;
-        private DefaultAuthenticationProvider _defaultAuthenticationProvider;
-        private InvalidAuthProvider _invalidAuthProvider;
-        private IPasswordResetProvider[] _passwordResetProviders;
-        private DefaultPasswordResetProvider _defaultPasswordResetProvider;
+        private IAuthenticationProvider[] _authenticationProviders = null!;
+        private DefaultAuthenticationProvider _defaultAuthenticationProvider = null!;
+        private InvalidAuthProvider _invalidAuthProvider = null!;
+        private IPasswordResetProvider[] _passwordResetProviders = null!;
+        private DefaultPasswordResetProvider _defaultPasswordResetProvider = null!;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
@@ -69,19 +70,19 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>> OnUserPasswordChanged;
+        public event EventHandler<GenericEventArgs<User>>? OnUserPasswordChanged;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>> OnUserUpdated;
+        public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>> OnUserCreated;
+        public event EventHandler<GenericEventArgs<User>>? OnUserCreated;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>> OnUserDeleted;
+        public event EventHandler<GenericEventArgs<User>>? OnUserDeleted;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>> OnUserLockedOut;
+        public event EventHandler<GenericEventArgs<User>>? OnUserLockedOut;
 
         /// <inheritdoc/>
         public IEnumerable<User> Users => _dbProvider.CreateContext().Users;
@@ -90,7 +91,7 @@ namespace Jellyfin.Server.Implementations.Users
         public IEnumerable<Guid> UsersIds => _dbProvider.CreateContext().Users.Select(u => u.Id);
 
         /// <inheritdoc/>
-        public User GetUserById(Guid id)
+        public User? GetUserById(Guid id)
         {
             if (id == Guid.Empty)
             {
@@ -101,7 +102,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public User GetUserByName(string name)
+        public User? GetUserByName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -173,7 +174,7 @@ namespace Jellyfin.Server.Implementations.Users
             var dbContext = _dbProvider.CreateContext();
 
             // TODO: Remove after user item data is migrated.
-            var max = dbContext.Users.Select(u => u.InternalId).Max();
+            var max = dbContext.Users.Any() ? dbContext.Users.Select(u => u.InternalId).Max() : 0;
 
             var newUser = new User(
                 name,
@@ -260,7 +261,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1)
+        public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
             user.EasyPassword = _cryptoProvider.CreatePasswordHash(newPassword).ToString();
             UpdateUser(user);
@@ -269,14 +270,17 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public UserDto GetUserDto(User user, string remoteEndPoint = null)
+        public UserDto GetUserDto(User user, string? remoteEndPoint = null)
         {
+            var hasPassword = GetAuthenticationProvider(user).HasPassword(user);
             return new UserDto
             {
                 Name = user.Username,
                 Id = user.Id,
                 ServerId = _appHost.SystemId,
-                HasPassword = user.Password != null,
+                HasPassword = hasPassword,
+                HasConfiguredPassword = hasPassword,
+                HasConfiguredEasyPassword = !string.IsNullOrEmpty(user.EasyPassword),
                 EnableAutoLogin = user.EnableAutoLogin,
                 LastLoginDate = user.LastLoginDate,
                 LastActivityDate = user.LastActivityDate,
@@ -303,7 +307,7 @@ namespace Jellyfin.Server.Implementations.Users
                 {
                     MaxParentalRating = user.MaxParentalAgeRating,
                     EnableUserPreferenceAccess = user.EnableUserPreferenceAccess,
-                    RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? -1,
+                    RemoteClientBitrateLimit = user.RemoteClientBitrateLimit ?? 0,
                     AuthenticationProviderId = user.AuthenticationProviderId,
                     PasswordResetProviderId = user.PasswordResetProviderId,
                     InvalidLoginAttemptCount = user.InvalidLoginAttemptCount,
@@ -335,13 +339,16 @@ namespace Jellyfin.Server.Implementations.Users
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
                     EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders),
                     EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
-                    SyncPlayAccess = user.SyncPlayAccess
+                    SyncPlayAccess = user.SyncPlayAccess,
+                    BlockedChannels = user.GetPreference(PreferenceKind.BlockedChannels),
+                    BlockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders),
+                    BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems).Select(Enum.Parse<UnratedItem>).ToArray()
                 }
             };
         }
 
         /// <inheritdoc/>
-        public async Task<User> AuthenticateUser(
+        public async Task<User?> AuthenticateUser(
             string username,
             string password,
             string passwordSha1,
@@ -356,7 +363,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             var user = Users.ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
             bool success;
-            IAuthenticationProvider authenticationProvider;
+            IAuthenticationProvider? authenticationProvider;
 
             if (user != null)
             {
@@ -516,6 +523,39 @@ namespace Jellyfin.Server.Implementations.Users
             _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
+        /// <inheritdoc />
+        public void Initialize()
+        {
+            // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
+            var dbContext = _dbProvider.CreateContext();
+
+            if (dbContext.Users.Any())
+            {
+                return;
+            }
+
+            var defaultName = Environment.UserName;
+            if (string.IsNullOrWhiteSpace(defaultName))
+            {
+                defaultName = "MyJellyfinUser";
+            }
+
+            _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
+
+            if (!IsValidUsername(defaultName))
+            {
+                throw new ArgumentException("Provided username is not valid!", defaultName);
+            }
+
+            var newUser = CreateUser(defaultName);
+            newUser.SetPermission(PermissionKind.IsAdministrator, true);
+            newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
+            newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
+
+            dbContext.Users.Update(newUser);
+            dbContext.SaveChanges();
+        }
+
         /// <inheritdoc/>
         public NameIdPair[] GetAuthenticationProviders()
         {
@@ -577,6 +617,8 @@ namespace Jellyfin.Server.Implementations.Users
         {
             var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users.Find(userId) ?? throw new ArgumentException("No user exists with given Id!");
+
+            // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
             int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
             {
                 -1 => null,
@@ -620,6 +662,10 @@ namespace Jellyfin.Server.Implementations.Users
                 user.AccessSchedules.Add(policyAccessSchedule);
             }
 
+            // TODO: fix this at some point
+            user.SetPreference(
+                PreferenceKind.BlockUnratedItems,
+                policy.BlockUnratedItems?.Select(i => i.ToString()).ToArray() ?? Array.Empty<string>());
             user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
             user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
@@ -627,6 +673,14 @@ namespace Jellyfin.Server.Implementations.Users
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);
+            dbContext.SaveChanges();
+        }
+
+        /// <inheritdoc/>
+        public void ClearProfileImage(User user)
+        {
+            var dbContext = _dbProvider.CreateContext();
+            dbContext.Remove(user.ProfileImage);
             dbContext.SaveChanges();
         }
 
@@ -648,7 +702,7 @@ namespace Jellyfin.Server.Implementations.Users
             return GetPasswordResetProviders(user)[0];
         }
 
-        private IList<IAuthenticationProvider> GetAuthenticationProviders(User user)
+        private IList<IAuthenticationProvider> GetAuthenticationProviders(User? user)
         {
             var authenticationProviderId = user?.AuthenticationProviderId;
 
@@ -698,14 +752,14 @@ namespace Jellyfin.Server.Implementations.Users
             return providers;
         }
 
-        private async Task<(IAuthenticationProvider authenticationProvider, string username, bool success)> AuthenticateLocalUser(
+        private async Task<(IAuthenticationProvider? authenticationProvider, string username, bool success)> AuthenticateLocalUser(
                 string username,
                 string password,
-                User user,
+                User? user,
                 string remoteEndPoint)
         {
             bool success = false;
-            IAuthenticationProvider authenticationProvider = null;
+            IAuthenticationProvider? authenticationProvider = null;
 
             foreach (var provider in GetAuthenticationProviders(user))
             {
@@ -743,7 +797,7 @@ namespace Jellyfin.Server.Implementations.Users
             IAuthenticationProvider provider,
             string username,
             string password,
-            User resolvedUser)
+            User? resolvedUser)
         {
             try
             {

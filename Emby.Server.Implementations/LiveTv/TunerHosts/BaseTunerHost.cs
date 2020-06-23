@@ -22,14 +22,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     public abstract class BaseTunerHost
     {
         protected readonly IServerConfigurationManager Config;
-        protected readonly ILogger Logger;
+        protected readonly ILogger<BaseTunerHost> Logger;
         protected IJsonSerializer JsonSerializer;
         protected readonly IFileSystem FileSystem;
 
         private readonly ConcurrentDictionary<string, ChannelCache> _channelCache =
             new ConcurrentDictionary<string, ChannelCache>(StringComparer.OrdinalIgnoreCase);
 
-        protected BaseTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
+        protected BaseTunerHost(IServerConfigurationManager config, ILogger<BaseTunerHost> logger, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
         {
             Config = config;
             Logger = logger;
@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var result = await GetChannelsInternal(tuner, cancellationToken).ConfigureAwait(false);
             var list = result.ToList();
-            //logger.LogInformation("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
+            // logger.LogInformation("Channels from {0}: {1}", tuner.Url, JsonSerializer.SerializeToString(list));
 
             if (!string.IsNullOrEmpty(key) && list.Count > 0)
             {
@@ -99,7 +99,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         }
                         catch (IOException)
                         {
-
                         }
                     }
                 }
@@ -116,7 +115,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         }
                         catch (IOException)
                         {
-
                         }
                     }
                 }

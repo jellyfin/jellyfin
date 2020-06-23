@@ -13,8 +13,20 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api
 {
+    [Route("/Repositories", "GET", Summary = "Gets all package repositories")]
+    [Authenticated]
+    public class GetRepositories : IReturnVoid
+    {
+    }
+
+    [Route("/Repositories", "POST", Summary = "Sets the enabled and existing package repositories")]
+    [Authenticated]
+    public class SetRepositories : List<RepositoryInfo>, IReturnVoid
+    {
+    }
+
     /// <summary>
-    /// Class GetPackage
+    /// Class GetPackage.
     /// </summary>
     [Route("/Packages/{Name}", "GET", Summary = "Gets a package, by name or assembly guid")]
     [Authenticated]
@@ -36,7 +48,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetPackages
+    /// Class GetPackages.
     /// </summary>
     [Route("/Packages", "GET", Summary = "Gets available packages")]
     [Authenticated]
@@ -45,7 +57,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class InstallPackage
+    /// Class InstallPackage.
     /// </summary>
     [Route("/Packages/Installed/{Name}", "POST", Summary = "Installs a package")]
     [Authenticated(Roles = "Admin")]
@@ -74,7 +86,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class CancelPackageInstallation
+    /// Class CancelPackageInstallation.
     /// </summary>
     [Route("/Packages/Installing/{Id}", "DELETE", Summary = "Cancels a package installation")]
     [Authenticated(Roles = "Admin")]
@@ -89,11 +101,12 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class PackageService
+    /// Class PackageService.
     /// </summary>
     public class PackageService : BaseApiService
     {
         private readonly IInstallationManager _installationManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         public PackageService(
             ILogger<PackageService> logger,
@@ -103,6 +116,19 @@ namespace MediaBrowser.Api
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _installationManager = installationManager;
+            _serverConfigurationManager = serverConfigurationManager;
+        }
+
+        public object Get(GetRepositories request)
+        {
+            var result = _serverConfigurationManager.Configuration.PluginRepositories;
+            return ToOptimizedResult(result);
+        }
+
+        public void Post(SetRepositories request)
+        {
+            _serverConfigurationManager.Configuration.PluginRepositories = request;
+            _serverConfigurationManager.SaveConfiguration();
         }
 
         /// <summary>

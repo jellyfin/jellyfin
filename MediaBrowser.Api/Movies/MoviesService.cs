@@ -15,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 
 namespace MediaBrowser.Api.Movies
@@ -64,13 +65,13 @@ namespace MediaBrowser.Api.Movies
     }
 
     /// <summary>
-    /// Class MoviesService
+    /// Class MoviesService.
     /// </summary>
     [Authenticated]
     public class MoviesService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
@@ -160,8 +161,8 @@ namespace MediaBrowser.Api.Movies
                 IncludeItemTypes = new[]
                 {
                     typeof(Movie).Name,
-                    //typeof(Trailer).Name,
-                    //typeof(LiveTvProgram).Name
+                    // typeof(Trailer).Name,
+                    // typeof(LiveTvProgram).Name
                 },
                 // IsMovie = true
                 OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
@@ -193,7 +194,6 @@ namespace MediaBrowser.Api.Movies
                 ParentId = parentIdGuid,
                 Recursive = true,
                 DtoOptions = dtoOptions
-
             });
 
             var mostRecentMovies = recentlyPlayedMovies.Take(6).ToList();
@@ -278,8 +278,7 @@ namespace MediaBrowser.Api.Movies
                     IsMovie = true,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
-
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                }).GroupBy(i => i.GetProviderId(MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
                 .ToList();
@@ -319,8 +318,7 @@ namespace MediaBrowser.Api.Movies
                     IsMovie = true,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
-
-                }).GroupBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
+                }).GroupBy(i => i.GetProviderId(MetadataProvider.Imdb) ?? Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture))
                 .Select(x => x.First())
                 .Take(itemLimit)
                 .ToList();
@@ -359,7 +357,6 @@ namespace MediaBrowser.Api.Movies
                     SimilarTo = item,
                     EnableGroupByMetadataKey = true,
                     DtoOptions = dtoOptions
-
                 });
 
                 if (similar.Count > 0)

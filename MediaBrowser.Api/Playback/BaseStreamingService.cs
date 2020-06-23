@@ -28,7 +28,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback
 {
     /// <summary>
-    /// Class BaseStreamingService
+    /// Class BaseStreamingService.
     /// </summary>
     public abstract class BaseStreamingService : BaseApiService
     {
@@ -216,7 +216,7 @@ namespace MediaBrowser.Api.Playback
                     UseShellExecute = false,
 
                     // Must consume both stdout and stderr or deadlocks may occur
-                    //RedirectStandardOutput = true,
+                    // RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     RedirectStandardInput = true,
 
@@ -303,6 +303,7 @@ namespace MediaBrowser.Api.Playback
             {
                 StartThrottler(state, transcodingJob);
             }
+
             Logger.LogDebug("StartFfMpeg() finished successfully");
 
             return transcodingJob;
@@ -608,6 +609,7 @@ namespace MediaBrowser.Api.Playback
             {
                 throw new ArgumentException("Invalid timeseek header");
             }
+
             int index = value.IndexOf('-');
             value = index == -1
                 ? value.Substring(Npt.Length)
@@ -639,8 +641,10 @@ namespace MediaBrowser.Api.Playback
                 {
                     throw new ArgumentException("Invalid timeseek header");
                 }
+
                 timeFactor /= 60;
             }
+
             return TimeSpan.FromSeconds(secondsSum).Ticks;
         }
 
@@ -685,7 +689,7 @@ namespace MediaBrowser.Api.Playback
                 state.User = UserManager.GetUserById(auth.UserId);
             }
 
-            //if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
+            // if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
             //    (Request.UserAgent ?? string.Empty).IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
             //{
@@ -716,9 +720,9 @@ namespace MediaBrowser.Api.Playback
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
-            //var primaryImage = item.GetImageInfo(ImageType.Primary, 0) ??
+            // var primaryImage = item.GetImageInfo(ImageType.Primary, 0) ??
             //             item.Parents.Select(i => i.GetImageInfo(ImageType.Primary, 0)).FirstOrDefault(i => i != null);
-            //if (primaryImage != null)
+            // if (primaryImage != null)
             //{
             //    state.AlbumCoverPath = primaryImage.Path;
             //}
@@ -885,7 +889,7 @@ namespace MediaBrowser.Api.Playback
                 if (transcodingProfile != null)
                 {
                     state.EstimateContentLength = transcodingProfile.EstimateContentLength;
-                    //state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
+                    // state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                     state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
                     if (state.VideoRequest != null)

@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetPersons
+    /// Class GetPersons.
     /// </summary>
     [Route("/Persons", "GET", Summary = "Gets all persons from a given item, folder, or the entire library")]
     public class GetPersons : GetItemsByName
@@ -22,7 +22,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetPerson
+    /// Class GetPerson.
     /// </summary>
     [Route("/Persons/{Name}", "GET", Summary = "Gets a person, by name")]
     public class GetPerson : IReturn<BaseItemDto>
@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class PersonsService
+    /// Class PersonsService.
     /// </summary>
     [Authenticated]
     public class PersonsService : BaseItemsByNameService<Person>

@@ -16,6 +16,7 @@ namespace MediaBrowser.Controller.Drawing
 
                 return newSize;
             }
+
             return GetSizeEstimate(options);
         }
 

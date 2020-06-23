@@ -124,8 +124,8 @@ namespace MediaBrowser.Model.Services
         /// Gets or sets a query parameter value by name. A query may contain multiple values of the same name
         /// (i.e. "x=1&amp;x=2"), in which case the value is an array, which works for both getting and setting.
         /// </summary>
-        /// <param name="name">The query parameter name</param>
-        /// <returns>The query parameter value or array of values</returns>
+        /// <param name="name">The query parameter name.</param>
+        /// <returns>The query parameter value or array of values.</returns>
         public string this[string name]
         {
             get => Get(name);

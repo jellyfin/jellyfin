@@ -37,7 +37,10 @@ namespace Emby.Server.Implementations.Net
 
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
-            if (socket == null) throw new ArgumentNullException(nameof(socket));
+            if (socket == null)
+            {
+                throw new ArgumentNullException(nameof(socket));
+            }
 
             _socket = socket;
             _localPort = localPort;
@@ -103,7 +106,10 @@ namespace Emby.Server.Implementations.Net
 
         public UdpSocket(Socket socket, IPEndPoint endPoint)
         {
-            if (socket == null) throw new ArgumentNullException(nameof(socket));
+            if (socket == null)
+            {
+                throw new ArgumentNullException(nameof(socket));
+            }
 
             _socket = socket;
             _socket.Connect(endPoint);

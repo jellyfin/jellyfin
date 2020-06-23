@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.IO
 {
     public class LibraryMonitor : ILibraryMonitor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryMonitor> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
@@ -266,7 +266,6 @@ namespace Emby.Server.Implementations.IO
                     {
                         DisposeWatcher(newWatcher, false);
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -393,7 +392,6 @@ namespace Emby.Server.Implementations.IO
                 }
 
                 return false;
-
             }))
             {
                 monitorPath = false;

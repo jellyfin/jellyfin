@@ -39,7 +39,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AccessSchedule");
+                    b.ToTable("AccessSchedules");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.ActivityLog", b =>
@@ -102,9 +102,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT")
                         .HasMaxLength(512);
 
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
-                    b.ToTable("ImageInfo");
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("ImageInfos");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>
@@ -234,9 +240,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool>("PlayDefaultAudioTrack")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("ProfileImageId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("RememberAudioSelections")
                         .HasColumnType("INTEGER");
 
@@ -267,8 +270,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProfileImageId");
-
                     b.ToTable("Users");
                 });
 
@@ -279,6 +280,13 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.ImageInfo", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.User", null)
+                        .WithOne("ProfileImage")
+                        .HasForeignKey("Jellyfin.Data.Entities.ImageInfo", "UserId");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>
@@ -293,13 +301,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasOne("Jellyfin.Data.Entities.User", null)
                         .WithMany("Preferences")
                         .HasForeignKey("Preference_Preferences_Guid");
-                });
-
-            modelBuilder.Entity("Jellyfin.Data.Entities.User", b =>
-                {
-                    b.HasOne("Jellyfin.Data.Entities.ImageInfo", "ProfileImage")
-                        .WithMany()
-                        .HasForeignKey("ProfileImageId");
                 });
 #pragma warning restore 612, 618
         }

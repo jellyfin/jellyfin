@@ -95,6 +95,8 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("User")]
         public StartupUserDto GetFirstUser()
         {
+            // TODO: Remove this method when startup wizard no longer requires an existing user.
+            _userManager.Initialize();
             var user = _userManager.Users.First();
             return new StartupUserDto
             {
@@ -115,7 +117,7 @@ namespace Jellyfin.Api.Controllers
 
             user.Username = startupUserDto.Name;
 
-            _userManager.UpdateUser(user);
+            await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(startupUserDto.Password))
             {

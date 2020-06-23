@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class TaskManager
+    /// Class TaskManager.
     /// </summary>
     public class TaskManager : ITaskManager
     {
@@ -23,20 +23,20 @@ namespace Emby.Server.Implementations.ScheduledTasks
         public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
 
         /// <summary>
-        /// Gets the list of Scheduled Tasks
+        /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
         public IScheduledTaskWorker[] ScheduledTasks { get; private set; }
 
         /// <summary>
-        /// The _task queue
+        /// The _task queue.
         /// </summary>
         private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
             new ConcurrentQueue<Tuple<Type, TaskOptions>>();
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationPaths _applicationPaths;
-        private readonly ILogger _logger;
+        private readonly ILogger<TaskManager> _logger;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Cancels if running
+        /// Cancels if running.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         public void CancelIfRunning<T>()
@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Queues the scheduled task.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="options">Task options</param>
+        /// <param name="options">Task options.</param>
         public void QueueScheduledTask<T>(TaskOptions options)
             where T : IScheduledTask
         {

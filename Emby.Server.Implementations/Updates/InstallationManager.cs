@@ -19,6 +19,7 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Configuration;
@@ -32,14 +33,9 @@ namespace Emby.Server.Implementations.Updates
     public class InstallationManager : IInstallationManager
     {
         /// <summary>
-        /// The key for a setting that specifies a URL for the plugin repository JSON manifest.
-        /// </summary>
-        public const string PluginManifestUrlKey = "InstallationManager:PluginManifestUrl";
-
-        /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<InstallationManager> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
@@ -122,16 +118,14 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
         /// <inheritdoc />
-        public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default)
         {
-            var manifestUrl = _appConfig.GetValue<string>(PluginManifestUrlKey);
-
             try
             {
                 using (var response = await _httpClient.SendAsync(
                     new HttpRequestOptions
                     {
-                        Url = manifestUrl,
+                        Url = manifest,
                         CancellationToken = cancellationToken,
                         CacheMode = CacheMode.Unconditional,
                         CacheLength = TimeSpan.FromMinutes(3)
@@ -145,23 +139,33 @@ namespace Emby.Server.Implementations.Updates
                     }
                     catch (SerializationException ex)
                     {
-                        const string LogTemplate =
-                            "Failed to deserialize the plugin manifest retrieved from {PluginManifestUrl}. If you " +
-                            "have specified a custom plugin repository manifest URL with --plugin-manifest-url or " +
-                            PluginManifestUrlKey + ", please ensure that it is correct.";
-                        _logger.LogError(ex, LogTemplate, manifestUrl);
-                        throw;
+                        _logger.LogError(ex, "Failed to deserialize the plugin manifest retrieved from {Manifest}", manifest);
+                        return Enumerable.Empty<PackageInfo>();
                     }
                 }
             }
             catch (UriFormatException ex)
             {
-                const string LogTemplate =
-                    "The URL configured for the plugin repository manifest URL is not valid: {PluginManifestUrl}. " +
-                    "Please check the URL configured by --plugin-manifest-url or " + PluginManifestUrlKey;
-                _logger.LogError(ex, LogTemplate, manifestUrl);
-                throw;
+                _logger.LogError(ex, "The URL configured for the plugin repository manifest URL is not valid: {Manifest}", manifest);
+                return Enumerable.Empty<PackageInfo>();
             }
+            catch (HttpException ex)
+            {
+                _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
+                return Enumerable.Empty<PackageInfo>();
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default)
+        {
+            var result = new List<PackageInfo>();
+            foreach (RepositoryInfo repository in _config.Configuration.PluginRepositories)
+            {
+                result.AddRange(await GetPackages(repository.Url, cancellationToken).ConfigureAwait(true));
+            }
+
+            return result.AsReadOnly();
         }
 
         /// <inheritdoc />
@@ -402,6 +406,12 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="plugin">The plugin.</param>
         public void UninstallPlugin(IPlugin plugin)
         {
+            if (!plugin.CanUninstall)
+            {
+                _logger.LogWarning("Attempt to delete non removable plugin {0}, ignoring request", plugin.Name);
+                return;
+            }
+
             plugin.OnUninstalling();
 
             // Remove it the quick way for now

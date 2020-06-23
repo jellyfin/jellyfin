@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers
         }
 
         /// <summary>
-        /// Not only does this clear, but initializes the list so that services can differentiate between a null list and zero people
+        /// Not only does this clear, but initializes the list so that services can differentiate between a null list and zero people.
         /// </summary>
         public void ResetPeople()
         {
@@ -48,6 +48,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 People = new List<PersonInfo>();
             }
+
             People.Clear();
         }
 

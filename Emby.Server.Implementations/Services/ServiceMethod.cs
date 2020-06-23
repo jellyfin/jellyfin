@@ -9,6 +9,7 @@ namespace Emby.Server.Implementations.Services
         public string Id { get; set; }
 
         public ActionInvokerFn ServiceAction { get; set; }
+
         public MediaBrowser.Model.Services.IHasRequestFilter[] RequestFilters { get; set; }
 
         public static string Key(Type serviceType, string method, string requestDtoName)

@@ -12,11 +12,12 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
     /// <summary>
-    /// Class Series
+    /// Class Series.
     /// </summary>
     public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
     {
@@ -29,6 +30,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         public DayOfWeek[] AirDays { get; set; }
+
         public string AirTime { get; set; }
 
         [JsonIgnore]
@@ -53,7 +55,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
-        /// airdate, dvd or absolute
+        /// airdate, dvd or absolute.
         /// </summary>
         public string DisplayOrder { get; set; }
 
@@ -149,6 +151,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 query.IncludeItemTypes = new[] { typeof(Episode).Name };
             }
+
             query.IsVirtualItem = false;
             query.Limit = 0;
             var totalRecordCount = LibraryManager.GetCount(query);
@@ -164,13 +167,13 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var list = base.GetUserDataKeys();
 
-            var key = this.GetProviderId(MetadataProviders.Imdb);
+            var key = this.GetProviderId(MetadataProvider.Imdb);
             if (!string.IsNullOrEmpty(key))
             {
                 list.Insert(0, key);
             }
 
-            key = this.GetProviderId(MetadataProviders.Tvdb);
+            key = this.GetProviderId(MetadataProvider.Tvdb);
             if (!string.IsNullOrEmpty(key))
             {
                 list.Insert(0, key);
@@ -487,7 +490,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var list = base.GetRelatedUrls();
 
-            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
             if (!string.IsNullOrEmpty(imdbId))
             {
                 list.Add(new ExternalUrl

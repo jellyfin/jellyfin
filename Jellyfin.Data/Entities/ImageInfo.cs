@@ -17,6 +17,8 @@ namespace Jellyfin.Data.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; protected set; }
 
+        public Guid? UserId { get; protected set; }
+
         [Required]
         [MaxLength(512)]
         [StringLength(512)]

@@ -10,11 +10,12 @@ using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class MusicArtist
+    /// Class MusicArtist.
     /// </summary>
     public class MusicArtist : Folder, IItemByName, IHasMusicGenres, IHasDualAccess, IHasLookupInfo<ArtistInfo>
     {
@@ -110,7 +111,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         /// <summary>
         /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
+        /// If the item is a folder, it returns the folder itself.
         /// </summary>
         /// <value>The containing folder path.</value>
         [JsonIgnore]
@@ -124,7 +125,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         private static List<string> GetUserDataKeys(MusicArtist item)
         {
             var list = new List<string>();
-            var id = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
+            var id = item.GetProviderId(MetadataProvider.MusicBrainzArtist);
 
             if (!string.IsNullOrEmpty(id))
             {
@@ -134,6 +135,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             list.Add("Artist-" + (item.Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
+
         public override string CreatePresentationUniqueKey()
         {
             return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
@@ -200,7 +202,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {

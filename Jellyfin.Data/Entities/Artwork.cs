@@ -24,7 +24,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="path"></param>
         /// <param name="kind"></param>
@@ -32,17 +32,28 @@ namespace Jellyfin.Data.Entities
         /// <param name="_personrole1"></param>
         public Artwork(string path, Enums.ArtKind kind, Metadata _metadata0, PersonRole _personrole1)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             this.Path = path;
 
             this.Kind = kind;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
+
             _metadata0.Artwork.Add(this);
 
-            if (_personrole1 == null) throw new ArgumentNullException(nameof(_personrole1));
-            _personrole1.Artwork = this;
+            if (_personrole1 == null)
+            {
+                throw new ArgumentNullException(nameof(_personrole1));
+            }
 
+            _personrole1.Artwork = this;
 
             Init();
         }
@@ -64,7 +75,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -77,7 +88,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -87,8 +98,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -101,7 +113,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Path
+        /// Backing field for Path.
         /// </summary>
         protected string _Path;
         /// <summary>
@@ -125,8 +137,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Path;
                 GetPath(ref value);
-                return (_Path = value);
+                return _Path = value;
             }
+
             set
             {
                 string oldValue = _Path;
@@ -139,7 +152,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Kind
+        /// Backing field for Kind.
         /// </summary>
         internal Enums.ArtKind _Kind;
         /// <summary>
@@ -152,7 +165,7 @@ namespace Jellyfin.Data.Entities
         partial void GetKind(ref Enums.ArtKind result);
 
         /// <summary>
-        /// Indexed, Required
+        /// Indexed, Required.
         /// </summary>
         [Required]
         public Enums.ArtKind Kind
@@ -161,8 +174,9 @@ namespace Jellyfin.Data.Entities
             {
                 Enums.ArtKind value = _Kind;
                 GetKind(ref value);
-                return (_Kind = value);
+                return _Kind = value;
             }
+
             set
             {
                 Enums.ArtKind oldValue = _Kind;
@@ -175,7 +189,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -189,7 +203,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

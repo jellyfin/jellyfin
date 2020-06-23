@@ -10,11 +10,12 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class MusicAlbum
+    /// Class MusicAlbum.
     /// </summary>
     public class MusicAlbum : Folder, IHasAlbumArtist, IHasArtist, IHasMusicGenres, IHasLookupInfo<AlbumInfo>, IMetadataContainer
     {
@@ -55,6 +56,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return LibraryManager.GetArtist(name, options);
             }
+
             return null;
         }
 
@@ -97,14 +99,14 @@ namespace MediaBrowser.Controller.Entities.Audio
                 list.Insert(0, albumArtist + "-" + Name);
             }
 
-            var id = this.GetProviderId(MetadataProviders.MusicBrainzAlbum);
+            var id = this.GetProviderId(MetadataProvider.MusicBrainzAlbum);
 
             if (!string.IsNullOrEmpty(id))
             {
                 list.Insert(0, "MusicAlbum-Musicbrainz-" + id);
             }
 
-            id = this.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+            id = this.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
 
             if (!string.IsNullOrEmpty(id))
             {

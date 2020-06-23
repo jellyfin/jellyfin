@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Linq;
 using System.Text;
@@ -61,25 +63,29 @@ namespace Jellyfin.Server.Implementations.Users
                 });
             }
 
-            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-
-            PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
-            if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id)
-                || _cryptographyProvider.DefaultHashMethod == readyHash.Id)
+            // Handle the case when the stored password is null, but the user tried to login with a password
+            if (resolvedUser.Password != null)
             {
-                byte[] calculatedHash = _cryptographyProvider.ComputeHash(
-                    readyHash.Id,
-                    passwordBytes,
-                    readyHash.Salt.ToArray());
+                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
 
-                if (readyHash.Hash.SequenceEqual(calculatedHash))
+                PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
+                if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id)
+                    || _cryptographyProvider.DefaultHashMethod == readyHash.Id)
                 {
-                    success = true;
+                    byte[] calculatedHash = _cryptographyProvider.ComputeHash(
+                        readyHash.Id,
+                        passwordBytes,
+                        readyHash.Salt.ToArray());
+
+                    if (readyHash.Hash.SequenceEqual(calculatedHash))
+                    {
+                        success = true;
+                    }
                 }
-            }
-            else
-            {
-                throw new AuthenticationException($"Requested crypto method not available in provider: {readyHash.Id}");
+                else
+                {
+                    throw new AuthenticationException($"Requested crypto method not available in provider: {readyHash.Id}");
+                }
             }
 
             if (!success)
@@ -111,5 +117,32 @@ namespace Jellyfin.Server.Implementations.Users
 
             return Task.CompletedTask;
         }
+<<<<<<< HEAD
+=======
+
+        /// <inheritdoc />
+        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
+        {
+            if (newPassword != null)
+            {
+                newPasswordHash = _cryptographyProvider.CreatePasswordHash(newPassword).ToString();
+            }
+
+            if (string.IsNullOrWhiteSpace(newPasswordHash))
+            {
+                throw new ArgumentNullException(nameof(newPasswordHash));
+            }
+
+            user.EasyPassword = newPasswordHash;
+        }
+
+        /// <inheritdoc />
+        public string? GetEasyPasswordHash(User user)
+        {
+            return string.IsNullOrEmpty(user.EasyPassword)
+                ? null
+                : Hex.Encode(PasswordHash.Parse(user.EasyPassword).Hash);
+        }
+>>>>>>> upstream/master
     }
 }

@@ -55,6 +55,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         episode.SeriesId = series.Id;
                         episode.SeriesName = series.Name;
                     }
+
                     if (season != null)
                     {
                         episode.SeasonId = season.Id;

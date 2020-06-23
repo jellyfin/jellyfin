@@ -29,7 +29,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryChangedNotifier> _logger;
 
         /// <summary>
         /// The library changed sync lock.
@@ -132,7 +132,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch
                 {
-
                 }
             }
         }

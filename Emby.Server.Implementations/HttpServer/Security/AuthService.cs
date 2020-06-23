@@ -2,11 +2,11 @@
 
 using System;
 using System.Linq;
-using System.Security.Authentication;
 using Emby.Server.Implementations.SocketSharp;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -46,9 +46,25 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
         {
-            var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
+            var req = new WebSocketSharpRequest(request, null, request.Path);
             var user = ValidateUser(req, authAttributes);
             return user;
+        }
+
+        public AuthorizationInfo Authenticate(HttpRequest request)
+        {
+            var auth = _authorizationContext.GetAuthorizationInfo(request);
+            if (auth?.User == null)
+            {
+                return null;
+            }
+
+            if (auth.User.HasPermission(PermissionKind.IsDisabled))
+            {
+                throw new SecurityException("User account has been disabled.");
+            }
+
+            return auth;
         }
 
         private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
@@ -140,6 +156,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 return true;
             }
+
             if (authAttribtues.AllowLocalOnly && request.IsLocal)
             {
                 return true;
@@ -225,7 +242,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 throw new AuthenticationException("Access token is invalid or expired.");
             }
 
-            //if (!string.IsNullOrEmpty(info.UserId))
+            // if (!string.IsNullOrEmpty(info.UserId))
             //{
             //    var user = _userManager.GetUserById(info.UserId);
 

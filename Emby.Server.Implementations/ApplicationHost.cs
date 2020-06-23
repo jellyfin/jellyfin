@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the logger.
         /// </summary>
-        protected ILogger Logger { get; }
+        protected ILogger<ApplicationHost> Logger { get; }
 
         private IPlugin[] _plugins;
 
@@ -956,7 +956,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Notifies that the kernel that a change has been made that requires a restart
+        /// Notifies that the kernel that a change has been made that requires a restart.
         /// </summary>
         public void NotifyPendingRestart()
         {
@@ -1234,7 +1234,7 @@ namespace Emby.Server.Implementations
 
             if (addresses.Count == 0)
             {
-                addresses.AddRange(_networkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
+                addresses.AddRange(_networkManager.GetLocalIpAddresses());
             }
 
             var resultList = new List<IPAddress>();

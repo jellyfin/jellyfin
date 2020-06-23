@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<MediaSourceManager> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILocalizationManager _localizationManager;
@@ -205,22 +205,27 @@ namespace Emby.Server.Implementations.Library
             {
                 return MediaProtocol.Rtsp;
             }
+
             if (path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtmp;
             }
+
             if (path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Http;
             }
+
             if (path.StartsWith("rtp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtp;
             }
+
             if (path.StartsWith("ftp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Ftp;
             }
+
             if (path.StartsWith("udp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Udp;
@@ -436,7 +441,6 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 return 1;
-
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
             .ThenByDescending(i =>
             {
@@ -620,7 +624,6 @@ namespace Emby.Server.Implementations.Library
                     MediaSource = mediaSource,
                     ExtractChapters = false,
                     MediaType = DlnaProfileType.Video
-
                 }, cancellationToken).ConfigureAwait(false);
 
                 mediaSource.MediaStreams = info.MediaStreams;
@@ -646,7 +649,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     mediaInfo = _jsonSerializer.DeserializeFromFile<MediaInfo>(cacheFilePath);
 
-                    //_logger.LogDebug("Found cached media info");
+                    // _logger.LogDebug("Found cached media info");
                 }
                 catch (Exception ex)
                 {
@@ -682,7 +685,7 @@ namespace Emby.Server.Implementations.Library
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     _jsonSerializer.SerializeToFile(mediaInfo, cacheFilePath);
 
-                    //_logger.LogDebug("Saved media info to {0}", cacheFilePath);
+                    // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
             }
 
@@ -748,17 +751,14 @@ namespace Emby.Server.Implementations.Library
                     {
                         videoStream.BitRate = 30000000;
                     }
-
                     else if (width >= 1900)
                     {
                         videoStream.BitRate = 20000000;
                     }
-
                     else if (width >= 1200)
                     {
                         videoStream.BitRate = 8000000;
                     }
-
                     else if (width >= 700)
                     {
                         videoStream.BitRate = 2000000;

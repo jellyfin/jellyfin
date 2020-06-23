@@ -29,6 +29,7 @@ using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
@@ -47,7 +48,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<SessionManager> _logger;
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
@@ -285,11 +286,18 @@ namespace Emby.Server.Implementations.Session
             if (user != null)
             {
                 var userLastActivityDate = user.LastActivityDate ?? DateTime.MinValue;
-                user.LastActivityDate = activityDate;
 
                 if ((activityDate - userLastActivityDate).TotalSeconds > 60)
                 {
-                    _userManager.UpdateUser(user);
+                    try
+                    {
+                        user.LastActivityDate = activityDate;
+                        _userManager.UpdateUser(user);
+                    }
+                    catch (DbUpdateConcurrencyException e)
+                    {
+                        _logger.LogWarning(e, "Error updating user's last activity date.");
+                    }
                 }
             }
 
@@ -835,7 +843,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <summary>
-        /// Used to report that playback has ended for an item
+        /// Used to report that playback has ended for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>

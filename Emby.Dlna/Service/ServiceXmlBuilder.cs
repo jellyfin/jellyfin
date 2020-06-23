@@ -80,6 +80,7 @@ namespace Emby.Dlna.Service
                     {
                         builder.Append("<allowedValue>" + DescriptionXmlBuilder.Escape(allowedValue) + "</allowedValue>");
                     }
+
                     builder.Append("</allowedValueList>");
                 }
 

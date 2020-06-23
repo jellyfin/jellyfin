@@ -13,11 +13,11 @@ using MediaBrowser.Model.Globalization;
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
-    /// Deletes all transcoding temp files
+    /// Deletes all transcoding temp files.
     /// </summary>
     public class DeleteTranscodeFileTask : IScheduledTask, IConfigurableScheduledTask
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<DeleteTranscodeFileTask> _logger;
         private readonly IConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;

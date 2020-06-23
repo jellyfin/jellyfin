@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -13,7 +15,7 @@ namespace MediaBrowser.Providers.Movies
         public string Name => "IMDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Imdb.ToString();
+        public string Key => MetadataProvider.Imdb.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.imdb.com/title/{0}";
@@ -37,7 +39,7 @@ namespace MediaBrowser.Providers.Movies
         public string Name => "IMDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Imdb.ToString();
+        public string Key => MetadataProvider.Imdb.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.imdb.com/name/{0}";

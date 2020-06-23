@@ -7,7 +7,7 @@ using MediaBrowser.Model.IO;
 namespace MediaBrowser.Controller.MediaEncoding
 {
     /// <summary>
-    /// Class MediaEncoderHelpers
+    /// Class MediaEncoderHelpers.
     /// </summary>
     public static class MediaEncoderHelpers
     {

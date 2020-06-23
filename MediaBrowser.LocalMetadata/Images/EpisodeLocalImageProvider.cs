@@ -10,24 +10,35 @@ using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
-    public class EpisodeLocalLocalImageProvider : ILocalImageProvider, IHasOrder
+    /// <summary>
+    /// Episode local image provider.
+    /// </summary>
+    public class EpisodeLocalImageProvider : ILocalImageProvider, IHasOrder
     {
         private readonly IFileSystem _fileSystem;
 
-        public EpisodeLocalLocalImageProvider(IFileSystem fileSystem)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodeLocalImageProvider"/> class.
+        /// </summary>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        public EpisodeLocalImageProvider(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
         }
 
+        /// <inheritdoc />
         public string Name => "Local Images";
 
+        /// <inheritdoc />
         public int Order => 0;
 
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             return item is Episode && item.SupportsLocalMetadata;
         }
 
+        /// <inheritdoc />
         public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var parentPath = Path.GetDirectoryName(item.Path);
@@ -58,23 +69,15 @@ namespace MediaBrowser.LocalMetadata.Images
 
                     if (string.Equals(filenameWithoutExtension, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                     {
-                        list.Add(new LocalImageInfo
-                        {
-                            FileInfo = i,
-                            Type = ImageType.Primary
-                        });
+                        list.Add(new LocalImageInfo { FileInfo = i, Type = ImageType.Primary });
                     }
-
                     else if (string.Equals(thumbName, currentNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                     {
-                        list.Add(new LocalImageInfo
-                        {
-                            FileInfo = i,
-                            Type = ImageType.Primary
-                        });
+                        list.Add(new LocalImageInfo { FileInfo = i, Type = ImageType.Primary });
                     }
                 }
             }
+
             return list;
         }
     }

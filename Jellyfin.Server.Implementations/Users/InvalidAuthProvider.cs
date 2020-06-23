@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Authentication;

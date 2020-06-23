@@ -117,12 +117,19 @@ namespace DvdLib.Ifo
                         uint chapNum = 1;
                         vtsFs.Seek(baseAddr + offsets[titleNum], SeekOrigin.Begin);
                         var t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum + 1));
-                        if (t == null) continue;
+                        if (t == null)
+                        {
+                            continue;
+                        }
 
                         do
                         {
                             t.Chapters.Add(new Chapter(vtsRead.ReadUInt16(), vtsRead.ReadUInt16(), chapNum));
-                            if (titleNum + 1 < numTitles && vtsFs.Position == (baseAddr + offsets[titleNum + 1])) break;
+                            if (titleNum + 1 < numTitles && vtsFs.Position == (baseAddr + offsets[titleNum + 1]))
+                            {
+                                break;
+                            }
+
                             chapNum++;
                         }
                         while (vtsFs.Position < (baseAddr + endaddr));
@@ -147,7 +154,10 @@ namespace DvdLib.Ifo
                         uint vtsPgcOffset = vtsRead.ReadUInt32();
 
                         var t = Titles.FirstOrDefault(vtst => vtst.IsVTSTitle(vtsNum, titleNum));
-                        if (t != null) t.AddPgc(vtsRead, startByte + vtsPgcOffset, entryPgc, pgcNum);
+                        if (t != null)
+                        {
+                            t.AddPgc(vtsRead, startByte + vtsPgcOffset, entryPgc, pgcNum);
+                        }
                     }
                 }
             }

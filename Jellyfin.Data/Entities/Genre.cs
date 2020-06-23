@@ -25,18 +25,25 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="_metadata0"></param>
         public Genre(string name, Metadata _metadata0)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             this.Name = name;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
-            _metadata0.Genres.Add(this);
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
 
+            _metadata0.Genres.Add(this);
 
             Init();
         }
@@ -56,7 +63,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -69,7 +76,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -80,8 +87,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -94,7 +102,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Name
+        /// Backing field for Name.
         /// </summary>
         internal string _Name;
         /// <summary>
@@ -118,8 +126,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
+
             set
             {
                 string oldValue = _Name;
@@ -132,7 +141,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -146,7 +155,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

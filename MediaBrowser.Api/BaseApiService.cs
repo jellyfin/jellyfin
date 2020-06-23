@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class BaseApiService
+    /// Class BaseApiService.
     /// </summary>
     public abstract class BaseApiService : IService, IRequiresRequest
     {
@@ -268,7 +268,6 @@ namespace MediaBrowser.Api
                 Name = name.Replace(BaseItem.SlugChar, '&'),
                 IncludeItemTypes = new[] { typeof(T).Name },
                 DtoOptions = dtoOptions
-
             }).OfType<T>().FirstOrDefault();
 
             result ??= libraryManager.GetItemList(new InternalItemsQuery
@@ -276,7 +275,6 @@ namespace MediaBrowser.Api
                 Name = name.Replace(BaseItem.SlugChar, '/'),
                 IncludeItemTypes = new[] { typeof(T).Name },
                 DtoOptions = dtoOptions
-
             }).OfType<T>().FirstOrDefault();
 
             result ??= libraryManager.GetItemList(new InternalItemsQuery
@@ -284,7 +282,6 @@ namespace MediaBrowser.Api
                 Name = name.Replace(BaseItem.SlugChar, '?'),
                 IncludeItemTypes = new[] { typeof(T).Name },
                 DtoOptions = dtoOptions
-
             }).OfType<T>().FirstOrDefault();
 
             return result;
