@@ -31,8 +31,8 @@ namespace Jellyfin.Api.Tests
 
             var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
 
-            var service = new BrandingService(
-                new NullLogger<BrandingService>(),
+            var service = new TestService(
+                new NullLogger<TestService>(),
                 confManagerMock,
                 Mock.Of<IHttpResultFactory>())
             {

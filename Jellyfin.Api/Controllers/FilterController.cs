@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -18,7 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Filters controller.
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class FilterController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;

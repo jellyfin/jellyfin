@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
@@ -57,7 +58,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">List of sessions returned.</response>
         /// <returns>An <see cref="IEnumerable{SessionInfo}"/> with the available sessions.</returns>
         [HttpGet("/Sessions")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<SessionInfo>> GetSessions(
             [FromQuery] Guid controllableByUserId,

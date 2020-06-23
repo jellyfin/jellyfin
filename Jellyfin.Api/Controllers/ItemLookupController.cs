@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Item lookup controller.
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ItemLookupController : BaseJellyfinApiController
     {
         private readonly IProviderManager _providerManager;
