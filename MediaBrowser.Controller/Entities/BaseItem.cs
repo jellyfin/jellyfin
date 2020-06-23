@@ -560,8 +560,6 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The logger.
         /// </summary>
-        public static ILoggerFactory LoggerFactory { get; set; }
-
         public static ILogger<BaseItem> Logger { get; set; }
 
         public static ILibraryManager LibraryManager { get; set; }
