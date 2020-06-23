@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,52 +9,17 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Emby.Server.Implementations.HttpServer
 {
     public class RangeRequestWriter : IAsyncStreamWriter, IHttpResult
     {
-        /// <summary>
-        /// Gets or sets the source stream.
-        /// </summary>
-        /// <value>The source stream.</value>
-        private Stream SourceStream { get; set; }
-
-        private string RangeHeader { get; set; }
-
-        private bool IsHeadRequest { get; set; }
-
-        private long RangeStart { get; set; }
-
-        private long RangeEnd { get; set; }
-
-        private long RangeLength { get; set; }
-
-        private long TotalContentLength { get; set; }
-
-        public Action OnComplete { get; set; }
-
-        private readonly ILogger _logger;
-
         private const int BufferSize = 81920;
 
-        /// <summary>
-        /// The _options.
-        /// </summary>
         private readonly Dictionary<string, string> _options = new Dictionary<string, string>();
 
-        /// <summary>
-        /// The us culture.
-        /// </summary>
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Additional HTTP Headers.
-        /// </summary>
-        /// <value>The headers.</value>
-        public IDictionary<string, string> Headers => _options;
+        private List<KeyValuePair<long, long?>> _requestedRanges;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RangeRequestWriter" /> class.
@@ -63,8 +29,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
-        /// <param name="logger">The logger instance.</param>
-        public RangeRequestWriter(string rangeHeader, long contentLength, Stream source, string contentType, bool isHeadRequest, ILogger logger)
+        public RangeRequestWriter(string rangeHeader, long contentLength, Stream source, string contentType, bool isHeadRequest)
         {
             if (string.IsNullOrEmpty(contentType))
             {
@@ -74,7 +39,6 @@ namespace Emby.Server.Implementations.HttpServer
             RangeHeader = rangeHeader;
             SourceStream = source;
             IsHeadRequest = isHeadRequest;
-            this._logger = logger;
 
             ContentType = contentType;
             Headers[HeaderNames.ContentType] = contentType;
@@ -82,6 +46,81 @@ namespace Emby.Server.Implementations.HttpServer
             StatusCode = HttpStatusCode.PartialContent;
 
             SetRangeValues(contentLength);
+        }
+
+        /// <summary>
+        /// Gets or sets the source stream.
+        /// </summary>
+        /// <value>The source stream.</value>
+        private Stream SourceStream { get; set; }
+        private string RangeHeader { get; set; }
+        private bool IsHeadRequest { get; set; }
+
+        private long RangeStart { get; set; }
+        private long RangeEnd { get; set; }
+        private long RangeLength { get; set; }
+        private long TotalContentLength { get; set; }
+
+        public Action OnComplete { get; set; }
+
+        /// <summary>
+        /// Additional HTTP Headers
+        /// </summary>
+        /// <value>The headers.</value>
+        public IDictionary<string, string> Headers => _options;
+
+        /// <summary>
+        /// Gets the requested ranges.
+        /// </summary>
+        /// <value>The requested ranges.</value>
+        protected List<KeyValuePair<long, long?>> RequestedRanges
+        {
+            get
+            {
+                if (_requestedRanges == null)
+                {
+                    _requestedRanges = new List<KeyValuePair<long, long?>>();
+
+                    // Example: bytes=0-,32-63
+                    var ranges = RangeHeader.Split('=')[1].Split(',');
+
+                    foreach (var range in ranges)
+                    {
+                        var vals = range.Split('-');
+
+                        long start = 0;
+                        long? end = null;
+
+                        if (!string.IsNullOrEmpty(vals[0]))
+                        {
+                            start = long.Parse(vals[0], CultureInfo.InvariantCulture);
+                        }
+
+                        if (!string.IsNullOrEmpty(vals[1]))
+                        {
+                            end = long.Parse(vals[1], CultureInfo.InvariantCulture);
+                        }
+
+                        _requestedRanges.Add(new KeyValuePair<long, long?>(start, end));
+                    }
+                }
+
+                return _requestedRanges;
+            }
+        }
+
+        public string ContentType { get; set; }
+
+        public IRequest RequestContext { get; set; }
+
+        public object Response { get; set; }
+
+        public int Status { get; set; }
+
+        public HttpStatusCode StatusCode
+        {
+            get => (HttpStatusCode)Status;
+            set => Status = (int)value;
         }
 
         /// <summary>
@@ -115,50 +154,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        /// <summary>
-        /// The _requested ranges.
-        /// </summary>
-        private List<KeyValuePair<long, long?>> _requestedRanges;
-        /// <summary>
-        /// Gets the requested ranges.
-        /// </summary>
-        /// <value>The requested ranges.</value>
-        protected List<KeyValuePair<long, long?>> RequestedRanges
-        {
-            get
-            {
-                if (_requestedRanges == null)
-                {
-                    _requestedRanges = new List<KeyValuePair<long, long?>>();
-
-                    // Example: bytes=0-,32-63
-                    var ranges = RangeHeader.Split('=')[1].Split(',');
-
-                    foreach (var range in ranges)
-                    {
-                        var vals = range.Split('-');
-
-                        long start = 0;
-                        long? end = null;
-
-                        if (!string.IsNullOrEmpty(vals[0]))
-                        {
-                            start = long.Parse(vals[0], UsCulture);
-                        }
-
-                        if (!string.IsNullOrEmpty(vals[1]))
-                        {
-                            end = long.Parse(vals[1], UsCulture);
-                        }
-
-                        _requestedRanges.Add(new KeyValuePair<long, long?>(start, end));
-                    }
-                }
-
-                return _requestedRanges;
-            }
-        }
-
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {
             try
@@ -174,59 +169,44 @@ namespace Emby.Server.Implementations.HttpServer
                     // If the requested range is "0-", we can optimize by just doing a stream copy
                     if (RangeEnd >= TotalContentLength - 1)
                     {
-                        await source.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
+                        await source.CopyToAsync(responseStream, BufferSize, cancellationToken).ConfigureAwait(false);
                     }
                     else
                     {
-                        await CopyToInternalAsync(source, responseStream, RangeLength).ConfigureAwait(false);
+                        await CopyToInternalAsync(source, responseStream, RangeLength, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
             finally
             {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
+                OnComplete?.Invoke();
             }
         }
 
-        private static async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength)
+        private static async Task CopyToInternalAsync(Stream source, Stream destination, long copyLength, CancellationToken cancellationToken)
         {
-            var array = new byte[BufferSize];
-            int bytesRead;
-            while ((bytesRead = await source.ReadAsync(array, 0, array.Length).ConfigureAwait(false)) != 0)
+            var array = ArrayPool<byte>.Shared.Rent(BufferSize);
+            try
             {
-                if (bytesRead == 0)
+                int bytesRead;
+                while ((bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
                 {
-                    break;
-                }
+                    var bytesToCopy = Math.Min(bytesRead, copyLength);
 
-                var bytesToCopy = Math.Min(bytesRead, copyLength);
+                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToCopy), cancellationToken).ConfigureAwait(false);
 
-                await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToCopy)).ConfigureAwait(false);
+                    copyLength -= bytesToCopy;
 
-                copyLength -= bytesToCopy;
-
-                if (copyLength <= 0)
-                {
-                    break;
+                    if (copyLength <= 0)
+                    {
+                        break;
+                    }
                 }
             }
-        }
-
-        public string ContentType { get; set; }
-
-        public IRequest RequestContext { get; set; }
-
-        public object Response { get; set; }
-
-        public int Status { get; set; }
-
-        public HttpStatusCode StatusCode
-        {
-            get => (HttpStatusCode)Status;
-            set => Status = (int)value;
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(array);
+            }
         }
     }
 }
