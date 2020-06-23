@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Security.Cryptography;
@@ -15,7 +16,6 @@ using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -26,6 +26,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -43,7 +44,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
-        private readonly IAuthorizationContext _authContext;
         private readonly ISessionContext _sessionContext;
         private readonly IStreamHelper _streamHelper;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -57,7 +57,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="httpClient">Instance of the <see cref="IHttpClient"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="sessionContext">Instance of the <see cref="ISessionContext"/> interface.</param>
         /// <param name="streamHelper">Instance of the <see cref="IStreamHelper"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
@@ -68,7 +67,6 @@ namespace Jellyfin.Api.Controllers
             IHttpClient httpClient,
             ILibraryManager libraryManager,
             IDtoService dtoService,
-            IAuthorizationContext authContext,
             ISessionContext sessionContext,
             IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
@@ -79,7 +77,6 @@ namespace Jellyfin.Api.Controllers
             _httpClient = httpClient;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
-            _authContext = authContext;
             _sessionContext = sessionContext;
             _streamHelper = streamHelper;
             _mediaSourceManager = mediaSourceManager;
@@ -782,6 +779,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Timers/{timerId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "channelId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> UpdateTimer([FromRoute] string timerId, [FromBody] TimerInfoDto timerInfo)
         {
             AssertUserCanManageLiveTv();
@@ -873,6 +871,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SeriesTimers/{timerId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> UpdateSeriesTimer([FromRoute] string timerId, [FromBody] SeriesTimerInfoDto seriesTimerInfo)
         {
             AssertUserCanManageLiveTv();
@@ -979,6 +978,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("ListingProviders")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [SuppressMessage("Microsoft.Performance", "CA5350:RemoveSha1", MessageId = "AddListingProvider", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult<ListingsProviderInfo>> AddListingProvider(
             [FromQuery] bool validateLogin,
             [FromQuery] bool validateListings,
@@ -1131,6 +1131,60 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult<IEnumerable<TunerHostInfo>>> DiscoverTuners([FromQuery] bool newDevicesOnly)
         {
             return await _liveTvManager.DiscoverTuners(newDevicesOnly, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Gets a live tv recording stream.
+        /// </summary>
+        /// <param name="recordingId">Recording id.</param>
+        /// <response code="200">Recording stream returned.</response>
+        /// <response code="404">Recording not found.</response>
+        /// <returns>
+        /// An <see cref="OkResult"/> containing the recording stream on success,
+        /// or a <see cref="NotFoundResult"/> if recording not found.
+        /// </returns>
+        [HttpGet("LiveRecordings/{recordingId}/stream")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> GetLiveRecordingFile([FromRoute] string recordingId)
+        {
+            var path = _liveTvManager.GetEmbyTvActiveRecordingPath(recordingId);
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return NotFound();
+            }
+
+            await using var memoryStream = new MemoryStream();
+            await new ProgressiveFileCopier(_streamHelper, path).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+            return File(memoryStream, MimeTypes.GetMimeType(path));
+        }
+
+        /// <summary>
+        /// Gets a live tv channel stream.
+        /// </summary>
+        /// <param name="streamId">Stream id.</param>
+        /// <param name="container">Container type.</param>
+        /// <response code="200">Stream returned.</response>
+        /// <response code="404">Stream not found.</response>
+        /// <returns>
+        /// An <see cref="OkResult"/> containing the channel stream on success,
+        /// or a <see cref="NotFoundResult"/> if stream not found.
+        /// </returns>
+        [HttpGet("LiveStreamFiles/{streamId}/stream.{container}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> GetLiveStreamFile([FromRoute] string streamId, [FromRoute] string container)
+        {
+            var liveStreamInfo = await _mediaSourceManager.GetDirectStreamProviderByUniqueId(streamId, CancellationToken.None).ConfigureAwait(false);
+            if (liveStreamInfo == null)
+            {
+                return NotFound();
+            }
+
+            await using var memoryStream = new MemoryStream();
+            await new ProgressiveFileCopier(_streamHelper, liveStreamInfo).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+            return File(memoryStream, MimeTypes.GetMimeType("file." + container));
         }
 
         private void AssertUserCanManageLiveTv()
