@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Users returned.</response>
         /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the users.</returns>
         [HttpGet]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isGuest", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<UserDto>> GetUsers(
@@ -237,7 +237,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
         [HttpPost("{userId}/Password")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -295,7 +295,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
         [HttpPost("{userId}/EasyPassword")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -337,7 +337,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="403">User update forbidden.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure.</returns>
         [HttpPost("{userId}")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -381,7 +381,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="403">User policy update forbidden.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure..</returns>
         [HttpPost("{userId}/Policy")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -437,7 +437,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="403">User configuration update forbidden.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{userId}/Configuration")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public ActionResult UpdateUserConfiguration(

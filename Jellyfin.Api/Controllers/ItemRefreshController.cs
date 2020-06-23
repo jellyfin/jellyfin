@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
@@ -15,7 +16,7 @@ namespace Jellyfin.Api.Controllers
     /// </summary>
     /// [Authenticated]
     [Route("/Items")]
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ItemRefreshController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;
