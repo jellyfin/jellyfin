@@ -1,6 +1,3 @@
-#nullable disable
-using System;
-
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
@@ -12,12 +9,12 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the URL.
         /// </summary>
         /// <value>The URL.</value>
-        public string Url { get; set; }
+        public string? Url { get; set; }
     }
 }

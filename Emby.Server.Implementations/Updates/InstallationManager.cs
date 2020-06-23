@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -17,12 +16,10 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Updates
@@ -49,7 +46,6 @@ namespace Emby.Server.Implementations.Updates
         private readonly IApplicationHost _applicationHost;
 
         private readonly IZipClient _zipClient;
-        private readonly IConfiguration _appConfig;
 
         private readonly object _currentInstallationsLock = new object();
 
@@ -71,8 +67,7 @@ namespace Emby.Server.Implementations.Updates
             IJsonSerializer jsonSerializer,
             IServerConfigurationManager config,
             IFileSystem fileSystem,
-            IZipClient zipClient,
-            IConfiguration appConfig)
+            IZipClient zipClient)
         {
             if (logger == null)
             {
@@ -90,7 +85,6 @@ namespace Emby.Server.Implementations.Updates
             _config = config;
             _fileSystem = fileSystem;
             _zipClient = zipClient;
-            _appConfig = appConfig;
         }
 
         /// <inheritdoc />
@@ -118,7 +112,7 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
         /// <inheritdoc />
-        public async Task<IEnumerable<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -140,19 +134,19 @@ namespace Emby.Server.Implementations.Updates
                     catch (SerializationException ex)
                     {
                         _logger.LogError(ex, "Failed to deserialize the plugin manifest retrieved from {Manifest}", manifest);
-                        return Enumerable.Empty<PackageInfo>();
+                        return Array.Empty<PackageInfo>();
                     }
                 }
             }
             catch (UriFormatException ex)
             {
                 _logger.LogError(ex, "The URL configured for the plugin repository manifest URL is not valid: {Manifest}", manifest);
-                return Enumerable.Empty<PackageInfo>();
+                return Array.Empty<PackageInfo>();
             }
             catch (HttpException ex)
             {
                 _logger.LogError(ex, "An error occurred while accessing the plugin manifest: {Manifest}", manifest);
-                return Enumerable.Empty<PackageInfo>();
+                return Array.Empty<PackageInfo>();
             }
         }
 
@@ -165,7 +159,7 @@ namespace Emby.Server.Implementations.Updates
                 result.AddRange(await GetPackages(repository.Url, cancellationToken).ConfigureAwait(true));
             }
 
-            return result.AsReadOnly();
+            return result;
         }
 
         /// <inheritdoc />
