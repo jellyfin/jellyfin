@@ -1000,7 +1000,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">Listing provider id.</param>
         /// <response code="204">Listing provider deleted.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpGet("ListingProviders")]
+        [HttpDelete("ListingProviders")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult DeleteListingProvider([FromQuery] string id)
