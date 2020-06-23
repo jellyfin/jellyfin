@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Cryptography;
@@ -117,32 +116,5 @@ namespace Jellyfin.Server.Implementations.Users
 
             return Task.CompletedTask;
         }
-<<<<<<< HEAD
-=======
-
-        /// <inheritdoc />
-        public void ChangeEasyPassword(User user, string newPassword, string newPasswordHash)
-        {
-            if (newPassword != null)
-            {
-                newPasswordHash = _cryptographyProvider.CreatePasswordHash(newPassword).ToString();
-            }
-
-            if (string.IsNullOrWhiteSpace(newPasswordHash))
-            {
-                throw new ArgumentNullException(nameof(newPasswordHash));
-            }
-
-            user.EasyPassword = newPasswordHash;
-        }
-
-        /// <inheritdoc />
-        public string? GetEasyPasswordHash(User user)
-        {
-            return string.IsNullOrEmpty(user.EasyPassword)
-                ? null
-                : Hex.Encode(PasswordHash.Parse(user.EasyPassword).Hash);
-        }
->>>>>>> upstream/master
     }
 }
