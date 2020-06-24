@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Net
 {
@@ -67,7 +68,7 @@ namespace Emby.Server.Implementations.Net
         /// <param name="multicastTimeToLive">The multicast time to live value for the acceptSocket.</param>
         /// <param name="localPort">The number of the local port to bind to.</param>
         /// <returns></returns>
-        public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
+        public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort, ILogger _logger)
         {
             if (ipAddress == null)
             {
@@ -89,6 +90,8 @@ namespace Emby.Server.Implementations.Net
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
             }
 
+            _logger.LogError("Created");
+
             var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
 
             try
@@ -100,6 +103,8 @@ namespace Emby.Server.Implementations.Net
             {
             }
 
+            _logger.LogError("Exclusive false");
+
             try
             {
                 // seeing occasional exceptions thrown on qnap
@@ -110,8 +115,14 @@ namespace Emby.Server.Implementations.Net
             {
             }
 
+            _logger.LogError("Reused");
+
             try
             {
+                retVal.EnableBroadcast = true; // CHANGE
+
+                _logger.LogError("Broadcast");
+
                 // retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
 
@@ -119,6 +130,8 @@ namespace Emby.Server.Implementations.Net
 
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse(ipAddress), localIp));
                 retVal.MulticastLoopback = true;
+
+                _logger.LogError("Sorted");
 
                 return new UdpSocket(retVal, localPort, localIp);
             }

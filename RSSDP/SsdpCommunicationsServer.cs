@@ -338,9 +338,12 @@ namespace Rssdp.Infrastructure
 
         private ISocket ListenForBroadcastsAsync()
         {
-            var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
+            var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort, _logger);
 
-            _ = ListenToSocketInternal(socket);
+            // TODO: remove this try and logging - testing purposes only.
+            _logger.LogError("Socket Created.");
+
+            _ = ListenToSocketInternal(socket, _logger);
 
             return socket;
         }
@@ -374,16 +377,16 @@ namespace Rssdp.Infrastructure
 
             foreach (var socket in sockets)
             {
-                _ = ListenToSocketInternal(socket);
+                _ = ListenToSocketInternal(socket, _logger);
             }
 
             return sockets;
         }
 
-        private async Task ListenToSocketInternal(ISocket socket)
+        private async Task ListenToSocketInternal(ISocket socket, ILogger logger)
         {
             var cancelled = false;
-            var receiveBuffer = new byte[8192];
+            var receiveBuffer = new byte[8192]; 
 
             while (!cancelled && !IsDisposed)
             {
@@ -393,6 +396,7 @@ namespace Rssdp.Infrastructure
 
                     if (result.ReceivedBytes > 0)
                     {
+                        _logger.LogError("processing...");
                         // Strange cannot convert compiler error here if I don't explicitly
                         // assign or cast to Action first. Assignment is easier to read,
                         // so went with that.
