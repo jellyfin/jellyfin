@@ -5,7 +5,10 @@ using System.Linq;
 using System.Reflection;
 using Jellyfin.Api;
 using Jellyfin.Api.Auth;
+using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
+using Jellyfin.Api.Auth.IgnoreSchedulePolicy;
+using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
@@ -15,6 +18,8 @@ using MediaBrowser.Common.Json;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -33,16 +38,19 @@ namespace Jellyfin.Server.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection AddJellyfinApiAuthorization(this IServiceCollection serviceCollection)
         {
+            serviceCollection.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreScheduleHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             return serviceCollection.AddAuthorizationCore(options =>
             {
                 options.AddPolicy(
-                    Policies.RequiresElevation,
+                    Policies.DefaultAuthorization,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new RequiresElevationRequirement());
+                        policy.AddRequirements(new DefaultAuthorizationRequirement());
                     });
                 options.AddPolicy(
                     Policies.FirstTimeSetupOrElevated,
@@ -50,6 +58,27 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.IgnoreSchedule,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new IgnoreScheduleRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.LocalAccessOnly,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new LocalAccessRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.RequiresElevation,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new RequiresElevationRequirement());
                     });
             });
         }
@@ -77,6 +106,10 @@ namespace Jellyfin.Server.Extensions
                 .AddCors(options =>
                 {
                     options.AddPolicy(ServerCorsPolicy.DefaultPolicyName, ServerCorsPolicy.DefaultPolicy);
+                })
+                .Configure<ForwardedHeadersOptions>(options =>
+                {
+                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
                 })
                 .AddMvc(opts =>
                 {
@@ -180,6 +213,31 @@ namespace Jellyfin.Server.Extensions
                         {
                             Type = "string",
                             Format = "string"
+                        })
+                });
+
+            /*
+             * Support BlurHash dictionary
+             */
+            options.MapType<Dictionary<ImageType, Dictionary<string, string>>>(() =>
+                new OpenApiSchema
+                {
+                    Type = "object",
+                    Properties = typeof(ImageType).GetEnumNames().ToDictionary(
+                        name => name,
+                        name => new OpenApiSchema
+                        {
+                            Type = "object", Properties = new Dictionary<string, OpenApiSchema>
+                            {
+                                {
+                                    "string",
+                                    new OpenApiSchema
+                                    {
+                                        Type = "string",
+                                        Format = "string"
+                                    }
+                                }
+                            }
                         })
                 });
         }

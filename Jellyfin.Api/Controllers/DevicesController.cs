@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Devices;
@@ -17,7 +15,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Devices Controller.
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class DevicesController : BaseJellyfinApiController
     {
         private readonly IDeviceManager _deviceManager;
@@ -105,12 +103,12 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="id">Device Id.</param>
         /// <param name="deviceOptions">Device Options.</param>
-        /// <response code="200">Device options updated.</response>
+        /// <response code="204">Device options updated.</response>
         /// <response code="404">Device not found.</response>
-        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
+        /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpPost("Options")]
         [Authorize(Policy = Policies.RequiresElevation)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateDeviceOptions(
             [FromQuery, BindRequired] string id,
@@ -123,18 +121,19 @@ namespace Jellyfin.Api.Controllers
             }
 
             _deviceManager.UpdateDeviceOptions(id, deviceOptions);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
         /// Deletes a device.
         /// </summary>
         /// <param name="id">Device Id.</param>
-        /// <response code="200">Device deleted.</response>
+        /// <response code="204">Device deleted.</response>
         /// <response code="404">Device not found.</response>
-        /// <returns>An <see cref="OkResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
+        /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult DeleteDevice([FromQuery, BindRequired] string id)
         {
             var existingDevice = _deviceManager.GetDevice(id);
@@ -150,7 +149,7 @@ namespace Jellyfin.Api.Controllers
                 _sessionManager.Logout(session);
             }
 
-            return Ok();
+            return NoContent();
         }
     }
 }

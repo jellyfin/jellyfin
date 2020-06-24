@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
@@ -15,6 +15,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 
 namespace MediaBrowser.Api.Movies
 {
@@ -251,7 +253,12 @@ namespace MediaBrowser.Api.Movies
             return categories.OrderBy(i => i.RecommendationType);
         }
 
-        private IEnumerable<RecommendationDto> GetWithDirector(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithDirector(
+            User user,
+            IEnumerable<string> names,
+            int itemLimit,
+            DtoOptions dtoOptions,
+            RecommendationType type)
         {
             var itemTypes = new List<string> { typeof(Movie).Name };
             if (ServerConfigurationManager.Configuration.EnableExternalContentInSuggestions)

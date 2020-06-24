@@ -312,7 +312,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!request.IsPlayed.HasValue)
             {
-                if (user.Configuration.HidePlayedInLatest)
+                if (user.HidePlayedInLatest)
                 {
                     request.IsPlayed = false;
                 }

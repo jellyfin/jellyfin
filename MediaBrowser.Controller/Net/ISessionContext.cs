@@ -1,4 +1,4 @@
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Services;
 
