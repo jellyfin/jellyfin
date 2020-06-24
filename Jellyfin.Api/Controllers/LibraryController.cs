@@ -31,6 +31,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
@@ -102,6 +103,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileStreamResult"/> with the original file.</returns>
         [HttpGet("/Items/{itemId}/File")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult GetFile([FromRoute] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -128,6 +131,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "startIndex", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "limit", Justification = "Imported from ServiceStack")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetCriticReviews(
             [FromRoute] Guid itemId,
             [FromQuery] int? startIndex,
@@ -147,6 +151,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The item theme songs.</returns>
         [HttpGet("/Items/{itemId}/ThemeSongs")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<ThemeMediaResult> GetThemeSongs(
             [FromRoute] Guid itemId,
             [FromQuery] Guid userId,
@@ -211,6 +217,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The item theme videos.</returns>
         [HttpGet("/Items/{itemId}/ThemeVideos")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<ThemeMediaResult> GetThemeVideos(
             [FromRoute] Guid itemId,
             [FromQuery] Guid userId,
@@ -273,6 +281,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Theme songs and videos returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>The item theme videos.</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<AllThemeMediaResult> GetThemeMedia(
             [FromRoute] Guid itemId,
             [FromQuery] Guid userId,
@@ -303,6 +312,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpGet("/Library/Refresh")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> RefreshLibrary()
         {
             try
@@ -326,6 +336,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpDelete("/Items/{itemId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult DeleteItem(Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -354,6 +366,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpDelete("/Items")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult DeleteItems([FromQuery] string ids)
         {
             var itemIds = string.IsNullOrWhiteSpace(ids)
@@ -394,6 +408,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Item counts.</returns>
         [HttpGet("/Items/Counts")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<ItemCounts> GetItemCounts(
             [FromQuery] Guid userId,
             [FromQuery] bool? isFavorite)
@@ -427,6 +442,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Item parents.</returns>
         [HttpGet("/Items/{itemId}/Ancestors")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute] Guid itemId, [FromQuery] Guid userId)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -467,6 +484,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>List of physical paths.</returns>
         [HttpGet("/Library/PhysicalPaths")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<string>> GetPhysicalPaths()
         {
             return Ok(_libraryManager.RootFolder.Children
@@ -477,9 +495,11 @@ namespace Jellyfin.Api.Controllers
         /// Gets all user media folders.
         /// </summary>
         /// <param name="isHidden">Optional. Filter by folders that are marked hidden, or not.</param>
+        /// <response code="200">Media folders returned.</response>
         /// <returns>List of user media folders.</returns>
         [HttpGet("/Library/MediaFolders")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetMediaFolders([FromQuery] bool? isHidden)
         {
             var items = _libraryManager.GetUserRootFolder().Children.Concat(_libraryManager.RootFolder.VirtualChildren).OrderBy(i => i.SortName).ToList();
@@ -510,6 +530,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Library/Series/Added")]
         [HttpPost("/Library/Series/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostUpdatedSeries([FromQuery] string tvdbId)
         {
             var series = _libraryManager.GetItemList(new InternalItemsQuery
@@ -539,6 +560,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Library/Movies/Added")]
         [HttpPost("/Library/Movies/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostUpdatedMovies([FromRoute] string tmdbId, [FromRoute] string imdbId)
         {
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
@@ -579,6 +601,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("/Library/Media/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostUpdatedMedia([FromBody, BindRequired] MediaUpdateInfoDto[] updates)
         {
             foreach (var item in updates)
@@ -599,6 +622,8 @@ namespace Jellyfin.Api.Controllers
         /// <exception cref="ArgumentException">User can't download or item can't be downloaded.</exception>
         [HttpGet("/Items/{itemId}/Download")]
         [Authorize(Policy = Policies.Download)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult GetDownload([FromRoute] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -662,6 +687,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
+        /// <response code="200">Similar items returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>
         [HttpGet("/Artists/{itemId}/Similar")]
         [HttpGet("/Items/{itemId}/Similar")]
@@ -673,6 +699,7 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableUserData", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageTypeLimit", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableImageTypes", Justification = "Imported from ServiceStack")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
             [FromRoute] Guid itemId,
             [FromQuery] string excludeArtistIds,
@@ -728,6 +755,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Library options info.</returns>
         [HttpGet("/Libraries/AvailableOptions")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo([FromQuery] string libraryContentType, [FromQuery] bool isNewLibrary)
         {
             var result = new LibraryOptionsResultDto();
