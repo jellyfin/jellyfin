@@ -43,3 +43,5 @@ jobs:
           NugetPackageName: Jellyfin.Common
           AssemblyFileName: MediaBrowser.Common.dll
       LinuxImage: 'ubuntu-latest'
+
+  - template: azure-pipelines-package.yml

@@ -20,6 +20,7 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.CreateUserLoggingConfigFile),
             typeof(Routines.MigrateActivityLogDb),
             typeof(Routines.RemoveDuplicateExtras),
+            typeof(Routines.AddDefaultPluginRepository),
             typeof(Routines.MigrateUserDb)
         };
 

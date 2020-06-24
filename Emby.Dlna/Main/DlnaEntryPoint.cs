@@ -35,8 +35,6 @@ namespace Emby.Dlna.Main
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
-
-        private PlayToManager _manager;
         private readonly ISessionManager _sessionManager;
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
@@ -47,14 +45,13 @@ namespace Emby.Dlna.Main
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-
         private readonly IDeviceDiscovery _deviceDiscovery;
-
-        private SsdpDevicePublisher _Publisher;
-
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
+        private readonly object _syncLock = new object();
 
+        private PlayToManager _manager;
+        private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
 
         internal IContentDirectory ContentDirectory { get; private set; }
@@ -181,7 +178,7 @@ namespace Emby.Dlna.Main
                     var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
                                                    OperatingSystem.Id == OperatingSystemId.Linux;
 
-                    _communicationsServer = new SsdpCommunicationsServer(_config, _socketFactory, _networkManager, _logger, enableMultiSocketBinding)
+                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
                         IsShared = true
                     };
@@ -232,20 +229,22 @@ namespace Emby.Dlna.Main
                 return;
             }
 
-            if (_Publisher != null)
+            if (_publisher != null)
             {
                 return;
             }
 
             try
             {
-                _Publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost);
-                _Publisher.LogFunction = LogMessage;
-                _Publisher.SupportPnpRootDevice = false;
+                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                {
+                    LogFunction = LogMessage,
+                    SupportPnpRootDevice = false
+                };
 
                 await RegisterServerEndpoints().ConfigureAwait(false);
 
-                _Publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
             }
             catch (Exception ex)
             {
@@ -264,6 +263,12 @@ namespace Emby.Dlna.Main
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     // Not supporting IPv6 right now
+                    continue;
+                }
+
+                // Limit to LAN addresses only
+                if (!_networkManager.IsAddressInSubnets(address, true, true))
+                {
                     continue;
                 }
 
@@ -288,13 +293,13 @@ namespace Emby.Dlna.Main
                 };
 
                 SetProperies(device, fullService);
-                _Publisher.AddDevice(device);
+                _publisher.AddDevice(device);
 
                 var embeddedDevices = new[]
                 {
                     "urn:schemas-upnp-org:service:ContentDirectory:1",
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
-                    //"urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
+                    // "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
                 };
 
                 foreach (var subDevice in embeddedDevices)
@@ -326,7 +331,7 @@ namespace Emby.Dlna.Main
 
         private void SetProperies(SsdpDevice device, string fullDeviceType)
         {
-            var service = fullDeviceType.Replace("urn:", string.Empty).Replace(":1", string.Empty);
+            var service = fullDeviceType.Replace("urn:", string.Empty, StringComparison.OrdinalIgnoreCase).Replace(":1", string.Empty, StringComparison.OrdinalIgnoreCase);
 
             var serviceParts = service.Split(':');
 
@@ -337,7 +342,6 @@ namespace Emby.Dlna.Main
             device.DeviceType = serviceParts[2];
         }
 
-        private readonly object _syncLock = new object();
         private void StartPlayToManager()
         {
             lock (_syncLock)
@@ -416,11 +420,11 @@ namespace Emby.Dlna.Main
 
         public void DisposeDevicePublisher()
         {
-            if (_Publisher != null)
+            if (_publisher != null)
             {
                 _logger.LogInformation("Disposing SsdpDevicePublisher");
-                _Publisher.Dispose();
-                _Publisher = null;
+                _publisher.Dispose();
+                _publisher = null;
             }
         }
     }
