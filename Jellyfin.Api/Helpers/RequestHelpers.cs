@@ -32,23 +32,6 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Splits a comma delimited string and parses Guids.
-        /// </summary>
-        /// <param name="value">Input value.</param>
-        /// <returns>Parsed Guids.</returns>
-        public static Guid[] GetGuids(string value)
-        {
-            if (value == null)
-            {
-                return Array.Empty<Guid>();
-            }
-
-            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(i => new Guid(i))
-                .ToArray();
-        }
-
-        /// <summary>
         /// Checks if the user can update an entry.
         /// </summary>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
@@ -104,7 +87,7 @@ namespace Jellyfin.Api.Helpers
                 return Array.Empty<Guid>();
             }
 
-            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            return Split(value, ',', true)
                 .Select(i => new Guid(i))
                 .ToArray();
         }
