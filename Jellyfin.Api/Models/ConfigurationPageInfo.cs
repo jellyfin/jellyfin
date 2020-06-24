@@ -1,13 +1,18 @@
-#pragma warning disable CS1591
-
-using MediaBrowser.Common.Plugins;
+﻿using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
 
-namespace MediaBrowser.WebDashboard.Api
+namespace Jellyfin.Api.Models
 {
+    /// <summary>
+    /// The configuration page info.
+    /// </summary>
     public class ConfigurationPageInfo
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
+        /// </summary>
+        /// <param name="page">Instance of <see cref="IPluginConfigurationPage"/> interface.</param>
         public ConfigurationPageInfo(IPluginConfigurationPage page)
         {
             Name = page.Name;
@@ -22,6 +27,11 @@ namespace MediaBrowser.WebDashboard.Api
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
+        /// </summary>
+        /// <param name="plugin">Instance of <see cref="IPlugin"/> interface.</param>
+        /// <param name="page">Instance of <see cref="PluginPageInfo"/> interface.</param>
         public ConfigurationPageInfo(IPlugin plugin, PluginPageInfo page)
         {
             Name = page.Name;
@@ -40,13 +50,25 @@ namespace MediaBrowser.WebDashboard.Api
         /// <value>The name.</value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the configurations page is enabled in the main menu.
+        /// </summary>
         public bool EnableInMainMenu { get; set; }
 
-        public string MenuSection { get; set; }
+        /// <summary>
+        /// Gets or sets the menu section.
+        /// </summary>
+        public string? MenuSection { get; set; }
 
-        public string MenuIcon { get; set; }
+        /// <summary>
+        /// Gets or sets the menu icon.
+        /// </summary>
+        public string? MenuIcon { get; set; }
 
-        public string DisplayName { get; set; }
+        /// <summary>
+        /// Gets or sets the display name.
+        /// </summary>
+        public string? DisplayName { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the configuration page.
@@ -58,6 +80,6 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets or sets the plugin id.
         /// </summary>
         /// <value>The plugin id.</value>
-        public string PluginId { get; set; }
+        public string? PluginId { get; set; }
     }
 }
