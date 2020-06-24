@@ -23,7 +23,7 @@ namespace Jellyfin.Api.Extensions
         /// <param name="dtoOptions">DtoOptions object.</param>
         /// <param name="fields">Comma delimited string of fields.</param>
         /// <returns>Modified DtoOptions object.</returns>
-        internal static DtoOptions AddItemFields(this DtoOptions dtoOptions, string fields)
+        internal static DtoOptions AddItemFields(this DtoOptions dtoOptions, string? fields)
         {
             if (string.IsNullOrEmpty(fields))
             {

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Helpers
@@ -53,29 +53,6 @@ namespace Jellyfin.Api.Helpers
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Gets the item fields.
-        /// </summary>
-        /// <param name="fields">The fields.</param>
-        /// <returns>IEnumerable{ItemFields}.</returns>
-        public static ItemFields[] GetItemFields(string? fields)
-        {
-            if (string.IsNullOrEmpty(fields))
-            {
-                return Array.Empty<ItemFields>();
-            }
-
-            return fields.Split(',').Select(v =>
-            {
-                if (Enum.TryParse(v, true, out ItemFields value))
-                {
-                    return (ItemFields?)value;
-                }
-
-                return null;
-            }).Where(i => i.HasValue).Select(i => i!.Value).ToArray();
         }
 
         /// <summary>
