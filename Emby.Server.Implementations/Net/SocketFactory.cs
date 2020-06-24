@@ -4,7 +4,6 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using MediaBrowser.Model.Net;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Net
 {
@@ -123,6 +122,7 @@ namespace Emby.Server.Implementations.Net
 
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse(ipAddress), localIp));
                 retVal.MulticastLoopback = true;
+
                 return new UdpSocket(retVal, localPort, localIp);
             }
             catch

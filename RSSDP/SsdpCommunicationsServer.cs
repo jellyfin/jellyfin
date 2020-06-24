@@ -338,7 +338,8 @@ namespace Rssdp.Infrastructure
 
         private ISocket ListenForBroadcastsAsync()
         {
-            var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);            
+            var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
+            
             _ = ListenToSocketInternal(socket);
 
             return socket;
@@ -382,7 +383,7 @@ namespace Rssdp.Infrastructure
         private async Task ListenToSocketInternal(ISocket socket)
         {
             var cancelled = false;
-            var receiveBuffer = new byte[8192]; 
+            var receiveBuffer = new byte[8192];
 
             while (!cancelled && !IsDisposed)
             {

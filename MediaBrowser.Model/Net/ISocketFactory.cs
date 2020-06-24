@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System.Net;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Model.Net
 {
@@ -25,6 +24,5 @@ namespace MediaBrowser.Model.Net
         /// <param name="localPort">The local port to bind to.</param>
         /// <returns>A <see cref="ISocket"/> implementation.</returns>
         ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort);
-
     }
 }
