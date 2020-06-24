@@ -87,7 +87,7 @@ namespace Jellyfin.Api.Helpers
                 return Array.Empty<Guid>();
             }
 
-            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            return Split(value, ',', true)
                 .Select(i => new Guid(i))
                 .ToArray();
         }
