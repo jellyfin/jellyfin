@@ -23,9 +23,8 @@ namespace MediaBrowser.Model.Net
         /// <param name="ipAddress">The multicast IP address to bind to.</param>
         /// <param name="multicastTimeToLive">The multicast time to live value. Actually a maximum number of network hops for UDP packets.</param>
         /// <param name="localPort">The local port to bind to.</param>
-        /// <param name="logger"></param>
         /// <returns>A <see cref="ISocket"/> implementation.</returns>
-        ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort, ILogger logger);
+        ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort);
 
     }
 }
