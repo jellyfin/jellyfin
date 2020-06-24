@@ -47,7 +47,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageRefreshMode">(Optional) Specifies the image refresh mode.</param>
         /// <param name="replaceAllMetadata">(Optional) Determines if metadata should be replaced. Only applicable if mode is FullRefresh.</param>
         /// <param name="replaceAllImages">(Optional) Determines if images should be replaced. Only applicable if mode is FullRefresh.</param>
-        /// <param name="recursive">(Unused) Indicates if the refresh should occur recursively.</param>
         /// <response code="204">Item metadata refresh queued.</response>
         /// <response code="404">Item to refresh not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
@@ -55,14 +54,12 @@ namespace Jellyfin.Api.Controllers
         [Description("Refreshes metadata for an item.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "recursive", Justification = "Imported from ServiceStack")]
         public ActionResult Post(
             [FromRoute] Guid itemId,
             [FromQuery] MetadataRefreshMode metadataRefreshMode = MetadataRefreshMode.None,
             [FromQuery] MetadataRefreshMode imageRefreshMode = MetadataRefreshMode.None,
             [FromQuery] bool replaceAllMetadata = false,
-            [FromQuery] bool replaceAllImages = false,
-            [FromQuery] bool recursive = false)
+            [FromQuery] bool replaceAllImages = false)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)

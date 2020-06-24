@@ -68,17 +68,14 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="isHidden">Optional filter by IsHidden=true or false.</param>
         /// <param name="isDisabled">Optional filter by IsDisabled=true or false.</param>
-        /// <param name="isGuest">Optional filter by IsGuest=true or false.</param>
         /// <response code="200">Users returned.</response>
         /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the users.</returns>
         [HttpGet]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isGuest", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<UserDto>> GetUsers(
             [FromQuery] bool? isHidden,
-            [FromQuery] bool? isDisabled,
-            [FromQuery] bool? isGuest)
+            [FromQuery] bool? isDisabled)
         {
             var users = Get(isHidden, isDisabled, false, false);
             return Ok(users);
