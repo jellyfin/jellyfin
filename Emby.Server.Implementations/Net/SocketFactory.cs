@@ -61,6 +61,9 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
+                // Without this an access denied occurs on some systems.
+                retVal.EnableBroadcast = true;
+
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
                 return new UdpSocket(retVal, localPort, addr);
             }
@@ -112,6 +115,8 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
+                // Without this an access denied occurs on some systems.
+                retVal.EnableBroadcast = true;
                 if (localIpAddress.AddressFamily == AddressFamily.InterNetwork)
                 {
                     retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, SsdpConstants.SsdpDefaultMulticastTimeToLive);
@@ -206,6 +211,9 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
+                // Without this an access denied occurs on some systems.
+                retVal.EnableBroadcast = true;
+
                 IPAddress localIp;
                 if (addr.AddressFamily == AddressFamily.InterNetwork)
                 {
