@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -45,8 +46,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="excludeArtistIds">Optional. Ids of artists to exclude.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
+        /// <response code="200">Similar albums returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with similar albums.</returns>
         [HttpGet("/Albums/{albumId}/Similar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarAlbums(
             [FromRoute] string albumId,
             [FromQuery] Guid userId,
@@ -75,8 +78,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="excludeArtistIds">Optional. Ids of artists to exclude.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
+        /// <response code="200">Similar artists returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with similar artists.</returns>
         [HttpGet("/Artists/{artistId}/Similar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarArtists(
             [FromRoute] string artistId,
             [FromQuery] Guid userId,
