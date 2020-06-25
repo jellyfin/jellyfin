@@ -16,7 +16,7 @@
 <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-core/?utm_source=widget">
 <img alt="Translation Status" src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-core/svg-badge.svg"/>
 </a>
-<a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=1">
+<a href="https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=29">
 <img alt="Azure Builds" src="https://dev.azure.com/jellyfin-project/jellyfin/_apis/build/status/Jellyfin%20CI"/>
 </a>
 <a href="https://hub.docker.com/r/jellyfin/jellyfin">
