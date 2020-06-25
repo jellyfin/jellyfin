@@ -111,7 +111,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Deletes the specified user.
         /// </summary>
-        /// <param name="userId">The if of the user to be deleted.</param>
+        /// <param name="userId">The id of the user to be deleted.</param>
         void DeleteUser(Guid userId);
 
         /// <summary>
