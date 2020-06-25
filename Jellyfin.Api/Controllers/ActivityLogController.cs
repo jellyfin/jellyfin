@@ -1,7 +1,5 @@
-#nullable enable
-#pragma warning disable CA1801
-
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
@@ -37,7 +35,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="minDate">Optional. The minimum date. Format = ISO.</param>
-        /// <param name="hasUserId">Optional. Only returns activities that have a user associated.</param>
         /// <response code="200">Activity log returned.</response>
         /// <returns>A <see cref="QueryResult{ActivityLogEntry}"/> containing the log entries.</returns>
         [HttpGet("Entries")]
@@ -45,8 +42,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<ActivityLogEntry>> GetLogEntries(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] DateTime? minDate,
-            bool? hasUserId)
+            [FromQuery] DateTime? minDate)
         {
             var filterFunc = new Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>>(
                 entries => entries.Where(entry => entry.DateCreated >= minDate));

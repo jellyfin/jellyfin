@@ -1,9 +1,8 @@
-#nullable enable
-
 using System;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -17,7 +16,7 @@ namespace Jellyfin.Api.Controllers
     /// Attachments controller.
     /// </summary>
     [Route("Videos")]
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class VideoAttachmentsController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;
@@ -45,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Attachment retrieved.</response>
         /// <response code="404">Video or attachment not found.</response>
         /// <returns>An <see cref="FileStreamResult"/> containing the attachment stream on success, or a <see cref="NotFoundResult"/> if the attachment could not be found.</returns>
-        [HttpGet("{VideoID}/{MediaSourceID}/Attachments/{Index}")]
+        [HttpGet("{videoId}/{mediaSourceId}/Attachments/{index}")]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

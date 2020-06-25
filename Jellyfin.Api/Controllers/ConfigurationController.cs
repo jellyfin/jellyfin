@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -18,7 +16,7 @@ namespace Jellyfin.Api.Controllers
     /// Configuration Controller.
     /// </summary>
     [Route("System")]
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ConfigurationController : BaseJellyfinApiController
     {
         private readonly IServerConfigurationManager _configurationManager;
@@ -53,15 +51,15 @@ namespace Jellyfin.Api.Controllers
         /// Updates application configuration.
         /// </summary>
         /// <param name="configuration">Configuration.</param>
-        /// <response code="200">Configuration updated.</response>
+        /// <response code="204">Configuration updated.</response>
         /// <returns>Update status.</returns>
         [HttpPost("Configuration")]
         [Authorize(Policy = Policies.RequiresElevation)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateConfiguration([FromBody, BindRequired] ServerConfiguration configuration)
         {
             _configurationManager.ReplaceConfiguration(configuration);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -70,7 +68,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="key">Configuration key.</param>
         /// <response code="200">Configuration returned.</response>
         /// <returns>Configuration.</returns>
-        [HttpGet("Configuration/{Key}")]
+        [HttpGet("Configuration/{key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<object> GetNamedConfiguration([FromRoute] string key)
         {
@@ -81,17 +79,17 @@ namespace Jellyfin.Api.Controllers
         /// Updates named configuration.
         /// </summary>
         /// <param name="key">Configuration key.</param>
-        /// <response code="200">Named configuration updated.</response>
+        /// <response code="204">Named configuration updated.</response>
         /// <returns>Update status.</returns>
-        [HttpPost("Configuration/{Key}")]
+        [HttpPost("Configuration/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string key)
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType).ConfigureAwait(false);
             _configurationManager.SaveConfiguration(key, configuration);
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
@@ -111,15 +109,15 @@ namespace Jellyfin.Api.Controllers
         /// Updates the path to the media encoder.
         /// </summary>
         /// <param name="mediaEncoderPath">Media encoder path form body.</param>
-        /// <response code="200">Media encoder path updated.</response>
+        /// <response code="204">Media encoder path updated.</response>
         /// <returns>Status.</returns>
         [HttpPost("MediaEncoder/Path")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateMediaEncoderPath([FromForm, BindRequired] MediaEncoderPathDto mediaEncoderPath)
         {
             _mediaEncoder.UpdateEncoderPath(mediaEncoderPath.Path, mediaEncoderPath.PathType);
-            return Ok();
+            return NoContent();
         }
     }
 }

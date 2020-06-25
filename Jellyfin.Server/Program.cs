@@ -14,9 +14,9 @@ using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Networking;
+using Jellyfin.Api.Controllers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.WebDashboard.Api;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
@@ -172,7 +172,7 @@ namespace Jellyfin.Server
                 // If hosting the web client, validate the client content path
                 if (startupConfig.HostWebClient())
                 {
-                    string webContentPath = DashboardService.GetDashboardUIPath(startupConfig, appHost.ServerConfigurationManager);
+                    string? webContentPath = DashboardController.GetWebClientUiPath(startupConfig, appHost.ServerConfigurationManager);
                     if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                     {
                         throw new InvalidOperationException(

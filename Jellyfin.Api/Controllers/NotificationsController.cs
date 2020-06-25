@@ -1,11 +1,10 @@
-#nullable enable
-#pragma warning disable CA1801
-
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Models.NotificationDtos;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Dto;
@@ -37,19 +36,11 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets a user's notifications.
         /// </summary>
-        /// <param name="userId">The user's ID.</param>
-        /// <param name="isRead">An optional filter by notification read state.</param>
-        /// <param name="startIndex">The optional index to start at. All notifications with a lower index will be omitted from the results.</param>
-        /// <param name="limit">An optional limit on the number of notifications returned.</param>
         /// <response code="200">Notifications returned.</response>
         /// <returns>An <see cref="OkResult"/> containing a list of notifications.</returns>
-        [HttpGet("{UserID}")]
+        [HttpGet("{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<NotificationResultDto> GetNotifications(
-            [FromRoute] string userId,
-            [FromQuery] bool? isRead,
-            [FromQuery] int? startIndex,
-            [FromQuery] int? limit)
+        public ActionResult<NotificationResultDto> GetNotifications()
         {
             return new NotificationResultDto();
         }
@@ -57,13 +48,11 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets a user's notification summary.
         /// </summary>
-        /// <param name="userId">The user's ID.</param>
         /// <response code="200">Summary of user's notifications returned.</response>
         /// <returns>An <cref see="OkResult"/> containing a summary of the users notifications.</returns>
-        [HttpGet("{UserID}/Summary")]
+        [HttpGet("{userId}/Summary")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<NotificationsSummaryDto> GetNotificationsSummary(
-            [FromRoute] string userId)
+        public ActionResult<NotificationsSummaryDto> GetNotificationsSummary()
         {
             return new NotificationsSummaryDto();
         }
@@ -99,10 +88,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="description">The description of the notification.</param>
         /// <param name="url">The URL of the notification.</param>
         /// <param name="level">The level of the notification.</param>
-        /// <response code="200">Notification sent.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
+        /// <response code="204">Notification sent.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("Admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CreateAdminNotification(
             [FromQuery] string name,
             [FromQuery] string description,
@@ -115,45 +104,40 @@ namespace Jellyfin.Api.Controllers
                 Description = description,
                 Url = url,
                 Level = level ?? NotificationLevel.Normal,
-                UserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id).ToArray(),
+                UserIds = _userManager.Users
+                    .Where(user => user.HasPermission(PermissionKind.IsAdministrator))
+                    .Select(user => user.Id)
+                    .ToArray(),
                 Date = DateTime.UtcNow,
             };
 
             _notificationManager.SendNotification(notification, CancellationToken.None);
 
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
         /// Sets notifications as read.
         /// </summary>
-        /// <param name="userId">The userID.</param>
-        /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as read.</param>
-        /// <response code="200">Notifications set as read.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
-        [HttpPost("{UserID}/Read")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult SetRead(
-            [FromRoute] string userId,
-            [FromQuery] string ids)
+        /// <response code="204">Notifications set as read.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
+        [HttpPost("{userId}/Read")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SetRead()
         {
-            return Ok();
+            return NoContent();
         }
 
         /// <summary>
         /// Sets notifications as unread.
         /// </summary>
-        /// <param name="userId">The userID.</param>
-        /// <param name="ids">A comma-separated list of the IDs of notifications which should be set as unread.</param>
-        /// <response code="200">Notifications set as unread.</response>
-        /// <returns>An <cref see="OkResult"/>.</returns>
-        [HttpPost("{UserID}/Unread")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult SetUnread(
-            [FromRoute] string userId,
-            [FromQuery] string ids)
+        /// <response code="204">Notifications set as unread.</response>
+        /// <returns>A <cref see="NoContentResult"/>.</returns>
+        [HttpPost("{userId}/Unread")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SetUnread()
         {
-            return Ok();
+            return NoContent();
         }
     }
 }

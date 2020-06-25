@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Api.UserLibrary;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -859,7 +860,7 @@ namespace MediaBrowser.Api.LiveTv
                 throw new SecurityException("Anonymous live tv management is not allowed.");
             }
 
-            if (!user.Policy.EnableLiveTvManagement)
+            if (!user.HasPermission(PermissionKind.EnableLiveTvManagement))
             {
                 throw new SecurityException("The current user does not have permission to manage live tv.");
             }
