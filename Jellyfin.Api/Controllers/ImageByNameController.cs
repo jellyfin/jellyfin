@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -43,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Retrieved list of images.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("General")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetGeneralImages()
         {
@@ -58,7 +59,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Image stream retrieved.</response>
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
-        [HttpGet("General/{Name}/{Type}")]
+        [HttpGet("General/{name}/{type}")]
         [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -88,7 +89,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Retrieved list of images.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("Ratings")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetRatingImages()
         {
@@ -103,7 +104,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Image stream retrieved.</response>
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
-        [HttpGet("Ratings/{Theme}/{Name}")]
+        [HttpGet("Ratings/{theme}/{name}")]
         [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -121,7 +122,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Image list retrieved.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of images.</returns>
         [HttpGet("MediaInfo")]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<ImageByNameInfo>> GetMediaInfoImages()
         {
@@ -136,7 +137,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Image stream retrieved.</response>
         /// <response code="404">Image not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
-        [HttpGet("MediaInfo/{Theme}/{Name}")]
+        [HttpGet("MediaInfo/{theme}/{name}")]
         [AllowAnonymous]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]

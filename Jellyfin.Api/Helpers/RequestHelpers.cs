@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -72,6 +73,23 @@ namespace Jellyfin.Api.Helpers
             }
 
             return session;
+        }
+
+        /// <summary>
+        /// Get Guid array from string.
+        /// </summary>
+        /// <param name="value">String value.</param>
+        /// <returns>Guid array.</returns>
+        internal static Guid[] GetGuids(string? value)
+        {
+            if (value == null)
+            {
+                return Array.Empty<Guid>();
+            }
+
+            return Split(value, ',', true)
+                .Select(i => new Guid(i))
+                .ToArray();
         }
     }
 }

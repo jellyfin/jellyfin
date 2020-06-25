@@ -68,7 +68,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="key">Configuration key.</param>
         /// <response code="200">Configuration returned.</response>
         /// <returns>Configuration.</returns>
-        [HttpGet("Configuration/{Key}")]
+        [HttpGet("Configuration/{key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<object> GetNamedConfiguration([FromRoute] string key)
         {
@@ -81,7 +81,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="key">Configuration key.</param>
         /// <response code="204">Named configuration updated.</response>
         /// <returns>Update status.</returns>
-        [HttpPost("Configuration/{Key}")]
+        [HttpPost("Configuration/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string key)

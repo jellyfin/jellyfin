@@ -68,17 +68,14 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="isHidden">Optional filter by IsHidden=true or false.</param>
         /// <param name="isDisabled">Optional filter by IsDisabled=true or false.</param>
-        /// <param name="isGuest">Optional filter by IsGuest=true or false.</param>
         /// <response code="200">Users returned.</response>
         /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the users.</returns>
         [HttpGet]
-        [Authorize]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isGuest", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<UserDto>> GetUsers(
             [FromQuery] bool? isHidden,
-            [FromQuery] bool? isDisabled,
-            [FromQuery] bool? isGuest)
+            [FromQuery] bool? isDisabled)
         {
             var users = Get(isHidden, isDisabled, false, false);
             return Ok(users);
@@ -105,17 +102,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets a user by Id.
         /// </summary>
-        /// <param name="id">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <response code="200">User returned.</response>
         /// <response code="404">User not found.</response>
         /// <returns>An <see cref="UserDto"/> with information about the user or a <see cref="NotFoundResult"/> if the user was not found.</returns>
-        [HttpGet("{id}")]
+        [HttpGet("{userId}")]
         [Authorize(Policy = Policies.IgnoreSchedule)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<UserDto> GetUserById([FromRoute] Guid id)
+        public ActionResult<UserDto> GetUserById([FromRoute] Guid userId)
         {
-            var user = _userManager.GetUserById(id);
+            var user = _userManager.GetUserById(userId);
 
             if (user == null)
             {
@@ -129,17 +126,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Deletes a user.
         /// </summary>
-        /// <param name="id">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <response code="200">User deleted.</response>
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="NotFoundResult"/> if the user was not found.</returns>
-        [HttpDelete("{id}")]
+        [HttpDelete("{userId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteUser([FromRoute] Guid id)
+        public ActionResult DeleteUser([FromRoute] Guid userId)
         {
-            var user = _userManager.GetUserById(id);
+            var user = _userManager.GetUserById(userId);
 
             if (user == null)
             {
@@ -154,23 +151,23 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Authenticates a user.
         /// </summary>
-        /// <param name="id">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="pw">The password as plain text.</param>
         /// <param name="password">The password sha1-hash.</param>
         /// <response code="200">User authenticated.</response>
         /// <response code="403">Sha1-hashed password only is not allowed.</response>
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationResult"/>.</returns>
-        [HttpPost("{id}/Authenticate")]
+        [HttpPost("{userId}/Authenticate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
-            [FromRoute, Required] Guid id,
+            [FromRoute, Required] Guid userId,
             [FromQuery, BindRequired] string pw,
             [FromQuery, BindRequired] string password)
         {
-            var user = _userManager.GetUserById(id);
+            var user = _userManager.GetUserById(userId);
 
             if (user == null)
             {
@@ -230,27 +227,27 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a user's password.
         /// </summary>
-        /// <param name="id">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="request">The <see cref="UpdateUserPassword"/> request.</param>
         /// <response code="200">Password successfully reset.</response>
         /// <response code="403">User is not allowed to update the password.</response>
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
-        [HttpPost("{id}/Password")]
-        [Authorize]
+        [HttpPost("{userId}/Password")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateUserPassword(
-            [FromRoute] Guid id,
+            [FromRoute] Guid userId,
             [FromBody] UpdateUserPassword request)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, true))
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
                 return Forbid("User is not allowed to update the password.");
             }
 
-            var user = _userManager.GetUserById(id);
+            var user = _userManager.GetUserById(userId);
 
             if (user == null)
             {
@@ -288,27 +285,27 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a user's easy password.
         /// </summary>
-        /// <param name="id">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="request">The <see cref="UpdateUserEasyPassword"/> request.</param>
         /// <response code="200">Password successfully reset.</response>
         /// <response code="403">User is not allowed to update the password.</response>
         /// <response code="404">User not found.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="ForbidResult"/> or a <see cref="NotFoundResult"/> on failure.</returns>
-        [HttpPost("{id}/EasyPassword")]
-        [Authorize]
+        [HttpPost("{userId}/EasyPassword")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateUserEasyPassword(
-            [FromRoute] Guid id,
+            [FromRoute] Guid userId,
             [FromBody] UpdateUserEasyPassword request)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, true))
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
             {
                 return Forbid("User is not allowed to update the easy password.");
             }
 
-            var user = _userManager.GetUserById(id);
+            var user = _userManager.GetUserById(userId);
 
             if (user == null)
             {
@@ -330,19 +327,19 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a user.
         /// </summary>
-        /// <param name="id">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="updateUser">The updated user model.</param>
         /// <response code="204">User updated.</response>
         /// <response code="400">User information was not supplied.</response>
         /// <response code="403">User update forbidden.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure.</returns>
-        [HttpPost("{id}")]
-        [Authorize]
+        [HttpPost("{userId}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> UpdateUser(
-            [FromRoute] Guid id,
+            [FromRoute] Guid userId,
             [FromBody] UserDto updateUser)
         {
             if (updateUser == null)
@@ -350,12 +347,12 @@ namespace Jellyfin.Api.Controllers
                 return BadRequest();
             }
 
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, false))
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false))
             {
                 return Forbid("User update not allowed.");
             }
 
-            var user = _userManager.GetUserById(id);
+            var user = _userManager.GetUserById(userId);
 
             if (string.Equals(user.Username, updateUser.Name, StringComparison.Ordinal))
             {
@@ -374,19 +371,19 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a user policy.
         /// </summary>
-        /// <param name="id">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="newPolicy">The new user policy.</param>
         /// <response code="204">User policy updated.</response>
         /// <response code="400">User policy was not supplied.</response>
         /// <response code="403">User policy update forbidden.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure..</returns>
-        [HttpPost("{id}/Policy")]
-        [Authorize]
+        [HttpPost("{userId}/Policy")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public ActionResult UpdateUserPolicy(
-            [FromRoute] Guid id,
+            [FromRoute] Guid userId,
             [FromBody] UserPolicy newPolicy)
         {
             if (newPolicy == null)
@@ -394,7 +391,7 @@ namespace Jellyfin.Api.Controllers
                 return BadRequest();
             }
 
-            var user = _userManager.GetUserById(id);
+            var user = _userManager.GetUserById(userId);
 
             // If removing admin access
             if (!(newPolicy.IsAdministrator && user.HasPermission(PermissionKind.IsAdministrator)))
@@ -423,7 +420,7 @@ namespace Jellyfin.Api.Controllers
                 _sessionManager.RevokeUserTokens(user.Id, currentToken);
             }
 
-            _userManager.UpdatePolicy(id, newPolicy);
+            _userManager.UpdatePolicy(userId, newPolicy);
 
             return NoContent();
         }
@@ -431,25 +428,25 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a user configuration.
         /// </summary>
-        /// <param name="id">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="userConfig">The new user configuration.</param>
         /// <response code="204">User configuration updated.</response>
         /// <response code="403">User configuration update forbidden.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost("{id}/Configuration")]
-        [Authorize]
+        [HttpPost("{userId}/Configuration")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public ActionResult UpdateUserConfiguration(
-            [FromRoute] Guid id,
+            [FromRoute] Guid userId,
             [FromBody] UserConfiguration userConfig)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, id, false))
+            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false))
             {
                 return Forbid("User configuration update not allowed");
             }
 
-            _userManager.UpdateConfiguration(id, userConfig);
+            _userManager.UpdateConfiguration(userId, userConfig);
 
             return NoContent();
         }
