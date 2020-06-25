@@ -46,8 +46,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="ids">Item Ids to add to the collection.</param>
         /// <param name="isLocked">Whether or not to lock the new collection.</param>
         /// <param name="parentId">Optional. Create the collection within a specific folder.</param>
+        /// <response code="200">Collection created.</response>
         /// <returns>A <see cref="CollectionCreationOptions"/> with information about the new collection.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<CollectionCreationResult> CreateCollection(
             [FromQuery] string name,
             [FromQuery] string ids,
