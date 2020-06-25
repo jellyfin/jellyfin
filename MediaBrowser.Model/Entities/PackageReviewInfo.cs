@@ -36,6 +36,5 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the time of review.
         /// </summary>
         public DateTime timestamp { get; set; }
-
     }
 }

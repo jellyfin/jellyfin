@@ -551,10 +551,12 @@ namespace MediaBrowser.Api.Playback
                             {
                                 mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                             }
+
                             if (!allowAudioStreamCopy)
                             {
                                 mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                             }
+
                             mediaSource.TranscodingContainer = streamInfo.Container;
                             mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         }
@@ -646,7 +648,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 // Let's assume direct streaming a file is just as desirable as direct playing a remote url
@@ -656,7 +657,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 return i.Protocol switch
@@ -672,7 +672,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(originalList.IndexOf)
             .ToArray();
         }

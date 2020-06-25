@@ -14,7 +14,7 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Controller.LiveTv
 {
     /// <summary>
-    /// Manages all live tv services installed on the server
+    /// Manages all live tv services installed on the server.
     /// </summary>
     public interface ILiveTvManager
     {
@@ -286,8 +286,11 @@ namespace MediaBrowser.Controller.LiveTv
     public class ActiveRecordingInfo
     {
         public string Id { get; set; }
+
         public string Path { get; set; }
+
         public TimerInfo Timer { get; set; }
+
         public CancellationTokenSource CancellationTokenSource { get; set; }
     }
 }

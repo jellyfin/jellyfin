@@ -9,7 +9,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Trailer
+    /// Class Trailer.
     /// </summary>
     public class Trailer : Video, IHasLookupInfo<TrailerInfo>
     {

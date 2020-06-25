@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -33,7 +35,6 @@ namespace MediaBrowser.Providers.TV
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Series;
-
     }
 
     public class TvdbSeasonExternalId : IExternalId

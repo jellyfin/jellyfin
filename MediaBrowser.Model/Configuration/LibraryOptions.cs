@@ -10,17 +10,27 @@ namespace MediaBrowser.Model.Configuration
     public class LibraryOptions
     {
         public bool EnablePhotos { get; set; }
+
         public bool EnableRealtimeMonitor { get; set; }
+
         public bool EnableChapterImageExtraction { get; set; }
+
         public bool ExtractChapterImagesDuringLibraryScan { get; set; }
+
         public bool DownloadImagesInAdvance { get; set; }
+
         public MediaPathInfo[] PathInfos { get; set; }
 
         public bool SaveLocalMetadata { get; set; }
+
         public bool EnableInternetProviders { get; set; }
+
         public bool ImportMissingEpisodes { get; set; }
+
         public bool EnableAutomaticSeriesGrouping { get; set; }
+
         public bool EnableEmbeddedTitles { get; set; }
+
         public bool EnableEmbeddedEpisodeInfos { get; set; }
 
         public int AutomaticRefreshIntervalDays { get; set; }
@@ -38,17 +48,25 @@ namespace MediaBrowser.Model.Configuration
         public string MetadataCountryCode { get; set; }
 
         public string SeasonZeroDisplayName { get; set; }
+
         public string[] MetadataSavers { get; set; }
+
         public string[] DisabledLocalMetadataReaders { get; set; }
+
         public string[] LocalMetadataReaderOrder { get; set; }
 
         public string[] DisabledSubtitleFetchers { get; set; }
+
         public string[] SubtitleFetcherOrder { get; set; }
 
         public bool SkipSubtitlesIfEmbeddedSubtitlesPresent { get; set; }
+
         public bool SkipSubtitlesIfAudioTrackMatches { get; set; }
+
         public string[] SubtitleDownloadLanguages { get; set; }
+
         public bool RequirePerfectSubtitleMatch { get; set; }
+
         public bool SaveSubtitlesWithMedia { get; set; }
 
         public TypeOptions[] TypeOptions { get; set; }
@@ -89,17 +107,22 @@ namespace MediaBrowser.Model.Configuration
     public class MediaPathInfo
     {
         public string Path { get; set; }
+
         public string NetworkPath { get; set; }
     }
 
     public class TypeOptions
     {
         public string Type { get; set; }
+
         public string[] MetadataFetchers { get; set; }
+
         public string[] MetadataFetcherOrder { get; set; }
 
         public string[] ImageFetchers { get; set; }
+
         public string[] ImageFetcherOrder { get; set; }
+
         public ImageOption[] ImageOptions { get; set; }
 
         public ImageOption GetImageOptions(ImageType type)

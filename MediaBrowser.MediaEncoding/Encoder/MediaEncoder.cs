@@ -25,7 +25,7 @@ using System.Diagnostics;
 namespace MediaBrowser.MediaEncoding.Encoder
 {
     /// <summary>
-    /// Class MediaEncoder
+    /// Class MediaEncoder.
     /// </summary>
     public class MediaEncoder : IMediaEncoder, IDisposable
     {
@@ -111,6 +111,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 SetAvailableDecoders(validator.GetDecoders());
                 SetAvailableEncoders(validator.GetEncoders());
+                SetAvailableHwaccels(validator.GetHwaccels());
             }
 
             _logger.LogInformation("FFmpeg: {EncoderLocation}: {FfmpegPath}", EncoderLocation, _ffmpegPath ?? string.Empty);
@@ -165,7 +166,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Validates the supplied FQPN to ensure it is a ffmpeg utility.
         /// If checks pass, global variable FFmpegPath and EncoderLocation are updated.
         /// </summary>
-        /// <param name="path">FQPN to test</param>
+        /// <param name="path">FQPN to test.</param>
         /// <param name="location">Location (External, Custom, System) of tool</param>
         /// <returns></returns>
         private bool ValidatePath(string path, FFmpegLocation location)
@@ -228,6 +229,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 return inJellyfinPath;
             }
+
             var values = Environment.GetEnvironmentVariable("PATH");
 
             foreach (var path in values.Split(Path.PathSeparator))
@@ -247,14 +249,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public void SetAvailableEncoders(IEnumerable<string> list)
         {
             _encoders = list.ToList();
-            //_logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
+            // _logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
         }
 
         private List<string> _decoders = new List<string>();
         public void SetAvailableDecoders(IEnumerable<string> list)
         {
             _decoders = list.ToList();
-            //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
+            // _logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
+        }
+
+        private List<string> _hwaccels = new List<string>();
+        public void SetAvailableHwaccels(IEnumerable<string> list)
+        {
+            _hwaccels = list.ToList();
+            //_logger.Info("Supported hwaccels: {0}", string.Join(",", list.ToArray()));
         }
 
         public bool SupportsEncoder(string encoder)
@@ -265,6 +274,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public bool SupportsDecoder(string decoder)
         {
             return _decoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool SupportsHwaccel(string hwaccel)
+        {
+            return _hwaccels.Contains(hwaccel, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool CanEncodeToAudioCodec(string codec)
@@ -425,7 +439,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         /// <summary>
-        /// The us culture
+        /// The us culture.
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -500,11 +514,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         break;
                     case Video3DFormat.FullSideBySide:
                         vf = "crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
-                        //fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to 600.
+                        // fsbs crop width in half,set the display aspect,crop out any black bars we may have made the scale width to 600.
                         break;
                     case Video3DFormat.HalfTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
-                        //htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
+                        // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made the scale width to 600
                         break;
                     case Video3DFormat.FullTopAndBottom:
                         vf = "crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1,scale=600:trunc(600/dar/2)*2";
@@ -920,7 +934,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         var fileParts = _fileSystem.GetFileNameWithoutExtension(f).Split('_');
 
                         return fileParts.Length == 3 && string.Equals(title, fileParts[1], StringComparison.OrdinalIgnoreCase);
-
                     }).ToList();
 
                     // If this resulted in not getting any vobs, just take them all

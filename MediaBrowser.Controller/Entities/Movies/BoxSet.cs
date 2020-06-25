@@ -11,7 +11,7 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
-    /// Class BoxSet
+    /// Class BoxSet.
     /// </summary>
     public class BoxSet : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>
     {

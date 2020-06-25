@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -247,7 +249,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     ProductionYear = firstAired.Year,
                     SearchProviderName = Name,
                     ImageUrl = TvdbUtils.BannerUrl + seriesSearchResult.Banner
-
                 };
 
                 try

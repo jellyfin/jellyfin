@@ -102,20 +102,15 @@ namespace Emby.Server.Implementations.SyncPlay
                     return new SessionInfo[] { from };
                 case BroadcastType.AllGroup:
                     return _group.Participants.Values.Select(
-                        session => session.Session
-                    ).ToArray();
+                        session => session.Session).ToArray();
                 case BroadcastType.AllExceptCurrentSession:
                     return _group.Participants.Values.Select(
-                        session => session.Session
-                    ).Where(
-                        session => !session.Id.Equals(from.Id)
-                    ).ToArray();
+                        session => session.Session).Where(
+                        session => !session.Id.Equals(from.Id)).ToArray();
                 case BroadcastType.AllReady:
                     return _group.Participants.Values.Where(
-                        session => !session.IsBuffering
-                    ).Select(
-                        session => session.Session
-                    ).ToArray();
+                        session => !session.IsBuffering).Select(
+                        session => session.Session).ToArray();
                 default:
                     return Array.Empty<SessionInfo>();
             }
@@ -314,8 +309,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 // Playback synchronization will mainly happen client side
                 _group.IsPaused = false;
                 _group.LastActivity = DateTime.UtcNow.AddMilliseconds(
-                    delay
-                );
+                    delay);
 
                 var command = NewSyncPlayCommand(SendCommandType.Play);
                 SendCommand(session, BroadcastType.AllGroup, command, cancellationToken);
@@ -449,8 +443,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     {
                         // Client that was buffering is recovering, notifying others to resume
                         _group.LastActivity = currentTime.AddMilliseconds(
-                            delay
-                        );
+                            delay);
                         var command = NewSyncPlayCommand(SendCommandType.Play);
                         SendCommand(session, BroadcastType.AllExceptCurrentSession, command, cancellationToken);
                     }
@@ -461,8 +454,7 @@ namespace Emby.Server.Implementations.SyncPlay
                         delay = delay < _group.DefaulPing ? _group.DefaulPing : delay;
 
                         _group.LastActivity = currentTime.AddMilliseconds(
-                            delay
-                        );
+                            delay);
 
                         var command = NewSyncPlayCommand(SendCommandType.Play);
                         SendCommand(session, BroadcastType.AllGroup, command, cancellationToken);

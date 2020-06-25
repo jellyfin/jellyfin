@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -25,7 +27,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
     /// <summary>
-    /// Class MovieDbProvider
+    /// Class MovieDbProvider.
     /// </summary>
     public class TmdbMovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
@@ -129,7 +131,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         public string Name => TmdbUtils.ProviderName;
 
         /// <summary>
-        /// The _TMDB settings task
+        /// The _TMDB settings task.
         /// </summary>
         private TmdbSettingsResult _tmdbSettings;
 
@@ -149,7 +151,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 Url = string.Format(TmdbConfigUrl, TmdbUtils.ApiKey),
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (Stream json = response.Content)
@@ -195,7 +196,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         {
             var mainResult = await FetchMainResult(id, true, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
 
-            if (mainResult == null) return;
+            if (mainResult == null)
+            {
+                return;
+            }
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
@@ -313,7 +317,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <param name="id">The id.</param>
         /// <param name="isTmdbId">if set to <c>true</c> [is TMDB identifier].</param>
         /// <param name="language">The language.</param>
-        /// <param name="cancellationToken">The cancellation token</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{CompleteMovieData}.</returns>
         internal async Task<MovieResult> FetchMainResult(string id, bool isTmdbId, string language, CancellationToken cancellationToken)
         {
@@ -344,7 +348,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     AcceptHeader = TmdbUtils.AcceptHeader,
                     CacheMode = cacheMode,
                     CacheLength = cacheLength
-
                 }).ConfigureAwait(false))
                 {
                     using (var json = response.Content)
@@ -389,7 +392,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     AcceptHeader = TmdbUtils.AcceptHeader,
                     CacheMode = cacheMode,
                     CacheLength = cacheLength
-
                 }).ConfigureAwait(false))
                 {
                     using (var json = response.Content)

@@ -38,7 +38,7 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
-    /// Class ProviderManager
+    /// Class ProviderManager.
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
@@ -787,6 +787,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 searchInfo.SearchInfo.MetadataLanguage = _configurationManager.Configuration.PreferredMetadataLanguage;
             }
+
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
             {
                 searchInfo.SearchInfo.MetadataCountryCode = _configurationManager.Configuration.MetadataCountryCode;
@@ -831,7 +832,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            //_logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
+            // _logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }
@@ -905,7 +906,6 @@ namespace MediaBrowser.Providers.Manager
                         i.UrlFormatString,
                         value)
                 };
-
             }).Where(i => i != null).Concat(item.GetRelatedUrls());
         }
 

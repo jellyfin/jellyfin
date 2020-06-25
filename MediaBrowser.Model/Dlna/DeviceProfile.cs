@@ -27,16 +27,25 @@ namespace MediaBrowser.Model.Dlna
         public DeviceIdentification Identification { get; set; }
 
         public string FriendlyName { get; set; }
+
         public string Manufacturer { get; set; }
+
         public string ManufacturerUrl { get; set; }
+
         public string ModelName { get; set; }
+
         public string ModelDescription { get; set; }
+
         public string ModelNumber { get; set; }
+
         public string ModelUrl { get; set; }
+
         public string SerialNumber { get; set; }
 
         public bool EnableAlbumArtInDidl { get; set; }
+
         public bool EnableSingleAlbumArtLimit { get; set; }
+
         public bool EnableSingleSubtitleLimit { get; set; }
 
         public string SupportedMediaTypes { get; set; }
@@ -46,15 +55,19 @@ namespace MediaBrowser.Model.Dlna
         public string AlbumArtPn { get; set; }
 
         public int MaxAlbumArtWidth { get; set; }
+
         public int MaxAlbumArtHeight { get; set; }
 
         public int? MaxIconWidth { get; set; }
+
         public int? MaxIconHeight { get; set; }
 
         public long? MaxStreamingBitrate { get; set; }
+
         public long? MaxStaticBitrate { get; set; }
 
         public int? MusicStreamingTranscodingBitrate { get; set; }
+
         public int? MaxStaticMusicBitrate { get; set; }
 
         /// <summary>
@@ -65,10 +78,13 @@ namespace MediaBrowser.Model.Dlna
         public string ProtocolInfo { get; set; }
 
         public int TimelineOffsetSeconds { get; set; }
+
         public bool RequiresPlainVideoItems { get; set; }
+
         public bool RequiresPlainFolders { get; set; }
 
         public bool EnableMSMediaReceiverRegistrar { get; set; }
+
         public bool IgnoreTranscodeByteRangeRequests { get; set; }
 
         public XmlAttribute[] XmlRootAttributes { get; set; }
@@ -88,6 +104,7 @@ namespace MediaBrowser.Model.Dlna
         public ContainerProfile[] ContainerProfiles { get; set; }
 
         public CodecProfile[] CodecProfiles { get; set; }
+
         public ResponseProfile[] ResponseProfiles { get; set; }
 
         public SubtitleProfile[] SubtitleProfiles { get; set; }
@@ -169,6 +186,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return i;
             }
+
             return null;
         }
 
@@ -209,6 +227,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return i;
             }
+
             return null;
         }
 
@@ -254,6 +273,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return i;
             }
+
             return null;
         }
 
@@ -318,6 +338,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return i;
             }
+
             return null;
         }
     }

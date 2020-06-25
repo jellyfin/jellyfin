@@ -8,8 +8,11 @@ namespace MediaBrowser.Controller.Net
     public class StaticResultOptions
     {
         public string ContentType { get; set; }
+
         public TimeSpan? CacheDuration { get; set; }
+
         public DateTime? DateLastModified { get; set; }
+
         public Func<Task<Stream>> ContentFactory { get; set; }
 
         public bool IsHeadRequest { get; set; }
@@ -17,9 +20,11 @@ namespace MediaBrowser.Controller.Net
         public IDictionary<string, string> ResponseHeaders { get; set; }
 
         public Action OnComplete { get; set; }
+
         public Action OnError { get; set; }
 
         public string Path { get; set; }
+
         public long? ContentLength { get; set; }
 
         public FileShare FileShare { get; set; }

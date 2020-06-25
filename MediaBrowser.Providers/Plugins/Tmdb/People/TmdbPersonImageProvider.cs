@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -98,6 +100,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 {
                     return 3;
                 }
+
                 if (!isLanguageEn)
                 {
                     if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
@@ -105,10 +108,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                         return 2;
                     }
                 }
+
                 if (string.IsNullOrEmpty(i.Language))
                 {
                     return isLanguageEn ? 3 : 2;
                 }
+
                 return 0;
             })
                 .ThenByDescending(i => i.CommunityRating ?? 0)

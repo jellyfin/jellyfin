@@ -149,7 +149,7 @@ namespace Emby.Server.Implementations.TV
             var allNextUp = seriesKeys
                 .Select(i => GetNextUp(i, currentUser, dtoOptions));
 
-            //allNextUp = allNextUp.OrderByDescending(i => i.Item1);
+            // allNextUp = allNextUp.OrderByDescending(i => i.Item1);
 
             // If viewing all next up for all series, remove first episodes
             // But if that returns empty, keep those first episodes (avoid completely empty view)
@@ -225,7 +225,6 @@ namespace Emby.Server.Implementations.TV
                     ParentIndexNumberNotEquals = 0,
                     MinSortName = lastWatchedEpisode?.SortName,
                     DtoOptions = dtoOptions
-
                 }).Cast<Episode>().FirstOrDefault();
             };
 
@@ -257,6 +256,7 @@ namespace Emby.Server.Implementations.TV
             {
                 items = items.Skip(query.StartIndex.Value);
             }
+
             if (query.Limit.HasValue)
             {
                 items = items.Take(query.Limit.Value);
