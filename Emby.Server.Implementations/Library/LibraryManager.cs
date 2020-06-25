@@ -1894,9 +1894,19 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
-                image.Width = size.Width;
-                image.Height = size.Height;
+                try
+                {
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                    image.Width = size.Width;
+                    image.Height = size.Height;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
+                    image.Width = 0;
+                    image.Height = 0;
+                    continue;
+                }
 
                 try
                 {
