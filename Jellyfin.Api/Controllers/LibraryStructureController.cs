@@ -50,13 +50,11 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets all virtual folders.
         /// </summary>
-        /// <param name="userId">The user id.</param>
         /// <response code="200">Virtual folders retrieved.</response>
         /// <returns>An <see cref="IEnumerable{VirtualFolderInfo}"/> with the virtual folders.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
-        public ActionResult<IEnumerable<VirtualFolderInfo>> GetVirtualFolders([FromQuery] string userId)
+        public ActionResult<IEnumerable<VirtualFolderInfo>> GetVirtualFolders()
         {
             return _libraryManager.GetVirtualFolders(true);
         }
