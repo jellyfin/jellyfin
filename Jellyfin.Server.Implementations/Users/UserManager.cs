@@ -12,6 +12,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Drawing;
@@ -198,7 +199,7 @@ namespace Jellyfin.Server.Implementations.Users
             var user = dbContext.Users.Find(userId);
             if (user == null)
             {
-                throw new ArgumentNullException(nameof(userId));
+                throw new ResourceNotFoundException(nameof(userId));
             }
 
             if (dbContext.Users.Find(user.Id) == null)
