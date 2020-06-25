@@ -281,6 +281,8 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Theme songs and videos returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>The item theme videos.</returns>
+        [HttpGet("/Items/{itemId}/ThemeMedia")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<AllThemeMediaResult> GetThemeMedia(
             [FromRoute] Guid itemId,
