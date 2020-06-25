@@ -14,23 +14,45 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private static readonly string[] requiredDecoders = new[]
         {
+            "h264",
+            "hevc",
             "mpeg2video",
-            "h264_qsv",
-            "hevc_qsv",
-            "mpeg2_qsv",
-            "mpeg2_mmal",
-            "mpeg4_mmal",
-            "vc1_qsv",
-            "vc1_mmal",
-            "h264_cuvid",
-            "hevc_cuvid",
+            "mpeg4",
+            "msmpeg4",
             "dts",
             "ac3",
             "aac",
             "mp3",
-            "h264",
+            "h264_qsv",
+            "hevc_qsv",
+            "mpeg2_qsv",
+            "vc1_qsv",
+            "vp8_qsv",
+            "vp9_qsv",
+            "h264_cuvid",
+            "hevc_cuvid",
+            "mpeg2_cuvid",
+            "vc1_cuvid",
+            "mpeg4_cuvid",
+            "vp8_cuvid",
+            "vp9_cuvid",
             "h264_mmal",
-            "hevc"
+            "mpeg2_mmal",
+            "mpeg4_mmal",
+            "vc1_mmal",
+            "h264_mediacodec",
+            "hevc_mediacodec",
+            "mpeg2_mediacodec",
+            "mpeg4_mediacodec",
+            "vp8_mediacodec",
+            "vp9_mediacodec",
+            "h264_opencl",
+            "hevc_opencl",
+            "mpeg2_opencl",
+            "mpeg4_opencl",
+            "vp8_opencl",
+            "vp9_opencl",
+            "vc1_opencl"
         };
 
         private static readonly string[] requiredEncoders = new[]
@@ -42,22 +64,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "libvpx",
             "libvpx-vp9",
             "aac",
+            "libfdk_aac",
+            "ac3",
             "libmp3lame",
             "libopus",
             "libvorbis",
             "srt",
-            "h264_nvenc",
-            "hevc_nvenc",
+            "h264_amf",
+            "hevc_amf",
             "h264_qsv",
             "hevc_qsv",
-            "h264_omx",
-            "hevc_omx",
+            "h264_nvenc",
+            "hevc_nvenc",
             "h264_vaapi",
             "hevc_vaapi",
+            "h264_omx",
+            "hevc_omx",
             "h264_v4l2m2m",
-            "ac3",
-            "h264_amf",
-            "hevc_amf"
+            "h264_videotoolbox",
+            "hevc_videotoolbox"
         };
 
         // Try and use the individual library versions to determine a FFmpeg version
@@ -158,6 +183,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public IEnumerable<string> GetEncoders() => GetCodecs(Codec.Encoder);
 
+        public IEnumerable<string> GetHwaccels() => GetHwaccelTypes();
+
         /// <summary>
         /// Using the output from "ffmpeg -version" work out the FFmpeg version.
         /// For pre-built binaries the first line should contain a string like "ffmpeg version x.y", which is easy
@@ -215,6 +242,29 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             Encoder,
             Decoder
+        }
+
+        private IEnumerable<string> GetHwaccelTypes()
+        {
+            string output = null;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-hwaccels");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error detecting available hwaccel types");
+            }
+
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            var found = output.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
+            _logger.LogInformation("Available hwaccel types: {Types}", found);
+
+            return found;
         }
 
         private IEnumerable<string> GetCodecs(Codec codec)

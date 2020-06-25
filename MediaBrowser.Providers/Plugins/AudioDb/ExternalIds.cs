@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -10,7 +12,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Name => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbAlbum.ToString();
+        public string Key => MetadataProvider.AudioDbAlbum.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/album/{0}";
@@ -25,7 +27,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Name => "TheAudioDb Album";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbAlbum.ToString();
+        public string Key => MetadataProvider.AudioDbAlbum.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/album/{0}";
@@ -40,7 +42,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Name => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbArtist.ToString();
+        public string Key => MetadataProvider.AudioDbArtist.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/artist/{0}";
@@ -55,7 +57,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string Name => "TheAudioDb Artist";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbArtist.ToString();
+        public string Key => MetadataProvider.AudioDbArtist.ToString();
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/artist/{0}";

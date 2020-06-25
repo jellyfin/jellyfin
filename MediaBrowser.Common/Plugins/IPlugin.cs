@@ -41,6 +41,11 @@ namespace MediaBrowser.Common.Plugins
         string AssemblyFilePath { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the plugin can be uninstalled.
+        /// </summary>
+        bool CanUninstall { get; }
+
+        /// <summary>
         /// Gets the full path to the data folder, where the plugin can store any miscellaneous files needed.
         /// </summary>
         /// <value>The data folder path.</value>

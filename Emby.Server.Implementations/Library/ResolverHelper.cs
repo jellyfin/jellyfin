@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Ensures DateCreated and DateModified have values
+        /// Ensures DateCreated and DateModified have values.
         /// </summary>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="item">The item.</param>
@@ -118,10 +118,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(fileSystem));
             }
+
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
+
             if (args == null)
             {
                 throw new ArgumentNullException(nameof(args));

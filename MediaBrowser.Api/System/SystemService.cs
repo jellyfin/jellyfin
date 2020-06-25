@@ -18,30 +18,27 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.System
 {
     /// <summary>
-    /// Class GetSystemInfo
+    /// Class GetSystemInfo.
     /// </summary>
     [Route("/System/Info", "GET", Summary = "Gets information about the server")]
     [Authenticated(EscapeParentalControl = true, AllowBeforeStartupWizard = true)]
     public class GetSystemInfo : IReturn<SystemInfo>
     {
-
     }
 
     [Route("/System/Info/Public", "GET", Summary = "Gets public information about the server")]
     public class GetPublicSystemInfo : IReturn<PublicSystemInfo>
     {
-
     }
 
     [Route("/System/Ping", "POST")]
     [Route("/System/Ping", "GET")]
     public class PingSystem : IReturnVoid
     {
-
     }
 
     /// <summary>
-    /// Class RestartApplication
+    /// Class RestartApplication.
     /// </summary>
     [Route("/System/Restart", "POST", Summary = "Restarts the application, if needed")]
     [Authenticated(Roles = "Admin", AllowLocal = true)]
@@ -83,16 +80,15 @@ namespace MediaBrowser.Api.System
     [Authenticated]
     public class GetWakeOnLanInfo : IReturn<WakeOnLanInfo[]>
     {
-
     }
 
     /// <summary>
-    /// Class SystemInfoService
+    /// Class SystemInfoService.
     /// </summary>
     public class SystemService : BaseApiService
     {
         /// <summary>
-        /// The _app host
+        /// The _app host.
         /// </summary>
         private readonly IServerApplicationHost _appHost;
         private readonly IApplicationPaths _appPaths;
@@ -153,7 +149,6 @@ namespace MediaBrowser.Api.System
                 DateModified = _fileSystem.GetLastWriteTimeUtc(i),
                 Name = i.Name,
                 Size = i.Length
-
             }).OrderByDescending(i => i.DateModified)
                 .ThenByDescending(i => i.DateCreated)
                 .ThenBy(i => i.Name)
@@ -168,12 +163,9 @@ namespace MediaBrowser.Api.System
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
             // For older files, assume fully static
-            if (file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1))
-            {
-                return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.Read);
-            }
+            var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
 
-            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.ReadWrite);
+            return ResultFactory.GetStaticFileResult(Request, file.FullName, fileShare);
         }
 
         /// <summary>

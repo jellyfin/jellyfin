@@ -8,121 +8,143 @@ using System.Linq;
 namespace MediaBrowser.Model.Net
 {
     /// <summary>
-    /// Class MimeTypes
+    /// Class MimeTypes.
     /// </summary>
     public static class MimeTypes
     {
         /// <summary>
-        /// Any extension in this list is considered a video file
+        /// Any extension in this list is considered a video file.
         /// </summary>
         private static readonly HashSet<string> _videoFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            ".mkv",
-            ".m2t",
-            ".m2ts",
-            ".img",
-            ".iso",
-            ".mk3d",
-            ".ts",
-            ".rmvb",
-            ".mov",
+            ".3gp",
+            ".asf",
             ".avi",
-            ".mpg",
-            ".mpeg",
-            ".wmv",
-            ".mp4",
             ".divx",
             ".dvr-ms",
-            ".wtv",
+            ".f4v",
+            ".flv",
+            ".img",
+            ".iso",
+            ".m2t",
+            ".m2ts",
+            ".m2v",
+            ".m4v",
+            ".mk3d",
+            ".mkv",
+            ".mov",
+            ".mp4",
+            ".mpg",
+            ".mpeg",
+            ".mts",
+            ".ogg",
             ".ogm",
             ".ogv",
-            ".asf",
-            ".m4v",
-            ".flv",
-            ".f4v",
-            ".3gp",
+            ".rec",
+            ".ts",
+            ".rmvb",
             ".webm",
-            ".mts",
-            ".m2v",
-            ".rec"
+            ".wmv",
+            ".wtv",
         };
 
         // http://en.wikipedia.org/wiki/Internet_media_type
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+        // http://www.iana.org/assignments/media-types/media-types.xhtml
         // Add more as needed
         private static readonly Dictionary<string, string> _mimeTypeLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // Type application
+            { ".7z", "application/x-7z-compressed" },
+            { ".azw", "application/vnd.amazon.ebook" },
+            { ".azw3", "application/vnd.amazon.ebook" },
             { ".cbz", "application/x-cbz" },
             { ".cbr", "application/epub+zip" },
             { ".eot", "application/vnd.ms-fontobject" },
             { ".epub", "application/epub+zip" },
             { ".js", "application/x-javascript" },
             { ".json", "application/json" },
-            { ".map", "application/x-javascript" },
-            { ".pdf", "application/pdf" },
-            { ".ttml", "application/ttml+xml" },
             { ".m3u8", "application/x-mpegURL" },
+            { ".map", "application/x-javascript" },
             { ".mobi", "application/x-mobipocket-ebook" },
-            { ".xml", "application/xml" },
+            { ".opf", "application/oebps-package+xml" },
+            { ".pdf", "application/pdf" },
+            { ".rar", "application/vnd.rar" },
+            { ".srt", "application/x-subrip" },
+            { ".ttml", "application/ttml+xml" },
             { ".wasm", "application/wasm" },
+            { ".xml", "application/xml" },
+            { ".zip", "application/zip" },
 
             // Type image
+            { ".bmp", "image/bmp" },
+            { ".gif", "image/gif" },
+            { ".ico", "image/vnd.microsoft.icon" },
             { ".jpg", "image/jpeg" },
             { ".jpeg", "image/jpeg" },
-            { ".tbn", "image/jpeg" },
             { ".png", "image/png" },
-            { ".gif", "image/gif" },
-            { ".tiff", "image/tiff" },
-            { ".webp", "image/webp" },
-            { ".ico", "image/vnd.microsoft.icon" },
             { ".svg", "image/svg+xml" },
             { ".svgz", "image/svg+xml" },
+            { ".tbn", "image/jpeg" },
+            { ".tif", "image/tiff" },
+            { ".tiff", "image/tiff" },
+            { ".webp", "image/webp" },
 
             // Type font
             { ".ttf" , "font/ttf" },
             { ".woff" , "font/woff" },
+            { ".woff2" , "font/woff2" },
 
             // Type text
             { ".ass", "text/x-ssa" },
             { ".ssa", "text/x-ssa" },
             { ".css", "text/css" },
             { ".csv", "text/csv" },
+            { ".edl", "text/plain" },
+            { ".rtf", "text/rtf" },
             { ".txt", "text/plain" },
             { ".vtt", "text/vtt" },
 
             // Type video
-            { ".mpg", "video/mpeg" },
-            { ".ogv", "video/ogg" },
-            { ".mov", "video/quicktime" },
-            { ".webm", "video/webm" },
-            { ".mkv", "video/x-matroska" },
-            { ".wmv", "video/x-ms-wmv" },
-            { ".flv", "video/x-flv" },
-            { ".avi", "video/x-msvideo" },
-            { ".asf", "video/x-ms-asf" },
-            { ".m4v", "video/x-m4v" },
-            { ".m4s", "video/mp4" },
             { ".3gp", "video/3gpp" },
             { ".3g2", "video/3gpp2" },
+            { ".asf", "video/x-ms-asf" },
+            { ".avi", "video/x-msvideo" },
+            { ".flv", "video/x-flv" },
+            { ".mp4", "video/mp4" },
+            { ".m4s", "video/mp4" },
+            { ".m4v", "video/x-m4v" },
+            { ".mpegts", "video/mp2t" },
+            { ".mpg", "video/mpeg" },
+            { ".mkv", "video/x-matroska" },
+            { ".mov", "video/quicktime" },
             { ".mpd", "video/vnd.mpeg.dash.mpd" },
+            { ".ogv", "video/ogg" },
             { ".ts", "video/mp2t" },
+            { ".webm", "video/webm" },
+            { ".wmv", "video/x-ms-wmv" },
 
             // Type audio
-            { ".mp3", "audio/mpeg" },
-            { ".m4a", "audio/mp4" },
             { ".aac", "audio/mp4" },
-            { ".webma", "audio/webm" },
-            { ".wav", "audio/wav" },
-            { ".wma", "audio/x-ms-wma" },
-            { ".ogg", "audio/ogg" },
-            { ".oga", "audio/ogg" },
-            { ".opus", "audio/ogg" },
             { ".ac3", "audio/ac3" },
+            { ".ape", "audio/x-ape" },
             { ".dsf", "audio/dsf" },
-            { ".m4b", "audio/m4b" },
-            { ".xsp", "audio/xsp" },
             { ".dsp", "audio/dsp" },
             { ".flac", "audio/flac" },
+            { ".m4a", "audio/mp4" },
+            { ".m4b", "audio/m4b" },
+            { ".mid", "audio/midi" },
+            { ".midi", "audio/midi" },
+            { ".mp3", "audio/mpeg" },
+            { ".oga", "audio/ogg" },
+            { ".ogg", "audio/ogg" },
+            { ".opus", "audio/ogg" },
+            { ".vorbis", "audio/vorbis" },
+            { ".wav", "audio/wav" },
+            { ".webma", "audio/webm" },
+            { ".wma", "audio/x-ms-wma" },
+            { ".wv", "audio/x-wavpack" },
+            { ".xsp", "audio/xsp" },
         };
 
         private static readonly Dictionary<string, string> _extensionLookup = CreateExtensionLookup();
@@ -141,16 +163,16 @@ namespace MediaBrowser.Model.Net
             return dict;
         }
 
-        public static string GetMimeType(string path) => GetMimeType(path, true);
+        public static string? GetMimeType(string path) => GetMimeType(path, true);
 
         /// <summary>
         /// Gets the type of the MIME.
         /// </summary>
-        public static string GetMimeType(string path, bool enableStreamDefault)
+        public static string? GetMimeType(string path, bool enableStreamDefault)
         {
-            if (string.IsNullOrEmpty(path))
+            if (path.Length == 0)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentException("String can't be empty.", nameof(path));
             }
 
             var ext = Path.GetExtension(path);
@@ -188,11 +210,11 @@ namespace MediaBrowser.Model.Net
             return enableStreamDefault ? "application/octet-stream" : null;
         }
 
-        public static string ToExtension(string mimeType)
+        public static string? ToExtension(string mimeType)
         {
-            if (string.IsNullOrEmpty(mimeType))
+            if (mimeType.Length == 0)
             {
-                throw new ArgumentNullException(nameof(mimeType));
+                throw new ArgumentException("String can't be empty.", nameof(mimeType));
             }
 
             // handle text/html; charset=UTF-8

@@ -22,7 +22,7 @@ namespace Emby.Photos
     /// </summary>
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IForcedProvider, IHasItemChangeMonitor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<PhotoProvider> _logger;
         private readonly IImageProcessor _imageProcessor;
 
         // These are causing taglib to hang
@@ -104,7 +104,7 @@ namespace Emby.Photos
                             item.Overview = image.ImageTag.Comment;
 
                             if (!string.IsNullOrWhiteSpace(image.ImageTag.Title)
-                                && !item.LockedFields.Contains(MetadataFields.Name))
+                                && !item.LockedFields.Contains(MetadataField.Name))
                             {
                                 item.Name = image.ImageTag.Title;
                             }
@@ -160,7 +160,7 @@ namespace Emby.Photos
 
                 try
                 {
-                    var size = _imageProcessor.GetImageDimensions(item, img, false);
+                    var size = _imageProcessor.GetImageDimensions(item, img);
 
                     if (size.Width > 0 && size.Height > 0)
                     {

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -22,7 +24,7 @@ namespace MediaBrowser.Providers.Photos
         }
 
         /// <inheritdoc />
-        protected override void MergeData(MetadataResult<PhotoAlbum> source, MetadataResult<PhotoAlbum> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<PhotoAlbum> source, MetadataResult<PhotoAlbum> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }

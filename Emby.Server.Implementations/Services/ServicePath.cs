@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -60,7 +62,9 @@ namespace Emby.Server.Implementations.Services
         public string Path => this.restPath;
 
         public string Summary { get; private set; }
+
         public string Description { get; private set; }
+
         public bool IsHidden { get; private set; }
 
         public static string[] GetPathPartsForMatching(string pathInfo)
@@ -116,11 +120,14 @@ namespace Emby.Server.Implementations.Services
 
             var componentsList = new List<string>();
 
-            //We only split on '.' if the restPath has them. Allows for /{action}.{type}
+            // We only split on '.' if the restPath has them. Allows for /{action}.{type}
             var hasSeparators = new List<bool>();
             foreach (var component in this.restPath.Split(PathSeperatorChar))
             {
-                if (string.IsNullOrEmpty(component)) continue;
+                if (string.IsNullOrEmpty(component))
+                {
+                    continue;
+                }
 
                 if (component.IndexOf(VariablePrefix, StringComparison.OrdinalIgnoreCase) != -1
                     && component.IndexOf(ComponentSeperator) != -1)
@@ -157,6 +164,7 @@ namespace Emby.Server.Implementations.Services
                         this.isWildcard[i] = true;
                         variableName = variableName.Substring(0, variableName.Length - 1);
                     }
+
                     this.variablesNames[i] = variableName;
                     this.VariableArgsCount++;
                 }
@@ -296,12 +304,12 @@ namespace Emby.Server.Implementations.Services
                 return -1;
             }
 
-            //Routes with least wildcard matches get the highest score
-            var score = Math.Max((100 - wildcardMatchCount), 1) * 1000
-                        //Routes with less variable (and more literal) matches
-                        + Math.Max((10 - VariableArgsCount), 1) * 100;
+            // Routes with least wildcard matches get the highest score
+            var score = Math.Max(100 - wildcardMatchCount, 1) * 1000
+                        // Routes with less variable (and more literal) matches
+                        + Math.Max(10 - VariableArgsCount, 1) * 100;
 
-            //Exact verb match is better than ANY
+            // Exact verb match is better than ANY
             if (Verbs.Length == 1 && string.Equals(httpMethod, Verbs[0], StringComparison.OrdinalIgnoreCase))
             {
                 score += 10;
@@ -437,12 +445,14 @@ namespace Emby.Server.Implementations.Services
                     && requestComponents.Length >= this.TotalComponentsCount - this.wildcardCount;
 
                 if (!isValidWildCardPath)
+                {
                     throw new ArgumentException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Path Mismatch: Request Path '{0}' has invalid number of components compared to: '{1}'",
                             pathInfo,
                             this.restPath));
+                }
             }
 
             var requestKeyValuesMap = new Dictionary<string, string>();
@@ -468,7 +478,7 @@ namespace Emby.Server.Implementations.Services
                         + variableName + " on " + RequestType.GetMethodName());
                 }
 
-                var value = requestComponents.Length > pathIx ? requestComponents[pathIx] : null; //wildcard has arg mismatch
+                var value = requestComponents.Length > pathIx ? requestComponents[pathIx] : null; // wildcard has arg mismatch
                 if (value != null && this.isWildcard[i])
                 {
                     if (i == this.TotalComponentsCount - 1)
@@ -517,8 +527,8 @@ namespace Emby.Server.Implementations.Services
 
             if (queryStringAndFormData != null)
             {
-                //Query String and form data can override variable path matches
-                //path variables < query string < form data
+                // Query String and form data can override variable path matches
+                // path variables < query string < form data
                 foreach (var name in queryStringAndFormData)
                 {
                     requestKeyValuesMap[name.Key] = name.Value;

@@ -97,6 +97,7 @@ namespace MediaBrowser.Api.Subtitles
 
         [ApiMember(Name = "CopyTimestamps", Description = "CopyTimestamps", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool CopyTimestamps { get; set; }
+
         public bool AddVttTimeMap { get; set; }
     }
 
@@ -214,6 +215,7 @@ namespace MediaBrowser.Api.Subtitles
             {
                 request.Format = "json";
             }
+
             if (string.IsNullOrEmpty(request.Format))
             {
                 var item = (Video)_libraryManager.GetItemById(request.Id);
@@ -230,17 +232,14 @@ namespace MediaBrowser.Api.Subtitles
 
             if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase) && request.AddVttTimeMap)
             {
-                using (var stream = await GetSubtitles(request).ConfigureAwait(false))
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var text = reader.ReadToEnd();
+                using var stream = await GetSubtitles(request).ConfigureAwait(false);
+                using var reader = new StreamReader(stream);
 
-                        text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
+                var text = reader.ReadToEnd();
 
-                        return ResultFactory.GetResult(Request, text, MimeTypes.GetMimeType("file." + request.Format));
-                    }
-                }
+                text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
+
+                return ResultFactory.GetResult(Request, text, MimeTypes.GetMimeType("file." + request.Format));
             }
 
             return ResultFactory.GetResult(Request, await GetSubtitles(request).ConfigureAwait(false), MimeTypes.GetMimeType("file." + request.Format));

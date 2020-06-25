@@ -36,7 +36,7 @@ namespace MediaBrowser.Api
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -90,7 +90,7 @@ namespace MediaBrowser.Api
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -116,12 +116,9 @@ namespace MediaBrowser.Api
         {
             var val = Filters;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+            return string.IsNullOrEmpty(val)
+                ? Array.Empty<ItemFilter>()
+                : val.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
         }
 
         /// <summary>
@@ -152,7 +149,7 @@ namespace MediaBrowser.Api
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -173,14 +170,9 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{ItemFilter}.</returns>
         public IEnumerable<ItemFilter> GetFilters()
         {
-            var val = Filters;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(',').Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true));
+            return string.IsNullOrEmpty(Filters)
+                ? Array.Empty<ItemFilter>()
+                : Filters.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
         }
     }
 
@@ -241,14 +233,13 @@ namespace MediaBrowser.Api
             {
                 Limit = request.Limit,
                 StartIndex = request.StartIndex,
-                ChannelIds = new Guid[] { new Guid(request.Id) },
+                ChannelIds = new[] { new Guid(request.Id) },
                 ParentId = string.IsNullOrWhiteSpace(request.FolderId) ? Guid.Empty : new Guid(request.FolderId),
                 OrderBy = request.GetOrderBy(),
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
                     Fields = request.GetItemFields()
                 }
-
             };
 
             foreach (var filter in request.GetFilters())

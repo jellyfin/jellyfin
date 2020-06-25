@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -58,6 +60,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 ClearImages(item, ImageType.Backdrop);
             }
+
             if (refreshOptions.IsReplacingImage(ImageType.Screenshot))
             {
                 ClearImages(item, ImageType.Screenshot);
@@ -112,7 +115,10 @@ namespace MediaBrowser.Providers.Manager
 
                 foreach (var imageType in images)
                 {
-                    if (!IsEnabled(savedOptions, imageType, item)) continue;
+                    if (!IsEnabled(savedOptions, imageType, item))
+                    {
+                        continue;
+                    }
 
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
@@ -168,7 +174,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Image types that are only one per item
+        /// Image types that are only one per item.
         /// </summary>
         private readonly ImageType[] _singularImages =
         {
@@ -189,7 +195,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
-        /// Determines if an item already contains the given images
+        /// Determines if an item already contains the given images.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="images">The images.</param>
@@ -221,6 +227,7 @@ namespace MediaBrowser.Providers.Manager
         /// Refreshes from provider.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="libraryOptions">The library options.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
@@ -230,7 +237,9 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="result">The result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task RefreshFromProvider(BaseItem item, LibraryOptions libraryOptions,
+        private async Task RefreshFromProvider(
+            BaseItem item,
+            LibraryOptions libraryOptions,
             IRemoteImageProvider provider,
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
@@ -256,20 +265,24 @@ namespace MediaBrowser.Providers.Manager
 
                 _logger.LogDebug("Running {0} for {1}", provider.GetType().Name, item.Path ?? item.Name);
 
-                var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
-                {
-                    ProviderName = provider.Name,
-                    IncludeAllLanguages = false,
-                    IncludeDisabledProviders = false,
-
-                }, cancellationToken).ConfigureAwait(false);
+                var images = await _providerManager.GetAvailableRemoteImages(
+                    item,
+                    new RemoteImageQuery(provider.Name)
+                    {
+                        IncludeAllLanguages = false,
+                        IncludeDisabledProviders = false,
+                    },
+                    cancellationToken).ConfigureAwait(false);
 
                 var list = images.ToList();
                 int minWidth;
 
                 foreach (var imageType in _singularImages)
                 {
-                    if (!IsEnabled(savedOptions, imageType, item)) continue;
+                    if (!IsEnabled(savedOptions, imageType, item))
+                    {
+                        continue;
+                    }
 
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
@@ -329,7 +342,6 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (FileNotFoundException)
                 {
-
                 }
             }
 
@@ -463,10 +475,12 @@ namespace MediaBrowser.Providers.Manager
                 catch (HttpException ex)
                 {
                     // Sometimes providers send back bad url's. Just move to the next image
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    if (ex.StatusCode.HasValue
+                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         continue;
                     }
+
                     break;
                 }
             }
@@ -500,7 +514,7 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            //if (!item.IsSaveLocalMetadataEnabled())
+            // if (!item.IsSaveLocalMetadataEnabled())
             //{
             //    return true;
             //}
@@ -523,7 +537,6 @@ namespace MediaBrowser.Providers.Manager
             {
                 Path = path,
                 Type = imageType
-
             }, newIndex);
         }
 
@@ -577,10 +590,12 @@ namespace MediaBrowser.Providers.Manager
                 catch (HttpException ex)
                 {
                     // Sometimes providers send back bad urls. Just move onto the next image
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    if (ex.StatusCode.HasValue
+                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         continue;
                     }
+
                     break;
                 }
             }

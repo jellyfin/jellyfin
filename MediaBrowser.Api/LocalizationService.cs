@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetCultures
+    /// Class GetCultures.
     /// </summary>
     [Route("/Localization/Cultures", "GET", Summary = "Gets known cultures")]
     public class GetCultures : IReturn<CultureDto[]>
@@ -16,7 +16,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetCountries
+    /// Class GetCountries.
     /// </summary>
     [Route("/Localization/Countries", "GET", Summary = "Gets known countries")]
     public class GetCountries : IReturn<CountryInfo[]>
@@ -24,7 +24,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class ParentalRatings
+    /// Class ParentalRatings.
     /// </summary>
     [Route("/Localization/ParentalRatings", "GET", Summary = "Gets known parental ratings")]
     public class GetParentalRatings : IReturn<ParentalRating[]>
@@ -32,7 +32,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class ParentalRatings
+    /// Class ParentalRatings.
     /// </summary>
     [Route("/Localization/Options", "GET", Summary = "Gets localization options")]
     public class GetLocalizationOptions : IReturn<LocalizationOption[]>
@@ -40,13 +40,13 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class CulturesService
+    /// Class CulturesService.
     /// </summary>
     [Authenticated(AllowBeforeStartupWizard = true)]
     public class LocalizationService : BaseApiService
     {
         /// <summary>
-        /// The _localization
+        /// The _localization.
         /// </summary>
         private readonly ILocalizationManager _localization;
 

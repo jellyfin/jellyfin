@@ -128,6 +128,7 @@ namespace MediaBrowser.Api
             var items = request.Ids.Split(',')
                 .Select(i => _libraryManager.GetItemById(i))
                 .OfType<Video>()
+                .OrderBy(i => i.Id)
                 .ToList();
 
             if (items.Count < 2)
@@ -139,17 +140,11 @@ namespace MediaBrowser.Api
                 .ToList();
 
             var primaryVersion = videosWithVersions.FirstOrDefault();
-
             if (primaryVersion == null)
             {
                 primaryVersion = items.OrderBy(i =>
                     {
-                        if (i.Video3DFormat.HasValue)
-                        {
-                            return 1;
-                        }
-
-                        if (i.VideoType != Model.Entities.VideoType.VideoFile)
+                        if (i.Video3DFormat.HasValue || i.VideoType != Model.Entities.VideoType.VideoFile)
                         {
                             return 1;
                         }
@@ -158,10 +153,7 @@ namespace MediaBrowser.Api
                     })
                     .ThenByDescending(i =>
                     {
-                        var stream = i.GetDefaultVideoStream();
-
-                        return stream == null || stream.Width == null ? 0 : stream.Width.Value;
-
+                        return i.GetDefaultVideoStream()?.Width ?? 0;
                     }).First();
             }
 

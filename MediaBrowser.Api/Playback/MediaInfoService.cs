@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -79,7 +80,7 @@ namespace MediaBrowser.Api.Playback
         private readonly IAuthorizationContext _authContext;
 
         public MediaInfoService(
-            ILogger logger,
+            ILogger<MediaInfoService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IMediaSourceManager mediaSourceManager,
@@ -234,7 +235,7 @@ namespace MediaBrowser.Api.Playback
                         OpenToken = mediaSource.OpenToken
                     }).ConfigureAwait(false);
 
-                    info.MediaSources = new MediaSourceInfo[] { openStreamResult.MediaSource };
+                    info.MediaSources = new[] { openStreamResult.MediaSource };
                 }
             }
 
@@ -289,7 +290,7 @@ namespace MediaBrowser.Api.Playback
             {
                 var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-                mediaSources = new MediaSourceInfo[] { mediaSource };
+                mediaSources = new[] { mediaSource };
             }
 
             if (mediaSources.Length == 0)
@@ -366,7 +367,7 @@ namespace MediaBrowser.Api.Playback
 
             var options = new VideoOptions
             {
-                MediaSources = new MediaSourceInfo[] { mediaSource },
+                MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
                 DeviceId = auth.DeviceId,
                 ItemId = item.Id,
@@ -400,21 +401,24 @@ namespace MediaBrowser.Api.Playback
 
             if (item is Audio)
             {
-                Logger.LogInformation("User policy for {0}. EnableAudioPlaybackTranscoding: {1}", user.Name, user.Policy.EnableAudioPlaybackTranscoding);
+                Logger.LogInformation(
+                    "User policy for {0}. EnableAudioPlaybackTranscoding: {1}",
+                    user.Username,
+                    user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
             else
             {
                 Logger.LogInformation("User policy for {0}. EnablePlaybackRemuxing: {1} EnableVideoPlaybackTranscoding: {2} EnableAudioPlaybackTranscoding: {3}",
-                    user.Name,
-                    user.Policy.EnablePlaybackRemuxing,
-                    user.Policy.EnableVideoPlaybackTranscoding,
-                    user.Policy.EnableAudioPlaybackTranscoding);
+                    user.Username,
+                    user.HasPermission(PermissionKind.EnablePlaybackRemuxing),
+                    user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding),
+                    user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding));
             }
 
             // Beginning of Playback Determination: Attempt DirectPlay first
             if (mediaSource.SupportsDirectPlay)
             {
-                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     mediaSource.SupportsDirectPlay = false;
                 }
@@ -428,14 +432,16 @@ namespace MediaBrowser.Api.Playback
 
                     if (item is Audio)
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding)
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
                         {
                             options.ForceDirectPlay = true;
                         }
                     }
                     else if (item is Video)
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectPlay = true;
                         }
@@ -463,7 +469,7 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
-                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     mediaSource.SupportsDirectStream = false;
                 }
@@ -473,14 +479,16 @@ namespace MediaBrowser.Api.Playback
 
                     if (item is Audio)
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding)
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding))
                         {
                             options.ForceDirectStream = true;
                         }
                     }
                     else if (item is Video)
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                        if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
+                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectStream = true;
                         }
@@ -512,7 +520,7 @@ namespace MediaBrowser.Api.Playback
                     ? streamBuilder.BuildAudioItem(options)
                     : streamBuilder.BuildVideoItem(options);
 
-                if (mediaSource.IsRemote && user.Policy.ForceRemoteSourceTranscoding)
+                if (mediaSource.IsRemote && user.HasPermission(PermissionKind.ForceRemoteSourceTranscoding))
                 {
                     if (streamInfo != null)
                     {
@@ -520,10 +528,7 @@ namespace MediaBrowser.Api.Playback
                         streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
                         mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                        if (!allowAudioStreamCopy)
-                        {
-                            mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
-                        }
+                        mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
 
@@ -546,10 +551,12 @@ namespace MediaBrowser.Api.Playback
                             {
                                 mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                             }
+
                             if (!allowAudioStreamCopy)
                             {
                                 mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                             }
+
                             mediaSource.TranscodingContainer = streamInfo.Container;
                             mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         }
@@ -572,18 +579,17 @@ namespace MediaBrowser.Api.Playback
             {
                 attachment.DeliveryUrl = string.Format(
                     CultureInfo.InvariantCulture,
-                    "{0}/Videos/{1}/{2}/Attachments/{3}",
-                    ServerConfigurationManager.Configuration.BaseUrl,
+                    "/Videos/{0}/{1}/Attachments/{2}",
                     item.Id,
                     mediaSource.Id,
                     attachment.Index);
             }
         }
 
-        private long? GetMaxBitrate(long? clientMaxBitrate, User user)
+        private long? GetMaxBitrate(long? clientMaxBitrate, Jellyfin.Data.Entities.User user)
         {
             var maxBitrate = clientMaxBitrate;
-            var remoteClientMaxBitrate = user == null ? 0 : user.Policy.RemoteClientBitrateLimit;
+            var remoteClientMaxBitrate = user?.RemoteClientBitrateLimit ?? 0;
 
             if (remoteClientMaxBitrate <= 0)
             {
@@ -642,7 +648,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 // Let's assume direct streaming a file is just as desirable as direct playing a remote url
@@ -652,7 +657,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 return i.Protocol switch
@@ -662,21 +666,12 @@ namespace MediaBrowser.Api.Playback
                 };
             }).ThenBy(i =>
             {
-                if (maxBitrate.HasValue)
+                if (maxBitrate.HasValue && i.Bitrate.HasValue)
                 {
-                    if (i.Bitrate.HasValue)
-                    {
-                        if (i.Bitrate.Value <= maxBitrate.Value)
-                        {
-                            return 0;
-                        }
-
-                        return 2;
-                    }
+                    return i.Bitrate.Value <= maxBitrate.Value ? 0 : 2;
                 }
 
                 return 1;
-
             }).ThenBy(originalList.IndexOf)
             .ToArray();
         }

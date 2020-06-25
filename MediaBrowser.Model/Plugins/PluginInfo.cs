@@ -1,3 +1,4 @@
+#nullable disable
 namespace MediaBrowser.Model.Plugins
 {
     /// <summary>
@@ -34,6 +35,12 @@ namespace MediaBrowser.Model.Plugins
         /// </summary>
         /// <value>The unique id.</value>
         public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the plugin can be uninstalled.
+        /// </summary>
+        public bool CanUninstall { get; set; }
+
         /// <summary>
         /// Gets or sets the image URL.
         /// </summary>

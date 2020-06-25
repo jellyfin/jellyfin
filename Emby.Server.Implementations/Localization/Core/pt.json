@@ -91,5 +91,18 @@
     "CameraImageUploadedFrom": "Uma nova imagem da câmara foi enviada a partir de {0}",
     "AuthenticationSucceededWithUserName": "{0} autenticado com sucesso",
     "Application": "Aplicação",
-    "AppDeviceValues": "Aplicação {0}, Dispositivo: {1}"
+    "AppDeviceValues": "Aplicação {0}, Dispositivo: {1}",
+    "TaskCleanCache": "Limpar Diretório de Cache",
+    "TasksApplicationCategory": "Aplicação",
+    "TasksLibraryCategory": "Biblioteca",
+    "TasksMaintenanceCategory": "Manutenção",
+    "TaskRefreshChannels": "Atualizar Canais",
+    "TaskUpdatePlugins": "Atualizar Plugins",
+    "TaskCleanLogsDescription": "Deletar arquivos de log que existe a mais de {0} dias.",
+    "TaskCleanLogs": "Limpar diretório de log",
+    "TaskRefreshLibrary": "Escanear biblioteca de mídias",
+    "TaskRefreshChapterImagesDescription": "Cria miniaturas para vídeos que têm capítulos.",
+    "TaskCleanCacheDescription": "Apaga ficheiros em cache que já não são usados pelo sistema.",
+    "TasksChannelsCategory": "Canais de Internet",
+    "TaskRefreshChapterImages": "Extrair Imagens do Capítulo"
 }

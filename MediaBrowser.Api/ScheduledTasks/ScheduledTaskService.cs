@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.ScheduledTasks
 {
     /// <summary>
-    /// Class GetScheduledTask
+    /// Class GetScheduledTask.
     /// </summary>
     [Route("/ScheduledTasks/{Id}", "GET", Summary = "Gets a scheduled task, by Id")]
     public class GetScheduledTask : IReturn<TaskInfo>
@@ -25,7 +25,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     }
 
     /// <summary>
-    /// Class GetScheduledTasks
+    /// Class GetScheduledTasks.
     /// </summary>
     [Route("/ScheduledTasks", "GET", Summary = "Gets scheduled tasks")]
     public class GetScheduledTasks : IReturn<TaskInfo[]>
@@ -38,7 +38,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     }
 
     /// <summary>
-    /// Class StartScheduledTask
+    /// Class StartScheduledTask.
     /// </summary>
     [Route("/ScheduledTasks/Running/{Id}", "POST", Summary = "Starts a scheduled task")]
     public class StartScheduledTask : IReturnVoid
@@ -52,7 +52,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     }
 
     /// <summary>
-    /// Class StopScheduledTask
+    /// Class StopScheduledTask.
     /// </summary>
     [Route("/ScheduledTasks/Running/{Id}", "DELETE", Summary = "Stops a scheduled task")]
     public class StopScheduledTask : IReturnVoid
@@ -66,7 +66,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     }
 
     /// <summary>
-    /// Class UpdateScheduledTaskTriggers
+    /// Class UpdateScheduledTaskTriggers.
     /// </summary>
     [Route("/ScheduledTasks/{Id}/Triggers", "POST", Summary = "Updates the triggers for a scheduled task")]
     public class UpdateScheduledTaskTriggers : List<TaskTriggerInfo>, IReturnVoid
@@ -80,7 +80,7 @@ namespace MediaBrowser.Api.ScheduledTasks
     }
 
     /// <summary>
-    /// Class ScheduledTasksService
+    /// Class ScheduledTasksService.
     /// </summary>
     [Authenticated(Roles = "Admin")]
     public class ScheduledTaskService : BaseApiService
@@ -123,9 +123,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 {
                     var isHidden = false;
 
-                    var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
-
-                    if (configurableTask != null)
+                    if (i.ScheduledTask is IConfigurableScheduledTask configurableTask)
                     {
                         isHidden = configurableTask.IsHidden;
                     }
@@ -142,9 +140,7 @@ namespace MediaBrowser.Api.ScheduledTasks
                 {
                     var isEnabled = true;
 
-                    var configurableTask = i.ScheduledTask as IConfigurableScheduledTask;
-
-                    if (configurableTask != null)
+                    if (i.ScheduledTask is IConfigurableScheduledTask configurableTask)
                     {
                         isEnabled = configurableTask.IsEnabled;
                     }

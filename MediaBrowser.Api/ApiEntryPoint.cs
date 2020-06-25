@@ -31,7 +31,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The logger.
         /// </summary>
-        private ILogger _logger;
+        private ILogger<ApiEntryPoint> _logger;
 
         /// <summary>
         /// The configuration manager.
@@ -43,7 +43,7 @@ namespace MediaBrowser.Api
         private readonly IMediaSourceManager _mediaSourceManager;
 
         /// <summary>
-        /// The active transcoding jobs
+        /// The active transcoding jobs.
         /// </summary>
         private readonly List<TranscodingJob> _activeTranscodingJobs = new List<TranscodingJob>();
 
@@ -86,12 +86,9 @@ namespace MediaBrowser.Api
                 return Array.Empty<string>();
             }
 
-            if (removeEmpty)
-            {
-                return value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
-            }
-
-            return value.Split(separator);
+            return removeEmpty
+                ? value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
+                : value.Split(separator);
         }
 
         public SemaphoreSlim GetTranscodingLock(string outputPath)
@@ -258,7 +255,7 @@ namespace MediaBrowser.Api
 
         public void ReportTranscodingProgress(TranscodingJob job, StreamState state, TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
-            var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : (long?)null;
+            var ticks = transcodingPosition?.Ticks;
 
             if (job != null)
             {
@@ -287,8 +284,8 @@ namespace MediaBrowser.Api
                     Width = state.OutputWidth,
                     Height = state.OutputHeight,
                     AudioChannels = state.OutputAudioChannels,
-                    IsAudioDirect = string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase),
-                    IsVideoDirect = string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase),
+                    IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
+                    IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
                     TranscodeReasons = state.TranscodeReasons
                 });
             }
@@ -296,7 +293,7 @@ namespace MediaBrowser.Api
 
         /// <summary>
         /// <summary>
-        /// The progressive
+        /// The progressive.
         /// </summary>
         /// Called when [transcode failed to start].
         /// </summary>
@@ -487,16 +484,9 @@ namespace MediaBrowser.Api
         /// <returns>Task.</returns>
         internal Task KillTranscodingJobs(string deviceId, string playSessionId, Func<string, bool> deleteFiles)
         {
-            return KillTranscodingJobs(j =>
-            {
-                if (!string.IsNullOrWhiteSpace(playSessionId))
-                {
-                    return string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase);
-
-            }, deleteFiles);
+            return KillTranscodingJobs(j => string.IsNullOrWhiteSpace(playSessionId)
+                ? string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase)
+                : string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase), deleteFiles);
         }
 
         /// <summary>
@@ -561,10 +551,7 @@ namespace MediaBrowser.Api
 
             lock (job.ProcessLock)
             {
-                if (job.TranscodingThrottler != null)
-                {
-                    job.TranscodingThrottler.Stop().GetAwaiter().GetResult();
-                }
+                job.TranscodingThrottler?.Stop().GetAwaiter().GetResult();
 
                 var process = job.Process;
 

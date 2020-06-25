@@ -24,7 +24,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
@@ -39,7 +38,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
         private readonly IEncodingManager _encodingManager;
-        private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
@@ -56,7 +54,6 @@ namespace MediaBrowser.Providers.MediaInfo
             IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IEncodingManager encodingManager,
-            IFileSystem fileSystem,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
@@ -68,7 +65,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _blurayExaminer = blurayExaminer;
             _localization = localization;
             _encodingManager = encodingManager;
-            _fileSystem = fileSystem;
             _config = config;
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
@@ -76,7 +72,8 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
         }
 
-        public async Task<ItemUpdateType> ProbeVideo<T>(T item,
+        public async Task<ItemUpdateType> ProbeVideo<T>(
+            T item,
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
             where T : Video
@@ -99,7 +96,6 @@ namespace MediaBrowser.Providers.MediaInfo
                         return ItemUpdateType.MetadataImport;
                     }
                 }
-
                 else if (item.VideoType == VideoType.BluRay)
                 {
                     var inputPath = item.Path;
@@ -130,7 +126,8 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
+        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
+            Video item,
             string[] streamFileNames,
             CancellationToken cancellationToken)
         {
@@ -145,22 +142,24 @@ namespace MediaBrowser.Providers.MediaInfo
                 protocol = _mediaSourceManager.GetPathProtocol(path);
             }
 
-            return _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-            {
-                PlayableStreamFileNames = streamFileNames,
-                ExtractChapters = true,
-                MediaType = DlnaProfileType.Video,
-                MediaSource = new MediaSourceInfo
+            return _mediaEncoder.GetMediaInfo(
+                new MediaInfoRequest
                 {
-                    Path = path,
-                    Protocol = protocol,
-                    VideoType = item.VideoType
-                }
-
-            }, cancellationToken);
+                    PlayableStreamFileNames = streamFileNames,
+                    ExtractChapters = true,
+                    MediaType = DlnaProfileType.Video,
+                    MediaSource = new MediaSourceInfo
+                    {
+                        Path = path,
+                        Protocol = protocol,
+                        VideoType = item.VideoType
+                    }
+                },
+                cancellationToken);
         }
 
-        protected async Task Fetch(Video video,
+        protected async Task Fetch(
+            Video video,
             CancellationToken cancellationToken,
             Model.MediaInfo.MediaInfo mediaInfo,
             BlurayDiscInfo blurayInfo,
@@ -176,7 +175,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 mediaAttachments = mediaInfo.MediaAttachments;
 
                 video.TotalBitrate = mediaInfo.Bitrate;
-                //video.FormatName = (mediaInfo.Container ?? string.Empty)
+                // video.FormatName = (mediaInfo.Container ?? string.Empty)
                 //    .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
                 // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
@@ -283,7 +282,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var video = (Video)item;
 
-            //video.PlayableStreamFileNames = blurayInfo.Files.ToList();
+            // video.PlayableStreamFileNames = blurayInfo.Files.ToList();
 
             // Use BD Info if it has multiple m2ts. Otherwise, treat it like a video file and rely more on ffprobe output
             if (blurayInfo.Files.Length > 1)
@@ -342,7 +341,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Gets information about the longest playlist on a bdrom
+        /// Gets information about the longest playlist on a bdrom.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>VideoStream.</returns>
@@ -368,7 +367,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var isFullRefresh = refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.OfficialRating))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.OfficialRating))
             {
                 if (!string.IsNullOrWhiteSpace(data.OfficialRating) || isFullRefresh)
                 {
@@ -376,7 +375,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Genres))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Genres))
             {
                 if (video.Genres.Length == 0 || isFullRefresh)
                 {
@@ -389,7 +388,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Studios))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Studios))
             {
                 if (video.Studios.Length == 0 || isFullRefresh)
                 {
@@ -404,6 +403,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.ProductionYear = data.ProductionYear;
                 }
             }
+
             if (data.PremiereDate.HasValue)
             {
                 if (!video.PremiereDate.HasValue || isFullRefresh)
@@ -411,6 +411,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.PremiereDate = data.PremiereDate;
                 }
             }
+
             if (data.IndexNumber.HasValue)
             {
                 if (!video.IndexNumber.HasValue || isFullRefresh)
@@ -418,6 +419,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     video.IndexNumber = data.IndexNumber;
                 }
             }
+
             if (data.ParentIndexNumber.HasValue)
             {
                 if (!video.ParentIndexNumber.HasValue || isFullRefresh)
@@ -426,7 +428,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Name))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Name))
             {
                 if (!string.IsNullOrWhiteSpace(data.Name) && libraryOptions.EnableEmbeddedTitles)
                 {
@@ -444,7 +446,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.ProductionYear = video.PremiereDate.Value.ToLocalTime().Year;
             }
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Overview))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Overview))
             {
                 if (string.IsNullOrWhiteSpace(video.Overview) || isFullRefresh)
                 {
@@ -457,7 +459,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
 
-            if (!video.IsLocked && !video.LockedFields.Contains(MetadataFields.Cast))
+            if (!video.IsLocked && !video.LockedFields.Contains(MetadataField.Cast))
             {
                 if (isFullRefresh || _libraryManager.GetPeople(video).Count == 0)
                 {
@@ -491,12 +493,13 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="options">The refreshOptions.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task AddExternalSubtitles(Video video,
+        private async Task AddExternalSubtitles(
+            Video video,
             List<MediaStream> currentStreams,
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var subtitleResolver = new SubtitleResolver(_localization, _fileSystem);
+            var subtitleResolver = new SubtitleResolver(_localization);
 
             var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
             var externalSubtitleStreams = subtitleResolver.GetExternalSubtitleStreams(video, startIndex, options.DirectoryService, false);
@@ -564,7 +567,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Creates dummy chapters.
         /// </summary>
         /// <param name="video">The video.</param>
-        /// <return>An array of dummy chapters.</returns>
+        /// <returns>An array of dummy chapters.</returns>
         private ChapterInfo[] CreateDummyChapters(Video video)
         {
             var runtime = video.RunTimeTicks ?? 0;
@@ -605,7 +608,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private string[] FetchFromDvdLib(Video item)
         {
             var path = item.Path;
-            var dvd = new Dvd(path, _fileSystem);
+            var dvd = new Dvd(path);
 
             var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
 

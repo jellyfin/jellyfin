@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Library
 {
     /// <summary>
-    /// Class GetDefaultVirtualFolders
+    /// Class GetDefaultVirtualFolders.
     /// </summary>
     [Route("/Library/VirtualFolders", "GET")]
     public class GetVirtualFolders : IReturn<List<VirtualFolderInfo>>
@@ -166,18 +166,18 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class LibraryStructureService
+    /// Class LibraryStructureService.
     /// </summary>
     [Authenticated(Roles = "Admin", AllowBeforeStartupWizard = true)]
     public class LibraryStructureService : BaseApiService
     {
         /// <summary>
-        /// The _app paths
+        /// The _app paths.
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly ILibraryMonitor _libraryMonitor;
@@ -327,15 +327,11 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                var mediaPath = request.PathInfo;
-
-                if (mediaPath == null)
+                var mediaPath = request.PathInfo ?? new MediaPathInfo
                 {
-                    mediaPath = new MediaPathInfo
-                    {
-                        Path = request.Path
-                    };
-                }
+                    Path = request.Path
+                };
+
                 _libraryManager.AddMediaPath(request.Name, mediaPath);
             }
             finally

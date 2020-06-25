@@ -1,7 +1,10 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -15,10 +18,14 @@ namespace MediaBrowser.Model.Configuration
         private string _baseUrl;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable u pn p].
+        /// Gets or sets a value indicating whether to enable automatic port forwarding.
         /// </summary>
-        /// <value><c>true</c> if [enable u pn p]; otherwise, <c>false</c>.</value>
         public bool EnableUPnP { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable prometheus metrics exporting.
+        /// </summary>
+        public bool EnableMetrics { get; set; }
 
         /// <summary>
         /// Gets or sets the public mapped port.
@@ -45,17 +52,24 @@ namespace MediaBrowser.Model.Configuration
         public int HttpsPortNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [use HTTPS].
+        /// Gets or sets a value indicating whether to use HTTPS.
         /// </summary>
-        /// <value><c>true</c> if [use HTTPS]; otherwise, <c>false</c>.</value>
+        /// <remarks>
+        /// In order for HTTPS to be used, in addition to setting this to true, valid values must also be
+        /// provided for <see cref="CertificatePath"/> and <see cref="CertificatePassword"/>.
+        /// </remarks>
         public bool EnableHttps { get; set; }
+
         public bool EnableNormalizedItemByNameIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the value pointing to the file system where the ssl certificate is located..
+        /// Gets or sets the filesystem path of an X.509 certificate to use for SSL.
         /// </summary>
-        /// <value>The value pointing to the file system where the ssl certificate is located..</value>
         public string CertificatePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the password required to access the X.509 certificate data in the file specified by <see cref="CertificatePath"/>.
+        /// </summary>
         public string CertificatePassword { get; set; }
 
         /// <summary>
@@ -65,8 +79,9 @@ namespace MediaBrowser.Model.Configuration
         public bool IsPortAuthorized { get; set; }
 
         public bool AutoRunWebApp { get; set; }
+
         public bool EnableRemoteAccess { get; set; }
-        public bool CameraUploadUpgraded { get; set; }
+
         public bool CollectionsUpgraded { get; set; }
 
         /// <summary>
@@ -82,6 +97,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The metadata path.</value>
         public string MetadataPath { get; set; }
+
         public string MetadataNetworkPath { get; set; }
 
         /// <summary>
@@ -97,19 +113,19 @@ namespace MediaBrowser.Model.Configuration
         public string MetadataCountryCode { get; set; }
 
         /// <summary>
-        /// Characters to be replaced with a ' ' in strings to create a sort name
+        /// Characters to be replaced with a ' ' in strings to create a sort name.
         /// </summary>
         /// <value>The sort replace characters.</value>
         public string[] SortReplaceCharacters { get; set; }
 
         /// <summary>
-        /// Characters to be removed from strings to create a sort name
+        /// Characters to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove characters.</value>
         public string[] SortRemoveCharacters { get; set; }
 
         /// <summary>
-        /// Words to be removed from strings to create a sort name
+        /// Words to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove words.</value>
         public string[] SortRemoveWords { get; set; }
@@ -204,23 +220,38 @@ namespace MediaBrowser.Model.Configuration
         public int RemoteClientBitrateLimit { get; set; }
 
         public bool EnableFolderView { get; set; }
+
         public bool EnableGroupingIntoCollections { get; set; }
+
         public bool DisplaySpecialsWithinSeasons { get; set; }
+
         public string[] LocalNetworkSubnets { get; set; }
+
         public string[] LocalNetworkAddresses { get; set; }
+
         public string[] CodecsUsed { get; set; }
+
+        public List<RepositoryInfo> PluginRepositories { get; set; }
+
         public bool IgnoreVirtualInterfaces { get; set; }
+
         public bool EnableExternalContentInSuggestions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the server should force connections over HTTPS.
+        /// </summary>
         public bool RequireHttps { get; set; }
-        public bool IsBehindProxy { get; set; }
+
         public bool EnableNewOmdbSupport { get; set; }
 
         public string[] RemoteIPFilter { get; set; }
+
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; }
+
         public bool EnableSimpleArtistDetection { get; set; }
 
         public string[] UninstalledPlugins { get; set; }
@@ -247,6 +278,7 @@ namespace MediaBrowser.Model.Configuration
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;
             HttpsPortNumber = DefaultHttpsPort;
+            EnableMetrics = false;
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
@@ -254,7 +286,7 @@ namespace MediaBrowser.Model.Configuration
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 
-            EnableUPnP = true;
+            EnableUPnP = false;
             MinResumePct = 5;
             MaxResumePct = 90;
 
@@ -288,24 +320,24 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "MusicVideo",
-                    DisabledMetadataFetchers = new [] { "The Open Movie Database" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database" }
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "Series",
-                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "TheMovieDb" }
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "TheMovieDb" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "MusicAlbum",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
                 },
                 new MetadataOptions
                 {
                     ItemType = "MusicArtist",
-                    DisabledMetadataFetchers = new [] { "TheAudioDB" }
+                    DisabledMetadataFetchers = new[] { "TheAudioDB" }
                 },
                 new MetadataOptions
                 {
@@ -314,13 +346,13 @@ namespace MediaBrowser.Model.Configuration
                 new MetadataOptions
                 {
                     ItemType = "Season",
-                    DisabledMetadataFetchers = new [] { "TheMovieDb" },
+                    DisabledMetadataFetchers = new[] { "TheMovieDb" },
                 },
                 new MetadataOptions
                 {
                     ItemType = "Episode",
-                    DisabledMetadataFetchers = new [] { "The Open Movie Database", "TheMovieDb" },
-                    DisabledImageFetchers = new [] { "The Open Movie Database", "TheMovieDb" }
+                    DisabledMetadataFetchers = new[] { "The Open Movie Database", "TheMovieDb" },
+                    DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
         }
@@ -329,6 +361,7 @@ namespace MediaBrowser.Model.Configuration
     public class PathSubstitution
     {
         public string From { get; set; }
+
         public string To { get; set; }
     }
 }
