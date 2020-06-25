@@ -365,15 +365,8 @@ namespace MediaBrowser.Api
 
         public Task DeleteAsync(DeleteUser request)
         {
-            var user = _userManager.GetUserById(request.Id);
-
-            if (user == null)
-            {
-                throw new ResourceNotFoundException("User not found");
-            }
-
-            _sessionMananger.RevokeUserTokens(user.Id, null);
-            _userManager.DeleteUser(user);
+            _userManager.DeleteUser(request.Id);
+            _sessionMananger.RevokeUserTokens(request.Id, null);
             return Task.CompletedTask;
         }
 

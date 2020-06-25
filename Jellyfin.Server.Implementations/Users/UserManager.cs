@@ -12,6 +12,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Drawing;
@@ -192,14 +193,14 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void DeleteUser(User user)
+        public void DeleteUser(Guid userId)
         {
+            var dbContext = _dbProvider.CreateContext();
+            var user = dbContext.Users.Find(userId);
             if (user == null)
             {
-                throw new ArgumentNullException(nameof(user));
+                throw new ResourceNotFoundException(nameof(userId));
             }
-
-            var dbContext = _dbProvider.CreateContext();
 
             if (dbContext.Users.Find(user.Id) == null)
             {
@@ -226,9 +227,18 @@ namespace Jellyfin.Server.Implementations.Users
                         CultureInfo.InvariantCulture,
                         "The user '{0}' cannot be deleted because there must be at least one admin user in the system.",
                         user.Username),
-                    nameof(user));
+                    nameof(userId));
             }
 
+            // Clear all entities related to the user from the database.
+            if (user.ProfileImage != null)
+            {
+                dbContext.Remove(user.ProfileImage);
+            }
+
+            dbContext.RemoveRange(user.Permissions);
+            dbContext.RemoveRange(user.Preferences);
+            dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             dbContext.SaveChanges();
             OnUserDeleted?.Invoke(this, new GenericEventArgs<User>(user));
