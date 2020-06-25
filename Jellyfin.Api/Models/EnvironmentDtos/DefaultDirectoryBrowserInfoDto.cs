@@ -8,6 +8,6 @@ namespace Jellyfin.Api.Models.EnvironmentDtos
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
-        public string Path { get; set; }
+        public string? Path { get; set; }
     }
 }
