@@ -82,8 +82,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableRemoteAccess { get; set; }
 
-        public bool CollectionsUpgraded { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
         /// </summary>
@@ -269,6 +267,7 @@ namespace MediaBrowser.Model.Configuration
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = false;
+            SkipDeserializationForBasicTypes = true;
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
@@ -282,6 +281,9 @@ namespace MediaBrowser.Model.Configuration
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
+            EnableNormalizedItemByNameIds = true;
+            DisableLiveTvChannelUserDataName = true;
+            EnableNewOmdbSupport = true;
 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
