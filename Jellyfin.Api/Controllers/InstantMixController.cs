@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -56,8 +57,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+        /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("/Songs/{id}/InstantMix")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromSong(
             [FromRoute] Guid id,
             [FromQuery] Guid userId,
@@ -89,8 +92,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+        /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("/Albums/{id}/InstantMix")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromAlbum(
             [FromRoute] Guid id,
             [FromQuery] Guid userId,
@@ -122,8 +127,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+        /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("/Playlists/{id}/InstantMix")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromPlaylist(
             [FromRoute] Guid id,
             [FromQuery] Guid userId,
@@ -155,8 +162,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+        /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("/MusicGenres/{name}/InstantMix")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenre(
             [FromRoute] string name,
             [FromQuery] Guid userId,
@@ -187,8 +196,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+        /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("/Artists/InstantMix")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists(
             [FromRoute] Guid id,
             [FromQuery] Guid userId,
@@ -220,8 +231,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+        /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("/MusicGenres/InstantMix")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenres(
             [FromRoute] Guid id,
             [FromQuery] Guid userId,
@@ -253,8 +266,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
+        /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("/Items/{id}/InstantMix")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromItem(
             [FromRoute] Guid id,
             [FromQuery] Guid userId,
