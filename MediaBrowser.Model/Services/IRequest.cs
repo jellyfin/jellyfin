@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -22,7 +23,7 @@ namespace MediaBrowser.Model.Services
         string Verb { get; }
 
         /// <summary>
-        /// The request ContentType
+        /// The request ContentType.
         /// </summary>
         string ContentType { get; }
 
@@ -31,7 +32,7 @@ namespace MediaBrowser.Model.Services
         string UserAgent { get; }
 
         /// <summary>
-        /// The expected Response ContentType for this request
+        /// The expected Response ContentType for this request.
         /// </summary>
         string ResponseContentType { get; set; }
 
@@ -54,7 +55,7 @@ namespace MediaBrowser.Model.Services
         string RemoteIp { get; }
 
         /// <summary>
-        /// The value of the Authorization Header used to send the Api Key, null if not available
+        /// The value of the Authorization Header used to send the Api Key, null if not available.
         /// </summary>
         string Authorization { get; }
 
@@ -67,7 +68,7 @@ namespace MediaBrowser.Model.Services
         long ContentLength { get; }
 
         /// <summary>
-        /// The value of the Referrer, null if not available
+        /// The value of the Referrer, null if not available.
         /// </summary>
         Uri UrlReferrer { get; }
     }
@@ -75,9 +76,13 @@ namespace MediaBrowser.Model.Services
     public interface IHttpFile
     {
         string Name { get; }
+
         string FileName { get; }
+
         long ContentLength { get; }
+
         string ContentType { get; }
+
         Stream InputStream { get; }
     }
 

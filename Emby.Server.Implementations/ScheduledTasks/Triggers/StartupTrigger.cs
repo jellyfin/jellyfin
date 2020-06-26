@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Tasks;
@@ -6,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class StartupTaskTrigger
+    /// Class StartupTaskTrigger.
     /// </summary>
     public class StartupTrigger : ITaskTrigger
     {
@@ -23,9 +25,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stars waiting for the trigger action
+        /// Stars waiting for the trigger action.
         /// </summary>
         /// <param name="lastResult">The last result.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="taskName">The name of the task.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
         public async void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
@@ -38,7 +42,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Stops waiting for the trigger action
+        /// Stops waiting for the trigger action.
         /// </summary>
         public void Stop()
         {

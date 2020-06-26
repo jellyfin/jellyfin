@@ -1,4 +1,3 @@
-using System.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
@@ -38,33 +37,6 @@ namespace MediaBrowser.Api.Devices
     {
         [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string Id { get; set; }
-    }
-
-    [Route("/Devices/CameraUploads", "GET", Summary = "Gets camera upload history for a device")]
-    [Authenticated]
-    public class GetCameraUploads : IReturn<ContentUploadHistory>
-    {
-        [ApiMember(Name = "Id", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string DeviceId { get; set; }
-    }
-
-    [Route("/Devices/CameraUploads", "POST", Summary = "Uploads content")]
-    [Authenticated]
-    public class PostCameraUpload : IRequiresRequestStream, IReturnVoid
-    {
-        [ApiMember(Name = "DeviceId", Description = "Device Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string DeviceId { get; set; }
-
-        [ApiMember(Name = "Album", Description = "Album", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Album { get; set; }
-
-        [ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Name { get; set; }
-
-        [ApiMember(Name = "Id", Description = "Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string Id { get; set; }
-
-        public Stream RequestStream { get; set; }
     }
 
     [Route("/Devices/Options", "POST", Summary = "Updates device options")]
@@ -120,7 +92,6 @@ namespace MediaBrowser.Api.Devices
             var sessions = _authRepo.Get(new AuthenticationInfoQuery
             {
                 DeviceId = request.Id
-
             }).Items;
 
             foreach (var session in sessions)

@@ -29,7 +29,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="_movie0"></param>
@@ -40,25 +40,53 @@ namespace Jellyfin.Data.Entities
         /// <param name="_photo5"></param>
         public Release(string name, Movie _movie0, Episode _episode1, Track _track2, CustomItem _customitem3, Book _book4, Photo _photo5)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             this.Name = name;
 
-            if (_movie0 == null) throw new ArgumentNullException(nameof(_movie0));
+            if (_movie0 == null)
+            {
+                throw new ArgumentNullException(nameof(_movie0));
+            }
+
             _movie0.Releases.Add(this);
 
-            if (_episode1 == null) throw new ArgumentNullException(nameof(_episode1));
+            if (_episode1 == null)
+            {
+                throw new ArgumentNullException(nameof(_episode1));
+            }
+
             _episode1.Releases.Add(this);
 
-            if (_track2 == null) throw new ArgumentNullException(nameof(_track2));
+            if (_track2 == null)
+            {
+                throw new ArgumentNullException(nameof(_track2));
+            }
+
             _track2.Releases.Add(this);
 
-            if (_customitem3 == null) throw new ArgumentNullException(nameof(_customitem3));
+            if (_customitem3 == null)
+            {
+                throw new ArgumentNullException(nameof(_customitem3));
+            }
+
             _customitem3.Releases.Add(this);
 
-            if (_book4 == null) throw new ArgumentNullException(nameof(_book4));
+            if (_book4 == null)
+            {
+                throw new ArgumentNullException(nameof(_book4));
+            }
+
             _book4.Releases.Add(this);
 
-            if (_photo5 == null) throw new ArgumentNullException(nameof(_photo5));
+            if (_photo5 == null)
+            {
+                throw new ArgumentNullException(nameof(_photo5));
+            }
+
             _photo5.Releases.Add(this);
 
             this.MediaFiles = new HashSet<MediaFile>();
@@ -87,7 +115,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -100,7 +128,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -111,8 +139,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -125,7 +154,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Name
+        /// Backing field for Name.
         /// </summary>
         protected string _Name;
         /// <summary>
@@ -149,8 +178,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
+
             set
             {
                 string oldValue = _Name;
@@ -163,7 +193,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -182,7 +212,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Chapter_Chapters_Id")]
         public virtual ICollection<Chapter> Chapters { get; protected set; }
-
     }
 }
 

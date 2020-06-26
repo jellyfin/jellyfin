@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,7 +26,7 @@ namespace Emby.Server.Implementations.SocketSharp
         private Dictionary<string, object> _items;
         private string _responseContentType;
 
-        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName, ILogger logger)
+        public WebSocketSharpRequest(HttpRequest httpRequest, HttpResponse httpResponse, string operationName)
         {
             this.OperationName = operationName;
             this.Request = httpRequest;
@@ -209,7 +211,7 @@ namespace Emby.Server.Implementations.SocketSharp
         private static string GetQueryStringContentType(HttpRequest httpReq)
         {
             ReadOnlySpan<char> format = httpReq.Query["format"].ToString();
-            if (format == null)
+            if (format == ReadOnlySpan<char>.Empty)
             {
                 const int FormatMaxLength = 4;
                 ReadOnlySpan<char> pi = httpReq.Path.ToString();

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -9,7 +10,7 @@ using MediaBrowser.Model.Entities;
 namespace MediaBrowser.Controller.Drawing
 {
     /// <summary>
-    /// Interface IImageProcessor
+    /// Interface IImageProcessor.
     /// </summary>
     public interface IImageProcessor
     {
@@ -29,7 +30,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets the dimensions of the image.
         /// </summary>
         /// <param name="path">Path to the image file.</param>
-        /// <returns>ImageDimensions</returns>
+        /// <returns>ImageDimensions.</returns>
         ImageDimensions GetImageDimensions(string path);
 
         /// <summary>
@@ -37,8 +38,15 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <param name="item">The base item.</param>
         /// <param name="info">The information.</param>
-        /// <returns>ImageDimensions</returns>
+        /// <returns>ImageDimensions.</returns>
         ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info);
+
+        /// <summary>
+        /// Gets the blurhash of the image.
+        /// </summary>
+        /// <param name="path">Path to the image file.</param>
+        /// <returns>BlurHash.</returns>
+        string GetImageBlurHash(string path);
 
         /// <summary>
         /// Gets the image cache tag.
@@ -47,7 +55,10 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="image">The image.</param>
         /// <returns>Guid.</returns>
         string GetImageCacheTag(BaseItem item, ItemImageInfo image);
+
         string GetImageCacheTag(BaseItem item, ChapterInfo info);
+
+        string GetImageCacheTag(User user);
 
         /// <summary>
         /// Processes the image.

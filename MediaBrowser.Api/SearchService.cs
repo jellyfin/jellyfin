@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class GetSearchHints
+    /// Class GetSearchHints.
     /// </summary>
     [Route("/Search/Hints", "GET", Summary = "Gets search hints based on a search term")]
     public class GetSearchHints : IReturn<SearchHintResult>
@@ -31,7 +31,7 @@ namespace MediaBrowser.Api
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -45,7 +45,7 @@ namespace MediaBrowser.Api
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// Search characters used to find items
+        /// Search characters used to find items.
         /// </summary>
         /// <value>The index by.</value>
         [ApiMember(Name = "SearchTerm", Description = "The search term to filter on", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -104,13 +104,13 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class SearchService
+    /// Class SearchService.
     /// </summary>
     [Authenticated]
     public class SearchService : BaseApiService
     {
         /// <summary>
-        /// The _search engine
+        /// The _search engine.
         /// </summary>
         private readonly ISearchEngine _searchEngine;
         private readonly ILibraryManager _libraryManager;
@@ -180,7 +180,6 @@ namespace MediaBrowser.Api
                 IsNews = request.IsNews,
                 IsSeries = request.IsSeries,
                 IsSports = request.IsSports
-
             });
 
             return new SearchHintResult

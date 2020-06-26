@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -12,7 +14,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.MusicBrainzReleaseGroup.ToString();
+        public string Key => MetadataProvider.MusicBrainzReleaseGroup.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.ReleaseGroup;
@@ -30,7 +32,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.MusicBrainzAlbumArtist.ToString();
+        public string Key => MetadataProvider.MusicBrainzAlbumArtist.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.AlbumArtist;
@@ -48,7 +50,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.MusicBrainzAlbum.ToString();
+        public string Key => MetadataProvider.MusicBrainzAlbum.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
@@ -66,7 +68,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.MusicBrainzArtist.ToString();
+        public string Key => MetadataProvider.MusicBrainzArtist.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Artist;
@@ -85,7 +87,7 @@ namespace MediaBrowser.Providers.Music
 
         /// <inheritdoc />
 
-        public string Key => MetadataProviders.MusicBrainzArtist.ToString();
+        public string Key => MetadataProvider.MusicBrainzArtist.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;
@@ -103,7 +105,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.MusicBrainzTrack.ToString();
+        public string Key => MetadataProvider.MusicBrainzTrack.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Track;

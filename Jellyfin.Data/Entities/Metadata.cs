@@ -24,16 +24,24 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         protected Metadata(string title, string language, DateTime dateadded, DateTime datemodified)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
             this.PersonRoles = new HashSet<PersonRole>();
@@ -50,7 +58,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -63,7 +71,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -74,8 +82,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -88,7 +97,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Title
+        /// Backing field for Title.
         /// </summary>
         protected string _Title;
         /// <summary>
@@ -102,7 +111,7 @@ namespace Jellyfin.Data.Entities
 
         /// <summary>
         /// Required, Max length = 1024
-        /// The title or name of the object
+        /// The title or name of the object.
         /// </summary>
         [Required]
         [MaxLength(1024)]
@@ -113,8 +122,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Title;
                 GetTitle(ref value);
-                return (_Title = value);
+                return _Title = value;
             }
+
             set
             {
                 string oldValue = _Title;
@@ -127,7 +137,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for OriginalTitle
+        /// Backing field for OriginalTitle.
         /// </summary>
         protected string _OriginalTitle;
         /// <summary>
@@ -150,8 +160,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _OriginalTitle;
                 GetOriginalTitle(ref value);
-                return (_OriginalTitle = value);
+                return _OriginalTitle = value;
             }
+
             set
             {
                 string oldValue = _OriginalTitle;
@@ -164,7 +175,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for SortTitle
+        /// Backing field for SortTitle.
         /// </summary>
         protected string _SortTitle;
         /// <summary>
@@ -187,8 +198,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _SortTitle;
                 GetSortTitle(ref value);
-                return (_SortTitle = value);
+                return _SortTitle = value;
             }
+
             set
             {
                 string oldValue = _SortTitle;
@@ -201,7 +213,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Language
+        /// Backing field for Language.
         /// </summary>
         protected string _Language;
         /// <summary>
@@ -215,7 +227,7 @@ namespace Jellyfin.Data.Entities
 
         /// <summary>
         /// Required, Min length = 3, Max length = 3
-        /// ISO-639-3 3-character language codes
+        /// ISO-639-3 3-character language codes.
         /// </summary>
         [Required]
         [MinLength(3)]
@@ -227,8 +239,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Language;
                 GetLanguage(ref value);
-                return (_Language = value);
+                return _Language = value;
             }
+
             set
             {
                 string oldValue = _Language;
@@ -241,7 +254,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for ReleaseDate
+        /// Backing field for ReleaseDate.
         /// </summary>
         protected DateTimeOffset? _ReleaseDate;
         /// <summary>
@@ -259,8 +272,9 @@ namespace Jellyfin.Data.Entities
             {
                 DateTimeOffset? value = _ReleaseDate;
                 GetReleaseDate(ref value);
-                return (_ReleaseDate = value);
+                return _ReleaseDate = value;
             }
+
             set
             {
                 DateTimeOffset? oldValue = _ReleaseDate;
@@ -273,7 +287,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateAdded
+        /// Backing field for DateAdded.
         /// </summary>
         protected DateTime _DateAdded;
         /// <summary>
@@ -286,7 +300,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateAdded(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateAdded
@@ -295,8 +309,9 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateAdded;
                 GetDateAdded(ref value);
-                return (_DateAdded = value);
+                return _DateAdded = value;
             }
+
             internal set
             {
                 DateTime oldValue = _DateAdded;
@@ -309,7 +324,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateModified
+        /// Backing field for DateModified.
         /// </summary>
         protected DateTime _DateModified;
         /// <summary>
@@ -322,7 +337,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateModified(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateModified
@@ -331,8 +346,9 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateModified;
                 GetDateModified(ref value);
-                return (_DateModified = value);
+                return _DateModified = value;
             }
+
             internal set
             {
                 DateTime oldValue = _DateModified;
@@ -345,7 +361,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -374,7 +390,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("PersonRole_PersonRoles_Id")]
         public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
-
     }
 }
 

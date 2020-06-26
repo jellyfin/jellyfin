@@ -1,25 +1,25 @@
 namespace MediaBrowser.Controller.Resolvers
 {
     /// <summary>
-    /// Enum ResolverPriority
+    /// Enum ResolverPriority.
     /// </summary>
     public enum ResolverPriority
     {
         /// <summary>
-        /// The first
+        /// The first.
         /// </summary>
         First = 1,
         /// <summary>
-        /// The second
+        /// The second.
         /// </summary>
         Second = 2,
         /// <summary>
-        /// The third
+        /// The third.
         /// </summary>
         Third = 3,
         Fourth = 4,
         /// <summary>
-        /// The last
+        /// The last.
         /// </summary>
         Last = 5
     }

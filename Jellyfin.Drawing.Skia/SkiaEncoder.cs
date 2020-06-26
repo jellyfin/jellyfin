@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using BlurHashSharp.SkiaSharp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Extensions;
@@ -20,7 +21,7 @@ namespace Jellyfin.Drawing.Skia
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".gif", ".webp" };
 
-        private readonly ILogger _logger;
+        private readonly ILogger<SkiaEncoder> _logger;
         private readonly IApplicationPaths _appPaths;
 
         /// <summary>
@@ -52,9 +53,7 @@ namespace Jellyfin.Drawing.Skia
                 "jpeg",
                 "jpg",
                 "png",
-
                 "dng",
-
                 "webp",
                 "gif",
                 "bmp",
@@ -63,10 +62,8 @@ namespace Jellyfin.Drawing.Skia
                 "ktx",
                 "pkm",
                 "wbmp",
-
-                // TODO
-                // Are all of these supported? https://github.com/google/skia/blob/master/infra/bots/recipes/test.py#L454
-
+                // TODO: check if these are supported on multiple platforms
+                // https://github.com/google/skia/blob/master/infra/bots/recipes/test.py#L454
                 // working on windows at least
                 "cr2",
                 "nef",
@@ -229,6 +226,20 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
+        /// <inheritdoc />
+        /// <exception cref="ArgumentNullException">The path is null.</exception>
+        /// <exception cref="FileNotFoundException">The path is not valid.</exception>
+        /// <exception cref="SkiaCodecException">The file at the specified path could not be used to generate a codec.</exception>
+        public string GetImageBlurHash(int xComp, int yComp, string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            return BlurHashEncoder.Encode(xComp, yComp, path);
+        }
+
         private static bool HasDiacritics(string text)
             => !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
 
@@ -257,7 +268,7 @@ namespace Jellyfin.Drawing.Skia
                 return path;
             }
 
-            var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path) ?? string.Empty);
+            var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
 
             Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
             File.Copy(path, tempPath, true);

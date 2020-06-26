@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -20,7 +22,9 @@ namespace Emby.Server.Implementations.Services
             }
 
             public Action<object, object> PropertySetFn { get; private set; }
+
             public Func<string, object> PropertyParseStringFn { get; private set; }
+
             public Type PropertyType { get; private set; }
         }
 
@@ -81,7 +85,7 @@ namespace Emby.Server.Implementations.Services
 
                 if (propertySerializerEntry.PropertyType == typeof(bool))
                 {
-                    //InputExtensions.cs#530 MVC Checkbox helper emits extra hidden input field, generating 2 values, first is the real value
+                    // InputExtensions.cs#530 MVC Checkbox helper emits extra hidden input field, generating 2 values, first is the real value
                     propertyTextValue = StringExtensions.LeftPart(propertyTextValue, ',').ToString();
                 }
 

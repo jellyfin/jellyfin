@@ -88,25 +88,26 @@ namespace Emby.Server.Implementations.Activity
 
             _subManager.SubtitleDownloadFailure += OnSubtitleDownloadFailure;
 
-            _userManager.UserCreated += OnUserCreated;
-            _userManager.UserPasswordChanged += OnUserPasswordChanged;
-            _userManager.UserDeleted += OnUserDeleted;
-            _userManager.UserPolicyUpdated += OnUserPolicyUpdated;
-            _userManager.UserLockedOut += OnUserLockedOut;
+            _userManager.OnUserCreated += OnUserCreated;
+            _userManager.OnUserPasswordChanged += OnUserPasswordChanged;
+            _userManager.OnUserDeleted += OnUserDeleted;
+            _userManager.OnUserLockedOut += OnUserLockedOut;
 
             return Task.CompletedTask;
         }
 
-        private async void OnUserLockedOut(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
+        private async void OnUserLockedOut(object sender, GenericEventArgs<User> e)
         {
             await CreateLogEntry(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localization.GetLocalizedString("UserLockedOutWithName"),
-                        e.Argument.Name),
+                        e.Argument.Username),
                     NotificationType.UserLockedOut.ToString(),
-                    e.Argument.Id))
-                .ConfigureAwait(false);
+                    e.Argument.Id)
+            {
+                LogSeverity = LogLevel.Error
+            }).ConfigureAwait(false);
         }
 
         private async void OnSubtitleDownloadFailure(object sender, SubtitleDownloadFailureEventArgs e)
@@ -152,7 +153,7 @@ namespace Emby.Server.Implementations.Activity
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserStoppedPlayingItemWithValues"),
-                    user.Name,
+                    user.Username,
                     GetItemName(item),
                     e.DeviceName),
                 GetPlaybackStoppedNotificationType(item.MediaType),
@@ -187,7 +188,7 @@ namespace Emby.Server.Implementations.Activity
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserStartedPlayingItemWithValues"),
-                    user.Name,
+                    user.Username,
                     GetItemName(item),
                     e.DeviceName),
                 GetPlaybackNotificationType(item.MediaType),
@@ -304,49 +305,37 @@ namespace Emby.Server.Implementations.Activity
             }).ConfigureAwait(false);
         }
 
-        private async void OnUserPolicyUpdated(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
-        {
-            await CreateLogEntry(new ActivityLog(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    _localization.GetLocalizedString("UserPolicyUpdatedWithName"),
-                    e.Argument.Name),
-                "UserPolicyUpdated",
-                e.Argument.Id))
-                .ConfigureAwait(false);
-        }
-
-        private async void OnUserDeleted(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
+        private async void OnUserDeleted(object sender, GenericEventArgs<User> e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserDeletedWithName"),
-                    e.Argument.Name),
+                    e.Argument.Username),
                 "UserDeleted",
                 Guid.Empty))
                 .ConfigureAwait(false);
         }
 
-        private async void OnUserPasswordChanged(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
+        private async void OnUserPasswordChanged(object sender, GenericEventArgs<User> e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserPasswordChangedWithName"),
-                    e.Argument.Name),
+                    e.Argument.Username),
                 "UserPasswordChanged",
                 e.Argument.Id))
                 .ConfigureAwait(false);
         }
 
-        private async void OnUserCreated(object sender, GenericEventArgs<MediaBrowser.Controller.Entities.User> e)
+        private async void OnUserCreated(object sender, GenericEventArgs<User> e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("UserCreatedWithName"),
-                    e.Argument.Name),
+                    e.Argument.Username),
                 "UserCreated",
                 e.Argument.Id))
                 .ConfigureAwait(false);
@@ -377,50 +366,50 @@ namespace Emby.Server.Implementations.Activity
             }).ConfigureAwait(false);
         }
 
-        private async void OnPluginUpdated(object sender, GenericEventArgs<(IPlugin, VersionInfo)> e)
+        private async void OnPluginUpdated(object sender, InstallationInfo e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginUpdatedWithName"),
-                    e.Argument.Item1.Name),
+                    e.Name),
                 NotificationType.PluginUpdateInstalled.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.Item2.version),
-                Overview = e.Argument.Item2.changelog
+                    e.Version),
+                Overview = e.Changelog
             }).ConfigureAwait(false);
         }
 
-        private async void OnPluginUninstalled(object sender, GenericEventArgs<IPlugin> e)
+        private async void OnPluginUninstalled(object sender, IPlugin e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginUninstalledWithName"),
-                    e.Argument.Name),
+                    e.Name),
                 NotificationType.PluginUninstalled.ToString(),
                 Guid.Empty))
                 .ConfigureAwait(false);
         }
 
-        private async void OnPluginInstalled(object sender, GenericEventArgs<VersionInfo> e)
+        private async void OnPluginInstalled(object sender, InstallationInfo e)
         {
             await CreateLogEntry(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("PluginInstalledWithName"),
-                    e.Argument.name),
+                    e.Name),
                 NotificationType.PluginInstalled.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localization.GetLocalizedString("VersionNumber"),
-                    e.Argument.version)
+                    e.Version)
             }).ConfigureAwait(false);
         }
 
@@ -510,11 +499,10 @@ namespace Emby.Server.Implementations.Activity
 
             _subManager.SubtitleDownloadFailure -= OnSubtitleDownloadFailure;
 
-            _userManager.UserCreated -= OnUserCreated;
-            _userManager.UserPasswordChanged -= OnUserPasswordChanged;
-            _userManager.UserDeleted -= OnUserDeleted;
-            _userManager.UserPolicyUpdated -= OnUserPolicyUpdated;
-            _userManager.UserLockedOut -= OnUserLockedOut;
+            _userManager.OnUserCreated -= OnUserCreated;
+            _userManager.OnUserPasswordChanged -= OnUserPasswordChanged;
+            _userManager.OnUserDeleted -= OnUserDeleted;
+            _userManager.OnUserLockedOut -= OnUserLockedOut;
         }
 
         /// <summary>

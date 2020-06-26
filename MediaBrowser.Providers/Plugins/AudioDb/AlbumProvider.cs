@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -104,11 +106,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 item.Genres = new[] { result.strGenre };
             }
 
-            item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
-            item.SetProviderId(MetadataProviders.AudioDbAlbum, result.idAlbum);
+            item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
+            item.SetProviderId(MetadataProvider.AudioDbAlbum, result.idAlbum);
 
-            item.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
-            item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, result.strMusicBrainzID);
+            item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
+            item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, result.strMusicBrainzID);
 
             string overview = null;
 
@@ -210,42 +212,79 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public class Album
         {
             public string idAlbum { get; set; }
+
             public string idArtist { get; set; }
+
             public string strAlbum { get; set; }
+
             public string strArtist { get; set; }
+
             public string intYearReleased { get; set; }
+
             public string strGenre { get; set; }
+
             public string strSubGenre { get; set; }
+
             public string strReleaseFormat { get; set; }
+
             public string intSales { get; set; }
+
             public string strAlbumThumb { get; set; }
+
             public string strAlbumCDart { get; set; }
+
             public string strDescriptionEN { get; set; }
+
             public string strDescriptionDE { get; set; }
+
             public string strDescriptionFR { get; set; }
+
             public string strDescriptionCN { get; set; }
+
             public string strDescriptionIT { get; set; }
+
             public string strDescriptionJP { get; set; }
+
             public string strDescriptionRU { get; set; }
+
             public string strDescriptionES { get; set; }
+
             public string strDescriptionPT { get; set; }
+
             public string strDescriptionSE { get; set; }
+
             public string strDescriptionNL { get; set; }
+
             public string strDescriptionHU { get; set; }
+
             public string strDescriptionNO { get; set; }
+
             public string strDescriptionIL { get; set; }
+
             public string strDescriptionPL { get; set; }
+
             public object intLoved { get; set; }
+
             public object intScore { get; set; }
+
             public string strReview { get; set; }
+
             public object strMood { get; set; }
+
             public object strTheme { get; set; }
+
             public object strSpeed { get; set; }
+
             public object strLocation { get; set; }
+
             public string strMusicBrainzID { get; set; }
+
             public string strMusicBrainzArtistID { get; set; }
+
             public object strItunesID { get; set; }
+
             public object strAmazonID { get; set; }
+
             public string strLocked { get; set; }
         }
 

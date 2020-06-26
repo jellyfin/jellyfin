@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<WebSocketConnection> _logger;
 
         /// <summary>
         /// The json serializer options.
@@ -77,6 +77,9 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         /// <value>The last activity date.</value>
         public DateTime LastActivityDate { get; private set; }
+
+        /// <inheritdoc />
+        public DateTime LastKeepAliveDate { get; set; }
 
         /// <summary>
         /// Gets or sets the query string.
@@ -218,7 +221,44 @@ namespace Emby.Server.Implementations.HttpServer
                 Connection = this
             };
 
-            await OnReceive(info).ConfigureAwait(false);
+            if (info.MessageType.Equals("KeepAlive", StringComparison.Ordinal))
+            {
+                await SendKeepAliveResponse();
+            }
+            else
+            {
+                await OnReceive(info).ConfigureAwait(false);
+            }
+        }
+
+        private Task SendKeepAliveResponse()
+        {
+            LastKeepAliveDate = DateTime.UtcNow;
+            return SendAsync(
+                new WebSocketMessage<string>
+                {
+                    MessageId = Guid.NewGuid(),
+                    MessageType = "KeepAlive"
+                }, CancellationToken.None);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                _socket.Dispose();
+            }
         }
     }
 }

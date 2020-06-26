@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetArtists
+    /// Class GetArtists.
     /// </summary>
     [Route("/Artists", "GET", Summary = "Gets all artists from a given item, folder, or the entire library")]
     public class GetArtists : GetItemsByName
@@ -45,7 +45,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class ArtistsService
+    /// Class ArtistsService.
     /// </summary>
     [Authenticated]
     public class ArtistsService : BaseItemsByNameService<MusicArtist>

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
@@ -13,8 +14,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
@@ -24,6 +23,11 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.Channels
 {
@@ -36,7 +40,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IUserDataManager _userDataManager;
         private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<ChannelManager> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
@@ -46,14 +50,14 @@ namespace Emby.Server.Implementations.Channels
             new ConcurrentDictionary<string, Tuple<DateTime, List<MediaSourceInfo>>>();
 
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
         /// </summary>
         /// <param name="userManager">The user manager.</param>
         /// <param name="dtoService">The dto service.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="config">The server configuration manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="userDataManager">The user data manager.</param>
@@ -791,7 +795,8 @@ namespace Emby.Server.Implementations.Channels
             return result;
         }
 
-        private async Task<ChannelItemResult> GetChannelItems(IChannel channel,
+        private async Task<ChannelItemResult> GetChannelItems(
+            IChannel channel,
             User user,
             string externalFolderId,
             ChannelItemSortField? sortField,
@@ -1067,7 +1072,7 @@ namespace Emby.Server.Implementations.Channels
             }
 
             // was used for status
-            //if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
+            // if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
             //{
             //    item.ExternalEtag = info.Etag;
             //    forceUpdate = true;

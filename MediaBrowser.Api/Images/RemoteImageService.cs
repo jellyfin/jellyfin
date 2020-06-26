@@ -33,7 +33,7 @@ namespace MediaBrowser.Api.Images
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -147,13 +147,11 @@ namespace MediaBrowser.Api.Images
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery
+            var images = await _providerManager.GetAvailableRemoteImages(item, new RemoteImageQuery(request.ProviderName)
             {
-                ProviderName = request.ProviderName,
                 IncludeAllLanguages = request.IncludeAllLanguages,
                 IncludeDisabledProviders = true,
                 ImageType = request.Type
-
             }, CancellationToken.None).ConfigureAwait(false);
 
             var imagesList = images.ToArray();

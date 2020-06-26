@@ -27,16 +27,16 @@ namespace MediaBrowser.Api.Music
     public class AlbumsService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _user data repository
+        /// The _user data repository.
         /// </summary>
         private readonly IUserDataManager _userDataRepository;
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
@@ -67,12 +67,13 @@ namespace MediaBrowser.Api.Music
         {
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
+            var result = SimilarItemsHelper.GetSimilarItemsResult(
+                dtoOptions, 
+                _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 _dtoService,
-                Logger,
                 request, new[] { typeof(MusicArtist) },
                 SimilarItemsHelper.GetSimiliarityScore);
 
@@ -88,12 +89,13 @@ namespace MediaBrowser.Api.Music
         {
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
+            var result = SimilarItemsHelper.GetSimilarItemsResult(
+                dtoOptions, 
+                _userManager,
                 _itemRepo,
                 _libraryManager,
                 _userDataRepository,
                 _dtoService,
-                Logger,
                 request, new[] { typeof(MusicAlbum) },
                 GetAlbumSimilarityScore);
 

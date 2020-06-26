@@ -101,7 +101,8 @@
     "TaskCleanLogsDescription": "Deletar arquivos de log que existe a mais de {0} dias.",
     "TaskCleanLogs": "Limpar diretório de log",
     "TaskRefreshLibrary": "Escanear biblioteca de mídias",
-    "TaskRefreshChapterImagesDescription": "Criar miniaturas para videos que tem capítulos.",
-    "TaskCleanCacheDescription": "Deletar arquivos de cache que não são mais usados pelo sistema.",
-    "TasksChannelsCategory": "Canais de Internet"
+    "TaskRefreshChapterImagesDescription": "Cria miniaturas para vídeos que têm capítulos.",
+    "TaskCleanCacheDescription": "Apaga ficheiros em cache que já não são usados pelo sistema.",
+    "TasksChannelsCategory": "Canais de Internet",
+    "TaskRefreshChapterImages": "Extrair Imagens do Capítulo"
 }

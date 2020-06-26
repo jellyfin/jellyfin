@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -96,7 +98,6 @@ namespace Emby.Server.Implementations.Net
             }
             catch (SocketException)
             {
-
             }
 
             try
@@ -107,12 +108,11 @@ namespace Emby.Server.Implementations.Net
             }
             catch (SocketException)
             {
-
             }
 
             try
             {
-                //retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+                // retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
 
                 var localIp = IPAddress.Any;

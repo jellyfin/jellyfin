@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="_collection0"></param>
         /// <param name="_collectionitem1"></param>
@@ -38,15 +38,26 @@ namespace Jellyfin.Data.Entities
             // NOTE: This class has one-to-one associations with CollectionItem.
             // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
 
-            if (_collection0 == null) throw new ArgumentNullException(nameof(_collection0));
+            if (_collection0 == null)
+            {
+                throw new ArgumentNullException(nameof(_collection0));
+            }
+
             _collection0.CollectionItem.Add(this);
 
-            if (_collectionitem1 == null) throw new ArgumentNullException(nameof(_collectionitem1));
+            if (_collectionitem1 == null)
+            {
+                throw new ArgumentNullException(nameof(_collectionitem1));
+            }
+
             _collectionitem1.Next = this;
 
-            if (_collectionitem2 == null) throw new ArgumentNullException(nameof(_collectionitem2));
-            _collectionitem2.Previous = this;
+            if (_collectionitem2 == null)
+            {
+                throw new ArgumentNullException(nameof(_collectionitem2));
+            }
 
+            _collectionitem2.Previous = this;
 
             Init();
         }
@@ -67,7 +78,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -80,7 +91,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -91,8 +102,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -105,7 +117,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -121,7 +133,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [ForeignKey("LibraryItem_Id")]
         public virtual LibraryItem LibraryItem { get; set; }
@@ -137,7 +149,6 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [ForeignKey("CollectionItem_Previous_Id")]
         public virtual CollectionItem Previous { get; set; }
-
     }
 }
 

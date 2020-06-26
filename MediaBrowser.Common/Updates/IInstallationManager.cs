@@ -5,40 +5,47 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Common.Updates
 {
     public interface IInstallationManager : IDisposable
     {
-        event EventHandler<InstallationEventArgs> PackageInstalling;
+        event EventHandler<InstallationInfo> PackageInstalling;
 
-        event EventHandler<InstallationEventArgs> PackageInstallationCompleted;
+        event EventHandler<InstallationInfo> PackageInstallationCompleted;
 
         event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
 
-        event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
+        event EventHandler<InstallationInfo> PackageInstallationCancelled;
 
         /// <summary>
         /// Occurs when a plugin is uninstalled.
         /// </summary>
-        event EventHandler<GenericEventArgs<IPlugin>> PluginUninstalled;
+        event EventHandler<IPlugin> PluginUninstalled;
 
         /// <summary>
         /// Occurs when a plugin is updated.
         /// </summary>
-        event EventHandler<GenericEventArgs<(IPlugin, VersionInfo)>> PluginUpdated;
+        event EventHandler<InstallationInfo> PluginUpdated;
 
         /// <summary>
         /// Occurs when a plugin is installed.
         /// </summary>
-        event EventHandler<GenericEventArgs<VersionInfo>> PluginInstalled;
+        event EventHandler<InstallationInfo> PluginInstalled;
 
         /// <summary>
         /// Gets the completed installations.
         /// </summary>
         IEnumerable<InstallationInfo> CompletedInstallations { get; }
+
+        /// <summary>
+        /// Parses a plugin manifest at the supplied URL.
+        /// </summary>
+        /// <param name="manifest">The URL to query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
+        Task<IReadOnlyList<PackageInfo>> GetPackages(string manifest, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all available packages.
@@ -62,22 +69,12 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// Returns all compatible versions ordered from newest to oldest.
         /// </summary>
-        /// <param name="availableVersions">The available version of the plugin.</param>
-        /// <param name="minVersion">The minimum required version of the plugin.</param>
-        /// <returns>All compatible versions ordered from newest to oldest.</returns>
-        IEnumerable<VersionInfo> GetCompatibleVersions(
-            IEnumerable<VersionInfo> availableVersions,
-            Version minVersion = null);
-
-        /// <summary>
-        /// Returns all compatible versions ordered from newest to oldest.
-        /// </summary>
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name.</param>
         /// <param name="guid">The guid of the plugin.</param>
         /// <param name="minVersion">The minimum required version of the plugin.</param>
         /// <returns>All compatible versions ordered from newest to oldest.</returns>
-        IEnumerable<VersionInfo> GetCompatibleVersions(
+        IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string name = null,
             Guid guid = default,
@@ -88,7 +85,7 @@ namespace MediaBrowser.Common.Updates
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The available plugin updates.</returns>
-        Task<IEnumerable<VersionInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
+        Task<IEnumerable<InstallationInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Installs the package.
@@ -96,7 +93,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="package">The package.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><see cref="Task" />.</returns>
-        Task InstallPackage(VersionInfo package, CancellationToken cancellationToken = default);
+        Task InstallPackage(InstallationInfo package, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Uninstalls a plugin.

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -11,7 +13,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbAlbum.ToString();
+        public string Key => MetadataProvider.AudioDbAlbum.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => null;
@@ -29,7 +31,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbAlbum.ToString();
+        public string Key => MetadataProvider.AudioDbAlbum.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
@@ -47,7 +49,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbArtist.ToString();
+        public string Key => MetadataProvider.AudioDbArtist.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Artist;
@@ -65,7 +67,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbArtist.ToString();
+        public string Key => MetadataProvider.AudioDbArtist.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;

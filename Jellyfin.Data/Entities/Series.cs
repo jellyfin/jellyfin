@@ -20,15 +20,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
-        /// </summary>
-        public static Series CreateSeriesUnsafe()
-        {
-            return new Series();
-        }
-
-        /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
         public Series(Guid urlid, DateTime dateadded)
@@ -55,29 +47,30 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for AirsDayOfWeek
+        /// Backing field for AirsDayOfWeek.
         /// </summary>
-        protected Enums.Weekday? _AirsDayOfWeek;
+        protected DayOfWeek? _AirsDayOfWeek;
         /// <summary>
         /// When provided in a partial class, allows value of AirsDayOfWeek to be changed before setting.
         /// </summary>
-        partial void SetAirsDayOfWeek(Enums.Weekday? oldValue, ref Enums.Weekday? newValue);
+        partial void SetAirsDayOfWeek(DayOfWeek? oldValue, ref DayOfWeek? newValue);
         /// <summary>
         /// When provided in a partial class, allows value of AirsDayOfWeek to be changed before returning.
         /// </summary>
-        partial void GetAirsDayOfWeek(ref Enums.Weekday? result);
+        partial void GetAirsDayOfWeek(ref DayOfWeek? result);
 
-        public Enums.Weekday? AirsDayOfWeek
+        public DayOfWeek? AirsDayOfWeek
         {
             get
             {
-                Enums.Weekday? value = _AirsDayOfWeek;
+                DayOfWeek? value = _AirsDayOfWeek;
                 GetAirsDayOfWeek(ref value);
-                return (_AirsDayOfWeek = value);
+                return _AirsDayOfWeek = value;
             }
+
             set
             {
-                Enums.Weekday? oldValue = _AirsDayOfWeek;
+                DayOfWeek? oldValue = _AirsDayOfWeek;
                 SetAirsDayOfWeek(oldValue, ref value);
                 if (oldValue != value)
                 {
@@ -87,7 +80,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for AirsTime
+        /// Backing field for AirsTime.
         /// </summary>
         protected DateTimeOffset? _AirsTime;
         /// <summary>
@@ -100,7 +93,7 @@ namespace Jellyfin.Data.Entities
         partial void GetAirsTime(ref DateTimeOffset? result);
 
         /// <summary>
-        /// The time the show airs, ignore the date portion
+        /// The time the show airs, ignore the date portion.
         /// </summary>
         public DateTimeOffset? AirsTime
         {
@@ -108,8 +101,9 @@ namespace Jellyfin.Data.Entities
             {
                 DateTimeOffset? value = _AirsTime;
                 GetAirsTime(ref value);
-                return (_AirsTime = value);
+                return _AirsTime = value;
             }
+
             set
             {
                 DateTimeOffset? oldValue = _AirsTime;
@@ -122,7 +116,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for FirstAired
+        /// Backing field for FirstAired.
         /// </summary>
         protected DateTimeOffset? _FirstAired;
         /// <summary>
@@ -140,8 +134,9 @@ namespace Jellyfin.Data.Entities
             {
                 DateTimeOffset? value = _FirstAired;
                 GetFirstAired(ref value);
-                return (_FirstAired = value);
+                return _FirstAired = value;
             }
+
             set
             {
                 DateTimeOffset? oldValue = _FirstAired;
@@ -161,7 +156,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Season_Seasons_Id")]
         public virtual ICollection<Season> Seasons { get; protected set; }
-
     }
 }
 

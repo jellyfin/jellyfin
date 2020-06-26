@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -14,6 +15,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Drawing
 {
@@ -28,7 +30,7 @@ namespace Emby.Drawing
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
 
-        private readonly ILogger _logger;
+        private readonly ILogger<ImageProcessor> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IImageEncoder _imageEncoder;
@@ -114,7 +116,7 @@ namespace Emby.Drawing
             => _transparentImageTypes.Contains(Path.GetExtension(path));
 
         /// <inheritdoc />
-        public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
+        public async Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
@@ -230,7 +232,7 @@ namespace Emby.Drawing
             return ImageFormat.Jpg;
         }
 
-        private string GetMimeType(ImageFormat format, string path)
+        private string? GetMimeType(ImageFormat format, string path)
             => format switch
             {
                 ImageFormat.Bmp => MimeTypes.GetMimeType("i.bmp"),
@@ -300,7 +302,7 @@ namespace Emby.Drawing
             }
 
             string path = info.Path;
-            _logger.LogInformation("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
+            _logger.LogDebug("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
 
             ImageDimensions size = GetImageDimensions(path);
             info.Width = size.Width;
@@ -312,6 +314,27 @@ namespace Emby.Drawing
         /// <inheritdoc />
         public ImageDimensions GetImageDimensions(string path)
             => _imageEncoder.GetImageSize(path);
+
+        /// <inheritdoc />
+        public string GetImageBlurHash(string path)
+        {
+            var size = GetImageDimensions(path);
+            if (size.Width <= 0 || size.Height <= 0)
+            {
+                return string.Empty;
+            }
+
+            // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
+            // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
+            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
+            float xCompF = MathF.Sqrt(16.0f * size.Width / size.Height);
+            float yCompF = xCompF * size.Height / size.Width;
+
+            int xComp = Math.Min((int)xCompF + 1, 9);
+            int yComp = Math.Min((int)yCompF + 1, 9);
+
+            return _imageEncoder.GetImageBlurHash(xComp, yComp, path);
+        }
 
         /// <inheritdoc />
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
@@ -326,6 +349,13 @@ namespace Emby.Drawing
                 Type = ImageType.Chapter,
                 DateModified = chapter.ImageDateModified
             });
+        }
+
+        /// <inheritdoc />
+        public string GetImageCacheTag(User user)
+        {
+            return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
+                .ToString("N", CultureInfo.InvariantCulture);
         }
 
         private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)

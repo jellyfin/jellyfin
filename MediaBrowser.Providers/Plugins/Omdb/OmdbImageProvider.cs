@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +44,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = item.GetProviderId(MetadataProvider.Imdb);
 
             var list = new List<RemoteImageInfo>();
 
@@ -92,6 +94,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             return item is Movie || item is Trailer || item is Episode;
         }
+
         // After other internet providers, because they're better
         // But before fallback providers like screengrab
         public int Order => 90;

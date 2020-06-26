@@ -2,11 +2,12 @@
 
 using System;
 using System.Linq;
-using System.Security.Authentication;
 using Emby.Server.Implementations.SocketSharp;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
@@ -45,9 +46,25 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
         public User Authenticate(HttpRequest request, IAuthenticationAttributes authAttributes)
         {
-            var req = new WebSocketSharpRequest(request, null, request.Path, _logger);
+            var req = new WebSocketSharpRequest(request, null, request.Path);
             var user = ValidateUser(req, authAttributes);
             return user;
+        }
+
+        public AuthorizationInfo Authenticate(HttpRequest request)
+        {
+            var auth = _authorizationContext.GetAuthorizationInfo(request);
+            if (auth?.User == null)
+            {
+                return null;
+            }
+
+            if (auth.User.HasPermission(PermissionKind.IsDisabled))
+            {
+                throw new SecurityException("User account has been disabled.");
+            }
+
+            return auth;
         }
 
         private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
@@ -90,7 +107,8 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 !string.IsNullOrEmpty(auth.Client) &&
                 !string.IsNullOrEmpty(auth.Device))
             {
-                _sessionManager.LogSessionActivity(auth.Client,
+                _sessionManager.LogSessionActivity(
+                    auth.Client,
                     auth.Version,
                     auth.DeviceId,
                     auth.Device,
@@ -104,21 +122,21 @@ namespace Emby.Server.Implementations.HttpServer.Security
         private void ValidateUserAccess(
             User user,
             IRequest request,
-            IAuthenticationAttributes authAttribtues,
+            IAuthenticationAttributes authAttributes,
             AuthorizationInfo auth)
         {
-            if (user.Policy.IsDisabled)
+            if (user.HasPermission(PermissionKind.IsDisabled))
             {
                 throw new SecurityException("User account has been disabled.");
             }
 
-            if (!user.Policy.EnableRemoteAccess && !_networkManager.IsInLocalNetwork(request.RemoteIp))
+            if (!user.HasPermission(PermissionKind.EnableRemoteAccess) && !_networkManager.IsInLocalNetwork(request.RemoteIp))
             {
                 throw new SecurityException("User account has been disabled.");
             }
 
-            if (!user.Policy.IsAdministrator
-                && !authAttribtues.EscapeParentalControl
+            if (!user.HasPermission(PermissionKind.IsAdministrator)
+                && !authAttributes.EscapeParentalControl
                 && !user.IsParentalScheduleAllowed())
             {
                 request.Response.Headers.Add("X-Application-Error-Code", "ParentalControl");
@@ -138,6 +156,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 return true;
             }
+
             if (authAttribtues.AllowLocalOnly && request.IsLocal)
             {
                 return true;
@@ -180,7 +199,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         {
             if (roles.Contains("admin", StringComparer.OrdinalIgnoreCase))
             {
-                if (user == null || !user.Policy.IsAdministrator)
+                if (user == null || !user.HasPermission(PermissionKind.IsAdministrator))
                 {
                     throw new SecurityException("User does not have admin access.");
                 }
@@ -188,7 +207,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (roles.Contains("delete", StringComparer.OrdinalIgnoreCase))
             {
-                if (user == null || !user.Policy.EnableContentDeletion)
+                if (user == null || !user.HasPermission(PermissionKind.EnableContentDeletion))
                 {
                     throw new SecurityException("User does not have delete access.");
                 }
@@ -196,7 +215,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (roles.Contains("download", StringComparer.OrdinalIgnoreCase))
             {
-                if (user == null || !user.Policy.EnableContentDownloading)
+                if (user == null || !user.HasPermission(PermissionKind.EnableContentDownloading))
                 {
                     throw new SecurityException("User does not have download access.");
                 }
@@ -223,7 +242,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 throw new AuthenticationException("Access token is invalid or expired.");
             }
 
-            //if (!string.IsNullOrEmpty(info.UserId))
+            // if (!string.IsNullOrEmpty(info.UserId))
             //{
             //    var user = _userManager.GetUserById(info.UserId);
 

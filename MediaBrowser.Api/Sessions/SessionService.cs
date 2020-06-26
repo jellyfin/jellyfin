@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -45,14 +46,14 @@ namespace MediaBrowser.Api.Sessions
         public string Id { get; set; }
 
         /// <summary>
-        /// Artist, Genre, Studio, Person, or any kind of BaseItem
+        /// Artist, Genre, Studio, Person, or any kind of BaseItem.
         /// </summary>
         /// <value>The type of the item.</value>
         [ApiMember(Name = "ItemType", Description = "The type of item to browse to.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ItemType { get; set; }
 
         /// <summary>
-        /// Artist name, genre name, item Id, etc
+        /// Artist name, genre name, item Id, etc.
         /// </summary>
         /// <value>The item identifier.</value>
         [ApiMember(Name = "ItemId", Description = "The Id of the item.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
@@ -326,12 +327,12 @@ namespace MediaBrowser.Api.Sessions
 
                 var user = _userManager.GetUserById(request.ControllableByUserId);
 
-                if (!user.Policy.EnableRemoteControlOfOtherUsers)
+                if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
                 {
                     result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(request.ControllableByUserId));
                 }
 
-                if (!user.Policy.EnableSharedDeviceControl)
+                if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
                 {
                     result = result.Where(i => !i.UserId.Equals(Guid.Empty));
                 }

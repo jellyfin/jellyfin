@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -40,11 +42,11 @@ namespace MediaBrowser.Providers.TV
 
             if (hasNewSeasons)
             {
-                //var directoryService = new DirectoryService(_fileSystem);
+                // var directoryService = new DirectoryService(_fileSystem);
 
-                //await series.RefreshMetadata(new MetadataRefreshOptions(directoryService), cancellationToken).ConfigureAwait(false);
+                // await series.RefreshMetadata(new MetadataRefreshOptions(directoryService), cancellationToken).ConfigureAwait(false);
 
-                //await series.ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(directoryService))
+                // await series.ValidateChildren(new SimpleProgress<double>(), cancellationToken, new MetadataRefreshOptions(directoryService))
                 //    .ConfigureAwait(false);
             }
 
@@ -72,6 +74,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     seasons = series.Children.OfType<Season>().ToList();
                 }
+
                 var existingSeason = seasons
                     .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
 

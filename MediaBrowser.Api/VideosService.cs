@@ -128,6 +128,7 @@ namespace MediaBrowser.Api
             var items = request.Ids.Split(',')
                 .Select(i => _libraryManager.GetItemById(i))
                 .OfType<Video>()
+                .OrderBy(i => i.Id)
                 .ToList();
 
             if (items.Count < 2)

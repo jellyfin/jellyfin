@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         public const string DefaultRedirectKey = "HttpListenerHost:DefaultRedirectPath";
 
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpListenerHost> _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
@@ -210,16 +210,8 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private async Task ErrorHandler(Exception ex, IRequest httpReq, int statusCode, string urlToLog)
+        private async Task ErrorHandler(Exception ex, IRequest httpReq, int statusCode, string urlToLog, bool ignoreStackTrace)
         {
-            bool ignoreStackTrace =
-                ex is SocketException
-                || ex is IOException
-                || ex is OperationCanceledException
-                || ex is SecurityException
-                || ex is AuthenticationException
-                || ex is FileNotFoundException;
-
             if (ignoreStackTrace)
             {
                 _logger.LogError("Error processing request: {Message}. URL: {Url}", ex.Message.TrimEnd('.'), urlToLog);
@@ -238,7 +230,9 @@ namespace Emby.Server.Implementations.HttpServer
 
             httpRes.StatusCode = statusCode;
 
-            var errContent = NormalizeExceptionMessage(ex) ?? string.Empty;
+            var errContent = _hostEnvironment.IsDevelopment()
+                    ? (NormalizeExceptionMessage(ex) ?? string.Empty)
+                    : "Error processing request.";
             httpRes.ContentType = "text/plain";
             httpRes.ContentLength = errContent.Length;
             await httpRes.WriteAsync(errContent).ConfigureAwait(false);
@@ -405,7 +399,7 @@ namespace Emby.Server.Implementations.HttpServer
             var response = context.Response;
             var localPath = context.Request.Path.ToString();
 
-            var req = new WebSocketSharpRequest(request, response, request.Path, _logger);
+            var req = new WebSocketSharpRequest(request, response, request.Path);
             return RequestHandler(req, request.GetDisplayUrl(), request.Host.ToString(), localPath, context.RequestAborted);
         }
 
@@ -459,6 +453,7 @@ namespace Emby.Server.Implementations.HttpServer
                     {
                         httpRes.Headers.Add(key, value);
                     }
+
                     httpRes.ContentType = "text/plain";
                     await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
                     return;
@@ -505,14 +500,32 @@ namespace Emby.Server.Implementations.HttpServer
                     var requestInnerEx = GetActualException(requestEx);
                     var statusCode = GetStatusCode(requestInnerEx);
 
-                    // Do not handle 500 server exceptions manually when in development mode
-                    // The framework-defined development exception page will be returned instead
-                    if (statusCode == 500 && _hostEnvironment.IsDevelopment())
+                    foreach (var (key, value) in GetDefaultCorsHeaders(httpReq))
+                    {
+                        if (!httpRes.Headers.ContainsKey(key))
+                        {
+                            httpRes.Headers.Add(key, value);
+                        }
+                    }
+
+                    bool ignoreStackTrace =
+                        requestInnerEx is SocketException
+                        || requestInnerEx is IOException
+                        || requestInnerEx is OperationCanceledException
+                        || requestInnerEx is SecurityException
+                        || requestInnerEx is AuthenticationException
+                        || requestInnerEx is FileNotFoundException;
+
+                    // Do not handle 500 server exceptions manually when in development mode.
+                    // Instead, re-throw the exception so it can be handled by the DeveloperExceptionPageMiddleware.
+                    // However, do not use the DeveloperExceptionPageMiddleware when the stack trace should be ignored,
+                    // because it will log the stack trace when it handles the exception.
+                    if (statusCode == 500 && !ignoreStackTrace && _hostEnvironment.IsDevelopment())
                     {
                         throw;
                     }
 
-                    await ErrorHandler(requestInnerEx, httpReq, statusCode, urlToLog).ConfigureAwait(false);
+                    await ErrorHandler(requestInnerEx, httpReq, statusCode, urlToLog, ignoreStackTrace).ConfigureAwait(false);
                 }
                 catch (Exception handlerException)
                 {
@@ -579,7 +592,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Get the default CORS headers
+        /// Get the default CORS headers.
         /// </summary>
         /// <param name="req"></param>
         /// <returns></returns>

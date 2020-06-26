@@ -54,7 +54,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             var series = (Series)item;
 
-            var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
+            var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
 
             if (!string.IsNullOrEmpty(tvdb))
             {

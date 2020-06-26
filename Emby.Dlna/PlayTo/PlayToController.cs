@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Didl;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
@@ -22,6 +23,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Dlna.PlayTo
 {
@@ -146,11 +148,14 @@ namespace Emby.Dlna.PlayTo
                 {
                     var positionTicks = GetProgressPositionTicks(streamInfo);
 
-                    ReportPlaybackStopped(streamInfo, positionTicks);
+                    await ReportPlaybackStopped(streamInfo, positionTicks).ConfigureAwait(false);
                 }
 
                 streamInfo = StreamParams.ParseFromUrl(e.NewMediaInfo.Url, _libraryManager, _mediaSourceManager);
-                if (streamInfo.Item == null) return;
+                if (streamInfo.Item == null)
+                {
+                    return;
+                }
 
                 var newItemProgress = GetProgressInfo(streamInfo);
 
@@ -173,11 +178,14 @@ namespace Emby.Dlna.PlayTo
             {
                 var streamInfo = StreamParams.ParseFromUrl(e.MediaInfo.Url, _libraryManager, _mediaSourceManager);
 
-                if (streamInfo.Item == null) return;
+                if (streamInfo.Item == null)
+                {
+                    return;
+                }
 
                 var positionTicks = GetProgressPositionTicks(streamInfo);
 
-                ReportPlaybackStopped(streamInfo, positionTicks);
+                await ReportPlaybackStopped(streamInfo, positionTicks).ConfigureAwait(false);
 
                 var mediaSource = await streamInfo.GetMediaSource(CancellationToken.None).ConfigureAwait(false);
 
@@ -185,7 +193,7 @@ namespace Emby.Dlna.PlayTo
                     (_device.Duration == null ? (long?)null : _device.Duration.Value.Ticks) :
                     mediaSource.RunTimeTicks;
 
-                var playedToCompletion = (positionTicks.HasValue && positionTicks.Value == 0);
+                var playedToCompletion = positionTicks.HasValue && positionTicks.Value == 0;
 
                 if (!playedToCompletion && duration.HasValue && positionTicks.HasValue)
                 {
@@ -210,7 +218,7 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private async void ReportPlaybackStopped(StreamParams streamInfo, long? positionTicks)
+        private async Task ReportPlaybackStopped(StreamParams streamInfo, long? positionTicks)
         {
             try
             {
@@ -220,7 +228,6 @@ namespace Emby.Dlna.PlayTo
                     SessionId = _session.Id,
                     PositionTicks = positionTicks,
                     MediaSourceId = streamInfo.MediaSourceId
-
                 }).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -418,6 +425,7 @@ namespace Emby.Dlna.PlayTo
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
                     return;
                 }
+
                 await SeekAfterTransportChange(newPosition, CancellationToken.None).ConfigureAwait(false);
             }
         }
@@ -441,7 +449,13 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
+        private PlaylistItem CreatePlaylistItem(
+            BaseItem item,
+            User user,
+            long startPostionTicks,
+            string mediaSourceId,
+            int? audioStreamIndex,
+            int? subtitleStreamIndex)
         {
             var deviceInfo = _device.Properties;
 
@@ -700,6 +714,7 @@ namespace Emby.Dlna.PlayTo
 
                             throw new ArgumentException("Volume argument cannot be null");
                         }
+
                     default:
                         return Task.CompletedTask;
                 }
@@ -785,12 +800,15 @@ namespace Emby.Dlna.PlayTo
             public int? SubtitleStreamIndex { get; set; }
 
             public string DeviceProfileId { get; set; }
+
             public string DeviceId { get; set; }
 
             public string MediaSourceId { get; set; }
+
             public string LiveStreamId { get; set; }
 
             public BaseItem Item { get; set; }
+
             private MediaSourceInfo MediaSource;
 
             private IMediaSourceManager _mediaSourceManager;

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -12,7 +14,7 @@ namespace MediaBrowser.Providers.TV
         public string ProviderName => "Zap2It";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Zap2It.ToString();
+        public string Key => MetadataProvider.Zap2It.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => null;
@@ -30,7 +32,7 @@ namespace MediaBrowser.Providers.TV
         public string ProviderName => "TheTVDB";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Tvdb.ToString();
+        public string Key => MetadataProvider.Tvdb.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => null;
@@ -40,7 +42,6 @@ namespace MediaBrowser.Providers.TV
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Series;
-
     }
 
     public class TvdbSeasonExternalId : IExternalId
@@ -49,7 +50,7 @@ namespace MediaBrowser.Providers.TV
         public string ProviderName => "TheTVDB";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Tvdb.ToString();
+        public string Key => MetadataProvider.Tvdb.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Season;
@@ -67,7 +68,7 @@ namespace MediaBrowser.Providers.TV
         public string ProviderName => "TheTVDB";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Tvdb.ToString();
+        public string Key => MetadataProvider.Tvdb.ToString();
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Episode;

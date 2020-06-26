@@ -25,7 +25,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="value"></param>
         /// <param name="_metadata0"></param>
@@ -33,9 +33,12 @@ namespace Jellyfin.Data.Entities
         {
             this.Value = value;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
-            _metadata0.Ratings.Add(this);
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
 
+            _metadata0.Ratings.Add(this);
 
             Init();
         }
@@ -55,7 +58,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -68,7 +71,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -79,8 +82,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -93,7 +97,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Value
+        /// Backing field for Value.
         /// </summary>
         protected double _Value;
         /// <summary>
@@ -106,7 +110,7 @@ namespace Jellyfin.Data.Entities
         partial void GetValue(ref double result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public double Value
@@ -115,8 +119,9 @@ namespace Jellyfin.Data.Entities
             {
                 double value = _Value;
                 GetValue(ref value);
-                return (_Value = value);
+                return _Value = value;
             }
+
             set
             {
                 double oldValue = _Value;
@@ -129,7 +134,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Votes
+        /// Backing field for Votes.
         /// </summary>
         protected int? _Votes;
         /// <summary>
@@ -147,8 +152,9 @@ namespace Jellyfin.Data.Entities
             {
                 int? value = _Votes;
                 GetVotes(ref value);
-                return (_Votes = value);
+                return _Votes = value;
             }
+
             set
             {
                 int? oldValue = _Votes;
@@ -161,7 +167,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -181,7 +187,6 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [ForeignKey("RatingSource_RatingType_Id")]
         public virtual RatingSource RatingType { get; set; }
-
     }
 }
 
