@@ -3,6 +3,7 @@ using System.Linq;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Helpers
@@ -90,6 +91,19 @@ namespace Jellyfin.Api.Helpers
             return Split(value, ',', true)
                 .Select(i => new Guid(i))
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Gets the filters.
+        /// </summary>
+        /// <param name="filters">The filter string.</param>
+        /// <returns>IEnumerable{ItemFilter}.</returns>
+        internal static ItemFilter[] GetFilters(string filters)
+        {
+            return string.IsNullOrEmpty(filters)
+                ? Array.Empty<ItemFilter>()
+                : Split(filters, ',', true)
+                    .Select(v => Enum.Parse<ItemFilter>(v, true)).ToArray();
         }
     }
 }
