@@ -31,6 +31,7 @@ namespace MediaBrowser.Common.Json
             options.Converters.Add(new JsonInt32Converter());
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new JsonNonStringKeyDictionaryConverterFactory());
+            options.Converters.Add(new JsonInt64Converter());
 
             return options;
         }

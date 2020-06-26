@@ -120,22 +120,13 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets critic review for an item.
         /// </summary>
-        /// <param name="itemId">The item id.</param>
-        /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
-        /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <response code="200">Critic reviews returned.</response>
         /// <returns>The list of critic reviews.</returns>
         [HttpGet("/Items/{itemId}/CriticReviews")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [Obsolete("This endpoint is obsolete.")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "startIndex", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "limit", Justification = "Imported from ServiceStack")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetCriticReviews(
-            [FromRoute] Guid itemId,
-            [FromQuery] int? startIndex,
-            [FromQuery] int? limit)
+        public ActionResult<QueryResult<BaseItemDto>> GetCriticReviews()
         {
             return new QueryResult<BaseItemDto>();
         }
@@ -282,6 +273,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Item not found.</response>
         /// <returns>The item theme videos.</returns>
         [HttpGet("/Items/{itemId}/ThemeMedia")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<AllThemeMediaResult> GetThemeMedia(
             [FromRoute] Guid itemId,
@@ -681,10 +673,6 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="excludeArtistIds">Exclude artist ids.</param>
-        /// <param name="enableImages">(Unused) Optional. include image information in output.</param>
-        /// <param name="enableUserData">(Unused) Optional. include user data.</param>
-        /// <param name="imageTypeLimit">(Unused) Optional. the max number of images to return, per image type.</param>
-        /// <param name="enableImageTypes">(Unused) Optional. The image types to include in the output.</param>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
@@ -696,18 +684,10 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Shows/{itemId}/Similar")]
         [HttpGet("/Movies/{itemId}/Similar")]
         [HttpGet("/Trailers/{itemId}/Similar")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableImages", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableUserData", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageTypeLimit", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableImageTypes", Justification = "Imported from ServiceStack")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
             [FromRoute] Guid itemId,
             [FromQuery] string excludeArtistIds,
-            [FromQuery] bool? enableImages,
-            [FromQuery] bool? enableUserData,
-            [FromQuery] int? imageTypeLimit,
-            [FromQuery] string enableImageTypes,
             [FromQuery] Guid userId,
             [FromQuery] int? limit,
             [FromQuery] string fields)

@@ -125,7 +125,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">Optional. User id.</param>
         /// <param name="parentId">Optional. Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimited.</param>
-        /// <param name="mediaTypes">[Unused] Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
         /// <param name="isAiring">Optional. Is item airing.</param>
         /// <param name="isMovie">Optional. Is item movie.</param>
         /// <param name="isSports">Optional. Is item sports.</param>
@@ -137,12 +136,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Query filters.</returns>
         [HttpGet("/Items/Filters2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "mediaTypes", Justification = "Imported from ServiceStack")]
         public ActionResult<QueryFilters> GetQueryFilters(
             [FromQuery] Guid? userId,
             [FromQuery] string? parentId,
             [FromQuery] string? includeItemTypes,
-            [FromQuery] string? mediaTypes,
             [FromQuery] bool? isAiring,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSports,

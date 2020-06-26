@@ -195,7 +195,7 @@ namespace Jellyfin.Server.Extensions
 
                 // Order actions by route path, then by http method.
                 c.OrderActionsBy(description =>
-                    $"{description.ActionDescriptor.RouteValues["controller"]}_{description.HttpMethod}");
+                    $"{description.ActionDescriptor.RouteValues["controller"]}_{description.RelativePath}");
 
                 // Use method name as operationId
                 c.CustomOperationIds(description =>
