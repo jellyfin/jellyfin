@@ -3,6 +3,7 @@ using System.Linq;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Helpers
@@ -90,6 +91,46 @@ namespace Jellyfin.Api.Helpers
             return Split(value, ',', true)
                 .Select(i => new Guid(i))
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Get orderby.
+        /// </summary>
+        /// <param name="sortBy">Sort by.</param>
+        /// <param name="requestedSortOrder">Sort order.</param>
+        /// <returns>Resulting order by.</returns>
+        internal static ValueTuple<string, SortOrder>[] GetOrderBy(string sortBy, string requestedSortOrder)
+        {
+            var val = sortBy;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return Array.Empty<ValueTuple<string, SortOrder>>();
+            }
+
+            var vals = val.Split(',');
+            if (string.IsNullOrWhiteSpace(requestedSortOrder))
+            {
+                requestedSortOrder = "Ascending";
+            }
+
+            var sortOrders = requestedSortOrder.Split(',');
+
+            var result = new ValueTuple<string, SortOrder>[vals.Length];
+
+            for (var i = 0; i < vals.Length; i++)
+            {
+                var sortOrderIndex = sortOrders.Length > i ? i : 0;
+
+                var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
+                var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase)
+                    ? SortOrder.Descending
+                    : SortOrder.Ascending;
+
+                result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
+            }
+
+            return result;
         }
     }
 }
