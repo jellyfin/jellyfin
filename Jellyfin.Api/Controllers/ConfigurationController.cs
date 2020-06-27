@@ -70,7 +70,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Configuration.</returns>
         [HttpGet("Configuration/{key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<object> GetNamedConfiguration([FromRoute] string key)
+        public ActionResult<object> GetNamedConfiguration([FromRoute] string? key)
         {
             return _configurationManager.GetConfiguration(key);
         }
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Configuration/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string key)
+        public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string? key)
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType).ConfigureAwait(false);

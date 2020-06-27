@@ -265,12 +265,12 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<IEnumerable<BaseItemDto>> GetLatestMedia(
             [FromRoute] Guid userId,
             [FromQuery] Guid parentId,
-            [FromQuery] string fields,
-            [FromQuery] string includeItemTypes,
+            [FromQuery] string? fields,
+            [FromQuery] string? includeItemTypes,
             [FromQuery] bool? isPlayed,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string enableImageTypes,
+            [FromQuery] string? enableImageTypes,
             [FromQuery] bool? enableUserData,
             [FromQuery] int limit = 20,
             [FromQuery] bool groupItems = true)
