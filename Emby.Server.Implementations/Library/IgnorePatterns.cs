@@ -1,3 +1,6 @@
+#nullable enable
+
+using System;
 using System.Linq;
 using DotNet.Globbing;
 
@@ -88,9 +91,18 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="path">The path to test.</param>
         /// <returns>Whether to ignore the path.</returns>
-        public static bool ShouldIgnore(string path)
+        public static bool ShouldIgnore(ReadOnlySpan<char> path)
         {
-            return _globs.Any(g => g.IsMatch(path));
+            int len = _globs.Length;
+            for (int i = 0; i < len; i++)
+            {
+                if (_globs[i].IsMatch(path))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
