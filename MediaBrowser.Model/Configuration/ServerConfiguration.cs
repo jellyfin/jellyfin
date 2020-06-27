@@ -269,6 +269,8 @@ namespace MediaBrowser.Model.Configuration
             EnableSimpleArtistDetection = false;
             SkipDeserializationForBasicTypes = true;
 
+            PluginRepositories = new List<RepositoryInfo>();
+
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
 
