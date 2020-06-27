@@ -270,6 +270,8 @@ namespace MediaBrowser.Model.Configuration
             IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = false;
 
+            PluginRepositories = new List<RepositoryInfo>();
+
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
 
