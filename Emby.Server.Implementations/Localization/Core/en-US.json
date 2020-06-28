@@ -86,6 +86,7 @@
     "UserOfflineFromDevice": "{0} has disconnected from {1}",
     "UserOnlineFromDevice": "{0} is online from {1}",
     "UserPasswordChangedWithName": "Password has been changed for user {0}",
+    "UserPasswordReset": "{0} has requested a password reset using the code {1}",
     "UserPolicyUpdatedWithName": "User policy has been updated for {0}",
     "UserStartedPlayingItemWithValues": "{0} is playing {1} on {2}",
     "UserStoppedPlayingItemWithValues": "{0} has finished playing {1} on {2}",

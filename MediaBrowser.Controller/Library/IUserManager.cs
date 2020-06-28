@@ -154,17 +154,17 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Starts the forgot password process.
         /// </summary>
-        /// <param name="enteredUsername">The entered username.</param>
-        /// <param name="isInNetwork">if set to <c>true</c> [is in network].</param>
+        /// <param name="username">The entered username.</param>
         /// <returns>ForgotPasswordResult.</returns>
-        Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork);
+        Task<ForgotPasswordResult> StartForgotPasswordProcess(string username);
 
         /// <summary>
         /// Redeems the password reset pin.
         /// </summary>
-        /// <param name="pin">The pin.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
+        /// <param name="code">The code.</param>
+        /// <param name="password">The password to apply if the code is correct.</param>
+        /// <returns>CodeRedeemResult.</returns>
+        Task<CodeRedeemResult> RedeemPasswordResetPin(string code, string password);
 
         void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders, IEnumerable<IPasswordResetProvider> passwordResetProviders);
 

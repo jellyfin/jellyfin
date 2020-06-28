@@ -14,15 +14,9 @@ namespace MediaBrowser.Model.Users
         public ForgotPasswordAction Action { get; set; }
 
         /// <summary>
-        /// Gets or sets the pin file.
+        /// Gets or sets the expiration date.
         /// </summary>
-        /// <value>The pin file.</value>
-        public string PinFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pin expiration date.
-        /// </summary>
-        /// <value>The pin expiration date.</value>
-        public DateTime? PinExpirationDate { get; set; }
+        /// <value>The expiration date.</value>
+        public DateTime? ExpirationDate { get; set; }
     }
 }

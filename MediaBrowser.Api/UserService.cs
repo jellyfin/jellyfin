@@ -224,15 +224,18 @@ namespace MediaBrowser.Api
     [Route("/Users/ForgotPassword", "POST", Summary = "Initiates the forgot password process for a local user")]
     public class ForgotPassword : IReturn<ForgotPasswordResult>
     {
-        [ApiMember(Name = "EnteredUsername", IsRequired = false, DataType = "string", ParameterType = "body", Verb = "POST")]
-        public string EnteredUsername { get; set; }
+        [ApiMember(Name = "EnteredUsername", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Username { get; set; }
     }
 
-    [Route("/Users/ForgotPassword/Pin", "POST", Summary = "Redeems a forgot password pin")]
-    public class ForgotPasswordPin : IReturn<PinRedeemResult>
+    [Route("/Users/ForgotPassword/Code", "POST", Summary = "Redeems a forgot password pin")]
+    public class ForgotPasswordCode : IReturn<CodeRedeemResult>
     {
-        [ApiMember(Name = "Pin", IsRequired = false, DataType = "string", ParameterType = "body", Verb = "POST")]
-        public string Pin { get; set; }
+        [ApiMember(Name = "Code", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Code { get; set; }
+
+        [ApiMember(Name = "Password", IsRequired = true, DataType = "string", ParameterType = "body", Verb = "POST")]
+        public string Password { get; set; }
     }
 
     /// <summary>
@@ -540,16 +543,14 @@ namespace MediaBrowser.Api
 
         public async Task<object> Post(ForgotPassword request)
         {
-            var isLocal = Request.IsLocal || _networkManager.IsInLocalNetwork(Request.RemoteIp);
-
-            var result = await _userManager.StartForgotPasswordProcess(request.EnteredUsername, isLocal).ConfigureAwait(false);
+            var result = await _userManager.StartForgotPasswordProcess(request.Username).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task<object> Post(ForgotPasswordPin request)
+        public async Task<object> Post(ForgotPasswordCode request)
         {
-            var result = await _userManager.RedeemPasswordResetPin(request.Pin).ConfigureAwait(false);
+            var result = await _userManager.RedeemPasswordResetPin(request.Code, request.Password).ConfigureAwait(false);
 
             return result;
         }

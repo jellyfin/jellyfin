@@ -485,29 +485,28 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername, bool isInNetwork)
+        public async Task<ForgotPasswordResult> StartForgotPasswordProcess(string enteredUsername)
         {
             var user = string.IsNullOrWhiteSpace(enteredUsername) ? null : GetUserByName(enteredUsername);
 
-            if (user != null && isInNetwork)
+            if (user != null)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
-                return await passwordResetProvider.StartForgotPasswordProcess(user, isInNetwork).ConfigureAwait(false);
+                return await passwordResetProvider.StartForgotPasswordProcess(user).ConfigureAwait(false);
             }
 
             return new ForgotPasswordResult
             {
-                Action = ForgotPasswordAction.InNetworkRequired,
-                PinFile = string.Empty
+                Action = ForgotPasswordAction.ContactAdmin
             };
         }
 
         /// <inheritdoc/>
-        public async Task<PinRedeemResult> RedeemPasswordResetPin(string pin)
+        public async Task<CodeRedeemResult> RedeemPasswordResetPin(string pin, string password)
         {
             foreach (var provider in _passwordResetProviders)
             {
-                var result = await provider.RedeemPasswordResetPin(pin).ConfigureAwait(false);
+                var result = await provider.RedeemPasswordResetPin(pin, password).ConfigureAwait(false);
 
                 if (result.Success)
                 {
@@ -515,10 +514,9 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            return new PinRedeemResult
+            return new CodeRedeemResult
             {
-                Success = false,
-                UsersReset = Array.Empty<string>()
+                Success = false
             };
         }
 

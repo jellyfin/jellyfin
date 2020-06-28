@@ -11,13 +11,14 @@ namespace MediaBrowser.Controller.Authentication
 
         bool IsEnabled { get; }
 
-        Task<ForgotPasswordResult> StartForgotPasswordProcess(User user, bool isInNetwork);
-        Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
+        Task<ForgotPasswordResult> StartForgotPasswordProcess(User user);
+
+        Task<CodeRedeemResult> RedeemPasswordResetPin(string code, string password);
     }
 
-    public class PasswordPinCreationResult
+    public class PasswordResetResult
     {
-        public string PinFile { get; set; }
+        public string File { get; set; }
 
         public DateTime ExpirationDate { get; set; }
     }
