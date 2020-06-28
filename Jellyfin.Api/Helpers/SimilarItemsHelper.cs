@@ -23,7 +23,7 @@ namespace Jellyfin.Api.Helpers
             IDtoService dtoService,
             Guid userId,
             string id,
-            string excludeArtistIds,
+            string? excludeArtistIds,
             int? limit,
             Type[] includeTypes,
             Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)

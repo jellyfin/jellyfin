@@ -50,7 +50,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<FileStreamResult>> GetAttachment(
             [FromRoute] Guid videoId,
-            [FromRoute] string mediaSourceId,
+            [FromRoute] string? mediaSourceId,
             [FromRoute] int index)
         {
             try

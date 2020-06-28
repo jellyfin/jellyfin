@@ -64,7 +64,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<FileStreamResult> GetGeneralImage([FromRoute] string name, [FromRoute] string type)
+        public ActionResult<FileStreamResult> GetGeneralImage([FromRoute] string? name, [FromRoute] string? type)
         {
             var filename = string.Equals(type, "primary", StringComparison.OrdinalIgnoreCase)
                 ? "folder"
@@ -110,8 +110,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<FileStreamResult> GetRatingImage(
-            [FromRoute] string theme,
-            [FromRoute] string name)
+            [FromRoute] string? theme,
+            [FromRoute] string? name)
         {
             return GetImageFile(_applicationPaths.RatingsPath, theme, name);
         }
@@ -143,8 +143,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<FileStreamResult> GetMediaInfoImage(
-            [FromRoute] string theme,
-            [FromRoute] string name)
+            [FromRoute] string? theme,
+            [FromRoute] string? name)
         {
             return GetImageFile(_applicationPaths.MediaInfoImagesPath, theme, name);
         }
@@ -156,7 +156,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="theme">Theme to search.</param>
         /// <param name="name">File name to search for.</param>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
-        private ActionResult<FileStreamResult> GetImageFile(string basePath, string theme, string name)
+        private ActionResult<FileStreamResult> GetImageFile(string basePath, string? theme, string? name)
         {
             var themeFolder = Path.Combine(basePath, theme);
             if (Directory.Exists(themeFolder))

@@ -66,7 +66,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] Guid userId,
             [FromQuery] bool? includeExternalContent,
             [FromQuery] bool includeHidden,
-            [FromQuery] string presetViews)
+            [FromQuery] string? presetViews)
         {
             var query = new UserViewQuery
             {

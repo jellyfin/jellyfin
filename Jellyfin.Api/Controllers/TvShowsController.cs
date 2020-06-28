@@ -190,7 +190,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
-            [FromRoute] string seriesId,
+            [FromRoute] string? seriesId,
             [FromQuery] Guid userId,
             [FromQuery] string? fields,
             [FromQuery] int? season,
@@ -311,12 +311,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
-            [FromRoute] string seriesId,
+            [FromRoute] string? seriesId,
             [FromQuery] Guid userId,
-            [FromQuery] string fields,
+            [FromQuery] string? fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
-            [FromQuery] string adjacentTo,
+            [FromQuery] string? adjacentTo,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery] string? enableImageTypes,

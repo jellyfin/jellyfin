@@ -524,7 +524,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Library/Series/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostUpdatedSeries([FromQuery] string tvdbId)
+        public ActionResult PostUpdatedSeries([FromQuery] string? tvdbId)
         {
             var series = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -554,7 +554,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Library/Movies/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostUpdatedMovies([FromRoute] string tmdbId, [FromRoute] string imdbId)
+        public ActionResult PostUpdatedMovies([FromRoute] string? tmdbId, [FromRoute] string? imdbId)
         {
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
@@ -687,10 +687,10 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
             [FromRoute] Guid itemId,
-            [FromQuery] string excludeArtistIds,
+            [FromQuery] string? excludeArtistIds,
             [FromQuery] Guid userId,
             [FromQuery] int? limit,
-            [FromQuery] string fields)
+            [FromQuery] string? fields)
         {
             var item = itemId.Equals(Guid.Empty)
                 ? (!userId.Equals(Guid.Empty)
@@ -737,7 +737,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Libraries/AvailableOptions")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo([FromQuery] string libraryContentType, [FromQuery] bool isNewLibrary)
+        public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo([FromQuery] string? libraryContentType, [FromQuery] bool isNewLibrary)
         {
             var result = new LibraryOptionsResultDto();
 
@@ -877,10 +877,10 @@ namespace Jellyfin.Api.Controllers
 
         private QueryResult<BaseItemDto> GetSimilarItemsResult(
             BaseItem item,
-            string excludeArtistIds,
+            string? excludeArtistIds,
             Guid userId,
             int? limit,
-            string fields,
+            string? fields,
             string[] includeItemTypes,
             bool isMovie)
         {
@@ -942,7 +942,7 @@ namespace Jellyfin.Api.Controllers
             return result;
         }
 
-        private static string[] GetRepresentativeItemTypes(string contentType)
+        private static string[] GetRepresentativeItemTypes(string? contentType)
         {
             return contentType switch
             {

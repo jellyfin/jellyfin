@@ -20,7 +20,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="separator">The char that separates the substrings.</param>
         /// <param name="removeEmpty">Option to remove empty substrings from the array.</param>
         /// <returns>An array of the substrings.</returns>
-        internal static string[] Split(string value, char separator, bool removeEmpty)
+        internal static string[] Split(string? value, char separator, bool removeEmpty)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -99,16 +99,14 @@ namespace Jellyfin.Api.Helpers
         /// <param name="sortBy">Sort by.</param>
         /// <param name="requestedSortOrder">Sort order.</param>
         /// <returns>Resulting order by.</returns>
-        internal static ValueTuple<string, SortOrder>[] GetOrderBy(string sortBy, string requestedSortOrder)
+        internal static ValueTuple<string, SortOrder>[] GetOrderBy(string? sortBy, string? requestedSortOrder)
         {
-            var val = sortBy;
-
-            if (string.IsNullOrEmpty(val))
+            if (string.IsNullOrEmpty(sortBy))
             {
                 return Array.Empty<ValueTuple<string, SortOrder>>();
             }
 
-            var vals = val.Split(',');
+            var vals = sortBy.Split(',');
             if (string.IsNullOrWhiteSpace(requestedSortOrder))
             {
                 requestedSortOrder = "Ascending";
