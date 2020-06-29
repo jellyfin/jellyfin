@@ -63,7 +63,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _fileSystem = fileSystem;
             _localization = localization;
             _encodingHelperFactory = encodingHelperFactory;
-            _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? "";
+            _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
         }
 
         private EncodingHelper EncodingHelper => _encodingHelperFactory.Value;
