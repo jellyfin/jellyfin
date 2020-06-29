@@ -568,8 +568,7 @@ namespace Emby.Server.Implementations
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             // TODO: Add StartupOptions.FFmpegPath to IConfiguration and remove this custom activation
             serviceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
-            serviceCollection.AddSingleton<IMediaEncoder>(provider =>
-                ActivatorUtilities.CreateInstance<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(provider, _startupOptions.FFmpegPath ?? string.Empty));
+            serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
