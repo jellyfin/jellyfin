@@ -116,7 +116,7 @@ namespace Emby.Dlna.Api
         private readonly IDlnaManager _dlnaManager;
         private readonly IHttpResultFactory _resultFactory;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly string? _publishedServerUrl;
+        private readonly string _publishedServerUrl;
 
         public IRequest Request { get; set; }
 
