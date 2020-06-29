@@ -93,8 +93,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CreateAdminNotification(
-            [FromQuery] string name,
-            [FromQuery] string description,
+            [FromQuery] string? name,
+            [FromQuery] string? description,
             [FromQuery] string? url,
             [FromQuery] NotificationLevel? level)
         {

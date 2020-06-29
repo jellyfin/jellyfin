@@ -51,8 +51,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<CollectionCreationResult> CreateCollection(
-            [FromQuery] string name,
-            [FromQuery] string ids,
+            [FromQuery] string? name,
+            [FromQuery] string? ids,
             [FromQuery] bool isLocked,
             [FromQuery] Guid? parentId)
         {
@@ -86,7 +86,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult AddToCollection([FromRoute] Guid collectionId, [FromQuery] string itemIds)
+        public ActionResult AddToCollection([FromRoute] Guid collectionId, [FromQuery] string? itemIds)
         {
             _collectionManager.AddToCollection(collectionId, RequestHelpers.Split(itemIds, ',', true));
             return NoContent();
@@ -101,7 +101,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpDelete("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery] string itemIds)
+        public ActionResult RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery] string? itemIds)
         {
             _collectionManager.RemoveFromCollection(collectionId, RequestHelpers.Split(itemIds, ',', true));
             return NoContent();

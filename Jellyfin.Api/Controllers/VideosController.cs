@@ -133,7 +133,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult MergeVersions([FromQuery] string itemIds)
+        public ActionResult MergeVersions([FromQuery] string? itemIds)
         {
             var items = RequestHelpers.Split(itemIds, ',', true)
                 .Select(i => _libraryManager.GetItemById(i))
