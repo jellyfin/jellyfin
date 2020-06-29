@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace Emby.Dlna.Api
 {
@@ -115,6 +116,7 @@ namespace Emby.Dlna.Api
         private readonly IDlnaManager _dlnaManager;
         private readonly IHttpResultFactory _resultFactory;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly string? _publishedServerUrl;
 
         public IRequest Request { get; set; }
 
@@ -127,11 +129,13 @@ namespace Emby.Dlna.Api
         public DlnaServerService(
             IDlnaManager dlnaManager,
             IHttpResultFactory httpResultFactory,
-            IServerConfigurationManager configurationManager)
+            IServerConfigurationManager configurationManager,
+            IConfiguration config)
         {
             _dlnaManager = dlnaManager;
             _resultFactory = httpResultFactory;
             _configurationManager = configurationManager;
+            _publishedServerUrl = config["PublishedServerUrl"];
         }
 
         private string GetHeader(string name)
@@ -143,7 +147,8 @@ namespace Emby.Dlna.Api
         {
             var url = Request.AbsoluteUri;
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, serverAddress);
+
+            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, _publishedServerUrl ?? serverAddress);
 
             var cacheLength = TimeSpan.FromDays(1);
             var cacheKey = Request.RawUrl.GetMD5();
