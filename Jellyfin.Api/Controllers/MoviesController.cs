@@ -75,8 +75,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string enableImageTypes,
-            [FromQuery] string fields,
+            [FromQuery] string? enableImageTypes,
+            [FromQuery] string? fields,
             [FromQuery] int categoryLimit = 5,
             [FromQuery] int itemLimit = 8)
         {
