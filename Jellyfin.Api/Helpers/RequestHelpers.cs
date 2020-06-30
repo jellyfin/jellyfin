@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Api.Helpers
