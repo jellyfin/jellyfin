@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -15,16 +16,22 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IServerApplicationPaths _serverApplicationPaths;
+        private readonly IServerConfigurationManager _configurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CoreResolutionIgnoreRule"/> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="serverApplicationPaths">The server application paths.</param>
-        public CoreResolutionIgnoreRule(ILibraryManager libraryManager, IServerApplicationPaths serverApplicationPaths)
+        /// <param name="configurationManager">The configuration manager.</param>
+        public CoreResolutionIgnoreRule(
+            ILibraryManager libraryManager, 
+            IServerApplicationPaths serverApplicationPaths,
+            IServerConfigurationManager configurationManager)
         {
             _libraryManager = libraryManager;
             _serverApplicationPaths = serverApplicationPaths;
+            _configurationManager = configurationManager;
         }
 
         /// <inheritdoc />
@@ -42,7 +49,7 @@ namespace Emby.Server.Implementations.Library
                 return false;
             }
 
-            if (IgnorePatterns.ShouldIgnore(fileInfo.FullName))
+            if (IgnorePatterns.ShouldIgnore(fileInfo.FullName) && _configurationManager.Configuration.ApplyIgnorePatterns)
             {
                 return true;
             }

@@ -236,6 +236,11 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableExternalContentInSuggestions { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to apply ignore patterns.
+        /// </summary>
+        public bool ApplyIgnorePatterns { get; set; } 
+
+        /// <summary>
         /// Gets or sets a value indicating whether the server should force connections over HTTPS.
         /// </summary>
         public bool RequireHttps { get; set; }
@@ -273,6 +278,7 @@ namespace MediaBrowser.Model.Configuration
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
+            ApplyIgnorePatterns = true;
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = DefaultHttpPort;
