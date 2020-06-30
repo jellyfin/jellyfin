@@ -21,6 +21,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -46,7 +47,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
-        private string _ffmpegPath;
+        private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
 
         public MediaEncoder(
@@ -55,14 +56,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IFileSystem fileSystem,
             ILocalizationManager localization,
             Lazy<EncodingHelper> encodingHelperFactory,
-            string startupOptionsFFmpegPath)
+            IConfiguration config)
         {
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _encodingHelperFactory = encodingHelperFactory;
-            _startupOptionFFmpegPath = startupOptionsFFmpegPath;
+            _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
         }
 
         private EncodingHelper EncodingHelper => _encodingHelperFactory.Value;
