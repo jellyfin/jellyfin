@@ -78,35 +78,13 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Gets the item fields.
+        /// Get Guid array from string.
         /// </summary>
-        /// <param name="fields">The item field string.</param>
-        /// <returns>Array of parsed item fields.</returns>
-        internal static ItemFields[] GetItemFields(string fields)
-        {
-            if (string.IsNullOrEmpty(fields))
-            {
-                return Array.Empty<ItemFields>();
-            }
-
-            return Split(fields, ',', true)
-                .Select(v =>
-                {
-                    if (Enum.TryParse(v, true, out ItemFields value))
-                    {
-                        return (ItemFields?)value;
-                    }
-
-                    return null;
-                })
-                .Where(i => i.HasValue)
-                .Select(i => i!.Value)
-                .ToArray();
-        }
-
+        /// <param name="value">String value.</param>
+        /// <returns>Guid array.</returns>
         internal static Guid[] GetGuids(string? value)
         {
-            if (string.IsNullOrEmpty(value))
+            if (value == null)
             {
                 return Array.Empty<Guid>();
             }
@@ -116,16 +94,20 @@ namespace Jellyfin.Api.Helpers
                 .ToArray();
         }
 
+        /// <summary>
+        /// Get orderby.
+        /// </summary>
+        /// <param name="sortBy">Sort by.</param>
+        /// <param name="requestedSortOrder">Sort order.</param>
+        /// <returns>Resulting order by.</returns>
         internal static ValueTuple<string, SortOrder>[] GetOrderBy(string? sortBy, string? requestedSortOrder)
         {
-            var val = sortBy;
-
-            if (string.IsNullOrEmpty(val))
+            if (string.IsNullOrEmpty(sortBy))
             {
                 return Array.Empty<ValueTuple<string, SortOrder>>();
             }
 
-            var vals = val.Split(',');
+            var vals = sortBy.Split(',');
             if (string.IsNullOrWhiteSpace(requestedSortOrder))
             {
                 requestedSortOrder = "Ascending";
@@ -148,6 +130,19 @@ namespace Jellyfin.Api.Helpers
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the filters.
+        /// </summary>
+        /// <param name="filters">The filter string.</param>
+        /// <returns>IEnumerable{ItemFilter}.</returns>
+        internal static ItemFilter[] GetFilters(string filters)
+        {
+            return string.IsNullOrEmpty(filters)
+                ? Array.Empty<ItemFilter>()
+                : Split(filters, ',', true)
+                    .Select(v => Enum.Parse<ItemFilter>(v, true)).ToArray();
         }
     }
 }

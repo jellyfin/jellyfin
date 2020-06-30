@@ -122,7 +122,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/web/ConfigurationPage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult GetDashboardConfigurationPage([FromQuery] string name)
+        public ActionResult GetDashboardConfigurationPage([FromQuery] string? name)
         {
             IPlugin? plugin = null;
             Stream? stream = null;
@@ -178,14 +178,13 @@ namespace Jellyfin.Api.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult GetRobotsTxt()
         {
-            return GetWebClientResource("robots.txt", string.Empty);
+            return GetWebClientResource("robots.txt");
         }
 
         /// <summary>
         /// Gets a resource from the web client.
         /// </summary>
         /// <param name="resourceName">The resource name.</param>
-        /// <param name="v">The v.</param>
         /// <response code="200">Web client returned.</response>
         /// <response code="404">Server does not host a web client.</response>
         /// <returns>The resource.</returns>
@@ -193,10 +192,7 @@ namespace Jellyfin.Api.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "v", Justification = "Imported from ServiceStack")]
-        public ActionResult GetWebClientResource(
-            [FromRoute] string resourceName,
-            [FromQuery] string? v)
+        public ActionResult GetWebClientResource([FromRoute] string resourceName)
         {
             if (!_appConfig.HostWebClient() || WebClientUiPath == null)
             {
@@ -228,7 +224,7 @@ namespace Jellyfin.Api.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult GetFavIcon()
         {
-            return GetWebClientResource("favicon.ico", string.Empty);
+            return GetWebClientResource("favicon.ico");
         }
 
         /// <summary>

@@ -50,13 +50,11 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets all virtual folders.
         /// </summary>
-        /// <param name="userId">The user id.</param>
         /// <response code="200">Virtual folders retrieved.</response>
         /// <returns>An <see cref="IEnumerable{VirtualFolderInfo}"/> with the virtual folders.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Imported from ServiceStack")]
-        public ActionResult<IEnumerable<VirtualFolderInfo>> GetVirtualFolders([FromQuery] string userId)
+        public ActionResult<IEnumerable<VirtualFolderInfo>> GetVirtualFolders()
         {
             return _libraryManager.GetVirtualFolders(true);
         }
@@ -74,8 +72,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> AddVirtualFolder(
-            [FromQuery] string name,
-            [FromQuery] string collectionType,
+            [FromQuery] string? name,
+            [FromQuery] string? collectionType,
             [FromQuery] bool refreshLibrary,
             [FromQuery] string[] paths,
             [FromQuery] LibraryOptions libraryOptions)
@@ -102,7 +100,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> RemoveVirtualFolder(
-            [FromQuery] string name,
+            [FromQuery] string? name,
             [FromQuery] bool refreshLibrary)
         {
             await _libraryManager.RemoveVirtualFolder(name, refreshLibrary).ConfigureAwait(false);
@@ -125,8 +123,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public ActionResult RenameVirtualFolder(
-            [FromQuery] string name,
-            [FromQuery] string newName,
+            [FromQuery] string? name,
+            [FromQuery] string? newName,
             [FromQuery] bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -207,8 +205,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Paths")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddMediaPath(
-            [FromQuery] string name,
-            [FromQuery] string path,
+            [FromQuery] string? name,
+            [FromQuery] string? path,
             [FromQuery] MediaPathInfo pathInfo,
             [FromQuery] bool refreshLibrary)
         {
@@ -258,7 +256,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Paths/Update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateMediaPath(
-            [FromQuery] string name,
+            [FromQuery] string? name,
             [FromQuery] MediaPathInfo pathInfo)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -282,8 +280,8 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Paths")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RemoveMediaPath(
-            [FromQuery] string name,
-            [FromQuery] string path,
+            [FromQuery] string? name,
+            [FromQuery] string? path,
             [FromQuery] bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -329,7 +327,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("LibraryOptions")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateLibraryOptions(
-            [FromQuery] string id,
+            [FromQuery] string? id,
             [FromQuery] LibraryOptions libraryOptions)
         {
             var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(id);
