@@ -286,7 +286,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableTotalRecordCount">Total record count.</param>
         /// <response code="200">Album artists returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the album artists.</returns>
-        [HttpGet("/AlbumArtists")]
+        [HttpGet("AlbumArtists")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetAlbumArtists(
             [FromQuery] double? minCommunityRating,
