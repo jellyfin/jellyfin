@@ -1,9 +1,10 @@
-using System.Threading;
+using System;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +14,7 @@ namespace MediaBrowser.Api
     /// Class UpdateDisplayPreferences.
     /// </summary>
     [Route("/DisplayPreferences/{DisplayPreferencesId}", "POST", Summary = "Updates a user's display preferences for an item")]
-    public class UpdateDisplayPreferences : DisplayPreferences, IReturnVoid
+    public class UpdateDisplayPreferences : DisplayPreferencesDto, IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
@@ -27,7 +28,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/DisplayPreferences/{Id}", "GET", Summary = "Gets a user's display preferences for an item")]
-    public class GetDisplayPreferences : IReturn<DisplayPreferences>
+    public class GetDisplayPreferences : IReturn<DisplayPreferencesDto>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -50,28 +51,21 @@ namespace MediaBrowser.Api
     public class DisplayPreferencesService : BaseApiService
     {
         /// <summary>
-        /// The _display preferences manager.
+        /// The user manager.
         /// </summary>
-        private readonly IDisplayPreferencesRepository _displayPreferencesManager;
-        /// <summary>
-        /// The _json serializer.
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IDisplayPreferencesManager _displayPreferencesManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesService" /> class.
         /// </summary>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
         public DisplayPreferencesService(
             ILogger<DisplayPreferencesService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
-            IJsonSerializer jsonSerializer,
-            IDisplayPreferencesRepository displayPreferencesManager)
+            IDisplayPreferencesManager displayPreferencesManager)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _jsonSerializer = jsonSerializer;
             _displayPreferencesManager = displayPreferencesManager;
         }
 
@@ -81,9 +75,34 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            var result = _displayPreferencesManager.GetDisplayPreferences(request.Id, request.UserId, request.Client);
+            var result = _displayPreferencesManager.GetDisplayPreferences(Guid.Parse(request.UserId), request.Client);
 
-            return ToOptimizedResult(result);
+            if (result == null)
+            {
+                return null;
+            }
+
+            var dto = new DisplayPreferencesDto
+            {
+                Client = result.Client,
+                Id = result.UserId.ToString(),
+                ViewType = result.ViewType?.ToString(),
+                SortBy = result.SortBy,
+                SortOrder = result.SortOrder,
+                IndexBy = result.IndexBy?.ToString(),
+                RememberIndexing = result.RememberIndexing,
+                RememberSorting = result.RememberSorting,
+                ScrollDirection = result.ScrollDirection,
+                ShowBackdrop = result.ShowBackdrop,
+                ShowSidebar = result.ShowSidebar
+            };
+
+            foreach (var homeSection in result.HomeSections)
+            {
+                dto.CustomPrefs["homesection" + homeSection.Order] = homeSection.Type.ToString().ToLowerInvariant();
+            }
+
+            return ToOptimizedResult(dto);
         }
 
         /// <summary>
@@ -92,10 +111,43 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdateDisplayPreferences request)
         {
-            // Serialize to json and then back so that the core doesn't see the request dto type
-            var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
+            HomeSectionType[] defaults =
+            {
+                HomeSectionType.SmallLibraryTiles,
+                HomeSectionType.Resume,
+                HomeSectionType.ResumeAudio,
+                HomeSectionType.LiveTv,
+                HomeSectionType.NextUp,
+                HomeSectionType.LatestMedia,
+                HomeSectionType.None,
+            };
 
-            _displayPreferencesManager.SaveDisplayPreferences(displayPreferences, request.UserId, request.Client, CancellationToken.None);
+            var prefs = _displayPreferencesManager.GetDisplayPreferences(Guid.Parse(request.UserId), request.Client);
+
+            prefs.ViewType = Enum.TryParse<ViewType>(request.ViewType, true, out var viewType) ? viewType : (ViewType?)null;
+            prefs.IndexBy = Enum.TryParse<IndexingKind>(request.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null;
+            prefs.ShowBackdrop = request.ShowBackdrop;
+            prefs.ShowSidebar = request.ShowSidebar;
+            prefs.SortBy = request.SortBy;
+            prefs.SortOrder = request.SortOrder;
+            prefs.RememberIndexing = request.RememberIndexing;
+            prefs.RememberSorting = request.RememberSorting;
+            prefs.ScrollDirection = request.ScrollDirection;
+            prefs.HomeSections.Clear();
+
+            for (int i = 0; i < 7; i++)
+            {
+                if (request.CustomPrefs.TryGetValue("homesection" + i, out var homeSection))
+                {
+                    prefs.HomeSections.Add(new HomeSection
+                    {
+                        Order = i,
+                        Type = Enum.TryParse<HomeSectionType>(homeSection, true, out var type) ? type : defaults[i]
+                    });
+                }
+            }
+
+            _displayPreferencesManager.SaveChanges(prefs);
         }
     }
 }

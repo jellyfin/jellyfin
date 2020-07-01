@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;

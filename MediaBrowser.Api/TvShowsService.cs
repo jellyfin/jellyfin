@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;

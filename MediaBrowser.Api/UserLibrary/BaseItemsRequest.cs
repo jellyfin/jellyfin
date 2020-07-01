@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
@@ -466,8 +467,8 @@ namespace MediaBrowser.Api.UserLibrary
 
                 var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
                 var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase)
-                    ? MediaBrowser.Model.Entities.SortOrder.Descending
-                    : MediaBrowser.Model.Entities.SortOrder.Ascending;
+                    ? Jellyfin.Data.Enums.SortOrder.Descending
+                    : Jellyfin.Data.Enums.SortOrder.Ascending;
 
                 result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
             }

@@ -349,6 +349,11 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         public virtual ICollection<AccessSchedule> AccessSchedules { get; protected set; }
 
+        /// <summary>
+        /// Gets or sets the list of item display preferences.
+        /// </summary>
+        public virtual ICollection<DisplayPreferences> DisplayPreferences { get; protected set; }
+
         /*
         /// <summary>
         /// Gets or sets the list of groups this user is a member of.

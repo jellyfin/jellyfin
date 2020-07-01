@@ -27,6 +27,8 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
 
+        public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
+
         public virtual DbSet<ImageInfo> ImageInfos { get; set; }
 
         public virtual DbSet<Permission> Permissions { get; set; }

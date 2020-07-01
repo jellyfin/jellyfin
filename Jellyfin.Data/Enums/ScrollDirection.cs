@@ -1,17 +1,17 @@
-namespace MediaBrowser.Model.Entities
+﻿namespace Jellyfin.Data.Enums
 {
     /// <summary>
-    /// Enum ScrollDirection.
+    /// An enum representing the axis that should be scrolled.
     /// </summary>
     public enum ScrollDirection
     {
         /// <summary>
-        /// The horizontal.
+        /// Horizontal scrolling direction.
         /// </summary>
         Horizontal,
 
         /// <summary>
-        /// The vertical.
+        /// Vertical scrolling direction.
         /// </summary>
         Vertical
     }

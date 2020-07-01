@@ -554,8 +554,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
             serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 
-            serviceCollection.AddSingleton<IDisplayPreferencesRepository, SqliteDisplayPreferencesRepository>();
-
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
             serviceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
@@ -650,7 +648,6 @@ namespace Emby.Server.Implementations
             _httpServer = Resolve<IHttpServer>();
             _httpClient = Resolve<IHttpClient>();
 
-            ((SqliteDisplayPreferencesRepository)Resolve<IDisplayPreferencesRepository>()).Initialize();
             ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
             SetStaticProperties();

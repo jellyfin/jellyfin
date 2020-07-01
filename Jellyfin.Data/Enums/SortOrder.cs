@@ -1,17 +1,17 @@
-namespace MediaBrowser.Model.Entities
+﻿namespace Jellyfin.Data.Enums
 {
     /// <summary>
-    /// Enum SortOrder.
+    /// An enum representing the sorting order.
     /// </summary>
     public enum SortOrder
     {
         /// <summary>
-        /// The ascending.
+        /// Sort in increasing order.
         /// </summary>
         Ascending,
 
         /// <summary>
-        /// The descending.
+        /// Sort in decreasing order.
         /// </summary>
         Descending
     }
