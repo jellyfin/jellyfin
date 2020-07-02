@@ -131,7 +131,7 @@ namespace Emby.Dlna.Api
         {
             _dlnaManager = dlnaManager;
             _resultFactory = httpResultFactory;
-            _configurationManager = configurationManager;            
+            _configurationManager = configurationManager;
         }
 
         private string GetHeader(string name)
