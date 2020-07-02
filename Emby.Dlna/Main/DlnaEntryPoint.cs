@@ -23,6 +23,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
@@ -54,6 +55,8 @@ namespace Emby.Dlna.Main
         private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
 
+        private string _publishedServerUrl = null;
+
         internal IContentDirectory ContentDirectory { get; private set; }
 
         internal IConnectionManager ConnectionManager { get; private set; }
@@ -80,7 +83,8 @@ namespace Emby.Dlna.Main
             ISocketFactory socketFactory,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
-            ITVSeriesManager tvSeriesManager)
+            ITVSeriesManager tvSeriesManager,
+            IConfiguration conf)
         {
             _config = config;
             _appHost = appHost;
@@ -98,6 +102,8 @@ namespace Emby.Dlna.Main
             _socketFactory = socketFactory;
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
+
+            _publishedServerUrl = conf["PublishedServerUrl"];
 
             ContentDirectory = new ContentDirectory.ContentDirectory(
                 dlnaManager,
@@ -277,7 +283,7 @@ namespace Emby.Dlna.Main
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+                var uri = new Uri(string.IsNullOrEmpty(_publishedServerUrl) ? _appHost.GetLocalApiUrl(address) + descriptorUri : _publishedServerUrl + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
