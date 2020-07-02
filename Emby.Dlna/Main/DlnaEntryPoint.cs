@@ -55,7 +55,8 @@ namespace Emby.Dlna.Main
         private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
 
-        private string _publishedServerUrl = null;
+        private string _publishedServerUrl;
+        private string _basedir;
 
         internal IContentDirectory ContentDirectory { get; private set; }
 
@@ -104,6 +105,7 @@ namespace Emby.Dlna.Main
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
             _publishedServerUrl = conf["PublishedServerUrl"];
+            _basedir = config.Configuration.BaseUrl;
 
             ContentDirectory = new ContentDirectory.ContentDirectory(
                 dlnaManager,
@@ -282,7 +284,8 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var descriptorUri = "dlna/" + udn + "/description.xml";
+                var descriptorUri = (_basedir + "/dlna/" + udn + "/description.xml").TrimStart('/');
+
                 var uri = new Uri(string.IsNullOrEmpty(_publishedServerUrl) ? _appHost.GetLocalApiUrl(address) + "/" + descriptorUri : _publishedServerUrl + descriptorUri);
 
                 var device = new SsdpRootDevice
