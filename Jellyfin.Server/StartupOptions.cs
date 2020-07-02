@@ -101,6 +101,11 @@ namespace Jellyfin.Server
                 config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl.ToString());
             }
 
+            if (FFmpegPath != null)
+            {
+                config.Add(ConfigurationExtensions.FfmpegPathKey, FFmpegPath);
+            }
+
             return config;
         }
     }
