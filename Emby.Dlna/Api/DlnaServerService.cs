@@ -148,7 +148,7 @@ namespace Emby.Dlna.Api
             var url = Request.AbsoluteUri;
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
 
-            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, string.IsNullOrEmpty(_publishedServerUrl) ? serverAddress : _publishedServerUrl);
+            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, serverAddress);
 
             var cacheLength = TimeSpan.FromDays(1);
             var cacheKey = Request.RawUrl.GetMD5();

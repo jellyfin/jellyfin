@@ -282,8 +282,8 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(string.IsNullOrEmpty(_publishedServerUrl) ? _appHost.GetLocalApiUrl(address) + descriptorUri : _publishedServerUrl + descriptorUri);
+                var descriptorUri = "dlna/" + udn + "/description.xml";
+                var uri = new Uri(string.IsNullOrEmpty(_publishedServerUrl) ? _appHost.GetLocalApiUrl(address) + "/" + descriptorUri : _publishedServerUrl + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
@@ -305,7 +305,7 @@ namespace Emby.Dlna.Main
                 {
                     "urn:schemas-upnp-org:service:ContentDirectory:1",
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
-                    // "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
+                    //"urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
                 };
 
                 foreach (var subDevice in embeddedDevices)
