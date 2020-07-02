@@ -56,7 +56,6 @@ namespace Emby.Dlna.Main
         private ISsdpCommunicationsServer _communicationsServer;
 
         private string _publishedServerUrl;
-        private string _basedir;
 
         internal IContentDirectory ContentDirectory { get; private set; }
 
@@ -105,8 +104,7 @@ namespace Emby.Dlna.Main
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
             _publishedServerUrl = conf["PublishedServerUrl"];
-            _basedir = config.Configuration.BaseUrl;
-
+            
             ContentDirectory = new ContentDirectory.ContentDirectory(
                 dlnaManager,
                 userDataManager,
@@ -284,7 +282,7 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var descriptorUri = (_basedir + "/dlna/" + udn + "/description.xml").TrimStart('/');
+                var descriptorUri = (_config.Configuration.BaseUrl ?? string.Empty + "/dlna/" + udn + "/description.xml").TrimStart('/');
 
                 var uri = new Uri(string.IsNullOrEmpty(_publishedServerUrl) ? _appHost.GetLocalApiUrl(address) + "/" + descriptorUri : _publishedServerUrl + descriptorUri);
 
@@ -308,7 +306,7 @@ namespace Emby.Dlna.Main
                 {
                     "urn:schemas-upnp-org:service:ContentDirectory:1",
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
-                    //"urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
+                    // "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
                 };
 
                 foreach (var subDevice in embeddedDevices)
