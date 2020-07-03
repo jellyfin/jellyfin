@@ -725,6 +725,27 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
+        /// Gets a live tv program.
+        /// </summary>
+        /// <param name="programId">Program id.</param>
+        /// <param name="userId">Optional. Attach user data.</param>
+        /// <response code="200">Program returned.</response>
+        /// <returns>An <see cref="OkResult"/> containing the livetv program.</returns>
+        [HttpGet("Programs/{programId{")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<BaseItemDto>> GetProgram(
+            [FromRoute] string programId,
+            [FromQuery] Guid userId)
+        {
+            var user = userId.Equals(Guid.Empty)
+                ? null
+                : _userManager.GetUserById(userId);
+
+            return await _liveTvManager.GetProgram(programId, CancellationToken.None, user).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Deletes a live tv recording.
         /// </summary>
         /// <param name="recordingId">Recording id.</param>
@@ -779,7 +800,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Timers/{timerId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "channelId", Justification = "Imported from ServiceStack")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "timerId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> UpdateTimer([FromRoute] string timerId, [FromBody] TimerInfoDto timerInfo)
         {
             AssertUserCanManageLiveTv();
