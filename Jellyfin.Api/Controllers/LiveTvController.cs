@@ -731,7 +731,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">Optional. Attach user data.</param>
         /// <response code="200">Program returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the livetv program.</returns>
-        [HttpGet("Programs/{programId{")]
+        [HttpGet("Programs/{programId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<BaseItemDto>> GetProgram(
