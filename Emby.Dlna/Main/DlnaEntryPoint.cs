@@ -56,6 +56,7 @@ namespace Emby.Dlna.Main
         private ISsdpCommunicationsServer _communicationsServer;
 
         private string _publishedServerUrl;
+        private string _basedir;
 
         internal IContentDirectory ContentDirectory { get; private set; }
 
@@ -66,7 +67,7 @@ namespace Emby.Dlna.Main
         public static DlnaEntryPoint Current;
 
         public DlnaEntryPoint(
-            IServerConfigurationManager config,
+            IServerConfigurationManager configurationManager,
             ILoggerFactory loggerFactory,
             IServerApplicationHost appHost,
             ISessionManager sessionManager,
@@ -84,9 +85,9 @@ namespace Emby.Dlna.Main
             INetworkManager networkManager,
             IUserViewManager userViewManager,
             ITVSeriesManager tvSeriesManager,
-            IConfiguration conf)
+            IConfiguration configuration)
         {
-            _config = config;
+            _config = configurationManager;
             _appHost = appHost;
             _sessionManager = sessionManager;
             _httpClient = httpClient;
@@ -103,14 +104,15 @@ namespace Emby.Dlna.Main
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
-            _publishedServerUrl = conf["PublishedServerUrl"];
-            
+            _publishedServerUrl = configuration["PublishedServerUrl"];
+            _basedir = configurationManager.Configuration.BaseUrl;
+
             ContentDirectory = new ContentDirectory.ContentDirectory(
                 dlnaManager,
                 userDataManager,
                 imageProcessor,
                 libraryManager,
-                config,
+                configurationManager,
                 userManager,
                 loggerFactory.CreateLogger<ContentDirectory.ContentDirectory>(),
                 httpClient,
@@ -122,14 +124,14 @@ namespace Emby.Dlna.Main
 
             ConnectionManager = new ConnectionManager.ConnectionManager(
                 dlnaManager,
-                config,
+                configurationManager,
                 loggerFactory.CreateLogger<ConnectionManager.ConnectionManager>(),
                 httpClient);
 
             MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
                 loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
                 httpClient,
-                config);
+                configurationManager);
             Current = this;
         }
 
@@ -282,9 +284,32 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var descriptorUri = (_config.Configuration.BaseUrl ?? string.Empty + "/dlna/" + udn + "/description.xml").TrimStart('/');
+                string descriptorUri = string.Empty;
+                if (string.IsNullOrEmpty(_basedir))
+                {
+                    descriptorUri = "/dlna/" + udn + "/description.xml";
+                }
+                else
+                {
+                    if (!_basedir.StartsWith('/'))
+                    {
+                        _basedir = "/" + _basedir;
+                    }
 
-                var uri = new Uri(string.IsNullOrEmpty(_publishedServerUrl) ? _appHost.GetLocalApiUrl(address) + "/" + descriptorUri : _publishedServerUrl + descriptorUri);
+                    descriptorUri = _basedir + "/dlna/" + udn + "/description.xml";
+                }
+
+                string uriAddress = string.Empty;
+                if (string.IsNullOrEmpty(_publishedServerUrl))
+                {
+                    uriAddress = _appHost.GetLocalApiUrl(address);
+                }
+                else
+                {
+                    uriAddress = _publishedServerUrl.TrimEnd('/');
+                }
+
+                var uri = new Uri(uriAddress + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
