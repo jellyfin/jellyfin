@@ -144,7 +144,7 @@ namespace MediaBrowser.Model.Dlna
 
         public Dictionary<string, string> StreamOptions { get; private set; }
 
-        public string MediaSourceId => MediaSource == null ? null : MediaSource.Id;
+        public string MediaSourceId => MediaSource?.Id;
 
         public bool IsDirectStream =>
             PlayMethod == PlayMethod.DirectStream ||

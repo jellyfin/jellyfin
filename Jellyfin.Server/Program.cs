@@ -274,10 +274,10 @@ namespace Jellyfin.Server
                     var addresses = appHost.ServerConfigurationManager
                         .Configuration
                         .LocalNetworkAddresses
-                        .Select(appHost.NormalizeConfiguredLocalAddress)
+                        .Select(x => appHost.NormalizeConfiguredLocalAddress(x))
                         .Where(i => i != null)
                         .ToHashSet();
-                    if (addresses.Any() && !addresses.Contains(IPAddress.Any))
+                    if (addresses.Count > 0 && !addresses.Contains(IPAddress.Any))
                     {
                         if (!addresses.Contains(IPAddress.Loopback))
                         {
