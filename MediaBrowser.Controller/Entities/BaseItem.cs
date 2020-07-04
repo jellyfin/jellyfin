@@ -613,7 +613,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (!IsFileProtocol)
                 {
-                    return new string[] { };
+                    return Array.Empty<string>();
                 }
 
                 return new[] { Path };

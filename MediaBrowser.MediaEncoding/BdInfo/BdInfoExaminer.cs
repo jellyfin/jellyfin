@@ -41,7 +41,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
             var outputStream = new BlurayDiscInfo
             {
-                MediaStreams = new MediaStream[] { }
+                MediaStreams = Array.Empty<MediaStream>()
             };
 
             if (playlist == null)
