@@ -40,6 +40,8 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<User> Users { get; set; }
 
+        public virtual DbSet<UserItemData> UserItemData { get; set; }
+
         /*public virtual DbSet<Artwork> Artwork { get; set; }
 
         public virtual DbSet<Book> Books { get; set; }
@@ -163,6 +165,10 @@ namespace Jellyfin.Server.Implementations
             OnModelCreatingImpl(modelBuilder);
 
             modelBuilder.HasDefaultSchema("jellyfin");
+
+            modelBuilder.Entity<UserItemData>()
+                .HasIndex(entry => new { entry.UserId, entry.ItemId })
+                .IsUnique();
 
             /*modelBuilder.Entity<Artwork>().HasIndex(t => t.Kind);
 
