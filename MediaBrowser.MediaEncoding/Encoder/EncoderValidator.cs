@@ -90,6 +90,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         // $ ffmpeg -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
         private static readonly IReadOnlyDictionary<string, Version> _ffmpegVersionMap = new Dictionary<string, Version>
         {
+            { "libavutil=56.51,libavcodec=58.91,libavformat=58.45,libavdevice=58.10,libavfilter=7.85,libswscale=5.7,libswresample=3.7,libpostproc=55.7,", new Version(4, 3) },
             { "libavutil=56.31,libavcodec=58.54,libavformat=58.29,libavdevice=58.8,libavfilter=7.57,libswscale=5.5,libswresample=3.5,libpostproc=55.5,", new Version(4, 2) },
             { "libavutil=56.22,libavcodec=58.35,libavformat=58.20,libavdevice=58.5,libavfilter=7.40,libswscale=5.3,libswresample=3.3,libpostproc=55.3,", new Version(4, 1) },
             { "libavutil=56.14,libavcodec=58.18,libavformat=58.12,libavdevice=58.3,libavfilter=7.16,libswscale=5.1,libswresample=3.1,libpostproc=55.1,", new Version(4, 0) },
@@ -147,11 +148,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // Work out what the version under test is
             var version = GetFFmpegVersion(versionOutput);
 
-            _logger.LogInformation("Found ffmpeg version {0}", version != null ? version.ToString() : "unknown");
+            if (version != null && version.MinorRevision != 0)
+            {
+                _logger.LogInformation("Found custom ffmpeg. Approximating version around {0}.{1}", version.Major, version.Minor);
+            }
+            else
+            { 
+                _logger.LogInformation("Found ffmpeg version {1}", version != null ? version.ToString() : "unknown");
+            }
 
             if (version == null)
             {
-                if (MinVersion != null && MaxVersion != null) // Version is unknown
+                if (MinVersion != null && MinVersion != null) // Version is unknown
                 {
                     if (MinVersion == MaxVersion)
                     {
@@ -159,7 +167,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                     else
                     {
-                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);
+                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);                        
                     }
                 }
 
@@ -196,8 +204,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns></returns>
         internal static Version GetFFmpegVersion(string output)
         {
-            // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
-            var match = Regex.Match(output, @"^ffmpeg version n?((?:\d+\.?)+)");
+            // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output.
+            var match = Regex.Match(output, @"^ffmpeg version ?((?:\d+\.?)+)");
 
             if (match.Success)
             {
@@ -205,11 +213,48 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                // Create a reduced version string and lookup key from dictionary
+                // Create a reduced version string and lookup key from dictionary.
                 var reducedVersion = GetLibrariesVersionString(output);
 
-                // Try to lookup the string and return Key, otherwise if not found returns null
-                return _ffmpegVersionMap.TryGetValue(reducedVersion, out Version version) ? version : null;
+                // Try to lookup the string and return Key, otherwise if not found returns null.
+                if (_ffmpegVersionMap.TryGetValue(reducedVersion, out Version version))
+                {
+                    return version;
+                }
+                else
+                {
+                    // Make a guess as what the version could be, based up on the version of libavutil.
+                    if (!Version.TryParse(reducedVersion.Substring(10, 5), out Version guessVersion))
+                    {
+                        return null;
+                    }
+
+                    string nearestVersion = string.Empty;
+                    foreach (string releaseVersion in _ffmpegVersionMap.Keys)
+                    {
+                        if (!Version.TryParse(releaseVersion.Substring(10, 5), out Version libavutilVersion))
+                        {
+                            continue;
+                        }
+
+                        nearestVersion = releaseVersion;
+
+                        if (libavutilVersion.CompareTo(guessVersion) < 0)
+                        { 
+                            break;                            
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(nearestVersion))
+                    {
+                        return null;
+                    }
+
+                    // Add a revision, to signify a custom version.
+                    return new Version(_ffmpegVersionMap[nearestVersion].ToString() + ".0.1");
+                    
+
+                }
             }
         }
 
@@ -221,23 +266,38 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns></returns>
         private static string GetLibrariesVersionString(string output)
         {
+            // List of libraries we want in the order we need for comparison.
+            var wanted = "libavutil:libavcodec:libavformat:libavdevice:libavfilter:libswscale:libswresample:libpostproc";
+
+            var tupleLibrary = new Dictionary<string, Tuple<string, string>>();
+
+            // Store matches in a dictionary so we can build a comparison string in the right sequence.
             var rc = new StringBuilder(144);
             foreach (Match m in Regex.Matches(
                 output,
                 @"((?<name>lib\w+)\s+(?<major>\d+)\.\s*(?<minor>\d+))",
                 RegexOptions.Multiline))
             {
-                rc.Append(m.Groups["name"])
-                    .Append('=')
-                    .Append(m.Groups["major"])
-                    .Append('.')
-                    .Append(m.Groups["minor"])
-                    .Append(',');
+                tupleLibrary.Add(m.Groups["name"].Value, Tuple.Create(m.Groups["major"].Value, m.Groups["minor"].Value));
             }
 
-            return rc.Length == 0 ? null : rc.ToString();
-        }
+            // Build the sequence.
+            foreach (var name in wanted.Split(':'))
+            {
+                if (tupleLibrary.TryGetValue(name, out var version))
+                {
+                    rc.Append(name)
+                    .Append('=')
+                    .Append(version.Item1)
+                    .Append('.')
+                    .Append(version.Item2)
+                    .Append(',');
+                }
+            }
 
+            return rc.Length == 0 ? string.Empty : rc.ToString();
+        }
+    
         private enum Codec
         {
             Encoder,
