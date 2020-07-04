@@ -377,7 +377,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             {
                 _logger.LogInformation("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
 
-                url = string.Format(CultureInfo.InvariantCulture,GetMovieInfo3, id, TmdbUtils.ApiKey) + "&language=en";
+                url = string.Format(CultureInfo.InvariantCulture, GetMovieInfo3, id, TmdbUtils.ApiKey) + "&language=en";
 
                 if (!string.IsNullOrEmpty(language))
                 {
