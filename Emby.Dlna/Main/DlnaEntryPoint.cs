@@ -269,7 +269,8 @@ namespace Emby.Dlna.Main
                 // Limit to LAN addresses only
                 if (!_networkManager.IsAddressInSubnets(address, true, true))
                 {
-                    continue;
+                    // subnet detection broken?
+                    //continue;
                 }
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
