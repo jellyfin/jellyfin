@@ -125,7 +125,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { },
+                    Fields = Array.Empty<ItemFields>(),
                     EnableImages = false,
                     EnableUserData = false
                 },
