@@ -288,7 +288,7 @@ namespace Jellyfin.Api.Controllers
                     MediaTypes = RequestHelpers.Split(mediaTypes, ',', true),
                     IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
                     ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
-                    Recursive = recursive!.Value,
+                    Recursive = recursive ?? false,
                     OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                     IsFavorite = isFavorite,
                     Limit = limit,
@@ -343,10 +343,10 @@ namespace Jellyfin.Api.Controllers
                     ExcludeItemIds = RequestHelpers.GetGuids(excludeItemIds),
                     DtoOptions = dtoOptions,
                     SearchTerm = searchTerm,
-                    MinDateLastSaved = minDateLastSaved!.Value.ToUniversalTime(),
-                    MinDateLastSavedForUser = minDateLastSavedForUser!.Value.ToUniversalTime(),
-                    MinPremiereDate = minPremiereDate!.Value.ToUniversalTime(),
-                    MaxPremiereDate = maxPremiereDate!.Value.ToUniversalTime(),
+                    MinDateLastSaved = minDateLastSaved?.ToUniversalTime(),
+                    MinDateLastSavedForUser = minDateLastSavedForUser?.ToUniversalTime(),
+                    MinPremiereDate = minPremiereDate?.ToUniversalTime(),
+                    MaxPremiereDate = maxPremiereDate?.ToUniversalTime(),
                 };
 
                 if (!string.IsNullOrWhiteSpace(ids) || !string.IsNullOrWhiteSpace(searchTerm))
