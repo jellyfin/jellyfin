@@ -159,7 +159,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (version == null)
             {
-                if (MinVersion != null && MinVersion != null) // Version is unknown
+                if (MinVersion != null && MaxVersion != null) // Version is unknown
                 {
                     if (MinVersion == MaxVersion)
                     {
@@ -167,7 +167,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     }
                     else
                     {
-                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);                        
+                        _logger.LogWarning("FFmpeg validation: We recommend a minimum of {0} and maximum of {1}", MinVersion, MaxVersion);
                     }
                 }
 
@@ -297,7 +297,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             return rc.Length == 0 ? string.Empty : rc.ToString();
         }
-    
+   
         private enum Codec
         {
             Encoder,
