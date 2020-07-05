@@ -12,6 +12,7 @@ namespace Emby.Dlna.Configuration
             SendOnlyMatchedHost = true;
             ClientDiscoveryIntervalSeconds = 60;
             BlastAliveMessageIntervalSeconds = 1800;
+            DefaultUserId = string.Empty;
         }
 
         public bool EnablePlayTo { get; set; }

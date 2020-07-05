@@ -11,6 +11,17 @@ namespace Emby.Dlna.PlayTo
         public DeviceInfo()
         {
             Name = "Generic Device";
+            UUID = string.Empty;
+            Name = string.Empty;
+            ModelName = string.Empty;
+            ModelDescription = string.Empty;
+            ModelUrl = string.Empty;
+            Manufacturer = string.Empty;
+            SerialNumber = string.Empty;
+            ManufacturerUrl = string.Empty;
+            PresentationUrl = string.Empty;
+            BaseUrl = string.Empty;
+            Services = new List<DeviceService>();
         }
 
         public string UUID { get; set; }
@@ -33,17 +44,11 @@ namespace Emby.Dlna.PlayTo
 
         public string PresentationUrl { get; set; }
 
-        private string _baseUrl = string.Empty;
-        public string BaseUrl
-        {
-            get => _baseUrl;
-            set => _baseUrl = value;
-        }
+        public string BaseUrl { get; set; }
 
-        public DeviceIcon Icon { get; set; }
+        public DeviceIcon? Icon { get; set; }
 
-        private readonly List<DeviceService> _services = new List<DeviceService>();
-        public List<DeviceService> Services => _services;
+        public List<DeviceService> Services { get; }
 
         public DeviceIdentification ToDeviceIdentification()
         {

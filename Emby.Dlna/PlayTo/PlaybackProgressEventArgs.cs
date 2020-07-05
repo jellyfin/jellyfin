@@ -6,6 +6,11 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlaybackProgressEventArgs : EventArgs
     {
-        public uBaseObject MediaInfo { get; set; }
+        public PlaybackProgressEventArgs(uBaseObject mediaInfo)
+        {
+            MediaInfo = mediaInfo ?? throw new ArgumentNullException(nameof(mediaInfo));
+        }
+
+        public uBaseObject MediaInfo { get; }
     }
 }

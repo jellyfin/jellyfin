@@ -1,17 +1,24 @@
 #pragma warning disable CS1591
 
+using System;
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.PlayTo
 {
     public class PlaylistItem
     {
-        public string StreamUrl { get; set; }
+        public PlaylistItem(StreamInfo streamInfo, DeviceProfile profile)
+        {
+            StreamInfo = streamInfo ?? throw new ArgumentNullException(nameof(streamInfo));
+            Profile = profile ?? throw new ArgumentNullException(nameof(profile));
+        }
 
-        public string Didl { get; set; }
+        public string StreamUrl { get; set; } = string.Empty;
 
-        public StreamInfo StreamInfo { get; set; }
+        public string Didl { get; set; } = string.Empty;
 
-        public DeviceProfile Profile { get; set; }
+        public StreamInfo StreamInfo { get; }
+
+        public DeviceProfile Profile { get; }
     }
 }

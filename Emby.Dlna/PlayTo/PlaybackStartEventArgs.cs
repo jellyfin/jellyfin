@@ -6,6 +6,11 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlaybackStartEventArgs : EventArgs
     {
-        public uBaseObject MediaInfo { get; set; }
+        public PlaybackStartEventArgs(uBaseObject mediaInfo)
+        {
+            MediaInfo = mediaInfo ?? throw new ArgumentNullException(nameof(mediaInfo));
+        }
+
+        public uBaseObject MediaInfo { get; }
     }
 }

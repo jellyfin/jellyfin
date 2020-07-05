@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable IDE0063
 
 using System;
 using System.Globalization;
@@ -32,9 +33,14 @@ namespace Emby.Dlna.PlayTo
             DeviceService service,
             string command,
             string postData,
-            string header = null,
+            string? header = null,
             CancellationToken cancellationToken = default)
         {
+            if (service == null)
+            {
+                throw new ArgumentNullException(nameof(service));
+            }
+
             var url = NormalizeServiceUrl(baseUrl, service.ControlUrl);
             using (var response = await PostSoapDataAsync(
                 url,
@@ -122,7 +128,7 @@ namespace Emby.Dlna.PlayTo
             string url,
             string soapAction,
             string postData,
-            string header,
+            string? header,
             CancellationToken cancellationToken)
         {
             if (soapAction[0] != '\"')

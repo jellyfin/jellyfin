@@ -1,5 +1,8 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1402
+#pragma warning disable SA1649
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MediaBrowser.Controller.Dlna;
@@ -18,7 +21,7 @@ namespace Emby.Dlna.Api
     public class DeleteProfile : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/Profiles/Default", "GET", Summary = "Gets the default profile")]
@@ -30,7 +33,7 @@ namespace Emby.Dlna.Api
     public class GetProfile : IReturn<DeviceProfile>
     {
         [ApiMember(Name = "Id", Description = "Profile Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/Profiles/{Id}", "POST", Summary = "Updates a profile")]
@@ -54,6 +57,7 @@ namespace Emby.Dlna.Api
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Get(GetProfileInfos request)
         {
             return _dlnaManager.GetProfileInfos().ToArray();
@@ -61,10 +65,16 @@ namespace Emby.Dlna.Api
 
         public object Get(GetProfile request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             return _dlnaManager.GetProfile(request.Id);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Get(GetDefaultProfile request)
         {
             return _dlnaManager.GetDefaultProfile();
@@ -72,16 +82,31 @@ namespace Emby.Dlna.Api
 
         public void Delete(DeleteProfile request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             _dlnaManager.DeleteProfile(request.Id);
         }
 
         public void Post(UpdateProfile request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             _dlnaManager.UpdateProfile(request);
         }
 
         public void Post(CreateProfile request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             _dlnaManager.CreateProfile(request);
         }
     }

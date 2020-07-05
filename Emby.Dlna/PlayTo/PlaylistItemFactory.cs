@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
@@ -8,21 +9,28 @@ using MediaBrowser.Model.Session;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class PlaylistItemFactory
+    public static class PlaylistItemFactory
     {
-        public PlaylistItem Create(Photo item, DeviceProfile profile)
+        public static PlaylistItem Create(Photo item, DeviceProfile profile)
         {
-            var playlistItem = new PlaylistItem
+            if (item == null)
             {
-                StreamInfo = new StreamInfo
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            if (profile == null)
+            {
+                throw new ArgumentNullException(nameof(profile));
+            }
+
+            var playlistItem = new PlaylistItem(
+                new StreamInfo
                 {
                     ItemId = item.Id,
                     MediaType = DlnaProfileType.Photo,
                     DeviceProfile = profile
                 },
-
-                Profile = profile
-            };
+                profile);
 
             var directPlay = profile.DirectPlayProfiles
                 .FirstOrDefault(i => i.Type == DlnaProfileType.Photo && IsSupported(i, item));
