@@ -6,11 +6,11 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
-  - script: 'az login --identity && az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Unstable"'
+  - script: 'az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Unstable"'
     displayName: 'Trigger Azure DevOps build'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/azure-ci')
 
-  - script: 'az login --identity && az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Stable" TagName="$(Build.SourceBranch)"'
+  - script: 'az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Stable" TagName="$(Build.SourceBranch)"'
     displayName: 'Trigger Azure DevOps build'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
 
