@@ -57,7 +57,8 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets items based on a query.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="uId">The user id supplied in the /Users/{uid}/Items.</param>
+        /// <param name="userId">The user id supplied as query parameter.</param>
         /// <param name="maxOfficialRating">Optional filter by maximum official rating (PG, PG-13, TV-MA, etc).</param>
         /// <param name="hasThemeSong">Optional filter by items with theme songs.</param>
         /// <param name="hasThemeVideo">Optional filter by items with theme videos.</param>
@@ -142,7 +143,8 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Users/{userId}/Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
-            [FromRoute] Guid userId,
+            [FromRoute] Guid uId,
+            [FromQuery] Guid userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
@@ -223,6 +225,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
+            // use user id route parameter over query parameter
+            userId = (uId != null) ? uId : userId;
+
             var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
             var dtoOptions = new DtoOptions()
                 .AddItemFields(fields)
