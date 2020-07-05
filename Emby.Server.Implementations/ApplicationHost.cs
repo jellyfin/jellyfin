@@ -869,6 +869,11 @@ namespace Emby.Server.Implementations
                     Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
                     continue;
                 }
+                catch (TypeLoadException ex)
+                {
+                    Logger.LogError(ex, "Error loading types from {Assembly}.", ass.FullName);
+                    continue;
+                }
 
                 foreach (Type type in exportedTypes)
                 {
