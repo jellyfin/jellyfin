@@ -1,4 +1,19 @@
 jobs:
+- job: TriggerWinInstaller
+  displayName: 'Trigger Windows installer build'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - script: 'az login --identity && az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Unstable"'
+    displayName: 'Trigger Azure DevOps build'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/azure-ci')
+
+  - script: 'az login --identity && az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Stable" TagName="$(Build.SourceBranch)"'
+    displayName: 'Trigger Azure DevOps build'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+
 - job: BuildPackage
   displayName: 'Build Packages'
 
@@ -129,18 +144,3 @@ jobs:
       sshEndpoint: repository
       runOptions: 'inline'
       inline: 'sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)'
-
-- job: TriggerWinInstaller
-  displayName: 'Trigger Windows installer build'
-
-  pool:
-    vmImage: 'ubuntu-latest'
-
-  steps:
-  - script: 'az login --identity && az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Unstable"'
-    displayName: 'Trigger Azure DevOps build'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/azure-ci')
-
-  - script: 'az login --identity && az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Stable" TagName="$(Build.SourceBranch)"'
-    displayName: 'Trigger Azure DevOps build'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
