@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.Services
             var serviceType = httpHost.GetServiceTypeByRequest(requestType);
 
             var service = httpHost.CreateInstance(serviceType, req);
-            
+
             var serviceRequiresContext = service as IRequiresRequest;
             if (serviceRequiresContext != null)
             {
@@ -189,5 +189,4 @@ namespace Emby.Server.Implementations.Services
             return ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName());
         }
     }
-
 }
