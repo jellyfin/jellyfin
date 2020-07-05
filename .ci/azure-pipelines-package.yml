@@ -132,18 +132,25 @@ jobs:
 
 - job: TriggerWinInstaller
   displayName: 'Trigger Windows installer build'
-  dependsOn:
-  - BuildPackage
-  condition: succeeded('BuildPackage')
 
   pool:
     vmImage: 'ubuntu-latest'
 
   steps:
-  - script: 'az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Unstable"'
-    displayName: 'Trigger Azure DevOps build'
+  - task: AzureCLI@2
+    displayName: 'Trigger Azure DevOps build (unstable)'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/azure-ci')
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Unstable"
 
-  - script: 'az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Stable" TagName="$(Build.SourceBranch)"'
-    displayName: 'Trigger Azure DevOps build'
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+  - task: AzureCLI@2
+    displayName: 'Trigger Azure DevOps build (unstable)'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/azure-ci')
+    inputs:
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az pipelines build queue --organization https://dev.azure.com/jellyfin-project --project jellyfin --definition-id 30 --branch master --variables Trigger="Stable" TagName="$(Build.SourceBranch)"
