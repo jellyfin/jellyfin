@@ -14,6 +14,11 @@ namespace Emby.Dlna.Service
 
         public static ControlResponse GetResponse(Exception ex)
         {
+            if (ex == null)
+            {
+                throw new ArgumentNullException(nameof(ex));
+            }
+
             var settings = new XmlWriterSettings
             {
                 Encoding = Encoding.UTF8,

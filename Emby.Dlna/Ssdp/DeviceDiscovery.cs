@@ -20,7 +20,7 @@ namespace Emby.Dlna.Ssdp
         private int _listenerCount;
         private bool _disposed;
 
-        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
+        private event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceDiscoveredInternal;
 
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered
@@ -47,11 +47,11 @@ namespace Emby.Dlna.Ssdp
         }
 
         /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>>? DeviceLeft;
 
-        private SsdpDeviceLocator _deviceLocator;
+        private SsdpDeviceLocator? _deviceLocator;
 
-        private ISsdpCommunicationsServer _commsServer;
+        private ISsdpCommunicationsServer? _commsServer;
 
         public DeviceDiscovery(IServerConfigurationManager config)
         {

@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable IDE0063
 
 using System;
 using System.Collections.Generic;
@@ -17,18 +18,23 @@ namespace Emby.Dlna.Service
     {
         private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
 
-        protected IServerConfigurationManager Config { get; }
-
-        protected ILogger Logger { get; }
-
         protected BaseControlHandler(IServerConfigurationManager config, ILogger logger)
         {
             Config = config;
             Logger = logger;
         }
 
+        protected IServerConfigurationManager Config { get; }
+
+        protected ILogger Logger { get; }
+
         public async Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             try
             {
                 LogRequest(request);
@@ -45,9 +51,11 @@ namespace Emby.Dlna.Service
             }
         }
 
+        protected abstract void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter);
+
         private async Task<ControlResponse> ProcessControlRequestInternalAsync(ControlRequest request)
         {
-            ControlRequestInfo requestInfo = null;
+            ControlRequestInfo? requestInfo = null;
 
             using (var streamReader = new StreamReader(request.InputXml))
             {
@@ -210,17 +218,6 @@ namespace Emby.Dlna.Service
             }
         }
 
-        private class ControlRequestInfo
-        {
-            public string LocalName { get; set; }
-
-            public string NamespaceURI { get; set; }
-
-            public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        protected abstract void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter);
-
         private void LogRequest(ControlRequest request)
         {
             if (!Config.GetDlnaConfiguration().EnableDebugLog)
@@ -239,6 +236,15 @@ namespace Emby.Dlna.Service
             }
 
             Logger.LogDebug("Control response. Headers: {@Headers}\n{Xml}", response.Headers, response.Xml);
+        }
+
+        private class ControlRequestInfo
+        {
+            public string LocalName { get; set; } = string.Empty;
+
+            public string NamespaceURI { get; set; } = string.Empty;
+
+            public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

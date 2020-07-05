@@ -20,6 +20,11 @@ namespace Emby.Dlna.MediaReceiverRegistrar
         /// <inheritdoc />
         protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
+            if (xmlWriter == null)
+            {
+                throw new ArgumentNullException(nameof(xmlWriter));
+            }
+
             if (string.Equals(methodName, "IsAuthorized", StringComparison.OrdinalIgnoreCase))
             {
                 HandleIsAuthorized(xmlWriter);

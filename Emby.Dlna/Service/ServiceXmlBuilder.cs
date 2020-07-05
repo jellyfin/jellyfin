@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Emby.Dlna.Common;
@@ -7,10 +8,20 @@ using Emby.Dlna.Server;
 
 namespace Emby.Dlna.Service
 {
-    public class ServiceXmlBuilder
+    public static class ServiceXmlBuilder
     {
-        public string GetXml(IEnumerable<ServiceAction> actions, IEnumerable<StateVariable> stateVariables)
+        public static string GetXml(IEnumerable<ServiceAction> actions, IEnumerable<StateVariable> stateVariables)
         {
+            if (actions == null)
+            {
+                throw new ArgumentNullException(nameof(actions));
+            }
+
+            if (stateVariables == null)
+            {
+                throw new ArgumentNullException(nameof(stateVariables));
+            }
+
             var builder = new StringBuilder();
 
             builder.Append("<?xml version=\"1.0\"?>");

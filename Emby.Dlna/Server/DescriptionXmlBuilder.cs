@@ -64,7 +64,7 @@ namespace Emby.Dlna.Server
 
             foreach (var att in attributes)
             {
-                builder.AppendFormat(" {0}=\"{1}\"", att.Name, att.Value);
+                builder.AppendFormat(CultureInfo.InvariantCulture, " {0}=\"{1}\"", att.Name, att.Value);
             }
 
             builder.Append(">");
@@ -99,16 +99,16 @@ namespace Emby.Dlna.Server
             builder.Append("</device>");
         }
 
-        private static readonly char[] s_escapeChars = new char[]
-        {
+        private static readonly char[] _escapeChars = new char[]
+       {
             '<',
             '>',
             '"',
             '\'',
             '&'
-        };
+       };
 
-        private static readonly string[] s_escapeStringPairs = new[]
+        private static readonly string[] _escapeStringPairs = new[]
         {
             "<",
             "&lt;",
@@ -124,11 +124,11 @@ namespace Emby.Dlna.Server
 
         private static string GetEscapeSequence(char c)
         {
-            int num = s_escapeStringPairs.Length;
+            int num = _escapeStringPairs.Length;
             for (int i = 0; i < num; i += 2)
             {
-                string text = s_escapeStringPairs[i];
-                string result = s_escapeStringPairs[i + 1];
+                string text = _escapeStringPairs[i];
+                string result = _escapeStringPairs[i + 1];
                 if (text[0] == c)
                 {
                     return result;
@@ -145,15 +145,15 @@ namespace Emby.Dlna.Server
         {
             if (str == null)
             {
-                return null;
+                return string.Empty;
             }
 
-            StringBuilder stringBuilder = null;
+            StringBuilder? stringBuilder = null;
             int length = str.Length;
             int num = 0;
             while (true)
             {
-                int num2 = str.IndexOfAny(s_escapeChars, num);
+                int num2 = str.IndexOfAny(_escapeChars, num);
                 if (num2 == -1)
                 {
                     break;
@@ -361,25 +361,26 @@ namespace Emby.Dlna.Server
 
         private IEnumerable<DeviceService> GetServices()
         {
-            var list = new List<DeviceService>();
-
-            list.Add(new DeviceService
+            var list = new List<DeviceService>
             {
-                ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
-                ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
-                ScpdUrl = "contentdirectory/contentdirectory.xml",
-                ControlUrl = "contentdirectory/control",
-                EventSubUrl = "contentdirectory/events"
-            });
+                new DeviceService
+                {
+                    ServiceType = "urn:schemas-upnp-org:service:ContentDirectory:1",
+                    ServiceId = "urn:upnp-org:serviceId:ContentDirectory",
+                    ScpdUrl = "contentdirectory/contentdirectory.xml",
+                    ControlUrl = "contentdirectory/control",
+                    EventSubUrl = "contentdirectory/events"
+                },
 
-            list.Add(new DeviceService
-            {
-                ServiceType = "urn:schemas-upnp-org:service:ConnectionManager:1",
-                ServiceId = "urn:upnp-org:serviceId:ConnectionManager",
-                ScpdUrl = "connectionmanager/connectionmanager.xml",
-                ControlUrl = "connectionmanager/control",
-                EventSubUrl = "connectionmanager/events"
-            });
+                new DeviceService
+                {
+                    ServiceType = "urn:schemas-upnp-org:service:ConnectionManager:1",
+                    ServiceId = "urn:upnp-org:serviceId:ConnectionManager",
+                    ScpdUrl = "connectionmanager/connectionmanager.xml",
+                    ControlUrl = "connectionmanager/control",
+                    EventSubUrl = "connectionmanager/events"
+                }
+            };
 
             if (_profile.EnableMSMediaReceiverRegistrar)
             {

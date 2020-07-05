@@ -24,6 +24,11 @@ namespace Emby.Dlna.ConnectionManager
         /// <inheritdoc />
         protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
+            if (xmlWriter == null)
+            {
+                throw new ArgumentNullException(nameof(xmlWriter));
+            }
+
             if (string.Equals(methodName, "GetProtocolInfo", StringComparison.OrdinalIgnoreCase))
             {
                 HandleGetProtocolInfo(xmlWriter);
@@ -35,6 +40,11 @@ namespace Emby.Dlna.ConnectionManager
 
         private void HandleGetProtocolInfo(XmlWriter xmlWriter)
         {
+            if (xmlWriter == null)
+            {
+                throw new ArgumentNullException(nameof(xmlWriter));
+            }
+
             xmlWriter.WriteElementString("Source", _profile.ProtocolInfo);
             xmlWriter.WriteElementString("Sink", string.Empty);
         }

@@ -1,5 +1,7 @@
+#nullable enable
 #pragma warning disable CS1591
 
+using System;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -9,19 +11,38 @@ namespace Emby.Dlna.Ssdp
     {
         public static string GetValue(this XElement container, XName name)
         {
-            var node = container.Element(name);
+            if (container == null)
+            {
+                throw new ArgumentNullException(nameof(container));
+            }
 
-            return node?.Value;
+            XElement? node = container.Element(name);
+
+            return node != null ? node.Value ?? string.Empty : string.Empty;
         }
 
         public static string GetAttributeValue(this XElement container, XName name)
         {
-            var node = container.Attribute(name);
+            if (container == null)
+            {
+                throw new ArgumentNullException(nameof(container));
+            }
 
-            return node?.Value;
+            XAttribute? node = container.Attribute(name);
+
+            return node != null ? node.Value ?? string.Empty : string.Empty;
         }
 
         public static string GetDescendantValue(this XElement container, XName name)
-            => container.Descendants(name).FirstOrDefault()?.Value;
+        {
+            if (container == null)
+            {
+                throw new ArgumentNullException(nameof(container));
+            }
+
+            var x = container.Descendants(name).FirstOrDefault();
+
+            return x != null ? x.Value ?? string.Empty : string.Empty;
+        }
     }
 }

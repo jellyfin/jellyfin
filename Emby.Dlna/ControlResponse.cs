@@ -9,9 +9,10 @@ namespace Emby.Dlna
         public ControlResponse()
         {
             Headers = new Dictionary<string, string>();
+            Xml = string.Empty;
         }
 
-        public IDictionary<string, string> Headers { get; set; }
+        public IDictionary<string, string> Headers { get; }
 
         public string Xml { get; set; }
 

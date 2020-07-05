@@ -21,6 +21,7 @@ namespace Emby.Dlna.Eventing
 
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public EventManager(ILogger logger, IHttpClient httpClient)
         {
@@ -58,7 +59,8 @@ namespace Emby.Dlna.Eventing
             var timeout = ParseTimeout(requestedTimeoutString) ?? 300;
             var id = "uuid:" + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
-            _logger.LogDebug("Creating event subscription for {0} with timeout of {1} to {2}",
+            _logger.LogDebug(
+                "Creating event subscription for {0} with timeout of {1} to {2}",
                 notificationType,
                 timeout,
                 callbackUrl);
@@ -94,7 +96,7 @@ namespace Emby.Dlna.Eventing
         {
             _logger.LogDebug("Cancelling event subscription {0}", subscriptionId);
 
-            _subscriptions.TryRemove(subscriptionId, out EventSubscription sub);
+            _subscriptions.TryRemove(subscriptionId, out EventSubscription _);
 
             return new EventSubscriptionResponse
             {
@@ -103,7 +105,6 @@ namespace Emby.Dlna.Eventing
             };
         }
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, string requestedTimeoutString, int timeoutSeconds)
         {
             var response = new EventSubscriptionResponse

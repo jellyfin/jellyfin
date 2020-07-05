@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1402
 
 using System;
 using System.Collections.Generic;
@@ -39,22 +40,19 @@ namespace Emby.Dlna.ContentDirectory
 {
     public class ControlHandler : BaseControlHandler
     {
+        private const string NS_DC = "http://purl.org/dc/elements/1.1/";
+        private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
+        private const string NS_DLNA = "urn:schemas-dlna-org:metadata-1-0/";
+        private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
+
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataManager;
         private readonly IServerConfigurationManager _config;
         private readonly User _user;
         private readonly IUserViewManager _userViewManager;
         private readonly ITVSeriesManager _tvSeriesManager;
-
-        private const string NS_DC = "http://purl.org/dc/elements/1.1/";
-        private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
-        private const string NS_DLNA = "urn:schemas-dlna-org:metadata-1-0/";
-        private const string NS_UPNP = "urn:schemas-upnp-org:metadata-1-0/upnp/";
-
         private readonly int _systemUpdateId;
-
         private readonly DidlBuilder _didlBuilder;
-
         private readonly DeviceProfile _profile;
 
         public ControlHandler(
@@ -62,7 +60,7 @@ namespace Emby.Dlna.ContentDirectory
             ILibraryManager libraryManager,
             DeviceProfile profile,
             string serverAddress,
-            string accessToken,
+            string? accessToken,
             IImageProcessor imageProcessor,
             IUserDataManager userDataManager,
             User user,
@@ -102,6 +100,16 @@ namespace Emby.Dlna.ContentDirectory
         protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
             const string DeviceId = "test";
+
+            if (xmlWriter == null)
+            {
+                throw new ArgumentNullException(nameof(xmlWriter));
+            }
+
+            if (methodParams == null)
+            {
+                throw new ArgumentNullException(nameof(methodParams));
+            }
 
             if (string.Equals(methodName, "GetSearchCapabilities", StringComparison.OrdinalIgnoreCase))
             {
@@ -180,8 +188,7 @@ namespace Emby.Dlna.ContentDirectory
 
             userdata.PlaybackPositionTicks = TimeSpan.FromSeconds(newbookmark).Ticks;
 
-            _userDataManager.SaveUserData(_user, item, userdata, UserDataSaveReason.TogglePlayed,
-                CancellationToken.None);
+            _userDataManager.SaveUserData(_user, item, userdata, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         private void HandleGetSearchCapabilities(XmlWriter xmlWriter)
@@ -237,8 +244,13 @@ namespace Emby.Dlna.ContentDirectory
             return builder.ToString();
         }
 
-        public string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
+        public static string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
         {
+            if (sparams == null)
+            {
+                throw new ArgumentNullException(nameof(sparams));
+            }
+
             if (sparams.TryGetValue(key, out string val))
             {
                 return val;
@@ -252,7 +264,7 @@ namespace Emby.Dlna.ContentDirectory
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
             var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
-            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
+            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
 
             var provided = 0;
 
@@ -295,7 +307,6 @@ namespace Emby.Dlna.ContentDirectory
 
                     var serverItem = GetItemFromObjectId(id);
                     var item = serverItem.Item;
-
 
                     if (string.Equals(flag, "BrowseMetadata", StringComparison.Ordinal))
                     {
@@ -361,8 +372,8 @@ namespace Emby.Dlna.ContentDirectory
 
         private void HandleSearch(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
         {
-            var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", ""));
-            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
+            var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", string.Empty));
+            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
             var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
 
             // sort example: dc:title, dc:date
@@ -639,57 +650,58 @@ namespace Emby.Dlna.ContentDirectory
                 return GetMusicGenres(item, user, query);
             }
 
-            var list = new List<ServerItem>();
-
-            list.Add(new ServerItem(item)
+            var list = new List<ServerItem>
             {
-                StubType = StubType.Latest
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Latest
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Playlists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Playlists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Albums
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Albums
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.AlbumArtists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.AlbumArtists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Artists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Artists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Songs
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Songs
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Genres
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Genres
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteArtists
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteArtists
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteAlbums
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteAlbums
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteSongs
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteSongs
+                }
+            };
 
             return new QueryResult<ServerItem>
             {
@@ -782,11 +794,14 @@ namespace Emby.Dlna.ContentDirectory
                 })
                 .ToArray();
 
-            return ApplyPaging(new QueryResult<ServerItem>
-            {
-                Items = folders,
-                TotalRecordCount = folders.Length
-            }, startIndex, limit);
+            return ApplyPaging(
+                new QueryResult<ServerItem>
+                {
+                    Items = folders,
+                    TotalRecordCount = folders.Length
+                },
+                startIndex,
+                limit);
         }
 
         private QueryResult<ServerItem> GetTvFolders(BaseItem item, User user, StubType? stubType, SortCriteria sort, int? startIndex, int? limit)
@@ -833,42 +848,43 @@ namespace Emby.Dlna.ContentDirectory
                 return GetGenres(item, user, query);
             }
 
-            var list = new List<ServerItem>();
-
-            list.Add(new ServerItem(item)
+            var list = new List<ServerItem>
             {
-                StubType = StubType.ContinueWatching
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.ContinueWatching
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.NextUp
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.NextUp
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Latest
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Latest
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Series
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Series
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteSeries
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteSeries
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.FavoriteEpisodes
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.FavoriteEpisodes
+                },
 
-            list.Add(new ServerItem(item)
-            {
-                StubType = StubType.Genres
-            });
+                new ServerItem(item)
+                {
+                    StubType = StubType.Genres
+                }
+            };
 
             return new QueryResult<ServerItem>
             {
@@ -1134,14 +1150,18 @@ namespace Emby.Dlna.ContentDirectory
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
-            var items = _userViewManager.GetLatestItems(new LatestItemsQuery
-            {
-                UserId = user.Id,
-                Limit = 50,
-                IncludeItemTypes = new[] { nameof(Audio) },
-                ParentId = parent?.Id ?? Guid.Empty,
-                GroupItems = true
-            }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+            var items = _userViewManager.GetLatestItems(
+                new LatestItemsQuery
+                {
+                    UserId = user.Id,
+                    Limit = 50,
+                    IncludeItemTypes = new[] { nameof(Audio) },
+                    ParentId = parent?.Id ?? Guid.Empty,
+                    GroupItems = true
+                },
+                query.DtoOptions)
+                .Select(i => i.Item1 ?? i.Item2.FirstOrDefault())
+                .Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
@@ -1150,12 +1170,15 @@ namespace Emby.Dlna.ContentDirectory
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
-            var result = _tvSeriesManager.GetNextUp(new NextUpQuery
-            {
-                Limit = query.Limit,
-                StartIndex = query.StartIndex,
-                UserId = query.User.Id
-            }, new[] { parent }, query.DtoOptions);
+            var result = _tvSeriesManager.GetNextUp(
+                new NextUpQuery
+                {
+                    Limit = query.Limit,
+                    StartIndex = query.StartIndex,
+                    UserId = query.User.Id
+                },
+                new[] { parent },
+                query.DtoOptions);
 
             return ToResult(result);
         }
@@ -1164,14 +1187,18 @@ namespace Emby.Dlna.ContentDirectory
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
-            var items = _userViewManager.GetLatestItems(new LatestItemsQuery
-            {
-                UserId = user.Id,
-                Limit = 50,
-                IncludeItemTypes = new[] { typeof(Episode).Name },
-                ParentId = parent == null ? Guid.Empty : parent.Id,
-                GroupItems = false
-            }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+            var items = _userViewManager.GetLatestItems(
+                new LatestItemsQuery
+                {
+                    UserId = user.Id,
+                    Limit = 50,
+                    IncludeItemTypes = new[] { typeof(Episode).Name },
+                    ParentId = parent == null ? Guid.Empty : parent.Id,
+                    GroupItems = false
+                },
+                query.DtoOptions)
+                .Select(i => i.Item1 ?? i.Item2.FirstOrDefault())
+                .Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
@@ -1182,13 +1209,13 @@ namespace Emby.Dlna.ContentDirectory
 
             var items = _userViewManager.GetLatestItems(
                 new LatestItemsQuery
-            {
-                UserId = user.Id,
-                Limit = 50,
-                IncludeItemTypes = new[] { nameof(Movie) },
-                ParentId = parent?.Id ?? Guid.Empty,
-                GroupItems = true
-            }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
+                {
+                    UserId = user.Id,
+                    Limit = 50,
+                    IncludeItemTypes = new[] { nameof(Movie) },
+                    ParentId = parent?.Id ?? Guid.Empty,
+                    GroupItems = true
+                }, query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
 
             return ToResult(items);
         }
@@ -1356,10 +1383,6 @@ namespace Emby.Dlna.ContentDirectory
 
     internal class ServerItem
     {
-        public BaseItem Item { get; set; }
-
-        public StubType? StubType { get; set; }
-
         public ServerItem(BaseItem item)
         {
             Item = item;
@@ -1369,28 +1392,107 @@ namespace Emby.Dlna.ContentDirectory
                 StubType = Dlna.ContentDirectory.StubType.Folder;
             }
         }
+
+        public BaseItem Item { get; set; }
+
+        public StubType? StubType { get; set; }
     }
 
     public enum StubType
     {
+        /// <summary>
+        /// Folder.
+        /// </summary>
         Folder = 0,
+
+        /// <summary>
+        /// Latest.
+        /// </summary>
         Latest = 2,
+
+        /// <summary>
+        /// Playlists.
+        /// </summary>
         Playlists = 3,
+
+        /// <summary>
+        /// Albums.
+        /// </summary>
         Albums = 4,
+
+        /// <summary>
+        /// AlbumArtists.
+        /// </summary>
         AlbumArtists = 5,
+
+        /// <summary>
+        /// Artists.
+        /// </summary>
         Artists = 6,
+
+        /// <summary>
+        /// Songs.
+        /// </summary>
         Songs = 7,
+
+        /// <summary>
+        /// Genres.
+        /// </summary>
         Genres = 8,
+
+        /// <summary>
+        /// FavoriteSongs.
+        /// </summary>
         FavoriteSongs = 9,
+
+        /// <summary>
+        /// FavoriteArtists.
+        /// </summary>
         FavoriteArtists = 10,
+
+        /// <summary>
+        /// FavoriteAlbums.
+        /// </summary>
         FavoriteAlbums = 11,
+
+        /// <summary>
+        /// ContinueWatching.
+        /// </summary>
         ContinueWatching = 12,
+
+        /// <summary>
+        /// Movies.
+        /// </summary>
         Movies = 13,
+
+        /// <summary>
+        /// Collections.
+        /// </summary>
         Collections = 14,
+
+        /// <summary>
+        /// Favorites.
+        /// </summary>
         Favorites = 15,
+
+        /// <summary>
+        /// NextUp.
+        /// </summary>
         NextUp = 16,
+
+        /// <summary>
+        /// Series.
+        /// </summary>
         Series = 17,
+
+        /// <summary>
+        /// FavoriteSeries.
+        /// </summary>
         FavoriteSeries = 18,
+
+        /// <summary>
+        /// FavoriteEpisodes.
+        /// </summary>
         FavoriteEpisodes = 19
     }
 }

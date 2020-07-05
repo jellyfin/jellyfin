@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Threading.Tasks;
 using Emby.Dlna.Service;
 using MediaBrowser.Common.Net;
@@ -30,12 +31,17 @@ namespace Emby.Dlna.ConnectionManager
         /// <inheritdoc />
         public string GetServiceXml()
         {
-            return new ConnectionManagerXmlBuilder().GetXml();
+            return ConnectionManagerXmlBuilder.GetXml();
         }
 
         /// <inheritdoc />
         public Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var profile = _dlna.GetProfile(request.Headers) ??
                          _dlna.GetDefaultProfile();
 
