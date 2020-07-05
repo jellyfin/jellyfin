@@ -11,11 +11,13 @@ namespace Emby.Dlna.PlayTo
         {
             StreamInfo = streamInfo ?? throw new ArgumentNullException(nameof(streamInfo));
             Profile = profile ?? throw new ArgumentNullException(nameof(profile));
+            StreamUrl = string.Empty;
+            Didl = string.Empty;
         }
 
-        public string StreamUrl { get; set; } = string.Empty;
+        public string StreamUrl { get; set; }
 
-        public string Didl { get; set; } = string.Empty;
+        public string Didl { get; set; }
 
         public StreamInfo StreamInfo { get; }
 
