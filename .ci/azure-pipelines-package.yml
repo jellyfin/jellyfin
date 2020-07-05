@@ -132,9 +132,6 @@ jobs:
 
 - job: TriggerWinInstaller
   displayName: 'Trigger Windows installer build'
-  dependsOn:
-  - BuildPackage
-  condition: succeeded('BuildPackage')
 
   pool:
     vmImage: 'ubuntu-latest'
