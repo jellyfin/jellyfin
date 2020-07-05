@@ -354,6 +354,42 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependencies.
         /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="parameter">Additional argument for the constructor.</param>
+        /// <returns></returns>
+        public object CreateInstance(Type type, object parameter)
+        {
+            ConstructorInfo constructor = type.GetConstructors()[0];
+            if (constructor != null)
+            {
+                ParameterInfo[] argInfo = constructor
+                    .GetParameters();
+
+                object[] args = argInfo
+                .Select(o => o.ParameterType)
+                .Select(o => ServiceProvider.GetService(o))
+                .ToArray();
+
+                if (parameter != null)
+                {
+                    // Assumption is that the <parameter> is always the last in the constructor's parameter list.
+                    int argsLen = args.Length;
+                    var argType = argInfo[argsLen - 1].ParameterType;
+                    var paramType = parameter.GetType();
+                    if (argType.IsAssignableFrom(paramType) || argType == paramType)
+                    {
+                        args[argsLen - 1] = parameter;
+                        return ActivatorUtilities.CreateInstance(ServiceProvider, type, args);
+                    }
+                }
+            }
+
+            return ActivatorUtilities.CreateInstance(ServiceProvider, type);
+        }
+
+        /// <summary>
+        /// Creates an instance of type and resolves all constructor dependencies.
+        /// </summary>
         /// /// <typeparam name="T">The type.</typeparam>
         /// <returns>T.</returns>
         public T CreateInstance<T>()
@@ -566,8 +602,10 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
+            // TODO: Add StartupOptions.FFmpegPath to IConfiguration and remove this custom activation
             serviceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
-            serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
+            serviceCollection.AddSingleton<IMediaEncoder>(provider =>
+                ActivatorUtilities.CreateInstance<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(provider, _startupOptions.FFmpegPath ?? string.Empty));
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));

@@ -125,5 +125,13 @@ namespace MediaBrowser.Common
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
         object CreateInstance(Type type);
+
+        /// <summary>
+        /// Creates a new instance of a class.
+        /// </summary>
+        /// <param name="type">The type to create.</param>
+        /// <param name="parameter">An addtional parameter.</param>
+        /// <returns>Created instance.</returns>
+        object CreateInstance(Type type, object parameter);
     }
 }

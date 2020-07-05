@@ -177,8 +177,8 @@ namespace Emby.Server.Implementations.Services
 
             var serviceType = httpHost.GetServiceTypeByRequest(requestType);
 
-            var service = httpHost.CreateInstance(serviceType);
-
+            var service = httpHost.CreateInstance(serviceType, req);
+            
             var serviceRequiresContext = service as IRequiresRequest;
             if (serviceRequiresContext != null)
             {
