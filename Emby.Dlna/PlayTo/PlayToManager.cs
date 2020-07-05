@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
@@ -34,19 +33,17 @@ namespace Emby.Dlna.PlayTo
         private readonly IServerApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
         private readonly IHttpClient _httpClient;
-        private readonly IServerConfigurationManager _config;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
 
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-
         private bool _disposed;
-        private SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
-        private CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
+        private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
+        private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -57,7 +54,6 @@ namespace Emby.Dlna.PlayTo
             _imageProcessor = imageProcessor;
             _deviceDiscovery = deviceDiscovery;
             _httpClient = httpClient;
-            _config = config;
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
@@ -153,6 +149,7 @@ namespace Emby.Dlna.PlayTo
             return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Controller is stored in sessionInfo.")]
         private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
         {
             var uri = info.Location;
@@ -174,7 +171,7 @@ namespace Emby.Dlna.PlayTo
 
             if (controller == null)
             {
-                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger, cancellationToken).ConfigureAwait(false);
+                var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _logger, cancellationToken).ConfigureAwait(false);
 
                 string deviceName = device.Properties.Name;
 
@@ -192,24 +189,21 @@ namespace Emby.Dlna.PlayTo
 
                 controller = new PlayToController(
                     sessionInfo,
-                   _sessionManager,
-                   _libraryManager,
-                   _logger,
-                   _dlnaManager,
-                   _userManager,
-                   _imageProcessor,
-                   serverAddress,
-                   null,
-                   _deviceDiscovery,
-                   _userDataManager,
-                   _localization,
-                   _mediaSourceManager,
-                   _config,
-                   _mediaEncoder);
-
-                sessionInfo.AddController(controller);
-
-                controller.Init(device);
+                    _sessionManager,
+                    _libraryManager,
+                    _logger,
+                    _dlnaManager,
+                    _userManager,
+                    _imageProcessor,
+                    serverAddress,
+                    null,
+                    _deviceDiscovery,
+                    _userDataManager,
+                    _localization,
+                    _mediaSourceManager,
+                    _mediaEncoder,
+                    sessionInfo,
+                    device);
 
                 var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
                               _dlnaManager.GetDefaultProfile();
@@ -249,6 +243,7 @@ namespace Emby.Dlna.PlayTo
             }
             catch
             {
+                // Ignore errors.
             }
 
             _sessionLock.Dispose();

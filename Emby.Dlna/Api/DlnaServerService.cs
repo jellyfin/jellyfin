@@ -1,4 +1,6 @@
 #pragma warning disable CS1591
+#pragma warning disable SA1402
+#pragma warning disable SA1649
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -19,7 +21,7 @@ namespace Emby.Dlna.Api
     public class GetDescriptionXml
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/{UuId}/contentdirectory/contentdirectory.xml", "GET", Summary = "Gets dlna content directory xml")]
@@ -27,7 +29,7 @@ namespace Emby.Dlna.Api
     public class GetContentDirectory
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/{UuId}/connectionmanager/connectionmanager.xml", "GET", Summary = "Gets dlna connection manager xml")]
@@ -35,7 +37,7 @@ namespace Emby.Dlna.Api
     public class GetConnnectionManager
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/{UuId}/mediareceiverregistrar/mediareceiverregistrar.xml", "GET", Summary = "Gets dlna mediareceiverregistrar xml")]
@@ -43,34 +45,34 @@ namespace Emby.Dlna.Api
     public class GetMediaReceiverRegistrar
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/{UuId}/contentdirectory/control", "POST", Summary = "Processes a control request")]
     public class ProcessContentDirectoryControlRequest : IRequiresRequestStream
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
 
-        public Stream RequestStream { get; set; }
+        public Stream RequestStream { get; set; } = null!; // This implements IRequiresRequestStream which is used elsewhere. Didn't want to touch.
     }
 
     [Route("/Dlna/{UuId}/connectionmanager/control", "POST", Summary = "Processes a control request")]
     public class ProcessConnectionManagerControlRequest : IRequiresRequestStream
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
 
-        public Stream RequestStream { get; set; }
+        public Stream RequestStream { get; set; } = null!; // This implements IRequiresRequestStream which is used elsewhere. Didn't want to touch.
     }
 
     [Route("/Dlna/{UuId}/mediareceiverregistrar/control", "POST", Summary = "Processes a control request")]
     public class ProcessMediaReceiverRegistrarControlRequest : IRequiresRequestStream
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
 
-        public Stream RequestStream { get; set; }
+        public Stream RequestStream { get; set; } = null!; // This implements IRequiresRequestStream which is used elsewhere. Didn't want to touch.
     }
 
     [Route("/Dlna/{UuId}/mediareceiverregistrar/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
@@ -78,7 +80,7 @@ namespace Emby.Dlna.Api
     public class ProcessMediaReceiverRegistrarEventRequest
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/{UuId}/contentdirectory/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
@@ -86,7 +88,7 @@ namespace Emby.Dlna.Api
     public class ProcessContentDirectoryEventRequest
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/{UuId}/connectionmanager/events", "SUBSCRIBE", Summary = "Processes an event subscription request")]
@@ -94,7 +96,7 @@ namespace Emby.Dlna.Api
     public class ProcessConnectionManagerEventRequest
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "SUBSCRIBE,UNSUBSCRIBE")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
     }
 
     [Route("/Dlna/{UuId}/icons/{Filename}", "GET", Summary = "Gets a server icon")]
@@ -102,10 +104,10 @@ namespace Emby.Dlna.Api
     public class GetIcon
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UuId { get; set; }
+        public string UuId { get; set; } = string.Empty;
 
         [ApiMember(Name = "Filename", Description = "The icon filename", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Filename { get; set; }
+        public string Filename { get; set; } = string.Empty;
     }
 
     public class DlnaServerService : IService, IRequiresRequest
@@ -118,20 +120,58 @@ namespace Emby.Dlna.Api
 
         public IRequest Request { get; set; }
 
-        private IContentDirectory ContentDirectory => DlnaEntryPoint.Current.ContentDirectory;
+        private IContentDirectory ContentDirectory
+        {
+            get
+            {
+                var cd = DlnaEntryPoint.Current?.ContentDirectory;
+                if (cd == null)
+                {
+                    throw new NullReferenceException("ContentDirectory cannot be null.");
+                }
 
-        private IConnectionManager ConnectionManager => DlnaEntryPoint.Current.ConnectionManager;
+                return cd;
+            }
+        }
 
-        private IMediaReceiverRegistrar MediaReceiverRegistrar => DlnaEntryPoint.Current.MediaReceiverRegistrar;
+        private IConnectionManager ConnectionManager
+        {
+            get
+            {
+                var cm = DlnaEntryPoint.Current?.ConnectionManager;
+                if (cm == null)
+                {
+                    throw new NullReferenceException("ConnectionManager cannot be null.");
+                }
+
+                return cm;
+            }
+        }
+
+        private IMediaReceiverRegistrar MediaReceiverRegistrar
+        {
+            get
+            {
+                var mrr = DlnaEntryPoint.Current?.MediaReceiverRegistrar;
+                if (mrr == null)
+                {
+                    throw new NullReferenceException("MediaReceiverRegistrar cannot be null.");
+                }
+
+                return mrr;
+            }
+        }
 
         public DlnaServerService(
             IDlnaManager dlnaManager,
             IHttpResultFactory httpResultFactory,
-            IServerConfigurationManager configurationManager)
+            IServerConfigurationManager configurationManager,
+            IRequest request)
         {
             _dlnaManager = dlnaManager;
             _resultFactory = httpResultFactory;
             _configurationManager = configurationManager;
+            Request = (IRequest)request;
         }
 
         private string GetHeader(string name)
@@ -141,6 +181,11 @@ namespace Emby.Dlna.Api
 
         public object Get(GetDescriptionXml request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var url = Request.AbsoluteUri;
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
             var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, serverAddress);
@@ -153,6 +198,7 @@ namespace Emby.Dlna.Api
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Get(GetContentDirectory request)
         {
             var xml = ContentDirectory.GetServiceXml();
@@ -161,6 +207,7 @@ namespace Emby.Dlna.Api
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Get(GetMediaReceiverRegistrar request)
         {
             var xml = MediaReceiverRegistrar.GetServiceXml();
@@ -169,6 +216,7 @@ namespace Emby.Dlna.Api
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Get(GetConnnectionManager request)
         {
             var xml = ConnectionManager.GetServiceXml();
@@ -178,40 +226,39 @@ namespace Emby.Dlna.Api
 
         public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, MediaReceiverRegistrar).ConfigureAwait(false);
+            var response = await PostAsync(request?.RequestStream, MediaReceiverRegistrar).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
         public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, ContentDirectory).ConfigureAwait(false);
+            var response = await PostAsync(request?.RequestStream, ContentDirectory).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
         public async Task<object> Post(ProcessConnectionManagerControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, ConnectionManager).ConfigureAwait(false);
+            var response = await PostAsync(request?.RequestStream, ConnectionManager).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
-        private Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
+        private Task<ControlResponse> PostAsync(Stream? requestStream, IUpnpService service)
         {
             var id = GetPathValue(2).ToString();
 
-            return service.ProcessControlRequestAsync(new ControlRequest
-            {
-                Headers = Request.Headers,
-                InputXml = requestStream,
-                TargetServerUuId = id,
-                RequestedUrl = Request.AbsoluteUri
-            });
+            return service.ProcessControlRequestAsync(new ControlRequest(
+                Request.Headers,
+                requestStream,
+                id,
+                Request.AbsoluteUri));
         }
 
         // Copied from MediaBrowser.Api/BaseApiService.cs
         // TODO: Remove code duplication
+
         /// <summary>
         /// Gets the path segment at the specified index.
         /// </summary>
@@ -307,6 +354,11 @@ namespace Emby.Dlna.Api
 
         public object Get(GetIcon request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var contentType = "image/" + Path.GetExtension(request.Filename)
                                             .TrimStart('.')
                                             .ToLowerInvariant();
@@ -318,36 +370,42 @@ namespace Emby.Dlna.Api
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Subscribe(ProcessContentDirectoryEventRequest request)
         {
             return ProcessEventRequest(ContentDirectory);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Subscribe(ProcessConnectionManagerEventRequest request)
         {
             return ProcessEventRequest(ConnectionManager);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Subscribe(ProcessMediaReceiverRegistrarEventRequest request)
         {
             return ProcessEventRequest(MediaReceiverRegistrar);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Unsubscribe(ProcessContentDirectoryEventRequest request)
         {
             return ProcessEventRequest(ContentDirectory);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Unsubscribe(ProcessConnectionManagerEventRequest request)
         {
             return ProcessEventRequest(ConnectionManager);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required for ServiceStack")]
         public object Unsubscribe(ProcessMediaReceiverRegistrarEventRequest request)
         {
             return ProcessEventRequest(MediaReceiverRegistrar);
