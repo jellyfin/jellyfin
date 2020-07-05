@@ -30,7 +30,7 @@ using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
-    public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
+    public sealed class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<DlnaEntryPoint> _logger;
@@ -50,9 +50,9 @@ namespace Emby.Dlna.Main
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new object();
 
-        private PlayToManager _manager;
-        private SsdpDevicePublisher _publisher;
-        private ISsdpCommunicationsServer _communicationsServer;
+        private PlayToManager? _manager;
+        private SsdpDevicePublisher? _publisher;
+        private ISsdpCommunicationsServer? _communicationsServer;
 
         internal IContentDirectory ContentDirectory { get; private set; }
 
@@ -60,7 +60,7 @@ namespace Emby.Dlna.Main
 
         internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
-        public static DlnaEntryPoint Current;
+        public static DlnaEntryPoint? Current;
 
         public DlnaEntryPoint(
             IServerConfigurationManager config,
@@ -126,7 +126,7 @@ namespace Emby.Dlna.Main
                 config);
             Current = this;
         }
-
+        
         public async Task RunAsync()
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
@@ -224,6 +224,11 @@ namespace Emby.Dlna.Main
 
         public async Task StartDevicePublisher(Configuration.DlnaOptions options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             if (!options.BlastAliveMessages)
             {
                 return;
@@ -251,7 +256,7 @@ namespace Emby.Dlna.Main
                 _logger.LogError(ex, "Error registering endpoint");
             }
         }
-
+        
         private async Task RegisterServerEndpoints()
         {
             var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
@@ -262,11 +267,11 @@ namespace Emby.Dlna.Main
             {
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    // Not supporting IPv6 right now
+                    // Not supporting IPv6 right now.
                     continue;
                 }
 
-                // Limit to LAN addresses only
+                // Limit to LAN addresses only.
                 if (!_networkManager.IsAddressInSubnets(address, true, true))
                 {
                     continue;
@@ -293,7 +298,7 @@ namespace Emby.Dlna.Main
                 };
 
                 SetProperies(device, fullService);
-                _publisher.AddDevice(device);
+                _publisher?.AddDevice(device);
 
                 var embeddedDevices = new[]
                 {
@@ -363,7 +368,6 @@ namespace Emby.Dlna.Main
                         _imageProcessor,
                         _deviceDiscovery,
                         _httpClient,
-                        _config,
                         _userDataManager,
                         _localization,
                         _mediaSourceManager,
@@ -412,10 +416,12 @@ namespace Emby.Dlna.Main
                 _communicationsServer = null;
             }
 
-            ContentDirectory = null;
-            ConnectionManager = null;
-            MediaReceiverRegistrar = null;
+            // ContentDirectory = null;
+            // ConnectionManager = null;
+            // MediaReceiverRegistrar = null;
             Current = null;
+
+            GC.SuppressFinalize(this);
         }
 
         public void DisposeDevicePublisher()

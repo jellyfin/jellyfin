@@ -6,8 +6,9 @@ namespace Emby.Dlna.Didl
 {
     public class Filter
     {
-        private readonly string[] _fields;
-        private readonly bool _all;
+        // TODO: separate PR to remove Filter from DLNA and replace with true througout.
+        // private readonly string[] _fields;
+        // private readonly bool _all;
 
         public Filter()
             : this("*")
@@ -16,9 +17,9 @@ namespace Emby.Dlna.Didl
 
         public Filter(string filter)
         {
-            _all = string.Equals(filter, "*", StringComparison.OrdinalIgnoreCase);
+            // _all = string.Equals(filter, "*", StringComparison.OrdinalIgnoreCase);
 
-            _fields = (filter ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            // _fields = (filter ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool Contains(string field)

@@ -6,11 +6,11 @@ namespace Emby.Dlna.Eventing
 {
     public class EventSubscription
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
-        public string CallbackUrl { get; set; }
+        public string CallbackUrl { get; set; } = string.Empty;
 
-        public string NotificationType { get; set; }
+        public string NotificationType { get; set; } = string.Empty;
 
         public DateTime SubscriptionTime { get; set; }
 

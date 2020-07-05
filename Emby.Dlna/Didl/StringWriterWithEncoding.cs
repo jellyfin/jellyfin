@@ -8,7 +8,7 @@ namespace Emby.Dlna.Didl
 {
     public class StringWriterWithEncoding : StringWriter
     {
-        private readonly Encoding _encoding;
+        private readonly Encoding? _encoding;
 
         public StringWriterWithEncoding()
         {
@@ -20,7 +20,7 @@ namespace Emby.Dlna.Didl
         }
 
         public StringWriterWithEncoding(StringBuilder sb)
-            : base(sb)
+            : base(sb, System.Globalization.CultureInfo.InvariantCulture)
         {
         }
 
@@ -28,7 +28,6 @@ namespace Emby.Dlna.Didl
             : base(sb, formatProvider)
         {
         }
-
 
         public StringWriterWithEncoding(Encoding encoding)
         {
@@ -42,7 +41,7 @@ namespace Emby.Dlna.Didl
         }
 
         public StringWriterWithEncoding(StringBuilder sb, Encoding encoding)
-            : base(sb)
+            : base(sb, System.Globalization.CultureInfo.InvariantCulture)
         {
             _encoding = encoding;
         }
