@@ -140,7 +140,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional, include image information in output.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
         [HttpGet("/Items")]
-        [HttpGet("/Users/{userId}/Items")]
+        [HttpGet("/Users/{uId}/Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
             [FromRoute] Guid uId,

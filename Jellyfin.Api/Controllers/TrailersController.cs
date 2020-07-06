@@ -222,6 +222,7 @@ namespace Jellyfin.Api.Controllers
                 _logger)
                 .GetItems(
                     userId,
+                    userId,
                     maxOfficialRating,
                     hasThemeSong,
                     hasThemeVideo,
