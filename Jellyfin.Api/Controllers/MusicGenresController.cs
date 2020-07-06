@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
@@ -10,6 +11,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +20,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The music genres controller.
     /// </summary>
-    [Route("/MusicGenres")]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class MusicGenresController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;
