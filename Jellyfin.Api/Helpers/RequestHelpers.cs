@@ -148,57 +148,6 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Get orderby.
-        /// </summary>
-        /// <param name="sortBy">Sort by.</param>
-        /// <param name="requestedSortOrder">Sort order.</param>
-        /// <returns>Resulting order by.</returns>
-        internal static ValueTuple<string, SortOrder>[] GetOrderBy(string? sortBy, string? requestedSortOrder)
-        {
-            if (string.IsNullOrEmpty(sortBy))
-            {
-                return Array.Empty<ValueTuple<string, SortOrder>>();
-            }
-
-            var vals = sortBy.Split(',');
-            if (string.IsNullOrWhiteSpace(requestedSortOrder))
-            {
-                requestedSortOrder = "Ascending";
-            }
-
-            var sortOrders = requestedSortOrder.Split(',');
-
-            var result = new ValueTuple<string, SortOrder>[vals.Length];
-
-            for (var i = 0; i < vals.Length; i++)
-            {
-                var sortOrderIndex = sortOrders.Length > i ? i : 0;
-
-                var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
-                var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase)
-                    ? SortOrder.Descending
-                    : SortOrder.Ascending;
-
-                result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the filters.
-        /// </summary>
-        /// <param name="filters">The filter string.</param>
-        /// <returns>IEnumerable{ItemFilter}.</returns>
-        internal static ItemFilter[] GetFilters(string filters)
-        {
-            return string.IsNullOrEmpty(filters)
-                ? Array.Empty<ItemFilter>()
-                : Split(filters, ',', true)
-                    .Select(v => Enum.Parse<ItemFilter>(v, true)).ToArray();
-        }
-
-        /// <summary>
         /// Gets the item fields.
         /// </summary>
         /// <param name="fields">The fields string.</param>
