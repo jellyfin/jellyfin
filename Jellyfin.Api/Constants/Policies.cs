@@ -29,5 +29,10 @@ namespace Jellyfin.Api.Constants
         /// Policy name for escaping schedule controls.
         /// </summary>
         public const string IgnoreSchedule = "IgnoreSchedule";
+
+        /// <summary>
+        /// Policy name for requiring download permission.
+        /// </summary>
+        public const string Download = "Download";
     }
 }

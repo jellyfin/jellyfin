@@ -68,17 +68,14 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="isHidden">Optional filter by IsHidden=true or false.</param>
         /// <param name="isDisabled">Optional filter by IsDisabled=true or false.</param>
-        /// <param name="isGuest">Optional filter by IsGuest=true or false.</param>
         /// <response code="200">Users returned.</response>
         /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the users.</returns>
         [HttpGet]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isGuest", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<UserDto>> GetUsers(
             [FromQuery] bool? isHidden,
-            [FromQuery] bool? isDisabled,
-            [FromQuery] bool? isGuest)
+            [FromQuery] bool? isDisabled)
         {
             var users = Get(isHidden, isDisabled, false, false);
             return Ok(users);
@@ -167,8 +164,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
             [FromRoute, Required] Guid userId,
-            [FromQuery, BindRequired] string pw,
-            [FromQuery, BindRequired] string password)
+            [FromQuery, BindRequired] string? pw,
+            [FromQuery, BindRequired] string? password)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -486,7 +483,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing a <see cref="ForgotPasswordResult"/>.</returns>
         [HttpPost("ForgotPassword")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string enteredUsername)
+        public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string? enteredUsername)
         {
             var isLocal = HttpContext.Connection.RemoteIpAddress.Equals(HttpContext.Connection.LocalIpAddress)
                           || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString());
@@ -504,7 +501,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing a <see cref="PinRedeemResult"/>.</returns>
         [HttpPost("ForgotPassword/Pin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string pin)
+        public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string? pin)
         {
             var result = await _userManager.RedeemPasswordResetPin(pin).ConfigureAwait(false);
             return result;

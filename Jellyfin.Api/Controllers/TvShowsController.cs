@@ -185,14 +185,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
         /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
-        /// <param name="sortOrder">Optional. Sort order: Ascending,Descending.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the episodes on success or a <see cref="NotFoundResult"/> if the series was not found.</returns>
         [HttpGet("{seriesId}/Episodes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "sortOrder", Justification = "Imported from ServiceStack")]
         public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
-            [FromRoute] string seriesId,
+            [FromRoute] string? seriesId,
             [FromQuery] Guid userId,
             [FromQuery] string? fields,
             [FromQuery] int? season,
@@ -206,8 +204,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery] string? enableImageTypes,
             [FromQuery] bool? enableUserData,
-            [FromQuery] string? sortBy,
-            [FromQuery] SortOrder? sortOrder)
+            [FromQuery] string? sortBy)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -314,12 +311,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
-            [FromRoute] string seriesId,
+            [FromRoute] string? seriesId,
             [FromQuery] Guid userId,
-            [FromQuery] string fields,
+            [FromQuery] string? fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
-            [FromQuery] string adjacentTo,
+            [FromQuery] string? adjacentTo,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
             [FromQuery] string? enableImageTypes,

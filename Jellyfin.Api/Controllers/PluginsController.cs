@@ -42,13 +42,11 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets a list of currently installed plugins.
         /// </summary>
-        /// <param name="isAppStoreEnabled">Optional. Unused.</param>
         /// <response code="200">Installed plugins returned.</response>
         /// <returns>List of currently installed plugins.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "isAppStoreEnabled", Justification = "Imported from ServiceStack")]
-        public ActionResult<IEnumerable<PluginInfo>> GetPlugins([FromRoute] bool? isAppStoreEnabled)
+        public ActionResult<IEnumerable<PluginInfo>> GetPlugins()
         {
             return Ok(_appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()));
         }
@@ -168,7 +166,7 @@ namespace Jellyfin.Api.Controllers
         [Obsolete("This endpoint should not be used.")]
         [HttpPost("RegistrationRecords/{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<MBRegistrationRecord> GetRegistrationStatus([FromRoute] string name)
+        public ActionResult<MBRegistrationRecord> GetRegistrationStatus([FromRoute] string? name)
         {
             return new MBRegistrationRecord
             {
@@ -190,7 +188,7 @@ namespace Jellyfin.Api.Controllers
         [Obsolete("Paid plugins are not supported")]
         [HttpGet("/Registrations/{name}")]
         [ProducesResponseType(StatusCodes.Status501NotImplemented)]
-        public ActionResult GetRegistration([FromRoute] string name)
+        public ActionResult GetRegistration([FromRoute] string? name)
         {
             // TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
             // delete all these registration endpoints. They are only kept for compatibility.

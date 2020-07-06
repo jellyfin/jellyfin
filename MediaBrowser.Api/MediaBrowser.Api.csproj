@@ -14,6 +14,10 @@
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Library" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Extensions
             bool? enableImages,
             bool? enableUserData,
             int? imageTypeLimit,
-            string enableImageTypes)
+            string? enableImageTypes)
         {
             dtoOptions.EnableImages = enableImages ?? true;
 
