@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
@@ -14,6 +15,58 @@ namespace Jellyfin.Api.Helpers
     /// </summary>
     public static class RequestHelpers
     {
+        /// <summary>
+        /// Get Order By.
+        /// </summary>
+        /// <param name="sortBy">Sort By. Comma delimited string.</param>
+        /// <param name="requestedSortOrder">Sort Order. Comma delimited string.</param>
+        /// <returns>Order By.</returns>
+        public static ValueTuple<string, SortOrder>[] GetOrderBy(string? sortBy, string? requestedSortOrder)
+        {
+            var val = sortBy;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return Array.Empty<ValueTuple<string, SortOrder>>();
+            }
+
+            var vals = val.Split(',');
+            if (string.IsNullOrWhiteSpace(requestedSortOrder))
+            {
+                requestedSortOrder = "Ascending";
+            }
+
+            var sortOrders = requestedSortOrder.Split(',');
+
+            var result = new ValueTuple<string, SortOrder>[vals.Length];
+
+            for (var i = 0; i < vals.Length; i++)
+            {
+                var sortOrderIndex = sortOrders.Length > i ? i : 0;
+
+                var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
+                var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase)
+                    ? SortOrder.Descending
+                    : SortOrder.Ascending;
+
+                result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get parsed filters.
+        /// </summary>
+        /// <param name="filters">The filters.</param>
+        /// <returns>Item filters.</returns>
+        public static IEnumerable<ItemFilter> GetFilters(string? filters)
+        {
+            return string.IsNullOrEmpty(filters)
+                ? Array.Empty<ItemFilter>()
+                : filters.Split(',').Select(v => Enum.Parse<ItemFilter>(v, true));
+        }
+
         /// <summary>
         /// Splits a string at a separating character into an array of substrings.
         /// </summary>
@@ -92,57 +145,6 @@ namespace Jellyfin.Api.Helpers
             return Split(value, ',', true)
                 .Select(i => new Guid(i))
                 .ToArray();
-        }
-
-        /// <summary>
-        /// Get orderby.
-        /// </summary>
-        /// <param name="sortBy">Sort by.</param>
-        /// <param name="requestedSortOrder">Sort order.</param>
-        /// <returns>Resulting order by.</returns>
-        internal static ValueTuple<string, SortOrder>[] GetOrderBy(string? sortBy, string? requestedSortOrder)
-        {
-            if (string.IsNullOrEmpty(sortBy))
-            {
-                return Array.Empty<ValueTuple<string, SortOrder>>();
-            }
-
-            var vals = sortBy.Split(',');
-            if (string.IsNullOrWhiteSpace(requestedSortOrder))
-            {
-                requestedSortOrder = "Ascending";
-            }
-
-            var sortOrders = requestedSortOrder.Split(',');
-
-            var result = new ValueTuple<string, SortOrder>[vals.Length];
-
-            for (var i = 0; i < vals.Length; i++)
-            {
-                var sortOrderIndex = sortOrders.Length > i ? i : 0;
-
-                var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
-                var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase)
-                    ? SortOrder.Descending
-                    : SortOrder.Ascending;
-
-                result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets the filters.
-        /// </summary>
-        /// <param name="filters">The filter string.</param>
-        /// <returns>IEnumerable{ItemFilter}.</returns>
-        internal static ItemFilter[] GetFilters(string filters)
-        {
-            return string.IsNullOrEmpty(filters)
-                ? Array.Empty<ItemFilter>()
-                : Split(filters, ',', true)
-                    .Select(v => Enum.Parse<ItemFilter>(v, true)).ToArray();
         }
 
         /// <summary>
