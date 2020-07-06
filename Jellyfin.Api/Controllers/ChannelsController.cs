@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Controller.Channels;
@@ -21,7 +22,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Channels Controller.
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ChannelsController : BaseJellyfinApiController
     {
         private readonly IChannelManager _channelManager;
@@ -107,7 +108,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime.</param>
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
         /// <response code="200">Channel items returned.</response>
-        /// <returns>Channel items.</returns>
+        /// <returns>
+        /// A <see cref="Task"/> representing the request to get the channel items.
+        /// The task result contains an <see cref="OkResult"/> containing the channel items.
+        /// </returns>
         [HttpGet("{channelId}/Items")]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetChannelItems(
             [FromRoute] Guid channelId,
