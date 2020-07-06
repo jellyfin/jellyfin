@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
@@ -18,6 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The genres controller.
     /// </summary>
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class GenresController : BaseJellyfinApiController
     {
         private readonly IUserManager _userManager;
