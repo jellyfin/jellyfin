@@ -16,11 +16,13 @@ trigger:
 
 jobs:
   - template: azure-pipelines-main.yml
+    condition: ! or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
     parameters:
       LinuxImage: 'ubuntu-latest'
       RestoreBuildProjects: $(RestoreBuildProjects)
 
   - template: azure-pipelines-test.yml
+    condition: ! or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
     parameters:
       ImageNames:
         Linux: 'ubuntu-latest'
@@ -28,6 +30,7 @@ jobs:
         macOS: 'macos-latest'
 
   - template: azure-pipelines-abi.yml
+    condition: ! or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
     parameters:
       Packages:
         Naming:
@@ -45,3 +48,4 @@ jobs:
       LinuxImage: 'ubuntu-latest'
 
   - template: azure-pipelines-package.yml
+    condition: or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
