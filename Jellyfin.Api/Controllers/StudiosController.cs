@@ -82,31 +82,31 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] double? minCommunityRating,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string searchTerm,
-            [FromQuery] string parentId,
-            [FromQuery] string fields,
-            [FromQuery] string excludeItemTypes,
-            [FromQuery] string includeItemTypes,
-            [FromQuery] string filters,
+            [FromQuery] string? searchTerm,
+            [FromQuery] string? parentId,
+            [FromQuery] string? fields,
+            [FromQuery] string? excludeItemTypes,
+            [FromQuery] string? includeItemTypes,
+            [FromQuery] string? filters,
             [FromQuery] bool? isFavorite,
-            [FromQuery] string mediaTypes,
-            [FromQuery] string genres,
-            [FromQuery] string genreIds,
-            [FromQuery] string officialRatings,
-            [FromQuery] string tags,
-            [FromQuery] string years,
+            [FromQuery] string? mediaTypes,
+            [FromQuery] string? genres,
+            [FromQuery] string? genreIds,
+            [FromQuery] string? officialRatings,
+            [FromQuery] string? tags,
+            [FromQuery] string? years,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string enableImageTypes,
-            [FromQuery] string person,
-            [FromQuery] string personIds,
-            [FromQuery] string personTypes,
-            [FromQuery] string studios,
-            [FromQuery] string studioIds,
-            [FromQuery] Guid userId,
-            [FromQuery] string nameStartsWithOrGreater,
-            [FromQuery] string nameStartsWith,
-            [FromQuery] string nameLessThan,
+            [FromQuery] string? enableImageTypes,
+            [FromQuery] string? person,
+            [FromQuery] string? personIds,
+            [FromQuery] string? personTypes,
+            [FromQuery] string? studios,
+            [FromQuery] string? studioIds,
+            [FromQuery] Guid? userId,
+            [FromQuery] string? nameStartsWithOrGreater,
+            [FromQuery] string? nameStartsWith,
+            [FromQuery] string? nameLessThan,
             [FromQuery] bool? enableImages = true,
             [FromQuery] bool enableTotalRecordCount = true)
         {
@@ -118,9 +118,9 @@ namespace Jellyfin.Api.Controllers
             User? user = null;
             BaseItem parentItem;
 
-            if (!userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
-                user = _userManager.GetUserById(userId);
+                user = _userManager.GetUserById(userId.Value);
                 parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
             }
             else
@@ -259,14 +259,14 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the studio.</returns>
         [HttpGet("{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<BaseItemDto> GetStudio([FromRoute] string name, [FromQuery] Guid userId)
+        public ActionResult<BaseItemDto> GetStudio([FromRoute] string name, [FromQuery] Guid? userId)
         {
             var dtoOptions = new DtoOptions().AddClientFields(Request);
 
             var item = _libraryManager.GetStudio(name);
-            if (!userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
-                var user = _userManager.GetUserById(userId);
+                var user = _userManager.GetUserById(userId.Value);
 
                 return _dtoService.GetBaseItemDto(item, dtoOptions, user);
             }

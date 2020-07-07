@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback information.</returns>
         [HttpGet("/Items/{itemId}/PlaybackInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute] Guid itemId, [FromQuery] Guid userId)
+        public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute] Guid itemId, [FromQuery] Guid? userId)
         {
             return await GetPlaybackInfoInternal(itemId, userId, null, null).ConfigureAwait(false);
         }
@@ -118,16 +118,16 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaybackInfoResponse>> GetPostedPlaybackInfo(
             [FromRoute] Guid itemId,
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] long? maxStreamingBitrate,
             [FromQuery] long? startTimeTicks,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? maxAudioChannels,
-            [FromQuery] string mediaSourceId,
-            [FromQuery] string liveStreamId,
-            [FromQuery] DeviceProfile deviceProfile,
-            [FromQuery] bool autoOpenLiveStream,
+            [FromQuery] string? mediaSourceId,
+            [FromQuery] string? liveStreamId,
+            [FromQuery] DeviceProfile? deviceProfile,
+            [FromQuery] bool autoOpenLiveStream = false,
             [FromQuery] bool enableDirectPlay = true,
             [FromQuery] bool enableDirectStream = true,
             [FromQuery] bool enableTranscoding = true,
@@ -165,12 +165,12 @@ namespace Jellyfin.Api.Controllers
                         authInfo,
                         maxStreamingBitrate ?? profile.MaxStreamingBitrate,
                         startTimeTicks ?? 0,
-                        mediaSourceId,
+                        mediaSourceId ?? string.Empty,
                         audioStreamIndex,
                         subtitleStreamIndex,
                         maxAudioChannels,
                         info!.PlaySessionId!,
-                        userId,
+                        userId ?? Guid.Empty,
                         enableDirectPlay,
                         enableDirectStream,
                         enableTranscoding,
@@ -199,7 +199,7 @@ namespace Jellyfin.Api.Controllers
                         PlaySessionId = info.PlaySessionId,
                         StartTimeTicks = startTimeTicks,
                         SubtitleStreamIndex = subtitleStreamIndex,
-                        UserId = userId,
+                        UserId = userId ?? Guid.Empty,
                         OpenToken = mediaSource.OpenToken
                     }).ConfigureAwait(false);
 
@@ -239,16 +239,16 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/LiveStreams/Open")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<LiveStreamResponse>> OpenLiveStream(
-            [FromQuery] string openToken,
-            [FromQuery] Guid userId,
-            [FromQuery] string playSessionId,
+            [FromQuery] string? openToken,
+            [FromQuery] Guid? userId,
+            [FromQuery] string? playSessionId,
             [FromQuery] long? maxStreamingBitrate,
             [FromQuery] long? startTimeTicks,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? maxAudioChannels,
-            [FromQuery] Guid itemId,
-            [FromQuery] DeviceProfile deviceProfile,
+            [FromQuery] Guid? itemId,
+            [FromQuery] DeviceProfile? deviceProfile,
             [FromQuery] MediaProtocol[] directPlayProtocols,
             [FromQuery] bool enableDirectPlay = true,
             [FromQuery] bool enableDirectStream = true)
@@ -256,14 +256,14 @@ namespace Jellyfin.Api.Controllers
             var request = new LiveStreamRequest
             {
                 OpenToken = openToken,
-                UserId = userId,
+                UserId = userId ?? Guid.Empty,
                 PlaySessionId = playSessionId,
                 MaxStreamingBitrate = maxStreamingBitrate,
                 StartTimeTicks = startTimeTicks,
                 AudioStreamIndex = audioStreamIndex,
                 SubtitleStreamIndex = subtitleStreamIndex,
                 MaxAudioChannels = maxAudioChannels,
-                ItemId = itemId,
+                ItemId = itemId ?? Guid.Empty,
                 DeviceProfile = deviceProfile,
                 EnableDirectPlay = enableDirectPlay,
                 EnableDirectStream = enableDirectStream,
@@ -280,7 +280,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("/LiveStreams/Close")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult CloseLiveStream([FromQuery] string liveStreamId)
+        public ActionResult CloseLiveStream([FromQuery] string? liveStreamId)
         {
             _mediaSourceManager.CloseLiveStream(liveStreamId).GetAwaiter().GetResult();
             return NoContent();
@@ -325,11 +325,13 @@ namespace Jellyfin.Api.Controllers
 
         private async Task<PlaybackInfoResponse> GetPlaybackInfoInternal(
             Guid id,
-            Guid userId,
+            Guid? userId,
             string? mediaSourceId = null,
             string? liveStreamId = null)
         {
-            var user = _userManager.GetUserById(userId);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
             var item = _libraryManager.GetItemById(id);
             var result = new PlaybackInfoResponse();
 

@@ -52,7 +52,7 @@ namespace Jellyfin.Api.Auth
         {
             // Ensure claim has userId.
             var userId = ClaimHelpers.GetUserId(claimsPrincipal);
-            if (userId == null)
+            if (!userId.HasValue)
             {
                 return false;
             }
