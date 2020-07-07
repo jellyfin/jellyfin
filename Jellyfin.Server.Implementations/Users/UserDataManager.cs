@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -42,10 +43,15 @@ namespace Jellyfin.Server.Implementations.Users
                 return null;
             }
 
-            var userData = _provider.CreateContext().UserItemData
+            var dbContext = _provider.CreateContext();
+            var userData = dbContext.UserItemData
                 .FirstOrDefault(entry => entry.UserId == userId && entry.ItemId == itemId);
 
-            userData ??= new UserItemData { UserId = userId, ItemId = itemId };
+            if (userData == null)
+            {
+                userData = new UserItemData { UserId = userId, ItemId = itemId };
+                dbContext.Add(userData);
+            }
 
             return userData;
         }
@@ -54,7 +60,11 @@ namespace Jellyfin.Server.Implementations.Users
         public void SaveUserItemData(UserItemData itemData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
             var dbContext = _provider.CreateContext();
-            dbContext.Update(itemData);
+
+            // Because we can't reuse DbContexts within requests, we have to manually reattach the object and determine
+            // if it was added or modified.
+            // TODO: clean up when we have scoping
+            dbContext.Update(itemData).State = itemData.Id == 0 ? EntityState.Added : EntityState.Modified;
             dbContext.SaveChanges();
 
             UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
