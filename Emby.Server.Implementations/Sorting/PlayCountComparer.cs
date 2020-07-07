@@ -35,9 +35,14 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>DateTime.</returns>
         private int GetValue(BaseItem x)
         {
-            var userdata = UserDataRepository.GetUserData(User, x);
+            if (x == null)
+            {
+                return 0;
+            }
 
-            return userdata == null ? 0 : userdata.PlayCount;
+            var userData = UserDataRepository.GetUserItemData(User.Id, x.Id);
+
+            return userData?.PlayCount ?? 0;
         }
 
         /// <summary>

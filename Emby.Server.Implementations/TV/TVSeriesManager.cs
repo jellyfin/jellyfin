@@ -227,7 +227,7 @@ namespace Emby.Server.Implementations.TV
 
             if (lastWatchedEpisode != null)
             {
-                var userData = _userDataManager.GetUserData(user, lastWatchedEpisode);
+                var userData = _userDataManager.GetUserItemData(user.Id, lastWatchedEpisode.Id);
 
                 var lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue.AddDays(1);
 

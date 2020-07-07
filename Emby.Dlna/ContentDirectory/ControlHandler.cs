@@ -169,20 +169,14 @@ namespace Emby.Dlna.ContentDirectory
 
         private void HandleXSetBookmark(IDictionary<string, string> sparams)
         {
-            var id = sparams["ObjectID"];
-
-            var serverItem = GetItemFromObjectId(id);
-
-            var item = serverItem.Item;
-
+            var item = GetItemFromObjectId(sparams["ObjectID"]).Item;
             var newbookmark = int.Parse(sparams["PosSecond"], CultureInfo.InvariantCulture);
 
-            var userdata = _userDataManager.GetUserData(_user, item);
+            var userData = _userDataManager.GetUserItemData(_user.Id, item.Id);
 
-            userdata.PlaybackPositionTicks = TimeSpan.FromSeconds(newbookmark).Ticks;
+            userData.PlaybackPositionTicks = TimeSpan.FromSeconds(newbookmark).Ticks;
 
-            _userDataManager.SaveUserData(_user, item, userdata, UserDataSaveReason.TogglePlayed,
-                CancellationToken.None);
+            _userDataManager.SaveUserItemData(userData, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         private void HandleGetSearchCapabilities(XmlWriter xmlWriter)

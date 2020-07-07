@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Emby.Server.Implementations.Playlists;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
@@ -19,7 +20,6 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -32,6 +32,16 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Person = MediaBrowser.Controller.Entities.Person;
+using Photo = MediaBrowser.Controller.Entities.Photo;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -105,7 +115,7 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
-        public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
+        public void Initialize(IUserManager userManager)
         {
             const string CreateMediaStreamsTableCommand
                     = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, ColorPrimaries TEXT NULL, ColorSpace TEXT NULL, ColorTransfer TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
@@ -326,8 +336,6 @@ namespace Emby.Server.Implementations.Data
 
                 connection.RunQueries(postQueries);
             }
-
-            userDataRepo.Initialize(userManager, WriteLock, WriteConnection);
         }
 
         private static readonly string[] _retriveItemColumns =

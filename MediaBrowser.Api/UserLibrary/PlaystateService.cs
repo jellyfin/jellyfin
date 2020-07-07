@@ -450,7 +450,7 @@ namespace MediaBrowser.Api.UserLibrary
                 item.MarkUnplayed(user);
             }
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return _userDataRepository.GetUserDataDto(user, item);
         }
     }
 }

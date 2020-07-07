@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
@@ -22,6 +23,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly ISessionManager _sessionManager;
         private readonly IUserDataManager _userDataManager;
         private readonly IUserManager _userManager;
+        private readonly ILibraryManager _libraryManager;
 
         private readonly Dictionary<Guid, List<BaseItem>> _changedItems = new Dictionary<Guid, List<BaseItem>>();
 
@@ -29,11 +31,16 @@ namespace Emby.Server.Implementations.EntryPoints
         private Timer _updateTimer;
 
 
-        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, IUserManager userManager)
+        public UserDataChangeNotifier(
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ISessionManager sessionManager,
+            ILibraryManager libraryManager)
         {
             _userDataManager = userDataManager;
             _sessionManager = sessionManager;
             _userManager = userManager;
+            _libraryManager = libraryManager;
         }
 
         public Task RunAsync()
@@ -43,7 +50,7 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        void OnUserDataManagerUserDataSaved(object sender, UserDataSaveEventArgs e)
+        private void OnUserDataManagerUserDataSaved(object sender, UserDataSaveEventArgs e)
         {
             if (e.SaveReason == UserDataSaveReason.PlaybackProgress)
             {
@@ -71,9 +78,8 @@ namespace Emby.Server.Implementations.EntryPoints
                     _changedItems[e.UserId] = keys;
                 }
 
-                keys.Add(e.Item);
-
-                var baseItem = e.Item;
+                var baseItem = _libraryManager.GetItemById(e.ItemId);
+                keys.Add(baseItem);
 
                 // Go up one level for indicators
                 if (baseItem != null)
@@ -110,31 +116,30 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             foreach (var pair in changes)
             {
-                await SendNotifications(pair.Key, pair.Value, cancellationToken).ConfigureAwait(false);
+                var user = _userManager.GetUserById(pair.Key);
+                await SendNotifications(user, pair.Value, cancellationToken).ConfigureAwait(false);
             }
         }
 
-        private Task SendNotifications(Guid userId, List<BaseItem> changedItems, CancellationToken cancellationToken)
+        private Task SendNotifications(User user, List<BaseItem> changedItems, CancellationToken cancellationToken)
         {
-            return _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "UserDataChanged", () => GetUserDataChangeInfo(userId, changedItems), cancellationToken);
+            return _sessionManager.SendMessageToUserSessions(new List<Guid> { user.Id }, "UserDataChanged", () => GetUserDataChangeInfo(user, changedItems), cancellationToken);
         }
 
-        private UserDataChangeInfo GetUserDataChangeInfo(Guid userId, List<BaseItem> changedItems)
+        private UserDataChangeInfo GetUserDataChangeInfo(User user, List<BaseItem> changedItems)
         {
-            var user = _userManager.GetUserById(userId);
-
             var dtoList = changedItems
                 .GroupBy(x => x.Id)
                 .Select(x => x.First())
                 .Select(i =>
                 {
-                    var dto = _userDataManager.GetUserDataDto(i, user);
+                    var dto = _userDataManager.GetUserDataDto(user, i);
                     dto.ItemId = i.Id.ToString("N", CultureInfo.InvariantCulture);
                     return dto;
                 })
                 .ToArray();
 
-            var userIdString = userId.ToString("N", CultureInfo.InvariantCulture);
+            var userIdString = user.Id.ToString("N", CultureInfo.InvariantCulture);
 
             return new UserDataChangeInfo
             {

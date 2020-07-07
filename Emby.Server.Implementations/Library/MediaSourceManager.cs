@@ -361,13 +361,17 @@ namespace Emby.Server.Implementations.Library
             return new string[] { language };
         }
 
-        private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
+        private void SetDefaultSubtitleStreamIndex(
+            MediaSourceInfo source,
+            UserItemData streamSettings,
+            User user,
+            bool allowRememberingSelection)
         {
-            if (userData.SubtitleStreamIndex.HasValue
+            if (streamSettings.SubtitleStreamIndex.HasValue
                 && user.RememberSubtitleSelections
                 && user.SubtitleMode != SubtitlePlaybackMode.None && allowRememberingSelection)
             {
-                var index = userData.SubtitleStreamIndex.Value;
+                var index = streamSettings.SubtitleStreamIndex.Value;
                 // Make sure the saved index is still valid
                 if (index == -1 || source.MediaStreams.Any(i => i.Type == MediaStreamType.Subtitle && i.Index == index))
                 {
@@ -420,7 +424,7 @@ namespace Emby.Server.Implementations.Library
 
             if (string.Equals(mediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
-                var userData = item == null ? new UserItemData() : _userDataManager.GetUserData(user, item);
+                var userData = item == null ? new UserItemData() : _userDataManager.GetUserItemData(user.Id, item.Id);
 
                 var allowRememberingSelection = item == null || item.EnableRememberingTrackSelections;
 

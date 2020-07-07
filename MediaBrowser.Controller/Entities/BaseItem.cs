@@ -2150,7 +2150,7 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var data = UserDataManager.GetUserData(user, this);
+            var data = UserDataManager.GetUserItemData(user.Id, Id);
 
             if (datePlayed.HasValue)
             {
@@ -2167,9 +2167,9 @@ namespace MediaBrowser.Controller.Entities
             }
 
             data.LastPlayedDate = datePlayed ?? data.LastPlayedDate ?? DateTime.UtcNow;
-            data.Played = true;
+            data.IsPlayed = true;
 
-            UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            UserDataManager.SaveUserItemData(data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         /// <summary>
@@ -2185,17 +2185,17 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var data = UserDataManager.GetUserData(user, this);
+            var watchState = UserDataManager.GetUserItemData(user.Id, Id);
 
             // I think it is okay to do this here.
             // if this is only called when a user is manually forcing something to un-played
             // then it probably is what we want to do...
-            data.PlayCount = 0;
-            data.PlaybackPositionTicks = 0;
-            data.LastPlayedDate = null;
-            data.Played = false;
+            watchState.PlayCount = 0;
+            watchState.PlaybackPositionTicks = 0;
+            watchState.LastPlayedDate = null;
+            watchState.IsPlayed = false;
 
-            UserDataManager.SaveUserData(user.Id, this, data, UserDataSaveReason.TogglePlayed, CancellationToken.None);
+            UserDataManager.SaveUserItemData(watchState, UserDataSaveReason.TogglePlayed, CancellationToken.None);
         }
 
         /// <summary>
@@ -2597,14 +2597,14 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsPlayed(User user)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            var userdata = UserDataManager.GetUserItemData(user.Id, Id);
 
-            return userdata != null && userdata.Played;
+            return userdata != null && userdata.IsPlayed;
         }
 
         public bool IsFavoriteOrLiked(User user)
         {
-            var userdata = UserDataManager.GetUserData(user, this);
+            var userdata = UserDataManager.GetUserItemData(user.Id, Id);
 
             return userdata != null && (userdata.IsFavorite || (userdata.Likes ?? false));
         }
@@ -2616,9 +2616,9 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var userdata = UserDataManager.GetUserData(user, this);
+            var userData = UserDataManager.GetUserItemData(user.Id, Id);
 
-            return userdata == null || !userdata.Played;
+            return userData == null || !userData.IsPlayed;
         }
 
         ItemLookupInfo IHasLookupInfo<ItemLookupInfo>.GetLookupInfo()

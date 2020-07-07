@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
@@ -16,6 +16,8 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -489,7 +491,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(MarkFavoriteItem request)
         {
-            var dto = MarkFavorite(request.UserId, request.Id, true);
+            var user = _userManager.GetUserById(request.UserId);
+            var dto = MarkFavorite(user, request.Id, true);
 
             return ToOptimizedResult(dto);
         }
@@ -500,7 +503,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(UnmarkFavoriteItem request)
         {
-            var dto = MarkFavorite(request.UserId, request.Id, false);
+            var user = _userManager.GetUserById(request.UserId);
+            var dto = MarkFavorite(user, request.Id, false);
 
             return ToOptimizedResult(dto);
         }
@@ -508,24 +512,22 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Marks the favorite.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="user">The user.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
-        private UserItemDataDto MarkFavorite(Guid userId, Guid itemId, bool isFavorite)
+        private UserItemDataDto MarkFavorite(User user, Guid itemId, bool isFavorite)
         {
-            var user = _userManager.GetUserById(userId);
-
             var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
 
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user, item);
+            var data = _userDataRepository.GetUserItemData(user.Id, item.Id);
 
             // Set favorite status
             data.IsFavorite = isFavorite;
 
-            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserItemData(data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return _userDataRepository.GetUserDataDto(user, item);
         }
 
         /// <summary>
@@ -534,7 +536,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Delete(DeleteUserItemRating request)
         {
-            var dto = UpdateUserItemRating(request.UserId, request.Id, null);
+            var user = _userManager.GetUserById(request.UserId);
+            var dto = UpdateUserItemRating(user, request.Id, null);
 
             return ToOptimizedResult(dto);
         }
@@ -545,7 +548,8 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         public object Post(UpdateUserItemRating request)
         {
-            var dto = UpdateUserItemRating(request.UserId, request.Id, request.Likes);
+            var user = _userManager.GetUserById(request.UserId);
+            var dto = UpdateUserItemRating(user, request.Id, request.Likes);
 
             return ToOptimizedResult(dto);
         }
@@ -553,23 +557,21 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Updates the user item rating.
         /// </summary>
-        /// <param name="userId">The user id.</param>
+        /// <param name="user">The user.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
-        private UserItemDataDto UpdateUserItemRating(Guid userId, Guid itemId, bool? likes)
+        private UserItemDataDto UpdateUserItemRating(User user, Guid itemId, bool? likes)
         {
-            var user = _userManager.GetUserById(userId);
-
             var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
 
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user, item);
+            var data = _userDataRepository.GetUserItemData(user.Id, item.Id);
 
             data.Likes = likes;
 
-            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserItemData(data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return _userDataRepository.GetUserDataDto(user, item);
         }
     }
 }

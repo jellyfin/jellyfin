@@ -20,16 +20,19 @@ namespace MediaBrowser.XbmcMetadata
         private readonly ILogger<EntryPoint> _logger;
         private readonly IProviderManager _providerManager;
         private readonly IConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
         public EntryPoint(
             IUserDataManager userDataManager,
             ILogger<EntryPoint> logger,
             IProviderManager providerManager,
+            ILibraryManager libraryManager,
             IConfigurationManager config)
         {
             _userDataManager = userDataManager;
             _logger = logger;
             _providerManager = providerManager;
+            _libraryManager = libraryManager;
             _config = config;
         }
 
@@ -47,7 +50,7 @@ namespace MediaBrowser.XbmcMetadata
             {
                 if (!string.IsNullOrWhiteSpace(_config.GetNfoConfiguration().UserId))
                 {
-                    SaveMetadataForItem(e.Item, ItemUpdateType.MetadataDownload);
+                    SaveMetadataForItem(_libraryManager.GetItemById(e.ItemId), ItemUpdateType.MetadataDownload);
                 }
             }
         }

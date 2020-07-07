@@ -522,11 +522,9 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            UserItemData userData = null;
-
             if (query.IsLiked.HasValue)
             {
-                userData = userDataManager.GetUserData(user, item);
+                var userData = userDataManager.GetUserItemData(user.Id, item.Id);
 
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {
@@ -536,7 +534,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavoriteOrLiked.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                var userData = userDataManager.GetUserItemData(user.Id, item.Id);
                 var isFavoriteOrLiked = userData.IsFavorite || (userData.Likes ?? false);
 
                 if (isFavoriteOrLiked != query.IsFavoriteOrLiked.Value)
@@ -547,7 +545,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavorite.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                var userData = userDataManager.GetUserItemData(user.Id, item.Id);
 
                 if (userData.IsFavorite != query.IsFavorite.Value)
                 {
@@ -557,7 +555,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsResumable.HasValue)
             {
-                userData = userData ?? userDataManager.GetUserData(user, item);
+                var userData = userDataManager.GetUserItemData(user.Id, item.Id);
                 var isResumable = userData.PlaybackPositionTicks > 0;
 
                 if (isResumable != query.IsResumable.Value)
@@ -578,9 +576,8 @@ namespace MediaBrowser.Controller.Entities
             if (query.Is3D.HasValue)
             {
                 var val = query.Is3D.Value;
-                var video = item as Video;
 
-                if (video == null || val != video.Video3DFormat.HasValue)
+                if (!(item is Video video) || val != video.Video3DFormat.HasValue)
                 {
                     return false;
                 }

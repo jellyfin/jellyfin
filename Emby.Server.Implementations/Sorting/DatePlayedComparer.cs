@@ -44,18 +44,18 @@ namespace Emby.Server.Implementations.Sorting
         /// <summary>
         /// Gets the date.
         /// </summary>
-        /// <param name="x">The x.</param>
+        /// <param name="item">The item.</param>
         /// <returns>DateTime.</returns>
-        private DateTime GetDate(BaseItem x)
+        private DateTime GetDate(BaseItem item)
         {
-            var userdata = UserDataRepository.GetUserData(User, x);
-
-            if (userdata != null && userdata.LastPlayedDate.HasValue)
+            if (item == null)
             {
-                return userdata.LastPlayedDate.Value;
+                return DateTime.MinValue;
             }
 
-            return DateTime.MinValue;
+            var userData = UserDataRepository.GetUserItemData(User.Id, item.Id);
+
+            return userData?.LastPlayedDate ?? DateTime.MinValue;
         }
 
         /// <summary>

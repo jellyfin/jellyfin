@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Providers
@@ -8,8 +6,6 @@ namespace MediaBrowser.Controller.Providers
     public class MetadataResult<T>
     {
         public List<LocalImageInfo> Images { get; set; }
-
-        public List<UserItemData> UserDataList { get; set; }
 
         public MetadataResult()
         {
@@ -52,7 +48,7 @@ namespace MediaBrowser.Controller.Providers
             People.Clear();
         }
 
-        public UserItemData GetOrAddUserData(string userId)
+        /*public UserItemData GetOrAddUserData(string userId)
         {
             if (UserDataList == null)
             {
@@ -80,6 +76,6 @@ namespace MediaBrowser.Controller.Providers
             }
 
             return userData;
-        }
+        }*/
     }
 }

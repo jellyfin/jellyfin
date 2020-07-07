@@ -74,6 +74,7 @@ namespace Jellyfin.Server
 
             serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
             serviceCollection.AddSingleton<IUserManager, UserManager>();
+            serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
             serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
 
             base.RegisterServices(serviceCollection);

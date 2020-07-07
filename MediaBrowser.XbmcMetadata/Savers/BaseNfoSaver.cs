@@ -249,7 +249,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (baseItem != null)
                 {
-                    AddCommonNodes(baseItem, writer, LibraryManager, UserManager, UserDataManager, ConfigurationManager);
+                    AddCommonNodes(baseItem, writer, LibraryManager, UserDataManager, ConfigurationManager);
                 }
 
                 WriteCustomElements(item, writer);
@@ -424,7 +424,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             BaseItem item,
             XmlWriter writer,
             ILibraryManager libraryManager,
-            IUserManager userManager,
             IUserDataManager userDataRepo,
             IServerConfigurationManager config)
         {
@@ -782,7 +781,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 AddImages(item, writer, libraryManager);
             }
 
-            AddUserData(item, writer, userManager, userDataRepo, options);
+            AddUserData(item, writer, userDataRepo, options);
 
             AddActors(people, writer, libraryManager, options.SaveImagePathsInNfo);
 
@@ -846,53 +845,47 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteEndElement();
         }
 
-        private void AddUserData(BaseItem item, XmlWriter writer, IUserManager userManager, IUserDataManager userDataRepo, XbmcMetadataOptions options)
+        private void AddUserData(BaseItem item, XmlWriter writer, IUserDataManager userDataRepo, XbmcMetadataOptions options)
         {
-            var userId = options.UserId;
-            if (string.IsNullOrWhiteSpace(userId))
+            if (string.IsNullOrWhiteSpace(options.UserId))
             {
                 return;
             }
 
-            var user = userManager.GetUserById(Guid.Parse(userId));
-
-            if (user == null)
+            if (item is Folder)
             {
                 return;
             }
 
-            if (item.IsFolder)
-            {
-                return;
-            }
+            var userId = Guid.Parse(options.UserId);
 
-            var userdata = userDataRepo.GetUserData(user, item);
+            var userData = userDataRepo.GetUserItemData(userId, item.Id);
 
             writer.WriteElementString(
                 "isuserfavorite",
-                userdata.IsFavorite.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                userData.IsFavorite.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
-            if (userdata.Rating.HasValue)
+            if (userData.Rating.HasValue)
             {
                 writer.WriteElementString(
                     "userrating",
-                    userdata.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    userData.Rating.Value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
             }
 
             if (!item.IsFolder)
             {
                 writer.WriteElementString(
                     "playcount",
-                    userdata.PlayCount.ToString(CultureInfo.InvariantCulture));
+                    userData.PlayCount.ToString(CultureInfo.InvariantCulture));
                 writer.WriteElementString(
                     "watched",
-                    userdata.Played.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                    userData.IsPlayed.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
 
-                if (userdata.LastPlayedDate.HasValue)
+                if (userData.LastPlayedDate.HasValue)
                 {
                     writer.WriteElementString(
                         "lastplayed",
-                        userdata.LastPlayedDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLowerInvariant());
+                        userData.LastPlayedDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLowerInvariant());
                 }
 
                 writer.WriteStartElement("resume");
@@ -901,7 +894,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 writer.WriteElementString(
                     "position",
-                    TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+                    TimeSpan.FromTicks(userData.PlaybackPositionTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));
                 writer.WriteElementString(
                     "total",
                     TimeSpan.FromTicks(runTimeTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture));

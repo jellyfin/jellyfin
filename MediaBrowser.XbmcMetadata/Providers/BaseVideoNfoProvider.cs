@@ -42,11 +42,6 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
             result.Item = (T)tmpItem.Item;
             result.People = tmpItem.People;
-
-            if (tmpItem.UserDataList != null)
-            {
-                result.UserDataList = tmpItem.UserDataList;
-            }
         }
 
         /// <inheritdoc />

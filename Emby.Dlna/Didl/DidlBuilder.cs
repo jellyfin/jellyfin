@@ -691,8 +691,8 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            var userdata = _userDataManager.GetUserData(user, item);
-            var playbackPositionTicks = (streamInfo != null && streamInfo.StartPositionTicks > 0) ? streamInfo.StartPositionTicks : userdata.PlaybackPositionTicks;
+            var userData = _userDataManager.GetUserItemData(user.Id, item.Id);
+            var playbackPositionTicks = (streamInfo != null && streamInfo.StartPositionTicks > 0) ? streamInfo.StartPositionTicks : userData.PlaybackPositionTicks;
 
             if (playbackPositionTicks > 0)
             {

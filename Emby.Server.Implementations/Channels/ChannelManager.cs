@@ -223,7 +223,7 @@ namespace Emby.Server.Implementations.Channels
             if (query.IsFavorite.HasValue)
             {
                 var val = query.IsFavorite.Value;
-                channels = channels.Where(i => _userDataManager.GetUserData(user, i).IsFavorite == val)
+                channels = channels.Where(i => _userDataManager.GetUserItemData(user.Id, i.Id).IsFavorite == val)
                     .ToList();
             }
 

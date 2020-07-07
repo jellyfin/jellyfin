@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 
@@ -34,6 +35,6 @@ namespace MediaBrowser.Controller.Library
         /// Gets or sets the item.
         /// </summary>
         /// <value>The item.</value>
-        public BaseItem Item { get; set; }
+        public Guid ItemId { get; set; }
     }
 }

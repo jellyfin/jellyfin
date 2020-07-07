@@ -133,7 +133,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if ((query.IsFavorite ?? false) && query.User != null)
             {
-                items = items.Where(i => UserDataRepository.GetUserData(query.User, i).IsFavorite).ToList();
+                items = items.Where(i => UserDataRepository.GetUserItemData(query.User.Id, i.Id).IsFavorite).ToList();
             }
 
             return new QueryResult<(BaseItem, ItemCounts)>

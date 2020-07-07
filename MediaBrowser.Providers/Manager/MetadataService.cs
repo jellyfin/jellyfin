@@ -14,6 +14,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -685,8 +686,6 @@ namespace MediaBrowser.Providers.Manager
             };
             temp.Item.Path = item.Path;
 
-            var userDataList = new List<UserItemData>();
-
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
@@ -716,11 +715,6 @@ namespace MediaBrowser.Providers.Manager
                         if (imageService.MergeImages(item, localItem.Images))
                         {
                             refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
-                        }
-
-                        if (localItem.UserDataList != null)
-                        {
-                            userDataList.AddRange(localItem.UserDataList);
                         }
 
                         MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);

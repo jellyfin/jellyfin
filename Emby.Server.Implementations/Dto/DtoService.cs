@@ -381,7 +381,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.EnableUserData)
                 {
-                    dto.UserData = _userDataRepository.GetUserDataDto(item, dto, user, options);
+                    dto.UserData = _userDataRepository.GetUserDataDto(user, item, dto, options);
                 }
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
@@ -412,7 +412,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (options.EnableUserData)
                 {
-                    dto.UserData = _userDataRepository.GetUserDataDto(item, user);
+                    dto.UserData = _userDataRepository.GetUserDataDto(user, item);
                 }
             }
 

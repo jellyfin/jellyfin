@@ -663,7 +663,7 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
-                    OnPlaybackStart(user, libraryItem);
+                    OnPlaybackStart(user.Id, libraryItem);
                 }
             }
 
@@ -691,25 +691,17 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Called when [playback start].
         /// </summary>
-        /// <param name="user">The user object.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="item">The item.</param>
-        private void OnPlaybackStart(User user, BaseItem item)
+        private void OnPlaybackStart(Guid userId, BaseItem item)
         {
-            var data = _userDataManager.GetUserData(user, item);
+            var data = _userDataManager.GetUserItemData(userId, item.Id);
 
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
+            data.IsPlayed = item.SupportsPlayedStatus && !item.SupportsPositionTicksResume;
 
-            if (item.SupportsPlayedStatus && !item.SupportsPositionTicksResume)
-            {
-                data.Played = true;
-            }
-            else
-            {
-                data.Played = false;
-            }
-
-            _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None);
+            _userDataManager.SaveUserItemData(data, UserDataSaveReason.PlaybackStart, CancellationToken.None);
         }
 
         /// <inheritdoc />
@@ -778,7 +770,7 @@ namespace Emby.Server.Implementations.Session
 
         private void OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
         {
-            var data = _userDataManager.GetUserData(user, item);
+            var watchState = _userDataManager.GetUserItemData(user.Id, item.Id);
 
             var positionTicks = info.PositionTicks;
 
@@ -786,11 +778,11 @@ namespace Emby.Server.Implementations.Session
 
             if (positionTicks.HasValue)
             {
-                _userDataManager.UpdatePlayState(item, data, positionTicks.Value);
+                _userDataManager.UpdatePlayState(item, watchState, positionTicks.Value);
                 changed = true;
             }
 
-            var tracksChanged = UpdatePlaybackSettings(user, info, data);
+            var tracksChanged = UpdatePlaybackSettings(user, info, watchState);
             if (!tracksChanged)
             {
                 changed = true;
@@ -798,7 +790,7 @@ namespace Emby.Server.Implementations.Session
 
             if (changed)
             {
-                _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
+                _userDataManager.SaveUserItemData(watchState, UserDataSaveReason.PlaybackProgress, CancellationToken.None);
             }
         }
 
@@ -927,7 +919,7 @@ namespace Emby.Server.Implementations.Session
             {
                 foreach (var user in users)
                 {
-                    playedToCompletion = OnPlaybackStopped(user, libraryItem, info.PositionTicks, info.Failed);
+                    playedToCompletion = OnPlaybackStopped(user.Id, libraryItem, info.PositionTicks, info.Failed);
                 }
             }
 
@@ -962,13 +954,13 @@ namespace Emby.Server.Implementations.Session
                 _logger);
         }
 
-        private bool OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)
+        private bool OnPlaybackStopped(Guid userId, BaseItem item, long? positionTicks, bool playbackFailed)
         {
             bool playedToCompletion = false;
 
             if (!playbackFailed)
             {
-                var data = _userDataManager.GetUserData(user, item);
+                var data = _userDataManager.GetUserItemData(userId, item.Id);
 
                 if (positionTicks.HasValue)
                 {
@@ -978,12 +970,12 @@ namespace Emby.Server.Implementations.Session
                 {
                     // If the client isn't able to report this, then we'll just have to make an assumption
                     data.PlayCount++;
-                    data.Played = item.SupportsPlayedStatus;
+                    data.IsPlayed = item.SupportsPlayedStatus;
                     data.PlaybackPositionTicks = 0;
                     playedToCompletion = true;
                 }
 
-                _userDataManager.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
+                _userDataManager.SaveUserItemData(data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
             }
 
             return playedToCompletion;

@@ -551,9 +551,6 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
-            serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
-            serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
-
             serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
             serviceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
@@ -652,8 +649,7 @@ namespace Emby.Server.Implementations
 
             SetStaticProperties();
 
-            var userDataRepo = (SqliteUserDataRepository)Resolve<IUserDataRepository>();
-            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, Resolve<IUserManager>());
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(Resolve<IUserManager>());
 
             FindParts();
         }

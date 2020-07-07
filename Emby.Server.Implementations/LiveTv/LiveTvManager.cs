@@ -892,7 +892,7 @@ namespace Emby.Server.Implementations.LiveTv
             if (query.IsAiring ?? false)
             {
                 orderedPrograms = orderedPrograms
-                    .ThenByDescending(i => GetRecommendationScore(i, user, true));
+                    .ThenByDescending(i => GetRecommendationScore(i, user.Id, true));
             }
 
             IEnumerable<BaseItem> programs = orderedPrograms;
@@ -927,7 +927,7 @@ namespace Emby.Server.Implementations.LiveTv
             };
         }
 
-        private int GetRecommendationScore(LiveTvProgram program, User user, bool factorChannelWatchCount)
+        private int GetRecommendationScore(LiveTvProgram program, Guid userId, bool factorChannelWatchCount)
         {
             var score = 0;
 
@@ -948,21 +948,21 @@ namespace Emby.Server.Implementations.LiveTv
                 return score;
             }
 
-            var channelUserdata = _userDataManager.GetUserData(user, channel);
+            var userData = _userDataManager.GetUserItemData(userId, channel.Id);
 
-            if (channelUserdata.Likes.HasValue)
+            if (userData.Likes.HasValue)
             {
-                score += channelUserdata.Likes.Value ? 2 : -2;
+                score += userData.Likes.Value ? 2 : -2;
             }
 
-            if (channelUserdata.IsFavorite)
+            if (userData.IsFavorite)
             {
                 score += 3;
             }
 
             if (factorChannelWatchCount)
             {
-                score += channelUserdata.PlayCount;
+                score += userData.PlayCount;
             }
 
             return score;
