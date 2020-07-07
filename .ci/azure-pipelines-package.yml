@@ -35,7 +35,6 @@ jobs:
   steps:
   - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) deployment'
     displayName: 'Build Dockerfile'
-    condition: or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
 
   - script: 'docker image ls -a && docker run -v $(pwd)/deployment/dist:/dist -v $(pwd):/jellyfin -e IS_UNSTABLE="yes" -e BUILD_ID=$(Build.BuildNumber) jellyfin-server-$(BuildConfiguration)'
     displayName: 'Run Dockerfile (unstable)'
@@ -47,14 +46,12 @@ jobs:
 
   - task: PublishPipelineArtifact@1
     displayName: 'Publish Release'
-    condition: or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       targetPath: '$(Build.SourcesDirectory)/deployment/dist'
       artifactName: 'jellyfin-server-$(BuildConfiguration)'
 
   - task: CopyFilesOverSSH@0
     displayName: 'Upload artifacts to repository server'
-    condition: or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       sshEndpoint: repository
       sourceFolder: '$(Build.SourcesDirectory)/deployment/dist'
