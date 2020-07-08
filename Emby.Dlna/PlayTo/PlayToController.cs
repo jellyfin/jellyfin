@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Emby.Dlna.Didl;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -42,7 +43,7 @@ namespace Emby.Dlna.PlayTo
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IConfigurationManager _config;
+        private readonly IServerConfigurationManager _config;
         private readonly IMediaEncoder _mediaEncoder;
 
         private readonly IDeviceDiscovery _deviceDiscovery;
@@ -68,7 +69,7 @@ namespace Emby.Dlna.PlayTo
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
-            IConfigurationManager config,
+            IServerConfigurationManager config,
             IMediaEncoder mediaEncoder)
         {
             _session = session;
@@ -200,7 +201,7 @@ namespace Emby.Dlna.PlayTo
                     double percent = positionTicks.Value;
                     percent /= duration.Value;
 
-                    playedToCompletion = Math.Abs(1 - percent) <= .1;
+                    playedToCompletion = Math.Abs(1 - percent) * 100 <= _config.Configuration.MaxResumePct;
                 }
 
                 if (playedToCompletion)
@@ -778,7 +779,7 @@ namespace Emby.Dlna.PlayTo
             const int maxWait = 15000000;
             const int interval = 500;
             var currentWait = 0;
-            while (_device.TransportState != TRANSPORTSTATE.PLAYING && currentWait < maxWait)
+            while (_device.TransportState != TransportState.PLAYING && currentWait < maxWait)
             {
                 await Task.Delay(interval).ConfigureAwait(false);
                 currentWait += interval;

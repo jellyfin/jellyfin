@@ -127,6 +127,8 @@ namespace Emby.Dlna.Main
             Current = this;
         }
 
+        public PlayToManager PlayToManager { get => _manager; }
+
         public async Task RunAsync()
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);

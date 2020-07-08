@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
@@ -11,20 +12,15 @@ namespace Emby.Dlna.PlayTo
 {
     public class TransportCommands
     {
-        private List<StateVariable> _stateVariables = new List<StateVariable>();
-        public List<StateVariable> StateVariables
-        {
-            get => _stateVariables;
-            set => _stateVariables = value;
-        }
+        public List<StateVariable> StateVariables { get; } = new List<StateVariable>();
 
-        private List<ServiceAction> _serviceActions = new List<ServiceAction>();
-        public List<ServiceAction> ServiceActions
-        {
-            get => _serviceActions;
-            set => _serviceActions = value;
-        }
+        public List<ServiceAction> ServiceActions { get; } = new List<ServiceAction>();
 
+        /// <summary>
+        /// Parses the urn:upnp-org:serviceId:AVTransport response returns an internal equivalent.
+        /// </summary>
+        /// <param name="document">SOAP response from the client.</param>
+        /// <returns>TransportCommand object.</returns>
         public static TransportCommands Create(XDocument document)
         {
             var command = new TransportCommands();
@@ -49,6 +45,11 @@ namespace Emby.Dlna.PlayTo
             return command;
         }
 
+        /// <summary>
+        /// Parse the parameters from a DLNA method.
+        /// </summary>
+        /// <param name="container">SOAP response.</param>
+        /// <returns>A ServiceAction representation.</returns>
         private static ServiceAction ServiceActionFromXml(XElement container)
         {
             var argumentList = new List<Argument>();
@@ -66,6 +67,11 @@ namespace Emby.Dlna.PlayTo
             };
         }
 
+        /// <summary>
+        /// Parses the definition of an DLNA argument.
+        /// </summary>
+        /// <param name="container">SOAP response.</param>
+        /// <returns>An Argument representation.</returns>
         private static Argument ArgumentFromXml(XElement container)
         {
             if (container == null)
@@ -81,6 +87,11 @@ namespace Emby.Dlna.PlayTo
             };
         }
 
+        /// <summary>
+        /// Parses the definition of a DLNA state variable.
+        /// </summary>
+        /// <param name="container">SOAP response.</param>
+        /// <returns>A StateVariable representation.</returns>
         private static StateVariable FromXml(XElement container)
         {
             var allowedValues = new List<string>();
@@ -123,7 +134,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            return string.Format(CommandBase, action.Name, xmlNamespace, stateString);
+            return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamespace, stateString);
         }
 
         public string BuildPost(ServiceAction action, string xmlNamesapce, object value, string commandParameter = "")
@@ -147,7 +158,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            return string.Format(CommandBase, action.Name, xmlNamesapce, stateString);
+            return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamesapce, stateString);
         }
 
         public string BuildPost(ServiceAction action, string xmlNamesapce, object value, Dictionary<string, string> dictionary)
@@ -170,7 +181,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            return string.Format(CommandBase, action.Name, xmlNamesapce, stateString);
+            return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamesapce, stateString);
         }
 
         private string BuildArgumentXml(Argument argument, string value, string commandParameter = "")
@@ -183,10 +194,10 @@ namespace Emby.Dlna.PlayTo
                                  state.AllowedValues.FirstOrDefault() ??
                                  value;
 
-                return string.Format("<{0} xmlns:dt=\"urn:schemas-microsoft-com:datatypes\" dt:dt=\"{1}\">{2}</{0}>", argument.Name, state.DataType ?? "string", sendValue);
+                return string.Format(CultureInfo.InvariantCulture, "<{0} xmlns:dt=\"urn:schemas-microsoft-com:datatypes\" dt:dt=\"{1}\">{2}</{0}>", argument.Name, state.DataType ?? "string", sendValue);
             }
 
-            return string.Format("<{0}>{1}</{0}>", argument.Name, value);
+            return string.Format(CultureInfo.InvariantCulture, "<{0}>{1}</{0}>", argument.Name, value);
         }
 
         private const string CommandBase = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" + "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + "<SOAP-ENV:Body>" + "<m:{0} xmlns:m=\"{1}\">" + "{2}" + "</m:{0}>" + "</SOAP-ENV:Body></SOAP-ENV:Envelope>";
