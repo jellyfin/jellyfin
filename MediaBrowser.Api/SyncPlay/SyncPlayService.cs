@@ -11,15 +11,15 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.SyncPlay
 {
-    [Route("/SyncPlay/NewGroup", "POST", Summary = "Create a new SyncPlay group")]
+    [Route("/SyncPlay/New", "POST", Summary = "Create a new SyncPlay group")]
     [Authenticated]
-    public class SyncPlayNewGroup : IReturnVoid
+    public class SyncPlayNew : IReturnVoid
     {
     }
 
-    [Route("/SyncPlay/JoinGroup", "POST", Summary = "Join an existing SyncPlay group")]
+    [Route("/SyncPlay/Join", "POST", Summary = "Join an existing SyncPlay group")]
     [Authenticated]
-    public class SyncPlayJoinGroup : IReturnVoid
+    public class SyncPlayJoin : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the Group id.
@@ -36,15 +36,15 @@ namespace MediaBrowser.Api.SyncPlay
         public string PlayingItemId { get; set; }
     }
 
-    [Route("/SyncPlay/LeaveGroup", "POST", Summary = "Leave joined SyncPlay group")]
+    [Route("/SyncPlay/Leave", "POST", Summary = "Leave joined SyncPlay group")]
     [Authenticated]
-    public class SyncPlayLeaveGroup : IReturnVoid
+    public class SyncPlayLeave : IReturnVoid
     {
     }
 
-    [Route("/SyncPlay/ListGroups", "GET", Summary = "List SyncPlay groups")]
+    [Route("/SyncPlay/List", "GET", Summary = "List SyncPlay groups")]
     [Authenticated]
-    public class SyncPlayListGroups : IReturnVoid
+    public class SyncPlayList : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the filter item id.
@@ -54,29 +54,29 @@ namespace MediaBrowser.Api.SyncPlay
         public string FilterItemId { get; set; }
     }
 
-    [Route("/SyncPlay/PlayRequest", "POST", Summary = "Request play in SyncPlay group")]
+    [Route("/SyncPlay/Play", "POST", Summary = "Request play in SyncPlay group")]
     [Authenticated]
-    public class SyncPlayPlayRequest : IReturnVoid
+    public class SyncPlayPlay : IReturnVoid
     {
     }
 
-    [Route("/SyncPlay/PauseRequest", "POST", Summary = "Request pause in SyncPlay group")]
+    [Route("/SyncPlay/Pause", "POST", Summary = "Request pause in SyncPlay group")]
     [Authenticated]
-    public class SyncPlayPauseRequest : IReturnVoid
+    public class SyncPlayPause : IReturnVoid
     {
     }
 
-    [Route("/SyncPlay/SeekRequest", "POST", Summary = "Request seek in SyncPlay group")]
+    [Route("/SyncPlay/Seek", "POST", Summary = "Request seek in SyncPlay group")]
     [Authenticated]
-    public class SyncPlaySeekRequest : IReturnVoid
+    public class SyncPlaySeek : IReturnVoid
     {
         [ApiMember(Name = "PositionTicks", IsRequired = true, DataType = "long", ParameterType = "query", Verb = "POST")]
         public long PositionTicks { get; set; }
     }
 
-    [Route("/SyncPlay/BufferingRequest", "POST", Summary = "Request group wait in SyncPlay group while buffering")]
+    [Route("/SyncPlay/Buffering", "POST", Summary = "Request group wait in SyncPlay group while buffering")]
     [Authenticated]
-    public class SyncPlayBufferingRequest : IReturnVoid
+    public class SyncPlayBuffering : IReturnVoid
     {
         /// <summary>
         /// Gets or sets the date used to pin PositionTicks in time.
@@ -96,9 +96,9 @@ namespace MediaBrowser.Api.SyncPlay
         public bool BufferingDone { get; set; }
     }
 
-    [Route("/SyncPlay/UpdatePing", "POST", Summary = "Update session ping")]
+    [Route("/SyncPlay/Ping", "POST", Summary = "Update session ping")]
     [Authenticated]
-    public class SyncPlayUpdatePing : IReturnVoid
+    public class SyncPlayPing : IReturnVoid
     {
         [ApiMember(Name = "Ping", IsRequired = true, DataType = "double", ParameterType = "query", Verb = "POST")]
         public double Ping { get; set; }
@@ -135,7 +135,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncPlayNewGroup request)
+        public void Post(SyncPlayNew request)
         {
             var currentSession = GetSession(_sessionContext);
             _syncPlayManager.NewGroup(currentSession, CancellationToken.None);
@@ -145,7 +145,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncPlayJoinGroup request)
+        public void Post(SyncPlayJoin request)
         {
             var currentSession = GetSession(_sessionContext);
 
@@ -178,7 +178,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncPlayLeaveGroup request)
+        public void Post(SyncPlayLeave request)
         {
             var currentSession = GetSession(_sessionContext);
             _syncPlayManager.LeaveGroup(currentSession, CancellationToken.None);
@@ -189,7 +189,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// </summary>
         /// <param name="request">The request.</param>
         /// <value>The requested list of groups.</value>
-        public List<GroupInfoView> Post(SyncPlayListGroups request)
+        public List<GroupInfoView> Post(SyncPlayList request)
         {
             var currentSession = GetSession(_sessionContext);
             var filterItemId = Guid.Empty;
@@ -206,7 +206,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncPlayPlayRequest request)
+        public void Post(SyncPlayPlay request)
         {
             var currentSession = GetSession(_sessionContext);
             var syncPlayRequest = new PlaybackRequest()
@@ -220,7 +220,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncPlayPauseRequest request)
+        public void Post(SyncPlayPause request)
         {
             var currentSession = GetSession(_sessionContext);
             var syncPlayRequest = new PlaybackRequest()
@@ -234,7 +234,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncPlaySeekRequest request)
+        public void Post(SyncPlaySeek request)
         {
             var currentSession = GetSession(_sessionContext);
             var syncPlayRequest = new PlaybackRequest()
@@ -249,7 +249,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncPlayBufferingRequest request)
+        public void Post(SyncPlayBuffering request)
         {
             var currentSession = GetSession(_sessionContext);
             var syncPlayRequest = new PlaybackRequest()
@@ -265,7 +265,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// Handles the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void Post(SyncPlayUpdatePing request)
+        public void Post(SyncPlayPing request)
         {
             var currentSession = GetSession(_sessionContext);
             var syncPlayRequest = new PlaybackRequest()
