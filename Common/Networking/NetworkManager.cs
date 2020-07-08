@@ -605,12 +605,26 @@ namespace Common.Networking
                 if (_excludedAddresses.Count > 0)
                 {
                     _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Exclude(_excludedAddresses).Where(i => i.IsPrivateAddressRange()));
-                    _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses.Exclude(_excludedAddresses));
+                    if (_lanAddresse.Count == 0)
+                    {
+                       _filteredLANAddresses = NetCollection.AsNetworks(_internalInterfaceAddresses.Exclude(_excludedAddresses));
+                    }
+                    else
+                    {
+                       _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses.Exclude(_excludedAddresses));
+                    }
                 }
                 else
                 {
                     _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Where(i => i.IsPrivateAddressRange()));
-                    _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses);
+                    if (_lanAddresses.Count == 0)
+                    {
+                        _filteredLANAddresses = NetCollection.AsNetworks(_internalInterfaceAddresses);
+                    }
+                    else
+                    {                    
+                        _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses);
+                    }
                 }
 
                 _logger?.LogDebug("Using LAN addresses: {0}", _filteredLANAddresses);
