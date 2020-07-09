@@ -21,14 +21,21 @@ namespace Emby.Dlna.PlayTo.Api
     {
         public async Task Notify(DLNAEvent request)
         {
-            using (var reader = new StreamReader(request.RequestStream, Encoding.UTF8))
+            try
             {
-                string response = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                if (DlnaEntryPoint.Current?.PlayToManager != null)
+                using (var reader = new StreamReader(request.RequestStream, Encoding.UTF8))
                 {
-                    await DlnaEntryPoint.Current.PlayToManager.FireEvent(new DlnaEventArgs(request.Id, response)).ConfigureAwait(false);
+                    string response = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    if (DlnaEntryPoint.Current?.PlayToManager != null)
+                    {
+                        await DlnaEntryPoint.Current.PlayToManager.FireEvent(new DlnaEventArgs(request.Id, response)).ConfigureAwait(false);
+                    }
                 }
+            }
+            catch
+            {
+                // Ignore connection forcible closed messages.
             }
         }
     }

@@ -102,8 +102,6 @@ namespace Emby.Dlna.PlayTo
             _device.PlaybackStopped += OnDevicePlaybackStopped;
             _device.MediaChanged += OnDeviceMediaChanged;
 
-            _device.Start();
-
             _deviceDiscovery.DeviceLeft += OnDeviceDiscoveryDeviceLeft;
         }
 
@@ -112,6 +110,7 @@ namespace Emby.Dlna.PlayTo
             try
             {
                 _sessionManager.ReportSessionEnded(_session.Id);
+                _ = _device.DeviceUnavailable();
             }
             catch (Exception ex)
             {
@@ -346,16 +345,29 @@ namespace Emby.Dlna.PlayTo
             var playlist = new List<PlaylistItem>();
             var isFirst = true;
 
+            var deviceInfo = _device.Properties;
+
+            // Checking the profile once instead of on each iteration.
+            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
+                _dlnaManager.GetDefaultProfile();
+
             foreach (var item in items)
             {
                 if (isFirst && command.StartPositionTicks.HasValue)
                 {
-                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value, command.MediaSourceId, command.AudioStreamIndex, command.SubtitleStreamIndex));
+                    playlist.Add(CreatePlaylistItem(
+                        item,
+                        user,
+                        command.StartPositionTicks.Value,
+                        command.MediaSourceId,
+                        command.AudioStreamIndex,
+                        command.SubtitleStreamIndex,
+                        profile));
                     isFirst = false;
                 }
                 else
                 {
-                    playlist.Add(CreatePlaylistItem(item, user, 0, null, null, null));
+                    playlist.Add(CreatePlaylistItem(item, user, 0, null, null, null, profile));
                 }
             }
 
@@ -456,16 +468,19 @@ namespace Emby.Dlna.PlayTo
             long startPostionTicks,
             string mediaSourceId,
             int? audioStreamIndex,
-            int? subtitleStreamIndex)
+            int? subtitleStreamIndex,
+            DeviceProfile profile = null)
         {
-            var deviceInfo = _device.Properties;
-
-            var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
-                _dlnaManager.GetDefaultProfile();
-
             var mediaSources = item is IHasMediaSources
                 ? _mediaSourceManager.GetStaticMediaSources(item, true, user)
                 : new List<MediaSourceInfo>();
+
+            if (profile == null)
+            {
+                var deviceInfo = _device.Properties;
+                profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
+                        _dlnaManager.GetDefaultProfile();
+            }
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
             playlistItem.StreamInfo.StartPositionTicks = startPostionTicks;
@@ -939,6 +954,9 @@ namespace Emby.Dlna.PlayTo
             {
                 return Task.CompletedTask;
             }
+
+            // Ensure the device is initialised.
+            _device.DeviceInitialise().ConfigureAwait(false);
 
             if (string.Equals(name, "Play", StringComparison.OrdinalIgnoreCase))
             {

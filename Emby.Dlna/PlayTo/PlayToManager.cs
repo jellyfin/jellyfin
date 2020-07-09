@@ -172,7 +172,7 @@ namespace Emby.Dlna.PlayTo
             return usn.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private async Task AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
+        private async Task<bool> AddDevice(UpnpDeviceInfo info, string location, CancellationToken cancellationToken)
         {
             var uri = info.Location;
             _logger.LogDebug("Attempting to create PlayToController from location {0}", location);
@@ -191,6 +191,7 @@ namespace Emby.Dlna.PlayTo
 
             var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
 
+            // TODO: is this correct - as it looks like if there is a controller, nothing is done.
             if (controller == null)
             {
                 string serverAddress;
@@ -204,6 +205,10 @@ namespace Emby.Dlna.PlayTo
                 }
 
                 var device = await Device.CreateuPnpDeviceAsync(this, uri, _httpClient, _logger, serverAddress, cancellationToken).ConfigureAwait(false);
+                if (device == null)
+                {
+                    return false;
+                }
 
                 string deviceName = device.Properties.Name;
 
@@ -254,7 +259,11 @@ namespace Emby.Dlna.PlayTo
                 });
 
                 _logger.LogInformation("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+
+                return true;
             }
+
+            return false;
         }
 
         /// <inheritdoc />
