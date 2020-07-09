@@ -53,6 +53,7 @@ namespace Jellyfin.Api.Helpers
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ISessionManager _sessionManager;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TranscodingJobHelper"/> class.
@@ -90,10 +91,12 @@ namespace Jellyfin.Api.Helpers
             _authorizationContext = authorizationContext;
             _isoManager = isoManager;
             _loggerFactory = loggerFactory;
-
             _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
 
             DeleteEncodedMediaCache();
+
+            sessionManager!.PlaybackProgress += OnPlaybackProgress;
+            sessionManager!.PlaybackStart += OnPlaybackProgress;
         }
 
         /// <summary>
@@ -831,6 +834,14 @@ namespace Jellyfin.Api.Helpers
                 }
 
                 return result;
+            }
+        }
+
+        private void OnPlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
+            {
+                PingTranscodingJob(e.PlaySessionId, e.IsPaused);
             }
         }
 

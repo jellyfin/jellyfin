@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -55,7 +56,6 @@ namespace Jellyfin.Api.Controllers
             _sessionManager = sessionManager;
             _authContext = authContext;
             _logger = loggerFactory.CreateLogger<PlaystateController>();
-
             _transcodingJobHelper = transcodingJobHelper;
         }
 
