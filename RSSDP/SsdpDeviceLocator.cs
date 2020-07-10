@@ -36,6 +36,16 @@ namespace Rssdp.Infrastructure
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
 
             _Devices = new List<DiscoveredSsdpDevice>();
+
+            NotificationFilter = new string[] {
+                "urn:schemas-upnp-org:device:MediaServer:1",
+                "urn:schemas-upnp-org:device:MediaServer:2",
+                "urn:schemas-upnp-org:device:MediaServer:3",
+                "urn:schemas-upnp-org:device:MediaServer:4",
+                "urn:schemas-upnp-org:device:MediaRenderer:1",
+                "urn:schemas-upnp-org:device:MediaRenderer:2",
+                "urn:schemas-upnp-org:device:MediaRenderer:3",
+                "urn:schemas-upnp-org:device:MediaPlayer:1" };
         }
 
         /// <summary>
@@ -260,7 +270,7 @@ namespace Rssdp.Infrastructure
         /// <seealso cref="ISsdpDeviceLocator.DeviceUnavailable"/>
         /// <seealso cref="ISsdpDeviceLocator.StartListeningForNotifications"/>
         /// <seealso cref="ISsdpDeviceLocator.StopListeningForNotifications"/>
-        public string NotificationFilter
+        public string[] NotificationFilter
         {
             get;
             set;
@@ -319,9 +329,13 @@ namespace Rssdp.Infrastructure
 
         private bool NotificationTypeMatchesFilter(DiscoveredSsdpDevice device)
         {
-            return String.IsNullOrEmpty(this.NotificationFilter)
-                || this.NotificationFilter == SsdpConstants.SsdpDiscoverAllSTHeader
-                || device.NotificationType == this.NotificationFilter;
+            // Only get DLNA Media devices.            
+            return NotificationFilter
+                .Where(
+                    msg => msg.Equals(SsdpConstants.SsdpDiscoverAllSTHeader, StringComparison.OrdinalIgnoreCase) ||
+                    msg.Equals(device.NotificationType, StringComparison.OrdinalIgnoreCase))
+                .ToArray()
+                .Length > 0;
         }
 
         private Task BroadcastDiscoverMessage(string serviceType, TimeSpan mxValue, CancellationToken cancellationToken)
@@ -343,7 +357,6 @@ namespace Rssdp.Infrastructure
             var header = "M-SEARCH * HTTP/1.1";
 
             var message = BuildMessage(header, values);
-
             return _CommunicationsServer.SendMulticastMessage(message, null, cancellationToken);
         }
 

@@ -110,7 +110,7 @@ namespace Emby.Dlna.PlayTo
             try
             {
                 _sessionManager.ReportSessionEnded(_session.Id);
-                _ = _device.DeviceUnavailable();
+                _ = _device?.DeviceUnavailable();
             }
             catch (Exception ex)
             {
@@ -342,8 +342,8 @@ namespace Emby.Dlna.PlayTo
                 items = items.Skip(startIndex).ToList();
             }
 
-            var playlist = new List<PlaylistItem>();
-            var isFirst = true;
+            var playlist = _device.Playlist; // new List<PlaylistItem>();
+            var isFirst = _device.Playlist.Count == 0; // true;
 
             var deviceInfo = _device.Properties;
 
