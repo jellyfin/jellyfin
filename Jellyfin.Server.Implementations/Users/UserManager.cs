@@ -110,9 +110,8 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            // This can't use an overload with StringComparer because that would cause the query to
-            // have to be evaluated client-side.
-            return _dbProvider.CreateContext().Users.FirstOrDefault(u => string.Equals(u.Username, name));
+            return _dbProvider.CreateContext().Users.ToList()
+                .FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <inheritdoc/>
