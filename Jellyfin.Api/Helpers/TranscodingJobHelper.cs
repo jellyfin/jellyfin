@@ -5,10 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Models;
 using Jellyfin.Api.Models.PlaybackDtos;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers
@@ -58,6 +60,14 @@ namespace Jellyfin.Api.Helpers
             lock (_activeTranscodingJobs)
             {
                 return _activeTranscodingJobs.FirstOrDefault(j => string.Equals(j.PlaySessionId, playSessionId, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        public static TranscodingJobDto GetTranscodingJob(string path, TranscodingJobType type)
+        {
+            lock (_activeTranscodingJobs)
+            {
+                return _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -348,6 +358,51 @@ namespace Jellyfin.Api.Helpers
             if (exs != null)
             {
                 throw new AggregateException("Error deleting HLS files", exs);
+            }
+        }
+
+        public void ReportTranscodingProgress(
+        TranscodingJob job,
+        StreamState state,
+        TimeSpan? transcodingPosition,
+        float? framerate,
+        double? percentComplete,
+        long? bytesTranscoded,
+        int? bitRate)
+        {
+            var ticks = transcodingPosition?.Ticks;
+
+            if (job != null)
+            {
+                job.Framerate = framerate;
+                job.CompletionPercentage = percentComplete;
+                job.TranscodingPositionTicks = ticks;
+                job.BytesTranscoded = bytesTranscoded;
+                job.BitRate = bitRate;
+            }
+
+            var deviceId = state.Request.DeviceId;
+
+            if (!string.IsNullOrWhiteSpace(deviceId))
+            {
+                var audioCodec = state.ActualOutputAudioCodec;
+                var videoCodec = state.ActualOutputVideoCodec;
+
+                _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
+                {
+                    Bitrate = bitRate ?? state.TotalOutputBitrate,
+                    AudioCodec = audioCodec,
+                    VideoCodec = videoCodec,
+                    Container = state.OutputContainer,
+                    Framerate = framerate,
+                    CompletionPercentage = percentComplete,
+                    Width = state.OutputWidth,
+                    Height = state.OutputHeight,
+                    AudioChannels = state.OutputAudioChannels,
+                    IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
+                    IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
+                    TranscodeReasons = state.TranscodeReasons
+                });
             }
         }
     }
