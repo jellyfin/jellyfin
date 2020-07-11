@@ -400,7 +400,6 @@ namespace Emby.Dlna.PlayTo
             _logger.LogDebug("{0} - Playlist created", _session.DeviceName);
 
             // track offset./
-            var index = 0;
             if (command.PlayCommand == PlayCommand.PlayNow)
             {
                 // Reset playlist and re-add tracks.
@@ -409,6 +408,7 @@ namespace Emby.Dlna.PlayTo
             }
             else if (command.PlayCommand == PlayCommand.PlayShuffle)
             {
+                _logger.LogDebug("{0} - Shuffling playlist.", _session.DeviceName);
                 // Will restart playback on a random item.
                 ShufflePlaylist();
             }
@@ -416,15 +416,18 @@ namespace Emby.Dlna.PlayTo
             {
                 // Add to the end of the list.
                 _playlist.AddRange(playlist);
-                index = _currentPlaylistIndex;
 
-                return true;
+                _logger.LogDebug("{0} - Adding {1} items to the end of the playlist.", _session.DeviceName, _playlist.Count);
+                if (_device.IsPlaying)
+                {
+                    return Task.CompletedTask;
+                }
             }
             else if (command.PlayCommand == PlayCommand.PlayNext)
             {
                 // Insert into the next up.
 
-                // 0.._currentPlaylistIndex + _playlist +  _currentPlaylistIndex+1..end
+                _logger.LogDebug("{0} - Inserting {1} items next in the playlist.", _session.DeviceName, _playlist.Count);
                 if (_currentPlaylistIndex >= 0)
                 {
                     _playlist.InsertRange(_currentPlaylistIndex, playlist);
@@ -434,7 +437,10 @@ namespace Emby.Dlna.PlayTo
                     _playlist.AddRange(playlist);
                 }
 
-                return true;
+                if (_device.IsPlaying)
+                {
+                    return Task.CompletedTask;
+                }
             }
 
             if (!command.ControllingUserId.Equals(Guid.Empty))

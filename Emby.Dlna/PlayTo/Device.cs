@@ -5,6 +5,7 @@ namespace Emby.Dlna.PlayTo
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -64,6 +65,9 @@ namespace Emby.Dlna.PlayTo
         /// Outbound events processing queue.
         /// </summary>
         private readonly List<KeyValuePair<string, object>> _queue = new List<KeyValuePair<string, object>>();
+
+        private TimeSpan _transportOffset = TimeSpan.Zero;
+        private TimeSpan _position = TimeSpan.Zero;
 
         private bool _disposed;
         private Timer? _timer;
@@ -181,7 +185,7 @@ namespace Emby.Dlna.PlayTo
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error updating device volume info for {DeviceName}", Properties.Name);
+                    _logger.LogError(ex, "{0} : Error updating device volume info.", Properties.Name);
                 }
 
                 return _volume;
@@ -198,7 +202,18 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Gets or sets the Position.
         /// </summary>
-        public TimeSpan Position { get; set; } = TimeSpan.FromSeconds(0);
+        public TimeSpan Position
+        {
+            get
+            {
+                return _position.Add(_transportOffset);
+            }
+
+            set
+            {
+                _position = value;
+            }
+        }
 
         /// <summary>
         /// Gets the TransportState.
@@ -266,24 +281,22 @@ namespace Emby.Dlna.PlayTo
             try
             {
                 var document = await GetDataAsync(httpClient, url.ToString(), logger, cancellationToken).ConfigureAwait(false);
-                // var data = ParseResponse(document, "");
-                if (document == null)
+                var data = ParseResponse(document, "device");
+                if (data == null)
                 {
                     return null;
                 }
 
                 var friendlyNames = new List<string>();
 
-                var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
-                if (name != null && !string.IsNullOrWhiteSpace(name.Value))
+                if (data.TryGetValue("friendlyName", out string value))
                 {
-                    friendlyNames.Add(name.Value);
+                    friendlyNames.Add(value);
                 }
 
-                var room = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
-                if (room != null && !string.IsNullOrWhiteSpace(room.Value))
+                if (data.TryGetValue("roomName", out value))
                 {
-                    friendlyNames.Add(room.Value);
+                    friendlyNames.Add(value);
                 }
 
                 var deviceProperties = new DeviceInfo()
@@ -292,61 +305,9 @@ namespace Emby.Dlna.PlayTo
                     BaseUrl = string.Format(CultureInfo.InvariantCulture, "http://{0}:{1}", url.Host, url.Port)
                 };
 
-                var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
-                if (model != null)
-                {
-                    deviceProperties.ModelName = model.Value;
-                }
-
-                var modelNumber = document.Descendants(uPnpNamespaces.ud.GetName("modelNumber")).FirstOrDefault();
-                if (modelNumber != null)
-                {
-                    deviceProperties.ModelNumber = modelNumber.Value;
-                }
-
-                var uuid = document.Descendants(uPnpNamespaces.ud.GetName("UDN")).FirstOrDefault();
-                if (uuid != null)
-                {
-                    deviceProperties.UUID = uuid.Value;
-                }
-
-                var manufacturer = document.Descendants(uPnpNamespaces.ud.GetName("manufacturer")).FirstOrDefault();
-                if (manufacturer != null)
-                {
-                    deviceProperties.Manufacturer = manufacturer.Value;
-                }
-
-                var manufacturerUrl = document.Descendants(uPnpNamespaces.ud.GetName("manufacturerURL")).FirstOrDefault();
-                if (manufacturerUrl != null)
-                {
-                    deviceProperties.ManufacturerUrl = manufacturerUrl.Value;
-                }
-
-                var presentationUrl = document.Descendants(uPnpNamespaces.ud.GetName("presentationURL")).FirstOrDefault();
-                if (presentationUrl != null)
-                {
-                    deviceProperties.PresentationUrl = presentationUrl.Value;
-                }
-
-                var modelUrl = document.Descendants(uPnpNamespaces.ud.GetName("modelURL")).FirstOrDefault();
-                if (modelUrl != null)
-                {
-                    deviceProperties.ModelUrl = modelUrl.Value;
-                }
-
-                var serialNumber = document.Descendants(uPnpNamespaces.ud.GetName("serialNumber")).FirstOrDefault();
-                if (serialNumber != null)
-                {
-                    deviceProperties.SerialNumber = serialNumber.Value;
-                }
-
-                var modelDescription = document.Descendants(uPnpNamespaces.ud.GetName("modelDescription")).FirstOrDefault();
-                if (modelDescription != null)
-                {
-                    deviceProperties.ModelDescription = modelDescription.Value;
-                }
-
+#pragma warning disable CS8602 // Dereference of a possibly null reference : data is null, if document is null. Compiler doesn't pick this up.
                 var icon = document.Descendants(uPnpNamespaces.ud.GetName("icon")).FirstOrDefault();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 if (icon != null)
                 {
                     deviceProperties.Icon = CreateIcon(icon);
@@ -376,6 +337,51 @@ namespace Emby.Dlna.PlayTo
                     }
                 }
 
+                if (data.TryGetValue("modelName", out value))
+                {
+                    deviceProperties.ModelName = value;
+                }
+
+                if (data.TryGetValue("modelNumber", out value))
+                {
+                    deviceProperties.ModelNumber = value;
+                }
+
+                if (data.TryGetValue("UDN", out value))
+                {
+                    deviceProperties.UUID = value;
+                }
+
+                if (data.TryGetValue("manufacturer", out value))
+                {
+                    deviceProperties.Manufacturer = value;
+                }
+
+                if (data.TryGetValue("manufacturerURL", out value))
+                {
+                    deviceProperties.ManufacturerUrl = value;
+                }
+
+                if (data.TryGetValue("presentationURL", out value))
+                {
+                    deviceProperties.PresentationUrl = value;
+                }
+
+                if (data.TryGetValue("modelURL", out value))
+                {
+                    deviceProperties.ModelUrl = value;
+                }
+
+                if (data.TryGetValue("serialNumber", out value))
+                {
+                    deviceProperties.SerialNumber = value;
+                }
+
+                if (data.TryGetValue("modelDescription", out value))
+                {
+                    deviceProperties.ModelDescription = value;
+                }
+
                 return new Device(playToManager, deviceProperties, httpClient, logger, serverUrl);
             }
 #pragma warning disable CA1031 // Do not catch general exception types : Don't let our errors affect our owners.
@@ -394,16 +400,20 @@ namespace Emby.Dlna.PlayTo
         {
             if (_timer == null)
             {
-                _logger.LogDebug("Starting timer.");
+                _logger.LogDebug("{0} : Starting timer.", Properties.Name);
                 _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
                 try
                 {
                     _lastVolumeRefresh = DateTime.UtcNow;
 
                     // Refresh the volume.
+                    var reply = await GetStateVariable(GetServiceRenderingControl(), "Volume").ConfigureAwait(false);
+
+
                     await GetPositionRequest().ConfigureAwait(false); // TODO: do we need the other work around?
                     await RefreshVolumeIfNeeded().ConfigureAwait(false);
                     await SubscribeAsync().ConfigureAwait(false);
+
                 }
                 catch (ObjectDisposedException)
                 {
@@ -423,7 +433,7 @@ namespace Emby.Dlna.PlayTo
         {
             if (_subscribed)
             {
-                _logger.LogDebug("Killing the timer.");
+                _logger.LogDebug("{0} : Killing the timer.", Properties.Name);
 
                 await UnSubscribeAsync().ConfigureAwait(false);
 
@@ -490,12 +500,12 @@ namespace Emby.Dlna.PlayTo
 
                 if (index != -1)
                 {
-                    _logger.LogDebug("Replacing user event: {0} {1}", command, value);
+                    _logger.LogDebug("{0} : Replacing user event: {1} {2}", Properties.Name, command, value);
                     _queue.RemoveAt(index);
                 }
                 else
                 {
-                    _logger.LogDebug("Queuing user event: {0} {1}", command, value);
+                    _logger.LogDebug("{0} : Queuing user event: {1} {2}", Properties.Name, command, value);
                 }
 
                 _queue.Add(new KeyValuePair<string, object>(command, value ?? 0));
@@ -513,12 +523,12 @@ namespace Emby.Dlna.PlayTo
 
                 if (index != -1)
                 {
-                    _logger.LogDebug("Cancelling user event: {0}", command);
+                    _logger.LogDebug("{0} : Cancelling user event: {1}", Properties.Name, command);
                     _queue.RemoveAt(index);
                 }
                 else
                 {
-                    _logger.LogDebug("Queuing user event: {0}", command);
+                    _logger.LogDebug("{0} : Queuing user event: {1}", Properties.Name, command);
                     _queue.Add(new KeyValuePair<string, object>(command, 0));
                 }
             }
@@ -543,7 +553,7 @@ namespace Emby.Dlna.PlayTo
 
                     try
                     {
-                        _logger.LogDebug("Attempting action : {0}", action.Key);
+                        _logger.LogDebug("{0} : Attempting action : {1}", Properties.Name, action.Key);
 
                         switch (action.Key)
                         {
@@ -634,7 +644,7 @@ namespace Emby.Dlna.PlayTo
                                         // Has user requested a media change?
                                         if (_mediaPlaying != settings.Item1)
                                         {
-                                            _logger.LogDebug("Stopping current playback.");
+                                            _logger.LogDebug("{0} : Stopping current playback for transition.", Properties.Name);
                                             success = await SendStopRequest().ConfigureAwait(false);
 
                                             if (success)
@@ -648,7 +658,7 @@ namespace Emby.Dlna.PlayTo
                                         else
                                         {
                                             // Restart from the beginning.
-                                            _logger.LogDebug("Restarting playback.");
+                                            _logger.LogDebug("{0} : Resetting playback position.", Properties.Name);
                                             success = await SendSeekRequest(TimeSpan.Zero).ConfigureAwait(false);
                                             if (success)
                                             {
@@ -730,19 +740,27 @@ namespace Emby.Dlna.PlayTo
                 options.RequestContentType = "text/xml";
                 options.RequestContent = postData;
 
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
                 HttpResponseInfo response = await _httpClient.Post(options).ConfigureAwait(true);
 
                 using var stream = response.Content;
                 using var reader = new StreamReader(stream, Encoding.UTF8);
-                return XDocument.Parse(await reader.ReadToEndAsync().ConfigureAwait(false), LoadOptions.PreserveWhitespace);
+                var result = XDocument.Parse(await reader.ReadToEndAsync().ConfigureAwait(false), LoadOptions.PreserveWhitespace);
+                stopWatch.Stop();
+
+                // Calculate just under half of the round trip time.
+                _transportOffset = stopWatch.Elapsed.Divide(1.8);
+
+                return result;
             }
             catch (HttpException ex)
             {
-                _logger.LogError("SendCommandAsync failed with {0} to {1} ", ex.ToString(), url);
+                _logger.LogError("{0} : SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.ToString(), url);
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError("SendCommandAsync failed with {0} to {1} ", ex.ToString(), url);
+                _logger.LogError("{0} : SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.ToString(), url);
             }
 
             return null;
@@ -785,14 +803,14 @@ namespace Emby.Dlna.PlayTo
                 RendererCommands ??= await GetProtocolAsync(service, cancellationToken).ConfigureAwait(false);
                 if (RendererCommands == null)
                 {
-                    _logger.LogWarning("GetRenderingProtocolAsync returned null.");
+                    _logger.LogError("{0} : GetRenderingProtocolAsync returned null.", Properties.Name);
                     return null;
                 }
 
                 command = RendererCommands.ServiceActions.FirstOrDefault(c => c.Name == actionCommand);
                 if (service == null || command == null)
                 {
-                    _logger.LogWarning("Command or service returned null.");
+                    _logger.LogError("{0} : Command or service returned null.", Properties.Name);
                     return null;
                 }
 
@@ -804,7 +822,7 @@ namespace Emby.Dlna.PlayTo
                 AvCommands ??= await GetProtocolAsync(service, cancellationToken).ConfigureAwait(false);
                 if (AvCommands == null)
                 {
-                    _logger.LogWarning("GetAVProtocolAsync returned null.");
+                    _logger.LogError("{0} : GetAVProtocolAsync returned null.", Properties.Name);
                     return null;
                 }
 
@@ -871,7 +889,52 @@ namespace Emby.Dlna.PlayTo
                 return true;
             }
 
-            _logger.LogWarning("Sending {0} Failed!", actionCommand);
+            _logger.LogWarning("{0} Sending {1} Failed!", Properties.Name, actionCommand);
+            return false;
+        }
+
+        /// <summary>
+        /// Retrieves the DNLA device description and parses the state variable info.
+        /// </summary>
+        /// <param name="renderService">Service to use.</param>
+        /// <param name="wanted">State variable to return.</param>
+        /// <returns></returns>
+        private async Task<bool> GetStateVariable(DeviceService renderService, string wanted)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            try
+            {
+                var response = await _httpClient.Get(new HttpRequestOptions
+                {
+                    Url = NormalizeUrl(Properties.BaseUrl, renderService.ScpdUrl),
+                    BufferContent = false
+                }).ConfigureAwait(false);
+
+                using var reader = new StreamReader(response, Encoding.UTF8);
+                {
+                    string xmlstring = await reader.ReadToEndAsync().ConfigureAwait(false);
+                }
+
+                var result = new XmlDocument();
+                result.LoadXml(xmlstring);
+                var statevar = result.SelectNodes("//stateVariable[name/text()='" + wanted + "]");
+                
+                // parse for volume settings
+
+            }
+            catch (XmlException)
+            {
+                _logger.LogError("{0} : Badly formed description document received XML", Properties.Name);
+            }
+            catch (HttpRequestException)
+            {
+                _logger.LogError("{0} : Unable to retrieve ssdp description.", Properties.Name);
+            }
+
             return false;
         }
 
@@ -932,7 +995,7 @@ namespace Emby.Dlna.PlayTo
                 }
                 catch (HttpException ex)
                 {
-                    _logger.LogError(ex, "SUBSCRIBE failed.");
+                    _logger.LogError(ex, "{0} : SUBSCRIBE failed.", Properties.Name);
                 }
             }
 
@@ -958,7 +1021,6 @@ namespace Emby.Dlna.PlayTo
                     _playToManager.DLNAEvents += ProcessSubscriptionEvent;
 
                     _transportSid = await SubscribeInternalAsync(GetAvTransportService(), _transportSid).ConfigureAwait(false);
-
                     _logger.LogDebug("AVTransport SID {0}.", _transportSid);
 
                     _renderSid = await SubscribeInternalAsync(GetServiceRenderingControl(), _renderSid).ConfigureAwait(false);
@@ -1154,7 +1216,7 @@ namespace Emby.Dlna.PlayTo
                     }
                     else
                     {
-                        _logger.LogDebug("Received blank event data : ");
+                        _logger.LogDebug("{0} : Received blank event data : ", Properties.Name);
                     }
                 }
                 catch (ObjectDisposedException)
@@ -1163,8 +1225,8 @@ namespace Emby.Dlna.PlayTo
                 }
                 catch (HttpException ex)
                 {
-                    _logger.LogError("Unable to parse event response.");
-                    _logger.LogDebug(ex, "Received: {0}", args.Response);
+                    _logger.LogError("{0} : Unable to parse event response.", Properties.Name);
+                    _logger.LogDebug(ex, "{0} : Received: ", Properties.Name, args.Response);
                 }
             }
         }
@@ -1180,7 +1242,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            _logger.LogDebug("Timer event");
+            _logger.LogDebug("{0} : Timer firing.", Properties.Name);
             try
             {
                 var cancellationToken = CancellationToken.None;
@@ -1188,7 +1250,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (transportState == TransportState.ERROR)
                 {
-                    _logger.LogError("Unable to get TransportState for {DeviceName}", Properties.Name);
+                    _logger.LogError("{0} : Unable to get TransportState.", Properties.Name);
                     // Assume it's a one off.
                     RestartTimer(Normal);
                 }
@@ -1219,7 +1281,7 @@ namespace Emby.Dlna.PlayTo
                                 Duration = dur;
                             }
 
-                            if (response.TryGetValue("relTime", out string position) && TimeSpan.TryParse(position, _usCulture, out TimeSpan rel))
+                            if (response.TryGetValue("RelTime", out string position) && TimeSpan.TryParse(position, _usCulture, out TimeSpan rel))
                             {
                                 Position = rel;
                             }
@@ -1270,10 +1332,10 @@ namespace Emby.Dlna.PlayTo
                     return;
                 }
 
-                _logger.LogError(ex, "Error updating device info for {DeviceName}", Properties.Name);
+                _logger.LogError(ex, "{0} : Error updating device info.", Properties.Name);
                 if (_connectFailureCount++ >= 3)
                 {
-                    _logger.LogDebug("Disposing device due to loss of connection");
+                    _logger.LogDebug("{0} : Disposing device due to loss of connection.", Properties.Name);
                     OnDeviceUnavailable?.Invoke();
                     return;
                 }
@@ -1324,7 +1386,7 @@ namespace Emby.Dlna.PlayTo
                     return true;
                 }
 
-                _logger.LogWarning("GetVolume Failed.");
+                _logger.LogWarning("{0} : GetVolume Failed.", Properties.Name);
             }
             catch (ObjectDisposedException)
             {
@@ -1429,7 +1491,7 @@ namespace Emby.Dlna.PlayTo
                 }
             }
 
-            _logger.LogWarning("GetTransportInfo failed.");
+            _logger.LogWarning("{0} : GetTransportInfo failed.", Properties.Name);
             return TransportState.ERROR;
         }
 
@@ -1465,7 +1527,7 @@ namespace Emby.Dlna.PlayTo
                 return true;
             }
 
-            _logger.LogWarning("GetMute failed.");
+            _logger.LogWarning("{0} : GetMute failed.", Properties.Name);
             return false;
         }
 
@@ -1477,7 +1539,7 @@ namespace Emby.Dlna.PlayTo
             if (!string.IsNullOrEmpty(url))
             {
                 url = url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
-                _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, settings.Item2);
+                _logger.LogDebug("{0} : {1} - SetAvTransport Uri: {2} DlnaHeaders: {3}", Properties.Name, url, settings.Item2);
 
                 var dictionary = new Dictionary<string, string>
                 {
@@ -1592,7 +1654,7 @@ namespace Emby.Dlna.PlayTo
                         Duration = d;
                     }
 
-                    if (position.TryGetValue("relTime", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan r))
+                    if (position.TryGetValue("RelTime", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan r))
                     {
                         Position = r;
                     }
@@ -1814,7 +1876,7 @@ namespace Emby.Dlna.PlayTo
                     {
                         if (TransportState != TransportState.STOPPED && !string.IsNullOrWhiteSpace(mediaInfo.Url))
                         {
-                            _logger.LogDebug("Firing playback started.");
+                            _logger.LogDebug("{0} : Firing playback started event.", Properties.Name);
                             PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
                             {
                                 MediaInfo = mediaInfo
@@ -1825,7 +1887,7 @@ namespace Emby.Dlna.PlayTo
                     {
                         if (!string.IsNullOrWhiteSpace(mediaInfo?.Url))
                         {
-                            _logger.LogDebug("Firing playback progress.");
+                            _logger.LogDebug("{0} : Firing playback progress event.", Properties.Name);
                             PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
                             {
                                 MediaInfo = mediaInfo
@@ -1834,7 +1896,7 @@ namespace Emby.Dlna.PlayTo
                     }
                     else
                     {
-                        _logger.LogDebug("Firing media change.");
+                        _logger.LogDebug("{0} : Firing media change event.", Properties.Name);
                         MediaChanged?.Invoke(this, new MediaChangedEventArgs
                         {
                             OldMediaInfo = previousMediaInfo,
@@ -1844,7 +1906,7 @@ namespace Emby.Dlna.PlayTo
                 }
                 else if (previousMediaInfo != null)
                 {
-                    _logger.LogDebug("Firing playback stopped.");
+                    _logger.LogDebug("{0} : Firing playback stopped event.", Properties.Name);
                     PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
                     {
                         MediaInfo = previousMediaInfo
@@ -1855,7 +1917,7 @@ namespace Emby.Dlna.PlayTo
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
-                _logger.LogError(ex, "UpdateMediaInfo errored.");
+                _logger.LogError(ex, "{0} : UpdateMediaInfo errored.", Properties.Name);
             }
         }
 
@@ -1889,7 +1951,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="document">Response to parse.</param>
         /// <param name="action">Action to extract.</param>
         /// <returns>Dictionary contains the arguments and values.</returns>
-        private Dictionary<string, string> ParseResponse(XDocument? document, string action)
+        private static Dictionary<string, string> ParseResponse(XDocument? document, string action)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
 
