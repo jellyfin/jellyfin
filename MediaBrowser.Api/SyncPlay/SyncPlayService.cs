@@ -189,7 +189,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// </summary>
         /// <param name="request">The request.</param>
         /// <value>The requested list of groups.</value>
-        public List<GroupInfoView> Post(SyncPlayList request)
+        public List<GroupInfoView> Get(SyncPlayList request)
         {
             var currentSession = GetSession(_sessionContext);
             var filterItemId = Guid.Empty;
