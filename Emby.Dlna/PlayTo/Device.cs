@@ -108,6 +108,8 @@ namespace Emby.Dlna.PlayTo
         private DateTime _lastVolumeRefresh;
         private bool _volumeRefreshActive;
         private int _volume;
+        private int _minVol = 0;
+        private int _maxVol = 100;
 
         /// <summary>
         /// Contains the item currently playing.
@@ -402,14 +404,27 @@ namespace Emby.Dlna.PlayTo
             {
                 _logger.LogDebug("{0} : Starting timer.", Properties.Name);
                 _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
+                _lastVolumeRefresh = DateTime.UtcNow;
                 try
                 {
-                    _lastVolumeRefresh = DateTime.UtcNow;
+                    var range = await GetStateVariableRange(GetServiceRenderingControl(), "Volume").ConfigureAwait(false);
+                    if (range.item1 !=null && range.item2 != null)
+                    {
+                        _minVolume = range.item1;
+                        _maxVolume = range.item2;
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    return;
+                }
+                catch (HttpException)
+                {
+                    // Ignore.
+                }
 
-                    // Refresh the volume.
-                    var reply = await GetStateVariable(GetServiceRenderingControl(), "Volume").ConfigureAwait(false);
-
-
+            try
+                {
                     await GetPositionRequest().ConfigureAwait(false); // TODO: do we need the other work around?
                     await RefreshVolumeIfNeeded().ConfigureAwait(false);
                     await SubscribeAsync().ConfigureAwait(false);
@@ -417,7 +432,7 @@ namespace Emby.Dlna.PlayTo
                 }
                 catch (ObjectDisposedException)
                 {
-                    // Ignore.
+                    return;
                 }
                 catch (HttpException)
                 {
@@ -898,13 +913,15 @@ namespace Emby.Dlna.PlayTo
         /// </summary>
         /// <param name="renderService">Service to use.</param>
         /// <param name="wanted">State variable to return.</param>
-        /// <returns></returns>
-        private async Task<bool> GetStateVariable(DeviceService renderService, string wanted)
+        /// <returns>Tuple of minimum/maximum.</returns>
+        private async Task<Tuple<int?,int?>> GetStateVariableRange(DeviceService renderService, string wanted)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(string.Empty);
             }
+
+            var result = new Tuple<int?, int?>(null, null);
 
             try
             {
@@ -919,12 +936,24 @@ namespace Emby.Dlna.PlayTo
                     string xmlstring = await reader.ReadToEndAsync().ConfigureAwait(false);
                 }
 
-                var result = new XmlDocument();
-                result.LoadXml(xmlstring);
-                var statevar = result.SelectNodes("//stateVariable[name/text()='" + wanted + "]");
-                
-                // parse for volume settings
+                var dlnaDescripton = new XmlDocument();
+                dlnaDescripton.LoadXml(xmlstring);
+                XmlNode? minimum = result.SelectNodes("//stateVariable[name/text()='"
+                    + wanted
+                    + "']/allowedValueRange/minimum/text()")?.First();
+                XmlNode? maximum = result.SelectNodes("//stateVariable[name/text()='"
+                    + wanted
+                    + "']/allowedValueRange/maximum/text()")?.First();
 
+                if (minimum.Value.HasValue)
+                {
+                    int.TryParse(minimum.Value, out result.item1);
+                }
+
+                if (maximum.Value.HasValue)
+                {
+                    int.TryParse(maximum.Value, out result.item2);
+                }
             }
             catch (XmlException)
             {
@@ -935,7 +964,7 @@ namespace Emby.Dlna.PlayTo
                 _logger.LogError("{0} : Unable to retrieve ssdp description.", Properties.Name);
             }
 
-            return false;
+            return result;
         }
 
         /// <summary>
@@ -1347,9 +1376,11 @@ namespace Emby.Dlna.PlayTo
         private async Task<bool> SendVolumeRequest(int value)
         {
             var result = false;
-            if (Volume != value)
+            if (Volume != value && value >= 0 && value <= 100)
             {
-                result = await SendCommand(TransportCommandsRender, "SetVolume", default, value).ConfigureAwait(false);
+                // Adjust for items that don't have a volume range 0..100.
+                int ratio = Math.Round((_maxVol - _minVol) / 100 * value);
+                result = await SendCommand(TransportCommandsRender, "SetVolume", default, ratio).ConfigureAwait(false);
                 if (result)
                 {
                     Volume = value;
@@ -1377,7 +1408,8 @@ namespace Emby.Dlna.PlayTo
 
                 if (response.TryGetValue("CurrentVolume", out string volume))
                 {
-                    Volume = int.Parse(volume, _usCulture);
+                    Volume = Math.Round(int.Parse(volume, _usCulture) / (_maxVol - _minVol) / 100);
+
                     if (Volume > 0)
                     {
                         _muteVol = Volume;
@@ -1392,7 +1424,10 @@ namespace Emby.Dlna.PlayTo
             {
                 // Ignore.
             }
-
+            catch (FormatException)
+            {
+                _logger.LogError("{0} : Error parsing GetVolume {1}.", Properties.Name, volume);
+            }
             return false;
         }
 
