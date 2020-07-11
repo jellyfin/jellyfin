@@ -47,44 +47,31 @@ namespace Emby.Dlna.PlayTo
         private const int Never = 0;
         private const int Normal = -1;
 
-        /// <summary>
-        /// Defines the _usCulture.
-        /// </summary>
         private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        /// <summary>
-        /// Defines the _httpClient.
-        /// </summary>
         private readonly IHttpClient _httpClient;
-
-        /// <summary>
-        /// Defines the _logger.
-        /// </summary>
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// Defines the _playToManager.
-        /// </summary>
         private readonly PlayToManager _playToManager;
-
-        /// <summary>
-        /// Defines the _timerLock.
-        /// </summary>
         private readonly object _timerLock = new object();
+        private readonly object _queueLock = new object();
 
         /// <summary>
         /// Holds the URL for the Jellyfin web server.
         /// </summary>
         private readonly string _jellyfinUrl;
 
+        /// <summary>
+        /// Outbound events processing queue.
+        /// </summary>
+        private readonly List<KeyValuePair<string, object>> _queue = new List<KeyValuePair<string, object>>();
+
         private bool _disposed;
+        private Timer? _timer;
 
         /// <summary>
         /// Connection failure retry counter.
         /// </summary>
         private int _connectFailureCount;
-
-        private Timer? _timer;
 
         /// <summary>
         /// Sound level prior to it being muted.
@@ -94,7 +81,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// True if this player is using subscription events.
         /// </summary>
-        private bool _eventing;
+        private bool _subscribed;
 
         /// <summary>
         /// Unique id used in subscription callbacks.
@@ -121,7 +108,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Contains the item currently playing.
         /// </summary>
-        private string _playing = string.Empty;
+        private string _mediaPlaying = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Device"/> class.
@@ -177,7 +164,7 @@ namespace Emby.Dlna.PlayTo
         public uBaseObject? CurrentMediaInfo { get; private set; }
 
         /// <summary>
-        /// Gets or sets the Volume.
+        /// Gets the Volume.
         /// </summary>
         public int Volume
         {
@@ -185,7 +172,8 @@ namespace Emby.Dlna.PlayTo
             {
                 try
                 {
-                    RefreshVolumeIfNeeded().GetAwaiter().GetResult();
+                    // _logger.LogDebug("Volume first.");
+                    // RefreshVolumeIfNeeded().GetAwaiter().GetResult();
                 }
                 catch (ObjectDisposedException)
                 {
@@ -199,7 +187,7 @@ namespace Emby.Dlna.PlayTo
                 return _volume;
             }
 
-            set => _volume = value;
+            internal set => _volume = value;
         }
 
         /// <summary>
@@ -246,11 +234,6 @@ namespace Emby.Dlna.PlayTo
         /// Gets or sets the RendererCommands.
         /// </summary>
         private TransportCommands? RendererCommands { get; set; }
-
-        /// <summary>
-        /// Current Playlist.
-        /// </summary>
-        public List<PlaylistItem> Playlist = new List<PlaylistItem>();
 
         /// <summary>
         /// The CreateuPnpDeviceAsync.
@@ -403,9 +386,42 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
+        /// <summary>
+        /// Starts the monitoring of the device.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public async Task DeviceInitialise()
+        {
+            if (_timer == null)
+            {
+                _logger.LogDebug("Starting timer.");
+                _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
+                try
+                {
+                    _lastVolumeRefresh = DateTime.UtcNow;
+
+                    // Refresh the volume.
+                    await GetPositionRequest().ConfigureAwait(false); // TODO: do we need the other work around?
+                    await RefreshVolumeIfNeeded().ConfigureAwait(false);
+                    await SubscribeAsync().ConfigureAwait(false);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Ignore.
+                }
+                catch (HttpException)
+                {
+                    // Ignore.
+                }
+
+                // Start the queue processor.
+                await ProcessQueue().ConfigureAwait(false);
+            }
+        }
+
         public async Task DeviceUnavailable()
         {
-            if (_eventing)
+            if (_subscribed)
             {
                 _logger.LogDebug("Killing the timer.");
 
@@ -420,706 +436,249 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Starts the monitoring of the device.
+        /// Enables the volume bar hovered over effect.
         /// </summary>
         /// <returns>Task.</returns>
-        public async Task DeviceInitialise()
+        private async Task RefreshVolumeIfNeeded()
         {
-            if (_timer == null)
+            if (_volumeRefreshActive && DateTime.UtcNow >= _lastVolumeRefresh.AddSeconds(5))
             {
-                _logger.LogDebug("Starting timer.");
-                _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
-
+                _lastVolumeRefresh = DateTime.UtcNow;
                 try
                 {
-                    // Refresh the volume.
-                    await RefreshPosition().ConfigureAwait(false);
-                    await SubscribeAsync().ConfigureAwait(false);
+                    await GetVolume().ConfigureAwait(false);
+                    await GetMute().ConfigureAwait(false);
                 }
                 catch (ObjectDisposedException)
                 {
                     // Ignore.
                 }
-                catch (HttpException)
+            }
+        }
+
+        /// <summary>
+        /// Restart the polling timer.
+        /// </summary>
+        /// <param name="when">When to restart the timer. Less than 0 = never, 0 = instantly, greater than 0 in 1 second.</param>
+        private void RestartTimer(int when)
+        {
+            lock (_timerLock)
+            {
+                if (_disposed)
                 {
-                    // Ignore.
+                    return;
+                }
+
+                _volumeRefreshActive = when != Never;
+
+                int delay = when == Never ? Timeout.Infinite : when == Now ? 100 : 10000;
+                _timer?.Change(delay, Timeout.Infinite);
+            }
+        }
+
+        /// <summary>
+        /// Adds an event to the queue.
+        /// </summary>
+        /// <param name="command">Command to queue.</param>
+        /// <param name="value">Command parameter.</param>
+        private void QueueEvent(string command, object? value = null)
+        {
+            lock (_queueLock)
+            {
+                // Does this action exist in the queue ?
+                int index = _queue.FindIndex(item => string.Equals(item.Key, command, StringComparison.OrdinalIgnoreCase));
+
+                if (index != -1)
+                {
+                    _logger.LogDebug("Replacing user event: {0} {1}", command, value);
+                    _queue.RemoveAt(index);
+                }
+                else
+                {
+                    _logger.LogDebug("Queuing user event: {0} {1}", command, value);
+                }
+
+                _queue.Add(new KeyValuePair<string, object>(command, value ?? 0));
+            }
+        }
+
+        /// <summary>
+        /// Removes an event from the queue.
+        /// </summary>
+        private void AddOrCancelIfQueued(string command)
+        {
+            lock (_queueLock)
+            {
+                int index = _queue.FindIndex(item => string.Equals(item.Key, command, StringComparison.OrdinalIgnoreCase));
+
+                if (index != -1)
+                {
+                    _logger.LogDebug("Cancelling user event: {0}", command);
+                    _queue.RemoveAt(index);
+                }
+                else
+                {
+                    _logger.LogDebug("Queuing user event: {0}", command);
+                    _queue.Add(new KeyValuePair<string, object>(command, 0));
                 }
             }
         }
 
-        /// <summary>
-        /// Enables the volume bar hovered over effect.
-        /// </summary>
-        /// <returns>Task.</returns>
-        private Task RefreshVolumeIfNeeded()
+        private async Task ProcessQueue()
         {
-            if (_volumeRefreshActive && DateTime.UtcNow >= _lastVolumeRefresh.AddSeconds(5))
+            while (!_disposed)
             {
-                _lastVolumeRefresh = DateTime.UtcNow;
-                return RefreshVolume();
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private async Task RefreshVolume(CancellationToken cancellationToken = default)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(string.Empty);
-            }
-
-            try
-            {
-                await GetVolume(cancellationToken).ConfigureAwait(false);
-                await GetMute(cancellationToken).ConfigureAwait(false);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-        }
-
-        /// <summary>
-        /// Attempts to turn the volume down.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>The <see cref="Task"/>.</returns>
-        public Task<bool> VolumeDown(CancellationToken cancellationToken)
-        {
-            try
-            {
-                return SetVolume(Math.Max(Volume - 5, 0), cancellationToken);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return Task.FromResult(false);
-        }
-
-        /// <summary>
-        /// Attempts to turn the volume up.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>The <see cref="Task"/>.</returns>
-        public Task<bool> VolumeUp(CancellationToken cancellationToken)
-        {
-            try
-            {
-                return SetVolume(Math.Min(Volume + 5, 100), cancellationToken);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return Task.FromResult(false);
-        }
-
-        /// <summary>
-        /// Attempts to togg;e the mute status.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>The <see cref="Task"/>.</returns>
-        public Task<bool> ToggleMute(CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (IsMuted)
+                while (_queue.Count > 0)
                 {
-                    return Unmute(cancellationToken);
-                }
-
-                return Mute(cancellationToken);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return Task.FromResult(false);
-        }
-
-        /// <summary>
-        /// Attempts to start playback.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>Returns success of the task.</returns>
-        public async Task<bool> SetPlay(CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (!IsPlaying)
-                {
-                    _logger.LogDebug("Playing.");
-                    var result = await SendCommand(TransportCommandsAV, "Play", cancellationToken, 1).ConfigureAwait(false);
-                    if (result)
-                    {
-                        // Stop user from issuing multiple commands.
-                        TransportState = TransportState.PLAYING;
-                        RestartTimer(Now);
-                    }
-
-                    return result;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to stop playback.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>Returns success of the task.</returns>
-        public async Task<bool> SetStop(CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (IsPlaying || IsPaused)
-                {
+                    // Ensure we are subscribed.
                     await SubscribeAsync().ConfigureAwait(false);
 
-                    _logger.LogDebug("Stopping.");
-                    var result = await SendCommand(TransportCommandsAV, "Stop", cancellationToken, 1).ConfigureAwait(false);
-                    if (result)
+                    KeyValuePair<string, object> action;
+
+                    lock (_queueLock)
                     {
-                        // Stop user from issuing multiple commands.
-                        TransportState = TransportState.STOPPED;
-                        RestartTimer(Now);
+                        action = _queue[0];
+                        _queue.RemoveAt(0);
                     }
 
-                    return result;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to pause the playback.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>Returns success of the task.</returns>
-        public async Task<bool> SetPause(CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (!IsPaused)
-                {
-                    _logger.LogDebug("Pausing.");
-                    var result = await SendCommand(TransportCommandsAV, "Pause", cancellationToken, 1).ConfigureAwait(false);
-                    if (result)
+                    try
                     {
-                        // Stop user from issuing multiple commands.
-                        TransportState = TransportState.PAUSED;
-                        RestartTimer(Now);
-                    }
+                        _logger.LogDebug("Attempting action : {0}", action.Key);
 
-                    return result;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to mute the sound.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>Returns success of the task.</returns>
-        public async Task<bool> Mute(CancellationToken cancellationToken)
-        {
-            try
-            {
-                var success = await SetMute(true, cancellationToken).ConfigureAwait(true);
-
-                if (!success)
-                {
-                    return await SetVolume(0, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to unmute the sound.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>Returns success of the task.</returns>
-        public async Task<bool> Unmute(CancellationToken cancellationToken)
-        {
-            try
-            {
-                var success = await SetMute(false, cancellationToken).ConfigureAwait(true);
-
-                if (!success)
-                {
-                    var sendVolume = _muteVol <= 0 ? 20 : _muteVol;
-                    return await SetVolume(sendVolume, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to set the volume on a scale of 0-100.
-        /// </summary>
-        /// <param name="value">Volume level.</param>
-        /// <param name="cancellationToken">CancellationToken.</param>
-        /// <returns>>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task<bool> SetVolume(int value, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Volume != value)
-                {
-                    _logger.LogDebug("Setting volume {0}.", value);
-                    var result = await SendCommand(TransportCommandsRender, "SetVolume", cancellationToken, value).ConfigureAwait(false);
-
-                    if (result)
-                    {
-                        Volume = value;
-                    }
-
-                    return result;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Attempts to perfroms a Seek operation.
-        /// </summary>
-        /// <param name="value">The value<see cref="TimeSpan"/>.</param>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>Returns success of the task.</returns>
-        public async Task<bool> Seek(TimeSpan value, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (IsPlaying || IsPaused)
-                {
-                    _logger.LogDebug("Seeking to {0}.", value);
-                    var result = await SendCommand(
-                        TransportCommandsAV,
-                        "Seek",
-                        cancellationToken,
-                        string.Format(CultureInfo.InvariantCulture, "{0:hh}:{0:mm}:{0:ss}", value),
-                        commandParameter: "REL_TIME").ConfigureAwait(false);
-
-                    if (result)
-                    {
-                        Position = value;
-                        RestartTimer(Now);
-                    }
-
-                    return result;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to set the AV transport.
-        /// </summary>
-        /// <param name="url">The url.</param>
-        /// <param name="header">The header.</param>
-        /// <param name="metaData">The metaData.</param>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>Returns success of the task.</returns>
-        public async Task<bool> SetAvTransport(string url, string header, string metaData, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(url))
-            {
-                return false;
-            }
-
-            if (IsPlaying && _playing != url)
-            {
-                // Media has changed so stop current playback.
-                await SetStop(cancellationToken).ConfigureAwait(false);
-            }
-
-            url = url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
-            _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
-
-            var dictionary = new Dictionary<string, string>
-            {
-                { "CurrentURI", url },
-                { "CurrentURIMetaData", DescriptionXmlBuilder.Escape(metaData) }
-            };
-
-            _logger.LogDebug("Setting transport to {0}.", dictionary);
-            try
-            {
-                var result = await SendCommand(TransportCommandsAV, "SetAVTransportURI", cancellationToken, url, dictionary: dictionary, header: header).ConfigureAwait(false);
-
-                if (result)
-                {
-                    await Task.Delay(50).ConfigureAwait(false);
-
-                    result = await SetPlay(CancellationToken.None).ConfigureAwait(false);
-
-                    if (result)
-                    {
-                        // Update what is playing.
-                        _playing = url;
-                        RestartTimer(Now);
-                    }
-                }
-
-                return result;
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-            catch (HttpException)
-            {
-                // Ignore.
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Dispose.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Returns a string representation of this object.
-        /// </summary>
-        /// <returns>The .</returns>
-        public override string ToString()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} - {1}", Properties.Name, Properties.BaseUrl);
-        }
-
-        /// <summary>
-        /// Diposes this object.
-        /// </summary>
-        /// <param name="disposing">The disposing<see cref="bool"/>.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _timer?.Dispose();
-
-                if (_playToManager != null)
-                {
-                    _playToManager.DLNAEvents -= ProcessSubscriptionEvent;
-                }
-            }
-
-            _disposed = true;
-        }
-
-        /// <summary>
-        /// Normalizes a Url.
-        /// </summary>
-        /// <param name="baseUrl">The base Url.</param>
-        /// <param name="url">The service Url.</param>
-        /// <param name="dmr">When true, prepends 'dmr' if not present in the url.</param>
-        /// <returns>A normalised Url.</returns>
-        private static string NormalizeUrl(string baseUrl, string url, bool dmr = false)
-        {
-            // If it's already a complete url, don't stick anything onto the front of it
-            if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return url;
-            }
-
-            if (dmr && !url.Contains("/", StringComparison.OrdinalIgnoreCase))
-            {
-                url = "/dmr/" + url;
-            }
-            else if (!url.StartsWith("/", StringComparison.Ordinal))
-            {
-                url = "/" + url;
-            }
-
-            return baseUrl + url;
-        }
-
-        /// <summary>
-        /// Gets service information from the DLNA clients.
-        /// </summary>
-        /// <param name="httpClient">The HttpClient to use. <see cref="IHttpClient"/>.</param>
-        /// <param name="url">The destination URL..</param>
-        /// <param name="logger">The logger to use.<see cref="ILogger"/>.</param>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>The <see cref="Task{XDocument}"/>.</returns>
-        private static async Task<XDocument?> GetDataAsync(IHttpClient httpClient, string url, ILogger logger, CancellationToken cancellationToken)
-        {
-            var options = new HttpRequestOptions
-            {
-                Url = url,
-                UserAgent = USERAGENT,
-                LogErrorResponseBody = true,
-                BufferContent = false,
-
-                CancellationToken = cancellationToken
-            };
-
-            options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
-            try
-            {
-                logger?.LogDebug("GetDataAsync: Communicating with {0}", url);
-                using var response = await httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
-                using var stream = response.Content;
-                using var reader = new StreamReader(stream, Encoding.UTF8);
-                return XDocument.Parse(
-                    await reader.ReadToEndAsync().ConfigureAwait(false),
-                    LoadOptions.PreserveWhitespace);
-            }
-            catch (Exception ex)
-            {
-                logger?.LogDebug(ex, "GetDataAsync: Failed.");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Creates a uBaseObject from the information provided.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        /// <param name="trackUri">The trackUri.</param>
-        /// <returns>The <see cref="uBaseObject"/>.</returns>
-        private static uBaseObject CreateUBaseObject(XElement? container, string trackUri)
-        {
-            if (container == null)
-            {
-                throw new ArgumentNullException(nameof(container));
-            }
-
-            var url = container.GetValue(uPnpNamespaces.Res);
-
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                url = trackUri;
-            }
-
-            var resElement = container.Element(uPnpNamespaces.Res);
-            var protocolInfo = new string[4];
-
-            if (resElement != null)
-            {
-                var info = resElement.Attribute(uPnpNamespaces.ProtocolInfo);
-
-                if (info != null && !string.IsNullOrWhiteSpace(info.Value))
-                {
-                    protocolInfo = info.Value.Split(':');
-                }
-            }
-
-            return new uBaseObject
-            {
-                Id = container.GetAttributeValue(uPnpNamespaces.Id),
-                ParentId = container.GetAttributeValue(uPnpNamespaces.ParentId),
-                Title = container.GetValue(uPnpNamespaces.title),
-                IconUrl = container.GetValue(uPnpNamespaces.Artwork),
-                SecondText = string.Empty,
-                Url = url,
-                ProtocolInfo = protocolInfo,
-                MetaData = container.ToString()
-            };
-        }
-
-        /// <summary>
-        /// The CreateIcon.
-        /// </summary>
-        /// <param name="element">The element.</param>
-        /// <returns>The <see cref="DeviceIcon"/>.</returns>
-        private static DeviceIcon CreateIcon(XElement element)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
-
-            var mimeType = element.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype"));
-            var width = element.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
-            var height = element.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
-            var depth = element.GetDescendantValue(uPnpNamespaces.ud.GetName("depth"));
-            var url = element.GetDescendantValue(uPnpNamespaces.ud.GetName("url"));
-
-            var widthValue = int.Parse(width, NumberStyles.Integer, _usCulture);
-            var heightValue = int.Parse(height, NumberStyles.Integer, _usCulture);
-
-            return new DeviceIcon
-            {
-                Depth = depth,
-                Height = heightValue,
-                MimeType = mimeType,
-                Url = url,
-                Width = widthValue
-            };
-        }
-
-        /// <summary>
-        /// Creates a DeviceService from an XML element.
-        /// </summary>
-        /// <param name="element">The element.</param>
-        /// <returns>The <see cref="DeviceService"/>.</returns>
-        private static DeviceService Create(XElement element)
-        {
-            var type = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceType"));
-            var id = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceId"));
-            var scpdUrl = element.GetDescendantValue(uPnpNamespaces.ud.GetName("SCPDURL"));
-            var controlURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("controlURL"));
-            var eventSubURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("eventSubURL"));
-
-            return new DeviceService
-            {
-                ControlUrl = controlURL,
-                EventSubUrl = eventSubURL,
-                ScpdUrl = scpdUrl,
-                ServiceId = id,
-                ServiceType = type
-            };
-        }
-
-        /// <summary>
-        /// Updates the media info, firing events.
-        /// </summary>
-        /// <param name="mediaInfo">The mediaInfo<see cref="uBaseObject"/>.</param>
-        /// <param name="state">The state<see cref="TransportState"/>.</param>
-        private void UpdateMediaInfo(uBaseObject? mediaInfo, TransportState state)
-        {
-            TransportState = state;
-            var previousMediaInfo = CurrentMediaInfo;
-            CurrentMediaInfo = mediaInfo;
-            try
-            {
-                if (mediaInfo != null)
-                {
-                    if (previousMediaInfo == null)
-                    {
-                        if (state != TransportState.STOPPED && !string.IsNullOrWhiteSpace(mediaInfo.Url))
+                        switch (action.Key)
                         {
-                            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
-                            {
-                                MediaInfo = mediaInfo
-                            });
+                            case "SetVolume":
+                                {
+                                    await SendVolumeRequest((int)action.Value).ConfigureAwait(false);
+
+                                    break;
+                                }
+
+                            case "ToggleMute":
+                                {
+                                    if ((int)action.Value == 1)
+                                    {
+                                        var success = await SendMuteRequest(false).ConfigureAwait(true);
+                                        if (!success)
+                                        {
+                                            var sendVolume = _muteVol <= 0 ? 20 : _muteVol;
+                                            await SendVolumeRequest(sendVolume).ConfigureAwait(false);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var success = await SendMuteRequest(true).ConfigureAwait(true);
+                                        if (!success)
+                                        {
+                                            await SendVolumeRequest(0).ConfigureAwait(false);
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "Play":
+                                {
+                                    await SendPlayRequest().ConfigureAwait(false);
+                                    break;
+                                }
+
+                            case "Stop":
+                                {
+                                    await SendStopRequest().ConfigureAwait(false);
+                                    break;
+                                }
+
+                            case "Pause":
+                                {
+                                    await SendPauseRequest().ConfigureAwait(false);
+                                    break;
+                                }
+
+                            case "Mute":
+                                {
+                                    var success = await SendMuteRequest(true).ConfigureAwait(true);
+                                    if (!success)
+                                    {
+                                        await SendVolumeRequest(0).ConfigureAwait(false);
+                                    }
+                                }
+
+                                break;
+
+                            case "Unmute":
+                                {
+                                    var success = await SendMuteRequest(false).ConfigureAwait(true);
+                                    if (!success)
+                                    {
+                                        var sendVolume = _muteVol <= 0 ? 20 : _muteVol;
+                                        await SendVolumeRequest(sendVolume).ConfigureAwait(false);
+                                    }
+
+                                    break;
+                                }
+
+                            case "Seek":
+                                {
+                                    await SendSeekRequest((TimeSpan)action.Value).ConfigureAwait(false);
+                                    break;
+                                }
+
+                            case "Queue":
+                                {
+                                    var settings = (Tuple<string, string, string>)action.Value;
+                                    bool success = true;
+
+                                    if (IsPlaying)
+                                    {
+                                        // Has user requested a media change?
+                                        if (_mediaPlaying != settings.Item1)
+                                        {
+                                            _logger.LogDebug("Stopping current playback.");
+                                            success = await SendStopRequest().ConfigureAwait(false);
+
+                                            if (success)
+                                            {
+                                                TransportState = TransportState.TRANSITIONING;
+                                                UpdateMediaInfo(null);
+                                            }
+
+                                            success = true; // Attempt to load up next track. May work on some systems.
+                                        }
+                                        else
+                                        {
+                                            // Restart from the beginning.
+                                            _logger.LogDebug("Restarting playback.");
+                                            success = await SendSeekRequest(TimeSpan.Zero).ConfigureAwait(false);
+                                            if (success)
+                                            {
+                                                UpdateMediaInfo(CurrentMediaInfo);
+                                                RestartTimer(Normal);
+                                                success = false; // Nothing to do here.
+                                            }
+                                        }
+                                    }
+
+                                    if (success)
+                                    {
+                                        await SendMediaRequest(settings).ConfigureAwait(false);
+                                    }
+
+                                    break;
+                                }
                         }
                     }
-                    else if (mediaInfo.Equals(previousMediaInfo))
+                    catch (ObjectDisposedException)
                     {
-                        if (!string.IsNullOrWhiteSpace(mediaInfo?.Url))
-                        {
-                            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
-                            {
-                                MediaInfo = mediaInfo
-                            });
-                        }
+                        return;
                     }
-                    else
+                    catch (HttpException)
                     {
-                        MediaChanged?.Invoke(this, new MediaChangedEventArgs
-                        {
-                            OldMediaInfo = previousMediaInfo,
-                            NewMediaInfo = mediaInfo
-                        });
+                        // Ignore.
                     }
                 }
-                else if (previousMediaInfo != null)
-                {
-                    PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
-                    {
-                        MediaInfo = previousMediaInfo
-                    });
-                }
-            }
-#pragma warning disable CA1031 // Do not catch general exception types : Don't let errors in the events affect us.
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                _logger.LogError(ex, "UpdateMediaInfo errored.");
+
+                await Task.Delay(1000).ConfigureAwait(false);
             }
         }
 
@@ -1181,497 +740,12 @@ namespace Emby.Dlna.PlayTo
             {
                 _logger.LogError("SendCommandAsync failed with {0} to {1} ", ex.ToString(), url);
             }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError("SendCommandAsync failed with {0} to {1} ", ex.ToString(), url);
+            }
 
             return null;
-        }
-
-        /// <summary>
-        /// Checks to see if DLNA subscriptions are implemented, and if so subscribes to changes.
-        /// </summary>
-        /// <param name="service">The service<see cref="DeviceService"/>.</param>
-        /// <param name="sid">The sid.</param>
-        /// <returns>Task.</returns>
-        private async Task<string> SubscribeInternalAsync(DeviceService service, string? sid)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(string.Empty);
-            }
-
-            if (service.EventSubUrl != null)
-            {
-                var options = new HttpRequestOptions
-                {
-                    Url = NormalizeUrl(Properties.BaseUrl, service.EventSubUrl),
-                    UserAgent = USERAGENT,
-                    LogErrorResponseBody = true,
-                    BufferContent = false,
-                };
-
-                if (string.IsNullOrEmpty(sid))
-                {
-                    if (string.IsNullOrEmpty(_sessionId))
-                    {
-                        // If we haven't got a GUID yet - get one.
-                        _sessionId = Guid.NewGuid().ToString();
-                    }
-
-                    // Create a unique callback url based up our GUID.
-                    options.RequestHeaders["CALLBACK"] = $"<{_jellyfinUrl}/Dlna/Eventing/{_sessionId}>";
-                }
-                else
-                {
-                    // Resubscription id.
-                    options.RequestHeaders["SID"] = "uuid:{sid}";
-                }
-
-                options.RequestHeaders["NT"] = "upnp:event";
-                options.RequestHeaders["TIMEOUT"] = "Second-30"; // Wait 5 seconds before timing out.
-                // TODO: check what happens at timeout.
-
-                try
-                {
-                    using var response = await _httpClient.SendAsync(options, new HttpMethod("SUBSCRIBE")).ConfigureAwait(false);
-                    if (response.StatusCode == HttpStatusCode.OK)
-                    {
-                        if (!_eventing)
-                        {
-                            return response.Headers.GetValues("SID").FirstOrDefault();
-                        }
-                    }
-                }
-                catch (HttpException ex)
-                {
-                    _logger.LogError(ex, "SUBSCRIBE failed.");
-                }
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Attempts to subscribe to the multiple services of a DLNA client.
-        /// </summary>
-        /// <returns>The <see cref="Task"/>.</returns>
-        private async Task SubscribeAsync()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(string.Empty);
-            }
-
-            if (!_eventing)
-            {
-                try
-                {
-                    // Start listening to DLNA events.
-                    _playToManager.DLNAEvents += ProcessSubscriptionEvent;
-
-                    _transportSid = await SubscribeInternalAsync(GetAvTransportService(), _transportSid).ConfigureAwait(false);
-
-                    _logger.LogDebug("AVTransport SID {0}.", _transportSid);
-
-                    _renderSid = await SubscribeInternalAsync(GetServiceRenderingControl(), _renderSid).ConfigureAwait(false);
-                    _logger.LogDebug("RenderControl SID {0}.", _renderSid);
-
-                    _eventing = true;
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Ignore.
-                }
-            }
-        }
-
-        /// <summary>
-        /// Attempts to unsubscribe from a DLNA client.
-        /// </summary>
-        /// <param name="service">The service<see cref="DeviceService"/>.</param>
-        /// <param name="sid">The sid.</param>
-        /// <returns>Returns success of the task.</returns>
-        private async Task<bool> UnSubscribeInternalAsync(DeviceService service, string? sid)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(string.Empty);
-            }
-
-            if (service?.EventSubUrl != null || string.IsNullOrEmpty(sid))
-            {
-                var options = new HttpRequestOptions
-                {
-#pragma warning disable CS8602 // Dereference of a possibly null reference. Erroneous warning: service cannot be null here.
-                    Url = NormalizeUrl(Properties.BaseUrl, service.EventSubUrl),
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-                    UserAgent = USERAGENT,
-                    LogErrorResponseBody = true,
-                    BufferContent = false,
-                };
-
-                options.RequestHeaders["SID"] = "uuid: {sid}";
-                try
-                {
-                    using var response = await _httpClient.SendAsync(options, new HttpMethod("UNSUBSCRIBE")).ConfigureAwait(false);
-                    if (response.StatusCode == HttpStatusCode.OK)
-                    {
-                        _logger.LogDebug("UNSUBSCRIBE succeeded.");
-                        return true;
-                    }
-                }
-                catch (HttpException ex)
-                {
-                    _logger.LogError(ex, "UNSUBSCRIBE failed.");
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to unsubscribe from the multiple services of the DLNA client.
-        /// </summary>
-        /// <returns>The <see cref="Task"/>.</returns>
-        private async Task UnSubscribeAsync()
-        {
-            if (_eventing)
-            {
-                try
-                {
-                    // stop processing events.
-                    _playToManager.DLNAEvents -= ProcessSubscriptionEvent;
-
-                    var success = await UnSubscribeInternalAsync(GetAvTransportService(), _transportSid).ConfigureAwait(false);
-                    if (success)
-                    {
-                        // Keep Sid in case the user interacts with this device.
-                        _transportSid = string.Empty;
-                    }
-
-                    success = await UnSubscribeInternalAsync(GetServiceRenderingControl(), _renderSid).ConfigureAwait(false);
-                    if (success)
-                    {
-                        _renderSid = string.Empty;
-                    }
-
-                    // TODO: should we attempt to unsubscribe again if they fail?
-
-                    _eventing = false;
-                }
-                catch (ObjectDisposedException)
-                {
-                   // Ignore.
-                }
-            }
-        }
-
-        /// <summary>
-        /// Timer Callback function that polls the DLNA status.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        private async void TimerCallback(object sender)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _logger.LogDebug("Timer event");
-            try
-            {
-                var cancellationToken = CancellationToken.None;
-                var transportState = await GetTransportInfo(cancellationToken).ConfigureAwait(false);
-
-                if (transportState == TransportState.ERROR)
-                {
-                    _logger.LogError("Unable to get TransportState for {DeviceName}", Properties.Name);
-                    // Assume it's a one off.
-                    RestartTimer(Normal);
-                }
-                else
-                {
-                    TransportState = transportState;
-
-                    if (transportState != TransportState.ERROR)
-                    {
-                        // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
-                        if (transportState == TransportState.STOPPED)
-                        {
-                            _logger.LogDebug("Saving progress.");
-                            UpdateMediaInfo(null, transportState);
-                            RestartTimer(Never);
-                        }
-                        else
-                        {
-                            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo", cancellationToken).ConfigureAwait(false);
-                            var response = ParseResponse(result?.Document, "GetPositionInfoResponse");
-                            if (response.Count == 0)
-                            {
-                                RestartTimer(Normal);
-                                return;
-                            }
-
-                            if (response.TryGetValue("TrackDuration", out string duration) && TimeSpan.TryParse(duration, _usCulture, out TimeSpan dur))
-                            {
-                                Duration = dur;
-                            }
-
-                            if (response.TryGetValue("relTime", out string position) && TimeSpan.TryParse(position, _usCulture, out TimeSpan rel))
-                            {
-                                Position = rel;
-                            }
-
-                            uBaseObject? currentObject = null;
-                            if (!response.TryGetValue("TrackMetaData", out string track) || string.IsNullOrEmpty(track))
-                            {
-                                // If track is null, some vendors do this, use GetMediaInfo instead
-                                currentObject = await GetMediaInfo(cancellationToken).ConfigureAwait(false);
-                            }
-
-                            XElement? uPnpResponse = ParseNodeResponse(track);
-                            if (uPnpResponse == null)
-                            {
-                                _logger.LogError("Failed to parse xml: \n {Xml}", track);
-                                currentObject = await GetMediaInfo(cancellationToken).ConfigureAwait(false);
-                            }
-
-                            if (currentObject == null)
-                            {
-                                var e = uPnpResponse?.Element(uPnpNamespaces.items);
-                                if (response.TryGetValue("TrackURI", out string trackUri))
-                                {
-                                    currentObject = CreateUBaseObject(e, trackUri);
-                                }
-                            }
-
-                            if (currentObject != null)
-                            {
-                                _logger.LogDebug("Saving progress.");
-                                UpdateMediaInfo(currentObject, TransportState);
-                            }
-
-                            RestartTimer(Normal);
-                        }
-                    }
-
-                    _connectFailureCount = 0;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
-            catch (HttpException ex)
-            {
-                if (_disposed)
-                {
-                    return;
-                }
-
-                _logger.LogError(ex, "Error updating device info for {DeviceName}", Properties.Name);
-                if (_connectFailureCount++ >= 3)
-                {
-                    _logger.LogDebug("Disposing device due to loss of connection");
-                    OnDeviceUnavailable?.Invoke();
-                    return;
-                }
-
-                RestartTimer(Normal);
-            }
-        }
-
-        /// <summary>
-        /// This method gets called with the information the DLNA clients have passed through eventing.
-        /// </summary>
-        /// <param name="sender">PlayToController object.</param>
-        /// <param name="args">Arguments passed from DLNA player.</param>
-        private async void ProcessSubscriptionEvent(object sender, DlnaEventArgs args)
-        {
-            if (args.Id == _sessionId)
-            {
-                try
-                {
-                    var response = XDocument.Parse(System.Web.HttpUtility.HtmlDecode(args.Response));
-                    if (response != null)
-                    {
-                        var reply = ParseResponse(response, "InstanceID");
-                        _logger.LogDebug("Subscription event.");
-
-                        if (reply.TryGetValue("Mute", out string value) && int.TryParse(value, out int mute))
-                        {
-                            _logger.LogDebug("Muted: {0}", mute);
-                            IsMuted = mute == 1;
-                        }
-
-                        if (reply.TryGetValue("Volume", out value) && int.TryParse(value, out int volume))
-                        {
-                            _logger.LogDebug("Volume: {0}", volume);
-                            Volume = volume;
-                        }
-
-                        if (reply.TryGetValue("CurrentTrackDuration", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan dur))
-                        {
-                            _logger.LogDebug("CurrentTrackDuration: {0}", dur);
-                            Duration = dur;
-                        }
-
-                        if (reply.TryGetValue("RelativeTimePosition", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan rel))
-                        {
-                            _logger.LogDebug("RelativeTimePosition: {0}", rel);
-                            Position = rel;
-                        }
-
-                        // If the position isn't in this update, try to get it.
-                        if (!reply.ContainsKey("RelativeTimePosition"))
-                        {
-                            _logger.LogDebug("Updating position as not included.");
-                            // Try and get the latest position update
-                            await RefreshPosition().ConfigureAwait(false);
-                        }
-
-                        if (reply.TryGetValue("TransportState", out value) && Enum.TryParse(value, true, out TransportState ts))
-                        {
-                            _logger.LogDebug("TransportState: {0}", ts);
-                            if (ts != TransportState)
-                            {
-                                if (ts == TransportState.STOPPED)
-                                {
-                                    _logger.LogDebug("Saving progress.");
-                                    UpdateMediaInfo(null, ts);
-                                    RestartTimer(Normal);
-                                }
-
-                                TransportState = ts;
-                            }
-                        }
-
-                        if (reply.TryGetValue("CurrentTrackMetaData", out value) && !string.IsNullOrEmpty(value))
-                        {
-                            XElement? uPnpResponse = ParseNodeResponse(value);
-                            var e = uPnpResponse?.Element(uPnpNamespaces.items);
-
-                            if (reply.TryGetValue("CurrentTrackURI", out value) && !string.IsNullOrEmpty(value))
-                            {
-                                uBaseObject? uTrack = CreateUBaseObject(e, value);
-
-                                if (uTrack != null)
-                                {
-                                    _logger.LogDebug("Saving progress.");
-                                    UpdateMediaInfo(uTrack, TransportState);
-                                    RestartTimer(Normal);
-                                }
-                            }
-                        }
-
-                        _ = ResubscribeToEvents();
-                    }
-                    else
-                    {
-                        _logger.LogDebug("Received blank event data : ");
-                    }
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Ignore.
-                }
-                catch (HttpException ex)
-                {
-                    _logger.LogError("Unable to parse event response.");
-                    _logger.LogDebug(ex, "Received: {0}", args.Response);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Resubscribe to DLNA evemts.
-        /// </summary>
-        /// <returns>The <see cref="Task"/>.</returns>
-        private async Task ResubscribeToEvents()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(string.Empty);
-            }
-
-            await SubscribeAsync().ConfigureAwait(false);
-        }
-
-        private async Task<bool> RefreshPosition(CancellationToken cancellationToken = default)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(string.Empty);
-            }
-
-            // Update position information.
-            try
-            {
-                var result = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo", cancellationToken).ConfigureAwait(false);
-                var position = ParseResponse(result?.Document, "GetPositionInfoResponse");
-                if (position.Count != 0)
-                {
-                    if (position.TryGetValue("TrackDuration", out string value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan d))
-                    {
-                        Duration = d;
-                    }
-
-                    if (position.TryGetValue("relTime", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan r))
-                    {
-                        Position = r;
-                    }
-
-                    return true;
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Ignore.
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Restart the polling timer.
-        /// </summary>
-        /// <param name="when">When to restart the timer. Less than 0 = never, 0 = instantly, greater than 0 in 1 second.</param>
-        private void RestartTimer(int when)
-        {
-            lock (_timerLock)
-            {
-                if (_disposed)
-                {
-                    return;
-                }
-
-                _volumeRefreshActive = when != Never;
-
-                int delay = when == Never ? Timeout.Infinite : when == Now ? 100 : 10000;
-                _timer?.Change(delay, Timeout.Infinite);
-            }
-        }
-
-        /// <summary>
-        /// Returns the ServiceRenderingControl element of the device.
-        /// </summary>
-        /// <returns>The ServiceRenderingControl <see cref="DeviceService"/>.</returns>
-        private DeviceService GetServiceRenderingControl()
-        {
-            var services = Properties.Services;
-
-            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:RenderingControl:1", StringComparison.OrdinalIgnoreCase)) ??
-                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:RenderingControl", StringComparison.OrdinalIgnoreCase));
-        }
-
-        /// <summary>
-        /// Returns the AvTransportService element of the device.
-        /// </summary>
-        /// <returns>The AvTransportService <see cref="DeviceService"/>.</returns>
-        private DeviceService GetAvTransportService()
-        {
-            var services = Properties.Services;
-
-            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:AVTransport:1", StringComparison.OrdinalIgnoreCase)) ??
-                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:AVTransport", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -1802,35 +876,432 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// The SetMute.
+        /// Checks to see if DLNA subscriptions are implemented, and if so subscribes to changes.
         /// </summary>
-        /// <param name="mute">The mute<see cref="bool"/>.</param>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>Returns success of the task.</returns>
-        private async Task<bool> SetMute(bool mute, CancellationToken cancellationToken)
+        /// <param name="service">The service<see cref="DeviceService"/>.</param>
+        /// <param name="sid">The sid.</param>
+        /// <returns>Task.</returns>
+        private async Task<string> SubscribeInternalAsync(DeviceService service, string? sid)
         {
-            try
+            if (_disposed)
             {
-                if (IsMuted != mute)
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            if (service.EventSubUrl != null)
+            {
+                var options = new HttpRequestOptions
                 {
-                    _logger.LogDebug("Setting mute {0}.", mute);
-                    return await SendCommand(TransportCommandsRender, "SetMute", cancellationToken, mute ? 1 : 0).ConfigureAwait(false);
+                    Url = NormalizeUrl(Properties.BaseUrl, service.EventSubUrl),
+                    UserAgent = USERAGENT,
+                    LogErrorResponseBody = true,
+                    BufferContent = false,
+                };
+
+                if (string.IsNullOrEmpty(sid))
+                {
+                    if (string.IsNullOrEmpty(_sessionId))
+                    {
+                        // If we haven't got a GUID yet - get one.
+                        _sessionId = Guid.NewGuid().ToString();
+                    }
+
+                    // Create a unique callback url based up our GUID.
+                    options.RequestHeaders["CALLBACK"] = $"<{_jellyfinUrl}/Dlna/Eventing/{_sessionId}>";
+                }
+                else
+                {
+                    // Resubscription id.
+                    options.RequestHeaders["SID"] = "uuid:{sid}";
+                }
+
+                options.RequestHeaders["NT"] = "upnp:event";
+                options.RequestHeaders["TIMEOUT"] = "Second-30"; // Wait 5 seconds before timing out.
+                // TODO: check what happens at timeout.
+
+                try
+                {
+                    using var response = await _httpClient.SendAsync(options, new HttpMethod("SUBSCRIBE")).ConfigureAwait(false);
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        if (!_subscribed)
+                        {
+                            return response.Headers.GetValues("SID").FirstOrDefault();
+                        }
+                    }
+                }
+                catch (HttpException ex)
+                {
+                    _logger.LogError(ex, "SUBSCRIBE failed.");
                 }
             }
-            catch (ObjectDisposedException)
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Attempts to subscribe to the multiple services of a DLNA client.
+        /// </summary>
+        /// <returns>The <see cref="Task"/>.</returns>
+        private async Task SubscribeAsync()
+        {
+            if (_disposed)
             {
-                // Ignore.
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            if (!_subscribed)
+            {
+                try
+                {
+                    // Start listening to DLNA events.
+                    _playToManager.DLNAEvents += ProcessSubscriptionEvent;
+
+                    _transportSid = await SubscribeInternalAsync(GetAvTransportService(), _transportSid).ConfigureAwait(false);
+
+                    _logger.LogDebug("AVTransport SID {0}.", _transportSid);
+
+                    _renderSid = await SubscribeInternalAsync(GetServiceRenderingControl(), _renderSid).ConfigureAwait(false);
+                    _logger.LogDebug("RenderControl SID {0}.", _renderSid);
+
+                    _subscribed = true;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Ignore.
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resubscribe to DLNA evemts.
+        /// </summary>
+        /// <returns>The <see cref="Task"/>.</returns>
+        private async Task ResubscribeToEvents()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            await SubscribeAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Attempts to unsubscribe from a DLNA client.
+        /// </summary>
+        /// <param name="service">The service<see cref="DeviceService"/>.</param>
+        /// <param name="sid">The sid.</param>
+        /// <returns>Returns success of the task.</returns>
+        private async Task<bool> UnSubscribeInternalAsync(DeviceService service, string? sid)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            if (service?.EventSubUrl != null || string.IsNullOrEmpty(sid))
+            {
+                var options = new HttpRequestOptions
+                {
+#pragma warning disable CS8602 // Dereference of a possibly null reference. Erroneous warning: service cannot be null here.
+                    Url = NormalizeUrl(Properties.BaseUrl, service.EventSubUrl),
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                    UserAgent = USERAGENT,
+                    LogErrorResponseBody = true,
+                    BufferContent = false,
+                };
+
+                options.RequestHeaders["SID"] = "uuid: {sid}";
+                try
+                {
+                    using var response = await _httpClient.SendAsync(options, new HttpMethod("UNSUBSCRIBE")).ConfigureAwait(false);
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        _logger.LogDebug("UNSUBSCRIBE succeeded.");
+                        return true;
+                    }
+                }
+                catch (HttpException ex)
+                {
+                    _logger.LogError(ex, "UNSUBSCRIBE failed.");
+                }
             }
 
             return false;
         }
 
         /// <summary>
+        /// Attempts to unsubscribe from the multiple services of the DLNA client.
+        /// </summary>
+        /// <returns>The <see cref="Task"/>.</returns>
+        private async Task UnSubscribeAsync()
+        {
+            if (_subscribed)
+            {
+                try
+                {
+                    // stop processing events.
+                    _playToManager.DLNAEvents -= ProcessSubscriptionEvent;
+
+                    var success = await UnSubscribeInternalAsync(GetAvTransportService(), _transportSid).ConfigureAwait(false);
+                    if (success)
+                    {
+                        // Keep Sid in case the user interacts with this device.
+                        _transportSid = string.Empty;
+                    }
+
+                    success = await UnSubscribeInternalAsync(GetServiceRenderingControl(), _renderSid).ConfigureAwait(false);
+                    if (success)
+                    {
+                        _renderSid = string.Empty;
+                    }
+
+                    // TODO: should we attempt to unsubscribe again if they fail?
+
+                    _subscribed = false;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Ignore.
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method gets called with the information the DLNA clients have passed through eventing.
+        /// </summary>
+        /// <param name="sender">PlayToController object.</param>
+        /// <param name="args">Arguments passed from DLNA player.</param>
+        private async void ProcessSubscriptionEvent(object sender, DlnaEventArgs args)
+        {
+            if (args.Id == _sessionId)
+            {
+                try
+                {
+                    var response = XDocument.Parse(System.Web.HttpUtility.HtmlDecode(args.Response));
+                    if (response != null)
+                    {
+                        var reply = ParseResponse(response, "InstanceID");
+                        _logger.LogDebug("Processing a subscription event.");
+
+                        if (reply.TryGetValue("Mute", out string value) && int.TryParse(value, out int mute))
+                        {
+                            _logger.LogDebug("Muted: {0}", mute);
+                            IsMuted = mute == 1;
+                        }
+
+                        if (reply.TryGetValue("Volume", out value) && int.TryParse(value, out int volume))
+                        {
+                            _logger.LogDebug("Volume: {0}", volume);
+                            Volume = volume;
+                        }
+
+                        if (reply.TryGetValue("CurrentTrackDuration", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan dur))
+                        {
+                            _logger.LogDebug("CurrentTrackDuration: {0}", dur);
+                            Duration = dur;
+                        }
+
+                        if (reply.TryGetValue("RelativeTimePosition", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan rel))
+                        {
+                            _logger.LogDebug("RelativeTimePosition: {0}", rel);
+                            Position = rel;
+                        }
+
+                        // If this is an AVTransport event and the position isn't in this update, try to get it.
+                        if (reply.TryGetValue("AVTransportURI", out value) && !reply.ContainsKey("RelativeTimePosition"))
+                        {
+                            _logger.LogDebug("Updating position as not included.");
+                            // Try and get the latest position update
+                            await GetPositionRequest().ConfigureAwait(false);
+                        }
+
+                        if (reply.TryGetValue("TransportState", out value) && Enum.TryParse(value, true, out TransportState ts))
+                        {
+                            _logger.LogDebug("TransportState: {0}", ts);
+                            // Mustn't process our own change playback event.
+                            if (ts != TransportState && TransportState != TransportState.TRANSITIONING)
+                            {
+                                TransportState = ts;
+
+                                if (ts == TransportState.STOPPED)
+                                {
+                                    UpdateMediaInfo(null);
+                                    RestartTimer(Normal);
+                                }
+                            }
+                        }
+
+                        if (reply.TryGetValue("CurrentTrackMetaData", out value) && !string.IsNullOrEmpty(value))
+                        {
+                            XElement? uPnpResponse = ParseNodeResponse(value);
+                            var e = uPnpResponse?.Element(uPnpNamespaces.items);
+
+                            if (reply.TryGetValue("CurrentTrackURI", out value) && !string.IsNullOrEmpty(value))
+                            {
+                                uBaseObject? uTrack = CreateUBaseObject(e, value);
+
+                                if (uTrack != null)
+                                {
+                                    UpdateMediaInfo(uTrack);
+                                    RestartTimer(Normal);
+                                }
+                            }
+                        }
+
+                        _ = ResubscribeToEvents();
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Received blank event data : ");
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Ignore.
+                }
+                catch (HttpException ex)
+                {
+                    _logger.LogError("Unable to parse event response.");
+                    _logger.LogDebug(ex, "Received: {0}", args.Response);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Timer Callback function that polls the DLNA status.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        private async void TimerCallback(object sender)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _logger.LogDebug("Timer event");
+            try
+            {
+                var cancellationToken = CancellationToken.None;
+                var transportState = await GetTransportStatus().ConfigureAwait(false);
+
+                if (transportState == TransportState.ERROR)
+                {
+                    _logger.LogError("Unable to get TransportState for {DeviceName}", Properties.Name);
+                    // Assume it's a one off.
+                    RestartTimer(Normal);
+                }
+                else
+                {
+                    TransportState = transportState;
+
+                    if (transportState != TransportState.ERROR)
+                    {
+                        // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
+                        if (transportState == TransportState.STOPPED)
+                        {
+                            UpdateMediaInfo(null);
+                            RestartTimer(Never);
+                        }
+                        else
+                        {
+                            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo", cancellationToken).ConfigureAwait(false);
+                            var response = ParseResponse(result?.Document, "GetPositionInfoResponse");
+                            if (response.Count == 0)
+                            {
+                                RestartTimer(Normal);
+                                return;
+                            }
+
+                            if (response.TryGetValue("TrackDuration", out string duration) && TimeSpan.TryParse(duration, _usCulture, out TimeSpan dur))
+                            {
+                                Duration = dur;
+                            }
+
+                            if (response.TryGetValue("relTime", out string position) && TimeSpan.TryParse(position, _usCulture, out TimeSpan rel))
+                            {
+                                Position = rel;
+                            }
+
+                            uBaseObject? currentObject = null;
+                            if (!response.TryGetValue("TrackMetaData", out string track) || string.IsNullOrEmpty(track))
+                            {
+                                // If track is null, some vendors do this, use GetMediaInfo instead
+                                currentObject = await GetMediaInfo(cancellationToken).ConfigureAwait(false);
+                            }
+
+                            XElement? uPnpResponse = ParseNodeResponse(track);
+                            if (uPnpResponse == null)
+                            {
+                                _logger.LogError("Failed to parse xml: \n {Xml}", track);
+                                currentObject = await GetMediaInfo(cancellationToken).ConfigureAwait(false);
+                            }
+
+                            if (currentObject == null)
+                            {
+                                var e = uPnpResponse?.Element(uPnpNamespaces.items);
+                                if (response.TryGetValue("TrackURI", out string trackUri))
+                                {
+                                    currentObject = CreateUBaseObject(e, trackUri);
+                                }
+                            }
+
+                            if (currentObject != null)
+                            {
+                                UpdateMediaInfo(currentObject);
+                            }
+
+                            RestartTimer(Normal);
+                        }
+                    }
+
+                    _connectFailureCount = 0;
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (HttpException ex)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _logger.LogError(ex, "Error updating device info for {DeviceName}", Properties.Name);
+                if (_connectFailureCount++ >= 3)
+                {
+                    _logger.LogDebug("Disposing device due to loss of connection");
+                    OnDeviceUnavailable?.Invoke();
+                    return;
+                }
+
+                RestartTimer(Normal);
+            }
+        }
+
+        private async Task<bool> SendVolumeRequest(int value)
+        {
+            var result = false;
+            if (Volume != value)
+            {
+                result = await SendCommand(TransportCommandsRender, "SetVolume", default, value).ConfigureAwait(false);
+                if (result)
+                {
+                    Volume = value;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Requests the volume setting from the client.
         /// </summary>
-        /// <param name="cancellationToken">CancellationToken.</param>
         /// <returns>Task.</returns>
-        private async Task<bool> GetVolume(CancellationToken cancellationToken)
+        private async Task<bool> GetVolume()
         {
             if (_disposed)
             {
@@ -1839,8 +1310,8 @@ namespace Emby.Dlna.PlayTo
 
             try
             {
-                var result = await SendCommandResponseRequired(TransportCommandsRender, "GetVolume", cancellationToken).ConfigureAwait(false);
-                var response = ParseResponse(result?.Document, "GetVolumeResponse"); // CurrentVolumeResponse
+                var result = await SendCommandResponseRequired(TransportCommandsRender, "GetVolume", default).ConfigureAwait(false);
+                var response = ParseResponse(result?.Document, "GetVolumeResponse");
 
                 if (response.TryGetValue("CurrentVolume", out string volume))
                 {
@@ -1863,44 +1334,69 @@ namespace Emby.Dlna.PlayTo
             return false;
         }
 
-        /// <summary>
-        /// Gets the mute setting from the client.
-        /// </summary>
-        /// <param name="cancellationToken">CancellationToken.</param>
-        /// <returns>Task.</returns>
-        private async Task<bool> GetMute(CancellationToken cancellationToken)
+        private async Task<bool> SendPauseRequest()
         {
-            if (_disposed)
+            var result = false;
+            if (!IsPaused)
             {
-                throw new ObjectDisposedException(string.Empty);
+                result = await SendCommand(TransportCommandsAV, "Pause", default, 1).ConfigureAwait(false);
+                if (result)
+                {
+                    // Stop user from issuing multiple commands.
+                    TransportState = TransportState.PAUSED;
+                    RestartTimer(Now);
+                }
             }
 
-            var result = await SendCommandResponseRequired(TransportCommandsRender, "GetMute", cancellationToken).ConfigureAwait(false);
-            var response = ParseResponse(result?.Document, "GetMuteResponse");
+            return result;
+        }
 
-            if (response.TryGetValue("CurrentMute", out string muted))
+        private async Task<bool> SendPlayRequest()
+        {
+            var result = false;
+            if (!IsPlaying)
             {
-                IsMuted = string.Equals(muted, "1", StringComparison.OrdinalIgnoreCase);
-                return true;
+                result = await SendCommand(TransportCommandsAV, "Play", default, 1).ConfigureAwait(false);
+                if (result)
+                {
+                    // Stop user from issuing multiple commands.
+                    TransportState = TransportState.PLAYING;
+                    RestartTimer(Now);
+                }
             }
 
-            _logger.LogWarning("GetMute failed.");
-            return false;
+            return result;
+        }
+
+        private async Task<bool> SendStopRequest()
+        {
+            var result = false;
+            if (IsPlaying || IsPaused)
+            {
+                result = await SendCommand(TransportCommandsAV, "Stop", default, 1).ConfigureAwait(false);
+                if (result)
+                {
+                    // Stop user from issuing multiple commands.
+                    TransportState = TransportState.STOPPED;
+                    RestartTimer(Now);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
         /// Returns information associated with the current transport state of the specified instance.
         /// </summary>
-        /// <param name="cancellationToken">CancellationToken.</param>
         /// <returns>Task.</returns>
-        private async Task<TransportState> GetTransportInfo(CancellationToken cancellationToken)
+        private async Task<TransportState> GetTransportStatus()
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(string.Empty);
             }
 
-            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetTransportInfo", cancellationToken).ConfigureAwait(false);
+            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetTransportInfo", default).ConfigureAwait(false);
             var response = ParseResponse(result?.Document, "GetTransportInfoResponse");
 
             if (response.TryGetValue("CurrentTransportState", out string transportState))
@@ -1913,6 +1409,106 @@ namespace Emby.Dlna.PlayTo
 
             _logger.LogWarning("GetTransportInfo failed.");
             return TransportState.ERROR;
+        }
+
+        private async Task<TransportState> GetPositionStatus()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetTransportInfo", default).ConfigureAwait(false);
+            var response = ParseResponse(result?.Document, "GetTransportInfoResponse");
+
+            if (response.TryGetValue("CurrentTransportState", out string transportState))
+            {
+                if (Enum.TryParse(transportState, true, out TransportState state))
+                {
+                    return state;
+                }
+            }
+
+            _logger.LogWarning("GetTransportInfo failed.");
+            return TransportState.ERROR;
+        }
+
+        private async Task<bool> SendMuteRequest(bool value)
+        {
+            var result = false;
+
+            if (IsMuted != value)
+            {
+                result = await SendCommand(TransportCommandsRender, "SetMute", default, value ? 1 : 0).ConfigureAwait(false);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the mute setting from the client.
+        /// </summary>
+        /// <returns>Task.</returns>
+        private async Task<bool> GetMute()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            var result = await SendCommandResponseRequired(TransportCommandsRender, "GetMute", default).ConfigureAwait(false);
+            var response = ParseResponse(result?.Document, "GetMuteResponse");
+
+            if (response.TryGetValue("CurrentMute", out string muted))
+            {
+                IsMuted = string.Equals(muted, "1", StringComparison.OrdinalIgnoreCase);
+                return true;
+            }
+
+            _logger.LogWarning("GetMute failed.");
+            return false;
+        }
+
+        private async Task<bool> SendMediaRequest(Tuple<string, string, string> settings)
+        {
+            string url = settings.Item1;
+            var result = false;
+
+            if (!string.IsNullOrEmpty(url))
+            {
+                url = url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
+                _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, settings.Item2);
+
+                var dictionary = new Dictionary<string, string>
+                {
+                    { "CurrentURI", settings.Item1 },
+                    { "CurrentURIMetaData", DescriptionXmlBuilder.Escape(settings.Item3) }
+                };
+
+                result = await SendCommand(
+                    TransportCommandsAV,
+                    "SetAVTransportURI",
+                    default,
+                    settings.Item1,
+                    dictionary: dictionary,
+                    header: settings.Item2).ConfigureAwait(false);
+
+                if (result)
+                {
+                    await Task.Delay(50).ConfigureAwait(false);
+
+                    result = await SendPlayRequest().ConfigureAwait(false);
+
+                    if (result)
+                    {
+                        // Update what is playing.
+                        _mediaPlaying = url;
+                        RestartTimer(Now);
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1953,6 +1549,338 @@ namespace Emby.Dlna.PlayTo
             }
 
             return null;
+        }
+
+        private async Task<bool> SendSeekRequest(TimeSpan value)
+        {
+            var result = false;
+            if (IsPlaying || IsPaused)
+            {
+                result = await SendCommand(
+                    TransportCommandsAV,
+                    "Seek",
+                    default,
+                    string.Format(CultureInfo.InvariantCulture, "{0:hh}:{0:mm}:{0:ss}", value),
+                    commandParameter: "REL_TIME").ConfigureAwait(false);
+
+                if (result)
+                {
+                    Position = value;
+                    RestartTimer(Now);
+                }
+            }
+
+            return result;
+        }
+
+        private async Task<bool> GetPositionRequest()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            // Update position information.
+            try
+            {
+                var result = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo", default).ConfigureAwait(false);
+                var position = ParseResponse(result?.Document, "GetPositionInfoResponse");
+                if (position.Count != 0)
+                {
+                    if (position.TryGetValue("TrackDuration", out string value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan d))
+                    {
+                        Duration = d;
+                    }
+
+                    if (position.TryGetValue("relTime", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan r))
+                    {
+                        Position = r;
+                    }
+
+                    return true;
+                }
+            }
+            catch (ObjectDisposedException)
+            {
+                // Ignore.
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Retreives SSDP protocol information.
+        /// </summary>
+        /// <param name="services">The service to extract.</param>
+        /// <param name="cancellationToken">The cancellationToken.</param>
+        /// <returns>The <see cref="Task{TransportCommands}"/>.</returns>
+        private async Task<TransportCommands?> GetProtocolAsync(DeviceService services, CancellationToken cancellationToken)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(string.Empty);
+            }
+
+            if (services == null)
+            {
+                return null;
+            }
+
+            string url = NormalizeUrl(Properties.BaseUrl, services.ScpdUrl, true);
+
+            var document = await GetDataAsync(_httpClient, url, _logger, cancellationToken).ConfigureAwait(false);
+            return TransportCommands.Create(document);
+        }
+
+        /// <summary>
+        /// Gets service information from the DLNA clients.
+        /// </summary>
+        /// <param name="httpClient">The HttpClient to use. <see cref="IHttpClient"/>.</param>
+        /// <param name="url">The destination URL..</param>
+        /// <param name="logger">The logger to use.<see cref="ILogger"/>.</param>
+        /// <param name="cancellationToken">The cancellationToken.</param>
+        /// <returns>The <see cref="Task{XDocument}"/>.</returns>
+        private static async Task<XDocument?> GetDataAsync(IHttpClient httpClient, string url, ILogger logger, CancellationToken cancellationToken)
+        {
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                UserAgent = USERAGENT,
+                LogErrorResponseBody = true,
+                BufferContent = false,
+
+                CancellationToken = cancellationToken
+            };
+
+            options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
+            try
+            {
+                logger?.LogDebug("GetDataAsync: Communicating with {0}", url);
+                using var response = await httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
+                using var stream = response.Content;
+                using var reader = new StreamReader(stream, Encoding.UTF8);
+                return XDocument.Parse(
+                    await reader.ReadToEndAsync().ConfigureAwait(false),
+                    LoadOptions.PreserveWhitespace);
+            }
+            catch (HttpRequestException ex)
+            {
+                logger?.LogDebug("GetDataAsync: Failed with {0}", ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // Show stack trace on other errors.
+                logger?.LogDebug(ex, "GetDataAsync: Failed.");
+                throw;
+            }
+        }
+
+        public Task VolumeDown()
+        {
+            QueueEvent("SetVolume", Math.Max(Volume - 5, 0));
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sets or increases the volume. (No value will increase the volume by 5.)
+        /// </summary>
+        /// <param name="value">A value will set the volume.</param>
+        /// <returns>Task.</returns>
+        public Task VolumeUp(int value = -1)
+        {
+            if (value == -1)
+            {
+                QueueEvent("SetVolume", Math.Min(Volume + 5, 100));
+            }
+            else if (value >= 0 && value <= 100)
+            {
+                QueueEvent("SetVolume", value);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task ToggleMute()
+        {
+            AddOrCancelIfQueued("ToggleMute");
+            return Task.CompletedTask;
+        }
+
+        public Task Play()
+        {
+            QueueEvent("Play");
+            return Task.CompletedTask;
+        }
+
+        public Task Stop()
+        {
+            QueueEvent("Stop");
+            return Task.CompletedTask;
+        }
+
+        public Task Pause()
+        {
+            QueueEvent("Pause");
+            return Task.CompletedTask;
+        }
+
+        public Task Mute()
+        {
+            QueueEvent("Mute");
+            return Task.CompletedTask;
+        }
+
+        public Task Unmute()
+        {
+            QueueEvent("Unmute");
+            return Task.CompletedTask;
+        }
+
+        public Task Seek(TimeSpan value)
+        {
+            QueueEvent("Seek", value);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Attempts to set the AV transport.
+        /// </summary>
+        /// <param name="url">The url.</param>
+        /// <param name="header">The header.</param>
+        /// <param name="metaData">The metaData.</param>
+        /// <returns>Task.</returns>
+        public Task SetAvTransport(string url, string header, string metaData)
+        {
+            QueueEvent("Queue", new Tuple<string, string, string>(url, header, metaData));
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Dispose.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Returns a string representation of this object.
+        /// </summary>
+        /// <returns>The .</returns>
+        public override string ToString()
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0} - {1}", Properties.Name, Properties.BaseUrl);
+        }
+
+        /// <summary>
+        /// Diposes this object.
+        /// </summary>
+        /// <param name="disposing">The disposing<see cref="bool"/>.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _timer?.Dispose();
+
+                if (_playToManager != null)
+                {
+                    _playToManager.DLNAEvents -= ProcessSubscriptionEvent;
+                }
+            }
+
+            _disposed = true;
+        }
+
+        /// <summary>
+        /// Updates the media info, firing events.
+        /// </summary>
+        /// <param name="mediaInfo">The mediaInfo<see cref="uBaseObject"/>.</param>
+        private void UpdateMediaInfo(uBaseObject? mediaInfo)
+        {
+            var previousMediaInfo = CurrentMediaInfo;
+            CurrentMediaInfo = mediaInfo;
+            try
+            {
+                if (mediaInfo != null)
+                {
+                    if (previousMediaInfo == null)
+                    {
+                        if (TransportState != TransportState.STOPPED && !string.IsNullOrWhiteSpace(mediaInfo.Url))
+                        {
+                            _logger.LogDebug("Firing playback started.");
+                            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
+                            {
+                                MediaInfo = mediaInfo
+                            });
+                        }
+                    }
+                    else if (mediaInfo.Equals(previousMediaInfo))
+                    {
+                        if (!string.IsNullOrWhiteSpace(mediaInfo?.Url))
+                        {
+                            _logger.LogDebug("Firing playback progress.");
+                            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
+                            {
+                                MediaInfo = mediaInfo
+                            });
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Firing media change.");
+                        MediaChanged?.Invoke(this, new MediaChangedEventArgs
+                        {
+                            OldMediaInfo = previousMediaInfo,
+                            NewMediaInfo = mediaInfo
+                        });
+                    }
+                }
+                else if (previousMediaInfo != null)
+                {
+                    _logger.LogDebug("Firing playback stopped.");
+                    PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
+                    {
+                        MediaInfo = previousMediaInfo
+                    });
+                }
+            }
+#pragma warning disable CA1031 // Do not catch general exception types : Don't let errors in the events affect us.
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+            {
+                _logger.LogError(ex, "UpdateMediaInfo errored.");
+            }
+        }
+
+        /// <summary>
+        /// Returns the ServiceRenderingControl element of the device.
+        /// </summary>
+        /// <returns>The ServiceRenderingControl <see cref="DeviceService"/>.</returns>
+        private DeviceService GetServiceRenderingControl()
+        {
+            var services = Properties.Services;
+
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:RenderingControl:1", StringComparison.OrdinalIgnoreCase)) ??
+                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:RenderingControl", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Returns the AvTransportService element of the device.
+        /// </summary>
+        /// <returns>The AvTransportService <see cref="DeviceService"/>.</returns>
+        private DeviceService GetAvTransportService()
+        {
+            var services = Properties.Services;
+
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:AVTransport:1", StringComparison.OrdinalIgnoreCase)) ??
+                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:AVTransport", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -2053,27 +1981,130 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Retreives SSDP protocol information.
+        /// Normalizes a Url.
         /// </summary>
-        /// <param name="services">The service to extract.</param>
-        /// <param name="cancellationToken">The cancellationToken.</param>
-        /// <returns>The <see cref="Task{TransportCommands}"/>.</returns>
-        private async Task<TransportCommands?> GetProtocolAsync(DeviceService services, CancellationToken cancellationToken)
+        /// <param name="baseUrl">The base Url.</param>
+        /// <param name="url">The service Url.</param>
+        /// <param name="dmr">When true, prepends 'dmr' if not present in the url.</param>
+        /// <returns>A normalised Url.</returns>
+        private static string NormalizeUrl(string baseUrl, string url, bool dmr = false)
         {
-            if (_disposed)
+            // If it's already a complete url, don't stick anything onto the front of it
+            if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                throw new ObjectDisposedException(string.Empty);
+                return url;
             }
 
-            if (services == null)
+            if (dmr && !url.Contains("/", StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                url = "/dmr/" + url;
+            }
+            else if (!url.StartsWith("/", StringComparison.Ordinal))
+            {
+                url = "/" + url;
             }
 
-            string url = NormalizeUrl(Properties.BaseUrl, services.ScpdUrl, true);
+            return baseUrl + url;
+        }
 
-            var document = await GetDataAsync(_httpClient, url, _logger, cancellationToken).ConfigureAwait(false);
-            return TransportCommands.Create(document);
+        /// <summary>
+        /// Creates a uBaseObject from the information provided.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="trackUri">The trackUri.</param>
+        /// <returns>The <see cref="uBaseObject"/>.</returns>
+        private static uBaseObject CreateUBaseObject(XElement? container, string trackUri)
+        {
+            if (container == null)
+            {
+                throw new ArgumentNullException(nameof(container));
+            }
+
+            var url = container.GetValue(uPnpNamespaces.Res);
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                url = trackUri;
+            }
+
+            var resElement = container.Element(uPnpNamespaces.Res);
+            var protocolInfo = new string[4];
+
+            if (resElement != null)
+            {
+                var info = resElement.Attribute(uPnpNamespaces.ProtocolInfo);
+
+                if (info != null && !string.IsNullOrWhiteSpace(info.Value))
+                {
+                    protocolInfo = info.Value.Split(':');
+                }
+            }
+
+            return new uBaseObject
+            {
+                Id = container.GetAttributeValue(uPnpNamespaces.Id),
+                ParentId = container.GetAttributeValue(uPnpNamespaces.ParentId),
+                Title = container.GetValue(uPnpNamespaces.title),
+                IconUrl = container.GetValue(uPnpNamespaces.Artwork),
+                SecondText = string.Empty,
+                Url = url,
+                ProtocolInfo = protocolInfo,
+                MetaData = container.ToString()
+            };
+        }
+
+        /// <summary>
+        /// The CreateIcon.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <returns>The <see cref="DeviceIcon"/>.</returns>
+        private static DeviceIcon CreateIcon(XElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            var mimeType = element.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype"));
+            var width = element.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
+            var height = element.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
+            var depth = element.GetDescendantValue(uPnpNamespaces.ud.GetName("depth"));
+            var url = element.GetDescendantValue(uPnpNamespaces.ud.GetName("url"));
+
+            var widthValue = int.Parse(width, NumberStyles.Integer, _usCulture);
+            var heightValue = int.Parse(height, NumberStyles.Integer, _usCulture);
+
+            return new DeviceIcon
+            {
+                Depth = depth,
+                Height = heightValue,
+                MimeType = mimeType,
+                Url = url,
+                Width = widthValue
+            };
+        }
+
+        /// <summary>
+        /// Creates a DeviceService from an XML element.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <returns>The <see cref="DeviceService"/>.</returns>
+        private static DeviceService Create(XElement element)
+        {
+            var type = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceType"));
+            var id = element.GetDescendantValue(uPnpNamespaces.ud.GetName("serviceId"));
+            var scpdUrl = element.GetDescendantValue(uPnpNamespaces.ud.GetName("SCPDURL"));
+            var controlURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("controlURL"));
+            var eventSubURL = element.GetDescendantValue(uPnpNamespaces.ud.GetName("eventSubURL"));
+
+            return new DeviceService
+            {
+                ControlUrl = controlURL,
+                EventSubUrl = eventSubURL,
+                ScpdUrl = scpdUrl,
+                ServiceId = id,
+                ServiceType = type
+            };
         }
     }
 }
