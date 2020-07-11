@@ -80,7 +80,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<SearchHintResult> Get(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery, Required] string? searchTerm,
             [FromQuery] string? includeItemTypes,
             [FromQuery] string? excludeItemTypes,
@@ -107,7 +107,7 @@ namespace Jellyfin.Api.Controllers
                 IncludePeople = includePeople,
                 IncludeStudios = includeStudios,
                 StartIndex = startIndex,
-                UserId = userId,
+                UserId = userId ?? Guid.Empty,
                 IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
                 ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
                 MediaTypes = RequestHelpers.Split(mediaTypes, ',', true),

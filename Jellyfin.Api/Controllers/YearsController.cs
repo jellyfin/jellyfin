@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
             [FromQuery] string? enableImageTypes,
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] bool recursive = true,
             [FromQuery] bool? enableImages = true)
         {
@@ -86,9 +86,9 @@ namespace Jellyfin.Api.Controllers
             User? user = null;
             BaseItem parentItem;
 
-            if (!userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
-                user = _userManager.GetUserById(userId);
+                user = _userManager.GetUserById(userId.Value);
                 parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
             }
             else
@@ -176,7 +176,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{year}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<BaseItemDto> GetYear([FromRoute] int year, [FromQuery] Guid userId)
+        public ActionResult<BaseItemDto> GetYear([FromRoute] int year, [FromQuery] Guid? userId)
         {
             var item = _libraryManager.GetYear(year);
             if (item == null)
@@ -187,9 +187,9 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions()
                 .AddClientFields(Request);
 
-            if (!userId.Equals(Guid.Empty))
+            if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
-                var user = _userManager.GetUserById(userId);
+                var user = _userManager.GetUserById(userId.Value);
                 return _dtoService.GetBaseItemDto(item, dtoOptions, user);
             }
 

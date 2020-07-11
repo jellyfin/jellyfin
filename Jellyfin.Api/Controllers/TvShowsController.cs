@@ -69,7 +69,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("NextUp")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetNextUp(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -93,12 +93,14 @@ namespace Jellyfin.Api.Controllers
                     ParentId = parentId,
                     SeriesId = seriesId,
                     StartIndex = startIndex,
-                    UserId = userId,
+                    UserId = userId ?? Guid.Empty,
                     EnableTotalRecordCount = enableTotalRecordCount
                 },
                 options);
 
-            var user = _userManager.GetUserById(userId);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             var returnItems = _dtoService.GetBaseItemDtos(result.Items, options, user);
 
@@ -125,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Upcoming")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetUpcomingEpisodes(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -135,7 +137,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
-            var user = _userManager.GetUserById(userId);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
 
@@ -191,7 +195,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
             [FromRoute] string? seriesId,
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? fields,
             [FromQuery] int? season,
             [FromQuery] string? seasonId,
@@ -206,7 +210,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] string? sortBy)
         {
-            var user = _userManager.GetUserById(userId);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             List<BaseItem> episodes;
 
@@ -312,7 +318,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
             [FromRoute] string? seriesId,
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,
@@ -322,7 +328,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? enableImageTypes,
             [FromQuery] bool? enableUserData)
         {
-            var user = _userManager.GetUserById(userId);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             if (!(_libraryManager.GetItemById(seriesId) is Series series))
             {

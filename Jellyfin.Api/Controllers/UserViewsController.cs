@@ -56,8 +56,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">User id.</param>
         /// <param name="includeExternalContent">Whether or not to include external views such as channels or live tv.</param>
-        /// <param name="includeHidden">Whether or not to include hidden content.</param>
         /// <param name="presetViews">Preset views.</param>
+        /// <param name="includeHidden">Whether or not to include hidden content.</param>
         /// <response code="200">User views returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the user views.</returns>
         [HttpGet("/Users/{userId}/Views")]
@@ -65,8 +65,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetUserViews(
             [FromRoute] Guid userId,
             [FromQuery] bool? includeExternalContent,
-            [FromQuery] bool includeHidden,
-            [FromQuery] string? presetViews)
+            [FromQuery] string? presetViews,
+            [FromQuery] bool includeHidden = false)
         {
             var query = new UserViewQuery
             {

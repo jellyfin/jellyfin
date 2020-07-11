@@ -53,9 +53,11 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{itemId}/AdditionalParts")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute] Guid itemId, [FromQuery] Guid userId)
+        public ActionResult<QueryResult<BaseItemDto>> GetAdditionalPart([FromRoute] Guid itemId, [FromQuery] Guid? userId)
         {
-            var user = !userId.Equals(Guid.Empty) ? _userManager.GetUserById(userId) : null;
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             var item = itemId.Equals(Guid.Empty)
                 ? (!userId.Equals(Guid.Empty)

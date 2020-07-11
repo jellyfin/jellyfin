@@ -143,8 +143,8 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Users/{uId}/Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
-            [FromRoute] Guid uId,
-            [FromQuery] Guid userId,
+            [FromRoute] Guid? uId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
@@ -226,9 +226,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableImages = true)
         {
             // use user id route parameter over query parameter
-            userId = (uId != null) ? uId : userId;
+            userId = uId ?? userId;
 
-            var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
             var dtoOptions = new DtoOptions()
                 .AddItemFields(fields)
                 .AddClientFields(Request)

@@ -57,9 +57,9 @@ namespace Jellyfin.Api.Controllers
                 ? null
                 : _libraryManager.GetItemById(parentId);
 
-            var user = userId == null || userId == Guid.Empty
-                ? null
-                : _userManager.GetUserById(userId.Value);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             if (string.Equals(includeItemTypes, nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
                 || string.Equals(includeItemTypes, nameof(Playlist), StringComparison.OrdinalIgnoreCase)
@@ -152,9 +152,9 @@ namespace Jellyfin.Api.Controllers
                 ? null
                 : _libraryManager.GetItemById(parentId);
 
-            var user = userId == null || userId == Guid.Empty
-                ? null
-                : _userManager.GetUserById(userId.Value);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             if (string.Equals(includeItemTypes, nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
                 || string.Equals(includeItemTypes, nameof(Playlist), StringComparison.OrdinalIgnoreCase)

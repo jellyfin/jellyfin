@@ -44,8 +44,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="name">The name of the collection.</param>
         /// <param name="ids">Item Ids to add to the collection.</param>
-        /// <param name="isLocked">Whether or not to lock the new collection.</param>
         /// <param name="parentId">Optional. Create the collection within a specific folder.</param>
+        /// <param name="isLocked">Whether or not to lock the new collection.</param>
         /// <response code="200">Collection created.</response>
         /// <returns>A <see cref="CollectionCreationOptions"/> with information about the new collection.</returns>
         [HttpPost]
@@ -53,8 +53,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<CollectionCreationResult> CreateCollection(
             [FromQuery] string? name,
             [FromQuery] string? ids,
-            [FromQuery] bool isLocked,
-            [FromQuery] Guid? parentId)
+            [FromQuery] Guid? parentId,
+            [FromQuery] bool isLocked = false)
         {
             var userId = _authContext.GetAuthorizationInfo(Request).UserId;
 

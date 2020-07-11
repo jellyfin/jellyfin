@@ -190,8 +190,8 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] int index,
             [FromRoute, Required] string? format,
             [FromQuery] long? endPositionTicks,
-            [FromQuery] bool copyTimestamps,
-            [FromQuery] bool addVttTimeMap,
+            [FromQuery] bool copyTimestamps = false,
+            [FromQuery] bool addVttTimeMap = false,
             [FromRoute] long startPositionTicks = 0)
         {
             if (string.Equals(format, "js", StringComparison.OrdinalIgnoreCase))

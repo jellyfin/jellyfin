@@ -86,9 +86,9 @@ namespace Jellyfin.Api.Controllers
         public ActionResult AddToPlaylist(
             [FromRoute] string? playlistId,
             [FromQuery] string? ids,
-            [FromQuery] Guid userId)
+            [FromQuery] Guid? userId)
         {
-            _playlistManager.AddToPlaylist(playlistId, RequestHelpers.GetGuids(ids), userId);
+            _playlistManager.AddToPlaylist(playlistId, RequestHelpers.GetGuids(ids), userId ?? Guid.Empty);
             return NoContent();
         }
 

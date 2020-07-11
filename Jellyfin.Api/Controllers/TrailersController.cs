@@ -132,7 +132,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Trailers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetTrailers(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,

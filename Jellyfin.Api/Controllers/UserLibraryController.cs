@@ -180,7 +180,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpPost("/Users/{userId}/Items/{itemId}/Rating")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute] Guid userId, [FromRoute] Guid itemId, [FromQuery] bool likes)
+        public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute] Guid userId, [FromRoute] Guid itemId, [FromQuery] bool? likes)
         {
             return UpdateUserItemRatingInternal(userId, itemId, likes);
         }
@@ -264,7 +264,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<BaseItemDto>> GetLatestMedia(
             [FromRoute] Guid userId,
-            [FromQuery] Guid parentId,
+            [FromQuery] Guid? parentId,
             [FromQuery] string? fields,
             [FromQuery] string? includeItemTypes,
             [FromQuery] bool? isPlayed,
@@ -297,7 +297,7 @@ namespace Jellyfin.Api.Controllers
                     IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
                     IsPlayed = isPlayed,
                     Limit = limit,
-                    ParentId = parentId,
+                    ParentId = parentId ?? Guid.Empty,
                     UserId = userId,
                 }, dtoOptions);
 
