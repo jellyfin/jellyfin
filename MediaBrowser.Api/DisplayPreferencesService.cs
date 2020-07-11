@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
@@ -135,16 +137,19 @@ namespace MediaBrowser.Api
             prefs.ScrollDirection = request.ScrollDirection;
             prefs.HomeSections.Clear();
 
-            for (int i = 0; i < 7; i++)
+            foreach (var key in request.CustomPrefs.Keys.Where(key => key.StartsWith("homesection")))
             {
-                if (request.CustomPrefs.TryGetValue("homesection" + i, out var homeSection))
+                var order = int.Parse(key.Substring("homesection".Length));
+                if (!Enum.TryParse<HomeSectionType>(request.CustomPrefs[key], true, out var type))
                 {
-                    prefs.HomeSections.Add(new HomeSection
-                    {
-                        Order = i,
-                        Type = Enum.TryParse<HomeSectionType>(homeSection, true, out var type) ? type : defaults[i]
-                    });
+                    type = order < 7 ? defaults[order] : HomeSectionType.None;
                 }
+
+                prefs.HomeSections.Add(new HomeSection
+                {
+                    Order = order,
+                    Type = type
+                });
             }
 
             _displayPreferencesManager.SaveChanges(prefs);
