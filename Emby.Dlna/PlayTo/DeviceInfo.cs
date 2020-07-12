@@ -41,7 +41,7 @@ namespace Emby.Dlna.PlayTo
         }
 
         // TODO: Remove as not used.
-        public DeviceIcon[] Icon { get; set; }
+        public DeviceIcon Icon { get; set; }
 
         private readonly List<DeviceService> _services = new List<DeviceService>();
         public List<DeviceService> Services => _services;
