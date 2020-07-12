@@ -108,8 +108,11 @@ namespace Emby.Dlna.PlayTo
         private DateTime _lastVolumeRefresh;
         private bool _volumeRefreshActive;
         private int _volume;
-        private int _minVol = 0;
-        private int _maxVol = 100;
+
+        /// <summary>
+        /// Device's volume boundary values.
+        /// </summary>
+        private ValueRange _volRange = new ValueRange();
 
         /// <summary>
         /// Contains the item currently playing.
@@ -119,9 +122,9 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Initializes a new instance of the <see cref="Device"/> class.
         /// </summary>
-        /// <param name="playToManager">The playToManager<see cref="PlayToManager"/>.</param>
+        /// <param name="playToManager">Our playToManager<see cref="PlayToManager"/>.</param>
         /// <param name="deviceProperties">The deviceProperties<see cref="DeviceInfo"/>.</param>
-        /// <param name="httpClient">The httpClient<see cref="IHttpClient"/>.</param>
+        /// <param name="httpClient">Our httpClient<see cref="IHttpClient"/>.</param>
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <param name="webUrl">The webUrl.</param>
         public Device(PlayToManager playToManager, DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, string webUrl)
@@ -129,9 +132,10 @@ namespace Emby.Dlna.PlayTo
             Properties = deviceProperties;
             _httpClient = httpClient;
             _logger = logger;
-            TransportState = TransportState.NO_MEDIA_PRESENT;
             _jellyfinUrl = webUrl;
             _playToManager = playToManager;
+
+            TransportState = TransportState.NO_MEDIA_PRESENT;
         }
 
         /// <summary>
@@ -157,12 +161,12 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Gets or sets the device's properties.
         /// </summary>
-        public DeviceInfo Properties { get; set; }
+        public DeviceInfo Properties { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the sound is muted.
         /// </summary>
-        public bool IsMuted { get; set; }
+        public bool IsMuted { get; private set; }
 
         /// <summary>
         /// Gets the current media information.
@@ -176,19 +180,19 @@ namespace Emby.Dlna.PlayTo
         {
             get
             {
-                try
-                {
+                // try
+                // {
                     // _logger.LogDebug("Volume first.");
                     // RefreshVolumeIfNeeded().GetAwaiter().GetResult();
-                }
-                catch (ObjectDisposedException)
-                {
+                // }
+                // catch (ObjectDisposedException)
+                // {
                     // Ignore.
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "{0} : Error updating device volume info.", Properties.Name);
-                }
+                // }
+                // catch (Exception ex)
+                // {
+                //     _logger.LogError(ex, "{0} : Error updating device volume info.", Properties.Name);
+                // }
 
                 return _volume;
             }
@@ -199,7 +203,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Gets or sets the Duration.
         /// </summary>
-        public TimeSpan? Duration { get; set; }
+        public TimeSpan? Duration { get; internal set; }
 
         /// <summary>
         /// Gets or sets the Position.
@@ -312,7 +316,28 @@ namespace Emby.Dlna.PlayTo
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
                 if (icon != null)
                 {
-                    deviceProperties.Icon = CreateIcon(icon);
+                    var width = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
+                    var height = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
+                    if (!int.TryParse(width, NumberStyles.Integer, _usCulture, out int widthValue))
+                    {
+                        logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
+                        widthValue = 32;
+                    }
+
+                    if (!int.TryParse(height, NumberStyles.Integer, _usCulture, out int heightValue))
+                    {
+                        logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
+                        heightValue = 32;
+                    }
+
+                    deviceProperties.Icon = new DeviceIcon
+                    {
+                        Depth = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("depth")),
+                        MimeType = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype")),
+                        Url = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("url")),
+                        Height = heightValue,
+                        Width = widthValue
+                    };
                 }
 
                 foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
@@ -402,17 +427,12 @@ namespace Emby.Dlna.PlayTo
         {
             if (_timer == null)
             {
-                _logger.LogDebug("{0} : Starting timer.", Properties.Name);
-                _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
                 _lastVolumeRefresh = DateTime.UtcNow;
+
+                // Make sure that the device doesn't have a range on the volume controls.
                 try
                 {
-                    var range = await GetStateVariableRange(GetServiceRenderingControl(), "Volume").ConfigureAwait(false);
-                    if (range.item1 !=null && range.item2 != null)
-                    {
-                        _minVolume = range.item1;
-                        _maxVolume = range.item2;
-                    }
+                    await GetStateVariableRange(GetServiceRenderingControl(), "Volume").ConfigureAwait(false);
                 }
                 catch (ObjectDisposedException)
                 {
@@ -423,12 +443,19 @@ namespace Emby.Dlna.PlayTo
                     // Ignore.
                 }
 
-            try
+                try
                 {
+                    // Update the position, volume and subscript for events.
                     await GetPositionRequest().ConfigureAwait(false); // TODO: do we need the other work around?
                     await RefreshVolumeIfNeeded().ConfigureAwait(false);
                     await SubscribeAsync().ConfigureAwait(false);
 
+                    if (_subscribed)
+                    {
+                        _logger.LogDebug("{0} : Starting legacy timer.", Properties.Name);
+                        _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
+                    }
+
                 }
                 catch (ObjectDisposedException)
                 {
@@ -439,11 +466,14 @@ namespace Emby.Dlna.PlayTo
                     // Ignore.
                 }
 
-                // Start the queue processor.
+                // Start the user command queue processor.
                 await ProcessQueue().ConfigureAwait(false);
             }
         }
 
+        /// <summary>
+        /// Called when the device becomes unavailable.
+        /// </summary>
         public async Task DeviceUnavailable()
         {
             if (_subscribed)
@@ -487,22 +517,26 @@ namespace Emby.Dlna.PlayTo
         /// <param name="when">When to restart the timer. Less than 0 = never, 0 = instantly, greater than 0 in 1 second.</param>
         private void RestartTimer(int when)
         {
-            lock (_timerLock)
+            if (!_subscribed)
             {
-                if (_disposed)
+                lock (_timerLock)
                 {
-                    return;
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
+                    _volumeRefreshActive = when != Never;
+
+                    int delay = when == Never ? Timeout.Infinite : when == Now ? 100 : 10000;
+                    _timer?.Change(delay, Timeout.Infinite);
                 }
-
-                _volumeRefreshActive = when != Never;
-
-                int delay = when == Never ? Timeout.Infinite : when == Now ? 100 : 10000;
-                _timer?.Change(delay, Timeout.Infinite);
             }
         }
 
         /// <summary>
-        /// Adds an event to the queue.
+        /// Adds an event to the user control queue.
+        /// Later identical events overwrite earlier ones.
         /// </summary>
         /// <param name="command">Command to queue.</param>
         /// <param name="value">Command parameter.</param>
@@ -528,7 +562,7 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Removes an event from the queue.
+        /// Removes an event from the queue if it exists, or adds it if it doesn't.
         /// </summary>
         private void AddOrCancelIfQueued(string command)
         {
@@ -551,11 +585,13 @@ namespace Emby.Dlna.PlayTo
 
         private async Task ProcessQueue()
         {
+            // Infinite loop until dispose.
             while (!_disposed)
             {
+                // Process items in the queue.
                 while (_queue.Count > 0)
                 {
-                    // Ensure we are subscribed.
+                    // Ensure we are still subscribed.
                     await SubscribeAsync().ConfigureAwait(false);
 
                     KeyValuePair<string, object> action;
@@ -651,19 +687,20 @@ namespace Emby.Dlna.PlayTo
 
                             case "Queue":
                                 {
-                                    var settings = (Tuple<string, string, string>)action.Value;
+                                    var settings = (MediaData)action.Value;
                                     bool success = true;
 
                                     if (IsPlaying)
                                     {
                                         // Has user requested a media change?
-                                        if (_mediaPlaying != settings.Item1)
+                                        if (_mediaPlaying != settings.url)
                                         {
                                             _logger.LogDebug("{0} : Stopping current playback for transition.", Properties.Name);
                                             success = await SendStopRequest().ConfigureAwait(false);
 
                                             if (success)
                                             {
+                                                // Save current progress.
                                                 TransportState = TransportState.TRANSITIONING;
                                                 UpdateMediaInfo(null);
                                             }
@@ -677,9 +714,11 @@ namespace Emby.Dlna.PlayTo
                                             success = await SendSeekRequest(TimeSpan.Zero).ConfigureAwait(false);
                                             if (success)
                                             {
+                                                // Save progress and restart time.
                                                 UpdateMediaInfo(CurrentMediaInfo);
                                                 RestartTimer(Normal);
-                                                success = false; // Nothing to do here.
+                                                // We're finished. Nothing further to do.
+                                                break;
                                             }
                                         }
                                     }
@@ -739,7 +778,6 @@ namespace Emby.Dlna.PlayTo
                     UserAgent = USERAGENT,
                     LogErrorResponseBody = true,
                     BufferContent = false,
-
                     CancellationToken = cancellationToken
                 };
 
@@ -759,12 +797,13 @@ namespace Emby.Dlna.PlayTo
                 stopWatch.Start();
                 HttpResponseInfo response = await _httpClient.Post(options).ConfigureAwait(true);
 
+                // Get the response.
                 using var stream = response.Content;
                 using var reader = new StreamReader(stream, Encoding.UTF8);
                 var result = XDocument.Parse(await reader.ReadToEndAsync().ConfigureAwait(false), LoadOptions.PreserveWhitespace);
                 stopWatch.Stop();
 
-                // Calculate just under half of the round trip time.
+                // Calculate just under half of the round trip time so we can make the position slide more accurate.
                 _transportOffset = stopWatch.Elapsed.Divide(1.8);
 
                 return result;
@@ -913,15 +952,12 @@ namespace Emby.Dlna.PlayTo
         /// </summary>
         /// <param name="renderService">Service to use.</param>
         /// <param name="wanted">State variable to return.</param>
-        /// <returns>Tuple of minimum/maximum.</returns>
-        private async Task<Tuple<int?,int?>> GetStateVariableRange(DeviceService renderService, string wanted)
+        private async Task GetStateVariableRange(DeviceService renderService, string wanted)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(string.Empty);
             }
-
-            var result = new Tuple<int?, int?>(null, null);
 
             try
             {
@@ -934,25 +970,24 @@ namespace Emby.Dlna.PlayTo
                 using var reader = new StreamReader(response, Encoding.UTF8);
                 {
                     string xmlstring = await reader.ReadToEndAsync().ConfigureAwait(false);
-                }
 
-                var dlnaDescripton = new XmlDocument();
-                dlnaDescripton.LoadXml(xmlstring);
-                XmlNode? minimum = result.SelectNodes("//stateVariable[name/text()='"
-                    + wanted
-                    + "']/allowedValueRange/minimum/text()")?.First();
-                XmlNode? maximum = result.SelectNodes("//stateVariable[name/text()='"
-                    + wanted
-                    + "']/allowedValueRange/maximum/text()")?.First();
+                    // Use xpath to get to /stateVariable/allowedValueRange/minimum|maximum where /stateVariable/Name == wanted.
+                    var dlnaDescripton = new XmlDocument();
+                    dlnaDescripton.LoadXml(xmlstring);
 
-                if (minimum.Value.HasValue)
-                {
-                    int.TryParse(minimum.Value, out result.item1);
-                }
+                    XmlNode? minimum = dlnaDescripton.SelectSingleNode("//stateVariable[name/text()='"
+                        + wanted
+                        + "']/allowedValueRange/minimum/text()").FirstChild;
+                    XmlNode? maximum = dlnaDescripton.SelectSingleNode("//stateVariable[name/text()='"
+                        + wanted
+                        + "']/allowedValueRange/maximum/text()").FirstChild;
 
-                if (maximum.Value.HasValue)
-                {
-                    int.TryParse(maximum.Value, out result.item2);
+                    // Populate the return value with what we have. Don't worry about null values.
+                    if (minimum.Value != null && maximum.Value != null)
+                    {
+                        _volRange.Min = int.Parse(minimum.Value, _usCulture);
+                        _volRange.Max = int.Parse(maximum.Value, _usCulture);
+                    }
                 }
             }
             catch (XmlException)
@@ -963,15 +998,13 @@ namespace Emby.Dlna.PlayTo
             {
                 _logger.LogError("{0} : Unable to retrieve ssdp description.", Properties.Name);
             }
-
-            return result;
         }
 
         /// <summary>
         /// Checks to see if DLNA subscriptions are implemented, and if so subscribes to changes.
         /// </summary>
         /// <param name="service">The service<see cref="DeviceService"/>.</param>
-        /// <param name="sid">The sid.</param>
+        /// <param name="sid">The SID for renewal, or null for subscription.</param>
         /// <returns>Task.</returns>
         private async Task<string> SubscribeInternalAsync(DeviceService service, string? sid)
         {
@@ -990,6 +1023,7 @@ namespace Emby.Dlna.PlayTo
                     BufferContent = false,
                 };
 
+                // Renewal or subscription?
                 if (string.IsNullOrEmpty(sid))
                 {
                     if (string.IsNullOrEmpty(_sessionId))
@@ -1008,11 +1042,12 @@ namespace Emby.Dlna.PlayTo
                 }
 
                 options.RequestHeaders["NT"] = "upnp:event";
-                options.RequestHeaders["TIMEOUT"] = "Second-30"; // Wait 5 seconds before timing out.
+                options.RequestHeaders["TIMEOUT"] = "Second-5";
                 // TODO: check what happens at timeout.
 
                 try
                 {
+                    // Send the subscription message to the client.
                     using var response = await _httpClient.SendAsync(options, new HttpMethod("SUBSCRIBE")).ConfigureAwait(false);
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
@@ -1046,9 +1081,10 @@ namespace Emby.Dlna.PlayTo
             {
                 try
                 {
-                    // Start listening to DLNA events.
+                    // Start listening to DLNA events that come via the url through the PlayToManger.
                     _playToManager.DLNAEvents += ProcessSubscriptionEvent;
 
+                    // Subscribe to both AvTransport and RenderControl events.
                     _transportSid = await SubscribeInternalAsync(GetAvTransportService(), _transportSid).ConfigureAwait(false);
                     _logger.LogDebug("AVTransport SID {0}.", _transportSid);
 
@@ -1066,6 +1102,7 @@ namespace Emby.Dlna.PlayTo
 
         /// <summary>
         /// Resubscribe to DLNA evemts.
+        /// Use in the event trigger, as an async wrapper.
         /// </summary>
         /// <returns>The <see cref="Task"/>.</returns>
         private async Task ResubscribeToEvents()
@@ -1176,67 +1213,81 @@ namespace Emby.Dlna.PlayTo
                         var reply = ParseResponse(response, "InstanceID");
                         _logger.LogDebug("Processing a subscription event.");
 
-                        if (reply.TryGetValue("Mute", out string value) && int.TryParse(value, out int mute))
+                        if (!reply.TryGetValue("AVTransportURI", out string value))
                         {
-                            _logger.LogDebug("Muted: {0}", mute);
-                            IsMuted = mute == 1;
-                        }
-
-                        if (reply.TryGetValue("Volume", out value) && int.TryParse(value, out int volume))
-                        {
-                            _logger.LogDebug("Volume: {0}", volume);
-                            Volume = volume;
-                        }
-
-                        if (reply.TryGetValue("CurrentTrackDuration", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan dur))
-                        {
-                            _logger.LogDebug("CurrentTrackDuration: {0}", dur);
-                            Duration = dur;
-                        }
-
-                        if (reply.TryGetValue("RelativeTimePosition", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan rel))
-                        {
-                            _logger.LogDebug("RelativeTimePosition: {0}", rel);
-                            Position = rel;
-                        }
-
-                        // If this is an AVTransport event and the position isn't in this update, try to get it.
-                        if (reply.TryGetValue("AVTransportURI", out value) && !reply.ContainsKey("RelativeTimePosition"))
-                        {
-                            _logger.LogDebug("Updating position as not included.");
-                            // Try and get the latest position update
-                            await GetPositionRequest().ConfigureAwait(false);
-                        }
-
-                        if (reply.TryGetValue("TransportState", out value) && Enum.TryParse(value, true, out TransportState ts))
-                        {
-                            _logger.LogDebug("TransportState: {0}", ts);
-                            // Mustn't process our own change playback event.
-                            if (ts != TransportState && TransportState != TransportState.TRANSITIONING)
+                            // Render events.
+                            if (reply.TryGetValue("Mute", out value)
+                                && int.TryParse(value, out int mute))
                             {
-                                TransportState = ts;
+                                _logger.LogDebug("Muted: {0}", mute);
+                                IsMuted = mute == 1;
+                            }
 
-                                if (ts == TransportState.STOPPED)
+                            if (reply.TryGetValue("Volume", out value)
+                                && int.TryParse(value, out int volume))
+                            {
+                                _logger.LogDebug("Volume: {0}", volume);
+                                Volume = volume;
+                            }
+
+                            if (reply.TryGetValue("TransportState", out value)
+                                && Enum.TryParse(value, true, out TransportState ts))
+                            {
+                                _logger.LogDebug("TransportState: {0}", ts);
+
+                                // Mustn't process our own change playback event.
+                                if (ts != TransportState && TransportState != TransportState.TRANSITIONING)
                                 {
-                                    UpdateMediaInfo(null);
-                                    RestartTimer(Normal);
+                                    TransportState = ts;
+
+                                    if (ts == TransportState.STOPPED)
+                                    {
+                                        UpdateMediaInfo(null);
+                                        // RestartTimer(Normal);
+                                    }
                                 }
                             }
+
                         }
-
-                        if (reply.TryGetValue("CurrentTrackMetaData", out value) && !string.IsNullOrEmpty(value))
+                        else // AVTransport events.
                         {
-                            XElement? uPnpResponse = ParseNodeResponse(value);
-                            var e = uPnpResponse?.Element(uPnpNamespaces.items);
-
-                            if (reply.TryGetValue("CurrentTrackURI", out value) && !string.IsNullOrEmpty(value))
+                            // If the position isn't in this update, try to get it.
+                            if (!reply.TryGetValue("RelativeTimePosition", out value))
                             {
-                                uBaseObject? uTrack = CreateUBaseObject(e, value);
+                                _logger.LogDebug("Updating position as not included.");
+                                // Try and get the latest position update
+                                await GetPositionRequest().ConfigureAwait(false);
+                            }
+                            else if (TimeSpan.TryParse(value, _usCulture, out TimeSpan rel))
+                            {
+                                _logger.LogDebug("RelativeTimePosition: {0}", rel);
+                                Position = rel;
+                            }
 
-                                if (uTrack != null)
+                            if (reply.TryGetValue("CurrentTrackDuration", out value)
+                                && TimeSpan.TryParse(value, _usCulture, out TimeSpan dur))
+                            {
+                                _logger.LogDebug("CurrentTrackDuration: {0}", dur);
+                                Duration = dur;
+                            }
+
+                            // See if we can update out media.
+                            if (reply.TryGetValue("CurrentTrackMetaData", out value)
+                                && !string.IsNullOrEmpty(value))
+                            {
+                                XElement? uPnpResponse = ParseNodeResponse(value);
+                                var e = uPnpResponse?.Element(uPnpNamespaces.items);
+
+                                if (reply.TryGetValue("CurrentTrackURI", out value)
+                                    && !string.IsNullOrEmpty(value))
                                 {
-                                    UpdateMediaInfo(uTrack);
-                                    RestartTimer(Normal);
+                                    uBaseObject? uTrack = CreateUBaseObject(e, value);
+
+                                    if (uTrack != null)
+                                    {
+                                        UpdateMediaInfo(uTrack);
+                                        // RestartTimer(Normal);
+                                    }
                                 }
                             }
                         }
@@ -1289,7 +1340,8 @@ namespace Emby.Dlna.PlayTo
 
                     if (transportState != TransportState.ERROR)
                     {
-                        // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
+                        // If we're not playing anything make sure we don't get data more
+                        // often than neccessary to keep the Session alive.
                         if (transportState == TransportState.STOPPED)
                         {
                             UpdateMediaInfo(null);
@@ -1297,7 +1349,10 @@ namespace Emby.Dlna.PlayTo
                         }
                         else
                         {
-                            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo", cancellationToken).ConfigureAwait(false);
+                            var result = await SendCommandResponseRequired(
+                                TransportCommandsAV,
+                                "GetPositionInfo",
+                                cancellationToken).ConfigureAwait(false);
                             var response = ParseResponse(result?.Document, "GetPositionInfoResponse");
                             if (response.Count == 0)
                             {
@@ -1315,6 +1370,7 @@ namespace Emby.Dlna.PlayTo
                                 Position = rel;
                             }
 
+                            // Get current media info.
                             uBaseObject? currentObject = null;
                             if (!response.TryGetValue("TrackMetaData", out string track) || string.IsNullOrEmpty(track))
                             {
@@ -1379,7 +1435,7 @@ namespace Emby.Dlna.PlayTo
             if (Volume != value && value >= 0 && value <= 100)
             {
                 // Adjust for items that don't have a volume range 0..100.
-                int ratio = Math.Round((_maxVol - _minVol) / 100 * value);
+                int ratio = (int)Math.Round((double)((_volRange.Max - _volRange.Min) / 100 * value));
                 result = await SendCommand(TransportCommandsRender, "SetVolume", default, ratio).ConfigureAwait(false);
                 if (result)
                 {
@@ -1401,14 +1457,15 @@ namespace Emby.Dlna.PlayTo
                 throw new ObjectDisposedException(string.Empty);
             }
 
+            string volume = string.Empty;
             try
             {
                 var result = await SendCommandResponseRequired(TransportCommandsRender, "GetVolume", default).ConfigureAwait(false);
                 var response = ParseResponse(result?.Document, "GetVolumeResponse");
 
-                if (response.TryGetValue("CurrentVolume", out string volume))
+                if (response.TryGetValue("CurrentVolume", out volume))
                 {
-                    Volume = Math.Round(int.Parse(volume, _usCulture) / (_maxVol - _minVol) / 100);
+                    Volume = (int)Math.Round((double)(int.Parse(volume, _usCulture) / (_volRange.Max - _volRange.Min) / 100));
 
                     if (Volume > 0)
                     {
@@ -1428,6 +1485,7 @@ namespace Emby.Dlna.PlayTo
             {
                 _logger.LogError("{0} : Error parsing GetVolume {1}.", Properties.Name, volume);
             }
+
             return false;
         }
 
@@ -1566,40 +1624,38 @@ namespace Emby.Dlna.PlayTo
             return false;
         }
 
-        private async Task<bool> SendMediaRequest(Tuple<string, string, string> settings)
+        private async Task<bool> SendMediaRequest(MediaData settings)
         {
-            string url = settings.Item1;
             var result = false;
 
-            if (!string.IsNullOrEmpty(url))
+            if (!string.IsNullOrEmpty(settings.url))
             {
-                url = url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
-                _logger.LogDebug("{0} : {1} - SetAvTransport Uri: {2} DlnaHeaders: {3}", Properties.Name, url, settings.Item2);
+                settings.url = settings.url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
+                _logger.LogDebug("{0} : {1} - SetAvTransport Uri: {2} DlnaHeaders: {3}", Properties.Name, settings.url, settings.headers);
 
                 var dictionary = new Dictionary<string, string>
                 {
-                    { "CurrentURI", settings.Item1 },
-                    { "CurrentURIMetaData", DescriptionXmlBuilder.Escape(settings.Item3) }
+                    { "CurrentURI", settings.url },
+                    { "CurrentURIMetaData", DescriptionXmlBuilder.Escape(settings.metadata) }
                 };
 
                 result = await SendCommand(
                     TransportCommandsAV,
                     "SetAVTransportURI",
                     default,
-                    settings.Item1,
+                    settings.url,
                     dictionary: dictionary,
-                    header: settings.Item2).ConfigureAwait(false);
+                    header: settings.headers).ConfigureAwait(false);
 
                 if (result)
                 {
                     await Task.Delay(50).ConfigureAwait(false);
 
                     result = await SendPlayRequest().ConfigureAwait(false);
-
                     if (result)
                     {
                         // Update what is playing.
-                        _mediaPlaying = url;
+                        _mediaPlaying = settings.url;
                         RestartTimer(Now);
                     }
                 }
@@ -1627,6 +1683,7 @@ namespace Emby.Dlna.PlayTo
                 var e = track?.Element(uPnpNamespaces.items) ?? track;
                 if (!string.IsNullOrWhiteSpace(e?.Value))
                 {
+                    RestartTimer(Normal);
                     return UpnpContainer.Create(e);
                 }
 
@@ -1634,6 +1691,7 @@ namespace Emby.Dlna.PlayTo
                 e = track?.Element(uPnpNamespaces.items) ?? track;
                 if (!string.IsNullOrWhiteSpace(e?.Value))
                 {
+                    RestartTimer(Normal);
                     return new uBaseObject
                     {
                         Url = e.Value
@@ -1642,7 +1700,7 @@ namespace Emby.Dlna.PlayTo
             }
             else
             {
-                _logger.LogWarning("GetMediaInfo failed.");
+                _logger.LogWarning("{0} : GetMediaInfo failed.", Properties.Name);
             }
 
             return null;
@@ -1694,6 +1752,7 @@ namespace Emby.Dlna.PlayTo
                         Position = r;
                     }
 
+                    RestartTimer(Normal);
                     return true;
                 }
             }
@@ -1840,16 +1899,9 @@ namespace Emby.Dlna.PlayTo
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Attempts to set the AV transport.
-        /// </summary>
-        /// <param name="url">The url.</param>
-        /// <param name="header">The header.</param>
-        /// <param name="metaData">The metaData.</param>
-        /// <returns>Task.</returns>
-        public Task SetAvTransport(string url, string header, string metaData)
+        public Task SetAvTransport(string dataurl, string dataheaders, string data)
         {
-            QueueEvent("Queue", new Tuple<string, string, string>(url, header, metaData));
+            QueueEvent("Queue", new MediaData { url = dataurl, headers = dataheaders, metadata = data });
             return Task.CompletedTask;
         }
 
@@ -1981,7 +2033,7 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Parses a response into a dictionary.
+        /// Parses a response into a dictionary, taking care of NOT IMPLEMENTED and null responses.
         /// </summary>
         /// <param name="document">Response to parse.</param>
         /// <param name="action">Action to extract.</param>
@@ -2005,7 +2057,7 @@ namespace Emby.Dlna.PlayTo
                                 string? value = childNode.Value;
                                 if (string.IsNullOrWhiteSpace(value))
                                 {
-                                    // Some responses are stores in the val property.
+                                    // Some responses are stores in the val property, and not in the element.
                                     value = childNode.Attribute("val")?.Value;
                                 }
 
@@ -2035,14 +2087,9 @@ namespace Emby.Dlna.PlayTo
             return result;
         }
 
-        /// <summary>
-        /// The ParseNodeResponse.
-        /// </summary>
-        /// <param name="xml">The xml.</param>
-        /// <returns>The .</returns>
         private XElement? ParseNodeResponse(string xml)
         {
-            // Handle different variations sent back by devices
+            // Handle different variations sent back by devices.
             try
             {
                 return XElement.Parse(xml);
@@ -2052,7 +2099,7 @@ namespace Emby.Dlna.PlayTo
                 // Wasn't this flavour.
             }
 
-            // first try to add a root node with a dlna namesapce
+            // First try to add a root node with a dlna namespace.
             try
             {
                 return XElement.Parse("<data xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + xml + "</data>")
@@ -2064,7 +2111,7 @@ namespace Emby.Dlna.PlayTo
                 // Wasn't this flavour.
             }
 
-            // some devices send back invalid xml
+            // Some devices send back invalid XML.
             try
             {
                 return XElement.Parse(xml.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase));
@@ -2077,13 +2124,6 @@ namespace Emby.Dlna.PlayTo
             return null;
         }
 
-        /// <summary>
-        /// Normalizes a Url.
-        /// </summary>
-        /// <param name="baseUrl">The base Url.</param>
-        /// <param name="url">The service Url.</param>
-        /// <param name="dmr">When true, prepends 'dmr' if not present in the url.</param>
-        /// <returns>A normalised Url.</returns>
         private static string NormalizeUrl(string baseUrl, string url, bool dmr = false)
         {
             // If it's already a complete url, don't stick anything onto the front of it
@@ -2151,37 +2191,6 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// The CreateIcon.
-        /// </summary>
-        /// <param name="element">The element.</param>
-        /// <returns>The <see cref="DeviceIcon"/>.</returns>
-        private static DeviceIcon CreateIcon(XElement element)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
-
-            var mimeType = element.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype"));
-            var width = element.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
-            var height = element.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
-            var depth = element.GetDescendantValue(uPnpNamespaces.ud.GetName("depth"));
-            var url = element.GetDescendantValue(uPnpNamespaces.ud.GetName("url"));
-
-            var widthValue = int.Parse(width, NumberStyles.Integer, _usCulture);
-            var heightValue = int.Parse(height, NumberStyles.Integer, _usCulture);
-
-            return new DeviceIcon
-            {
-                Depth = depth,
-                Height = heightValue,
-                MimeType = mimeType,
-                Url = url,
-                Width = widthValue
-            };
-        }
-
-        /// <summary>
         /// Creates a DeviceService from an XML element.
         /// </summary>
         /// <param name="element">The element.</param>
@@ -2202,6 +2211,19 @@ namespace Emby.Dlna.PlayTo
                 ServiceId = id,
                 ServiceType = type
             };
+        }
+
+        internal class ValueRange
+        {
+            internal int Min = 0;
+            internal int Max = 100;
+        }
+
+        internal class MediaData
+        {
+            internal string url = string.Empty;
+            internal string metadata = string.Empty;
+            internal string headers = string.Empty;
         }
     }
 }
