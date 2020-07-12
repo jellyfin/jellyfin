@@ -110,7 +110,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            return _dbProvider.CreateContext().Users.ToList()
+            return _dbProvider.CreateContext().Users.AsEnumerable()
                 .FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -380,7 +380,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentNullException(nameof(username));
             }
 
-            var user = Users.ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+            var user = Users.AsEnumerable().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
             bool success;
             IAuthenticationProvider? authenticationProvider;
 
@@ -408,8 +408,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                     // Search the database for the user again
                     // the authentication provider might have created it
-                    user = Users
-                        .ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+                    user = Users.AsEnumerable().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
                     if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
                     {
