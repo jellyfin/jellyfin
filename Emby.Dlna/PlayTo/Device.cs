@@ -12,6 +12,7 @@ namespace Emby.Dlna.PlayTo
     using System.Net;
     using System.Net.Http;
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Xml;
@@ -211,7 +212,7 @@ namespace Emby.Dlna.PlayTo
 
                 int calculateVolume = (int)Math.Round(100 / _volRange.Range * _volume);
 
-                _logger.LogError("{0} : Returning a volume setting of {1}.", Properties.Name, calculateVolume);
+                _logger.LogDebug("{0} : Returning a volume setting of {1}.", Properties.Name, calculateVolume);
                 return calculateVolume;
             }
 
@@ -324,6 +325,11 @@ namespace Emby.Dlna.PlayTo
 
                 if (data.TryGetValue("friendlyName", out string value))
                 {
+                    // Some devices include their MAC addresses as part of their name.
+                    value = Regex.Replace(value, "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})", string.Empty)
+                        .Replace("()", string.Empty, StringComparison.OrdinalIgnoreCase)
+                        .Replace("[]", string.Empty, StringComparison.OrdinalIgnoreCase)
+                        .Trim();
                     friendlyNames.Add(value);
                 }
 
@@ -338,36 +344,44 @@ namespace Emby.Dlna.PlayTo
                     BaseUrl = string.Format(CultureInfo.InvariantCulture, "http://{0}:{1}", url.Host, url.Port)
                 };
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference : data is null, if document is null. Compiler doesn't pick this up.
-                var icon = document.Descendants(uPnpNamespaces.ud.GetName("icon")).FirstOrDefault();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-                if (icon != null)
-                {
-                    var width = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
-                    var height = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
-                    if (!int.TryParse(width, NumberStyles.Integer, _usCulture, out int widthValue))
-                    {
-                        logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
-                        widthValue = 32;
-                    }
+                // Icon property is never used.
 
-                    if (!int.TryParse(height, NumberStyles.Integer, _usCulture, out int heightValue))
-                    {
-                        logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
-                        heightValue = 32;
-                    }
+                // var icons = document.Descendants(uPnpNamespaces.ud.GetName("icon"));
+                // var iconList = new List<DeviceIcon>();
+                // if (icons != null)
+                // {
+                //    // Get all size icons
+                //    foreach (var icon in icons)
+                //    {
+                //        var width = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
+                //        var height = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
+                //        if (!int.TryParse(width, NumberStyles.Integer, _usCulture, out int widthValue))
+                //        {
+                //            logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
+                //            widthValue = 32;
+                //        }
+                //
+                //        if (!int.TryParse(height, NumberStyles.Integer, _usCulture, out int heightValue))
+                //        {
+                //            logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
+                //            heightValue = 32;
+                //        }
+                //
+                //        iconList.Add(new DeviceIcon
+                //        {
+                //            Depth = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("depth")),
+                //            MimeType = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype")),
+                //            Url = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("url")),
+                //            Height = heightValue,
+                //            Width = widthValue
+                //        });
+                //    }
+                //    deviceProperties.Icon = iconList.ToArray();
+                // }
 
-                    deviceProperties.Icon = new DeviceIcon
-                    {
-                        Depth = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("depth")),
-                        MimeType = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype")),
-                        Url = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("url")),
-                        Height = heightValue,
-                        Width = widthValue
-                    };
-                }
-
+#pragma warning disable CS8602 // Dereference of a possibly null reference : Data returns null if document is null. So document has a value here.
                 foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 {
                     if (services == null)
                     {

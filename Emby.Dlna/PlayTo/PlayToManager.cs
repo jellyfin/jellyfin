@@ -191,7 +191,6 @@ namespace Emby.Dlna.PlayTo
 
             var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
 
-            // TODO: is this correct - as it looks like if there is a controller, nothing is done.
             if (controller == null)
             {
                 string serverAddress;
