@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.PluginDtos;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Plugins;
@@ -118,7 +119,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var configuration = (BasePluginConfiguration)await JsonSerializer.DeserializeAsync(Request.Body, plugin.ConfigurationType)
+            var configuration = (BasePluginConfiguration)await JsonSerializer.DeserializeAsync(Request.Body, plugin.ConfigurationType, JsonDefaults.GetOptions())
                 .ConfigureAwait(false);
 
             plugin.UpdateConfiguration(configuration);
