@@ -46,6 +46,7 @@ using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Emby.Server.Implementations.SyncPlay;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -637,6 +638,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<EncodingHelper>();
 
             serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
+
+            serviceCollection.AddSingleton<TranscodingJobHelper>();
         }
 
         /// <summary>

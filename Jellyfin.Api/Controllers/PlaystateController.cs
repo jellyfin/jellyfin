@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -40,8 +39,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
-        /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="transcodingJobHelper">Th <see cref="TranscodingJobHelper"/> singleton.</param>
         public PlaystateController(
             IUserManager userManager,
             IUserDataManager userDataRepository,
@@ -49,8 +47,7 @@ namespace Jellyfin.Api.Controllers
             ISessionManager sessionManager,
             IAuthorizationContext authContext,
             ILoggerFactory loggerFactory,
-            IMediaSourceManager mediaSourceManager,
-            IFileSystem fileSystem)
+            TranscodingJobHelper transcodingJobHelper)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
@@ -59,10 +56,7 @@ namespace Jellyfin.Api.Controllers
             _authContext = authContext;
             _logger = loggerFactory.CreateLogger<PlaystateController>();
 
-            _transcodingJobHelper = new TranscodingJobHelper(
-                loggerFactory.CreateLogger<TranscodingJobHelper>(),
-                mediaSourceManager,
-                fileSystem);
+            _transcodingJobHelper = transcodingJobHelper;
         }
 
         /// <summary>

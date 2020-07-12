@@ -1263,6 +1263,17 @@ namespace MediaBrowser.Controller.MediaEncoding
             return null;
         }
 
+        public int? GetAudioBitrateParam(int? audioBitRate, MediaStream audioStream)
+        {
+            if (audioBitRate.HasValue)
+            {
+                // Don't encode any higher than this
+                return Math.Min(384000, audioBitRate.Value);
+            }
+
+            return null;
+        }
+
         public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions, bool isHls)
         {
             var channels = state.OutputAudioChannels;
