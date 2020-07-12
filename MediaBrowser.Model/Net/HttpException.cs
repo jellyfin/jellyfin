@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Gets or sets the webservice response text that accompanied the error code.
         /// </summary>
-        public string ResponseText { get; set; }
+        public string? ResponseText { get; set; }
         
         /// <summary>
         /// Gets or sets a value indicating whether this instance is timed out.
