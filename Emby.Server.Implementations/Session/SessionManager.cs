@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (DbUpdateConcurrencyException e)
                     {
-                        _logger.LogWarning(e, "Error updating user's last activity date.");
+                        _logger.LogDebug(e, "Error updating user's last activity date.");
                     }
                 }
             }

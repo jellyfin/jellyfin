@@ -110,9 +110,8 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            // This can't use an overload with StringComparer because that would cause the query to
-            // have to be evaluated client-side.
-            return _dbProvider.CreateContext().Users.FirstOrDefault(u => string.Equals(u.Username, name));
+            return _dbProvider.CreateContext().Users.AsEnumerable()
+                .FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <inheritdoc/>
@@ -381,7 +380,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentNullException(nameof(username));
             }
 
-            var user = Users.ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+            var user = Users.AsEnumerable().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
             bool success;
             IAuthenticationProvider? authenticationProvider;
 
@@ -409,8 +408,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                     // Search the database for the user again
                     // the authentication provider might have created it
-                    user = Users
-                        .ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+                    user = Users.AsEnumerable().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
                     if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
                     {
