@@ -204,7 +204,7 @@ namespace Emby.Dlna.PlayTo
                     serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
                 }
 
-                var device = await Device.CreateuPnpDeviceAsync(this, uri, _httpClient, _logger, serverAddress, cancellationToken).ConfigureAwait(false);
+                var device = await Device.CreateuPnpDeviceAsync(this, uri, _httpClient, _logger, serverAddress).ConfigureAwait(false);
                 if (device == null)
                 {
                     return false;
