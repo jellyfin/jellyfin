@@ -783,7 +783,8 @@ namespace Emby.Dlna.PlayTo
                             {
                                 if (int.TryParse(arg, NumberStyles.Integer, _usCulture, out var volume))
                                 {
-                                    return _device.VolumeUp(volume);
+                                    _device.Volume = volume;
+                                    return Task.CompletedTask;
                                 }
 
                                 throw new ArgumentException("Unsupported volume value supplied.");

@@ -57,6 +57,11 @@ namespace Emby.Dlna.PlayTo
         private readonly object _queueLock = new object();
 
         /// <summary>
+        /// Device's volume boundary values.
+        /// </summary>
+        private readonly ValueRange _volRange = new ValueRange();
+
+        /// <summary>
         /// Holds the URL for the Jellyfin web server.
         /// </summary>
         private readonly string _jellyfinUrl;
@@ -110,11 +115,6 @@ namespace Emby.Dlna.PlayTo
         private int _volume;
 
         /// <summary>
-        /// Device's volume boundary values.
-        /// </summary>
-        private ValueRange _volRange = new ValueRange();
-
-        /// <summary>
         /// Contains the item currently playing.
         /// </summary>
         private string _mediaPlaying = string.Empty;
@@ -159,12 +159,12 @@ namespace Emby.Dlna.PlayTo
         public event EventHandler<MediaChangedEventArgs>? MediaChanged;
 
         /// <summary>
-        /// Gets or sets the device's properties.
+        /// Gets the device's properties.
         /// </summary>
         public DeviceInfo Properties { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the sound is muted.
+        /// Gets a value indicating whether the sound is muted.
         /// </summary>
         public bool IsMuted { get; private set; }
 
@@ -174,34 +174,47 @@ namespace Emby.Dlna.PlayTo
         public uBaseObject? CurrentMediaInfo { get; private set; }
 
         /// <summary>
-        /// Gets the Volume.
+        /// Gets or sets the Volume.
         /// </summary>
         public int Volume
         {
             get
             {
-                // try
-                // {
-                    // _logger.LogDebug("Volume first.");
-                    // RefreshVolumeIfNeeded().GetAwaiter().GetResult();
-                // }
-                // catch (ObjectDisposedException)
-                // {
-                    // Ignore.
-                // }
-                // catch (Exception ex)
-                // {
-                //     _logger.LogError(ex, "{0} : Error updating device volume info.", Properties.Name);
-                // }
+                if (!_subscribed)
+                {
+                    try
+                    {
+                        RefreshVolumeIfNeeded().GetAwaiter().GetResult();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // Ignore.
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "{0} : Error getting device volume.", Properties.Name);
+                    }
+                }
 
-                return _volume;
+                int calculateVolume = (int)Math.Round((double)((_volRange.Max - _volRange.Min) / 100 * _volume));
+
+                _logger.LogError("{0} : Returning a volume setting of ", Properties.Name, calculateVolume);
+                return calculateVolume;
             }
 
-            internal set => _volume = value;
+            set
+            {
+                if (value >= 0 && value <= 100)
+                {
+                    // Make ratio adjustments as not all devices have volume level 100. (User range => Device range.)
+                    _volume = (int)Math.Round((double)((_volRange.Max - _volRange.Min) / 100 * value));
+                    QueueEvent("SetVolume", _volume);
+                }
+            }
         }
 
         /// <summary>
-        /// Gets or sets the Duration.
+        /// Gets the Duration.
         /// </summary>
         public TimeSpan? Duration { get; internal set; }
 
@@ -455,7 +468,6 @@ namespace Emby.Dlna.PlayTo
                         _logger.LogDebug("{0} : Starting legacy timer.", Properties.Name);
                         _timer = new Timer(TimerCallback, null, 1000, Timeout.Infinite);
                     }
-
                 }
                 catch (ObjectDisposedException)
                 {
@@ -474,6 +486,7 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Called when the device becomes unavailable.
         /// </summary>
+        /// <returns>Task.</returns>
         public async Task DeviceUnavailable()
         {
             if (_subscribed)
@@ -488,6 +501,154 @@ namespace Emby.Dlna.PlayTo
                     _timer = null;
                 }
             }
+        }
+
+        /// <summary>
+        /// Decreases the volume.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task VolumeDown()
+        {
+            int fivePoints = (int)Math.Round((double)((_volRange.Max - _volRange.Min) / 100 * 5));
+            QueueEvent("SetVolume", Math.Max(_volume - fivePoints, _volRange.Min));
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Increases the volume.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task VolumeUp()
+        {
+            int fivePoints = (int)Math.Round((double)((_volRange.Max - _volRange.Min) / 100 * 5));
+            QueueEvent("SetVolume", Math.Min(_volume + fivePoints, _volRange.Max));
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Toggles Mute.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task ToggleMute()
+        {
+            AddOrCancelIfQueued("ToggleMute");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Starts playback.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task Play()
+        {
+            QueueEvent("Play");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Stops playback.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task Stop()
+        {
+            QueueEvent("Stop");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Pauses playback.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task Pause()
+        {
+            QueueEvent("Pause");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Mutes the sound.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task Mute()
+        {
+            QueueEvent("Mute");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Resumes the sound.
+        /// </summary>
+        /// <returns>Task.</returns>
+        public Task Unmute()
+        {
+            QueueEvent("Unmute");
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Moves playback to a specific point.
+        /// </summary>
+        /// <param name="value">The point at which playback will resume.</param>
+        /// <returns>Task.</returns>
+        public Task Seek(TimeSpan value)
+        {
+            QueueEvent("Seek", value);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Specifies new media to play.
+        /// </summary>
+        /// <param name="url">Url of media.</param>
+        /// <param name="headers">Headers.</param>
+        /// <param name="metadata">Media metadata.</param>
+        /// <returns>Task.</returns>
+        public Task SetAvTransport(string url, string headers, string metadata)
+        {
+            QueueEvent("Queue", new MediaData { Url = url, Headers = headers, Metadata = metadata });
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Disposes this object.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Returns a string representation of this object.
+        /// </summary>
+        /// <returns>The .</returns>
+        public override string ToString()
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0} - {1}", Properties.Name, Properties.BaseUrl);
+        }
+
+        /// <summary>
+        /// Diposes this object.
+        /// </summary>
+        /// <param name="disposing">The disposing<see cref="bool"/>.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _timer?.Dispose();
+
+                if (_playToManager != null)
+                {
+                    _playToManager.DLNAEvents -= ProcessSubscriptionEvent;
+                }
+            }
+
+            _disposed = true;
         }
 
         /// <summary>
@@ -622,7 +783,9 @@ namespace Emby.Dlna.PlayTo
                                         var success = await SendMuteRequest(false).ConfigureAwait(true);
                                         if (!success)
                                         {
-                                            var sendVolume = _muteVol <= 0 ? 20 : _muteVol;
+                                            var sendVolume = _muteVol <= 0 ?
+                                                (int)Math.Round((double)(_volRange.Max - _volRange.Min) / 100 * 20) // 20% of maximum.
+                                                : _muteVol;
                                             await SendVolumeRequest(sendVolume).ConfigureAwait(false);
                                         }
                                     }
@@ -672,7 +835,9 @@ namespace Emby.Dlna.PlayTo
                                     var success = await SendMuteRequest(false).ConfigureAwait(true);
                                     if (!success)
                                     {
-                                        var sendVolume = _muteVol <= 0 ? 20 : _muteVol;
+                                        var sendVolume = _muteVol <= 0 ?
+                                                (int)Math.Round((double)(_volRange.Max - _volRange.Min) / 100 * 20) // 20% of maximum.
+                                                : _muteVol;
                                         await SendVolumeRequest(sendVolume).ConfigureAwait(false);
                                     }
 
@@ -693,7 +858,7 @@ namespace Emby.Dlna.PlayTo
                                     if (IsPlaying)
                                     {
                                         // Has user requested a media change?
-                                        if (_mediaPlaying != settings.url)
+                                        if (_mediaPlaying != settings.Url)
                                         {
                                             _logger.LogDebug("{0} : Stopping current playback for transition.", Properties.Name);
                                             success = await SendStopRequest().ConfigureAwait(false);
@@ -974,13 +1139,18 @@ namespace Emby.Dlna.PlayTo
                     // Use xpath to get to /stateVariable/allowedValueRange/minimum|maximum where /stateVariable/Name == wanted.
                     var dlnaDescripton = new XmlDocument();
                     dlnaDescripton.LoadXml(xmlstring);
+                    XmlNamespaceManager xmlns = new XmlNamespaceManager(dlnaDescripton.NameTable);
+                    xmlns.AddNamespace("ns", "urn:schemas-upnp-org:service-1-0");
 
-                    XmlNode? minimum = dlnaDescripton.SelectSingleNode("//stateVariable[name/text()='"
+                    XmlNode? minimum = dlnaDescripton.SelectSingleNode(
+                        "//ns:stateVariable[ns:name/text()='"
                         + wanted
-                        + "']/allowedValueRange/minimum/text()").FirstChild;
-                    XmlNode? maximum = dlnaDescripton.SelectSingleNode("//stateVariable[name/text()='"
+                        + "']/ns:allowedValueRange/ns:minimum/text()", xmlns);
+
+                    XmlNode? maximum = dlnaDescripton.SelectSingleNode(
+                        "//ns:stateVariable[ns:name/text()='"
                         + wanted
-                        + "']/allowedValueRange/maximum/text()").FirstChild;
+                        + "']/ns:allowedValueRange/ns:maximum/text()", xmlns);
 
                     // Populate the return value with what we have. Don't worry about null values.
                     if (minimum.Value != null && maximum.Value != null)
@@ -1227,7 +1397,7 @@ namespace Emby.Dlna.PlayTo
                                 && int.TryParse(value, out int volume))
                             {
                                 _logger.LogDebug("Volume: {0}", volume);
-                                Volume = volume;
+                                _volume = volume;
                             }
 
                             if (reply.TryGetValue("TransportState", out value)
@@ -1247,7 +1417,6 @@ namespace Emby.Dlna.PlayTo
                                     }
                                 }
                             }
-
                         }
                         else // AVTransport events.
                         {
@@ -1432,14 +1601,13 @@ namespace Emby.Dlna.PlayTo
         private async Task<bool> SendVolumeRequest(int value)
         {
             var result = false;
-            if (Volume != value && value >= 0 && value <= 100)
+            if (_volume != value)
             {
                 // Adjust for items that don't have a volume range 0..100.
-                int ratio = (int)Math.Round((double)((_volRange.Max - _volRange.Min) / 100 * value));
-                result = await SendCommand(TransportCommandsRender, "SetVolume", default, ratio).ConfigureAwait(false);
+                result = await SendCommand(TransportCommandsRender, "SetVolume", default, value).ConfigureAwait(false);
                 if (result)
                 {
-                    Volume = value;
+                    _volume = value;
                 }
             }
 
@@ -1465,11 +1633,13 @@ namespace Emby.Dlna.PlayTo
 
                 if (response.TryGetValue("CurrentVolume", out volume))
                 {
-                    Volume = (int)Math.Round((double)(int.Parse(volume, _usCulture) / (_volRange.Max - _volRange.Min) / 100));
-
-                    if (Volume > 0)
+                    if (int.TryParse(volume, out int value))
                     {
-                        _muteVol = Volume;
+                        _volume = value;
+                        if (_volume > 0)
+                        {
+                            _muteVol = _volume;
+                        }
                     }
 
                     return true;
@@ -1566,28 +1736,6 @@ namespace Emby.Dlna.PlayTo
             return TransportState.ERROR;
         }
 
-        private async Task<TransportState> GetPositionStatus()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(string.Empty);
-            }
-
-            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetTransportInfo", default).ConfigureAwait(false);
-            var response = ParseResponse(result?.Document, "GetTransportInfoResponse");
-
-            if (response.TryGetValue("CurrentTransportState", out string transportState))
-            {
-                if (Enum.TryParse(transportState, true, out TransportState state))
-                {
-                    return state;
-                }
-            }
-
-            _logger.LogWarning("{0} : GetTransportInfo failed.", Properties.Name);
-            return TransportState.ERROR;
-        }
-
         private async Task<bool> SendMuteRequest(bool value)
         {
             var result = false;
@@ -1628,24 +1776,29 @@ namespace Emby.Dlna.PlayTo
         {
             var result = false;
 
-            if (!string.IsNullOrEmpty(settings.url))
+            if (!string.IsNullOrEmpty(settings.Url))
             {
-                settings.url = settings.url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
-                _logger.LogDebug("{0} : {1} - SetAvTransport Uri: {2} DlnaHeaders: {3}", Properties.Name, settings.url, settings.headers);
+                settings.Url = settings.Url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
+                _logger.LogDebug(
+                    "{0} : {1} - SetAvTransport Uri: {2} DlnaHeaders: {3}",
+                    Properties.Name,
+                    settings.Metadata,
+                    settings.Url,
+                    settings.Headers);
 
                 var dictionary = new Dictionary<string, string>
                 {
-                    { "CurrentURI", settings.url },
-                    { "CurrentURIMetaData", DescriptionXmlBuilder.Escape(settings.metadata) }
+                    { "CurrentURI", settings.Url },
+                    { "CurrentURIMetaData", DescriptionXmlBuilder.Escape(settings.Metadata) }
                 };
 
                 result = await SendCommand(
                     TransportCommandsAV,
                     "SetAVTransportURI",
                     default,
-                    settings.url,
+                    settings.Url,
                     dictionary: dictionary,
-                    header: settings.headers).ConfigureAwait(false);
+                    header: settings.Headers).ConfigureAwait(false);
 
                 if (result)
                 {
@@ -1655,7 +1808,7 @@ namespace Emby.Dlna.PlayTo
                     if (result)
                     {
                         // Update what is playing.
-                        _mediaPlaying = settings.url;
+                        _mediaPlaying = settings.Url;
                         RestartTimer(Now);
                     }
                 }
@@ -1832,121 +1985,6 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        public Task VolumeDown()
-        {
-            QueueEvent("SetVolume", Math.Max(Volume - 5, 0));
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Sets or increases the volume. (No value will increase the volume by 5.)
-        /// </summary>
-        /// <param name="value">A value will set the volume.</param>
-        /// <returns>Task.</returns>
-        public Task VolumeUp(int value = -1)
-        {
-            if (value == -1)
-            {
-                QueueEvent("SetVolume", Math.Min(Volume + 5, 100));
-            }
-            else if (value >= 0 && value <= 100)
-            {
-                QueueEvent("SetVolume", value);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task ToggleMute()
-        {
-            AddOrCancelIfQueued("ToggleMute");
-            return Task.CompletedTask;
-        }
-
-        public Task Play()
-        {
-            QueueEvent("Play");
-            return Task.CompletedTask;
-        }
-
-        public Task Stop()
-        {
-            QueueEvent("Stop");
-            return Task.CompletedTask;
-        }
-
-        public Task Pause()
-        {
-            QueueEvent("Pause");
-            return Task.CompletedTask;
-        }
-
-        public Task Mute()
-        {
-            QueueEvent("Mute");
-            return Task.CompletedTask;
-        }
-
-        public Task Unmute()
-        {
-            QueueEvent("Unmute");
-            return Task.CompletedTask;
-        }
-
-        public Task Seek(TimeSpan value)
-        {
-            QueueEvent("Seek", value);
-            return Task.CompletedTask;
-        }
-
-        public Task SetAvTransport(string dataurl, string dataheaders, string data)
-        {
-            QueueEvent("Queue", new MediaData { url = dataurl, headers = dataheaders, metadata = data });
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Dispose.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Returns a string representation of this object.
-        /// </summary>
-        /// <returns>The .</returns>
-        public override string ToString()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "{0} - {1}", Properties.Name, Properties.BaseUrl);
-        }
-
-        /// <summary>
-        /// Diposes this object.
-        /// </summary>
-        /// <param name="disposing">The disposing<see cref="bool"/>.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _timer?.Dispose();
-
-                if (_playToManager != null)
-                {
-                    _playToManager.DLNAEvents -= ProcessSubscriptionEvent;
-                }
-            }
-
-            _disposed = true;
-        }
-
         /// <summary>
         /// Updates the media info, firing events.
         /// </summary>
@@ -2087,7 +2125,7 @@ namespace Emby.Dlna.PlayTo
             return result;
         }
 
-        private XElement? ParseNodeResponse(string xml)
+        private static XElement? ParseNodeResponse(string xml)
         {
             // Handle different variations sent back by devices.
             try
@@ -2221,9 +2259,9 @@ namespace Emby.Dlna.PlayTo
 
         internal class MediaData
         {
-            internal string url = string.Empty;
-            internal string metadata = string.Empty;
-            internal string headers = string.Empty;
+            internal string Url = string.Empty;
+            internal string Metadata = string.Empty;
+            internal string Headers = string.Empty;
         }
     }
 }
