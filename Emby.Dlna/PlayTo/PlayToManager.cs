@@ -83,7 +83,7 @@ namespace Emby.Dlna.PlayTo
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
-        public async Task FireEvent(DlnaEventArgs args)
+        public Task FireEvent(DlnaEventArgs args)
         {
             DLNAEvents?.Invoke(this, args);
         }
