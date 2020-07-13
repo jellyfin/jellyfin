@@ -50,6 +50,13 @@ jobs:
       targetPath: '$(Build.SourcesDirectory)/deployment/dist'
       artifactName: 'jellyfin-server-$(BuildConfiguration)'
 
+  - task: SSH@0
+    displayName: 'Create target directory on repository server'
+    inputs:
+      sshEndpoint: repository
+      runOptions: 'inline'
+      inline: 'mkdir -p /srv/repository/incoming/azure/$(Build.BuildNumber)/$(BuildConfiguration)'
+
   - task: CopyFilesOverSSH@0
     displayName: 'Upload artifacts to repository server'
     inputs:
