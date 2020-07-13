@@ -15,11 +15,13 @@ trigger:
   batch: true
 
 jobs:
+- ${{ if not(or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))) }}:
   - template: azure-pipelines-main.yml
     parameters:
       LinuxImage: 'ubuntu-latest'
       RestoreBuildProjects: $(RestoreBuildProjects)
 
+- ${{ if not(or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))) }}:
   - template: azure-pipelines-test.yml
     parameters:
       ImageNames:
@@ -27,6 +29,7 @@ jobs:
         Windows: 'windows-latest'
         macOS: 'macos-latest'
 
+- ${{ if not(or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))) }}:
   - template: azure-pipelines-abi.yml
     parameters:
       Packages:
@@ -44,4 +47,5 @@ jobs:
           AssemblyFileName: MediaBrowser.Common.dll
       LinuxImage: 'ubuntu-latest'
 
+- ${{ if or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
   - template: azure-pipelines-package.yml

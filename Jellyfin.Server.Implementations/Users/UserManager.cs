@@ -133,7 +133,7 @@ namespace Jellyfin.Server.Implementations.Users
                 .Include(user => user.Preferences)
                 .Include(user => user.AccessSchedules)
                 .Include(user => user.ProfileImage)
-                .ToList()
+                .AsEnumerable()
                 .FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
