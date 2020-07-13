@@ -15,6 +15,14 @@ namespace MediaBrowser.Model.Notifications
             SendToUsers = Array.Empty<string>();
         }
 
+        public NotificationOption()
+        {
+            Type = string.Empty;
+            DisabledServices = Array.Empty<string>();
+            DisabledMonitorUsers = Array.Empty<string>();
+            SendToUsers = Array.Empty<string>();
+        }
+
         public string Type { get; set; }
 
         /// <summary>
