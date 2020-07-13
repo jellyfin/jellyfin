@@ -222,7 +222,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserJoined, session.UserName);
                 SendGroupUpdate(session, BroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
-                // syncing will happen client side
+                // Syncing will happen client-side
                 if (!_group.IsPaused)
                 {
                     var playCommand = NewSyncPlayCommand(SendCommandType.Play);
