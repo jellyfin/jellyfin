@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (System.Net.Sockets.SocketException ex)
             {
-                _logger.LogWarning($"Unable to start AutoDiscovery listener on UDP port {PortNumber} - {ex.Message}");
+                _logger.LogWarning(ex, "Unable to start AutoDiscovery listener on UDP port {PortNumber}", PortNumber);
             }
 
             return Task.CompletedTask;
