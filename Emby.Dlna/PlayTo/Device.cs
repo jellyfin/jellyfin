@@ -21,7 +21,9 @@ namespace Emby.Dlna.PlayTo
     using Emby.Dlna.Server;
     using Emby.Dlna.Ssdp;
     using MediaBrowser.Common.Net;
+    using MediaBrowser.Model.Dlna;
     using MediaBrowser.Model.Net;
+    using MediaBrowser.Model.Notifications;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -119,6 +121,11 @@ namespace Emby.Dlna.PlayTo
         /// Used by the volume control to stop DOS on volume queries.
         /// </summary>
         private int _volume;
+
+        /// <summary>
+        /// Media Type that is currently "loaded".
+        /// </summary>
+        private DlnaProfileType? _mediaType;
 
         /// <summary>
         /// Hosts the last time we polled for the requests.
@@ -626,13 +633,20 @@ namespace Emby.Dlna.PlayTo
         /// <summary>
         /// Specifies new media to play.
         /// </summary>
+        /// <param name="mediatype">The type of media the url points to.</param>
         /// <param name="url">Url of media.</param>
         /// <param name="headers">Headers.</param>
         /// <param name="metadata">Media metadata.</param>
         /// <returns>Task.</returns>
-        public Task SetAvTransport(string url, string headers, string metadata)
+        public Task SetAvTransport(DlnaProfileType mediatype, string url, string headers, string metadata)
         {
-            QueueEvent("Queue", new MediaData { Url = url, Headers = headers, Metadata = metadata });
+            QueueEvent("Queue", new MediaData
+                {
+                    Url = url,
+                    Headers = headers,
+                    Metadata = metadata,
+                    MediaType = mediatype
+                });
             return Task.CompletedTask;
         }
 
@@ -985,24 +999,47 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
+        /// <summary>
+        /// Gets the next item from the queue. (Threadsafe).
+        /// </summary>
+        /// <param name="action">Next item if true is returned, otherwise null.</param>
+        /// <param name="defaultAction">The value to return if not successful.</param>
+        /// <returns>Success of the operation.</returns>
+        private bool TryPop(out KeyValuePair<string, object> action, KeyValuePair<string, object> defaultAction)
+        {
+            lock (_queueLock)
+            {
+                if (_queue.Count <= 0)
+                {
+                    action = defaultAction;
+                    return false;
+                }
+
+                action = _queue[0];
+                _queue.RemoveAt(0);
+                return true;
+            }
+        }
+
         private async Task ProcessQueue()
         {
+            // When TryPop is unsuccessful it still needs to return a value in "action".
+            // To return null the KeyValuePair needs to be nullable.
+            // Doing this requires ".GetValueOrDefault()." to be prefixed to action every time it's used.
+            // In my opinion it makes the code look bad, implies a level of risk where there is none (action can never be null
+            // so why imply it in the code?), and adds an extra level of processing that is totally unneccesary.
+            // My work around is to default this default value that will never be used, except as a pass back when TryPop is false.
+
+            var defaultValue = new KeyValuePair<string, object>(string.Empty, 0);
+
             // Infinite loop until dispose.
             while (!_disposed)
             {
                 // Process items in the queue.
-                while (_queue.Count > 0)
+                while (TryPop(out KeyValuePair<string, object> action, defaultValue))
                 {
                     // Ensure we are still subscribed.
                     await SubscribeAsync().ConfigureAwait(false);
-
-                    KeyValuePair<string, object> action;
-
-                    lock (_queueLock)
-                    {
-                        action = _queue[0];
-                        _queue.RemoveAt(0);
-                    }
 
                     try
                     {
@@ -1152,6 +1189,29 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
+        private async Task NotifyUser(string msg)
+        {
+            var notification = new NotificationRequest()
+            {
+                Name = string.Format(CultureInfo.InvariantCulture, msg, "DLNA PlayTo")
+            };
+
+            if (_mediaType == DlnaProfileType.Audio)
+            {
+                notification.NotificationType = NotificationType.AudioPlayback.ToString();
+            }
+            else if (_mediaType == DlnaProfileType.Video)
+            {
+                notification.NotificationType = NotificationType.AudioPlayback.ToString();
+            }
+            else
+            {
+                notification.NotificationType = NotificationType.TaskFailed.ToString();
+            }
+
+            await _playToManager.SendNotification(this, notification).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Sends a command to the DLNA device.
         /// </summary>
@@ -1216,7 +1276,31 @@ namespace Emby.Dlna.PlayTo
             }
             catch (HttpException ex)
             {
-                _logger.LogError("{0} : SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.ToString(), url);
+                _logger.LogError("{0} : SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.Message.ToString(_usCulture), url);
+
+                if (!string.IsNullOrEmpty(ex.ResponseText))
+                {
+                    // Parse error to extract
+                    try
+                    {
+                        var doc = XDocument.Parse(ex.ResponseText);
+                        var msg = doc.Descendants("errorDescription")?.FirstOrDefault();
+                        if (msg == null)
+                        {
+                            msg = doc.Descendants("faultstring")?.FirstOrDefault();
+                        }
+
+                        if (msg != null)
+                        {
+                            // Send the user notification, so they don't just sit clicking!
+                            await NotifyUser(msg.Value.ToString()).ConfigureAwait(false);
+                        }
+                    }
+                    catch (XmlException)
+                    {
+                        // Give up at this point, as there is nothing we can really do.
+                    }
+                }
             }
             catch (HttpRequestException ex)
             {
@@ -1695,13 +1779,13 @@ namespace Emby.Dlna.PlayTo
                             if (reply.TryGetValue("CurrentTrackMetaData", out value)
                                 && !string.IsNullOrEmpty(value))
                             {
-                                XElement? uPnpResponse = ParseNodeResponse(System.Web.HttpUtility.HtmlDecode(value));
+                                XElement? uPnpResponse = ParseNodeResponse(value);
                                 var e = uPnpResponse?.Element(uPnpNamespaces.items);
 
                                 if (reply.TryGetValue("CurrentTrackURI", out value)
                                     && !string.IsNullOrEmpty(value))
                                 {
-                                    uBaseObject? uTrack = CreateUBaseObject(e, System.Web.HttpUtility.HtmlDecode(value));
+                                    uBaseObject? uTrack = CreateUBaseObject(e, value);
 
                                     if (uTrack != null)
                                     {
@@ -2076,6 +2160,7 @@ namespace Emby.Dlna.PlayTo
                     {
                         // Update what is playing.
                         _mediaPlaying = settings.Url;
+                        _mediaType = settings.MediaType;
                         RestartTimer(Now);
                     }
                 }
@@ -2318,6 +2403,7 @@ namespace Emby.Dlna.PlayTo
             internal string Url = string.Empty;
             internal string Metadata = string.Empty;
             internal string Headers = string.Empty;
+            internal DlnaProfileType MediaType = DlnaProfileType.Audio;
         }
     }
 #pragma warning restore SA1401 // Fields should be private

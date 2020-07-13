@@ -29,7 +29,7 @@ namespace Emby.Dlna.PlayTo.Api
 
                     if (DlnaEntryPoint.Current?.PlayToManager != null)
                     {
-                        await DlnaEntryPoint.Current.PlayToManager.FireEvent(new DlnaEventArgs(request.Id, response)).ConfigureAwait(false);
+                        await DlnaEntryPoint.Current.PlayToManager.NotifyDevice(new DlnaEventArgs(request.Id, response)).ConfigureAwait(false);
                     }
                 }
             }

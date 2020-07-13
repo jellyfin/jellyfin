@@ -14,10 +14,12 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
@@ -39,6 +41,7 @@ namespace Emby.Dlna.PlayTo
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly INotificationManager _notificationManager;
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
         private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
 
@@ -58,7 +61,8 @@ namespace Emby.Dlna.PlayTo
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
-            IMediaEncoder mediaEncoder)
+            IMediaEncoder mediaEncoder,
+            INotificationManager notificationManager)
         {
             _logger = logger;
             _sessionManager = sessionManager;
@@ -74,6 +78,7 @@ namespace Emby.Dlna.PlayTo
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
+            _notificationManager = notificationManager;
         }
 
         public event EventHandler<DlnaEventArgs> DLNAEvents;
@@ -83,10 +88,27 @@ namespace Emby.Dlna.PlayTo
             _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
-        public Task FireEvent(DlnaEventArgs args)
+        public Task NotifyDevice(DlnaEventArgs args)
         {
             DLNAEvents?.Invoke(this, args);
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Sends a message th
+        /// </summary>
+        /// <param name="notification">The notification to send.</param>
+        /// <returns>Task.</returns>
+        public async Task SendNotification(Device device, NotificationRequest notification)
+        {
+            try
+            {
+                await _notificationManager.SendNotification(notification, null, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{0} : Error sending notification.", device.Properties.Name);
+            }
         }
 
         private async void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)

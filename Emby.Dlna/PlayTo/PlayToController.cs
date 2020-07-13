@@ -16,12 +16,14 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -46,7 +48,6 @@ namespace Emby.Dlna.PlayTo
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _config;
         private readonly IMediaEncoder _mediaEncoder;
-
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
         private readonly string _accessToken;
@@ -500,7 +501,7 @@ namespace Emby.Dlna.PlayTo
                     var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
-                    await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
                     return;
                 }
 
@@ -694,7 +695,7 @@ namespace Emby.Dlna.PlayTo
             _currentPlaylistIndex = index;
             var currentitem = _playlist[index];
 
-            await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl).ConfigureAwait(false);
+            await _device.SetAvTransport(currentitem.StreamInfo.MediaType, currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl).ConfigureAwait(false);
 
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && EnableClientSideSeek(streamInfo))
@@ -816,7 +817,7 @@ namespace Emby.Dlna.PlayTo
                     var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
 
-                    await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
                     if (EnableClientSideSeek(newItem.StreamInfo))
                     {
@@ -841,7 +842,7 @@ namespace Emby.Dlna.PlayTo
                     var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, newIndex);
 
-                    await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
                     if (EnableClientSideSeek(newItem.StreamInfo) && newPosition > 0)
                     {

@@ -8,12 +8,14 @@ namespace Emby.Dlna.PlayTo
     public class DlnaEventArgs
     {
         /// <summary>
-        /// Constructor for DlnaEventArgs.
+        /// Initializes a new instance of the <see cref="DlnaEventArgs"/> class.
         /// </summary>
+        /// <param name="id">Id of device who subscribed.</param>
+        /// <param name="response">Response XML message received.</param>
         public DlnaEventArgs(string id, string response)
         {
             Id = id;
-            Response = response;
+            Response = System.Web.HttpUtility.HtmlDecode(response);
         }
 
         /// <summary>
@@ -23,7 +25,7 @@ namespace Emby.Dlna.PlayTo
 
         /// <summary>
         /// Gets the DNLA response string.
-        /// </summary>        
+        /// </summary>
         public string Response { get; }
     }
 }

@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.TV;
@@ -48,6 +49,7 @@ namespace Emby.Dlna.Main
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
+        private readonly INotificationManager _notificationManager;
         private readonly object _syncLock = new object();
 
         private PlayToManager _manager;
@@ -80,7 +82,8 @@ namespace Emby.Dlna.Main
             ISocketFactory socketFactory,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
-            ITVSeriesManager tvSeriesManager)
+            ITVSeriesManager tvSeriesManager,
+            INotificationManager notificationManager)
         {
             _config = config;
             _appHost = appHost;
@@ -98,6 +101,7 @@ namespace Emby.Dlna.Main
             _socketFactory = socketFactory;
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
+            _notificationManager = notificationManager;
 
             ContentDirectory = new ContentDirectory.ContentDirectory(
                 dlnaManager,
@@ -369,7 +373,8 @@ namespace Emby.Dlna.Main
                         _userDataManager,
                         _localization,
                         _mediaSourceManager,
-                        _mediaEncoder);
+                        _mediaEncoder,
+                        _notificationManager);
 
                     _manager.Start();
                 }
