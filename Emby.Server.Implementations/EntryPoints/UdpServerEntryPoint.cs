@@ -48,8 +48,16 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
-            _udpServer = new UdpServer(_logger, _appHost, _config);
-            _udpServer.Start(PortNumber, _cancellationTokenSource.Token);
+            try
+            {
+                _udpServer = new UdpServer(_logger, _appHost, _config);
+                _udpServer.Start(PortNumber, _cancellationTokenSource.Token);
+            }
+            catch (System.Net.Sockets.SocketException ex)
+            {
+                _logger.LogWarning($"Unable to start AutoDiscovery listener on UDP port {PortNumber} - {ex.Message}");
+            }
+
             return Task.CompletedTask;
         }
 
