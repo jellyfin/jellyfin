@@ -95,8 +95,9 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Sends a message th
+        /// Sends a client notification message.
         /// </summary>
+        /// <param name="device">Device sending the notification.</param>
         /// <param name="notification">The notification to send.</param>
         /// <returns>Task.</returns>
         public async Task SendNotification(Device device, NotificationRequest notification)
