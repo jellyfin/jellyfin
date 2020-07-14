@@ -92,7 +92,8 @@ namespace Jellyfin.Server.Implementations.Users
             get
             {
                 using var dbContext = _dbProvider.CreateContext();
-                return dbContext.Users.Include(user => user.Permissions)
+                return dbContext.Users
+                    .Include(user => user.Permissions)
                     .Include(user => user.Preferences)
                     .Include(user => user.AccessSchedules)
                     .Include(user => user.ProfileImage)
@@ -112,7 +113,8 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             using var dbContext = _dbProvider.CreateContext();
-            return dbContext.Users.Include(user => user.Permissions)
+            return dbContext.Users
+                .Include(user => user.Permissions)
                 .Include(user => user.Preferences)
                 .Include(user => user.AccessSchedules)
                 .Include(user => user.ProfileImage)
@@ -128,8 +130,8 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             using var dbContext = _dbProvider.CreateContext();
-
-            return dbContext.Users.Include(user => user.Permissions)
+            return dbContext.Users
+                .Include(user => user.Permissions)
                 .Include(user => user.Preferences)
                 .Include(user => user.AccessSchedules)
                 .Include(user => user.ProfileImage)
@@ -218,7 +220,8 @@ namespace Jellyfin.Server.Implementations.Users
         public void DeleteUser(Guid userId)
         {
             using var dbContext = _dbProvider.CreateContext();
-            var user = dbContext.Users.Include(u => u.Permissions)
+            var user = dbContext.Users
+                .Include(u => u.Permissions)
                 .Include(u => u.Preferences)
                 .Include(u => u.AccessSchedules)
                 .Include(u => u.ProfileImage)
@@ -635,7 +638,14 @@ namespace Jellyfin.Server.Implementations.Users
         public void UpdateConfiguration(Guid userId, UserConfiguration config)
         {
             var dbContext = _dbProvider.CreateContext();
-            var user = dbContext.Users.Find(userId) ?? throw new ArgumentException("No user exists with given Id!");
+            var user = dbContext.Users
+                           .Include(u => u.Permissions)
+                           .Include(u => u.Preferences)
+                           .Include(u => u.AccessSchedules)
+                           .Include(u => u.ProfileImage)
+                           .FirstOrDefault(u => u.Id == userId)
+                       ?? throw new ArgumentException("No user exists with given Id!");
+
             user.SubtitleMode = config.SubtitleMode;
             user.HidePlayedInLatest = config.HidePlayedInLatest;
             user.EnableLocalPassword = config.EnableLocalPassword;
