@@ -9,8 +9,6 @@ namespace MediaBrowser.Common.Json
     /// </summary>
     public static class JsonDefaults
     {
-        private static JsonSerializerOptions _defaultOptions;
-
         /// <summary>
         /// Gets the default <see cref="JsonSerializerOptions" /> options.
         /// </summary>
@@ -23,26 +21,20 @@ namespace MediaBrowser.Common.Json
         /// <returns>The default <see cref="JsonSerializerOptions" /> options.</returns>
         public static JsonSerializerOptions GetOptions()
         {
-            if (_defaultOptions == null)
+            var options = new JsonSerializerOptions
             {
-                var options = new JsonSerializerOptions
-                {
-                    ReadCommentHandling = JsonCommentHandling.Disallow,
-                    WriteIndented = false
-                };
+                ReadCommentHandling = JsonCommentHandling.Disallow,
+                WriteIndented = false
+            };
 
-                options.Converters.Add(new JsonGuidConverter());
-                options.Converters.Add(new JsonInt32Converter());
-                options.Converters.Add(new JsonStringEnumConverter());
-                options.Converters.Add(new JsonNonStringKeyDictionaryConverterFactory());
-                options.Converters.Add(new JsonInt64Converter());
-                options.Converters.Add(new JsonDoubleConverter());
+            options.Converters.Add(new JsonGuidConverter());
+            options.Converters.Add(new JsonInt32Converter());
+            options.Converters.Add(new JsonStringEnumConverter());
+            options.Converters.Add(new JsonNonStringKeyDictionaryConverterFactory());
+            options.Converters.Add(new JsonInt64Converter());
+            options.Converters.Add(new JsonDoubleConverter());
 
-                _defaultOptions = options;
-                return _defaultOptions;
-            }
-
-            return _defaultOptions;
+            return options;
         }
 
         /// <summary>

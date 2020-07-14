@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,6 +25,8 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly IApplicationHost _appHost;
         private readonly IInstallationManager _installationManager;
+
+        private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginsController"/> class.
@@ -119,7 +120,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var configuration = (BasePluginConfiguration)await JsonSerializer.DeserializeAsync(Request.Body, plugin.ConfigurationType, JsonDefaults.GetOptions())
+            var configuration = (BasePluginConfiguration)await JsonSerializer.DeserializeAsync(Request.Body, plugin.ConfigurationType, _serializerOptions)
                 .ConfigureAwait(false);
 
             plugin.UpdateConfiguration(configuration);
