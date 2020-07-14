@@ -483,7 +483,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         if (isQsvDecoder)
                         {
-                            arg.Append("-hwaccel qsv ");
+                            arg.Append("-hwaccel qsv -init_hw_device qsv=hw ");
                         }
                         // While using SW decoder
                         else
@@ -1757,7 +1757,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // output dimensions. Output dimensions are guaranteed to be even.
                 var outputWidth = width.Value;
                 var outputHeight = height.Value;
-                var vaapi_or_qsv = string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) ? "qsv" : "vaapi";
+                var qsv_or_vaapi = string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase);
 
                 if (!videoWidth.HasValue
                     || outputWidth != videoWidth.Value
@@ -1765,17 +1765,19 @@ namespace MediaBrowser.Controller.MediaEncoding
                     || outputHeight != videoHeight.Value)
                 {
                     // Force nv12 pixel format to enable 10-bit to 8-bit colour conversion.
+                    // use vpp_qsv filter to avoid green bar when the fixed output size is requested.
                     filters.Add(
                         string.Format(
                             CultureInfo.InvariantCulture,
-                            "scale_{0}=w={1}:h={2}:format=nv12",
-                            vaapi_or_qsv,
+                            "{0}=w={1}:h={2}:format=nv12",
+                            qsv_or_vaapi ? "vpp_qsv" : "scale_vaapi",
                             outputWidth,
                             outputHeight));
                 }
                 else
                 {
-                    filters.Add(string.Format(CultureInfo.InvariantCulture, "scale_{0}=format=nv12", vaapi_or_qsv));
+                    // set w=0:h=0 for vpp_qsv to keep the original dimensions, otherwise it will fail.
+                    filters.Add(string.Format(CultureInfo.InvariantCulture, "{0}format=nv12", qsv_or_vaapi ? "vpp_qsv=w=0:h=0:" : "scale_vaapi="));
                 }
             }
             else if ((videoDecoder ?? string.Empty).IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1
