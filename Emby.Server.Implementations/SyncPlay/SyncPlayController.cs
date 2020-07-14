@@ -194,26 +194,24 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
-        public void InitGroup(SessionInfo session, CancellationToken cancellationToken)
+        public void CreateGroup(SessionInfo session, CancellationToken cancellationToken)
         {
             _group.AddSession(session);
             _syncPlayManager.AddSessionToGroup(session, this);
 
             _group.PlayingItem = session.FullNowPlayingItem;
-            _group.IsPaused = true;
+            _group.IsPaused = session.PlayState.IsPaused;
             _group.PositionTicks = session.PlayState.PositionTicks ?? 0;
             _group.LastActivity = DateTime.UtcNow;
 
             var updateSession = NewSyncPlayGroupUpdate(GroupUpdateType.GroupJoined, DateToUTCString(DateTime.UtcNow));
             SendGroupUpdate(session, BroadcastType.CurrentSession, updateSession, cancellationToken);
-            var pauseCommand = NewSyncPlayCommand(SendCommandType.Pause);
-            SendCommand(session, BroadcastType.CurrentSession, pauseCommand, cancellationToken);
         }
 
         /// <inheritdoc />
         public void SessionJoin(SessionInfo session, JoinGroupRequest request, CancellationToken cancellationToken)
         {
-            if (session.NowPlayingItem?.Id == _group.PlayingItem.Id && request.PlayingItemId == _group.PlayingItem.Id)
+            if (session.NowPlayingItem?.Id == _group.PlayingItem.Id)
             {
                 _group.AddSession(session);
                 _syncPlayManager.AddSessionToGroup(session, this);
@@ -224,7 +222,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 var updateOthers = NewSyncPlayGroupUpdate(GroupUpdateType.UserJoined, session.UserName);
                 SendGroupUpdate(session, BroadcastType.AllExceptCurrentSession, updateOthers, cancellationToken);
 
-                // Client join and play, syncing will happen client side
+                // Syncing will happen client-side
                 if (!_group.IsPaused)
                 {
                     var playCommand = NewSyncPlayCommand(SendCommandType.Play);
@@ -262,10 +260,9 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <inheritdoc />
         public void HandleRequest(SessionInfo session, PlaybackRequest request, CancellationToken cancellationToken)
         {
-            // The server's job is to mantain a consistent state to which clients refer to,
-            // as also to notify clients of state changes.
-            // The actual syncing of media playback happens client side.
-            // Clients are aware of the server's time and use it to sync.
+            // The server's job is to maintain a consistent state for clients to reference
+            // and notify clients of state changes. The actual syncing of media playback
+            // happens client side. Clients are aware of the server's time and use it to sync.
             switch (request.Type)
             {
                 case PlaybackRequestType.Play:
@@ -277,13 +274,13 @@ namespace Emby.Server.Implementations.SyncPlay
                 case PlaybackRequestType.Seek:
                     HandleSeekRequest(session, request, cancellationToken);
                     break;
-                case PlaybackRequestType.Buffering:
+                case PlaybackRequestType.Buffer:
                     HandleBufferingRequest(session, request, cancellationToken);
                     break;
-                case PlaybackRequestType.BufferingDone:
+                case PlaybackRequestType.Ready:
                     HandleBufferingDoneRequest(session, request, cancellationToken);
                     break;
-                case PlaybackRequestType.UpdatePing:
+                case PlaybackRequestType.Ping:
                     HandlePingUpdateRequest(session, request);
                     break;
             }
@@ -301,7 +298,7 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 // Pick a suitable time that accounts for latency
                 var delay = _group.GetHighestPing() * 2;
-                delay = delay < _group.DefaulPing ? _group.DefaulPing : delay;
+                delay = delay < _group.DefaultPing ? _group.DefaultPing : delay;
 
                 // Unpause group and set starting point in future
                 // Clients will start playback at LastActivity (datetime) from PositionTicks (playback position)
@@ -337,8 +334,9 @@ namespace Emby.Server.Implementations.SyncPlay
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - _group.LastActivity;
                 _group.LastActivity = currentTime;
+
                 // Seek only if playback actually started
-                // (a pause request may be issued during the delay added to account for latency)
+                // Pause request may be issued during the delay added to account for latency
                 _group.PositionTicks += elapsedTime.Ticks > 0 ? elapsedTime.Ticks : 0;
 
                 var command = NewSyncPlayCommand(SendCommandType.Pause);
@@ -451,7 +449,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     {
                         // Client, that was buffering, resumed playback but did not update others in time
                         delay = _group.GetHighestPing() * 2;
-                        delay = delay < _group.DefaulPing ? _group.DefaulPing : delay;
+                        delay = delay < _group.DefaultPing ? _group.DefaultPing : delay;
 
                         _group.LastActivity = currentTime.AddMilliseconds(
                             delay);
@@ -495,7 +493,7 @@ namespace Emby.Server.Implementations.SyncPlay
         private void HandlePingUpdateRequest(SessionInfo session, PlaybackRequest request)
         {
             // Collected pings are used to account for network latency when unpausing playback
-            _group.UpdatePing(session, request.Ping ?? _group.DefaulPing);
+            _group.UpdatePing(session, request.Ping ?? _group.DefaultPing);
         }
 
         /// <inheritdoc />
