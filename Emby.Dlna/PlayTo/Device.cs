@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#pragma warning disable CA1031 // Catch a more specific exception type, or rethrow the exception.
 #nullable enable
 
 namespace Emby.Dlna.PlayTo
@@ -15,6 +16,7 @@ namespace Emby.Dlna.PlayTo
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Web;
     using System.Xml;
     using System.Xml.Linq;
     using Emby.Dlna.Common;
@@ -25,6 +27,8 @@ namespace Emby.Dlna.PlayTo
     using MediaBrowser.Model.Net;
     using MediaBrowser.Model.Notifications;
     using Microsoft.Extensions.Logging;
+
+    using XMLProperties = System.Collections.Generic.Dictionary<string, string>;
 
     /// <summary>
     /// Defines the <see cref="Device" />.
@@ -319,144 +323,140 @@ namespace Emby.Dlna.PlayTo
                 throw new ArgumentNullException(nameof(httpClient));
             }
 
+            var document = await GetDataAsync(httpClient, url.ToString(), logger).ConfigureAwait(false);
+
+            var friendlyNames = new List<string>();
+
+            var name = document.Descendants(uPnpNamespaces.ud.GetName("friendlyName")).FirstOrDefault();
+            if (name != null && !string.IsNullOrWhiteSpace(name.Value))
+            {
+                // Some devices include their MAC addresses as part of their name.
+                var value = Regex.Replace(name.Value, "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})", string.Empty)
+                    .Replace("()", string.Empty, StringComparison.OrdinalIgnoreCase)
+                    .Replace("[]", string.Empty, StringComparison.OrdinalIgnoreCase)
+                    .Trim();
+                friendlyNames.Add(value);
+            }
+
+            var room = document.Descendants(uPnpNamespaces.ud.GetName("roomName")).FirstOrDefault();
+            if (room != null && !string.IsNullOrWhiteSpace(room.Value))
+            {
+                friendlyNames.Add(room.Value);
+            }
+
+            var deviceProperties = new DeviceInfo()
+            {
+                Name = string.Join(" ", friendlyNames),
+                BaseUrl = string.Format(_usCulture, "http://{0}:{1}", url.Host, url.Port)
+            };
+
+            var model = document.Descendants(uPnpNamespaces.ud.GetName("modelName")).FirstOrDefault();
+            if (model != null)
+            {
+                deviceProperties.ModelName = model.Value;
+            }
+
+            var modelNumber = document.Descendants(uPnpNamespaces.ud.GetName("modelNumber")).FirstOrDefault();
+            if (modelNumber != null)
+            {
+                deviceProperties.ModelNumber = modelNumber.Value;
+            }
+
+            var uuid = document.Descendants(uPnpNamespaces.ud.GetName("UDN")).FirstOrDefault();
+            if (uuid != null)
+            {
+                deviceProperties.UUID = uuid.Value;
+            }
+
+            var manufacturer = document.Descendants(uPnpNamespaces.ud.GetName("manufacturer")).FirstOrDefault();
+            if (manufacturer != null)
+            {
+                deviceProperties.Manufacturer = manufacturer.Value;
+            }
+
+            var manufacturerUrl = document.Descendants(uPnpNamespaces.ud.GetName("manufacturerURL")).FirstOrDefault();
+            if (manufacturerUrl != null)
+            {
+                deviceProperties.ManufacturerUrl = manufacturerUrl.Value;
+            }
+
+            var presentationUrl = document.Descendants(uPnpNamespaces.ud.GetName("presentationURL")).FirstOrDefault();
+            if (presentationUrl != null)
+            {
+                deviceProperties.PresentationUrl = presentationUrl.Value;
+            }
+
+            var modelUrl = document.Descendants(uPnpNamespaces.ud.GetName("modelURL")).FirstOrDefault();
+            if (modelUrl != null)
+            {
+                deviceProperties.ModelUrl = modelUrl.Value;
+            }
+
+            var serialNumber = document.Descendants(uPnpNamespaces.ud.GetName("serialNumber")).FirstOrDefault();
+            if (serialNumber != null)
+            {
+                deviceProperties.SerialNumber = serialNumber.Value;
+            }
+
+            var modelDescription = document.Descendants(uPnpNamespaces.ud.GetName("modelDescription")).FirstOrDefault();
+            if (modelDescription != null)
+            {
+                deviceProperties.ModelDescription = modelDescription.Value;
+            }
+
+            var icon = document.Descendants(uPnpNamespaces.ud.GetName("icon")).FirstOrDefault();
+            if (icon != null)
+            {
+                var width = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
+                var height = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
+                if (!int.TryParse(width, NumberStyles.Integer, _usCulture, out int widthValue))
+                {
+                    logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
+                    widthValue = 32;
+                }
+
+                if (!int.TryParse(height, NumberStyles.Integer, _usCulture, out int heightValue))
+                {
+                    logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
+                    heightValue = 32;
+                }
+
+                deviceProperties.Icon = new DeviceIcon
+                    {
+                        Depth = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("depth")),
+                        MimeType = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype")),
+                        Url = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("url")),
+                        Height = heightValue,
+                        Width = widthValue
+                    };
+            }
+
+            foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
+            {
+                if (services == null)
+                {
+                    continue;
+                }
+
+                var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
+                if (servicesList == null)
+                {
+                    continue;
+                }
+
+                foreach (var element in servicesList)
+                {
+                    var service = Create(element);
+
+                    if (service != null)
+                    {
+                        deviceProperties.Services.Add(service);
+                    }
+                }
+            }
+
             try
             {
-                var document = await GetDataAsync(httpClient, url.ToString(), logger).ConfigureAwait(false);
-                var data = ParseResponse(document, "device");
-                if (data == null)
-                {
-                    return null;
-                }
-
-                var friendlyNames = new List<string>();
-
-                if (data.TryGetValue("friendlyName", out string value))
-                {
-                    // Some devices include their MAC addresses as part of their name.
-                    value = Regex.Replace(value, "([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})", string.Empty)
-                        .Replace("()", string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .Replace("[]", string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .Trim();
-                    friendlyNames.Add(value);
-                }
-
-                if (data.TryGetValue("roomName", out value))
-                {
-                    friendlyNames.Add(value);
-                }
-
-                var deviceProperties = new DeviceInfo()
-                {
-                    Name = string.Join(" ", friendlyNames),
-                    BaseUrl = string.Format(CultureInfo.InvariantCulture, "http://{0}:{1}", url.Host, url.Port)
-                };
-
-                // Icon property is never used.
-
-                // var icons = document.Descendants(uPnpNamespaces.ud.GetName("icon"));
-                // var iconList = new List<DeviceIcon>();
-                // if (icons != null)
-                // {
-                //    // Get all size icons
-                //    foreach (var icon in icons)
-                //    {
-                //        var width = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("width"));
-                //        var height = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("height"));
-                //        if (!int.TryParse(width, NumberStyles.Integer, _usCulture, out int widthValue))
-                //        {
-                //            logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
-                //            widthValue = 32;
-                //        }
-                //
-                //        if (!int.TryParse(height, NumberStyles.Integer, _usCulture, out int heightValue))
-                //        {
-                //            logger.LogDebug("{0} : Unable to parse icon width {1}.", deviceProperties.Name, width);
-                //            heightValue = 32;
-                //        }
-                //
-                //        iconList.Add(new DeviceIcon
-                //        {
-                //            Depth = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("depth")),
-                //            MimeType = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype")),
-                //            Url = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("url")),
-                //            Height = heightValue,
-                //            Width = widthValue
-                //        });
-                //    }
-                //    deviceProperties.Icon = iconList.ToArray();
-                // }
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference : Data returns null if document is null. So document has a value here.
-                foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-                {
-                    if (services == null)
-                    {
-                        continue;
-                    }
-
-                    var servicesList = services.Descendants(uPnpNamespaces.ud.GetName("service"));
-                    if (servicesList == null)
-                    {
-                        continue;
-                    }
-
-                    foreach (var element in servicesList)
-                    {
-                        var service = Create(element);
-
-                        if (service != null)
-                        {
-                            deviceProperties.Services.Add(service);
-                        }
-                    }
-                }
-
-                if (data.TryGetValue("modelName", out value))
-                {
-                    deviceProperties.ModelName = value;
-                }
-
-                if (data.TryGetValue("modelNumber", out value))
-                {
-                    deviceProperties.ModelNumber = value;
-                }
-
-                if (data.TryGetValue("UDN", out value))
-                {
-                    deviceProperties.UUID = value;
-                }
-
-                if (data.TryGetValue("manufacturer", out value))
-                {
-                    deviceProperties.Manufacturer = value;
-                }
-
-                if (data.TryGetValue("manufacturerURL", out value))
-                {
-                    deviceProperties.ManufacturerUrl = value;
-                }
-
-                if (data.TryGetValue("presentationURL", out value))
-                {
-                    deviceProperties.PresentationUrl = value;
-                }
-
-                if (data.TryGetValue("modelURL", out value))
-                {
-                    deviceProperties.ModelUrl = value;
-                }
-
-                if (data.TryGetValue("serialNumber", out value))
-                {
-                    deviceProperties.SerialNumber = value;
-                }
-
-                if (data.TryGetValue("modelDescription", out value))
-                {
-                    deviceProperties.ModelDescription = value;
-                }
-
                 return new Device(playToManager, deviceProperties, httpClient, logger, serverUrl);
             }
 #pragma warning disable CA1031 // Do not catch general exception types : Don't let our errors affect our owners.
@@ -641,12 +641,12 @@ namespace Emby.Dlna.PlayTo
         public Task SetAvTransport(DlnaProfileType mediatype, string url, string headers, string metadata)
         {
             QueueEvent("Queue", new MediaData
-                {
-                    Url = url,
-                    Headers = headers,
-                    Metadata = metadata,
-                    MediaType = mediatype
-                });
+            {
+                Url = url,
+                Headers = headers,
+                Metadata = metadata,
+                MediaType = mediatype
+            });
             return Task.CompletedTask;
         }
 
@@ -693,62 +693,217 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Parses a response into a dictionary, taking care of NOT IMPLEMENTED and null responses.
+        /// Fixes the issue whereby some dlna devices htmlencode all the data and provide it under LastChange.
+        /// HtmlDecode can corrupt the XML by inserting non-permittable characters in the attribute values.
         /// </summary>
-        /// <param name="document">Response to parse.</param>
-        /// <param name="action">Action to extract.</param>
-        /// <returns>Dictionary contains the arguments and values.</returns>
-        private static Dictionary<string, string> ParseResponse(XDocument? document, string action)
+        /// <param name="xml">The xml string to check.</param>
+        /// <param name="properties">The xml values in attrib/attribvalue, or tagname/value.</param>
+        /// <returns>A valid XDocument, or null if there is an error.</returns>
+        private static bool ParseXML(string xml, out Dictionary<string, string> properties)
         {
-            Dictionary<string, string> result = new Dictionary<string, string>();
+            // Some devices encode the whole return wrapped in a XML container, and encode the individual properties as well.
+            xml = HttpUtility.HtmlDecode(xml);
+            properties = new Dictionary<string, string>();
 
-            if (document != null)
+            bool inTag = false;
+            bool inAttrib = false;
+            bool inAttribValue = false;
+
+            string tagName = string.Empty;
+            string attribName = string.Empty;
+            string attribValue;
+            string value = string.Empty;
+            string lastTag = string.Empty;
+            bool hasAttribute = false;
+
+            StringBuilder token = new StringBuilder();
+
+            char lastChar = ' ';
+
+            int a = 0;
+            while (a < xml.Length)
             {
-                var nodes = document.Descendants()
-                    .Where(p => p.Name.LocalName == action);
-                if (nodes != null)
+                char c = xml[a];
+
+                switch (c)
                 {
-                    foreach (var node in nodes)
-                    {
-                        if (node.HasElements)
+                    case '?':
+                        if (lastChar == '<')
                         {
-                            foreach (var childNode in node.Elements())
+                            // Skip XML definition.
+                            while (a < xml.Length && xml[a] != '>')
                             {
-                                string? value = childNode.Value;
-                                if (string.IsNullOrWhiteSpace(value))
-                                {
-                                    // Some responses are stores in the val property, and not in the element.
-                                    value = childNode.Attribute("val")?.Value;
-                                }
-
-                                if (string.IsNullOrWhiteSpace(value) || string.Equals(value, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    value = string.Empty;
-                                }
-
-                                result.Add(childNode.Name.LocalName, value);
-                            }
-                        }
-                        else
-                        {
-                            string value = node.Value;
-
-                            if (string.IsNullOrWhiteSpace(value) && string.Equals(value, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
-                            {
-                                value = string.Empty;
+                                a++;
                             }
 
-                            result.Add(node.Name.LocalName, value);
+                            a++;
+                            lastChar = c;
+                            continue;
                         }
-                    }
+
+                        break;
+
+                    case '/':
+                        // Closing character. Valid for tags only.
+                        if (inTag & !inAttrib & !inAttribValue)
+                        {
+                            a++;
+                            lastChar = c;
+                            continue;
+                        }
+
+                        break;
+
+                    case ':':
+                        // Namespaces only exist in tags and attribute names.
+                        if ((inTag || inAttrib) & !inAttribValue)
+                        {
+                            // We don't want namespaces.
+                            token.Clear();
+                            a++;
+                            lastChar = c;
+                            continue;
+                        }
+
+                        break;
+
+                    case '<':
+                        if (!inTag)
+                        {
+                            // If we weren't in a tag, it was text.
+                            value = token.ToString();
+                            token.Clear();
+                        }
+
+                        // If there was a value, and we had a tag name then store it.
+                        if (!string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(lastTag))
+                        {
+                            properties[lastTag] = value;
+                        }
+
+                        inTag = true;
+
+                        // Reset everthing else.
+                        hasAttribute = false;
+                        inAttrib = false;
+                        inAttribValue = false;
+                        a++;
+                        lastChar = c;
+                        continue;
+
+                    case '>':
+                        // If we were in an attribute name
+                        if (inAttrib && !inAttribValue)
+                        {
+                            attribName = token.ToString(); // tagName;
+                            if (!string.IsNullOrEmpty(attribName))
+                            {
+                                // If the attribute has no value, store it against empty.
+                                properties[tagName + "." + attribName] = string.Empty;
+                            }
+
+                            inAttrib = false;
+                            hasAttribute = true;
+                        }
+                        else if (inAttrib)
+                        {
+                            attribValue = token.ToString();
+                            var blank = attribValue.Equals("NOT_IMPLEMENTED", StringComparison.Ordinal);
+                            properties[tagName + "." + attribName] = blank ? string.Empty : attribValue;
+                            inAttribValue = false;
+                            inAttrib = false;
+                            hasAttribute = true;
+                        }
+                        else if (inTag)
+                        {
+                            // If we haven't already got the tag's name.
+                            if (string.IsNullOrEmpty(tagName))
+                            {
+                                tagName = token.ToString();
+                                properties[tagName] = string.Empty;
+                            }
+
+                            lastTag = tagName;
+                            inTag = false;
+                        }
+
+                        token.Clear();
+                        a++;
+                        lastChar = c;
+                        continue;
+
+                    case ' ': // doesn't support single name-only attributes.
+                        if (inTag)
+                        {
+                            if (!inAttrib && !hasAttribute)
+                            {
+                                // End of tagName marker.
+                                tagName = token.ToString();
+                                token.Clear();
+                                inAttrib = true;
+                            }
+                            else if (inAttribValue)
+                            {
+                                break;
+                            }
+
+                            a++;
+                            lastChar = c;
+                            continue;
+                        }
+
+                        break;
+
+                    case '=':
+                        if (inTag && inAttrib & !inAttribValue)
+                        {
+                            attribName = token.ToString();
+                            token.Clear();
+                            a++;
+                            hasAttribute = true;
+                            lastChar = c;
+                            continue;
+                        }
+
+                        break;
+
+                    case '"':
+                        if (inTag && inAttrib)
+                        {
+                            if (!inAttribValue)
+                            {
+                                inAttribValue = true;
+                            }
+                            else
+                            {
+                                attribValue = token.ToString();
+                                token.Clear();
+                                var blank = attribValue.Equals("NOT_IMPLEMENTED", StringComparison.Ordinal);
+                                properties[tagName + "." + attribName] = blank ? string.Empty : attribValue;
+                                hasAttribute = true;
+                                inAttribValue = false;
+                                inAttrib = false;
+                            }
+
+                            a++;
+                            lastChar = c;
+                            continue;
+                        }
+
+                        break;
                 }
+
+                token.Append(c);
+                a++;
+                lastChar = c;
             }
 
-            return result;
+            return properties.Count > 0;
         }
 
         private static XElement? ParseNodeResponse(string xml)
         {
+            xml = HttpUtility.HtmlDecode(xml);
             // Handle different variations sent back by devices.
             try
             {
@@ -821,7 +976,7 @@ namespace Emby.Dlna.PlayTo
 
             if (string.IsNullOrWhiteSpace(url))
             {
-                url = trackUri;
+                url = HttpUtility.HtmlDecode(trackUri);
             }
 
             var resElement = container.Element(uPnpNamespaces.Res);
@@ -880,7 +1035,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="url">The destination URL..</param>
         /// <param name="logger">The logger to use.<see cref="ILogger"/>.</param>
         /// <returns>The <see cref="Task{XDocument}"/>.</returns>
-        private static async Task<XDocument?> GetDataAsync(IHttpClient httpClient, string url, ILogger logger)
+        private static async Task<XDocument> GetDataAsync(IHttpClient httpClient, string url, ILogger logger)
         {
             var options = new HttpRequestOptions
             {
@@ -892,15 +1047,22 @@ namespace Emby.Dlna.PlayTo
             };
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
+            string reply = string.Empty;
+
             try
             {
                 logger?.LogDebug("GetDataAsync: Communicating with {0}", url);
                 using var response = await httpClient.SendAsync(options, HttpMethod.Get).ConfigureAwait(false);
                 using var stream = response.Content;
                 using var reader = new StreamReader(stream, Encoding.UTF8);
-                return XDocument.Parse(
-                    await reader.ReadToEndAsync().ConfigureAwait(false),
-                    LoadOptions.PreserveWhitespace);
+                reply = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                return XDocument.Parse(reply);
+            }
+            catch (XmlException)
+            {
+                logger?.LogDebug("GetDataAsync: Invalid XML returned {0}", reply);
+                throw;
             }
             catch (HttpRequestException ex)
             {
@@ -1222,7 +1384,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="header">Headers to include..</param>
         /// <param name="cancellationToken">The cancellationToken.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        private async Task<XDocument?> SendCommandAsync(
+        private async Task<XMLProperties> SendCommandAsync(
             string baseUrl,
             DeviceService service,
             string command,
@@ -1236,6 +1398,9 @@ namespace Emby.Dlna.PlayTo
             }
 
             var url = NormalizeUrl(baseUrl, service.ControlUrl);
+            var stopWatch = new Stopwatch();
+            string xmlResponse = string.Empty;
+
             try
             {
                 var options = new HttpRequestOptions
@@ -1259,55 +1424,55 @@ namespace Emby.Dlna.PlayTo
                 options.RequestContentType = "text/xml";
                 options.RequestContent = postData;
 
-                var stopWatch = new Stopwatch();
                 stopWatch.Start();
                 HttpResponseInfo response = await _httpClient.Post(options).ConfigureAwait(true);
 
                 // Get the response.
                 using var stream = response.Content;
                 using var reader = new StreamReader(stream, Encoding.UTF8);
-                var result = XDocument.Parse(await reader.ReadToEndAsync().ConfigureAwait(false), LoadOptions.PreserveWhitespace);
+                ParseXML(await reader.ReadToEndAsync().ConfigureAwait(false),  out XMLProperties results);
                 stopWatch.Stop();
 
                 // Calculate just under half of the round trip time so we can make the position slide more accurate.
                 _transportOffset = stopWatch.Elapsed.Divide(1.8);
 
-                return result;
+                return results;
             }
             catch (HttpException ex)
             {
+                stopWatch.Stop();
                 _logger.LogError("{0} : SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.Message.ToString(_usCulture), url);
 
                 if (!string.IsNullOrEmpty(ex.ResponseText))
                 {
-                    // Parse error to extract
-                    try
+                    string msg = string.Empty;
+                    ParseXML(ex.ResponseText, out XMLProperties prop);
+                    if (!prop.TryGetValue("errorDescription", out msg))
                     {
-                        var doc = XDocument.Parse(ex.ResponseText);
-                        var msg = doc.Descendants("errorDescription")?.FirstOrDefault();
-                        if (msg == null)
-                        {
-                            msg = doc.Descendants("faultstring")?.FirstOrDefault();
-                        }
-
-                        if (msg != null)
-                        {
-                            // Send the user notification, so they don't just sit clicking!
-                            await NotifyUser(msg.Value.ToString()).ConfigureAwait(false);
-                        }
+                        prop.TryGetValue("faultstring", out msg);
                     }
-                    catch (XmlException)
+
+                    if (msg != null)
                     {
-                        // Give up at this point, as there is nothing we can really do.
+                        // Send the user notification, so they don't just sit clicking!
+                        await NotifyUser(Properties.Name + ": " + msg).ConfigureAwait(false);
                     }
                 }
+
+                throw;
             }
             catch (HttpRequestException ex)
             {
+                stopWatch.Stop();
                 _logger.LogError("{0} : SendCommandAsync failed with {1} to {2} ", Properties.Name, ex.ToString(), url);
+                throw;
             }
-
-            return null;
+            catch (XmlException)
+            {
+                stopWatch.Stop();
+                _logger.LogError("{0} : SendCommandAsync responded with invalid XML. \r\n{1} ", Properties.Name, xmlResponse);
+                throw;
+            }
         }
 
         /// <summary>
@@ -1320,7 +1485,7 @@ namespace Emby.Dlna.PlayTo
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="header">The header.</param>
         /// <returns>The <see cref="Task{XDocument}"/>.</returns>
-        private async Task<XDocument?> SendCommandResponseRequired(
+        private async Task<XMLProperties?> SendCommandResponseRequired(
             int transportCommandsType,
             string actionCommand,
             object? name = null,
@@ -1421,10 +1586,8 @@ namespace Emby.Dlna.PlayTo
                 throw new ObjectDisposedException(string.Empty);
             }
 
-            var result = await SendCommandResponseRequired(transportCommandsType, actionCommand, name, commandParameter, dictionary, header).ConfigureAwait(false);
-            var response = ParseResponse(result?.Document, actionCommand + "Response");
-
-            if (response.TryGetValue(actionCommand + "Response", out string _))
+            XMLProperties? result = await SendCommandResponseRequired(transportCommandsType, actionCommand, name, commandParameter, dictionary, header).ConfigureAwait(false);
+            if (result != null && result.TryGetValue(actionCommand + "Response", out string _))
             {
                 return true;
             }
@@ -1536,7 +1699,9 @@ namespace Emby.Dlna.PlayTo
 
                 options.RequestHeaders["NT"] = "upnp:event";
                 options.RequestHeaders["TIMEOUT"] = "Second-60";
-                // TODO: check what happens at timeout.
+
+                // uPnP v2 permits variables that are to returned at events to be defined.
+                options.RequestHeaders["STATEVAR"] = "Mute,Volume,CurrentTrackURI,CurrentTrackMetaData,CurrentTrackDuration,RelativeTimePosition,TransportState";
 
                 try
                 {
@@ -1678,8 +1843,6 @@ namespace Emby.Dlna.PlayTo
                         _renderSid = string.Empty;
                     }
 
-                    // TODO: should we attempt to unsubscribe again if they fail?
-
                     _subscribed = false;
                 }
                 catch (ObjectDisposedException)
@@ -1700,40 +1863,13 @@ namespace Emby.Dlna.PlayTo
             {
                 try
                 {
-                    XDocument response;
-                    try
+                    if (ParseXML(args.Response, out XMLProperties reply))
                     {
-                        response = XDocument.Parse(args.Response);
-                    }
-                    catch (XmlException ex)
-                    {
-                        _logger.LogWarning("{0} : {1} : {2}", Properties.Name, ex.Message, args.Response);
-                        return;
-                    }
-
-                    if (response != null)
-                    {
-                        var reply = ParseResponse(response, "InstanceID");
                         _logger.LogDebug("{0} : Processing a subscription event.", Properties.Name);
 
-                        if (!reply.TryGetValue("AVTransportURI", out string value))
+                        if (!reply.TryGetValue("AVTransportURI.val", out string value))
                         {
-                            // Render events.
-                            if (reply.TryGetValue("Mute", out value)
-                                && int.TryParse(value, out int mute))
-                            {
-                                _logger.LogDebug("Muted: {0}", mute);
-                                IsMuted = mute == 1;
-                            }
-
-                            if (reply.TryGetValue("Volume", out value)
-                                && int.TryParse(value, out int volume))
-                            {
-                                _logger.LogDebug("Volume: {0}", volume);
-                                _volume = volume;
-                            }
-
-                            if (reply.TryGetValue("TransportState", out value)
+                            if (reply.TryGetValue("TransportState.val", out value)
                                 && Enum.TryParse(value, true, out TransportState ts))
                             {
                                 _logger.LogDebug("{0} : TransportState: {1}", Properties.Name, ts);
@@ -1751,11 +1887,26 @@ namespace Emby.Dlna.PlayTo
                                     }
                                 }
                             }
+
+                            // Render events.
+                            if (reply.TryGetValue("Mute.val", out value)
+                                && int.TryParse(value, out int mute))
+                            {
+                                _logger.LogDebug("Muted: {0}", mute);
+                                IsMuted = mute == 1;
+                            }
+
+                            if (reply.TryGetValue("Volume.val", out value)
+                                && int.TryParse(value, out int volume))
+                            {
+                                _logger.LogDebug("Volume: {0}", volume);
+                                _volume = volume;
+                            }
                         }
                         else // AVTransport events.
                         {
                             // If the position isn't in this update, try to get it.
-                            if (!reply.TryGetValue("RelativeTimePosition", out value))
+                            if (!reply.TryGetValue("RelativeTimePosition.val", out value))
                             {
                                 _logger.LogDebug("{0} : Updating position as not included.", Properties.Name);
                                 // Try and get the latest position update
@@ -1768,7 +1919,7 @@ namespace Emby.Dlna.PlayTo
                                 _lastPositionRequest = DateTime.UtcNow;
                             }
 
-                            if (reply.TryGetValue("CurrentTrackDuration", out value)
+                            if (reply.TryGetValue("CurrentTrackDuration.val", out value)
                                 && TimeSpan.TryParse(value, _usCulture, out TimeSpan dur))
                             {
                                 _logger.LogDebug("CurrentTrackDuration: {0}", dur);
@@ -1776,13 +1927,13 @@ namespace Emby.Dlna.PlayTo
                             }
 
                             // See if we can update out media.
-                            if (reply.TryGetValue("CurrentTrackMetaData", out value)
+                            if (reply.TryGetValue("CurrentTrackMetaData.val", out value)
                                 && !string.IsNullOrEmpty(value))
                             {
                                 XElement? uPnpResponse = ParseNodeResponse(value);
                                 var e = uPnpResponse?.Element(uPnpNamespaces.items);
 
-                                if (reply.TryGetValue("CurrentTrackURI", out value)
+                                if (reply.TryGetValue("CurrentTrackURI.val", out value)
                                     && !string.IsNullOrEmpty(value))
                                 {
                                     uBaseObject? uTrack = CreateUBaseObject(e, value);
@@ -1853,11 +2004,8 @@ namespace Emby.Dlna.PlayTo
                         }
                         else
                         {
-                            var result = await SendCommandResponseRequired(
-                                TransportCommandsAV,
-                                "GetPositionInfo").ConfigureAwait(false);
-                            var response = ParseResponse(result?.Document, "GetPositionInfoResponse");
-                            if (response.Count == 0)
+                            XMLProperties? response = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo").ConfigureAwait(false);
+                            if (response == null || response.Count == 0)
                             {
                                 RestartTimer(Normal);
                                 return;
@@ -1881,19 +2029,22 @@ namespace Emby.Dlna.PlayTo
                                 currentObject = await GetMediaInfo().ConfigureAwait(false);
                             }
 
-                            XElement? uPnpResponse = ParseNodeResponse(track);
-                            if (uPnpResponse == null)
+                            if (!string.IsNullOrEmpty(track))
                             {
-                                _logger.LogError("Failed to parse xml: \n {Xml}", track);
-                                currentObject = await GetMediaInfo().ConfigureAwait(false);
-                            }
-
-                            if (currentObject == null)
-                            {
-                                var e = uPnpResponse?.Element(uPnpNamespaces.items);
-                                if (response.TryGetValue("TrackURI", out string trackUri))
+                                XElement? uPnpResponse = ParseNodeResponse(track);
+                                if (uPnpResponse == null)
                                 {
-                                    currentObject = CreateUBaseObject(e, trackUri);
+                                    _logger.LogError("Failed to parse xml: \n {Xml}", track);
+                                    currentObject = await GetMediaInfo().ConfigureAwait(false);
+                                }
+
+                                if (currentObject == null)
+                                {
+                                    var e = uPnpResponse?.Element(uPnpNamespaces.items);
+                                    if (response.TryGetValue("TrackURI", out string trackUri))
+                                    {
+                                        currentObject = CreateUBaseObject(e, trackUri);
+                                    }
                                 }
                             }
 
@@ -1967,10 +2118,8 @@ namespace Emby.Dlna.PlayTo
             string volume = string.Empty;
             try
             {
-                var result = await SendCommandResponseRequired(TransportCommandsRender, "GetVolume").ConfigureAwait(false);
-                var response = ParseResponse(result?.Document, "GetVolumeResponse");
-
-                if (response.TryGetValue("CurrentVolume", out volume))
+                XMLProperties? response = await SendCommandResponseRequired(TransportCommandsRender, "GetVolume").ConfigureAwait(false);
+                if (response != null && response.TryGetValue("CurrentVolume", out volume))
                 {
                     if (int.TryParse(volume, out int value))
                     {
@@ -2067,15 +2216,16 @@ namespace Emby.Dlna.PlayTo
                 return TransportState;
             }
 
-            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetTransportInfo").ConfigureAwait(false);
-            var response = ParseResponse(result?.Document, "GetTransportInfoResponse");
-
-            if (response.TryGetValue("CurrentTransportState", out string transportState))
+            XMLProperties? response = await SendCommandResponseRequired(TransportCommandsAV, "GetTransportInfo").ConfigureAwait(false);
+            if (response != null && response.ContainsKey("GetTransportInfoResponse"))
             {
-                if (Enum.TryParse(transportState, true, out TransportState state))
+                if (response.TryGetValue("CurrentTransportState", out string transportState))
                 {
-                    _lastTransportRefresh = DateTime.UtcNow;
-                    return state;
+                    if (Enum.TryParse(transportState, true, out TransportState state))
+                    {
+                        _lastTransportRefresh = DateTime.UtcNow;
+                        return state;
+                    }
                 }
             }
 
@@ -2111,13 +2261,14 @@ namespace Emby.Dlna.PlayTo
                 return true;
             }
 
-            var result = await SendCommandResponseRequired(TransportCommandsRender, "GetMute").ConfigureAwait(false);
-            var response = ParseResponse(result?.Document, "GetMuteResponse");
-
-            if (response.TryGetValue("CurrentMute", out string muted))
+            XMLProperties? response = await SendCommandResponseRequired(TransportCommandsRender, "GetMute").ConfigureAwait(false);
+            if (response != null && response.ContainsKey("GetMuteResponse"))
             {
-                IsMuted = string.Equals(muted, "1", StringComparison.OrdinalIgnoreCase);
-                return true;
+                if (response.TryGetValue("CurrentMute", out string muted))
+                {
+                    IsMuted = string.Equals(muted, "1", StringComparison.OrdinalIgnoreCase);
+                    return true;
+                }
             }
 
             _logger.LogWarning("{0} : GetMute failed.", Properties.Name);
@@ -2185,28 +2336,52 @@ namespace Emby.Dlna.PlayTo
                 return CurrentMediaInfo;
             }
 
-            var result = await SendCommandResponseRequired(TransportCommandsAV, "GetMediaInfo").ConfigureAwait(false);
-            if (result != null)
+            XMLProperties? response = await SendCommandResponseRequired(TransportCommandsAV, "GetMediaInfo").ConfigureAwait(false);
+            if (response != null && response.ContainsKey("GetMediaInfoResponse"))
             {
-                var track = result.Document.Descendants("CurrentURIMetaData").FirstOrDefault();
-                var e = track?.Element(uPnpNamespaces.items) ?? track;
-                if (!string.IsNullOrWhiteSpace(e?.Value))
+                if (response.TryGetValue("CurrentURIMetaData", out string track))
                 {
-                    _lastMetaRefresh = DateTime.UtcNow;
-                    RestartTimer(Normal);
-                    return UpnpContainer.Create(e);
+                    if (!string.IsNullOrWhiteSpace(track))
+                    {
+                        _lastMetaRefresh = DateTime.UtcNow;
+                        RestartTimer(Normal);
+
+                        var retVal = new uBaseObject();
+                        if (response.TryGetValue("CurrentURIMetaData.Id", out string value))
+                        {
+                            retVal.Id = value;
+                        }
+
+                        if (response.TryGetValue("CurrentURIMetaData.ParentId", out value))
+                        {
+                            retVal.ParentId = value;
+                        }
+
+                        if (response.TryGetValue("CurrentURIMetaData.Artwork", out value))
+                        {
+                            retVal.MetaData = value;
+                        }
+
+                        if (response.TryGetValue("CurrentURIMetaData.uClass", out value))
+                        {
+                            retVal.UpnpClass = value;
+                        }
+
+                        return retVal;
+                    }
                 }
 
-                track = result.Document.Descendants("CurrentURI").FirstOrDefault();
-                e = track?.Element(uPnpNamespaces.items) ?? track;
-                if (!string.IsNullOrWhiteSpace(e?.Value))
+                if (response.TryGetValue("CurrentURI", out track))
                 {
-                    _lastMetaRefresh = DateTime.UtcNow;
-                    RestartTimer(Normal);
-                    return new uBaseObject
+                    if (!string.IsNullOrWhiteSpace(track))
                     {
-                        Url = e.Value
-                    };
+                        _lastMetaRefresh = DateTime.UtcNow;
+                        RestartTimer(Normal);
+                        return new uBaseObject
+                        {
+                            Url = track
+                        };
+                    }
                 }
             }
             else
@@ -2253,16 +2428,15 @@ namespace Emby.Dlna.PlayTo
             // Update position information.
             try
             {
-                var result = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo").ConfigureAwait(false);
-                var position = ParseResponse(result?.Document, "GetPositionInfoResponse");
-                if (position.Count != 0)
+                XMLProperties? response = await SendCommandResponseRequired(TransportCommandsAV, "GetPositionInfo").ConfigureAwait(false);
+                if (response != null && response.ContainsKey("GetPositionInfoResponse"))
                 {
-                    if (position.TryGetValue("TrackDuration", out string value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan d))
+                    if (response.TryGetValue("TrackDuration", out string value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan d))
                     {
                         Duration = d;
                     }
 
-                    if (position.TryGetValue("RelTime", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan r))
+                    if (response.TryGetValue("RelTime", out value) && TimeSpan.TryParse(value, _usCulture, out TimeSpan r))
                     {
                         Position = r;
                         _lastPositionRequest = DateTime.Now;
@@ -2299,7 +2473,7 @@ namespace Emby.Dlna.PlayTo
 
             string url = NormalizeUrl(Properties.BaseUrl, services.ScpdUrl, true);
 
-            var document = await GetDataAsync(_httpClient, url, _logger).ConfigureAwait(false);
+            XDocument document = await GetDataAsync(_httpClient, url, _logger).ConfigureAwait(false);
             return TransportCommands.Create(document);
         }
 

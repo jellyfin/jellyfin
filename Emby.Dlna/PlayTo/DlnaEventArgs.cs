@@ -15,7 +15,7 @@ namespace Emby.Dlna.PlayTo
         public DlnaEventArgs(string id, string response)
         {
             Id = id;
-            Response = System.Web.HttpUtility.HtmlDecode(response);
+            Response = response;
         }
 
         /// <summary>
