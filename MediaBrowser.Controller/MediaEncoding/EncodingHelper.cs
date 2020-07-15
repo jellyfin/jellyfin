@@ -1351,7 +1351,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 transcoderChannelLimit = 6;
             }
 
-            var isTranscodingAudio = !EncodingHelper.IsCopyCodec(codec);
+            var isTranscodingAudio = !IsCopyCodec(codec);
 
             int? resultChannels = state.GetRequestedAudioChannels(codec);
             if (isTranscodingAudio)
@@ -2264,7 +2264,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 flags.Add("+ignidx");
             }
 
-            if (state.GenPtsInput || EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+            if (state.GenPtsInput || IsCopyCodec(state.OutputVideoCodec))
             {
                 flags.Add("+genpts");
             }
@@ -3008,7 +3008,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += " -mpegts_m2ts_mode 1";
             }
 
-            if (EncodingHelper.IsCopyCodec(videoCodec))
+            if (IsCopyCodec(videoCodec))
             {
                 if (state.VideoStream != null
                     && string.Equals(state.OutputContainer, "ts", StringComparison.OrdinalIgnoreCase)
@@ -3110,7 +3110,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var args = "-codec:a:0 " + codec;
 
-            if (EncodingHelper.IsCopyCodec(codec))
+            if (IsCopyCodec(codec))
             {
                 return args;
             }
