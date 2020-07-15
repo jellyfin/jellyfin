@@ -118,15 +118,16 @@ namespace Emby.Server.Implementations.TV
             }
 
             var items = _libraryManager
-                .GetItemList(new InternalItemsQuery(user)
-                {
-                    IncludeItemTypes = new[] {typeof(Episode).Name},
-                    OrderBy = new[] {new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending)},
-                    SeriesPresentationUniqueKey = presentationUniqueKey,
-                    Limit = limit,
-                    DtoOptions = new DtoOptions {Fields = new ItemFields[] {ItemFields.SeriesPresentationUniqueKey}, EnableImages = false},
-                    GroupBySeriesPresentationUniqueKey = true
-                }, parentsFolders.ToList())
+                .GetItemList(
+                    new InternalItemsQuery(user)
+                    {
+                        IncludeItemTypes = new[] { typeof(Episode).Name },
+                        OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
+                        SeriesPresentationUniqueKey = presentationUniqueKey,
+                        Limit = limit,
+                        DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
+                        GroupBySeriesPresentationUniqueKey = true
+                    }, parentsFolders.ToList())
                 .Cast<Episode>()
                 .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
                 .Select(GetUniqueSeriesKey);
