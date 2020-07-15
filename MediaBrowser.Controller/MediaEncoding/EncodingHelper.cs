@@ -2523,21 +2523,21 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets the name of the output video codec.
+        /// Gets the ffmpeg option string for the hardware accelerated video decoder.
         /// </summary>
+        /// <param name="state">The encoding job info.</param>
+        /// <param name="encodingOptions">The encoding options.</param>
+        /// <returns>The option string or null if none available.</returns>
         protected string GetHardwareAcceleratedVideoDecoder(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
-            var videoType = state.MediaSource.VideoType ?? VideoType.VideoFile;
             var videoStream = state.VideoStream;
-            var isColorDepth10 = !string.IsNullOrEmpty(videoStream.Profile) && (videoStream.Profile.Contains("Main 10", StringComparison.OrdinalIgnoreCase)
-                || videoStream.Profile.Contains("High 10", StringComparison.OrdinalIgnoreCase));
 
-
-            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
+            if (videoStream == null)
             {
                 return null;
             }
 
+            var videoType = state.MediaSource.VideoType ?? VideoType.VideoFile;
             // Only use alternative encoders for video files.
             // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
             // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
@@ -2546,10 +2546,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
-            if (videoStream != null
-                && !string.IsNullOrEmpty(videoStream.Codec)
-                && !string.IsNullOrEmpty(encodingOptions.HardwareAccelerationType))
+            if (IsCopyCodec(state.OutputVideoCodec))
             {
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(videoStream.Codec) && !string.IsNullOrEmpty(encodingOptions.HardwareAccelerationType))
+            {
+                var isColorDepth10 = !string.IsNullOrEmpty(videoStream.Profile)
+                    && (videoStream.Profile.Contains("Main 10", StringComparison.OrdinalIgnoreCase) || videoStream.Profile.Contains("High 10", StringComparison.OrdinalIgnoreCase));
+
                 // Only hevc and vp9 formats have 10-bit hardware decoder support now.
                 if (isColorDepth10 && !(string.Equals(videoStream.Codec, "hevc", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(videoStream.Codec, "h265", StringComparison.OrdinalIgnoreCase)
