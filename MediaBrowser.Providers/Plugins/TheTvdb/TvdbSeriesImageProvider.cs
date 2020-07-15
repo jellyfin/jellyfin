@@ -60,9 +60,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
             var tvdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tvdb));
-            var allowedKeyTypes = await _tvdbClientManager.GetImageKeyTypesForSeriesAsync(tvdbId, language, cancellationToken)
+            var allowedKeyTypes = _tvdbClientManager.GetImageKeyTypesForSeriesAsync(tvdbId, language, cancellationToken)
                 .ConfigureAwait(false);
-            foreach (KeyType keyType in allowedKeyTypes)
+            await foreach (KeyType keyType in allowedKeyTypes)
             {
                 var imageQuery = new ImagesQuery
                 {
