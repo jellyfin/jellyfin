@@ -63,6 +63,8 @@ namespace Jellyfin.Server
 
             app.UseMiddleware<ExceptionMiddleware>();
 
+            app.UseMiddleware<ResponseTimeMiddleware>();
+
             app.UseWebSockets();
 
             app.UseResponseCompression();
