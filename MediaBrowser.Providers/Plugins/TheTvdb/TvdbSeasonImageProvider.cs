@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
 
-            var keyTypes = new[] { KeyType.Season, KeyType.Seasonwide, KeyType.Fanart };
+            var keyTypes = await _tvdbClientManager.GetImageKeyTypesForSeasonAsync(tvdbId, language, cancellationToken).ConfigureAwait(false);
             foreach (var keyType in keyTypes)
             {
                 var imageQuery = new ImagesQuery
