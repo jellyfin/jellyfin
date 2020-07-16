@@ -1625,44 +1625,30 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var videoSizeParam = string.Empty;
             var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options) ?? string.Empty;
+            var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
 
             // Setup subtitle scaling
             if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
             {
-                videoSizeParam = string.Format(
+                // Adjust the size of graphical subtitles to fit the video stream.
+                var videoStream = state.VideoStream;
+                var inputWidth = videoStream?.Width;
+                var inputHeight = videoStream?.Height;
+                var (width, height) = GetFixedOutputSize(inputWidth, inputHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
+
+                if (width.HasValue && height.HasValue)
+                {
+                    videoSizeParam = string.Format(
                     CultureInfo.InvariantCulture,
                     "scale={0}x{1}",
-                    state.VideoStream.Width.Value,
-                    state.VideoStream.Height.Value);
+                    width.Value,
+                    height.Value);
+                }
 
                 // For QSV, feed it into hardware encoder now
-                var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
                 if (!isWindows && string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     videoSizeParam += ",hwupload=extra_hw_frames=64";
-                }
-
-                // For VAAPI and NVDEC decoder
-                // these encoders cannot automatically adjust the size of graphical subtitles to fit the output video,
-                // thus needs to be manually adjusted.
-                if (videoDecoder.IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1
-                    || (IsVaapiSupported(state) && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)
-                        && (videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
-                            || outputVideoCodec.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1)))
-                {
-                    var videoStream = state.VideoStream;
-                    var inputWidth = videoStream?.Width;
-                    var inputHeight = videoStream?.Height;
-                    var (width, height) = GetFixedOutputSize(inputWidth, inputHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
-
-                    if (width.HasValue && height.HasValue)
-                    {
-                        videoSizeParam = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "scale={0}x{1}",
-                        width.Value,
-                        height.Value);
-                    }
                 }
             }
 
@@ -1710,7 +1696,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     with fixed frame size.
                     Currently only supports linux.
                 */
-                var isWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
                 if (!isWindows)
                 {
                     retStr = !string.IsNullOrEmpty(outputSizeParam) ?
