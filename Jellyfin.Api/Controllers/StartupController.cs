@@ -36,7 +36,6 @@ namespace Jellyfin.Api.Controllers
         public void CompleteWizard()
         {
             _config.Configuration.IsStartupWizardCompleted = true;
-            _config.SetOptimalValues();
             _config.SaveConfiguration();
         }
 

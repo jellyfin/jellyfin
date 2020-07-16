@@ -1,6 +1,7 @@
 #nullable disable
 #pragma warning disable CS1591
 
+using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Querying
@@ -54,7 +55,7 @@ namespace MediaBrowser.Model.Querying
 
         public UpcomingEpisodesQuery()
         {
-            EnableImageTypes = new ImageType[] { };
+            EnableImageTypes = Array.Empty<ImageType>();
         }
     }
 }

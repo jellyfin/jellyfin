@@ -514,8 +514,8 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null, bool allowIgnorePath = true)
-            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent, allowIgnorePath: allowIgnorePath);
+        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null)
+            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent);
 
         private BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
@@ -523,8 +523,7 @@ namespace Emby.Server.Implementations.Library
             IItemResolver[] resolvers,
             Folder parent = null,
             string collectionType = null,
-            LibraryOptions libraryOptions = null,
-            bool allowIgnorePath = true)
+            LibraryOptions libraryOptions = null)
         {
             if (fileInfo == null)
             {
@@ -548,7 +547,7 @@ namespace Emby.Server.Implementations.Library
             };
 
             // Return null if ignore rules deem that we should do so
-            if (allowIgnorePath && IgnoreFile(args.FileInfo, args.Parent))
+            if (IgnoreFile(args.FileInfo, args.Parent))
             {
                 return null;
             }
@@ -713,7 +712,7 @@ namespace Emby.Server.Implementations.Library
             Directory.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
-                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath), allowIgnorePath: false))
+                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)))
                              .DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
@@ -795,7 +794,7 @@ namespace Emby.Server.Implementations.Library
                         if (tmpItem == null)
                         {
                             _logger.LogDebug("Creating new userRootFolder with DeepCopy");
-                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath), allowIgnorePath: false)).DeepCopy<Folder, UserRootFolder>();
+                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
                         }
 
                         // In case program data folder was moved
@@ -1894,9 +1893,19 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
-                image.Width = size.Width;
-                image.Height = size.Height;
+                try
+                {
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                    image.Width = size.Width;
+                    image.Height = size.Height;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
+                    image.Width = 0;
+                    image.Height = 0;
+                    continue;
+                }
 
                 try
                 {

@@ -229,6 +229,45 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             return GetEpisodesPageAsync(tvdbId, 1, episodeQuery, language, cancellationToken);
         }
 
+        public async IAsyncEnumerable<KeyType> GetImageKeyTypesForSeriesAsync(int tvdbId, string language, CancellationToken cancellationToken)
+        {
+            var cacheKey = GenerateKey(nameof(TvDbClient.Series.GetImagesSummaryAsync), tvdbId);
+            var imagesSummary = await TryGetValue(cacheKey, language, () => TvDbClient.Series.GetImagesSummaryAsync(tvdbId, cancellationToken)).ConfigureAwait(false);
+
+            if (imagesSummary.Data.Fanart > 0)
+            {
+                yield return KeyType.Fanart;
+            }
+
+            if (imagesSummary.Data.Series > 0)
+            {
+                yield return KeyType.Series;
+            }
+
+            if (imagesSummary.Data.Poster > 0)
+            {
+                yield return KeyType.Poster;
+            }
+        }
+
+        public async IAsyncEnumerable<KeyType> GetImageKeyTypesForSeasonAsync(int tvdbId, string language, CancellationToken cancellationToken)
+        {
+            var cacheKey = GenerateKey(nameof(TvDbClient.Series.GetImagesSummaryAsync), tvdbId);
+            var imagesSummary = await TryGetValue(cacheKey, language, () => TvDbClient.Series.GetImagesSummaryAsync(tvdbId, cancellationToken)).ConfigureAwait(false);
+
+            if (imagesSummary.Data.Season > 0)
+            {
+                yield return KeyType.Season;
+            }
+
+            if (imagesSummary.Data.Fanart > 0)
+            {
+                yield return KeyType.Fanart;
+            }
+
+            // TODO seasonwide is not supported in TvDbSharper
+        }
+
         private async Task<T> TryGetValue<T>(string key, string language, Func<Task<T>> resultFactory)
         {
             if (_cache.TryGetValue(key, out T cachedValue))

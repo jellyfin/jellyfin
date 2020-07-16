@@ -2,6 +2,18 @@ namespace Jellyfin.MediaEncoding.Tests
 {
     internal static class EncoderValidatorTestsData
     {
+        public const string FFmpegV43Output = @"ffmpeg version 4.3 Copyright (c) 2000-2020 the FFmpeg developers
+built with gcc 7 (Ubuntu 7.5.0-3ubuntu1~18.04)
+configuration: --prefix=/usr/lib/jellyfin-ffmpeg --target-os=linux --disable-doc --disable-ffplay --disable-shared --disable-libxcb --disable-vdpau --disable-sdl2 --disable-xlib --enable-gpl --enable-version3 --enable-static --enable-libfontconfig --enable-fontconfig --enable-gmp --enable-gnutls --enable-libass --enable-libbluray --enable-libdrm --enable-libfreetype --enable-libfribidi --enable-libmp3lame --enable-libopus --enable-libtheora --enable-libvorbis --enable-libwebp --enable-libx264 --enable-libx265 --enable-libzvbi --arch=amd64 --enable-amf --enable-nvenc --enable-nvdec --enable-vaapi --enable-opencl
+libavutil      56. 51.100 / 56. 51.100
+libavcodec     58. 91.100 / 58. 91.100
+libavformat    58. 45.100 / 58. 45.100
+libavdevice    58. 10.100 / 58. 10.100
+libavfilter     7. 85.100 /  7. 85.100
+libswscale      5.  7.100 /  5.  7.100
+libswresample   3.  7.100 /  3.  7.100
+libpostproc    55.  7.100 / 55.  7.100";
+
         public const string FFmpegV421Output = @"ffmpeg version 4.2.1 Copyright (c) 2000-2019 the FFmpeg developers
 built with gcc 9.1.1 (GCC) 20190807
 configuration: --enable-gpl --enable-version3 --enable-sdl2 --enable-fontconfig --enable-gnutls --enable-iconv --enable-libass --enable-libdav1d --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libtheora --enable-libtwolame --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libzimg --enable-lzma --enable-zlib --enable-gmp --enable-libvidstab --enable-libvorbis --enable-libvo-amrwbenc --enable-libmysofa --enable-libspeex --enable-libxvid --enable-libaom --enable-libmfx --enable-amf --enable-ffnvcodec --enable-cuvid --enable-d3d11va --enable-nvenc --enable-nvdec --enable-dxva2 --enable-avisynth --enable-libopenmpt

@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Session
                     }
                     catch (DbUpdateConcurrencyException e)
                     {
-                        _logger.LogWarning(e, "Error updating user's last activity date.");
+                        _logger.LogDebug(e, "Error updating user's last activity date.");
                     }
                 }
             }
@@ -502,7 +502,8 @@ namespace Emby.Server.Implementations.Session
                 Client = appName,
                 DeviceId = deviceId,
                 ApplicationVersion = appVersion,
-                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture)
+                Id = key.GetMD5().ToString("N", CultureInfo.InvariantCulture),
+                ServerId = _appHost.SystemId
             };
 
             var username = user?.Username;
