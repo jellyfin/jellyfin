@@ -22,9 +22,9 @@ namespace Emby.Server.Implementations
 
         public string GetResourcePath(string basePath, string virtualPath)
         {
-            var fullpath = basePath;
+            var fullPath = basePath;
 
-            if (virtualPath != null)
+            if (string.IsNullOrEmpty(virtualPath))
             {
                 fullPath = Path.Combine(basePath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
             }
