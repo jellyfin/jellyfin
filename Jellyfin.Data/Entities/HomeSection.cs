@@ -23,16 +23,25 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets the Id of the associated display preferences.
         /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
         public int DisplayPreferencesId { get; set; }
 
         /// <summary>
         /// Gets or sets the order.
         /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
         public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets the type.
         /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
         public HomeSectionType Type { get; set; }
     }
 }
