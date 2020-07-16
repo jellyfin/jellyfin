@@ -356,7 +356,7 @@ namespace Jellyfin.Server
                         }
 
                         options.ListenUnixSocket(socketPath);
-                        _logger.LogInformation($"Kestrel listening to unix socket {socketPath}");
+                        _logger.LogInformation("Kestrel listening to unix socket {socketPath}", socketPath);
                     }
                 })
                 .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
