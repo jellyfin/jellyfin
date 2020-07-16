@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations
         {
             var fullPath = basePath;
 
-            if (string.IsNullOrEmpty(virtualPath))
+            if (!string.IsNullOrEmpty(virtualPath))
             {
                 fullPath = Path.Combine(basePath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
             }
