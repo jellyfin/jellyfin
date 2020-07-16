@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Providers;
@@ -229,7 +230,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             return GetEpisodesPageAsync(tvdbId, 1, episodeQuery, language, cancellationToken);
         }
 
-        public async IAsyncEnumerable<KeyType> GetImageKeyTypesForSeriesAsync(int tvdbId, string language, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<KeyType> GetImageKeyTypesForSeriesAsync(int tvdbId, string language, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var cacheKey = GenerateKey(nameof(TvDbClient.Series.GetImagesSummaryAsync), tvdbId);
             var imagesSummary = await TryGetValue(cacheKey, language, () => TvDbClient.Series.GetImagesSummaryAsync(tvdbId, cancellationToken)).ConfigureAwait(false);
@@ -250,7 +251,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             }
         }
 
-        public async IAsyncEnumerable<KeyType> GetImageKeyTypesForSeasonAsync(int tvdbId, string language, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<KeyType> GetImageKeyTypesForSeasonAsync(int tvdbId, string language, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var cacheKey = GenerateKey(nameof(TvDbClient.Series.GetImagesSummaryAsync), tvdbId);
             var imagesSummary = await TryGetValue(cacheKey, language, () => TvDbClient.Series.GetImagesSummaryAsync(tvdbId, cancellationToken)).ConfigureAwait(false);
