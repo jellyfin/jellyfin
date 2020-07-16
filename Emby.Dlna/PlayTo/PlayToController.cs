@@ -945,7 +945,11 @@ namespace Emby.Dlna.PlayTo
             {
                 if (string.IsNullOrEmpty(url))
                 {
-                    throw new ArgumentNullException(nameof(url));
+                    // This condition is met on the initial loading of media, when the last media url is null.
+                    return new StreamParams
+                    {
+                        ItemId = Guid.Empty
+                    };
                 }
 
                 var request = new StreamParams
