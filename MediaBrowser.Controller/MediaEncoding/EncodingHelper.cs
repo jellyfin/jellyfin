@@ -1639,10 +1639,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (width.HasValue && height.HasValue)
                 {
                     videoSizeParam = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "scale={0}x{1}",
-                    width.Value,
-                    height.Value);
+                        CultureInfo.InvariantCulture,
+                        "scale={0}x{1}",
+                        width.Value,
+                        height.Value);
                 }
 
                 // For QSV, feed it into hardware encoder now
