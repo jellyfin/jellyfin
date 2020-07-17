@@ -136,6 +136,38 @@ namespace Jellyfin.Data.Entities
         public IndexingKind? IndexBy { get; set; }
 
         /// <summary>
+        /// Gets or sets the length of time to skip forwards, in milliseconds.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public int SkipForwardLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets the length of time to skip backwards, in milliseconds.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public int SkipBackwardLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Chromecast Version.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public ChromecastVersion ChromecastVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the next video info overlay should be shown.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public bool EnableNextVideoInfoOverlay { get; set; }
+
+        /// <summary>
         /// Gets or sets the home sections.
         /// </summary>
         public virtual ICollection<HomeSection> HomeSections { get; protected set; }

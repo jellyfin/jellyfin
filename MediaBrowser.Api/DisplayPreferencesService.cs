@@ -134,6 +134,14 @@ namespace MediaBrowser.Api
             prefs.RememberIndexing = request.RememberIndexing;
             prefs.RememberSorting = request.RememberSorting;
             prefs.ScrollDirection = request.ScrollDirection;
+            prefs.ChromecastVersion = request.CustomPrefs.TryGetValue("chromecastVersion", out var chromecastVersion)
+                ? Enum.Parse<ChromecastVersion>(chromecastVersion, true)
+                : ChromecastVersion.Stable;
+            prefs.EnableNextVideoInfoOverlay = request.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay)
+                ? bool.Parse(enableNextVideoInfoOverlay)
+                : true;
+            prefs.SkipBackwardLength = request.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength) ? int.Parse(skipBackLength) : 10000;
+            prefs.SkipForwardLength = request.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength) ? int.Parse(skipForwardLength) : 30000;
             prefs.HomeSections.Clear();
 
             foreach (var key in request.CustomPrefs.Keys.Where(key => key.StartsWith("homesection")))

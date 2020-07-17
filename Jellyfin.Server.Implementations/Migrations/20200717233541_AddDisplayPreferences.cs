@@ -1,7 +1,4 @@
-﻿#pragma warning disable CS1591
-#pragma warning disable SA1601
-
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jellyfin.Server.Implementations.Migrations
@@ -25,10 +22,14 @@ namespace Jellyfin.Server.Implementations.Migrations
                     SortOrder = table.Column<int>(nullable: false),
                     ShowSidebar = table.Column<bool>(nullable: false),
                     ShowBackdrop = table.Column<bool>(nullable: false),
-                    SortBy = table.Column<string>(nullable: true),
+                    SortBy = table.Column<string>(maxLength: 64, nullable: true),
                     ViewType = table.Column<int>(nullable: true),
                     ScrollDirection = table.Column<int>(nullable: false),
-                    IndexBy = table.Column<int>(nullable: true)
+                    IndexBy = table.Column<int>(nullable: true),
+                    SkipForwardLength = table.Column<int>(nullable: false),
+                    SkipBackwardLength = table.Column<int>(nullable: false),
+                    ChromecastVersion = table.Column<int>(nullable: false),
+                    EnableNextVideoInfoOverlay = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {

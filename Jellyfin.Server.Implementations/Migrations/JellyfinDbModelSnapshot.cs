@@ -94,10 +94,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("ChromecastVersion")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Client")
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasMaxLength(64);
+
+                    b.Property<bool>("EnableNextVideoInfoOverlay")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int?>("IndexBy")
                         .HasColumnType("INTEGER");
@@ -120,8 +126,15 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.Property<bool>("ShowSidebar")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("SkipBackwardLength")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SkipForwardLength")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("SortBy")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(64);
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
