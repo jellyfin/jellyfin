@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Services
 
             httpHost.ApplyRequestFilters(httpReq, httpRes, request);
             
-            httpRes.HttpContext.Items["ServiceStackRequest"] = httpReq;
+            httpRes.HttpContext.SetServiceStackRequest(httpReq);
             var response = await httpHost.ServiceController.Execute(httpHost, request, httpReq).ConfigureAwait(false);
 
             // Apply response filters
