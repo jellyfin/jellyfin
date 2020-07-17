@@ -108,7 +108,7 @@ namespace Emby.Dlna.Api
         public string Filename { get; set; }
     }
 
-    public class DlnaServerService : IService, IRequiresRequest
+    public class DlnaServerService : IService
     {
         private const string XMLContentType = "text/xml; charset=UTF-8";
 
