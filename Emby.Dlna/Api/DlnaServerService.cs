@@ -127,11 +127,14 @@ namespace Emby.Dlna.Api
         public DlnaServerService(
             IDlnaManager dlnaManager,
             IHttpResultFactory httpResultFactory,
-            IServerConfigurationManager configurationManager)
+            IServerConfigurationManager configurationManager,
+            IHttpContextAccessor httpContextAccessor)
         {
             _dlnaManager = dlnaManager;
             _resultFactory = httpResultFactory;
             _configurationManager = configurationManager;
+            object request = httpContextAccessor?.HttpContext.Items["ServiceStackRequest"] ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            Request = (IRequest)request;
         }
 
         private string GetHeader(string name)
