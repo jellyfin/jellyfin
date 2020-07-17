@@ -354,42 +354,6 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependencies.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="parameter">Additional argument for the constructor.</param>
-        /// <returns></returns>
-        public object CreateInstance(Type type, object parameter)
-        {
-            ConstructorInfo constructor = type.GetConstructors()[0];
-            if (constructor != null)
-            {
-                ParameterInfo[] argInfo = constructor
-                    .GetParameters();
-
-                object[] args = argInfo
-                .Select(o => o.ParameterType)
-                .Select(o => ServiceProvider.GetService(o))
-                .ToArray();
-
-                if (parameter != null)
-                {
-                    // Assumption is that the <parameter> is always the last in the constructor's parameter list.
-                    int argsLen = args.Length;
-                    var argType = argInfo[argsLen - 1].ParameterType;
-                    var paramType = parameter.GetType();
-                    if (argType.IsAssignableFrom(paramType) || argType == paramType)
-                    {
-                        args[argsLen - 1] = parameter;
-                        return ActivatorUtilities.CreateInstance(ServiceProvider, type, args);
-                    }
-                }
-            }
-
-            return ActivatorUtilities.CreateInstance(ServiceProvider, type);
-        }
-
-        /// <summary>
-        /// Creates an instance of type and resolves all constructor dependencies.
-        /// </summary>
         /// /// <typeparam name="T">The type.</typeparam>
         /// <returns>T.</returns>
         public T CreateInstance<T>()
