@@ -120,6 +120,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets what the view should be sorted by.
         /// </summary>
+        [MaxLength(64)]
+        [StringLength(64)]
         public string SortBy { get; set; }
 
         /// <summary>
