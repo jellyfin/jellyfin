@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.HttpServer
         {
             return _appHost.CreateInstance(type);
         }
-        
+
         private static string NormalizeUrlPath(string path)
         {
             if (path.Length > 0 && path[0] == '/')
