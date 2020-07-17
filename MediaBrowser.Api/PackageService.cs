@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -83,6 +84,9 @@ namespace MediaBrowser.Api
         /// <value>The version.</value>
         [ApiMember(Name = "Version", Description = "Optional version. Defaults to latest version.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string Version { get; set; }
+        
+        [ApiMember(Name = "RepositoryUrl", Description = "Optional. Specify the repository to install from", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string RepositoryUrl { get; set; }
     }
 
     /// <summary>
@@ -167,6 +171,12 @@ namespace MediaBrowser.Api
         public async Task Post(InstallPackage request)
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(request.RepositoryUrl))
+            {
+                packages = packages.Where(p => p.repositoryUrl.Equals(request.RepositoryUrl, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+            
             var package = _installationManager.GetCompatibleVersions(
                     packages,
                     request.Name,
