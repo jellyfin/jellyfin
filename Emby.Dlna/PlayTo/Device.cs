@@ -49,9 +49,19 @@ namespace Emby.Dlna.PlayTo
     public class Device : IDisposable
     {
         /// <summary>
-        /// Defines the USERAGENT.
+        /// Defines the USERAGENT that we send to devices.
         /// </summary>
         private const string USERAGENT = "Microsoft-Windows/6.2 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50";
+
+        /// <summary>
+        /// The frequency of the device polling (ms).
+        /// </summary>
+        private const int TIMERINTERVAL = 10000;
+
+        /// <summary>
+        /// The user queue processing frequency (ms).
+        /// </summary>
+        private const int QUEUEINTERVAL = 1000;
 
         /// <summary>
         /// Defines the FriendlyName.
@@ -277,11 +287,6 @@ namespace Emby.Dlna.PlayTo
         }
 
         /// <summary>
-        /// Gets the TransportState.
-        /// </summary>
-        public TransportState TransportState { get; private set; }
-
-        /// <summary>
         /// Gets a value indicating whether IsPlaying.
         /// </summary>
         public bool IsPlaying => TransportState == TransportState.PLAYING;
@@ -300,6 +305,11 @@ namespace Emby.Dlna.PlayTo
         /// Gets or sets the OnDeviceUnavailable.
         /// </summary>
         public Action? OnDeviceUnavailable { get; set; }
+
+        /// <summary>
+        /// Gets the TransportState.
+        /// </summary>
+        protected TransportState TransportState { get; private set; }
 
         /// <summary>
         /// Gets or sets the AvCommands.
@@ -436,13 +446,13 @@ namespace Emby.Dlna.PlayTo
                 }
 
                 deviceProperties.Icon = new DeviceIcon
-                    {
-                        Depth = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("depth")),
-                        MimeType = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype")),
-                        Url = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("url")),
-                        Height = heightValue,
-                        Width = widthValue
-                    };
+                {
+                    Depth = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("depth")),
+                    MimeType = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("mimetype")),
+                    Url = icon.GetDescendantValue(uPnpNamespaces.ud.GetName("url")),
+                    Height = heightValue,
+                    Width = widthValue
+                };
             }
 
             foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
@@ -776,7 +786,7 @@ namespace Emby.Dlna.PlayTo
                     properties.TryGetValue("TrackURI", out value);
                 }
 
-                uBase.Url = value;
+                uBase.Url = value.Replace("&amp;", "&", StringComparison.OrdinalIgnoreCase);
             }
 
             if (properties.TryGetValue("album", out value))
@@ -787,7 +797,7 @@ namespace Emby.Dlna.PlayTo
 
             if (properties.TryGetValue("res", out value))
             {
-                uBase.Url = value;
+                uBase.Url = value.Replace("&amp;", "&", StringComparison.OrdinalIgnoreCase);
             }
 
             if (uBase.Url == null)
@@ -901,7 +911,7 @@ namespace Emby.Dlna.PlayTo
                     return;
                 }
 
-                int delay = when == Never ? Timeout.Infinite : when == Now ? 100 : 10000;
+                int delay = when == Never ? Timeout.Infinite : when == Now ? 100 : TIMERINTERVAL;
                 _timer?.Change(delay, Timeout.Infinite);
             }
         }
@@ -1088,15 +1098,17 @@ namespace Emby.Dlna.PlayTo
                                 {
                                     var settings = (MediaData)action.Value;
 
-                                    if (!_mediaPlaying.Equals(settings.Url, StringComparison.Ordinal))
+                                    // Media Change event
+                                    if (IsPlaying)
                                     {
-                                        // Media Change/Load event
-                                        bool success = true;
+                                        // Compare what is currently playing to what is being sent minus the time element.
+                                        string thisMedia = Regex.Replace(_mediaPlaying, "&StartTimeTicks=\\d*", string.Empty);
+                                        string newMedia = Regex.Replace(settings.Url, "&StartTimeTicks=\\d*", string.Empty);
 
-                                        if (IsPlaying)
+                                        if (!thisMedia.Equals(newMedia, StringComparison.Ordinal))
                                         {
                                             _logger.LogDebug("{0} : Stopping current playback for transition.", Properties.Name);
-                                            success = await SendStopRequest().ConfigureAwait(false);
+                                            bool success = await SendStopRequest().ConfigureAwait(false);
 
                                             if (success)
                                             {
@@ -1104,14 +1116,13 @@ namespace Emby.Dlna.PlayTo
                                                 TransportState = TransportState.TRANSITIONING;
                                                 UpdateMediaInfo(null);
                                             }
-
-                                            success = true; // Try changing media without stopping.
                                         }
-                                        else if (settings.ResetPlay)
+
+                                        if (settings.ResetPlay)
                                         {
                                             // Restart from the beginning.
                                             _logger.LogDebug("{0} : Resetting playback position.", Properties.Name);
-                                            success = await SendSeekRequest(TimeSpan.Zero).ConfigureAwait(false);
+                                            bool success = await SendSeekRequest(TimeSpan.Zero).ConfigureAwait(false);
                                             if (success)
                                             {
                                                 // Save progress and restart time.
@@ -1121,12 +1132,9 @@ namespace Emby.Dlna.PlayTo
                                                 break;
                                             }
                                         }
-
-                                        if (success)
-                                        {
-                                            await SendMediaRequest(settings).ConfigureAwait(false);
-                                        }
                                     }
+
+                                    await SendMediaRequest(settings).ConfigureAwait(false);
 
                                     break;
                                 }
@@ -1142,7 +1150,7 @@ namespace Emby.Dlna.PlayTo
                     }
                 }
 
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(QUEUEINTERVAL).ConfigureAwait(false);
             }
         }
 
@@ -1225,7 +1233,7 @@ namespace Emby.Dlna.PlayTo
                 // Get the response.
                 using var stream = response.Content;
                 using var reader = new StreamReader(stream, Encoding.UTF8);
-                XMLUtilities.ParseXML(await reader.ReadToEndAsync().ConfigureAwait(false),  out XMLProperties results);
+                XMLUtilities.ParseXML(await reader.ReadToEndAsync().ConfigureAwait(false), out XMLProperties results);
                 stopWatch.Stop();
 
                 // Calculate just under half of the round trip time so we can make the position slide more accurate.
@@ -1362,6 +1370,8 @@ namespace Emby.Dlna.PlayTo
             {
                 postData = commands.BuildPost(command, service.ServiceType);
             }
+
+            _logger.LogDebug("{0}: Transmitting {1} to device.", Properties.Name, command.Name);
 
             return await SendCommandAsync(Properties.BaseUrl, service, command.Name, postData, header).ConfigureAwait(false);
         }
@@ -2152,7 +2162,7 @@ namespace Emby.Dlna.PlayTo
 
                 if (response.TryGetValue("CurrentURI", out value) && !string.IsNullOrWhiteSpace(value))
                 {
-                    retVal.Url = value;
+                    retVal.Url = value.Replace("&amp;", "&", StringComparison.OrdinalIgnoreCase);
                 }
 
                 return retVal;
@@ -2337,6 +2347,7 @@ namespace Emby.Dlna.PlayTo
 
 #pragma warning disable SA1401 // Fields should be private
 #pragma warning disable IDE1006 // Naming Styles
+
         internal class ValueRange
         {
             internal double FivePoints = 0;
@@ -2354,6 +2365,4 @@ namespace Emby.Dlna.PlayTo
             internal DlnaProfileType MediaType = DlnaProfileType.Audio;
         }
     }
-#pragma warning restore SA1401 // Fields should be private
-#pragma warning restore IDE1006 // Naming Styles
 }
