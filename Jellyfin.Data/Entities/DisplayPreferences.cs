@@ -39,7 +39,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; protected set; }
 
@@ -49,7 +48,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public Guid UserId { get; set; }
 
         /// <summary>
@@ -78,7 +76,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool RememberIndexing { get; set; }
 
         /// <summary>
@@ -87,7 +84,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool RememberSorting { get; set; }
 
         /// <summary>
@@ -96,7 +92,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public SortOrder SortOrder { get; set; }
 
         /// <summary>
@@ -105,7 +100,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool ShowSidebar { get; set; }
 
         /// <summary>
@@ -114,7 +108,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool ShowBackdrop { get; set; }
 
         /// <summary>
@@ -135,7 +128,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public ScrollDirection ScrollDirection { get; set; }
 
         /// <summary>

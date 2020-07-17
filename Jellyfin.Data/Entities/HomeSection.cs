@@ -16,7 +16,6 @@ namespace Jellyfin.Data.Entities
         /// Identity. Required.
         /// </remarks>
         [Key]
-        [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; protected set; }
 
