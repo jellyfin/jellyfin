@@ -501,7 +501,7 @@ namespace Emby.Dlna.PlayTo
                     var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
-                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, false, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
                     return;
                 }
 
@@ -695,7 +695,7 @@ namespace Emby.Dlna.PlayTo
             _currentPlaylistIndex = index;
             var currentitem = _playlist[index];
 
-            await _device.SetAvTransport(currentitem.StreamInfo.MediaType, currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl).ConfigureAwait(false);
+            await _device.SetAvTransport(currentitem.StreamInfo.MediaType, true, currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl).ConfigureAwait(false);
 
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && EnableClientSideSeek(streamInfo))
@@ -817,9 +817,12 @@ namespace Emby.Dlna.PlayTo
                     var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, newIndex, info.SubtitleStreamIndex);
 
-                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+                    bool seekAfter = EnableClientSideSeek(newItem.StreamInfo);
 
-                    if (EnableClientSideSeek(newItem.StreamInfo))
+                    // Pass our intentions to the device, so that it doesn't restart at the beginning, only to then seek.
+                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, !seekAfter, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+
+                    if (seekAfter)
                     {
                         await SeekAfterTransportChange(newPosition, CancellationToken.None).ConfigureAwait(false);
                     }
@@ -842,9 +845,12 @@ namespace Emby.Dlna.PlayTo
                     var user = !_session.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(_session.UserId) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, newIndex);
 
-                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+                    bool seekAfter = EnableClientSideSeek(newItem.StreamInfo) && newPosition > 0;
 
-                    if (EnableClientSideSeek(newItem.StreamInfo) && newPosition > 0)
+                    // Pass our intentions to the device, so that it doesn't restart at the beginning, only to then seek.
+                    await _device.SetAvTransport(newItem.StreamInfo.MediaType, !seekAfter, newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
+
+                    if (seekAfter)
                     {
                         await SeekAfterTransportChange(newPosition, CancellationToken.None).ConfigureAwait(false);
                     }

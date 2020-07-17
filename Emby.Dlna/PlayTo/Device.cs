@@ -650,19 +650,22 @@ namespace Emby.Dlna.PlayTo
         /// Specifies new media to play.
         /// </summary>
         /// <param name="mediatype">The type of media the url points to.</param>
+        /// <param name="resetPlay">In we are already playing this item, do we restart from the beginning.</param>
         /// <param name="url">Url of media.</param>
         /// <param name="headers">Headers.</param>
         /// <param name="metadata">Media metadata.</param>
         /// <returns>Task.</returns>
-        public Task SetAvTransport(DlnaProfileType mediatype, string url, string headers, string metadata)
+        public Task SetAvTransport(DlnaProfileType mediatype, bool resetPlay, string url, string headers, string metadata)
         {
             QueueEvent("Queue", new MediaData
             {
                 Url = url,
                 Headers = headers,
                 Metadata = metadata,
-                MediaType = mediatype
+                MediaType = mediatype,
+                ResetPlay = resetPlay
             });
+
             return Task.CompletedTask;
         }
 
@@ -1084,12 +1087,13 @@ namespace Emby.Dlna.PlayTo
                             case "Queue":
                                 {
                                     var settings = (MediaData)action.Value;
-                                    bool success = true;
 
-                                    if (IsPlaying)
+                                    if (!_mediaPlaying.Equals(settings.Url, StringComparison.Ordinal))
                                     {
-                                        // Has user requested a media change?
-                                        if (_mediaPlaying != settings.Url)
+                                        // Media Change/Load event
+                                        bool success = true;
+
+                                        if (IsPlaying)
                                         {
                                             _logger.LogDebug("{0} : Stopping current playback for transition.", Properties.Name);
                                             success = await SendStopRequest().ConfigureAwait(false);
@@ -1101,9 +1105,9 @@ namespace Emby.Dlna.PlayTo
                                                 UpdateMediaInfo(null);
                                             }
 
-                                            success = true; // Attempt to load up next track. May work on some systems.
+                                            success = true; // Try changing media without stopping.
                                         }
-                                        else
+                                        else if (settings.ResetPlay)
                                         {
                                             // Restart from the beginning.
                                             _logger.LogDebug("{0} : Resetting playback position.", Properties.Name);
@@ -1117,11 +1121,11 @@ namespace Emby.Dlna.PlayTo
                                                 break;
                                             }
                                         }
-                                    }
 
-                                    if (success)
-                                    {
-                                        await SendMediaRequest(settings).ConfigureAwait(false);
+                                        if (success)
+                                        {
+                                            await SendMediaRequest(settings).ConfigureAwait(false);
+                                        }
                                     }
 
                                     break;
@@ -2060,7 +2064,6 @@ namespace Emby.Dlna.PlayTo
 
             if (!string.IsNullOrEmpty(settings.Url))
             {
-                settings.Url = settings.Url.Replace("&", "&amp;", StringComparison.OrdinalIgnoreCase);
                 _logger.LogDebug(
                     "{0} : {1} - SetAvTransport Uri: {2} DlnaHeaders: {3}",
                     Properties.Name,
@@ -2344,6 +2347,7 @@ namespace Emby.Dlna.PlayTo
 
         internal class MediaData
         {
+            internal bool ResetPlay;
             internal string Url = string.Empty;
             internal string Metadata = string.Empty;
             internal string Headers = string.Empty;
