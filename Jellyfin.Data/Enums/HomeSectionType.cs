@@ -6,48 +6,48 @@
     public enum HomeSectionType
     {
         /// <summary>
+        /// None.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// My Media.
         /// </summary>
-        SmallLibraryTiles = 0,
+        SmallLibraryTiles = 1,
 
         /// <summary>
         /// My Media Small.
         /// </summary>
-        LibraryButtons = 1,
+        LibraryButtons = 2,
 
         /// <summary>
         /// Active Recordings.
         /// </summary>
-        ActiveRecordings = 2,
+        ActiveRecordings = 3,
 
         /// <summary>
         /// Continue Watching.
         /// </summary>
-        Resume = 3,
+        Resume = 4,
 
         /// <summary>
         /// Continue Listening.
         /// </summary>
-        ResumeAudio = 4,
+        ResumeAudio = 5,
 
         /// <summary>
         /// Latest Media.
         /// </summary>
-        LatestMedia = 5,
+        LatestMedia = 6,
 
         /// <summary>
         /// Next Up.
         /// </summary>
-        NextUp = 6,
+        NextUp = 7,
 
         /// <summary>
         /// Live TV.
         /// </summary>
-        LiveTv = 7,
-
-        /// <summary>
-        /// None.
-        /// </summary>
-        None = 8
+        LiveTv = 8
     }
 }
