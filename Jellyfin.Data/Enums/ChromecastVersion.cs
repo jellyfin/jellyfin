@@ -8,11 +8,11 @@
         /// <summary>
         /// Stable Chromecast version.
         /// </summary>
-        Stable,
+        Stable = 0,
 
         /// <summary>
         /// Nightly Chromecast version.
         /// </summary>
-        Nightly
+        Nightly = 2
     }
 }

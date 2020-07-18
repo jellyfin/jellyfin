@@ -8,11 +8,11 @@
         /// <summary>
         /// Horizontal scrolling direction.
         /// </summary>
-        Horizontal,
+        Horizontal = 0,
 
         /// <summary>
         /// Vertical scrolling direction.
         /// </summary>
-        Vertical
+        Vertical = 1
     }
 }
