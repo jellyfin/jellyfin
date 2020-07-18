@@ -134,8 +134,7 @@ namespace Emby.Dlna.Api
             _dlnaManager = dlnaManager;
             _resultFactory = httpResultFactory;
             _configurationManager = configurationManager;
-            object request = httpContextAccessor?.HttpContext.Items["ServiceStackRequest"] ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            Request = (IRequest)request;
+            Request = httpContextAccessor?.HttpContext.GetServiceStack() ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         private string GetHeader(string name)
