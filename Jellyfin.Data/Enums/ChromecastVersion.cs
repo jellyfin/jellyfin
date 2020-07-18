@@ -13,6 +13,6 @@
         /// <summary>
         /// Nightly Chromecast version.
         /// </summary>
-        Nightly = 2
+        Nightly = 1
     }
 }
