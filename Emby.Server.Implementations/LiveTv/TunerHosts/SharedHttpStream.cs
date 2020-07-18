@@ -103,21 +103,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
-            //OpenedMediaSource.Protocol = MediaProtocol.File;
-            //OpenedMediaSource.Path = tempFile;
-            //OpenedMediaSource.ReadAtNativeFramerate = true;
+            // OpenedMediaSource.Protocol = MediaProtocol.File;
+            // OpenedMediaSource.Path = tempFile;
+            // OpenedMediaSource.ReadAtNativeFramerate = true;
 
             MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
 
-            //OpenedMediaSource.Path = TempFilePath;
-            //OpenedMediaSource.Protocol = MediaProtocol.File;
+            // OpenedMediaSource.Path = TempFilePath;
+            // OpenedMediaSource.Protocol = MediaProtocol.File;
 
-            //OpenedMediaSource.Path = _tempFilePath;
-            //OpenedMediaSource.Protocol = MediaProtocol.File;
-            //OpenedMediaSource.SupportsDirectPlay = false;
-            //OpenedMediaSource.SupportsDirectStream = true;
-            //OpenedMediaSource.SupportsTranscoding = true;
+            // OpenedMediaSource.Path = _tempFilePath;
+            // OpenedMediaSource.Protocol = MediaProtocol.File;
+            // OpenedMediaSource.SupportsDirectPlay = false;
+            // OpenedMediaSource.SupportsDirectStream = true;
+            // OpenedMediaSource.SupportsTranscoding = true;
             await taskCompletionSource.Task.ConfigureAwait(false);
             if (taskCompletionSource.Task.Exception != null)
             {

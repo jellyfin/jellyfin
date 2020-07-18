@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Api.Movies;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -14,7 +15,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
@@ -27,6 +27,12 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Api.Library
 {
@@ -43,7 +49,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetCriticReviews
+    /// Class GetCriticReviews.
     /// </summary>
     [Route("/Items/{Id}/CriticReviews", "GET", Summary = "Gets critic reviews for an item")]
     [Authenticated]
@@ -64,7 +70,7 @@ namespace MediaBrowser.Api.Library
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -72,7 +78,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeSongs
+    /// Class GetThemeSongs.
     /// </summary>
     [Route("/Items/{Id}/ThemeSongs", "GET", Summary = "Gets theme songs for an item")]
     [Authenticated]
@@ -97,7 +103,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeVideos
+    /// Class GetThemeVideos.
     /// </summary>
     [Route("/Items/{Id}/ThemeVideos", "GET", Summary = "Gets theme videos for an item")]
     [Authenticated]
@@ -122,7 +128,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeVideos
+    /// Class GetThemeVideos.
     /// </summary>
     [Route("/Items/{Id}/ThemeMedia", "GET", Summary = "Gets theme videos and songs for an item")]
     [Authenticated]
@@ -199,7 +205,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetPhyscialPaths
+    /// Class GetPhyscialPaths.
     /// </summary>
     [Route("/Library/PhysicalPaths", "GET", Summary = "Gets a list of physical paths from virtual folders")]
     [Authenticated(Roles = "Admin")]
@@ -279,34 +285,43 @@ namespace MediaBrowser.Api.Library
     public class GetLibraryOptionsInfo : IReturn<LibraryOptionsResult>
     {
         public string LibraryContentType { get; set; }
+
         public bool IsNewLibrary { get; set; }
     }
 
     public class LibraryOptionInfo
     {
         public string Name { get; set; }
+
         public bool DefaultEnabled { get; set; }
     }
 
     public class LibraryOptionsResult
     {
         public LibraryOptionInfo[] MetadataSavers { get; set; }
+
         public LibraryOptionInfo[] MetadataReaders { get; set; }
+
         public LibraryOptionInfo[] SubtitleFetchers { get; set; }
+
         public LibraryTypeOptions[] TypeOptions { get; set; }
     }
 
     public class LibraryTypeOptions
     {
         public string Type { get; set; }
+
         public LibraryOptionInfo[] MetadataFetchers { get; set; }
+
         public LibraryOptionInfo[] ImageFetchers { get; set; }
+
         public ImageType[] SupportedImageTypes { get; set; }
+
         public ImageOption[] DefaultImageOptions { get; set; }
     }
 
     /// <summary>
-    /// Class LibraryService
+    /// Class LibraryService.
     /// </summary>
     public class LibraryService : BaseApiService
     {
@@ -350,6 +365,7 @@ namespace MediaBrowser.Api.Library
             _moviesServiceLogger = moviesServiceLogger;
         }
 
+        // Content Types available for each Library
         private string[] GetRepresentativeItemTypes(string contentType)
         {
             return contentType switch
@@ -359,7 +375,7 @@ namespace MediaBrowser.Api.Library
                 CollectionType.Movies => new[] {"Movie"},
                 CollectionType.TvShows => new[] {"Series", "Season", "Episode"},
                 CollectionType.Books => new[] {"Book"},
-                CollectionType.Music => new[] {"MusicAlbum", "MusicArtist", "Audio", "MusicVideo"},
+                CollectionType.Music => new[] {"MusicArtist", "MusicAlbum", "Audio", "MusicVideo"},
                 CollectionType.HomeVideos => new[] {"Video", "Photo"},
                 CollectionType.Photos => new[] {"Video", "Photo"},
                 CollectionType.MusicVideos => new[] {"MusicVideo"},
@@ -425,7 +441,6 @@ namespace MediaBrowser.Api.Library
                 return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
-                       || string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase);
             }
 
@@ -556,7 +571,6 @@ namespace MediaBrowser.Api.Library
                     _authContext)
                 {
                     Request = Request,
-
                 }.GetSimilarItemsResult(request);
             }
 
@@ -654,8 +668,7 @@ namespace MediaBrowser.Api.Library
                 {
                     EnableImages = false
                 }
-
-            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProvider.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             foreach (var item in series)
             {
@@ -683,16 +696,15 @@ namespace MediaBrowser.Api.Library
                 {
                     EnableImages = false
                 }
-
             });
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))
             {
-                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
+                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProvider.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else if (!string.IsNullOrWhiteSpace(request.TmdbId))
             {
-                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
+                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProvider.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {
@@ -763,8 +775,8 @@ namespace MediaBrowser.Api.Library
         {
             try
             {
-                _activityManager.Create(new Jellyfin.Data.Entities.ActivityLog(
-                    string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
+                _activityManager.Create(new ActivityLog(
+                    string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
                     "UserDownloadingContent",
                     auth.UserId)
                 {
@@ -1033,6 +1045,7 @@ namespace MediaBrowser.Api.Library
                 {
                     break;
                 }
+
                 item = parent;
             }
 
@@ -1090,6 +1103,7 @@ namespace MediaBrowser.Api.Library
                 {
                     break;
                 }
+
                 item = parent;
             }
 

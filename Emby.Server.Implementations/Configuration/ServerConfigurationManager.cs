@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.Configuration
             ValidateMetadataPath(newConfig);
             ValidateSslCertificate(newConfig);
 
-            ConfigurationUpdating?.Invoke(this, new GenericEventArgs<ServerConfiguration> { Argument = newConfig });
+            ConfigurationUpdating?.Invoke(this, new GenericEventArgs<ServerConfiguration>(newConfig));
 
             base.ReplaceConfiguration(newConfiguration);
         }
@@ -109,7 +109,6 @@ namespace Emby.Server.Implementations.Configuration
             if (!string.IsNullOrWhiteSpace(newPath)
                 && !string.Equals(Configuration.CertificatePath, newPath, StringComparison.Ordinal))
             {
-                // Validate
                 if (!File.Exists(newPath))
                 {
                     throw new FileNotFoundException(
@@ -133,7 +132,6 @@ namespace Emby.Server.Implementations.Configuration
             if (!string.IsNullOrWhiteSpace(newPath)
                 && !string.Equals(Configuration.MetadataPath, newPath, StringComparison.Ordinal))
             {
-                // Validate
                 if (!Directory.Exists(newPath))
                 {
                     throw new DirectoryNotFoundException(
@@ -145,61 +143,6 @@ namespace Emby.Server.Implementations.Configuration
 
                 EnsureWriteAccess(newPath);
             }
-        }
-
-        /// <summary>
-        /// Sets all configuration values to their optimal values.
-        /// </summary>
-        /// <returns>If the configuration changed.</returns>
-        public bool SetOptimalValues()
-        {
-            var config = Configuration;
-
-            var changed = false;
-
-            if (!config.EnableCaseSensitiveItemIds)
-            {
-                config.EnableCaseSensitiveItemIds = true;
-                changed = true;
-            }
-
-            if (!config.SkipDeserializationForBasicTypes)
-            {
-                config.SkipDeserializationForBasicTypes = true;
-                changed = true;
-            }
-
-            if (!config.EnableSimpleArtistDetection)
-            {
-                config.EnableSimpleArtistDetection = true;
-                changed = true;
-            }
-
-            if (!config.EnableNormalizedItemByNameIds)
-            {
-                config.EnableNormalizedItemByNameIds = true;
-                changed = true;
-            }
-
-            if (!config.DisableLiveTvChannelUserDataName)
-            {
-                config.DisableLiveTvChannelUserDataName = true;
-                changed = true;
-            }
-
-            if (!config.EnableNewOmdbSupport)
-            {
-                config.EnableNewOmdbSupport = true;
-                changed = true;
-            }
-
-            if (!config.CollectionsUpgraded)
-            {
-                config.CollectionsUpgraded = true;
-                changed = true;
-            }
-
-            return changed;
         }
     }
 }

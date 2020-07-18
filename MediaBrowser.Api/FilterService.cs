@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -72,11 +73,17 @@ namespace MediaBrowser.Api
         }
 
         public bool? IsAiring { get; set; }
+
         public bool? IsMovie { get; set; }
+
         public bool? IsSports { get; set; }
+
         public bool? IsKids { get; set; }
+
         public bool? IsNews { get; set; }
+
         public bool? IsSeries { get; set; }
+
         public bool? Recursive { get; set; }
     }
 
@@ -118,7 +125,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { },
+                    Fields = Array.Empty<ItemFields>(),
                     EnableImages = false,
                     EnableUserData = false
                 },
@@ -149,7 +156,6 @@ namespace MediaBrowser.Api
                 {
                     Name = i.Item1.Name,
                     Id = i.Item1.Id
-
                 }).ToArray();
             }
             else
@@ -158,7 +164,6 @@ namespace MediaBrowser.Api
                 {
                     Name = i.Item1.Name,
                     Id = i.Item1.Id
-
                 }).ToArray();
             }
 

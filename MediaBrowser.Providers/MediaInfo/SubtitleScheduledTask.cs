@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +26,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<SubtitleScheduledTask> _logger;
         private readonly IJsonSerializer _json;
         private readonly ILocalizationManager _localization;
 

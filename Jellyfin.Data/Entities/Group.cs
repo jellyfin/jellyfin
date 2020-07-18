@@ -2,19 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
 {
-    public partial class Group
+    /// <summary>
+    /// An entity representing a group.
+    /// </summary>
+    public partial class Group : IHasPermissions, ISavingChanges
     {
-        partial void Init();
-
         /// <summary>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
+        /// Initializes a new instance of the <see cref="Group"/> class.
+        /// Public constructor with required data.
         /// </summary>
-        protected Group()
+        /// <param name="name">The name of the group.</param>
+        public Group(string name)
         {
-            GroupPermissions = new HashSet<Permission>();
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            Name = name;
+            Id = Guid.NewGuid();
+
+            Permissions = new HashSet<Permission>();
             ProviderMappings = new HashSet<ProviderMapping>();
             Preferences = new HashSet<Preference>();
 
@@ -22,41 +35,12 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Replaces default constructor, since it's protected. Caller assumes responsibility for setting all required values before saving.
+        /// Initializes a new instance of the <see cref="Group"/> class.
+        /// Default constructor. Protected due to required properties, but present because EF needs it.
         /// </summary>
-        public static Group CreateGroupUnsafe()
+        protected Group()
         {
-            return new Group();
-        }
-
-        /// <summary>
-        /// Public constructor with required data
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_user0"></param>
-        public Group(string name, User _user0)
-        {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-            this.Name = name;
-
-            if (_user0 == null) throw new ArgumentNullException(nameof(_user0));
-            _user0.Groups.Add(this);
-
-            this.GroupPermissions = new HashSet<Permission>();
-            this.ProviderMappings = new HashSet<ProviderMapping>();
-            this.Preferences = new HashSet<Preference>();
-
             Init();
-        }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="_user0"></param>
-        public static Group Create(string name, User _user0)
-        {
-            return new Group(name, _user0);
         }
 
         /*************************************************************************
@@ -64,24 +48,32 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Gets or sets the id of this group.
         /// </summary>
+        /// <remarks>
+        /// Identity, Indexed, Required.
+        /// </remarks>
         [Key]
         [Required]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public Guid Id { get; protected set; }
 
         /// <summary>
-        /// Required, Max length = 255
+        /// Gets or sets the group's name.
         /// </summary>
+        /// <remarks>
+        /// Required, Max length = 255.
+        /// </remarks>
         [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Name { get; set; }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Gets or sets the row version.
         /// </summary>
+        /// <remarks>
+        /// Required, Concurrency Token.
+        /// </remarks>
         [ConcurrencyCheck]
         [Required]
         public uint RowVersion { get; set; }
@@ -96,7 +88,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         [ForeignKey("Permission_GroupPermissions_Id")]
-        public virtual ICollection<Permission> GroupPermissions { get; protected set; }
+        public virtual ICollection<Permission> Permissions { get; protected set; }
 
         [ForeignKey("ProviderMapping_ProviderMappings_Id")]
         public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
@@ -104,6 +96,27 @@ namespace Jellyfin.Data.Entities
         [ForeignKey("Preference_Preferences_Id")]
         public virtual ICollection<Preference> Preferences { get; protected set; }
 
+        /// <summary>
+        /// Static create function (for use in LINQ queries, etc.)
+        /// </summary>
+        /// <param name="name">The name of this group.</param>
+        public static Group Create(string name)
+        {
+            return new Group(name);
+        }
+
+        /// <inheritdoc/>
+        public bool HasPermission(PermissionKind kind)
+        {
+            return Permissions.First(p => p.Kind == kind).Value;
+        }
+
+        /// <inheritdoc/>
+        public void SetPermission(PermissionKind kind, bool value)
+        {
+            Permissions.First(p => p.Kind == kind).Value = value;
+        }
+
+        partial void Init();
     }
 }
-

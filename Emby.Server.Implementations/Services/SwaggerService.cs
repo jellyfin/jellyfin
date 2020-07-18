@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +18,21 @@ namespace Emby.Server.Implementations.Services
     public class SwaggerSpec
     {
         public string swagger { get; set; }
+
         public string[] schemes { get; set; }
+
         public SwaggerInfo info { get; set; }
+
         public string host { get; set; }
+
         public string basePath { get; set; }
+
         public SwaggerTag[] tags { get; set; }
+
         public IDictionary<string, Dictionary<string, SwaggerMethod>> paths { get; set; }
+
         public Dictionary<string, SwaggerDefinition> definitions { get; set; }
+
         public SwaggerComponents components { get; set; }
     }
 
@@ -34,15 +44,20 @@ namespace Emby.Server.Implementations.Services
     public class SwaggerSecurityScheme
     {
         public string name { get; set; }
+
         public string type { get; set; }
+
         public string @in { get; set; }
     }
 
     public class SwaggerInfo
     {
         public string description { get; set; }
+
         public string version { get; set; }
+
         public string title { get; set; }
+
         public string termsOfService { get; set; }
 
         public SwaggerConcactInfo contact { get; set; }
@@ -51,36 +66,52 @@ namespace Emby.Server.Implementations.Services
     public class SwaggerConcactInfo
     {
         public string email { get; set; }
+
         public string name { get; set; }
+
         public string url { get; set; }
     }
 
     public class SwaggerTag
     {
         public string description { get; set; }
+
         public string name { get; set; }
     }
 
     public class SwaggerMethod
     {
         public string summary { get; set; }
+
         public string description { get; set; }
+
         public string[] tags { get; set; }
+
         public string operationId { get; set; }
+
         public string[] consumes { get; set; }
+
         public string[] produces { get; set; }
+
         public SwaggerParam[] parameters { get; set; }
+
         public Dictionary<string, SwaggerResponse> responses { get; set; }
+
         public Dictionary<string, string[]>[] security { get; set; }
     }
 
     public class SwaggerParam
     {
         public string @in { get; set; }
+
         public string name { get; set; }
+
         public string description { get; set; }
+
         public bool required { get; set; }
+
         public string type { get; set; }
+
         public string collectionFormat { get; set; }
     }
 
@@ -95,15 +126,20 @@ namespace Emby.Server.Implementations.Services
     public class SwaggerDefinition
     {
         public string type { get; set; }
+
         public Dictionary<string, SwaggerProperty> properties { get; set; }
     }
 
     public class SwaggerProperty
     {
         public string type { get; set; }
+
         public string format { get; set; }
+
         public string description { get; set; }
+
         public string[] @enum { get; set; }
+
         public string @default { get; set; }
     }
 

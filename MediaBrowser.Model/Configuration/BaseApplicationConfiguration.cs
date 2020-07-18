@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Xml.Serialization;
 
@@ -11,7 +12,15 @@ namespace MediaBrowser.Model.Configuration
     public class BaseApplicationConfiguration
     {
         /// <summary>
-        /// The number of days we should retain log files
+        /// Initializes a new instance of the <see cref="BaseApplicationConfiguration" /> class.
+        /// </summary>
+        public BaseApplicationConfiguration()
+        {
+            LogFileRetentionDays = 3;
+        }
+
+        /// <summary>
+        /// Gets or sets the number of days we should retain log files.
         /// </summary>
         /// <value>The log file retention days.</value>
         public int LogFileRetentionDays { get; set; }
@@ -29,29 +38,21 @@ namespace MediaBrowser.Model.Configuration
         public string CachePath { get; set; }
 
         /// <summary>
-        /// Last known version that was ran using the configuration.
+        /// Gets or sets the last known version that was ran using the configuration.
         /// </summary>
         /// <value>The version from previous run.</value>
         [XmlIgnore]
         public Version PreviousVersion { get; set; }
 
         /// <summary>
-        /// Stringified PreviousVersion to be stored/loaded,
-        /// because System.Version itself isn't xml-serializable
+        /// Gets or sets the stringified PreviousVersion to be stored/loaded,
+        /// because System.Version itself isn't xml-serializable.
         /// </summary>
-        /// <value>String value of PreviousVersion</value>
+        /// <value>String value of PreviousVersion.</value>
         public string PreviousVersionStr
         {
             get => PreviousVersion?.ToString();
             set => PreviousVersion = Version.Parse(value);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseApplicationConfiguration" /> class.
-        /// </summary>
-        public BaseApplicationConfiguration()
-        {
-            LogFileRetentionDays = 3;
         }
     }
 }

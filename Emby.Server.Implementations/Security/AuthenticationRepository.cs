@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -59,7 +61,6 @@ namespace Emby.Server.Implementations.Security
                         AddColumn(db, "AccessTokens", "UserName", "TEXT", existingColumnNames);
                         AddColumn(db, "AccessTokens", "DateLastActivity", "DATETIME", existingColumnNames);
                         AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
-
                     }, TransactionMode);
 
                     connection.RunQueries(new[]
@@ -97,7 +98,7 @@ namespace Emby.Server.Implementations.Security
                         statement.TryBind("@AppName", info.AppName);
                         statement.TryBind("@AppVersion", info.AppVersion);
                         statement.TryBind("@DeviceName", info.DeviceName);
-                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture)));
+                        statement.TryBind("@UserId", info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture));
                         statement.TryBind("@UserName", info.UserName);
                         statement.TryBind("@IsActive", true);
                         statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
@@ -105,7 +106,6 @@ namespace Emby.Server.Implementations.Security
 
                         statement.MoveNext();
                     }
-
                 }, TransactionMode);
             }
         }
@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.Security
                         statement.TryBind("@AppName", info.AppName);
                         statement.TryBind("@AppVersion", info.AppVersion);
                         statement.TryBind("@DeviceName", info.DeviceName);
-                        statement.TryBind("@UserId", (info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture)));
+                        statement.TryBind("@UserId", info.UserId.Equals(Guid.Empty) ? null : info.UserId.ToString("N", CultureInfo.InvariantCulture));
                         statement.TryBind("@UserName", info.UserName);
                         statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
                         statement.TryBind("@DateLastActivity", info.DateLastActivity.ToDateTimeParamValue());
@@ -365,7 +365,6 @@ namespace Emby.Server.Implementations.Security
 
                         return result;
                     }
-
                 }, ReadTransactionMode);
             }
         }
@@ -396,7 +395,6 @@ namespace Emby.Server.Implementations.Security
 
                         statement.MoveNext();
                     }
-
                 }, TransactionMode);
             }
         }

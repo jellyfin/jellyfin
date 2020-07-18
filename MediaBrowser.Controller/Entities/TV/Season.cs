@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
     /// <summary>
-    /// Class Season
+    /// Class Season.
     /// </summary>
     public class Season : Folder, IHasSeries, IHasLookupInfo<SeasonInfo>
     {
@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This Episode's Series Instance
+        /// This Episode's Series Instance.
         /// </summary>
         /// <value>The series.</value>
         [JsonIgnore]
@@ -81,6 +81,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     seriesId = FindSeriesId();
                 }
+
                 return seriesId == Guid.Empty ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
@@ -168,7 +169,7 @@ namespace MediaBrowser.Controller.Entities.TV
             return GetEpisodes(user, new DtoOptions(true));
         }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        protected override bool GetBlockUnratedValue(User user)
         {
             // Don't block. Let either the entire series rating or episode rating determine it
             return false;
@@ -203,7 +204,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public Guid FindSeriesId()
         {
             var series = FindParent<Series>();
-            return series == null ? Guid.Empty : series.Id;
+            return series?.Id ?? Guid.Empty;
         }
 
         /// <summary>
@@ -225,7 +226,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
@@ -234,7 +235,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
             if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
             {
-                IndexNumber = IndexNumber ?? LibraryManager.GetSeasonNumberFromPath(Path);
+                IndexNumber ??= LibraryManager.GetSeasonNumberFromPath(Path);
 
                 // If a change was made record it
                 if (IndexNumber.HasValue)

@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -16,7 +17,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
@@ -28,15 +28,21 @@ using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 using Priority_Queue;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
-    /// Class ProviderManager
+    /// Class ProviderManager.
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ProviderManager> _logger;
         private readonly IHttpClient _httpClient;
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
@@ -96,7 +102,7 @@ namespace MediaBrowser.Providers.Manager
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
-            _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
+            _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
             _savers = metadataSavers.Where(i =>
             {
@@ -182,6 +188,12 @@ namespace MediaBrowser.Providers.Manager
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
 
+        public Task SaveImage(User user, Stream source, string mimeType, string path)
+        {
+            return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger)
+                .SaveImage(user, source, path);
+        }
+
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(BaseItem item, RemoteImageQuery query, CancellationToken cancellationToken)
         {
             var providers = GetRemoteImageProviders(item, query.IncludeDisabledProviders);
@@ -255,11 +267,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{IImageProvider}.</returns>
         public IEnumerable<ImageProviderInfo> GetRemoteImageProviderInfo(BaseItem item)
         {
-            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo
-            {
-                Name = i.Name,
-                SupportedImages = i.GetSupportedImages(item).ToArray()
-            });
+            return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo(i.Name, i.GetSupportedImages(item).ToArray()));
         }
 
         public IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions)
@@ -779,6 +787,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 searchInfo.SearchInfo.MetadataLanguage = _configurationManager.Configuration.PreferredMetadataLanguage;
             }
+
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
             {
                 searchInfo.SearchInfo.MetadataCountryCode = _configurationManager.Configuration.MetadataCountryCode;
@@ -823,7 +832,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            //_logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
+            // _logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }
@@ -891,13 +900,12 @@ namespace MediaBrowser.Providers.Manager
 
                 return new ExternalUrl
                 {
-                    Name = i.Name,
+                    Name = i.ProviderName,
                     Url = string.Format(
                         CultureInfo.InvariantCulture,
                         i.UrlFormatString,
                         value)
                 };
-
             }).Where(i => i != null).Concat(item.GetRelatedUrls());
         }
 
@@ -906,8 +914,9 @@ namespace MediaBrowser.Providers.Manager
             return GetExternalIds(item)
                 .Select(i => new ExternalIdInfo
                 {
-                    Name = i.Name,
+                    Name = i.ProviderName,
                     Key = i.Key,
+                    Type = i.Type,
                     UrlFormatString = i.UrlFormatString
                 });
         }

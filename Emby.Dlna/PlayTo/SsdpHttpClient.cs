@@ -91,7 +91,6 @@ namespace Emby.Dlna.PlayTo
 
             using (await _httpClient.SendAsync(options, new HttpMethod("SUBSCRIBE")).ConfigureAwait(false))
             {
-
             }
         }
 

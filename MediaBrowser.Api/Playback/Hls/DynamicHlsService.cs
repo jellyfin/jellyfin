@@ -234,6 +234,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         Logger.LogDebug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", requestedIndex - currentTranscodingIndex.Value, segmentGapRequiringTranscodingChange, requestedIndex);
                         startTranscoding = true;
                     }
+
                     if (startTranscoding)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
@@ -257,7 +258,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        //await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                        // await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                     else
                     {
@@ -277,8 +278,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
             }
 
-            //Logger.LogInformation("waiting for {0}", segmentPath);
-            //while (!File.Exists(segmentPath))
+            // Logger.LogInformation("waiting for {0}", segmentPath);
+            // while (!File.Exists(segmentPath))
             //{
             //    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             //}
@@ -518,6 +519,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
                 }
+
                 cancellationToken.ThrowIfCancellationRequested();
             }
             else
@@ -700,12 +702,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
-            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 return false;
             }
 
-            if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(state.OutputAudioCodec))
             {
                 return false;
             }
@@ -717,7 +719,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             // Having problems in android
             return false;
-            //return state.VideoRequest.VideoBitRate.HasValue;
+            // return state.VideoRequest.VideoBitRate.HasValue;
         }
 
         /// <summary>
@@ -728,7 +730,7 @@ namespace MediaBrowser.Api.Playback.Hls
         private int? GetOutputVideoCodecLevel(StreamState state)
         {
             string levelString;
-            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase)
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
                 && state.VideoStream.Level.HasValue)
             {
                 levelString = state.VideoStream?.Level.ToString();
@@ -872,9 +874,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (framerate.HasValue)
             {
-                builder.Append(",FRAME-RATE=\"")
-                    .Append(framerate.Value)
-                    .Append('"');
+                builder.Append(",FRAME-RATE=")
+                    .Append(framerate.Value);
             }
         }
 
@@ -888,11 +889,10 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
             {
-                builder.Append(",RESOLUTION=\"")
+                builder.Append(",RESOLUTION=")
                     .Append(state.OutputWidth.GetValueOrDefault())
                     .Append('x')
-                    .Append(state.OutputHeight.GetValueOrDefault())
-                    .Append('"');
+                    .Append(state.OutputHeight.GetValueOrDefault());
             }
         }
 
@@ -974,7 +974,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
-            //if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
+            // if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
             //{
             //    queryString = string.Empty;
             //}
@@ -1008,7 +1008,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!state.IsOutputVideo)
             {
-                if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
                     return "-acodec copy";
                 }
@@ -1036,11 +1036,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Join(" ", audioTranscodeParams.ToArray());
             }
 
-            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(audioCodec))
             {
                 var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
 
-                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.EnableBreakOnNonKeyFrames(videoCodec))
+                if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
                     return "-codec:a:0 copy -copypriorss:a:0 0";
                 }
@@ -1091,7 +1091,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // }
 
             // See if we can save come cpu cycles by avoiding encoding
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(codec))
             {
                 if (state.VideoStream != null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1102,7 +1102,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                 }
 
-                //args += " -flags -global_header";
+                // args += " -flags -global_header";
             }
             else
             {
@@ -1144,7 +1144,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " " + keyFrameArg + gopArg;
                 }
 
-                //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
+                // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
@@ -1166,7 +1166,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " -start_at_zero";
                 }
 
-                //args += " -flags -global_header";
+                // args += " -flags -global_header";
             }
 
             if (!string.IsNullOrEmpty(state.OutputVideoSync))

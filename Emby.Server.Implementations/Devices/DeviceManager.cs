@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Jellyfin.Data.Enums;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Devices;
@@ -16,7 +17,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
-using MediaBrowser.Model.Users;
 
 namespace Emby.Server.Implementations.Devices
 {
@@ -27,10 +27,9 @@ namespace Emby.Server.Implementations.Devices
         private readonly IServerConfigurationManager _config;
         private readonly IAuthenticationRepository _authRepo;
         private readonly Dictionary<string, ClientCapabilities> _capabilitiesCache;
+        private readonly object _capabilitiesSyncLock = new object();
 
         public event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
-
-        private readonly object _capabilitiesSyncLock = new object();
 
         public DeviceManager(
             IAuthenticationRepository authRepo,
@@ -62,13 +61,7 @@ namespace Emby.Server.Implementations.Devices
         {
             _authRepo.UpdateDeviceOptions(deviceId, options);
 
-            if (DeviceOptionsUpdated != null)
-            {
-                DeviceOptionsUpdated(this, new GenericEventArgs<Tuple<string, DeviceOptions>>()
-                {
-                    Argument = new Tuple<string, DeviceOptions>(deviceId, options)
-                });
-            }
+            DeviceOptionsUpdated?.Invoke(this, new GenericEventArgs<Tuple<string, DeviceOptions>>(new Tuple<string, DeviceOptions>(deviceId, options)));
         }
 
         public DeviceOptions GetDeviceOptions(string deviceId)
@@ -119,7 +112,7 @@ namespace Emby.Server.Implementations.Devices
         {
             IEnumerable<AuthenticationInfo> sessions = _authRepo.Get(new AuthenticationInfoQuery
             {
-                //UserId = query.UserId
+                // UserId = query.UserId
                 HasUser = true
             }).Items;
 
@@ -176,12 +169,18 @@ namespace Emby.Server.Implementations.Devices
             {
                 throw new ArgumentException("user not found");
             }
+
             if (string.IsNullOrEmpty(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));
             }
 
-            if (!CanAccessDevice(user.Policy, deviceId))
+            if (user.HasPermission(PermissionKind.EnableAllDevices) || user.HasPermission(PermissionKind.IsAdministrator))
+            {
+                return true;
+            }
+
+            if (!user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparer.OrdinalIgnoreCase))
             {
                 var capabilities = GetCapabilities(deviceId);
 
@@ -192,21 +191,6 @@ namespace Emby.Server.Implementations.Devices
             }
 
             return true;
-        }
-
-        private static bool CanAccessDevice(UserPolicy policy, string id)
-        {
-            if (policy.EnableAllDevices)
-            {
-                return true;
-            }
-
-            if (policy.IsAdministrator)
-            {
-                return true;
-            }
-
-            return policy.EnabledDevices.Contains(id, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Linq;
@@ -37,7 +39,7 @@ namespace MediaBrowser.Providers.MediaInfo
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<FFProbeProvider> _logger;
         private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;

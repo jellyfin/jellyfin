@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -178,7 +180,7 @@ namespace Emby.Server.Implementations.Services
             => string.Equals(method, expected, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Duplicate params have their values joined together in a comma-delimited string
+        /// Duplicate params have their values joined together in a comma-delimited string.
         /// </summary>
         private static Dictionary<string, string> GetFlattenedRequestParams(HttpRequest request)
         {

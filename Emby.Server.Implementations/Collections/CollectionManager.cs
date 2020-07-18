@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
@@ -29,7 +30,7 @@ namespace Emby.Server.Implementations.Collections
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _iLibraryMonitor;
-        private readonly ILogger _logger;
+        private readonly ILogger<CollectionManager> _logger;
         private readonly IProviderManager _providerManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
@@ -56,7 +57,7 @@ namespace Emby.Server.Implementations.Collections
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
-            _logger = loggerFactory.CreateLogger(nameof(CollectionManager));
+            _logger = loggerFactory.CreateLogger<CollectionManager>();
             _providerManager = providerManager;
             _localizationManager = localizationManager;
             _appPaths = appPaths;
@@ -360,62 +361,6 @@ namespace Emby.Server.Implementations.Collections
             }
 
             return results.Values;
-        }
-    }
-
-    /// <summary>
-    /// The collection manager entry point.
-    /// </summary>
-    public sealed class CollectionManagerEntryPoint : IServerEntryPoint
-    {
-        private readonly CollectionManager _collectionManager;
-        private readonly IServerConfigurationManager _config;
-        private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CollectionManagerEntryPoint"/> class.
-        /// </summary>
-        /// <param name="collectionManager">The collection manager.</param>
-        /// <param name="config">The server configuration manager.</param>
-        /// <param name="logger">The logger.</param>
-        public CollectionManagerEntryPoint(
-            ICollectionManager collectionManager,
-            IServerConfigurationManager config,
-            ILogger<CollectionManagerEntryPoint> logger)
-        {
-            _collectionManager = (CollectionManager)collectionManager;
-            _config = config;
-            _logger = logger;
-        }
-
-        /// <inheritdoc />
-        public async Task RunAsync()
-        {
-            if (!_config.Configuration.CollectionsUpgraded && _config.Configuration.IsStartupWizardCompleted)
-            {
-                var path = _collectionManager.GetCollectionsFolderPath();
-
-                if (Directory.Exists(path))
-                {
-                    try
-                    {
-                        await _collectionManager.EnsureLibraryFolder(path, true).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error creating camera uploads library");
-                    }
-
-                    _config.Configuration.CollectionsUpgraded = true;
-                    _config.SaveConfiguration();
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            // Nothing to dispose
         }
     }
 }

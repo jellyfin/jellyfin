@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.EntryPoints
     public class ExternalPortForwarding : IServerEntryPoint
     {
         private readonly IServerApplicationHost _appHost;
-        private readonly ILogger _logger;
+        private readonly ILogger<ExternalPortForwarding> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
 

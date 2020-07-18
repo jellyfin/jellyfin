@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,7 +21,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    class FFProbeAudioInfo
+    public class FFProbeAudioInfo
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
@@ -63,7 +65,6 @@ namespace MediaBrowser.Providers.MediaInfo
                         Path = path,
                         Protocol = protocol
                     }
-
                 }, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -91,8 +92,8 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.RunTimeTicks = mediaInfo.RunTimeTicks;
             audio.Size = mediaInfo.Size;
 
-            //var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
-            //audio.Container = extension;
+            // var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
+            // audio.Container = extension;
 
             FetchDataFromTags(audio, mediaInfo);
 
@@ -100,7 +101,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Fetches data from the tags dictionary
+        /// Fetches data from the tags dictionary.
         /// </summary>
         /// <param name="audio">The audio.</param>
         /// <param name="data">The data.</param>
@@ -112,7 +113,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Name = data.Name;
             }
 
-            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataFields.Cast))
+            if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();
 
@@ -143,7 +144,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.ProductionYear = audio.PremiereDate.Value.ToLocalTime().Year;
             }
 
-            if (!audio.LockedFields.Contains(MetadataFields.Genres))
+            if (!audio.LockedFields.Contains(MetadataField.Genres))
             {
                 audio.Genres = Array.Empty<string>();
 
@@ -153,16 +154,16 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!audio.LockedFields.Contains(MetadataFields.Studios))
+            if (!audio.LockedFields.Contains(MetadataField.Studios))
             {
                 audio.SetStudios(data.Studios);
             }
 
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist));
-            audio.SetProviderId(MetadataProviders.MusicBrainzArtist, data.GetProviderId(MetadataProviders.MusicBrainzArtist));
-            audio.SetProviderId(MetadataProviders.MusicBrainzAlbum, data.GetProviderId(MetadataProviders.MusicBrainzAlbum));
-            audio.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, data.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup));
-            audio.SetProviderId(MetadataProviders.MusicBrainzTrack, data.GetProviderId(MetadataProviders.MusicBrainzTrack));
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, data.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist));
+            audio.SetProviderId(MetadataProvider.MusicBrainzArtist, data.GetProviderId(MetadataProvider.MusicBrainzArtist));
+            audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, data.GetProviderId(MetadataProvider.MusicBrainzAlbum));
+            audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, data.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup));
+            audio.SetProviderId(MetadataProvider.MusicBrainzTrack, data.GetProviderId(MetadataProvider.MusicBrainzTrack));
         }
     }
 }

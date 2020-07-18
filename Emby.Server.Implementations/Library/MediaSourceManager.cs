@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
@@ -14,7 +16,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -33,7 +34,7 @@ namespace Emby.Server.Implementations.Library
         private readonly ILibraryManager _libraryManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<MediaSourceManager> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILocalizationManager _localizationManager;
@@ -190,10 +191,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!user.Policy.EnableAudioPlaybackTranscoding)
-                        {
-                            source.SupportsTranscoding = false;
-                        }
+                        source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
                     }
                 }
             }
@@ -207,22 +205,27 @@ namespace Emby.Server.Implementations.Library
             {
                 return MediaProtocol.Rtsp;
             }
+
             if (path.StartsWith("Rtmp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtmp;
             }
+
             if (path.StartsWith("Http", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Http;
             }
+
             if (path.StartsWith("rtp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Rtp;
             }
+
             if (path.StartsWith("ftp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Ftp;
             }
+
             if (path.StartsWith("udp", StringComparison.OrdinalIgnoreCase))
             {
                 return MediaProtocol.Udp;
@@ -352,7 +355,9 @@ namespace Emby.Server.Implementations.Library
 
         private void SetDefaultSubtitleStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
-            if (userData.SubtitleStreamIndex.HasValue && user.Configuration.RememberSubtitleSelections && user.Configuration.SubtitleMode != SubtitlePlaybackMode.None && allowRememberingSelection)
+            if (userData.SubtitleStreamIndex.HasValue
+                && user.RememberSubtitleSelections
+                && user.SubtitleMode != SubtitlePlaybackMode.None && allowRememberingSelection)
             {
                 var index = userData.SubtitleStreamIndex.Value;
                 // Make sure the saved index is still valid
@@ -363,26 +368,27 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredSubs = string.IsNullOrEmpty(user.Configuration.SubtitleLanguagePreference)
-                ? Array.Empty<string>() : NormalizeLanguage(user.Configuration.SubtitleLanguagePreference);
+
+            var preferredSubs = string.IsNullOrEmpty(user.SubtitleLanguagePreference)
+                ? Array.Empty<string>() : NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLangage = defaultAudioIndex == null
                 ? null
                 : source.MediaStreams.Where(i => i.Type == MediaStreamType.Audio && i.Index == defaultAudioIndex).Select(i => i.Language).FirstOrDefault();
 
-            source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(source.MediaStreams,
+            source.DefaultSubtitleStreamIndex = MediaStreamSelector.GetDefaultSubtitleStreamIndex(
+                source.MediaStreams,
                 preferredSubs,
-                user.Configuration.SubtitleMode,
+                user.SubtitleMode,
                 audioLangage);
 
-            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs,
-                user.Configuration.SubtitleMode, audioLangage);
+            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs, user.SubtitleMode, audioLangage);
         }
 
         private void SetDefaultAudioStreamIndex(MediaSourceInfo source, UserItemData userData, User user, bool allowRememberingSelection)
         {
-            if (userData.AudioStreamIndex.HasValue && user.Configuration.RememberAudioSelections && allowRememberingSelection)
+            if (userData.AudioStreamIndex.HasValue && user.RememberAudioSelections && allowRememberingSelection)
             {
                 var index = userData.AudioStreamIndex.Value;
                 // Make sure the saved index is still valid
@@ -393,11 +399,11 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredAudio = string.IsNullOrEmpty(user.Configuration.AudioLanguagePreference)
+            var preferredAudio = string.IsNullOrEmpty(user.AudioLanguagePreference)
                 ? Array.Empty<string>()
-                : NormalizeLanguage(user.Configuration.AudioLanguagePreference);
+                : NormalizeLanguage(user.AudioLanguagePreference);
 
-            source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.Configuration.PlayDefaultAudioTrack);
+            source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
         }
 
         public void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user)
@@ -435,7 +441,6 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 return 1;
-
             }).ThenBy(i => i.Video3DFormat.HasValue ? 1 : 0)
             .ThenByDescending(i =>
             {
@@ -521,11 +526,7 @@ namespace Emby.Server.Implementations.Library
                 SetDefaultAudioAndSubtitleStreamIndexes(item, clone, user);
             }
 
-            return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse
-            {
-                MediaSource = clone
-
-            }, liveStream as IDirectStreamProvider);
+            return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);
         }
 
         private static void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)
@@ -538,7 +539,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.RunTimeTicks = null;
             }
 
-            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Audio);
+            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
 
             if (audioStream == null || audioStream.Index == -1)
             {
@@ -549,7 +550,7 @@ namespace Emby.Server.Implementations.Library
                 mediaSource.DefaultAudioStreamIndex = audioStream.Index;
             }
 
-            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaBrowser.Model.Entities.MediaStreamType.Video);
+            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
             if (videoStream != null)
             {
                 if (!videoStream.BitRate.HasValue)
@@ -560,17 +561,14 @@ namespace Emby.Server.Implementations.Library
                     {
                         videoStream.BitRate = 30000000;
                     }
-
                     else if (width >= 1900)
                     {
                         videoStream.BitRate = 20000000;
                     }
-
                     else if (width >= 1200)
                     {
                         videoStream.BitRate = 8000000;
                     }
-
                     else if (width >= 700)
                     {
                         videoStream.BitRate = 2000000;
@@ -626,7 +624,6 @@ namespace Emby.Server.Implementations.Library
                     MediaSource = mediaSource,
                     ExtractChapters = false,
                     MediaType = DlnaProfileType.Video
-
                 }, cancellationToken).ConfigureAwait(false);
 
                 mediaSource.MediaStreams = info.MediaStreams;
@@ -652,7 +649,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     mediaInfo = _jsonSerializer.DeserializeFromFile<MediaInfo>(cacheFilePath);
 
-                    //_logger.LogDebug("Found cached media info");
+                    // _logger.LogDebug("Found cached media info");
                 }
                 catch (Exception ex)
                 {
@@ -674,20 +671,21 @@ namespace Emby.Server.Implementations.Library
                     mediaSource.AnalyzeDurationMs = 3000;
                 }
 
-                mediaInfo = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+                mediaInfo = await _mediaEncoder.GetMediaInfo(
+                    new MediaInfoRequest
                 {
                     MediaSource = mediaSource,
                     MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
                     ExtractChapters = false
-
-                }, cancellationToken).ConfigureAwait(false);
+                },
+                    cancellationToken).ConfigureAwait(false);
 
                 if (cacheFilePath != null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
                     _jsonSerializer.SerializeToFile(mediaInfo, cacheFilePath);
 
-                    //_logger.LogDebug("Saved media info to {0}", cacheFilePath);
+                    // _logger.LogDebug("Saved media info to {0}", cacheFilePath);
                 }
             }
 
@@ -753,17 +751,14 @@ namespace Emby.Server.Implementations.Library
                     {
                         videoStream.BitRate = 30000000;
                     }
-
                     else if (width >= 1900)
                     {
                         videoStream.BitRate = 20000000;
                     }
-
                     else if (width >= 1200)
                     {
                         videoStream.BitRate = 8000000;
                     }
-
                     else if (width >= 700)
                     {
                         videoStream.BitRate = 2000000;

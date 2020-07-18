@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Dto;
@@ -14,7 +13,7 @@ using MediaBrowser.Model.SyncPlay;
 namespace MediaBrowser.Controller.Session
 {
     /// <summary>
-    /// Interface ISessionManager
+    /// Interface ISessionManager.
     /// </summary>
     public interface ISessionManager
     {
@@ -75,19 +74,19 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
-        SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, User user);
+        SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
 
         void UpdateDeviceName(string sessionId, string reportedDeviceName);
 
         /// <summary>
-        /// Used to report that playback has started for an item
+        /// Used to report that playback has started for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
         Task OnPlaybackStart(PlaybackStartInfo info);
 
         /// <summary>
-        /// Used to report playback progress for an item
+        /// Used to report playback progress for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
@@ -97,7 +96,7 @@ namespace MediaBrowser.Controller.Session
         Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
 
         /// <summary>
-        /// Used to report that playback has ended for an item
+        /// Used to report that playback has ended for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>

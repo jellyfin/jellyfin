@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Constants;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -24,12 +24,6 @@ namespace Jellyfin.Api.Tests.Auth
         private readonly IFixture _fixture;
 
         private readonly Mock<IAuthService> _jellyfinAuthServiceMock;
-        private readonly Mock<IOptionsMonitor<AuthenticationSchemeOptions>> _optionsMonitorMock;
-        private readonly Mock<ISystemClock> _clockMock;
-        private readonly Mock<IServiceProvider> _serviceProviderMock;
-        private readonly Mock<IAuthenticationService> _authenticationServiceMock;
-        private readonly UrlEncoder _urlEncoder;
-        private readonly HttpContext _context;
 
         private readonly CustomAuthenticationHandler _sut;
         private readonly AuthenticationScheme _scheme;
@@ -45,26 +39,23 @@ namespace Jellyfin.Api.Tests.Auth
             AllowFixtureCircularDependencies();
 
             _jellyfinAuthServiceMock = _fixture.Freeze<Mock<IAuthService>>();
-            _optionsMonitorMock = _fixture.Freeze<Mock<IOptionsMonitor<AuthenticationSchemeOptions>>>();
-            _clockMock = _fixture.Freeze<Mock<ISystemClock>>();
-            _serviceProviderMock = _fixture.Freeze<Mock<IServiceProvider>>();
-            _authenticationServiceMock = _fixture.Freeze<Mock<IAuthenticationService>>();
+            var optionsMonitorMock = _fixture.Freeze<Mock<IOptionsMonitor<AuthenticationSchemeOptions>>>();
+            var serviceProviderMock = _fixture.Freeze<Mock<IServiceProvider>>();
+            var authenticationServiceMock = _fixture.Freeze<Mock<IAuthenticationService>>();
             _fixture.Register<ILoggerFactory>(() => new NullLoggerFactory());
 
-            _urlEncoder = UrlEncoder.Default;
+            serviceProviderMock.Setup(s => s.GetService(typeof(IAuthenticationService)))
+                .Returns(authenticationServiceMock.Object);
 
-            _serviceProviderMock.Setup(s => s.GetService(typeof(IAuthenticationService)))
-                .Returns(_authenticationServiceMock.Object);
-
-            _optionsMonitorMock.Setup(o => o.Get(It.IsAny<string>()))
+            optionsMonitorMock.Setup(o => o.Get(It.IsAny<string>()))
                 .Returns(new AuthenticationSchemeOptions
                 {
                     ForwardAuthenticate = null
                 });
 
-            _context = new DefaultHttpContext
+            HttpContext context = new DefaultHttpContext
             {
-                RequestServices = _serviceProviderMock.Object
+                RequestServices = serviceProviderMock.Object
             };
 
             _scheme = new AuthenticationScheme(
@@ -73,22 +64,7 @@ namespace Jellyfin.Api.Tests.Auth
                 typeof(CustomAuthenticationHandler));
 
             _sut = _fixture.Create<CustomAuthenticationHandler>();
-            _sut.InitializeAsync(_scheme, _context).Wait();
-        }
-
-        [Fact]
-        public async Task HandleAuthenticateAsyncShouldFailWithNullUser()
-        {
-            _jellyfinAuthServiceMock.Setup(
-                    a => a.Authenticate(
-                        It.IsAny<HttpRequest>(),
-                        It.IsAny<AuthenticatedAttribute>()))
-                .Returns((User?)null);
-
-            var authenticateResult = await _sut.AuthenticateAsync();
-
-            Assert.False(authenticateResult.Succeeded);
-            Assert.Equal("Invalid user", authenticateResult.Failure.Message);
+            _sut.InitializeAsync(_scheme, context).Wait();
         }
 
         [Fact]
@@ -98,8 +74,7 @@ namespace Jellyfin.Api.Tests.Auth
 
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
-                        It.IsAny<HttpRequest>(),
-                        It.IsAny<AuthenticatedAttribute>()))
+                        It.IsAny<HttpRequest>()))
                 .Throws(new SecurityException(errorMessage));
 
             var authenticateResult = await _sut.AuthenticateAsync();
@@ -121,10 +96,10 @@ namespace Jellyfin.Api.Tests.Auth
         [Fact]
         public async Task HandleAuthenticateAsyncShouldAssignNameClaim()
         {
-            var user = SetupUser();
+            var authorizationInfo = SetupUser();
             var authenticateResult = await _sut.AuthenticateAsync();
 
-            Assert.True(authenticateResult.Principal.HasClaim(ClaimTypes.Name, user.Name));
+            Assert.True(authenticateResult.Principal.HasClaim(ClaimTypes.Name, authorizationInfo.User.Username));
         }
 
         [Theory]
@@ -132,10 +107,10 @@ namespace Jellyfin.Api.Tests.Auth
         [InlineData(false)]
         public async Task HandleAuthenticateAsyncShouldAssignRoleClaim(bool isAdmin)
         {
-            var user = SetupUser(isAdmin);
+            var authorizationInfo = SetupUser(isAdmin);
             var authenticateResult = await _sut.AuthenticateAsync();
 
-            var expectedRole = user.Policy.IsAdministrator ? UserRoles.Administrator : UserRoles.User;
+            var expectedRole = authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator) ? UserRoles.Administrator : UserRoles.User;
             Assert.True(authenticateResult.Principal.HasClaim(ClaimTypes.Role, expectedRole));
         }
 
@@ -148,18 +123,18 @@ namespace Jellyfin.Api.Tests.Auth
             Assert.Equal(_scheme.Name, authenticatedResult.Ticket.AuthenticationScheme);
         }
 
-        private User SetupUser(bool isAdmin = false)
+        private AuthorizationInfo SetupUser(bool isAdmin = false)
         {
-            var user = _fixture.Create<User>();
-            user.Policy.IsAdministrator = isAdmin;
+            var authorizationInfo = _fixture.Create<AuthorizationInfo>();
+            authorizationInfo.User = _fixture.Create<User>();
+            authorizationInfo.User.SetPermission(PermissionKind.IsAdministrator, isAdmin);
 
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
-                        It.IsAny<HttpRequest>(),
-                        It.IsAny<AuthenticatedAttribute>()))
-                .Returns(user);
+                        It.IsAny<HttpRequest>()))
+                    .Returns(authorizationInfo);
 
-            return user;
+            return authorizationInfo;
         }
 
         private void AllowFixtureCircularDependencies()

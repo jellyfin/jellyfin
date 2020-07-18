@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -19,12 +20,17 @@ namespace MediaBrowser.Model.Dlna
         }
 
         public bool EnableDirectPlay { get; set; }
+
         public bool EnableDirectStream { get; set; }
+
         public bool ForceDirectPlay { get; set; }
+
         public bool ForceDirectStream { get; set; }
 
         public Guid ItemId { get; set; }
+
         public MediaSourceInfo[] MediaSources { get; set; }
+
         public DeviceProfile Profile { get; set; }
 
         /// <summary>
@@ -41,7 +47,7 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxAudioChannels { get; set; }
 
         /// <summary>
-        /// The application's configured quality setting
+        /// The application's configured quality setting.
         /// </summary>
         public long? MaxBitrate { get; set; }
 
@@ -79,6 +85,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return Profile.MaxStaticMusicBitrate;
                 }
+
                 return Profile.MaxStaticBitrate;
             }
 

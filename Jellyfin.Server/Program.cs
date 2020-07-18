@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -6,7 +7,6 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
@@ -40,12 +40,12 @@ namespace Jellyfin.Server
         /// <summary>
         /// The name of logging configuration file containing application defaults.
         /// </summary>
-        public static readonly string LoggingConfigFileDefault = "logging.default.json";
+        public const string LoggingConfigFileDefault = "logging.default.json";
 
         /// <summary>
         /// The name of the logging configuration file containing the system-specific override settings.
         /// </summary>
-        public static readonly string LoggingConfigFileSystem = "logging.json";
+        public const string LoggingConfigFileSystem = "logging.json";
 
         private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private static readonly ILoggerFactory _loggerFactory = new SerilogLoggerFactory();
@@ -59,20 +59,15 @@ namespace Jellyfin.Server
         /// <returns><see cref="Task" />.</returns>
         public static Task Main(string[] args)
         {
-            // For backwards compatibility.
-            // Modify any input arguments now which start with single-hyphen to POSIX standard
-            // double-hyphen to allow parsing by CommandLineParser package.
-            const string Pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
-            const string Substitution = @"-$1"; // Prepend with additional single-hyphen
-            var regex = new Regex(Pattern);
-            for (var i = 0; i < args.Length; i++)
+            static Task ErrorParsingArguments(IEnumerable<Error> errors)
             {
-                args[i] = regex.Replace(args[i], Substitution);
+                Environment.ExitCode = 1;
+                return Task.CompletedTask;
             }
 
             // Parse the command line arguments and either start the app or exit indicating error
             return Parser.Default.ParseArguments<StartupOptions>(args)
-                .MapResult(StartApp, _ => Task.CompletedTask);
+                .MapResult(StartApp, ErrorParsingArguments);
         }
 
         /// <summary>
@@ -279,10 +274,10 @@ namespace Jellyfin.Server
                     var addresses = appHost.ServerConfigurationManager
                         .Configuration
                         .LocalNetworkAddresses
-                        .Select(appHost.NormalizeConfiguredLocalAddress)
+                        .Select(x => appHost.NormalizeConfiguredLocalAddress(x))
                         .Where(i => i != null)
                         .ToHashSet();
-                    if (addresses.Any() && !addresses.Contains(IPAddress.Any))
+                    if (addresses.Count > 0 && !addresses.Contains(IPAddress.Any))
                     {
                         if (!addresses.Contains(IPAddress.Loopback))
                         {

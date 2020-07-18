@@ -31,7 +31,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
         /// <param name="_season0"></param>
@@ -42,7 +42,11 @@ namespace Jellyfin.Data.Entities
 
             this.UrlId = urlid;
 
-            if (_season0 == null) throw new ArgumentNullException(nameof(_season0));
+            if (_season0 == null)
+            {
+                throw new ArgumentNullException(nameof(_season0));
+            }
+
             _season0.Episodes.Add(this);
 
             this.Releases = new HashSet<Release>();
@@ -66,7 +70,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for EpisodeNumber
+        /// Backing field for EpisodeNumber.
         /// </summary>
         protected int? _EpisodeNumber;
         /// <summary>
@@ -84,8 +88,9 @@ namespace Jellyfin.Data.Entities
             {
                 int? value = _EpisodeNumber;
                 GetEpisodeNumber(ref value);
-                return (_EpisodeNumber = value);
+                return _EpisodeNumber = value;
             }
+
             set
             {
                 int? oldValue = _EpisodeNumber;
@@ -104,7 +109,6 @@ namespace Jellyfin.Data.Entities
         public virtual ICollection<Release> Releases { get; protected set; }
         [ForeignKey("EpisodeMetadata_EpisodeMetadata_Id")]
         public virtual ICollection<EpisodeMetadata> EpisodeMetadata { get; protected set; }
-
     }
 }
 

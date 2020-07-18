@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -5,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -19,6 +22,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PlaylistsNET.Content;
 using PlaylistsNET.Models;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace Emby.Server.Implementations.Playlists
 {
@@ -27,7 +32,7 @@ namespace Emby.Server.Implementations.Playlists
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryMonitor _iLibraryMonitor;
-        private readonly ILogger _logger;
+        private readonly ILogger<PlaylistManager> _logger;
         private readonly IUserManager _userManager;
         private readonly IProviderManager _providerManager;
         private readonly IConfiguration _appConfig;
@@ -153,10 +158,7 @@ namespace Emby.Server.Implementations.Playlists
                     });
                 }
 
-                return new PlaylistCreationResult
-                {
-                    Id = playlist.Id.ToString("N", CultureInfo.InvariantCulture)
-                };
+                return new PlaylistCreationResult(playlist.Id.ToString("N", CultureInfo.InvariantCulture));
             }
             finally
             {
@@ -399,6 +401,7 @@ namespace Emby.Server.Implementations.Playlists
                     {
                         entry.Duration = TimeSpan.FromTicks(child.RunTimeTicks.Value);
                     }
+
                     playlist.PlaylistEntries.Add(entry);
                 }
 
@@ -464,7 +467,7 @@ namespace Emby.Server.Implementations.Playlists
                     playlist.PlaylistEntries.Add(entry);
                 }
 
-                string text = new M3u8Content().ToText(playlist);
+                string text = new M3uContent().ToText(playlist);
                 File.WriteAllText(playlistPath, text);
             }
 
@@ -536,13 +539,21 @@ namespace Emby.Server.Implementations.Playlists
 
         private static string UnEscape(string content)
         {
-            if (content == null) return content;
+            if (content == null)
+            {
+                return content;
+            }
+
             return content.Replace("&amp;", "&").Replace("&apos;", "'").Replace("&quot;", "\"").Replace("&gt;", ">").Replace("&lt;", "<");
         }
 
         private static string Escape(string content)
         {
-            if (content == null) return null;
+            if (content == null)
+            {
+                return null;
+            }
+
             return content.Replace("&", "&amp;").Replace("'", "&apos;").Replace("\"", "&quot;").Replace(">", "&gt;").Replace("<", "&lt;");
         }
 

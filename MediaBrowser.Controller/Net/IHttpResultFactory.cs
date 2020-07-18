@@ -7,7 +7,7 @@ using MediaBrowser.Model.Services;
 namespace MediaBrowser.Controller.Net
 {
     /// <summary>
-    /// Interface IHttpResultFactory
+    /// Interface IHttpResultFactory.
     /// </summary>
     public interface IHttpResultFactory
     {

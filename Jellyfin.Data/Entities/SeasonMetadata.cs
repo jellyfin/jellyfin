@@ -25,22 +25,33 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_season0"></param>
         public SeasonMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Season _season0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_season0 == null) throw new ArgumentNullException(nameof(_season0));
-            _season0.SeasonMetadata.Add(this);
+            if (_season0 == null)
+            {
+                throw new ArgumentNullException(nameof(_season0));
+            }
 
+            _season0.SeasonMetadata.Add(this);
 
             Init();
         }
@@ -48,8 +59,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_season0"></param>
         public static SeasonMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Season _season0)
         {
@@ -61,7 +72,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Outline
+        /// Backing field for Outline.
         /// </summary>
         protected string _Outline;
         /// <summary>
@@ -84,8 +95,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Outline;
                 GetOutline(ref value);
-                return (_Outline = value);
+                return _Outline = value;
             }
+
             set
             {
                 string oldValue = _Outline;
@@ -100,7 +112,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

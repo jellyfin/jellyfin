@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using MediaBrowser.Controller.Net;
@@ -42,11 +41,11 @@ namespace Emby.Server.Implementations.HttpServer
                 res.Headers.Add(key, value);
             }
             // Try to prevent compatibility view
-            res.Headers["Access-Control-Allow-Headers"] = ("Accept, Accept-Language, Authorization, Cache-Control, " +
+            res.Headers["Access-Control-Allow-Headers"] = "Accept, Accept-Language, Authorization, Cache-Control, " +
                 "Content-Disposition, Content-Encoding, Content-Language, Content-Length, Content-MD5, Content-Range, " +
                 "Content-Type, Cookie, Date, Host, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, " +
                 "Origin, OriginToken, Pragma, Range, Slug, Transfer-Encoding, Want-Digest, X-MediaBrowser-Token, " +
-                "X-Emby-Authorization");
+                "X-Emby-Authorization";
 
             if (dto is Exception exception)
             {

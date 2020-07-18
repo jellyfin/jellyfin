@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.HttpClientManager
     /// </summary>
     public class HttpClientManager : IHttpClient
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpClientManager> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
         private readonly IApplicationHost _appHost;
@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.HttpClientManager
             => SendAsync(options, HttpMethod.Get);
 
         /// <summary>
-        /// Performs a GET request and returns the resulting stream
+        /// Performs a GET request and returns the resulting stream.
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task{Stream}.</returns>

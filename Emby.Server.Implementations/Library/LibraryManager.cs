@@ -17,14 +17,16 @@ using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -35,6 +37,7 @@ using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -44,17 +47,20 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
 
 namespace Emby.Server.Implementations.Library
 {
     /// <summary>
-    /// Class LibraryManager
+    /// Class LibraryManager.
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryManager> _logger;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -67,6 +73,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
         private readonly ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
+        private readonly IImageProcessor _imageProcessor;
 
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
@@ -90,13 +97,13 @@ namespace Emby.Server.Implementations.Library
         private IIntroProvider[] IntroProviders { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of entity resolution ignore rules
+        /// Gets or sets the list of entity resolution ignore rules.
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
         private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of currently registered entity resolvers
+        /// Gets or sets the list of currently registered entity resolvers.
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
         private IItemResolver[] EntityResolvers { get; set; }
@@ -129,12 +136,19 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
-        /// <param name="appHost">The application host</param>
+        /// <param name="appHost">The application host.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="libraryMonitorFactory">The library monitor.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="providerManagerFactory">The provider manager.</param>
+        /// <param name="userviewManagerFactory">The userview manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
+        /// <param name="itemRepository">The item repository.</param>
+        /// <param name="imageProcessor">The image processor.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILogger<LibraryManager> logger,
@@ -147,7 +161,8 @@ namespace Emby.Server.Implementations.Library
             Lazy<IProviderManager> providerManagerFactory,
             Lazy<IUserViewManager> userviewManagerFactory,
             IMediaEncoder mediaEncoder,
-            IItemRepository itemRepository)
+            IItemRepository itemRepository,
+            IImageProcessor imageProcessor)
         {
             _appHost = appHost;
             _logger = logger;
@@ -161,6 +176,7 @@ namespace Emby.Server.Implementations.Library
             _userviewManagerFactory = userviewManagerFactory;
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
+            _imageProcessor = imageProcessor;
 
             _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
 
@@ -193,12 +209,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The _root folder
+        /// The _root folder.
         /// </summary>
         private volatile AggregateFolder _rootFolder;
 
         /// <summary>
-        /// The _root folder sync lock
+        /// The _root folder sync lock.
         /// </summary>
         private readonly object _rootFolderSyncLock = new object();
 
@@ -325,7 +341,7 @@ namespace Emby.Server.Implementations.Library
             if (item is LiveTvProgram)
             {
                 _logger.LogDebug(
-                    "Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -334,7 +350,7 @@ namespace Emby.Server.Implementations.Library
             else
             {
                 _logger.LogInformation(
-                    "Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -352,7 +368,12 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                _logger.LogDebug("Deleting path {MetadataPath}", metadataPath);
+                _logger.LogDebug(
+                    "Deleting metadata path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    item.GetType().Name,
+                    item.Name ?? "Unknown name",
+                    metadataPath,
+                    item.Id);
 
                 try
                 {
@@ -376,7 +397,13 @@ namespace Emby.Server.Implementations.Library
                     {
                         try
                         {
-                            _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
+                            _logger.LogInformation(
+                                "Deleting item path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                                item.GetType().Name,
+                                item.Name ?? "Unknown name",
+                                fileSystemInfo.FullName,
+                                item.Id);
+
                             if (fileSystemInfo.IsDirectory)
                             {
                                 Directory.Delete(fileSystemInfo.FullName, true);
@@ -610,7 +637,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Determines whether a path should be ignored based on its contents - called after the contents have been read
+        /// Determines whether a path should be ignored based on its contents - called after the contents have been read.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
@@ -695,7 +722,9 @@ namespace Emby.Server.Implementations.Library
 
             Directory.CreateDirectory(rootFolderPath);
 
-            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ?? ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath))).DeepCopy<Folder, AggregateFolder>();
+            var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
+                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)))
+                             .DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
             if (!string.Equals(rootFolder.Path, rootFolderPath, StringComparison.Ordinal))
@@ -890,7 +919,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
@@ -971,7 +1000,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1524,7 +1553,8 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // Handle grouping
-                if (user != null && !string.IsNullOrEmpty(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType) && user.Configuration.GroupedFolders.Length > 0)
+                if (user != null && !string.IsNullOrEmpty(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType)
+                    && user.GetPreference(PreferenceKind.GroupedFolders).Length > 0)
                 {
                     return GetUserRootFolder()
                         .GetChildren(user, true)
@@ -1773,7 +1803,7 @@ namespace Emby.Server.Implementations.Library
         /// Creates the items.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <param name="parent">The parent item</param>
+        /// <param name="parent">The parent item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
@@ -1815,10 +1845,100 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public void UpdateImages(BaseItem item)
+        private bool ImageNeedsRefresh(ItemImageInfo image)
         {
-            _itemRepository.SaveImages(item);
+            if (image.Path != null && image.IsLocalFile)
+            {
+                if (image.Width == 0 || image.Height == 0 || string.IsNullOrEmpty(image.BlurHash))
+                {
+                    return true;
+                }
 
+                try
+                {
+                    return _fileSystem.GetLastWriteTimeUtc(image.Path) != image.DateModified;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot get file info for {0}", image.Path);
+                    return false;
+                }
+            }
+
+            return image.Path != null && !image.IsLocalFile;
+        }
+
+        public void UpdateImages(BaseItem item, bool forceUpdate = false)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            var outdated = forceUpdate ? item.ImageInfos.Where(i => i.Path != null).ToArray() : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
+            if (outdated.Length == 0)
+            {
+                RegisterItem(item);
+                return;
+            }
+
+            foreach (var img in outdated)
+            {
+                var image = img;
+                if (!img.IsLocalFile)
+                {
+                    try
+                    {
+                        var index = item.GetImageIndex(img);
+                        image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
+                    }
+                    catch (ArgumentException)
+                    {
+                        _logger.LogWarning("Cannot get image index for {0}", img.Path);
+                        continue;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        _logger.LogWarning("Cannot fetch image from {0}", img.Path);
+                        continue;
+                    }
+                }
+
+                try
+                {
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                    image.Width = size.Width;
+                    image.Height = size.Height;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
+                    image.Width = 0;
+                    image.Height = 0;
+                    continue;
+                }
+
+                try
+                {
+                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot compute blurhash for {0}", image.Path);
+                    image.BlurHash = string.Empty;
+                }
+
+                try
+                {
+                    image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot update DateModified for {0}", image.Path);
+                }
+            }
+
+            _itemRepository.SaveImages(item);
             RegisterItem(item);
         }
 
@@ -1839,7 +1959,7 @@ namespace Emby.Server.Implementations.Library
 
                 item.DateLastSaved = DateTime.UtcNow;
 
-                RegisterItem(item);
+                UpdateImages(item, updateReason >= ItemUpdateType.ImageUpdate);
             }
 
             _itemRepository.SaveItems(itemsList, cancellationToken);
@@ -2495,7 +2615,7 @@ namespace Emby.Server.Implementations.Library
                     Anime series don't generally have a season in their file name, however,
                     tvdb needs a season to correctly get the metadata.
                     Hence, a null season needs to be filled with something. */
-                    //FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
+                    // FIXME perhaps this would be better for tvdb parser to ask for season 1 if no season is specified
                     episode.ParentIndexNumber = 1;
                 }
 
@@ -2684,10 +2804,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (string.IsNullOrWhiteSpace(from))
             {
                 throw new ArgumentNullException(nameof(from));
             }
+
             if (string.IsNullOrWhiteSpace(to))
             {
                 throw new ArgumentNullException(nameof(to));
@@ -2761,7 +2883,6 @@ namespace Emby.Server.Implementations.Library
                     _logger.LogError(ex, "Error getting person");
                     return null;
                 }
-
             }).Where(i => i != null).ToList();
         }
 
@@ -2796,7 +2917,8 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (HttpException ex)
                 {
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    if (ex.StatusCode.HasValue
+                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         continue;
                     }
@@ -2891,7 +3013,7 @@ namespace Emby.Server.Implementations.Library
 
         private static bool ValidateNetworkPath(string path)
         {
-            //if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            // if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             //{
             //    // We can't validate protocol-based paths, so just allow them
             //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)

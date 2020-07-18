@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.IO
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
-        protected ILogger Logger;
+        protected ILogger<ManagedFileSystem> Logger;
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
@@ -237,7 +237,7 @@ namespace Emby.Server.Implementations.IO
             {
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
-                //if (!result.IsDirectory)
+                // if (!result.IsDirectory)
                 //{
                 //    result.IsHidden = (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
                 //}
@@ -638,6 +638,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         return false;
                     }
+
                     return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 });
             }
@@ -692,6 +693,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         return false;
                     }
+
                     return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
                 });
             }
