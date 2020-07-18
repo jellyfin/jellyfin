@@ -27,13 +27,6 @@ namespace MediaBrowser.Api.SyncPlay
         /// <value>The Group id to join.</value>
         [ApiMember(Name = "GroupId", Description = "Group Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string GroupId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the playing item id.
-        /// </summary>
-        /// <value>The client's currently playing item id.</value>
-        [ApiMember(Name = "PlayingItemId", Description = "Client's playing item id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string PlayingItemId { get; set; }
     }
 
     [Route("/SyncPlay/Leave", "POST", Summary = "Leave joined SyncPlay group")]
@@ -89,7 +82,7 @@ namespace MediaBrowser.Api.SyncPlay
         public long PositionTicks { get; set; }
 
         /// <summary>
-        /// Gets or sets whether this is a buffering or a buffering-done request.
+        /// Gets or sets whether this is a buffering or a ready request.
         /// </summary>
         /// <value><c>true</c> if buffering is complete; <c>false</c> otherwise.</value>
         [ApiMember(Name = "BufferingDone", IsRequired = true, DataType = "bool", ParameterType = "query", Verb = "POST")]
@@ -150,25 +143,15 @@ namespace MediaBrowser.Api.SyncPlay
             var currentSession = GetSession(_sessionContext);
 
             Guid groupId;
-            Guid playingItemId = Guid.Empty;
-
             if (!Guid.TryParse(request.GroupId, out groupId))
             {
                 Logger.LogError("JoinGroup: {0} is not a valid format for GroupId. Ignoring request.", request.GroupId);
                 return;
             }
 
-            // Both null and empty strings mean that client isn't playing anything
-            if (!string.IsNullOrEmpty(request.PlayingItemId) && !Guid.TryParse(request.PlayingItemId, out playingItemId))
-            {
-                Logger.LogError("JoinGroup: {0} is not a valid format for PlayingItemId. Ignoring request.", request.PlayingItemId);
-                return;
-            }
-
             var joinRequest = new JoinGroupRequest()
             {
-                GroupId = groupId,
-                PlayingItemId = playingItemId
+                GroupId = groupId
             };
 
             _syncPlayManager.JoinGroup(currentSession, groupId, joinRequest, CancellationToken.None);
@@ -189,7 +172,7 @@ namespace MediaBrowser.Api.SyncPlay
         /// </summary>
         /// <param name="request">The request.</param>
         /// <value>The requested list of groups.</value>
-        public List<GroupInfoView> Post(SyncPlayList request)
+        public List<GroupInfoView> Get(SyncPlayList request)
         {
             var currentSession = GetSession(_sessionContext);
             var filterItemId = Guid.Empty;
@@ -254,7 +237,7 @@ namespace MediaBrowser.Api.SyncPlay
             var currentSession = GetSession(_sessionContext);
             var syncPlayRequest = new PlaybackRequest()
             {
-                Type = request.BufferingDone ? PlaybackRequestType.BufferingDone : PlaybackRequestType.Buffering,
+                Type = request.BufferingDone ? PlaybackRequestType.Ready : PlaybackRequestType.Buffer,
                 When = DateTime.Parse(request.When),
                 PositionTicks = request.PositionTicks
             };
@@ -270,7 +253,7 @@ namespace MediaBrowser.Api.SyncPlay
             var currentSession = GetSession(_sessionContext);
             var syncPlayRequest = new PlaybackRequest()
             {
-                Type = PlaybackRequestType.UpdatePing,
+                Type = PlaybackRequestType.Ping,
                 Ping = Convert.ToInt64(request.Ping)
             };
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
