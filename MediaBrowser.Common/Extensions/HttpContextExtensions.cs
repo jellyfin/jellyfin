@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 namespace MediaBrowser.Common.Extensions
 {
     /// <summary>
-    /// Extention to enable the service stack request to be stored in the HttpRequest object.
     /// Static class containing extension methods for <see cref="HttpContext"/>.
     /// </summary>
     public static class HttpContextExtensions
