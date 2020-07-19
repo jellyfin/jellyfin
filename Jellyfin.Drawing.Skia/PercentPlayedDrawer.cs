@@ -25,14 +25,14 @@ namespace Jellyfin.Drawing.Skia
 
             paint.Color = SKColor.Parse("#99000000");
             paint.Style = SKPaintStyle.Fill;
-            canvas.DrawRect(SKRect.Create(0, (float)endY - IndicatorHeight, (float)endX, (float)endY), paint);
+            canvas.DrawRect(SKRect.Create(0, (float)endY - IndicatorHeight, endX, endY), paint);
 
             double foregroundWidth = endX;
             foregroundWidth *= percent;
             foregroundWidth /= 100;
 
             paint.Color = SKColor.Parse("#FF00A4DC");
-            canvas.DrawRect(SKRect.Create(0, (float)endY - IndicatorHeight, Convert.ToInt32(foregroundWidth), (float)endY), paint);
+            canvas.DrawRect(SKRect.Create(0, (float)endY - IndicatorHeight, Convert.ToInt32(foregroundWidth), endY), paint);
         }
     }
 }
