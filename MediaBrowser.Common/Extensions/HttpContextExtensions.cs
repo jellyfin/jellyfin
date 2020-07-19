@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Extensions
         /// </summary>
         /// <param name="httpContext">The HttpContext instance.</param>
         /// <returns>The service stack request instance.</returns>
-        public static IRequest GetServiceStack(this HttpContext httpContext)
+        public static IRequest GetServiceStackRequest(this HttpContext httpContext)
         {
             return (IRequest)httpContext.Items[SERVICESTACKREQUEST];
         }
