@@ -8,7 +8,7 @@ namespace MediaBrowser.Common.Extensions
     /// </summary>
     public static class HttpContextExtensions
     {
-        private const string SERVICESTACKREQUEST = "ServiceStackRequest";
+        private const string ServiceStackRequest = "ServiceStackRequest";
 
         /// <summary>
         /// Set the ServiceStack request.
@@ -17,7 +17,7 @@ namespace MediaBrowser.Common.Extensions
         /// <param name="request">The service stack request instance.</param>
         public static void SetServiceStackRequest(this HttpContext httpContext, IRequest request)
         {
-            httpContext.Items[SERVICESTACKREQUEST] = request;
+            httpContext.Items[ServiceStackRequest] = request;
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace MediaBrowser.Common.Extensions
         /// <returns>The service stack request instance.</returns>
         public static IRequest GetServiceStackRequest(this HttpContext httpContext)
         {
-            return (IRequest)httpContext.Items[SERVICESTACKREQUEST];
+            return (IRequest)httpContext.Items[ServiceStackRequest];
         }
     }
 }
