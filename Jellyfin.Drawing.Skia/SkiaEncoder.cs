@@ -244,12 +244,7 @@ namespace Jellyfin.Drawing.Skia
                 }
             }
 
-            if (HasDiacritics(path))
-            {
-                return true;
-            }
-
-            return false;
+            return HasDiacritics(path);
         }
 
         private string NormalizePath(string path)
@@ -349,12 +344,7 @@ namespace Jellyfin.Drawing.Skia
             if (cropWhitespace)
             {
                 using var bitmap = Decode(path, forceAnalyzeBitmap, orientation, out origin);
-                if (bitmap == null)
-                {
-                    return null;
-                }
-
-                return CropWhiteSpace(bitmap);
+                return bitmap == null ? null : CropWhiteSpace(bitmap);
             }
 
             return Decode(path, forceAnalyzeBitmap, orientation, out origin);
