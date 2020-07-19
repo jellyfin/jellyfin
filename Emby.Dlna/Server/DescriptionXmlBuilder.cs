@@ -65,7 +65,7 @@ namespace Emby.Dlna.Server
 
             foreach (var att in attributes)
             {
-                builder.AppendFormat(" {0}=\"{1}\"", att.Name, att.Value);
+                builder.AppendFormat(CultureInfo.InvariantCulture, " {0}=\"{1}\"", att.Name, att.Value);
             }
 
             builder.Append('>');
