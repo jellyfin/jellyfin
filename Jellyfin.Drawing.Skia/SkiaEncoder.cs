@@ -372,118 +372,55 @@ namespace Jellyfin.Drawing.Skia
 
         private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
         {
+            if (origin == SKEncodedOrigin.Default)
+            {
+                return bitmap;
+            }
+
+            var needsFlip = origin == SKEncodedOrigin.LeftBottom
+                            || origin == SKEncodedOrigin.LeftTop
+                            || origin == SKEncodedOrigin.RightBottom
+                            || origin == SKEncodedOrigin.RightTop;
+            var rotated = needsFlip
+                ? new SKBitmap(bitmap.Height, bitmap.Width)
+                : new SKBitmap(bitmap.Width, bitmap.Height);
+            using var surface = new SKCanvas(rotated);
+            var midX = (float)rotated.Width / 2;
+            var midY = (float)rotated.Height / 2;
+
             switch (origin)
             {
                 case SKEncodedOrigin.TopRight:
-                    {
-                        var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
-                        using var surface = new SKCanvas(rotated);
-                        surface.Translate(rotated.Width, 0);
-                        surface.Scale(-1, 1);
-                        surface.DrawBitmap(bitmap, 0, 0);
-
-                        return rotated;
-                    }
-
+                    surface.Scale(-1, 1, midX, midY);
+                    break;
                 case SKEncodedOrigin.BottomRight:
-                    {
-                        var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
-                        using var surface = new SKCanvas(rotated);
-                        float px = (float)bitmap.Width / 2;
-                        float py = (float)bitmap.Height / 2;
-
-                        surface.RotateDegrees(180, px, py);
-                        surface.DrawBitmap(bitmap, 0, 0);
-
-                        return rotated;
-                    }
-
+                    surface.RotateDegrees(180, midX, midY);
+                    break;
                 case SKEncodedOrigin.BottomLeft:
-                    {
-                        var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
-                        using var surface = new SKCanvas(rotated);
-                        float px = (float)bitmap.Width / 2;
-
-                        float py = (float)bitmap.Height / 2;
-
-                        surface.Translate(rotated.Width, 0);
-                        surface.Scale(-1, 1);
-
-                        surface.RotateDegrees(180, px, py);
-                        surface.DrawBitmap(bitmap, 0, 0);
-
-                        return rotated;
-                    }
-
+                    surface.Scale(1, -1, midX, midY);
+                    break;
                 case SKEncodedOrigin.LeftTop:
-                {
-                    // TODO: Remove dual canvases, had trouble with flipping
-                    using var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                    using (var surface = new SKCanvas(rotated))
-                    {
-                        surface.Translate(rotated.Width, 0);
-
-                        surface.RotateDegrees(90);
-
-                        surface.DrawBitmap(bitmap, 0, 0);
-                    }
-
-                    var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
-                    using (var flippedCanvas = new SKCanvas(flippedBitmap))
-                    {
-                        flippedCanvas.Translate(flippedBitmap.Width, 0);
-                        flippedCanvas.Scale(-1, 1);
-                        flippedCanvas.DrawBitmap(rotated, 0, 0);
-                    }
-
-                    return flippedBitmap;
-                }
+                    surface.Translate(0, -rotated.Height);
+                    surface.Scale(1, -1, midX, midY);
+                    surface.RotateDegrees(-90);
+                    break;
                 case SKEncodedOrigin.RightTop:
-                    {
-                        var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                        using var surface = new SKCanvas(rotated);
-                        surface.Translate(rotated.Width, 0);
-                        surface.RotateDegrees(90);
-                        surface.DrawBitmap(bitmap, 0, 0);
-
-                        return rotated;
-                    }
-
+                    surface.Translate(rotated.Width, 0);
+                    surface.RotateDegrees(90);
+                    break;
                 case SKEncodedOrigin.RightBottom:
-                {
-                    // TODO: Remove dual canvases, had trouble with flipping
-                    using var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                    using (var surface = new SKCanvas(rotated))
-                    {
-                        surface.Translate(0, rotated.Height);
-                        surface.RotateDegrees(270);
-                        surface.DrawBitmap(bitmap, 0, 0);
-                    }
-
-                    var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
-                    using (var flippedCanvas = new SKCanvas(flippedBitmap))
-                    {
-                        flippedCanvas.Translate(flippedBitmap.Width, 0);
-                        flippedCanvas.Scale(-1, 1);
-                        flippedCanvas.DrawBitmap(rotated, 0, 0);
-                    }
-
-                    return flippedBitmap;
-                }
-
+                    surface.Translate(rotated.Width, 0);
+                    surface.Scale(1, -1, midX, midY);
+                    surface.RotateDegrees(90);
+                    break;
                 case SKEncodedOrigin.LeftBottom:
-                    {
-                        var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                        using var surface = new SKCanvas(rotated);
-                        surface.Translate(0, rotated.Height);
-                        surface.RotateDegrees(270);
-                        surface.DrawBitmap(bitmap, 0, 0);
-
-                        return rotated;
-                    }
-
-                default: return bitmap;
+                    surface.Translate(0, rotated.Height);
+                    surface.RotateDegrees(-90);
+                    break;
             }
+
+            surface.DrawBitmap(bitmap, 0, 0);
+            return rotated;
         }
 
         /// <inheritdoc/>
