@@ -671,7 +671,13 @@ namespace Jellyfin.Server.Implementations.Users
         public void UpdatePolicy(Guid userId, UserPolicy policy)
         {
             var dbContext = _dbProvider.CreateContext();
-            var user = dbContext.Users.Find(userId) ?? throw new ArgumentException("No user exists with given Id!");
+            var user = dbContext.Users
+                           .Include(u => u.Permissions)
+                           .Include(u => u.Preferences)
+                           .Include(u => u.AccessSchedules)
+                           .Include(u => u.ProfileImage)
+                           .FirstOrDefault(u => u.Id == userId)
+                       ?? throw new ArgumentException("No user exists with given Id!");
 
             // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
             int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
