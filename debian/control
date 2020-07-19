@@ -21,7 +21,7 @@ Conflicts: mediabrowser, emby, emby-server-beta, jellyfin-dev, emby-server
 Architecture: any
 Depends: at,
          libsqlite3-0,
-         jellyfin-ffmpeg (>= 4.3.1-1),
+         jellyfin-ffmpeg (>= 4.2.1-2),
          libfontconfig1,
          libfreetype6,
          libssl1.1
