@@ -139,54 +139,27 @@ namespace Jellyfin.Drawing.Skia
         private SKBitmap CropWhiteSpace(SKBitmap bitmap)
         {
             var topmost = 0;
-            for (int row = 0; row < bitmap.Height; ++row)
+            while (topmost < bitmap.Height && IsTransparentRow(bitmap, topmost))
             {
-                if (IsTransparentRow(bitmap, row))
-                {
-                    topmost = row + 1;
-                }
-                else
-                {
-                    break;
-                }
+                topmost++;
             }
 
             int bottommost = bitmap.Height;
-            for (int row = bitmap.Height - 1; row >= 0; --row)
+            while (bottommost >= 0 && IsTransparentRow(bitmap, bottommost - 1))
             {
-                if (IsTransparentRow(bitmap, row))
-                {
-                    bottommost = row;
-                }
-                else
-                {
-                    break;
-                }
+                bottommost--;
             }
 
-            int leftmost = 0, rightmost = bitmap.Width;
-            for (int col = 0; col < bitmap.Width; ++col)
+            var leftmost = 0;
+            while (leftmost < bitmap.Width && IsTransparentColumn(bitmap, leftmost))
             {
-                if (IsTransparentColumn(bitmap, col))
-                {
-                    leftmost = col + 1;
-                }
-                else
-                {
-                    break;
-                }
+                leftmost++;
             }
 
-            for (int col = bitmap.Width - 1; col >= 0; --col)
+            var rightmost = bitmap.Width;
+            while (rightmost >= 0 && IsTransparentColumn(bitmap, rightmost - 1))
             {
-                if (IsTransparentColumn(bitmap, col))
-                {
-                    rightmost = col;
-                }
-                else
-                {
-                    break;
-                }
+                rightmost--;
             }
 
             var newRect = SKRectI.Create(leftmost, topmost, rightmost - leftmost, bottommost - topmost);
