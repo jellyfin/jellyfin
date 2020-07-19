@@ -198,11 +198,9 @@ namespace Jellyfin.Drawing.Skia
 
             var newRect = SKRectI.Create(leftmost, topmost, rightmost - leftmost, bottommost - topmost);
 
-            using (var image = SKImage.FromBitmap(bitmap))
-            using (var subset = image.Subset(newRect))
-            {
-                return SKBitmap.FromImage(subset);
-            }
+            using var image = SKImage.FromBitmap(bitmap);
+            using var subset = image.Subset(newRect);
+            return SKBitmap.FromImage(subset);
         }
 
         /// <inheritdoc />
@@ -216,14 +214,12 @@ namespace Jellyfin.Drawing.Skia
                 throw new FileNotFoundException("File not found", path);
             }
 
-            using (var codec = SKCodec.Create(path, out SKCodecResult result))
-            {
-                EnsureSuccess(result);
+            using var codec = SKCodec.Create(path, out SKCodecResult result);
+            EnsureSuccess(result);
 
-                var info = codec.Info;
+            var info = codec.Info;
 
-                return new ImageDimensions(info.Width, info.Height);
-            }
+            return new ImageDimensions(info.Width, info.Height);
         }
 
         /// <inheritdoc />
@@ -323,24 +319,22 @@ namespace Jellyfin.Drawing.Skia
 
             if (requiresTransparencyHack || forceCleanBitmap)
             {
-                using (var codec = SKCodec.Create(NormalizePath(path)))
+                using var codec = SKCodec.Create(NormalizePath(path));
+                if (codec == null)
                 {
-                    if (codec == null)
-                    {
-                        origin = GetSKEncodedOrigin(orientation);
-                        return null;
-                    }
-
-                    // create the bitmap
-                    var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
-
-                    // decode
-                    _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
-
-                    origin = codec.EncodedOrigin;
-
-                    return bitmap;
+                    origin = GetSKEncodedOrigin(orientation);
+                    return null;
                 }
+
+                // create the bitmap
+                var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
+
+                // decode
+                _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+
+                origin = codec.EncodedOrigin;
+
+                return bitmap;
             }
 
             var resultBitmap = SKBitmap.Decode(NormalizePath(path));
@@ -367,15 +361,13 @@ namespace Jellyfin.Drawing.Skia
         {
             if (cropWhitespace)
             {
-                using (var bitmap = Decode(path, forceAnalyzeBitmap, orientation, out origin))
+                using var bitmap = Decode(path, forceAnalyzeBitmap, orientation, out origin);
+                if (bitmap == null)
                 {
-                    if (bitmap == null)
-                    {
-                        return null;
-                    }
-
-                    return CropWhiteSpace(bitmap);
+                    return null;
                 }
+
+                return CropWhiteSpace(bitmap);
             }
 
             return Decode(path, forceAnalyzeBitmap, orientation, out origin);
@@ -408,12 +400,10 @@ namespace Jellyfin.Drawing.Skia
                 case SKEncodedOrigin.TopRight:
                     {
                         var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
-                        using (var surface = new SKCanvas(rotated))
-                        {
-                            surface.Translate(rotated.Width, 0);
-                            surface.Scale(-1, 1);
-                            surface.DrawBitmap(bitmap, 0, 0);
-                        }
+                        using var surface = new SKCanvas(rotated);
+                        surface.Translate(rotated.Width, 0);
+                        surface.Scale(-1, 1);
+                        surface.DrawBitmap(bitmap, 0, 0);
 
                         return rotated;
                     }
@@ -421,14 +411,12 @@ namespace Jellyfin.Drawing.Skia
                 case SKEncodedOrigin.BottomRight:
                     {
                         var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
-                        using (var surface = new SKCanvas(rotated))
-                        {
-                            float px = (float)bitmap.Width / 2;
-                            float py = (float)bitmap.Height / 2;
+                        using var surface = new SKCanvas(rotated);
+                        float px = (float)bitmap.Width / 2;
+                        float py = (float)bitmap.Height / 2;
 
-                            surface.RotateDegrees(180, px, py);
-                            surface.DrawBitmap(bitmap, 0, 0);
-                        }
+                        surface.RotateDegrees(180, px, py);
+                        surface.DrawBitmap(bitmap, 0, 0);
 
                         return rotated;
                     }
@@ -436,94 +424,83 @@ namespace Jellyfin.Drawing.Skia
                 case SKEncodedOrigin.BottomLeft:
                     {
                         var rotated = new SKBitmap(bitmap.Width, bitmap.Height);
-                        using (var surface = new SKCanvas(rotated))
-                        {
-                            float px = (float)bitmap.Width / 2;
+                        using var surface = new SKCanvas(rotated);
+                        float px = (float)bitmap.Width / 2;
 
-                            float py = (float)bitmap.Height / 2;
+                        float py = (float)bitmap.Height / 2;
 
-                            surface.Translate(rotated.Width, 0);
-                            surface.Scale(-1, 1);
+                        surface.Translate(rotated.Width, 0);
+                        surface.Scale(-1, 1);
 
-                            surface.RotateDegrees(180, px, py);
-                            surface.DrawBitmap(bitmap, 0, 0);
-                        }
+                        surface.RotateDegrees(180, px, py);
+                        surface.DrawBitmap(bitmap, 0, 0);
 
                         return rotated;
                     }
 
                 case SKEncodedOrigin.LeftTop:
+                {
+                    // TODO: Remove dual canvases, had trouble with flipping
+                    using var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
+                    using (var surface = new SKCanvas(rotated))
                     {
-                        // TODO: Remove dual canvases, had trouble with flipping
-                        using (var rotated = new SKBitmap(bitmap.Height, bitmap.Width))
-                        {
-                            using (var surface = new SKCanvas(rotated))
-                            {
-                                surface.Translate(rotated.Width, 0);
+                        surface.Translate(rotated.Width, 0);
 
-                                surface.RotateDegrees(90);
+                        surface.RotateDegrees(90);
 
-                                surface.DrawBitmap(bitmap, 0, 0);
-                            }
-
-                            var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
-                            using (var flippedCanvas = new SKCanvas(flippedBitmap))
-                            {
-                                flippedCanvas.Translate(flippedBitmap.Width, 0);
-                                flippedCanvas.Scale(-1, 1);
-                                flippedCanvas.DrawBitmap(rotated, 0, 0);
-                            }
-
-                            return flippedBitmap;
-                        }
+                        surface.DrawBitmap(bitmap, 0, 0);
                     }
 
+                    var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
+                    using (var flippedCanvas = new SKCanvas(flippedBitmap))
+                    {
+                        flippedCanvas.Translate(flippedBitmap.Width, 0);
+                        flippedCanvas.Scale(-1, 1);
+                        flippedCanvas.DrawBitmap(rotated, 0, 0);
+                    }
+
+                    return flippedBitmap;
+                }
                 case SKEncodedOrigin.RightTop:
                     {
                         var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                        using (var surface = new SKCanvas(rotated))
-                        {
-                            surface.Translate(rotated.Width, 0);
-                            surface.RotateDegrees(90);
-                            surface.DrawBitmap(bitmap, 0, 0);
-                        }
+                        using var surface = new SKCanvas(rotated);
+                        surface.Translate(rotated.Width, 0);
+                        surface.RotateDegrees(90);
+                        surface.DrawBitmap(bitmap, 0, 0);
 
                         return rotated;
                     }
 
                 case SKEncodedOrigin.RightBottom:
+                {
+                    // TODO: Remove dual canvases, had trouble with flipping
+                    using var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
+                    using (var surface = new SKCanvas(rotated))
                     {
-                        // TODO: Remove dual canvases, had trouble with flipping
-                        using (var rotated = new SKBitmap(bitmap.Height, bitmap.Width))
-                        {
-                            using (var surface = new SKCanvas(rotated))
-                            {
-                                surface.Translate(0, rotated.Height);
-                                surface.RotateDegrees(270);
-                                surface.DrawBitmap(bitmap, 0, 0);
-                            }
-
-                            var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
-                            using (var flippedCanvas = new SKCanvas(flippedBitmap))
-                            {
-                                flippedCanvas.Translate(flippedBitmap.Width, 0);
-                                flippedCanvas.Scale(-1, 1);
-                                flippedCanvas.DrawBitmap(rotated, 0, 0);
-                            }
-
-                            return flippedBitmap;
-                        }
+                        surface.Translate(0, rotated.Height);
+                        surface.RotateDegrees(270);
+                        surface.DrawBitmap(bitmap, 0, 0);
                     }
+
+                    var flippedBitmap = new SKBitmap(rotated.Width, rotated.Height);
+                    using (var flippedCanvas = new SKCanvas(flippedBitmap))
+                    {
+                        flippedCanvas.Translate(flippedBitmap.Width, 0);
+                        flippedCanvas.Scale(-1, 1);
+                        flippedCanvas.DrawBitmap(rotated, 0, 0);
+                    }
+
+                    return flippedBitmap;
+                }
 
                 case SKEncodedOrigin.LeftBottom:
                     {
                         var rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                        using (var surface = new SKCanvas(rotated))
-                        {
-                            surface.Translate(0, rotated.Height);
-                            surface.RotateDegrees(270);
-                            surface.DrawBitmap(bitmap, 0, 0);
-                        }
+                        using var surface = new SKCanvas(rotated);
+                        surface.Translate(0, rotated.Height);
+                        surface.RotateDegrees(270);
+                        surface.DrawBitmap(bitmap, 0, 0);
 
                         return rotated;
                     }
@@ -552,97 +529,87 @@ namespace Jellyfin.Drawing.Skia
             var blur = options.Blur ?? 0;
             var hasIndicator = options.AddPlayedIndicator || options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
-            using (var bitmap = GetBitmap(inputPath, options.CropWhiteSpace, autoOrient, orientation))
+            using var bitmap = GetBitmap(inputPath, options.CropWhiteSpace, autoOrient, orientation);
+            if (bitmap == null)
             {
-                if (bitmap == null)
+                throw new InvalidDataException($"Skia unable to read image {inputPath}");
+            }
+
+            var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
+
+            if (!options.CropWhiteSpace
+                && options.HasDefaultOptions(inputPath, originalImageSize)
+                && !autoOrient)
+            {
+                // Just spit out the original file if all the options are default
+                return inputPath;
+            }
+
+            var newImageSize = ImageHelper.GetNewImageSize(options, originalImageSize);
+
+            var width = newImageSize.Width;
+            var height = newImageSize.Height;
+
+            using var resizedBitmap = new SKBitmap(width, height, bitmap.ColorType, bitmap.AlphaType);
+            // scale image
+            bitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
+
+            // If all we're doing is resizing then we can stop now
+            if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                using var outputStream = new SKFileWStream(outputPath);
+                using var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
+                pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                return outputPath;
+            }
+
+            // create bitmap to use for canvas drawing used to draw into bitmap
+            using var saveBitmap = new SKBitmap(width, height);
+            using var canvas = new SKCanvas(saveBitmap);
+            // set background color if present
+            if (hasBackgroundColor)
+            {
+                canvas.Clear(SKColor.Parse(options.BackgroundColor));
+            }
+
+            // Add blur if option is present
+            if (blur > 0)
+            {
+                // create image from resized bitmap to apply blur
+                using var paint = new SKPaint();
+                using var filter = SKImageFilter.CreateBlur(blur, blur);
+                paint.ImageFilter = filter;
+                canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
+            }
+            else
+            {
+                // draw resized bitmap onto canvas
+                canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height));
+            }
+
+            // If foreground layer present then draw
+            if (hasForegroundColor)
+            {
+                if (!double.TryParse(options.ForegroundLayer, out double opacity))
                 {
-                    throw new InvalidDataException($"Skia unable to read image {inputPath}");
+                    opacity = .4;
                 }
 
-                var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
+                canvas.DrawColor(new SKColor(0, 0, 0, (byte)((1 - opacity) * 0xFF)), SKBlendMode.SrcOver);
+            }
 
-                if (!options.CropWhiteSpace
-                    && options.HasDefaultOptions(inputPath, originalImageSize)
-                    && !autoOrient)
+            if (hasIndicator)
+            {
+                DrawIndicator(canvas, width, height, options);
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            using (var outputStream = new SKFileWStream(outputPath))
+            {
+                using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
                 {
-                    // Just spit out the original file if all the options are default
-                    return inputPath;
-                }
-
-                var newImageSize = ImageHelper.GetNewImageSize(options, originalImageSize);
-
-                var width = newImageSize.Width;
-                var height = newImageSize.Height;
-
-                using (var resizedBitmap = new SKBitmap(width, height, bitmap.ColorType, bitmap.AlphaType))
-                {
-                    // scale image
-                    bitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
-
-                    // If all we're doing is resizing then we can stop now
-                    if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
-                        using (var outputStream = new SKFileWStream(outputPath))
-                        using (var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels()))
-                        {
-                            pixmap.Encode(outputStream, skiaOutputFormat, quality);
-                            return outputPath;
-                        }
-                    }
-
-                    // create bitmap to use for canvas drawing used to draw into bitmap
-                    using (var saveBitmap = new SKBitmap(width, height)) // , bitmap.ColorType, bitmap.AlphaType))
-                    using (var canvas = new SKCanvas(saveBitmap))
-                    {
-                        // set background color if present
-                        if (hasBackgroundColor)
-                        {
-                            canvas.Clear(SKColor.Parse(options.BackgroundColor));
-                        }
-
-                        // Add blur if option is present
-                        if (blur > 0)
-                        {
-                            // create image from resized bitmap to apply blur
-                            using (var paint = new SKPaint())
-                            using (var filter = SKImageFilter.CreateBlur(blur, blur))
-                            {
-                                paint.ImageFilter = filter;
-                                canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
-                            }
-                        }
-                        else
-                        {
-                            // draw resized bitmap onto canvas
-                            canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height));
-                        }
-
-                        // If foreground layer present then draw
-                        if (hasForegroundColor)
-                        {
-                            if (!double.TryParse(options.ForegroundLayer, out double opacity))
-                            {
-                                opacity = .4;
-                            }
-
-                            canvas.DrawColor(new SKColor(0, 0, 0, (byte)((1 - opacity) * 0xFF)), SKBlendMode.SrcOver);
-                        }
-
-                        if (hasIndicator)
-                        {
-                            DrawIndicator(canvas, width, height, options);
-                        }
-
-                        Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
-                        using (var outputStream = new SKFileWStream(outputPath))
-                        {
-                            using (var pixmap = new SKPixmap(new SKImageInfo(width, height), saveBitmap.GetPixels()))
-                            {
-                                pixmap.Encode(outputStream, skiaOutputFormat, quality);
-                            }
-                        }
-                    }
+                    pixmap.Encode(outputStream, skiaOutputFormat, quality);
                 }
             }
 
