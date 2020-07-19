@@ -27,9 +27,7 @@ namespace Jellyfin.Drawing.Skia
             paint.Style = SKPaintStyle.Fill;
             canvas.DrawRect(SKRect.Create(0, (float)endY - IndicatorHeight, endX, endY), paint);
 
-            double foregroundWidth = endX;
-            foregroundWidth *= percent;
-            foregroundWidth /= 100;
+            double foregroundWidth = (endX * percent) / 100;
 
             paint.Color = SKColor.Parse("#FF00A4DC");
             canvas.DrawRect(SKRect.Create(0, (float)endY - IndicatorHeight, Convert.ToInt32(foregroundWidth), endY), paint);
