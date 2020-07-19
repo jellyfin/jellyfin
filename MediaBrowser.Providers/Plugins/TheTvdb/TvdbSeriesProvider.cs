@@ -375,7 +375,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
                 if (!string.IsNullOrEmpty(actor.Image))
                 {
-                    personInfo.ImageUrl = TvdbUtils.TvdbImageBaseUrl + actor.Image;
+                    personInfo.ImageUrl = TvdbUtils.BannerUrl + actor.Image;
                 }
 
                 if (!string.IsNullOrWhiteSpace(personInfo.Name))
