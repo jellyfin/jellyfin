@@ -29,9 +29,7 @@ namespace Jellyfin.Drawing.Skia
         /// </summary>
         /// <param name="logger">The application logger.</param>
         /// <param name="appPaths">The application paths.</param>
-        public SkiaEncoder(
-            ILogger<SkiaEncoder> logger,
-            IApplicationPaths appPaths)
+        public SkiaEncoder(ILogger<SkiaEncoder> logger, IApplicationPaths appPaths)
         {
             _logger = logger;
             _appPaths = appPaths;
