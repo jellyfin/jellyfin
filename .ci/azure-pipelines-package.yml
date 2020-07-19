@@ -144,7 +144,7 @@ jobs:
   displayName: 'Publish NuGet packages'
   dependsOn:
   - BuildPackage
-  condition: and((succeeded'BuildPackage'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+  condition: and(succeeded('BuildPackage'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
   
   pool:
     vmImage: 'ubuntu-latest'
