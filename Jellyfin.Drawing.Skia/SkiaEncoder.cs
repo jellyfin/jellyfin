@@ -102,19 +102,14 @@ namespace Jellyfin.Drawing.Skia
         /// <returns>The converted format.</returns>
         public static SKEncodedImageFormat GetImageFormat(ImageFormat selectedFormat)
         {
-            switch (selectedFormat)
+            return selectedFormat switch
             {
-                case ImageFormat.Bmp:
-                    return SKEncodedImageFormat.Bmp;
-                case ImageFormat.Jpg:
-                    return SKEncodedImageFormat.Jpeg;
-                case ImageFormat.Gif:
-                    return SKEncodedImageFormat.Gif;
-                case ImageFormat.Webp:
-                    return SKEncodedImageFormat.Webp;
-                default:
-                    return SKEncodedImageFormat.Png;
-            }
+                ImageFormat.Bmp => SKEncodedImageFormat.Bmp,
+                ImageFormat.Jpg => SKEncodedImageFormat.Jpeg,
+                ImageFormat.Gif => SKEncodedImageFormat.Gif,
+                ImageFormat.Webp => SKEncodedImageFormat.Webp,
+                _ => SKEncodedImageFormat.Png
+            };
         }
 
         private static bool IsTransparentRow(SKBitmap bmp, int row)
@@ -279,25 +274,17 @@ namespace Jellyfin.Drawing.Skia
                 return SKEncodedOrigin.TopLeft;
             }
 
-            switch (orientation.Value)
+            return orientation.Value switch
             {
-                case ImageOrientation.TopRight:
-                    return SKEncodedOrigin.TopRight;
-                case ImageOrientation.RightTop:
-                    return SKEncodedOrigin.RightTop;
-                case ImageOrientation.RightBottom:
-                    return SKEncodedOrigin.RightBottom;
-                case ImageOrientation.LeftTop:
-                    return SKEncodedOrigin.LeftTop;
-                case ImageOrientation.LeftBottom:
-                    return SKEncodedOrigin.LeftBottom;
-                case ImageOrientation.BottomRight:
-                    return SKEncodedOrigin.BottomRight;
-                case ImageOrientation.BottomLeft:
-                    return SKEncodedOrigin.BottomLeft;
-                default:
-                    return SKEncodedOrigin.TopLeft;
-            }
+                ImageOrientation.TopRight => SKEncodedOrigin.TopRight,
+                ImageOrientation.RightTop => SKEncodedOrigin.RightTop,
+                ImageOrientation.RightBottom => SKEncodedOrigin.RightBottom,
+                ImageOrientation.LeftTop => SKEncodedOrigin.LeftTop,
+                ImageOrientation.LeftBottom => SKEncodedOrigin.LeftBottom,
+                ImageOrientation.BottomRight => SKEncodedOrigin.BottomRight,
+                ImageOrientation.BottomLeft => SKEncodedOrigin.BottomLeft,
+                _ => SKEncodedOrigin.TopLeft
+            };
         }
 
         /// <summary>
