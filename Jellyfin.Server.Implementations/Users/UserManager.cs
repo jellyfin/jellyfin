@@ -152,12 +152,12 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(newName));
             }
 
-            if (user.Username.Equals(newName, StringComparison.OrdinalIgnoreCase))
+            if (user.Username.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.Ordinal)))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
