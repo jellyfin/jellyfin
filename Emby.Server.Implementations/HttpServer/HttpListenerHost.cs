@@ -201,7 +201,7 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 case ArgumentException _: return 400;
                 case AuthenticationException _: return 401;
-                case SecurityException _: return 403;
+                case SecurityException _: return 401;
                 case DirectoryNotFoundException _:
                 case FileNotFoundException _:
                 case ResourceNotFoundException _: return 404;
