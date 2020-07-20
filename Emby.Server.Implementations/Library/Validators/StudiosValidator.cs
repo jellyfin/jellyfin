@@ -92,7 +92,6 @@ namespace Emby.Server.Implementations.Library.Validators
                 _libraryManager.DeleteItem(item, new DeleteOptions
                 {
                     DeleteFileLocation = false
-
                 }, false);
             }
 

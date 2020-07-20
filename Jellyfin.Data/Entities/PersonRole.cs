@@ -31,7 +31,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="type"></param>
         /// <param name="_metadata0"></param>
@@ -42,7 +42,11 @@ namespace Jellyfin.Data.Entities
 
             this.Type = type;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
+
             _metadata0.PersonRoles.Add(this);
 
             this.Sources = new HashSet<MetadataProviderId>();
@@ -65,7 +69,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -78,7 +82,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -89,8 +93,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -103,7 +108,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Role
+        /// Backing field for Role.
         /// </summary>
         protected string _Role;
         /// <summary>
@@ -126,8 +131,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Role;
                 GetRole(ref value);
-                return (_Role = value);
+                return _Role = value;
             }
+
             set
             {
                 string oldValue = _Role;
@@ -140,7 +146,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Type
+        /// Backing field for Type.
         /// </summary>
         protected Enums.PersonRoleType _Type;
         /// <summary>
@@ -153,7 +159,7 @@ namespace Jellyfin.Data.Entities
         partial void GetType(ref Enums.PersonRoleType result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public Enums.PersonRoleType Type
@@ -162,8 +168,9 @@ namespace Jellyfin.Data.Entities
             {
                 Enums.PersonRoleType value = _Type;
                 GetType(ref value);
-                return (_Type = value);
+                return _Type = value;
             }
+
             set
             {
                 Enums.PersonRoleType oldValue = _Type;
@@ -176,7 +183,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -192,7 +199,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [ForeignKey("Person_Id")]
 
@@ -203,7 +210,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("MetadataProviderId_Sources_Id")]
         public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
-
     }
 }
 

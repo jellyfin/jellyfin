@@ -1,7 +1,7 @@
 namespace MediaBrowser.Controller.Sync
 {
     /// <summary>
-    /// A marker interface
+    /// A marker interface.
     /// </summary>
     public interface IRemoteSyncProvider
     {

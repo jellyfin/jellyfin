@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
-    /// This is the entity to store review ratings, not age ratings
+    /// This is the entity to store review ratings, not age ratings.
     /// </summary>
     public partial class RatingSource
     {
@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="maximumvalue"></param>
         /// <param name="minimumvalue"></param>
@@ -39,9 +39,12 @@ namespace Jellyfin.Data.Entities
 
             this.MinimumValue = minimumvalue;
 
-            if (_rating0 == null) throw new ArgumentNullException(nameof(_rating0));
-            _rating0.RatingType = this;
+            if (_rating0 == null)
+            {
+                throw new ArgumentNullException(nameof(_rating0));
+            }
 
+            _rating0.RatingType = this;
 
             Init();
         }
@@ -62,7 +65,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -75,7 +78,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -86,8 +89,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -100,7 +104,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Name
+        /// Backing field for Name.
         /// </summary>
         protected string _Name;
         /// <summary>
@@ -123,8 +127,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
+
             set
             {
                 string oldValue = _Name;
@@ -137,7 +142,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for MaximumValue
+        /// Backing field for MaximumValue.
         /// </summary>
         protected double _MaximumValue;
         /// <summary>
@@ -150,7 +155,7 @@ namespace Jellyfin.Data.Entities
         partial void GetMaximumValue(ref double result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public double MaximumValue
@@ -159,8 +164,9 @@ namespace Jellyfin.Data.Entities
             {
                 double value = _MaximumValue;
                 GetMaximumValue(ref value);
-                return (_MaximumValue = value);
+                return _MaximumValue = value;
             }
+
             set
             {
                 double oldValue = _MaximumValue;
@@ -173,7 +179,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for MinimumValue
+        /// Backing field for MinimumValue.
         /// </summary>
         protected double _MinimumValue;
         /// <summary>
@@ -186,7 +192,7 @@ namespace Jellyfin.Data.Entities
         partial void GetMinimumValue(ref double result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public double MinimumValue
@@ -195,8 +201,9 @@ namespace Jellyfin.Data.Entities
             {
                 double value = _MinimumValue;
                 GetMinimumValue(ref value);
-                return (_MinimumValue = value);
+                return _MinimumValue = value;
             }
+
             set
             {
                 double oldValue = _MinimumValue;
@@ -209,7 +216,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -225,7 +232,6 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
         [ForeignKey("MetadataProviderId_Source_Id")]
         public virtual MetadataProviderId Source { get; set; }
-
     }
 }
 

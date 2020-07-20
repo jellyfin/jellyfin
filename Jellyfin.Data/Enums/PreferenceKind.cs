@@ -26,7 +26,7 @@ namespace Jellyfin.Data.Enums
         EnabledDevices = 3,
 
         /// <summary>
-        /// A list of enabled channels
+        /// A list of enabled channels.
         /// </summary>
         EnabledChannels = 4,
 

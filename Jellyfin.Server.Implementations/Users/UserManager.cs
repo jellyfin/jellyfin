@@ -12,6 +12,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Drawing;
@@ -22,6 +23,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Users;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Implementations.Users
@@ -85,7 +87,19 @@ namespace Jellyfin.Server.Implementations.Users
         public event EventHandler<GenericEventArgs<User>>? OnUserLockedOut;
 
         /// <inheritdoc/>
-        public IEnumerable<User> Users => _dbProvider.CreateContext().Users;
+        public IEnumerable<User> Users
+        {
+            get
+            {
+                using var dbContext = _dbProvider.CreateContext();
+                return dbContext.Users
+                    .Include(user => user.Permissions)
+                    .Include(user => user.Preferences)
+                    .Include(user => user.AccessSchedules)
+                    .Include(user => user.ProfileImage)
+                    .ToList();
+            }
+        }
 
         /// <inheritdoc/>
         public IEnumerable<Guid> UsersIds => _dbProvider.CreateContext().Users.Select(u => u.Id);
@@ -98,7 +112,13 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            return _dbProvider.CreateContext().Users.Find(id);
+            using var dbContext = _dbProvider.CreateContext();
+            return dbContext.Users
+                .Include(user => user.Permissions)
+                .Include(user => user.Preferences)
+                .Include(user => user.AccessSchedules)
+                .Include(user => user.ProfileImage)
+                .FirstOrDefault(user => user.Id == id);
         }
 
         /// <inheritdoc/>
@@ -109,9 +129,14 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Invalid username", nameof(name));
             }
 
-            // This can't use an overload with StringComparer because that would cause the query to
-            // have to be evaluated client-side.
-            return _dbProvider.CreateContext().Users.FirstOrDefault(u => string.Equals(u.Username, name));
+            using var dbContext = _dbProvider.CreateContext();
+            return dbContext.Users
+                .Include(user => user.Permissions)
+                .Include(user => user.Preferences)
+                .Include(user => user.AccessSchedules)
+                .Include(user => user.ProfileImage)
+                .AsEnumerable()
+                .FirstOrDefault(u => string.Equals(u.Username, name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <inheritdoc/>
@@ -132,7 +157,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.Ordinal)))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -149,7 +174,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void UpdateUser(User user)
         {
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
             dbContext.Users.Update(user);
             dbContext.SaveChanges();
         }
@@ -157,7 +182,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
-            var dbContext = _dbProvider.CreateContext();
+            await using var dbContext = _dbProvider.CreateContext();
             dbContext.Users.Update(user);
 
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -171,7 +196,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
             }
 
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
 
             // TODO: Remove after user item data is migrated.
             var max = dbContext.Users.Any() ? dbContext.Users.Select(u => u.InternalId).Max() : 0;
@@ -192,14 +217,19 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void DeleteUser(User user)
+        public void DeleteUser(Guid userId)
         {
+            using var dbContext = _dbProvider.CreateContext();
+            var user = dbContext.Users
+                .Include(u => u.Permissions)
+                .Include(u => u.Preferences)
+                .Include(u => u.AccessSchedules)
+                .Include(u => u.ProfileImage)
+                .FirstOrDefault(u => u.Id == userId);
             if (user == null)
             {
-                throw new ArgumentNullException(nameof(user));
+                throw new ResourceNotFoundException(nameof(userId));
             }
-
-            var dbContext = _dbProvider.CreateContext();
 
             if (dbContext.Users.Find(user.Id) == null)
             {
@@ -226,9 +256,18 @@ namespace Jellyfin.Server.Implementations.Users
                         CultureInfo.InvariantCulture,
                         "The user '{0}' cannot be deleted because there must be at least one admin user in the system.",
                         user.Username),
-                    nameof(user));
+                    nameof(userId));
             }
 
+            // Clear all entities related to the user from the database.
+            if (user.ProfileImage != null)
+            {
+                dbContext.Remove(user.ProfileImage);
+            }
+
+            dbContext.RemoveRange(user.Permissions);
+            dbContext.RemoveRange(user.Preferences);
+            dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             dbContext.SaveChanges();
             OnUserDeleted?.Invoke(this, new GenericEventArgs<User>(user));
@@ -263,7 +302,17 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
-            GetAuthenticationProvider(user).ChangeEasyPassword(user, newPassword, newPasswordSha1);
+            if (newPassword != null)
+            {
+                newPasswordSha1 = _cryptoProvider.CreatePasswordHash(newPassword).ToString();
+            }
+
+            if (string.IsNullOrWhiteSpace(newPasswordSha1))
+            {
+                throw new ArgumentNullException(nameof(newPasswordSha1));
+            }
+
+            user.EasyPassword = newPasswordSha1;
             UpdateUser(user);
 
             OnUserPasswordChanged?.Invoke(this, new GenericEventArgs<User>(user));
@@ -361,7 +410,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentNullException(nameof(username));
             }
 
-            var user = Users.ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+            var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
             bool success;
             IAuthenticationProvider? authenticationProvider;
 
@@ -389,8 +438,7 @@ namespace Jellyfin.Server.Implementations.Users
 
                     // Search the database for the user again
                     // the authentication provider might have created it
-                    user = Users
-                        .ToList().FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
+                    user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
 
                     if (authenticationProvider is IHasNewUserPolicy hasNewUserPolicy)
                     {
@@ -527,7 +575,7 @@ namespace Jellyfin.Server.Implementations.Users
         public void Initialize()
         {
             // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
 
             if (dbContext.Users.Any())
             {
@@ -590,7 +638,14 @@ namespace Jellyfin.Server.Implementations.Users
         public void UpdateConfiguration(Guid userId, UserConfiguration config)
         {
             var dbContext = _dbProvider.CreateContext();
-            var user = dbContext.Users.Find(userId) ?? throw new ArgumentException("No user exists with given Id!");
+            var user = dbContext.Users
+                           .Include(u => u.Permissions)
+                           .Include(u => u.Preferences)
+                           .Include(u => u.AccessSchedules)
+                           .Include(u => u.ProfileImage)
+                           .FirstOrDefault(u => u.Id == userId)
+                       ?? throw new ArgumentException("No user exists with given Id!");
+
             user.SubtitleMode = config.SubtitleMode;
             user.HidePlayedInLatest = config.HidePlayedInLatest;
             user.EnableLocalPassword = config.EnableLocalPassword;
@@ -616,7 +671,13 @@ namespace Jellyfin.Server.Implementations.Users
         public void UpdatePolicy(Guid userId, UserPolicy policy)
         {
             var dbContext = _dbProvider.CreateContext();
-            var user = dbContext.Users.Find(userId) ?? throw new ArgumentException("No user exists with given Id!");
+            var user = dbContext.Users
+                           .Include(u => u.Permissions)
+                           .Include(u => u.Preferences)
+                           .Include(u => u.AccessSchedules)
+                           .Include(u => u.ProfileImage)
+                           .FirstOrDefault(u => u.Id == userId)
+                       ?? throw new ArgumentException("No user exists with given Id!");
 
             // The default number of login attempts is 3, but for some god forsaken reason it's sent to the server as "0"
             int? maxLoginAttempts = policy.LoginAttemptsBeforeLockout switch
@@ -679,7 +740,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void ClearProfileImage(User user)
         {
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
             dbContext.SaveChanges();
         }

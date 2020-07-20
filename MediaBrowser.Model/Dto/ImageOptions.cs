@@ -61,7 +61,7 @@ namespace MediaBrowser.Model.Dto
 
         /// <summary>
         /// Gets or sets the image tag.
-        /// If set this will result in strong, unconditional response caching
+        /// If set this will result in strong, unconditional response caching.
         /// </summary>
         /// <value>The hash.</value>
         public string Tag { get; set; }

@@ -115,6 +115,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 throw new ArgumentNullException(nameof(item));
             }
+
             if (string.IsNullOrWhiteSpace(mediaSourceId))
             {
                 throw new ArgumentNullException(nameof(mediaSourceId));
@@ -271,8 +272,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             public string Path { get; set; }
+
             public MediaProtocol Protocol { get; set; }
+
             public string Format { get; set; }
+
             public bool IsExternal { get; set; }
         }
 
@@ -287,10 +291,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return new SrtParser(_logger);
             }
+
             if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
             {
                 return new SsaParser();
             }
+
             if (string.Equals(format, SubtitleFormat.ASS, StringComparison.OrdinalIgnoreCase))
             {
                 return new AssParser();
@@ -315,14 +321,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 return new JsonWriter();
             }
+
             if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
             {
                 return new SrtWriter();
             }
+
             if (string.Equals(format, SubtitleFormat.VTT, StringComparison.OrdinalIgnoreCase))
             {
                 return new VttWriter();
             }
+
             if (string.Equals(format, SubtitleFormat.TTML, StringComparison.OrdinalIgnoreCase))
             {
                 return new TtmlWriter();
@@ -344,7 +353,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
 
         /// <summary>
-        /// The _semaphoreLocks
+        /// The _semaphoreLocks.
         /// </summary>
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
             new ConcurrentDictionary<string, SemaphoreSlim>();
@@ -640,7 +649,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
                 catch (FileNotFoundException)
                 {
-
                 }
                 catch (IOException ex)
                 {
@@ -737,7 +745,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 var charset = CharsetDetector.DetectFromStream(stream).Detected?.EncodingName;
 
                 // UTF16 is automatically converted to UTF8 by FFmpeg, do not specify a character encoding
-                if ((path.EndsWith(".ass") || path.EndsWith(".ssa"))
+                if ((path.EndsWith(".ass") || path.EndsWith(".ssa") || path.EndsWith(".srt"))
                     && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
                 {

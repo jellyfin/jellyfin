@@ -183,7 +183,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var subtitleArgs = CopySubtitles ? " -codec:s copy" : " -sn";
 
-            //var outputParam = string.Equals(Path.GetExtension(targetFile), ".mp4", StringComparison.OrdinalIgnoreCase) ?
+            // var outputParam = string.Equals(Path.GetExtension(targetFile), ".mp4", StringComparison.OrdinalIgnoreCase) ?
             //    " -f mp4 -movflags frag_keyframe+empty_moov" :
             //    string.Empty;
 
@@ -206,13 +206,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             return "-codec:a:0 copy";
 
-            //var audioChannels = 2;
-            //var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
-            //if (audioStream != null)
+            // var audioChannels = 2;
+            // var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
+            // if (audioStream != null)
             //{
             //    audioChannels = audioStream.Channels ?? audioChannels;
             //}
-            //return "-codec:a:0 aac -strict experimental -ab 320000";
+            // return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 
         private static bool EncodeVideo(MediaSourceInfo mediaSource)

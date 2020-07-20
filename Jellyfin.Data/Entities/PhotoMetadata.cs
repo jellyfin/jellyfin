@@ -24,22 +24,33 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_photo0"></param>
         public PhotoMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Photo _photo0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_photo0 == null) throw new ArgumentNullException(nameof(_photo0));
-            _photo0.PhotoMetadata.Add(this);
+            if (_photo0 == null)
+            {
+                throw new ArgumentNullException(nameof(_photo0));
+            }
 
+            _photo0.PhotoMetadata.Add(this);
 
             Init();
         }
@@ -47,8 +58,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_photo0"></param>
         public static PhotoMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Photo _photo0)
         {
@@ -62,7 +73,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

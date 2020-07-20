@@ -5,7 +5,7 @@ using System.IO;
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
-    /// Interface IZipClient
+    /// Interface IZipClient.
     /// </summary>
     public interface IZipClient
     {

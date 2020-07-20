@@ -224,6 +224,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     uniqueString = "-" + programInfo.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
+
                 if (programInfo.EpisodeNumber.HasValue)
                 {
                     uniqueString = "-" + programInfo.EpisodeNumber.Value.ToString(CultureInfo.InvariantCulture);

@@ -23,22 +23,33 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_customitem0"></param>
         public CustomItemMetadata(string title, string language, DateTime dateadded, DateTime datemodified, CustomItem _customitem0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_customitem0 == null) throw new ArgumentNullException(nameof(_customitem0));
-            _customitem0.CustomItemMetadata.Add(this);
+            if (_customitem0 == null)
+            {
+                throw new ArgumentNullException(nameof(_customitem0));
+            }
 
+            _customitem0.CustomItemMetadata.Add(this);
 
             Init();
         }
@@ -46,8 +57,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_customitem0"></param>
         public static CustomItemMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, CustomItem _customitem0)
         {
@@ -61,7 +72,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

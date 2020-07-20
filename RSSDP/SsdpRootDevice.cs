@@ -12,13 +12,7 @@ namespace Rssdp
     /// </remarks>
     public class SsdpRootDevice : SsdpDevice
     {
-        #region Fields
-
         private Uri _UrlBase;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Default constructor.
@@ -26,10 +20,6 @@ namespace Rssdp
         public SsdpRootDevice() : base()
         {
         }
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         /// Specifies how long clients can cache this device's details for. Optional but defaults to <see cref="TimeSpan.Zero"/> which means no-caching. Recommended value is half an hour.
@@ -77,7 +67,5 @@ namespace Rssdp
                 _UrlBase = value;
             }
         }
-
-        #endregion
     }
 }

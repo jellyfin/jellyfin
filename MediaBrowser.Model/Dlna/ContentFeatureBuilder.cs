@@ -79,11 +79,11 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            //if (isDirectStream)
+            // if (isDirectStream)
             //{
             //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
             //}
-            //else if (runtimeTicks.HasValue)
+            // else if (runtimeTicks.HasValue)
             //{
             //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
             //}
@@ -148,11 +148,11 @@ namespace MediaBrowser.Model.Dlna
                             DlnaFlags.InteractiveTransferMode |
                             DlnaFlags.DlnaV15;
 
-            //if (isDirectStream)
+            // if (isDirectStream)
             //{
             //    flagValue = flagValue | DlnaFlags.ByteBasedSeek;
             //}
-            //else if (runtimeTicks.HasValue)
+            // else if (runtimeTicks.HasValue)
             //{
             //    flagValue = flagValue | DlnaFlags.TimeBasedSeek;
             //}

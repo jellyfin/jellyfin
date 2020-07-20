@@ -32,12 +32,12 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
-        /// The _options
+        /// The _options.
         /// </summary>
         private readonly IDictionary<string, string> _options = new Dictionary<string, string>();
 
         /// <summary>
-        /// The _requested ranges
+        /// The _requested ranges.
         /// </summary>
         private List<KeyValuePair<long, long?>> _requestedRanges;
 

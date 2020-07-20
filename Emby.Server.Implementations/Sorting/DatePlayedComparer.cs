@@ -8,7 +8,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class DatePlayedComparer
+    /// Class DatePlayedComparer.
     /// </summary>
     public class DatePlayedComparer : IUserBaseItemComparer
     {
