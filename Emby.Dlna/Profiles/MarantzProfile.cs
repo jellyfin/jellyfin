@@ -37,7 +37,7 @@ namespace Emby.Dlna.Profiles
                 },
             };
 
-            ResponseProfiles = new ResponseProfile[] { };
+            ResponseProfiles = System.Array.Empty<ResponseProfile>();
         }
     }
 }

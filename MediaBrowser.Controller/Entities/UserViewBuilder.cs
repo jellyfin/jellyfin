@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,7 @@ namespace MediaBrowser.Controller.Entities
     {
         private readonly IUserViewManager _userViewManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly ILogger<UserViewBuilder> _logger;
+        private readonly ILogger<BaseItem> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly IServerConfigurationManager _config;
@@ -30,7 +31,7 @@ namespace MediaBrowser.Controller.Entities
         public UserViewBuilder(
             IUserViewManager userViewManager,
             ILibraryManager libraryManager,
-            ILogger<UserViewBuilder> logger,
+            ILogger<BaseItem> logger,
             IUserDataManager userDataManager,
             ITVSeriesManager tvSeriesManager,
             IServerConfigurationManager config)
@@ -47,7 +48,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            //if (query.IncludeItemTypes != null &&
+            // if (query.IncludeItemTypes != null &&
             //    query.IncludeItemTypes.Length == 1 &&
             //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
             //{
@@ -270,7 +271,6 @@ namespace MediaBrowser.Controller.Entities
                         _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
-
                 })
                 .Where(i => i != null)
                 .Select(i => GetUserViewWithName(i.Name, SpecialFolder.MovieGenre, i.SortName, parent));
@@ -347,7 +347,6 @@ namespace MediaBrowser.Controller.Entities
                 Limit = query.Limit,
                 StartIndex = query.StartIndex,
                 UserId = query.User.Id
-
             }, parentFolders, query.DtoOptions);
 
             return result;
@@ -384,7 +383,6 @@ namespace MediaBrowser.Controller.Entities
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 Recursive = true,
                 EnableTotalRecordCount = false
-
             }).Items
                 .SelectMany(i => i.Genres)
                 .DistinctNames()
@@ -399,7 +397,6 @@ namespace MediaBrowser.Controller.Entities
                         _logger.LogError(ex, "Error getting genre");
                         return null;
                     }
-
                 })
                 .Where(i => i != null)
                 .Select(i => GetUserViewWithName(i.Name, SpecialFolder.TvGenre, i.SortName, parent));
@@ -424,7 +421,7 @@ namespace MediaBrowser.Controller.Entities
         {
             return new QueryResult<BaseItem>
             {
-                Items = result.Items, //TODO Fix The co-variant conversion between T[] and BaseItem[], this can generate runtime issues if T is not BaseItem.
+                Items = result.Items, // TODO Fix The co-variant conversion between T[] and BaseItem[], this can generate runtime issues if T is not BaseItem.
                 TotalRecordCount = result.TotalRecordCount
             };
         }
@@ -964,6 +961,7 @@ namespace MediaBrowser.Controller.Entities
                     .OfType<Folder>()
                     .Where(UserView.IsEligibleForGrouping);
             }
+
             return _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
                 .OfType<Folder>()
@@ -982,6 +980,7 @@ namespace MediaBrowser.Controller.Entities
                         return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
                     }).ToArray();
             }
+
             return GetMediaFolders(user)
                 .Where(i =>
                 {

@@ -9,12 +9,12 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Controller.Persistence
 {
     /// <summary>
-    /// Provides an interface to implement an Item repository
+    /// Provides an interface to implement an Item repository.
     /// </summary>
     public interface IItemRepository : IRepository
     {
         /// <summary>
-        /// Saves an item
+        /// Saves an item.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -43,14 +43,14 @@ namespace MediaBrowser.Controller.Persistence
         BaseItem RetrieveItem(Guid id);
 
         /// <summary>
-        /// Gets chapters for an item
+        /// Gets chapters for an item.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         List<ChapterInfo> GetChapters(BaseItem id);
 
         /// <summary>
-        /// Gets a single chapter for an item
+        /// Gets a single chapter for an item.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="index"></param>

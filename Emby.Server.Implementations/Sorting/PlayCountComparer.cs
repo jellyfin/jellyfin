@@ -7,7 +7,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class PlayCountComparer
+    /// Class PlayCountComparer.
     /// </summary>
     public class PlayCountComparer : IUserBaseItemComparer
     {

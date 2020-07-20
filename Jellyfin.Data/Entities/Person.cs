@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid"></param>
         /// <param name="name"></param>
@@ -36,7 +36,11 @@ namespace Jellyfin.Data.Entities
         {
             this.UrlId = urlid;
 
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             this.Name = name;
 
             this.Sources = new HashSet<MetadataProviderId>();
@@ -59,7 +63,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -72,7 +76,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -83,8 +87,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -97,7 +102,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for UrlId
+        /// Backing field for UrlId.
         /// </summary>
         protected Guid _UrlId;
         /// <summary>
@@ -110,7 +115,7 @@ namespace Jellyfin.Data.Entities
         partial void GetUrlId(ref Guid result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public Guid UrlId
@@ -119,8 +124,9 @@ namespace Jellyfin.Data.Entities
             {
                 Guid value = _UrlId;
                 GetUrlId(ref value);
-                return (_UrlId = value);
+                return _UrlId = value;
             }
+
             set
             {
                 Guid oldValue = _UrlId;
@@ -133,7 +139,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Name
+        /// Backing field for Name.
         /// </summary>
         protected string _Name;
         /// <summary>
@@ -157,8 +163,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Name;
                 GetName(ref value);
-                return (_Name = value);
+                return _Name = value;
             }
+
             set
             {
                 string oldValue = _Name;
@@ -171,7 +178,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for SourceId
+        /// Backing field for SourceId.
         /// </summary>
         protected string _SourceId;
         /// <summary>
@@ -194,8 +201,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _SourceId;
                 GetSourceId(ref value);
-                return (_SourceId = value);
+                return _SourceId = value;
             }
+
             set
             {
                 string oldValue = _SourceId;
@@ -208,7 +216,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateAdded
+        /// Backing field for DateAdded.
         /// </summary>
         protected DateTime _DateAdded;
         /// <summary>
@@ -221,7 +229,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateAdded(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateAdded
@@ -230,8 +238,9 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateAdded;
                 GetDateAdded(ref value);
-                return (_DateAdded = value);
+                return _DateAdded = value;
             }
+
             internal set
             {
                 DateTime oldValue = _DateAdded;
@@ -244,7 +253,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for DateModified
+        /// Backing field for DateModified.
         /// </summary>
         protected DateTime _DateModified;
         /// <summary>
@@ -257,7 +266,7 @@ namespace Jellyfin.Data.Entities
         partial void GetDateModified(ref DateTime result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public DateTime DateModified
@@ -266,8 +275,9 @@ namespace Jellyfin.Data.Entities
             {
                 DateTime value = _DateModified;
                 GetDateModified(ref value);
-                return (_DateModified = value);
+                return _DateModified = value;
             }
+
             internal set
             {
                 DateTime oldValue = _DateModified;
@@ -280,7 +290,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -296,7 +306,6 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
         [ForeignKey("MetadataProviderId_Sources_Id")]
         public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
-
     }
 }
 

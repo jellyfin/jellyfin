@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Entities;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class BaseIntroProvider
+    /// Class BaseIntroProvider.
     /// </summary>
     public interface IIntroProvider
     {

@@ -117,23 +117,20 @@ namespace Emby.Server.Implementations.TV
                 limit = limit.Value + 10;
             }
 
-            var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
-            {
-                IncludeItemTypes = new[] { typeof(Episode).Name },
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
-                SeriesPresentationUniqueKey = presentationUniqueKey,
-                Limit = limit,
-                DtoOptions = new DtoOptions
-                {
-                    Fields = new ItemFields[]
+            var items = _libraryManager
+                .GetItemList(
+                    new InternalItemsQuery(user)
                     {
-                        ItemFields.SeriesPresentationUniqueKey
-                    },
-                    EnableImages = false
-                },
-                GroupBySeriesPresentationUniqueKey = true
-
-            }, parentsFolders.ToList()).Cast<Episode>().Select(GetUniqueSeriesKey);
+                        IncludeItemTypes = new[] { typeof(Episode).Name },
+                        OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
+                        SeriesPresentationUniqueKey = presentationUniqueKey,
+                        Limit = limit,
+                        DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
+                        GroupBySeriesPresentationUniqueKey = true
+                    }, parentsFolders.ToList())
+                .Cast<Episode>()
+                .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
+                .Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);
@@ -149,7 +146,7 @@ namespace Emby.Server.Implementations.TV
             var allNextUp = seriesKeys
                 .Select(i => GetNextUp(i, currentUser, dtoOptions));
 
-            //allNextUp = allNextUp.OrderByDescending(i => i.Item1);
+            // allNextUp = allNextUp.OrderByDescending(i => i.Item1);
 
             // If viewing all next up for all series, remove first episodes
             // But if that returns empty, keep those first episodes (avoid completely empty view)
@@ -225,7 +222,6 @@ namespace Emby.Server.Implementations.TV
                     ParentIndexNumberNotEquals = 0,
                     MinSortName = lastWatchedEpisode?.SortName,
                     DtoOptions = dtoOptions
-
                 }).Cast<Episode>().FirstOrDefault();
             };
 
@@ -257,6 +253,7 @@ namespace Emby.Server.Implementations.TV
             {
                 items = items.Skip(query.StartIndex.Value);
             }
+
             if (query.Limit.HasValue)
             {
                 items = items.Take(query.Limit.Value);

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -141,8 +143,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 var credits = response.Credits;
                 if (credits != null)
                 {
-                    //Actors, Directors, Writers - all in People
-                    //actors come from cast
+                    // Actors, Directors, Writers - all in People
+                    // actors come from cast
                     if (credits.Cast != null)
                     {
                         foreach (var actor in credits.Cast.OrderBy(a => a.Order))
@@ -160,7 +162,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                         }
                     }
 
-                    //and the rest from crew
+                    // and the rest from crew
                     if (credits.Crew != null)
                     {
                         var keepTypes = new[]

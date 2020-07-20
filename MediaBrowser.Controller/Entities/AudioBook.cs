@@ -24,10 +24,12 @@ namespace MediaBrowser.Controller.Entities
         {
             return SeriesName;
         }
+
         public string FindSeriesName()
         {
             return SeriesName;
         }
+
         public string FindSeriesPresentationUniqueKey()
         {
             return SeriesPresentationUniqueKey;

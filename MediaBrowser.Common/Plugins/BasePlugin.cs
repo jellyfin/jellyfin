@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -50,6 +51,12 @@ namespace MediaBrowser.Common.Plugins
         public string DataFolderPath { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the plugin can be uninstalled.
+        /// </summary>
+        public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath)
+            .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.InvariantCulture);
+
+        /// <summary>
         /// Gets the plugin info.
         /// </summary>
         /// <returns>PluginInfo.</returns>
@@ -60,7 +67,8 @@ namespace MediaBrowser.Common.Plugins
                 Name = Name,
                 Version = Version.ToString(),
                 Description = Description,
-                Id = Id.ToString()
+                Id = Id.ToString(),
+                CanUninstall = CanUninstall
             };
 
             return info;

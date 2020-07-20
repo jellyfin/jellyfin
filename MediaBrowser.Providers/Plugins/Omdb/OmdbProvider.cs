@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -77,7 +79,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
                 && voteCount >= 0)
             {
-                //item.VoteCount = voteCount;
+                // item.VoteCount = voteCount;
             }
 
             if (!string.IsNullOrEmpty(result.imdbRating)
@@ -178,7 +180,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
                 && voteCount >= 0)
             {
-                //item.VoteCount = voteCount;
+                // item.VoteCount = voteCount;
             }
 
             if (!string.IsNullOrEmpty(result.imdbRating)

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.System
 {
     /// <summary>
-    /// Class SessionInfoWebSocketListener
+    /// Class SessionInfoWebSocketListener.
     /// </summary>
     public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>
     {
@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.System
         protected override string Name => "ActivityLogEntry";
 
         /// <summary>
-        /// The _kernel
+        /// The _kernel.
         /// </summary>
         private readonly IActivityManager _activityManager;
 

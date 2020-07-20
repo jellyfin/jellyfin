@@ -12,11 +12,13 @@ namespace Emby.Server.Implementations.Library
     public class ExclusiveLiveStream : ILiveStream
     {
         public int ConsumerCount { get; set; }
+
         public string OriginalStreamId { get; set; }
 
         public string TunerHostId => null;
 
         public bool EnableStreamSharing { get; set; }
+
         public MediaSourceInfo MediaSource { get; set; }
 
         public string UniqueId { get; private set; }

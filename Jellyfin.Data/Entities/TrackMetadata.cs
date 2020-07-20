@@ -24,22 +24,33 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_track0"></param>
         public TrackMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Track _track0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_track0 == null) throw new ArgumentNullException(nameof(_track0));
-            _track0.TrackMetadata.Add(this);
+            if (_track0 == null)
+            {
+                throw new ArgumentNullException(nameof(_track0));
+            }
 
+            _track0.TrackMetadata.Add(this);
 
             Init();
         }
@@ -47,8 +58,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_track0"></param>
         public static TrackMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Track _track0)
         {
@@ -62,7 +73,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

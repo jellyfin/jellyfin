@@ -7,14 +7,7 @@ namespace Rssdp
     /// </summary>
     public sealed class DeviceEventArgs : EventArgs
     {
-
-        #region Fields
-
         private readonly SsdpDevice _Device;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Constructs a new instance for the specified <see cref="SsdpDevice"/>.
@@ -23,14 +16,13 @@ namespace Rssdp
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="device"/> argument is null.</exception>
         public DeviceEventArgs(SsdpDevice device)
         {
-            if (device == null) throw new ArgumentNullException(nameof(device));
+            if (device == null)
+            {
+                throw new ArgumentNullException(nameof(device));
+            }
 
             _Device = device;
         }
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         /// Returns the <see cref="SsdpDevice"/> instance the event being raised for.
@@ -39,8 +31,5 @@ namespace Rssdp
         {
             get { return _Device; }
         }
-
-        #endregion
-
     }
 }

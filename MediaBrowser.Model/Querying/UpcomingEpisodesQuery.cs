@@ -1,6 +1,7 @@
 #nullable disable
 #pragma warning disable CS1591
 
+using System;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Querying
@@ -26,13 +27,13 @@ namespace MediaBrowser.Model.Querying
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
@@ -54,7 +55,7 @@ namespace MediaBrowser.Model.Querying
 
         public UpcomingEpisodesQuery()
         {
-            EnableImageTypes = new ImageType[] { };
+            EnableImageTypes = Array.Empty<ImageType>();
         }
     }
 }

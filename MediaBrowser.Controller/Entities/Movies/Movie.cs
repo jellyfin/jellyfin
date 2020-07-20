@@ -13,7 +13,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
-    /// Class Movie
+    /// Class Movie.
     /// </summary>
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {

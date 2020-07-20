@@ -25,7 +25,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="providername"></param>
         /// <param name="providersecrets"></param>
@@ -34,15 +34,26 @@ namespace Jellyfin.Data.Entities
         /// <param name="_group1"></param>
         public ProviderMapping(string providername, string providersecrets, string providerdata, User _user0, Group _group1)
         {
-            if (string.IsNullOrEmpty(providername)) throw new ArgumentNullException(nameof(providername));
+            if (string.IsNullOrEmpty(providername))
+            {
+                throw new ArgumentNullException(nameof(providername));
+            }
+
             this.ProviderName = providername;
 
-            if (string.IsNullOrEmpty(providersecrets)) throw new ArgumentNullException(nameof(providersecrets));
+            if (string.IsNullOrEmpty(providersecrets))
+            {
+                throw new ArgumentNullException(nameof(providersecrets));
+            }
+
             this.ProviderSecrets = providersecrets;
 
-            if (string.IsNullOrEmpty(providerdata)) throw new ArgumentNullException(nameof(providerdata));
-            this.ProviderData = providerdata;
+            if (string.IsNullOrEmpty(providerdata))
+            {
+                throw new ArgumentNullException(nameof(providerdata));
+            }
 
+            this.ProviderData = providerdata;
 
             Init();
         }
@@ -65,7 +76,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -97,7 +108,7 @@ namespace Jellyfin.Data.Entities
         public string ProviderData { get; set; }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -111,7 +122,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

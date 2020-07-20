@@ -127,13 +127,19 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string AlbumCoverPath { get; set; }
 
         public string InputAudioSync { get; set; }
+
         public string InputVideoSync { get; set; }
+
         public TransportStreamTimestamp InputTimestamp { get; set; }
 
         public MediaStream AudioStream { get; set; }
+
         public string[] SupportedAudioCodecs { get; set; }
+
         public string[] SupportedVideoCodecs { get; set; }
+
         public string InputContainer { get; set; }
+
         public IsoType? IsoType { get; set; }
 
         public BaseEncodingJobOptions BaseRequest { get; set; }
@@ -293,6 +299,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public bool IsVideoRequest { get; set; }
+
         public TranscodingJobType TranscodingType { get; set; }
 
         public EncodingJobInfo(TranscodingJobType jobType)
@@ -418,7 +425,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public double? TargetVideoLevel
         {
@@ -441,7 +448,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetVideoBitDepth
         {
@@ -476,7 +483,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public float? TargetFramerate
         {
@@ -508,7 +515,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public int? TargetPacketLength
         {
@@ -524,7 +531,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream
+        /// Predicts the audio sample rate that will be in the output stream.
         /// </summary>
         public string TargetVideoProfile
         {
@@ -672,6 +679,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         public IProgress<double> Progress { get; set; }
+
         public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             Progress.Report(percentComplete.Value);
@@ -679,20 +687,20 @@ namespace MediaBrowser.Controller.MediaEncoding
     }
 
     /// <summary>
-    /// Enum TranscodingJobType
+    /// Enum TranscodingJobType.
     /// </summary>
     public enum TranscodingJobType
     {
         /// <summary>
-        /// The progressive
+        /// The progressive.
         /// </summary>
         Progressive,
         /// <summary>
-        /// The HLS
+        /// The HLS.
         /// </summary>
         Hls,
         /// <summary>
-        /// The dash
+        /// The dash.
         /// </summary>
         Dash
     }
