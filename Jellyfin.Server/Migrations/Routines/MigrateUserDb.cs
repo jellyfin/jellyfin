@@ -55,6 +55,9 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "MigrateUserDatabase";
 
         /// <inheritdoc/>
+        public bool PerformOnNewInstall => false;
+
+        /// <inheritdoc/>
         public void Perform()
         {
             var dataPath = _paths.DataPath;
