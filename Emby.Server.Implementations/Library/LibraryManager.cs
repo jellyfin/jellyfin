@@ -60,6 +60,8 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
+        private const string ShortcutFileExtension = ".mblink";
+
         private readonly ILogger<LibraryManager> _logger;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
@@ -75,63 +77,24 @@ namespace Emby.Server.Implementations.Library
         private readonly ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
         private readonly IImageProcessor _imageProcessor;
 
+        /// <summary>
+        /// The _root folder sync lock.
+        /// </summary>
+        private readonly object _rootFolderSyncLock = new object();
+        private readonly object _userRootFolderSyncLock = new object();
+
+        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
+
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
 
-        private ILibraryMonitor LibraryMonitor => _libraryMonitorFactory.Value;
-
-        private IProviderManager ProviderManager => _providerManagerFactory.Value;
-
-        private IUserViewManager UserViewManager => _userviewManagerFactory.Value;
-
         /// <summary>
-        /// Gets or sets the postscan tasks.
+        /// The _root folder.
         /// </summary>
-        /// <value>The postscan tasks.</value>
-        private ILibraryPostScanTask[] PostscanTasks { get; set; }
+        private volatile AggregateFolder _rootFolder;
+        private volatile UserRootFolder _userRootFolder;
 
-        /// <summary>
-        /// Gets or sets the intro providers.
-        /// </summary>
-        /// <value>The intro providers.</value>
-        private IIntroProvider[] IntroProviders { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of entity resolution ignore rules.
-        /// </summary>
-        /// <value>The entity resolution ignore rules.</value>
-        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of currently registered entity resolvers.
-        /// </summary>
-        /// <value>The entity resolvers enumerable.</value>
-        private IItemResolver[] EntityResolvers { get; set; }
-
-        private IMultiItemResolver[] MultiItemResolvers { get; set; }
-
-        /// <summary>
-        /// Gets or sets the comparers.
-        /// </summary>
-        /// <value>The comparers.</value>
-        private IBaseItemComparer[] Comparers { get; set; }
-
-        /// <summary>
-        /// Occurs when [item added].
-        /// </summary>
-        public event EventHandler<ItemChangeEventArgs> ItemAdded;
-
-        /// <summary>
-        /// Occurs when [item updated].
-        /// </summary>
-        public event EventHandler<ItemChangeEventArgs> ItemUpdated;
-
-        /// <summary>
-        /// Occurs when [item removed].
-        /// </summary>
-        public event EventHandler<ItemChangeEventArgs> ItemRemoved;
-
-        public bool IsScanRunning { get; private set; }
+        private bool _wizardCompleted;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
@@ -186,37 +149,19 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Adds the parts.
+        /// Occurs when [item added].
         /// </summary>
-        /// <param name="rules">The rules.</param>
-        /// <param name="resolvers">The resolvers.</param>
-        /// <param name="introProviders">The intro providers.</param>
-        /// <param name="itemComparers">The item comparers.</param>
-        /// <param name="postscanTasks">The post scan tasks.</param>
-        public void AddParts(
-            IEnumerable<IResolverIgnoreRule> rules,
-            IEnumerable<IItemResolver> resolvers,
-            IEnumerable<IIntroProvider> introProviders,
-            IEnumerable<IBaseItemComparer> itemComparers,
-            IEnumerable<ILibraryPostScanTask> postscanTasks)
-        {
-            EntityResolutionIgnoreRules = rules.ToArray();
-            EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
-            MultiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>().ToArray();
-            IntroProviders = introProviders.ToArray();
-            Comparers = itemComparers.ToArray();
-            PostscanTasks = postscanTasks.ToArray();
-        }
+        public event EventHandler<ItemChangeEventArgs> ItemAdded;
 
         /// <summary>
-        /// The _root folder.
+        /// Occurs when [item updated].
         /// </summary>
-        private volatile AggregateFolder _rootFolder;
+        public event EventHandler<ItemChangeEventArgs> ItemUpdated;
 
         /// <summary>
-        /// The _root folder sync lock.
+        /// Occurs when [item removed].
         /// </summary>
-        private readonly object _rootFolderSyncLock = new object();
+        public event EventHandler<ItemChangeEventArgs> ItemRemoved;
 
         /// <summary>
         /// Gets the root folder.
@@ -241,7 +186,68 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private bool _wizardCompleted;
+        private ILibraryMonitor LibraryMonitor => _libraryMonitorFactory.Value;
+
+        private IProviderManager ProviderManager => _providerManagerFactory.Value;
+
+        private IUserViewManager UserViewManager => _userviewManagerFactory.Value;
+
+        /// <summary>
+        /// Gets or sets the postscan tasks.
+        /// </summary>
+        /// <value>The postscan tasks.</value>
+        private ILibraryPostScanTask[] PostscanTasks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the intro providers.
+        /// </summary>
+        /// <value>The intro providers.</value>
+        private IIntroProvider[] IntroProviders { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of entity resolution ignore rules.
+        /// </summary>
+        /// <value>The entity resolution ignore rules.</value>
+        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of currently registered entity resolvers.
+        /// </summary>
+        /// <value>The entity resolvers enumerable.</value>
+        private IItemResolver[] EntityResolvers { get; set; }
+
+        private IMultiItemResolver[] MultiItemResolvers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the comparers.
+        /// </summary>
+        /// <value>The comparers.</value>
+        private IBaseItemComparer[] Comparers { get; set; }
+
+        public bool IsScanRunning { get; private set; }
+
+        /// <summary>
+        /// Adds the parts.
+        /// </summary>
+        /// <param name="rules">The rules.</param>
+        /// <param name="resolvers">The resolvers.</param>
+        /// <param name="introProviders">The intro providers.</param>
+        /// <param name="itemComparers">The item comparers.</param>
+        /// <param name="postscanTasks">The post scan tasks.</param>
+        public void AddParts(
+            IEnumerable<IResolverIgnoreRule> rules,
+            IEnumerable<IItemResolver> resolvers,
+            IEnumerable<IIntroProvider> introProviders,
+            IEnumerable<IBaseItemComparer> itemComparers,
+            IEnumerable<ILibraryPostScanTask> postscanTasks)
+        {
+            EntityResolutionIgnoreRules = rules.ToArray();
+            EntityResolvers = resolvers.OrderBy(i => i.Priority).ToArray();
+            MultiItemResolvers = EntityResolvers.OfType<IMultiItemResolver>().ToArray();
+            IntroProviders = introProviders.ToArray();
+            Comparers = itemComparers.ToArray();
+            PostscanTasks = postscanTasks.ToArray();
+        }
 
         /// <summary>
         /// Records the configuration values.
@@ -512,7 +518,7 @@ namespace Emby.Server.Implementations.Library
                 // Try to normalize paths located underneath program-data in an attempt to make them more portable
                 key = key.Substring(_configurationManager.ApplicationPaths.ProgramDataPath.Length)
                     .TrimStart(new[] { '/', '\\' })
-                    .Replace("/", "\\");
+                    .Replace('/', '\\');
             }
 
             if (forceCaseInsensitive || !_configurationManager.Configuration.EnableCaseSensitiveItemIds)
@@ -775,14 +781,11 @@ namespace Emby.Server.Implementations.Library
             return rootFolder;
         }
 
-        private volatile UserRootFolder _userRootFolder;
-        private readonly object _syncLock = new object();
-
         public Folder GetUserRootFolder()
         {
             if (_userRootFolder == null)
             {
-                lock (_syncLock)
+                lock (_userRootFolderSyncLock)
                 {
                     if (_userRootFolder == null)
                     {
@@ -1332,7 +1335,7 @@ namespace Emby.Server.Implementations.Library
 
             return new QueryResult<BaseItem>
             {
-                Items = _itemRepository.GetItemList(query).ToArray()
+                Items = _itemRepository.GetItemList(query)
             };
         }
 
@@ -1463,11 +1466,9 @@ namespace Emby.Server.Implementations.Library
                 return _itemRepository.GetItems(query);
             }
 
-            var list = _itemRepository.GetItemList(query);
-
             return new QueryResult<BaseItem>
             {
-                Items = list
+                Items = _itemRepository.GetItemList(query)
             };
         }
 
@@ -1945,12 +1946,9 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Updates the item.
         /// </summary>
-        public void UpdateItems(IEnumerable<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public void UpdateItems(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            // Don't iterate multiple times
-            var itemsList = items.ToList();
-
-            foreach (var item in itemsList)
+            foreach (var item in items)
             {
                 if (item.IsFileProtocol)
                 {
@@ -1962,11 +1960,11 @@ namespace Emby.Server.Implementations.Library
                 UpdateImages(item, updateReason >= ItemUpdateType.ImageUpdate);
             }
 
-            _itemRepository.SaveItems(itemsList, cancellationToken);
+            _itemRepository.SaveItems(items, cancellationToken);
 
             if (ItemUpdated != null)
             {
-                foreach (var item in itemsList)
+                foreach (var item in items)
                 {
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
@@ -2188,8 +2186,6 @@ namespace Emby.Server.Implementations.Library
                 .Select(i => i.CollectionType)
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
         }
-
-        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 
         public UserView GetNamedView(
             User user,
@@ -2488,14 +2484,9 @@ namespace Emby.Server.Implementations.Library
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
-            var episodeInfo = episode.IsFileProtocol ?
-                resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) :
-                new Naming.TV.EpisodeInfo();
-
-            if (episodeInfo == null)
-            {
-                episodeInfo = new Naming.TV.EpisodeInfo();
-            }
+            var episodeInfo = episode.IsFileProtocol
+                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo()
+                : new Naming.TV.EpisodeInfo();
 
             try
             {
@@ -2503,11 +2494,13 @@ namespace Emby.Server.Implementations.Library
                 if (libraryOptions.EnableEmbeddedEpisodeInfos && string.Equals(episodeInfo.Container, "mp4", StringComparison.OrdinalIgnoreCase))
                 {
                     // Read from metadata
-                    var mediaInfo = _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-                    {
-                        MediaSource = episode.GetMediaSources(false)[0],
-                        MediaType = DlnaProfileType.Video
-                    }, CancellationToken.None).GetAwaiter().GetResult();
+                    var mediaInfo = _mediaEncoder.GetMediaInfo(
+                        new MediaInfoRequest
+                        {
+                            MediaSource = episode.GetMediaSources(false)[0],
+                            MediaType = DlnaProfileType.Video
+                        },
+                        CancellationToken.None).GetAwaiter().GetResult();
                     if (mediaInfo.ParentIndexNumber > 0)
                     {
                         episodeInfo.SeasonNumber = mediaInfo.ParentIndexNumber;
@@ -2665,7 +2658,7 @@ namespace Emby.Server.Implementations.Library
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 
             if (currentVideo != null)
             {
@@ -2682,9 +2675,7 @@ namespace Emby.Server.Implementations.Library
                 .Select(video =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = GetItemById(video.Id) as Trailer;
-
-                    if (dbItem != null)
+                    if (GetItemById(video.Id) is Trailer dbItem)
                     {
                         video = dbItem;
                     }
@@ -3011,8 +3002,6 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        private const string ShortcutFileExtension = ".mblink";
-
         public void AddMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
         {
             AddMediaPathInternal(virtualFolderName, pathInfo, true);
@@ -3206,7 +3195,8 @@ namespace Emby.Server.Implementations.Library
 
             if (!Directory.Exists(virtualFolderPath))
             {
-                throw new FileNotFoundException(string.Format("The media collection {0} does not exist", virtualFolderName));
+                throw new FileNotFoundException(
+                    string.Format(CultureInfo.InvariantCulture, "The media collection {0} does not exist", virtualFolderName));
             }
 
             var shortcut = _fileSystem.GetFilePaths(virtualFolderPath, true)
