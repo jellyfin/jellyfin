@@ -35,6 +35,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startIndex">Optional. The record index to start at. All items with a lower index will be dropped from the results.</param>
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="minDate">Optional. The minimum date. Format = ISO.</param>
+        /// <param name="hasUserId">Optional. Filter on entries that have a userId, or not.</param>
         /// <response code="200">Activity log returned.</response>
         /// <returns>A <see cref="QueryResult{ActivityLogEntry}"/> containing the log entries.</returns>
         [HttpGet("Entries")]
@@ -42,10 +43,14 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<ActivityLogEntry>> GetLogEntries(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] DateTime? minDate)
+            [FromQuery] DateTime? minDate,
+            [FromQuery] bool? hasUserId)
         {
             var filterFunc = new Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>>(
-                entries => entries.Where(entry => entry.DateCreated >= minDate));
+                entries => entries.Where(entry => entry.DateCreated >= minDate
+                                                  && (!hasUserId.HasValue || (hasUserId.Value
+                                                      ? entry.UserId != Guid.Empty
+                                                      : entry.UserId == Guid.Empty))));
 
             return _activityManager.GetPagedResult(filterFunc, startIndex, limit);
         }
