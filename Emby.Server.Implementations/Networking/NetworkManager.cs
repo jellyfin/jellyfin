@@ -152,6 +152,11 @@ namespace Emby.Server.Implementations.Networking
                 return true;
             }
 
+            if (!IPAddress.TryParse(endpoint, out _))
+            {
+                return false;
+            }
+
             byte[] octet = IPAddress.Parse(endpoint).GetAddressBytes();
 
             if ((octet[0] == 10) ||
@@ -267,6 +272,12 @@ namespace Emby.Server.Implementations.Networking
             string addressString = address.ToString();
             string excludeAddress = "[" + addressString + "]";
             var subnets = LocalSubnetsFn();
+
+            // Include any address if LAN subnets aren't specified
+            if (subnets.Length == 0)
+            {
+                return true;
+            }
 
             // Exclude any addresses if they appear in the LAN list in [ ]
             if (Array.IndexOf(subnets, excludeAddress) != -1)
