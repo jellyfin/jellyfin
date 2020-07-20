@@ -33,6 +33,9 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "AddDefaultPluginRepository";
 
         /// <inheritdoc/>
+        public bool PerformOnNewInstall => true;
+
+        /// <inheritdoc/>
         public void Perform()
         {
             _serverConfigurationManager.Configuration.PluginRepositories.Add(_defaultRepositoryInfo);
