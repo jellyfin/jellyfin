@@ -152,12 +152,12 @@ namespace Emby.Server.Implementations.Networking
                 return true;
             }
 
-            if (!IPAddress.TryParse(endpoint, out _))
+            if (!IPAddress.TryParse(endpoint, out var ipAddress))
             {
                 return false;
             }
 
-            byte[] octet = IPAddress.Parse(endpoint).GetAddressBytes();
+            byte[] octet = ipAddress.GetAddressBytes();
 
             if ((octet[0] == 10) ||
                 (octet[0] == 172 && (octet[1] >= 16 && octet[1] <= 31)) || // RFC1918
