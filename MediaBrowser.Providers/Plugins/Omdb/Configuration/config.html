@@ -27,7 +27,7 @@
             $('.configPage').on('pageshow', function () {
                 Dashboard.showLoadingMsg();
                 ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
-                    $('#castAndCrew').checked = config.CastAndCrew;
+                    document.querySelector('#castAndCrew').checked = config.CastAndCrew;
                     Dashboard.hideLoadingMsg();
                 });
             });
@@ -37,7 +37,7 @@
 
                 var form = this;
                 ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
-                    config.CastAndCrew = $('#castAndCrew', form).checked;
+                    config.CastAndCrew = document.querySelector('#castAndCrew', form).checked;
                     ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                 });
 
