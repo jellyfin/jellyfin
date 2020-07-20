@@ -30,6 +30,9 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "RemoveDuplicateExtras";
 
         /// <inheritdoc/>
+        public bool PerformOnNewInstall => false;
+
+        /// <inheritdoc/>
         public void Perform()
         {
             var dataPath = _paths.DataPath;

@@ -18,6 +18,11 @@ namespace Jellyfin.Server.Migrations
         public string Name { get; }
 
         /// <summary>
+        /// Gets a value indicating whether to perform migration on a new install.
+        /// </summary>
+        public bool PerformOnNewInstall { get; }
+
+        /// <summary>
         /// Execute the migration routine.
         /// </summary>
         public void Perform();
