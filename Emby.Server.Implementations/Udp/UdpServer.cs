@@ -176,7 +176,7 @@ namespace Emby.Server.Implementations.Udp
                 }
                 catch (SocketException ex)
                 {
-                    _logger.LogError(ex, "Failed to receive data drom socket");
+                    _logger.LogError(ex, "Failed to receive data from socket");
                 }
                 catch (OperationCanceledException)
                 {
