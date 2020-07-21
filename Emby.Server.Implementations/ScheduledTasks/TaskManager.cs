@@ -266,8 +266,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             _logger.LogInformation("ExecuteQueuedTasks");
 
-            WakeOnLAN.Instance?.WakeUpResources();
-
             // Execute queued tasks
             lock (_taskQueue)
             {

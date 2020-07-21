@@ -258,7 +258,7 @@ namespace Emby.Server.Implementations
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
             // LocalSubnetFn must be assigned after ConfigurationManager has been created, so the config is available at initiation.
-            _= new NetworkManager(
+            _networkManager = new NetworkManager(
                 LoggerFactory.CreateLogger<NetworkManager>(),
                 () =>
                 {
@@ -273,25 +273,6 @@ namespace Emby.Server.Implementations
                     return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
                 });
             ConfigurationManager.ConfigurationUpdated += NetworkManager.Instance.ConfigurationUpdated;
-            _networkManager = (INetworkManager)NetworkManager.Instance;
-
-            _ = new WakeOnLAN(
-                LoggerFactory.CreateLogger<WakeOnLAN>(),
-                () =>
-                {
-                    return ServerConfigurationManager.Configuration.MACWakeupList;
-                },
-                () =>
-                {
-                    return ServerConfigurationManager.Configuration.MACWakeupTimeout;
-                },
-                () =>
-                {
-                    return ServerConfigurationManager.Configuration.MACUDPPort;
-                },
-                NetworkManager.Instance
-            );
-            ConfigurationManager.ConfigurationUpdated += WakeOnLAN.Instance.ConfigurationUpdated;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 

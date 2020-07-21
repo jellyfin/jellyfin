@@ -235,12 +235,6 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] LocalNetworkAddresses { get; set; }
 
-        public string[] MACWakeupList { get; set; }
-
-        public int MACWakeupTimeout { get; set; }
-
-        public int MACUDPPort { get; set; }
-
         public string[] CodecsUsed { get; set; }
 
         public List<RepositoryInfo> PluginRepositories { get; set; }
@@ -299,8 +293,6 @@ namespace MediaBrowser.Model.Configuration
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
-            MACWakeupTimeout = 30; // Minutes.
-            MACUDPPort = 9; 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;
 

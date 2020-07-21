@@ -444,8 +444,6 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                WakeOnLAN.Instance.WakeUpResources();
-
                 if (!ValidateSsl(httpReq.RemoteIp, urlString))
                 {
                     RedirectToSecureUrl(httpReq, httpRes, urlString);
