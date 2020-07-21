@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
+using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Networking
@@ -20,14 +21,9 @@ namespace Emby.Server.Implementations.Networking
     /// </summary>
     public class NetworkManager : INetworkManager
     {
-        /// <summary>
-        /// Gets the singleton of this object.
-        /// </summary>
-#pragma warning disable CA2211 // Non-constant fields should not be visible
-#pragma warning disable SA1401 // Fields should be private
-        public static NetworkManager Instance = null!;
-#pragma warning restore SA1401 // Fields should be private
-#pragma warning restore CA2211 // Non-constant fields should not be visible
+#pragma warning disable CS8618 // Non-nullable field is uninitialized : Singleton implementation. Will get instantiated at creation time.
+        private static NetworkManager _instance;
+#pragma warning restore CS8618 // Non-nullable field is uninitialized.
 
         /// <summary>
         /// Defines the _interfaceNames.
@@ -49,17 +45,14 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         private readonly List<PhysicalAddress> _macAddresses;
 
-        private ILogger? _logger;
+        private readonly ILogger _logger;
+
+        private readonly IServerConfigurationManager _configurationManager;
 
         /// <summary>
         /// Used to stop "event-racing conditions".
         /// </summary>
         private bool _eventfire;
-
-        /// <summary>
-        /// True if IP6 addresses be ignored.
-        /// </summary>
-        private bool _ignoreIP6 = true;
 
         /// <summary>
         /// Unfiltered user defined LAN addresses,
@@ -99,54 +92,42 @@ namespace Emby.Server.Implementations.Networking
         private bool _usingInterfaces;
 
         /// <summary>
-        /// Function that return the LAN addresses from the config.
-        /// </summary>
-        private Func<string[]> _localSubnetsFn;
-
-        /// <summary>
-        /// Function that return the IP  addresses from the config.
-        /// </summary>
-        private Func<string[]> _bindAddressesFn;
-
-        /// <summary>
-        /// Gets or sets the EnableIPV6 setting from config.
-        /// </summary>
-        private Func<bool> _isIP6EnabledFn;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="NetworkManager"/> class.
         /// </summary>
+        /// <param name="configurationManager">IServerConfigurationManager object.</param>
         /// <param name="logger">Logger to use for messages.</param>
-        /// <param name="ip6Enabled">Function that returns the EnableIPV6 config option.</param>
-        /// <param name="subnets">Function that returns the LocalNetworkSubnets config option.</param>
-        /// <param name="bindInterfaces">Function that returns the LocalNetworkAddresses config option.</param>
-        public NetworkManager(ILogger<NetworkManager>? logger, Func<bool> ip6Enabled, Func<string[]> subnets, Func<string[]> bindInterfaces)
+
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. : values are set in InitialiseLAN function.
+        public NetworkManager(IServerConfigurationManager configurationManager, ILogger<NetworkManager>? logger)
+#pragma warning restore CS8618 // Non-nullable field is uninitialized.
         {
             _logger = logger;
+            _configurationManager = configurationManager;
 
             _interfaceAddresses = new NetCollection();
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new SortedList<string, int>();
 
-            // Assign empty objects to the rest of the properties
-            // so we don't have to define them as nullable.
-
-            _isIP6EnabledFn = ip6Enabled ?? throw new ArgumentNullException(nameof(ip6Enabled));
-            _ignoreIP6 = !_isIP6EnabledFn();
+            IsIP6Enabled = _configurationManager.Configuration.EnableIPV6;
 
             InitialiseInterfaces();
-
-            _localSubnetsFn = subnets;
             InitialiseLAN();
-
-            _bindAddressesFn = bindInterfaces ?? throw new ArgumentNullException(nameof(bindInterfaces));
             InitialiseBind();
 
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
-            Instance = this;
+            _instance = this;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NetworkManager"/> class FOR TESTING PURPOSE ONLY.
+        /// </summary>
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Used in Testing Only.
+        public NetworkManager()
+        {
+        }
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 
         /// <summary>
         /// Event triggered on network changes.
@@ -154,15 +135,19 @@ namespace Emby.Server.Implementations.Networking
         public event EventHandler? NetworkChanged;
 
         /// <summary>
+        /// Gets the singleton of this object.
+        /// </summary>
+        public static NetworkManager Instance { get => _instance; }
+
+        /// <summary>
+        /// Gets returns the remote address filter.
+        /// </summary>
+        public NetCollection RemoteAddressFilter { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether IP6 is enabled.
         /// </summary>
-        public bool IsIP6Enabled
-        {
-            get
-            {
-                return !_ignoreIP6;
-            }
-        }
+        public bool IsIP6Enabled { get; private set; } = false;
 
         /// <summary>
         /// Returns true if the IP address in address2 is within the network address1/subnetMask.
@@ -184,14 +169,25 @@ namespace Emby.Server.Implementations.Networking
         public void ConfigurationUpdated(object sender, EventArgs e)
         {
             // IP6 settings changed.
-            if (_ignoreIP6 == _isIP6EnabledFn())
+            if (IsIP6Enabled != _configurationManager.Configuration.EnableIPV6)
             {
                 InitialiseInterfaces();
-                _ignoreIP6 = !_ignoreIP6;
+                IsIP6Enabled = !IsIP6Enabled;
             }
 
             InitialiseLAN();
             InitialiseBind();
+        }
+
+        /// <summary>
+        /// Sets the internal status of the IPv6 flag.
+        /// Used for TESTING ONLY.
+        /// </summary>
+        /// <param name="value">New value.</param>
+        public void SetIP6(bool value)
+        {
+            // Enabled only for testing.
+            IsIP6Enabled = value;
         }
 
         /// <summary>
@@ -201,9 +197,9 @@ namespace Emby.Server.Implementations.Networking
         public int GetRandomUnusedUdpPort()
         {
             var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            #pragma warning disable IDE0063 // Use simple 'using' statement - want the item to be disposed of immediately.
+#pragma warning disable IDE0063 // Use simple 'using' statement - want the item to be disposed of immediately.
             using (var udpClient = new UdpClient(localEndPoint))
-            #pragma warning restore IDE0063
+#pragma warning restore IDE0063
             {
                 return ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
             }
@@ -250,7 +246,7 @@ namespace Emby.Server.Implementations.Networking
                     if (_usingInterfaces)
                     {
                         // Ensure we're an internal address.
-                        return _filteredLANAddresses.Contains(ep) && ep.IsPrivateAddressRange();
+                        return _filteredLANAddresses.Contains(ep) && IsPrivateAddressRange(ep);
                     }
 
                     return _filteredLANAddresses.Contains(ep);
@@ -280,7 +276,7 @@ namespace Emby.Server.Implementations.Networking
                 if (_usingInterfaces)
                 {
                     // Ensure we're an internal address.
-                    return _filteredLANAddresses.Contains(endpoint) && endpoint.IsPrivateAddressRange();
+                    return _filteredLANAddresses.Contains(endpoint) && IsPrivateAddressRange(endpoint);
                 }
 
                 return _filteredLANAddresses.Contains(endpoint);
@@ -359,6 +355,25 @@ namespace Emby.Server.Implementations.Networking
 
                 // Otherwise, return only valid interface addresses.
                 return new NetCollection(_bindAddresses.Union(_interfaceAddresses));
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the address is a private address.
+        /// The config option TrustIP6Interfaces overrides this functions behaviour.
+        /// </summary>
+        /// <param name="addr">Address to check.</param>
+        /// <returns>True or False.</returns>
+        public bool IsPrivateAddressRange(IPObject addr)
+        {
+            // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
+            if (_configurationManager.Configuration.TrustIP6Interfaces && addr.IsIP6())
+            {
+                return true;
+            }
+            else
+            {
+                return addr.IsPrivateAddressRange();
             }
         }
 
@@ -568,11 +583,12 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         private void InitialiseBind()
         {
-            string[] ba = _bindAddressesFn();
+            string[] ba = _configurationManager.Configuration.LocalNetworkAddresses;
             lock (_intLock)
             {
                 _bindAddresses = CreateIPCollection(ba);
                 _bindExclusions = CreateIPCollection(ba, true);
+                RemoteAddressFilter = CreateIPCollection(_configurationManager.Configuration.RemoteIPFilter);
             }
         }
 
@@ -586,7 +602,7 @@ namespace Emby.Server.Implementations.Networking
                 _logger?.LogDebug("Refreshing LAN information.");
 
                 // Get config options.
-                string[] subnets = _localSubnetsFn();
+                string[] subnets = _configurationManager.Configuration.LocalNetworkSubnets;
 
                 // Create lists from user settings.
                 _lanAddresses = NetCollection.AsNetworks(CreateIPCollection(subnets));
@@ -600,19 +616,19 @@ namespace Emby.Server.Implementations.Networking
 
                 if (_usingInterfaces)
                 {
-                    _logger?.LogDebug("Using interface addresses as user provided no LAN details.");
-                    _lanAddresses = new NetCollection(_interfaceAddresses);
+                    _logger?.LogDebug("Using private interface addresses as user provided no LAN details.");
+                    _lanAddresses = new NetCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i)));
                 }
 
                 // Cache results.
                 if (_excludedAddresses.Count > 0)
                 {
-                    _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Exclude(_excludedAddresses).Where(i => i.IsPrivateAddressRange()));
+                    _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Exclude(_excludedAddresses).Where(i => IsPrivateAddressRange(i)));
                     _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses.Exclude(_excludedAddresses));
                 }
                 else
                 {
-                    _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Where(i => i.IsPrivateAddressRange()));
+                    _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i)));
                     _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses);
                 }
 
@@ -636,7 +652,7 @@ namespace Emby.Server.Implementations.Networking
                 // retrieve a list of network interfaces that are up or unknown? (why unknown???)
                 try
                 {
-                    bool ip6 = _isIP6EnabledFn();
+                    bool ip6 = _configurationManager.Configuration.EnableIPV6;
 
                     IEnumerable<NetworkInterface> nics = NetworkInterface.GetAllNetworkInterfaces()
                         .Where(x => x.OperationalStatus == OperationalStatus.Up

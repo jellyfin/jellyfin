@@ -128,8 +128,6 @@ namespace Emby.Server.Implementations
         private IHttpClient _httpClient;
         private string _cachedLocalApiUrl = string.Empty;
 
-        public INetworkManager NetManager => _networkManager;
-
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
         /// </summary>
@@ -189,7 +187,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the NetworkManager object.
         /// </summary>
-        public INetworkManager _networkManager;
+        private INetworkManager _networkManager;
 
         /// <summary>
         /// Gets the logger factory.
@@ -257,22 +255,8 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
-            // LocalSubnetFn must be assigned after ConfigurationManager has been created, so the config is available at initiation.
-            _networkManager = new NetworkManager(
-                LoggerFactory.CreateLogger<NetworkManager>(),
-                () =>
-                {
-                    return ServerConfigurationManager.Configuration.EnableIPV6;
-                },
-                () =>
-                {
-                    return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
-                },
-                () =>
-                {
-                    return ServerConfigurationManager.Configuration.LocalNetworkAddresses;
-                });
-            ConfigurationManager.ConfigurationUpdated += NetworkManager.Instance.ConfigurationUpdated;
+            _networkManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
+            ConfigurationManager.ConfigurationUpdated += _networkManager.ConfigurationUpdated;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 

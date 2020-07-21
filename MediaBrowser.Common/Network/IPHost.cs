@@ -47,12 +47,25 @@ namespace MediaBrowser.Common.Networking
                     return _addresses[0];
                 }
 
-                return null!;
+                // Should always use HasAddress beforehand.
+                // Return ANY if no address exists.
+                return IPAddress.Any;
             }
 
             set
             {
                 // do nothing - cannot set the address of this object this way.
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the address has a value.
+        /// </summary>
+        public bool HasAddress
+        {
+            get
+            {
+                return Addresses.Length > 0;
             }
         }
 
@@ -169,8 +182,7 @@ namespace MediaBrowser.Common.Networking
         /// <returns>Object representing the string, if it has successfully been parsed.</returns>
         public static IPHost Parse(string host)
         {
-            if (!string.IsNullOrEmpty(host)
-                && IPHost.TryParse(host, out IPHost? res))
+            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost? res))
             {
                 // If TryParse is true, res is not null.
 #pragma warning disable CS8603 // Possible null reference return.

@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly Dictionary<Type, Type> _serviceOperationsMap = new Dictionary<Type, Type>();
         private readonly IHostEnvironment _hostEnvironment;
 
-        private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();        
+        private IWebSocketListener[] _webSocketListeners = Array.Empty<IWebSocketListener>();
         private bool _disposed = false;
 
         public HttpListenerHost(
@@ -126,6 +126,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Applies the request filters. Returns whether or not the request has been handled
         /// and no more processing should be done.
         /// </summary>
+        /// <returns></returns>
         public void ApplyRequestFilters(IRequest req, HttpResponse res, object requestDto)
         {
             // Exec all RequestFilter attributes with Priority < 0
@@ -296,28 +297,35 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns>Returns true of host is part of the defined LAN network, or true if it's external.</returns>
         private bool ValidateHost(string host)
         {
-            IPHost h = IPHost.Parse(host);
+            NetCollection nc = _networkManager.GetFilteredLANAddresses();
 
-            if (h.Addresses == null)
+            // If no LAN networks defined, return true.
+            if (nc.Count == 0)
             {
-                _logger.LogWarning("Recieved request from {0}. Unable to resolve name.", host);
-                // unresolvable item - return false;
-                return false;
+                return true;
             }
 
-            if (h.IsPrivateAddressRange())
+            if (IPHost.TryParse(host, out IPHost h))
             {
-                // LAN if undefined will be the network interfaces.
-                NetCollection nc = _networkManager.GetFilteredLANAddresses();
-
-                if (_config.Configuration.EnableIPV6)
+                if (!h.HasAddress)
                 {
-                    nc.Add(IPHost.Parse("::1"));
+                    _logger.LogWarning("Recieved request from {0}. Unable to resolve name.", host);
+                    // Unresolvable item - return false;
+                    return false;
                 }
 
-                nc.Add(IPHost.Parse("127.0.0.1"));
+                if (_networkManager.IsPrivateAddressRange(h))
+                {
+                    // LAN if undefined will be the network interfaces.
+                    if (_config.Configuration.EnableIPV6)
+                    {
+                        nc.Add(IPHost.Parse("::1"));
+                    }
 
-                return nc.Contains(h);
+                    nc.Add(IPHost.Parse("127.0.0.1"));
+
+                    return nc.Contains(h);
+                }
             }
 
             return true;
@@ -332,37 +340,40 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (IPNetAddress.TryParse(remoteIp, out IPNetAddress remoteIPObj))
             {
-                if (!_networkManager.IsInLocalNetwork(remoteIPObj))
+                if (_config.Configuration.EnableRemoteAccess)
                 {
-                    if (_config.Configuration.EnableRemoteAccess)
+                    // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                    // If left blank, all remote addresses will be allowed.
+                    NetCollection remoteAddressFilter = _networkManager.RemoteAddressFilter;
+
+                    if (remoteAddressFilter.Count > 0 && !_networkManager.IsInLocalNetwork(remoteIPObj))
                     {
-                        // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
-                        // If left blank, all remote addresses will be allowed.
-                        NetCollection remoteAddressFilter = _networkManager.CreateIPCollection(_config.Configuration.RemoteIPFilter);
-
-                        if (remoteAddressFilter.Count == 0)
-                        {
-                            return true;
-                        }
-
-                        // remoteAddressFilter is a whitelist or blacklist.
-                        NetCollection lanAddresses = _networkManager.GetFilteredLANAddresses(remoteAddressFilter);
-
-                        if (_config.Configuration.IsRemoteIPFilterBlacklist)
-                        {
-                            return !lanAddresses.Contains(remoteIPObj);
-                        }
-                        else
-                        {
-                            return lanAddresses.Contains(remoteIPObj);
-                        }
+                         // remoteAddressFilter is a whitelist or blacklist.
+                         if (_config.Configuration.IsRemoteIPFilterBlacklist)
+                         {
+                            return !remoteAddressFilter.Contains(remoteIPObj);
+                         }
+                         else
+                         {
+                            return remoteAddressFilter.Contains(remoteIPObj);
+                         }
                     }
                 }
-
-                return true;
+                else
+                {
+                    if (!_networkManager.IsInLocalNetwork(remoteIPObj))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogError("ValidateRequest: Unable to parse remoteIp: {0}", remoteIp);
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>

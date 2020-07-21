@@ -40,6 +40,11 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIPV6 { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as internal.
+        /// </summary>
+        public bool TrustIP6Interfaces { get; set; }
+
+        /// <summary>
         /// Gets or sets the public HTTPS port.
         /// </summary>
         /// <value>The public HTTPS port.</value>
@@ -278,6 +283,7 @@ namespace MediaBrowser.Model.Configuration
             SkipDeserializationForBasicTypes = true;
 
             EnableIPV6 = false;
+            TrustIP6Interfaces = false;
 
             PluginRepositories = new List<RepositoryInfo>();
 

@@ -26,6 +26,11 @@ namespace MediaBrowser.Common.Net
         bool IsIP6Enabled { get; }
 
         /// <summary>
+        /// Gets returns the remote address filter.
+        /// </summary>
+        NetCollection RemoteAddressFilter { get; }
+
+        /// <summary>
         /// Returns all the valid interfaces in config LocalNetworkAddresses.
         /// </summary>
         /// <returns>A NetCollection object containing all the interfaces to bind.
@@ -56,6 +61,14 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>List of MAC addresses.</returns>
         List<PhysicalAddress> GetMacAddresses();
+
+        /// <summary>
+        /// Returns true if the address is a private address.
+        /// The config option TrustIP6Interfaces overrides this functions behaviour.
+        /// </summary>
+        /// <param name="addr">Address to check.</param>
+        /// <returns>True or False.</returns>
+        public bool IsPrivateAddressRange(IPObject addr);
 
         /// <summary>
         /// Calculates if the endpoint given falls within the LAN networks specified in config.

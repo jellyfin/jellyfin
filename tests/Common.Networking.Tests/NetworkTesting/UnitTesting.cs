@@ -1,3 +1,5 @@
+#define TESTING
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -39,21 +41,6 @@ namespace NetworkTesting
             Assert.False(NetCollection.TryParse(address, out IPObject? result));
         }
 
-        public static bool DisableIP6()
-        {
-            return false;
-        }
-
-        public static bool EnableIP6()
-        {
-            return true;
-        }
-
-        public static string[] NoParams()
-        {
-            return Array.Empty<string>();
-        }
-
         [Theory]
         // Src, IncIP6, incIP4, exIP6, ecIP4, net
         [InlineData("127.0.0.1#",
@@ -88,7 +75,8 @@ namespace NetworkTesting
             "[192.158.0.0/16,fd23:184f:2029::]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
-            var nm = new NetworkManager(null, EnableIP6, NoParams, NoParams);
+            var nm = new NetworkManager();
+            nm.SetIP6(true);
             // Test included, IP6.            
             NetCollection nc = nm.CreateIPCollection(settings.Split(","), false);           
             Assert.True(string.Equals(nc.ToString(), result1, System.StringComparison.OrdinalIgnoreCase));
@@ -97,8 +85,7 @@ namespace NetworkTesting
             nc = nm.CreateIPCollection(settings.Split(","), true);
             Assert.True(string.Equals(nc?.ToString(), result3, System.StringComparison.OrdinalIgnoreCase));
 
-            nm = new NetworkManager(null, DisableIP6, NoParams, NoParams);
-
+            nm.SetIP6(false);
             // Test included, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.True(string.Equals(nc.ToString(), result2, System.StringComparison.OrdinalIgnoreCase));
@@ -107,7 +94,7 @@ namespace NetworkTesting
             nc = nm.CreateIPCollection(settings.Split(","), true);
             Assert.True(string.Equals(nc.ToString(), result4, System.StringComparison.OrdinalIgnoreCase));
 
-            nm = new NetworkManager(null, EnableIP6, NoParams, NoParams);
+            nm.SetIP6(true);
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             nc = NetCollection.AsNetworks(nc);            
@@ -147,7 +134,8 @@ namespace NetworkTesting
 
         public void TestMatches(string source, string dest, string result)
         {
-            var nm = new NetworkManager(null, EnableIP6, NoParams, NoParams);
+            var nm = new NetworkManager();
+            nm.SetIP6(true);
 
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
@@ -180,8 +168,8 @@ namespace NetworkTesting
         public void TestCallback(string source)
         {
 
-            var nm = new NetworkManager(null, EnableIP6, NoParams, NoParams);
-
+            var nm = new NetworkManager();
+            nm.SetIP6(true);
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(";"));
             ncSource[0].Tag = 1;
