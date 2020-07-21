@@ -157,7 +157,7 @@ namespace Jellyfin.Api.Controllers
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlaybackRequest()
             {
-                Type = bufferingDone ? PlaybackRequestType.BufferingDone : PlaybackRequestType.Buffering,
+                Type = bufferingDone ? PlaybackRequestType.Ready : PlaybackRequestType.Buffer,
                 When = when,
                 PositionTicks = positionTicks
             };
@@ -176,7 +176,7 @@ namespace Jellyfin.Api.Controllers
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlaybackRequest()
             {
-                Type = PlaybackRequestType.UpdatePing,
+                Type = PlaybackRequestType.Ping,
                 Ping = Convert.ToInt64(ping)
             };
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
