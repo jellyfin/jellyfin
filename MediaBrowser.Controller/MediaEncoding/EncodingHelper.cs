@@ -460,7 +460,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!IsCopyCodec(outputVideoCodec))
             {
                 if (state.IsVideoRequest
-                    && IsVaapiSupported(state)
+                    && _mediaEncoder.SupportsHwaccel("vaapi")
                     && string.Equals(encodingOptions.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
                 {
                     if (isVaapiDecoder)
@@ -1701,7 +1701,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first
-            else if (IsVaapiSupported(state) && videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
+            else if (_mediaEncoder.SupportsHwaccel("vaapi") && videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1
                 && string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 /*
