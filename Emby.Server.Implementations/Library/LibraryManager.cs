@@ -1882,59 +1882,63 @@ namespace Emby.Server.Implementations.Library
                 return;
             }
 
-            foreach (var img in outdated)
+            // Skip image processing for live tv
+            if (item.SourceType == SourceType.Library)
             {
-                var image = img;
-                if (!img.IsLocalFile)
+                foreach (var img in outdated)
                 {
+                    var image = img;
+                    if (!img.IsLocalFile)
+                    {
+                        try
+                        {
+                            var index = item.GetImageIndex(img);
+                            image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
+                        }
+                        catch (ArgumentException)
+                        {
+                            _logger.LogWarning("Cannot get image index for {0}", img.Path);
+                            continue;
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            _logger.LogWarning("Cannot fetch image from {0}", img.Path);
+                            continue;
+                        }
+                    }
+
                     try
                     {
-                        var index = item.GetImageIndex(img);
-                        image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
+                        ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                        image.Width = size.Width;
+                        image.Height = size.Height;
                     }
-                    catch (ArgumentException)
+                    catch (Exception ex)
                     {
-                        _logger.LogWarning("Cannot get image index for {0}", img.Path);
+                        _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
+                        image.Width = 0;
+                        image.Height = 0;
                         continue;
                     }
-                    catch (InvalidOperationException)
+
+                    try
                     {
-                        _logger.LogWarning("Cannot fetch image from {0}", img.Path);
-                        continue;
+                        image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);
                     }
-                }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Cannot compute blurhash for {0}", image.Path);
+                        image.BlurHash = string.Empty;
+                    }
 
-                try
-                {
-                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
-                    image.Width = size.Width;
-                    image.Height = size.Height;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
-                    image.Width = 0;
-                    image.Height = 0;
-                    continue;
-                }
-
-                try
-                {
-                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Cannot compute blurhash for {0}", image.Path);
-                    image.BlurHash = string.Empty;
-                }
-
-                try
-                {
-                    image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Cannot update DateModified for {0}", image.Path);
+                    try
+                    {
+                        image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Cannot update DateModified for {0}", image.Path);
+                    }
                 }
             }
 
