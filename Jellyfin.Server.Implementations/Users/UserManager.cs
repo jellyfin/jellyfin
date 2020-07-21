@@ -577,18 +577,11 @@ namespace Jellyfin.Server.Implementations.Users
             // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
             using var dbContext = _dbProvider.CreateContext();
 
-            if (dbContext.Users.Any())
-            {
-                return;
-            }
-
             var defaultName = Environment.UserName;
             if (string.IsNullOrWhiteSpace(defaultName))
             {
                 defaultName = "MyJellyfinUser";
             }
-
-            _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
 
             if (!IsValidUsername(defaultName))
             {
