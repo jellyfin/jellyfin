@@ -9,7 +9,7 @@
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
 
-  <ItemGroup>   
+  <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
@@ -20,7 +20,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'" >true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- Code Analyzers-->
