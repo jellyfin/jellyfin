@@ -1,19 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
+
 namespace Rssdp.Infrastructure
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Sockets;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Common.Networking;
-    using MediaBrowser.Controller.Configuration;
-    using MediaBrowser.Model.Net;
-    using Microsoft.Extensions.Logging;
-
     /// <summary>
     /// Provides the platform independent logic for publishing device existence and responding to search requests.
     /// </summary>

@@ -11,7 +11,7 @@ using MediaBrowser.Model.Users;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface IUserManager
+    /// Interface IUserManager.
     /// </summary>
     public interface IUserManager
     {
@@ -111,8 +111,8 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Deletes the specified user.
         /// </summary>
-        /// <param name="user">The user to be deleted.</param>
-        void DeleteUser(User user);
+        /// <param name="userId">The id of the user to be deleted.</param>
+        void DeleteUser(Guid userId);
 
         /// <summary>
         /// Resets the password.

@@ -1,9 +1,11 @@
-namespace Common.Networking
-{
-    using System;
-    using System.Net;
-    using System.Net.Sockets;
+#nullable enable
 
+using System;
+using System.Net;
+using System.Net.Sockets;
+
+namespace MediaBrowser.Common.Networking
+{
     /// <summary>
     /// An object that holds and IP address and subnet mask.
     /// </summary>
@@ -15,18 +17,13 @@ namespace Common.Networking
         private IPAddress _address;
 
         /// <summary>
-        /// Object's subnet mask.
-        /// </summary>
-        private IPAddress? _mask;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
         /// <param name="ip">Address to assign.</param>
         public IPNetAddress(IPAddress ip)
         {
             _address = ip;
-            _mask = null;
+            Mask = null;
         }
 
         /// <summary>
@@ -37,7 +34,7 @@ namespace Common.Networking
         public IPNetAddress(IPAddress address, IPAddress? subnet)
         {
             _address = address;
-            _mask = subnet;
+            Mask = subnet;
         }
 
         /// <summary>
@@ -52,11 +49,11 @@ namespace Common.Networking
                 _address = address;
                 if (Address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
-                    _mask = null;
+                    Mask = null;
                 }
                 else
                 {
-                    _mask = CidrToMask(cidr);
+                    Mask = CidrToMask(cidr);
                 }
             }
             else
@@ -77,26 +74,21 @@ namespace Common.Networking
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentException("Unable to assign null.");
-                }
-
-                _address = value;
+                _address = value ?? throw new ArgumentException("Unable to assign a null value as an address.");
             }
         }
 
         /// <summary>
-        /// Gets the subnet mask of this object..
+        /// Gets the subnet mask of this object.
         /// </summary>
-        public IPAddress? Mask => _mask;
+        public IPAddress? Mask { get; }
 
         /// <summary>
         /// Try to parse the address and subnet strings into an IPNetAddress object.
         /// </summary>
         /// <param name="addr">IP address to parse. Can be CIDR or X.X.X.X notation.</param>
         /// <param name="ip">Resultant object.</param>
-        /// <returns>True if the values parsed successfully. False if not, resulting in ip being null.</returns>
+        /// <returns>True if the values parsed successfully. False if not, resulting in the IP being null.</returns>
         public static bool TryParse(string addr, out IPNetAddress? ip)
         {
             if (!string.IsNullOrEmpty(addr))
@@ -163,8 +155,8 @@ namespace Common.Networking
         /// <returns>Comparison result.</returns>
         public override bool Contains(IPAddress ip)
         {
-            IPAddress? nwAdd1 = IPObject.NetworkAddress(Address, _mask);
-            IPAddress? nwAdd2 = IPObject.NetworkAddress(ip, _mask);
+            IPAddress? nwAdd1 = IPObject.NetworkAddress(Address, Mask);
+            IPAddress? nwAdd2 = IPObject.NetworkAddress(ip, Mask);
 
             if (nwAdd1 != null && nwAdd2 != null)
             {

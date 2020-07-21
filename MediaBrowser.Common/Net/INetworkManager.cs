@@ -1,12 +1,15 @@
-namespace Common.Networking
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.NetworkInformation;
-    using System.Threading;
-    using System.Threading.Tasks;
+#nullable enable
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Networking;
+
+namespace MediaBrowser.Common.Net
+{
     /// <summary>
     /// Interface for the NetworkManager class.
     /// </summary>
@@ -18,7 +21,7 @@ namespace Common.Networking
         event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets a value indicating whether IP6 is enabled..
+        /// Gets a value indicating whether IP6 is enabled.
         /// </summary>
         bool IsIP6Enabled { get; }
 
@@ -110,5 +113,14 @@ namespace Common.Networking
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         NetCollection GetFilteredLANAddresses(NetCollection? filter = null);
+
+        /// <summary>
+        /// Returns true if the IP address in address2 is within the network address1/subnetMask.
+        /// </summary>
+        /// <param name="subnetIP">Subnet IP.</param>
+        /// <param name="subnetMask">Subnet Mask.</param>
+        /// <param name="address">Address to check.</param>
+        /// <returns>True if address is in the subnet.</returns>
+        bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address);
     }
 }

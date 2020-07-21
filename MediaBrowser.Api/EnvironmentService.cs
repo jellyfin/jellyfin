@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Common.Networking;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
@@ -114,7 +114,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The _network manager
         /// </summary>
-        private readonly NetworkManager _networkManager;
+        private readonly INetworkManager _networkManager;
         private readonly IFileSystem _fileSystem;
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace MediaBrowser.Api
             ILogger<EnvironmentService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
-            NetworkManager networkManager,
+            INetworkManager networkManager,
             IFileSystem fileSystem)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {

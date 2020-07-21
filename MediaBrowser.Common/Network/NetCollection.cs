@@ -1,13 +1,15 @@
-namespace Common.Networking
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Threading;
-    using System.Threading.Tasks;
+#nullable enable
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MediaBrowser.Common.Networking
+{
     /// <summary>
     /// A class that holds a list of Network Address objects. (IPAddress, IPNetAddress and IPHostEntry).
     /// </summary>
@@ -15,7 +17,7 @@ namespace Common.Networking
     {
         /// <summary>
         /// Optimization flag.
-        /// Don't recalculate network addresses of items as this collection only contains network addresses.
+        /// When set, don't recalculate network addresses of items as this collection only contains network addresses.
         /// </summary>
         private bool _network;
 
@@ -51,18 +53,17 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Gets the number in this list..
+        /// Gets the number in this list.
         /// </summary>
         public int Count => Items.Count;
 
         /// <summary>
-        /// Gets the Items
-        /// Gets direct access to the list..
+        /// Gets direct access to the list.
         /// </summary>
         public List<IPObject> Items { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this collection is readonly..
+        /// Gets a value indicating whether this collection is readonly.
         /// </summary>
         public bool IsReadOnly => false;
 
@@ -95,10 +96,10 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Returns all the subnets of a NetCollection.
+        /// Returns a collection containing the subnets of this collection given.
         /// </summary>
-        /// <param name="nc">NetCollection to convert.</param>
-        /// <returns>NetCollection object contains subnets.</returns>
+        /// <param name="nc">NetCollection to process.</param>
+        /// <returns>NetCollection object containing the subnets.</returns>
         public static NetCollection AsNetworks(NetCollection nc)
         {
             if (nc == null)
@@ -181,8 +182,8 @@ namespace Common.Networking
         /// <summary>
         /// Excludes all the items from this list that are found in excludeList.
         /// </summary>
-        /// <param name="excludeList">Items to exlude.</param>
-        /// <returns>A new collection.</returns>
+        /// <param name="excludeList">Items to exclude.</param>
+        /// <returns>A new collection, with the items excluded.</returns>
         public NetCollection Exclude(NetCollection excludeList)
         {
             NetCollection results = new NetCollection();
@@ -241,10 +242,11 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Returns true is the item contains an item with the ip address, or the ip address falls within any of the networks.
+        /// Returns true if the collection contains an item with the ip address,
+        /// or the ip address falls within any of the collection's network ranges.
         /// </summary>
         /// <param name="item">The item to look for.</param>
-        /// <returns>True or false.</returns>
+        /// <returns>True if the collection contains the item.</returns>
         public bool Contains(IPObject item)
         {
             if (item == null)
@@ -265,10 +267,10 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Returns true is the item contains an item. Matches networks, ip address and host names.
+        /// Returns true if the item contains an item. (Matches networks, ip address and host names).
         /// </summary>
         /// <param name="search">The item to look for.</param>
-        /// <returns>True or false.</returns>
+        /// <returns>True if the item exists in the collection.</returns>
         public bool Equals(IPObject search)
         {
             if (search != null)
@@ -288,8 +290,8 @@ namespace Common.Networking
         /// <summary>
         /// Returns all items that co-exist in this object and target.
         /// </summary>
-        /// <param name="target">NetCollection to compare with.</param>
-        /// <returns>A NetCollection containing all the matches.</returns>
+        /// <param name="target">Collection to compare with.</param>
+        /// <returns>A collection containing all the matches.</returns>
         public NetCollection Union(NetCollection target)
         {
             if (target == null)
@@ -314,7 +316,7 @@ namespace Common.Networking
         /// Returns true is the collection contains the ip object.
         /// </summary>
         /// <param name="networkItem">IP address to search for.</param>
-        /// <returns>True of false.</returns>
+        /// <returns>True if the item exists in the collection.</returns>
         public bool Exists(IPObject networkItem)
         {
             if (networkItem == null)
@@ -337,7 +339,7 @@ namespace Common.Networking
         /// Returns true is the collection contains the ip object.
         /// </summary>
         /// <param name="networkItem">IP address to search for.</param>
-        /// <returns>True of false.</returns>
+        /// <returns>True if the item exists in the collection.</returns>
         public bool Exists(string networkItem)
         {
             if (!string.IsNullOrEmpty(networkItem))
@@ -358,7 +360,7 @@ namespace Common.Networking
         /// Returns true is the collection contains the ip address.
         /// </summary>
         /// <param name="networkItem">IP address to search for.</param>
-        /// <returns>True of false.</returns>
+        /// <returns>True if the item exists in the collection.</returns>
         public bool Exists(IPAddress networkItem)
         {
             if (networkItem == null)
@@ -391,8 +393,7 @@ namespace Common.Networking
                     output += $"{i},";
                 }
 
-                // output = output[0..^1];
-                output = output.Remove(output.Length - 1);
+                output = output[0..^1]; // output = output.Remove(output.Length - 1);
             }
 
             return $"{output}]";

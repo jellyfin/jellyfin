@@ -1,29 +1,26 @@
-namespace Common.Networking
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Sockets;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
+#nullable enable
 
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace MediaBrowser.Common.Networking
+{
     /// <summary>
     /// Object that holds a host name.
     /// </summary>
     public class IPHost : IPObject
     {
         /// <summary>
-        /// Time when last resolved. Timeout is 30 minutes..
+        /// Time when last resolved. Timeout is 30 minutes.
         /// </summary>
         private long _lastResolved;
 
         /// <summary>
-        /// Host name of this object..
-        /// </summary>
-        private string _hostName;
-
-        /// <summary>
-        /// Gets the IP Addresses, attempting to resolve the name, if there are none..
+        /// Gets the IP Addresses, attempting to resolve the name, if there are none.
         /// </summary>
         private IPAddress[] _addresses;
 
@@ -34,7 +31,7 @@ namespace Common.Networking
         public IPHost(string name)
         {
             _addresses = Array.Empty<IPAddress>();
-            _hostName = name;
+            HostName = name;
             NotAttemptedBefore = true;
         }
 
@@ -60,17 +57,12 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Gets the host name of this object..
+        /// Gets the host name of this object.
         /// </summary>
-        public string HostName { get => _hostName; }
+        public string HostName { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this host has attempted to be resolved.
-        /// </summary>
-        private bool NotAttemptedBefore { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IP Addresses associated with this object..
+        /// Gets or sets the IP Addresses associated with this object.
         /// </summary>
 #pragma warning disable CA1819 // Properties should not return arrays.
         public IPAddress[] Addresses
@@ -88,11 +80,16 @@ namespace Common.Networking
 
             set
             {
-                _addresses = (value == null) ? Array.Empty<IPAddress>() : value;
+                _addresses = value ?? Array.Empty<IPAddress>();
                 _lastResolved = 0;
                 NotAttemptedBefore = true;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this host has attempted to be resolved.
+        /// </summary>
+        private bool NotAttemptedBefore { get; set; }
 
         /// <summary>
         /// Attempts to parse the host string.
@@ -304,8 +301,7 @@ namespace Common.Networking
                     output += $"{i}/32,";
                 }
 
-                // output = output[0..^1];
-                output = output.Remove(output.Length - 1);
+                output = output[0..^1]; // output = output.Remove(output.Length - 1);
 
                 if (Addresses.Length > 1)
                 {
@@ -329,7 +325,7 @@ namespace Common.Networking
             {
                 List<IPAddress> add = new List<IPAddress>();
 
-                // Filter out IP6 addresses
+                // Filter out IP6 addresses.
                 foreach (IPAddress addr in _addresses)
                 {
                     if (addr.AddressFamily == AddressFamily.InterNetworkV6)

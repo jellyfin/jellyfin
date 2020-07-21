@@ -2,7 +2,7 @@
 
 using System;
 using System.Linq;
-using Common.Networking;
+using MediaBrowser.Common.Net;
 using Emby.Server.Implementations.SocketSharp;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;

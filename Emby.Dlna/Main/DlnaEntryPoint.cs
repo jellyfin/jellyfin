@@ -3,12 +3,12 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Common.Networking;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -32,8 +32,6 @@ namespace Emby.Dlna.Main
 {
     public class DlnaEntryPoint : IServerEntryPoint, IRunBeforeStartup
     {
-        public static DlnaEntryPoint Current;
-
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<DlnaEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
@@ -47,13 +45,22 @@ namespace Emby.Dlna.Main
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly object _syncLock = new object();
         private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
+        private readonly object _syncLock = new object();
+
+        private PlayToManager _manager;
         private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
-        private PlayToManager _manager;
+
+        internal IContentDirectory ContentDirectory { get; private set; }
+
+        internal IConnectionManager ConnectionManager { get; private set; }
+
+        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
+
+        public static DlnaEntryPoint Current;
 
         public DlnaEntryPoint(
             IServerConfigurationManager config,
@@ -122,12 +129,6 @@ namespace Emby.Dlna.Main
 
             Current = this;
         }
-
-        internal IContentDirectory ContentDirectory { get; private set; }
-
-        internal IConnectionManager ConnectionManager { get; private set; }
-
-        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
 
         public async Task RunAsync()
         {
@@ -318,7 +319,6 @@ namespace Emby.Dlna.Main
                     };
 
                     SetProperies(embeddedDevice, subDevice);
-
                     device.AddDevice(embeddedDevice);
                 }
             }

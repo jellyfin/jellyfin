@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>         
-    <ProjectReference Include="..\Common\Networking\Common.Networking.csproj" />         
     <ProjectReference Include="..\Emby.Naming\Emby.Naming.csproj" />
     <ProjectReference Include="..\Emby.Notifications\Emby.Notifications.csproj" />
     <ProjectReference Include="..\Jellyfin.Api\Jellyfin.Api.csproj" />
+    <ProjectReference Include="..\Jellyfin.Data\Jellyfin.Data.csproj" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />

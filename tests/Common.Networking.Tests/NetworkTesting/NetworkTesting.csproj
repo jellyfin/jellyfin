@@ -20,7 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\Networking\Common.Networking.csproj" />
+    <ProjectReference Include="..\..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
+    <ProjectReference Include="..\..\..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
   </ItemGroup>
 
 </Project>

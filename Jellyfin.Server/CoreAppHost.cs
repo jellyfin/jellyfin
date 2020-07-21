@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Common.Networking;
 using Emby.Drawing;
 using Emby.Server.Implementations;
 using Jellyfin.Drawing.Skia;

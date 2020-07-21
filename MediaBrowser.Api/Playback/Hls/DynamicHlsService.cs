@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Networking;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -125,9 +125,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 authorizationContext,
                 encodingHelper)
         {
-            NetworkManager = (NetworkManager)networkManager;
+            NetworkManager = networkManager;
         }
-        protected NetworkManager NetworkManager { get; private set; }
+        protected INetworkManager NetworkManager { get; private set; }
 
         public Task<object> Get(GetMasterHlsVideoPlaylist request)
         {

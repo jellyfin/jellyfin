@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Networking;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.System
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
 
-        private readonly NetworkManager _network;
+        private readonly INetworkManager _network;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemService" /> class.
@@ -108,7 +108,7 @@ namespace MediaBrowser.Api.System
             IHttpResultFactory httpResultFactory,
             IServerApplicationHost appHost,
             IFileSystem fileSystem,
-            NetworkManager network)
+            INetworkManager network)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
             _appPaths = serverConfigurationManager.ApplicationPaths;

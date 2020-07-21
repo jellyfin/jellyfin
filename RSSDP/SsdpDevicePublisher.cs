@@ -1,16 +1,16 @@
+using System;
+using System.Globalization;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using Microsoft.Extensions.Logging;
+
 namespace Rssdp.Infrastructure
 {
-    using System;
-    using System.Globalization;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-    using System.Net;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Common.Networking;
-    using Microsoft.Extensions.Logging;
-
     /// <summary>
     /// Provides the platform independent logic for publishing SSDP devices (notifications and search responses).
     /// </summary>
@@ -311,7 +311,7 @@ namespace Rssdp.Infrastructure
                           var rt = device.ToRootDevice();
                                                     
                           if (!_sendOnlyMatchedHost ||
-                              NetworkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address))
+                              _networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address))
                           {
                               _logger.LogInformation("Sending response to {0} {1}.", rt.Address, rt.ModelName);
                               SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress, cancellationToken);

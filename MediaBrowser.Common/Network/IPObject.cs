@@ -1,30 +1,21 @@
-namespace Common.Networking
-{
-    using System;
-    using System.Net;
-    using System.Net.NetworkInformation;
-    using System.Net.Sockets;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
+#nullable enable
 
+using System;
+using System.Net;
+using System.Net.Sockets;
+
+namespace MediaBrowser.Common.Networking
+{
     /// <summary>
     /// Base network object class.
     /// </summary>
     public abstract class IPObject : IEquatable<IPObject>
     {
-        /// <summary>
-        /// Defines the _ip6loopback.
-        /// </summary>
-        private static readonly byte[] _ip6loopback = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+        private static readonly byte[] _ipv6loopback = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+        private static readonly byte[] _ipv4loopback = { 127, 0, 0, 1 };
 
         /// <summary>
-        /// Defines the _ip4loopback.
-        /// </summary>
-        private static readonly byte[] _ip4loopback = { 127, 0, 0, 1 };
-
-        /// <summary>
-        /// Gets or sets the user defined functions that need storage in this object..
+        /// Gets or sets the user defined functions that need storage in this object.
         /// </summary>
         public int Tag { get; set; }
 
@@ -34,7 +25,7 @@ namespace Common.Networking
         public abstract IPAddress Address { get; set; }
 
         /// <summary>
-        /// Gets the AddressFamily of this object..
+        /// Gets the AddressFamily of this object.
         /// </summary>
         public AddressFamily AddressFamily
         {
@@ -78,17 +69,17 @@ namespace Common.Networking
                 byte[] b = i.GetAddressBytes();
                 if (i.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    return CompareByteArray(b, _ip4loopback, 4);
+                    return CompareByteArray(b, _ipv4loopback, 4);
                 }
 
-                return CompareByteArray(b, _ip6loopback, 16);
+                return CompareByteArray(b, _ipv6loopback, 16);
             }
 
             return false;
         }
 
         /// <summary>
-        /// Tests to see if the ip address is an ip 6 address.
+        /// Tests to see if the ip address is an IP6 address.
         /// </summary>
         /// <param name="i">Value to test.</param>
         /// <returns>True if it is.</returns>
@@ -98,7 +89,7 @@ namespace Common.Networking
         }
 
         /// <summary>
-        /// Tests to see if the address in i is in the private address ranges.
+        /// Tests to see if the address in the private address range.
         /// </summary>
         /// <param name="i">Object to test.</param>
         /// <returns>True if it contains a private address.</returns>
@@ -172,7 +163,7 @@ namespace Common.Networking
                     {
                         if (zeroed)
                         {
-                            // invalid netmask
+                            // Invalid netmask.
                             return ~cidrnet;
                         }
 
@@ -254,10 +245,11 @@ namespace Common.Networking
         /// </summary>
         public virtual void RemoveIP6()
         {
+            // This method only peforms a function in the IPHost implementation of IPObject.
         }
 
         /// <summary>
-        /// Tests to see if this object is an ip 6 address.
+        /// Tests to see if this object is an IPv6 address.
         /// </summary>
         /// <returns>True if it is.</returns>
         public virtual bool IsIP6()

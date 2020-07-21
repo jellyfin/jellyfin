@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Networking;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 

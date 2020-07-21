@@ -16,7 +16,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Networking;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
@@ -38,6 +37,7 @@ using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.Net;
+using Emby.Server.Implementations.Networking;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
 using Emby.Server.Implementations.Security;
@@ -52,6 +52,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
@@ -257,7 +258,7 @@ namespace Emby.Server.Implementations
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
             // LocalSubnetFn must be assigned after ConfigurationManager has been created, so the config is available at initiation.
-            NetworkManager.Instance.Initialise(
+            _= new NetworkManager(
                 LoggerFactory.CreateLogger<NetworkManager>(),
                 () =>
                 {
@@ -274,7 +275,7 @@ namespace Emby.Server.Implementations
             ConfigurationManager.ConfigurationUpdated += NetworkManager.Instance.ConfigurationUpdated;
             _networkManager = (INetworkManager)NetworkManager.Instance;
 
-            WakeOnLAN.Instance.Initialise(
+            _ = new WakeOnLAN(
                 LoggerFactory.CreateLogger<WakeOnLAN>(),
                 () =>
                 {
@@ -287,7 +288,8 @@ namespace Emby.Server.Implementations
                 () =>
                 {
                     return ServerConfigurationManager.Configuration.MACUDPPort;
-                }
+                },
+                NetworkManager.Instance
             );
             ConfigurationManager.ConfigurationUpdated += WakeOnLAN.Instance.ConfigurationUpdated;
 

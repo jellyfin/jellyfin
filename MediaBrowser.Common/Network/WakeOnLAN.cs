@@ -1,33 +1,40 @@
+#nullable enable
+
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
-namespace Common.Networking
+namespace MediaBrowser.Common.Networking
 {
     /// <summary>
-    /// WOL Class.
+    /// Wake-On-LAN Class.
     /// For use when the storage is separate from the webserver.
     /// </summary>
     public class WakeOnLAN
     {
         /// <summary>
-        /// Gets the singleton instance of this object.
+        /// Singleton instance of this object.
         /// </summary>
-        public static readonly WakeOnLAN Instance = new WakeOnLAN();
+#pragma warning disable CA2211 // Non-constant fields should not be visible
+#pragma warning disable SA1401 // Fields should be private
+        public static WakeOnLAN? Instance;
+#pragma warning restore SA1401 // Fields should be private
+#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         /// <summary>
-        /// Threading object for network interfaces..
+        /// Threading object for network interfaces.
         /// </summary>
         private readonly object _lock = new object();
 
         /// <summary>
         /// ILogger instance.
         /// </summary>
-        private ILogger? _logger;
+        private ILogger _logger;
 
         /// <summary>
         /// Last time a request was received.
@@ -62,41 +69,45 @@ namespace Common.Networking
         /// <summary>
         /// Port to use.
         /// </summary>
-        private int _port = 0;
+        private int _port = 9;
+
+        private INetworkManager _networkManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WakeOnLAN"/> class.
-        /// </summary>
-        private WakeOnLAN() { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WOL"/> class.
         /// </summary>
         /// <param name="logger">ILogger to use.</param>
         /// <param name="settings">Function to retrieve the MACWakeupList user setting from config.</param>
         /// <param name="timeoutFn">Function to retrieve the MACWakeupTimeout user setting from config.</param>
         /// <param name="portFn">Function to MACMulicastPort user setting from config.</param>
-        public void Initialise(ILogger? logger, Func<string[]> settings, Func<int> timeoutFn, Func<int> portFn)
+        /// <param name="networkManager">NetworkManager object.</param>
+        public WakeOnLAN(ILogger logger, Func<string[]> settings, Func<int> timeoutFn, Func<int> portFn, INetworkManager networkManager)
         {
             _logger = logger;
-            _lastRequestReceived = DateTime.Now.AddDays(-1); // set to Yesterday, so WOL will work the first time around.
-            _wolmacFn = settings;
+            _lastRequestReceived = DateTime.Now.AddDays(-1); // Set to Yesterday, so WOL will work the first time around.
+
+            _wolmacFn = settings ?? throw new ArgumentNullException(nameof(settings));
             _wolMACList = settings() ?? Array.Empty<string>();
             _timeoutFn = timeoutFn;
             _timeout = _timeoutFn();
             _portFn = portFn;
-            _port = portFn();
+            _port = _portFn();
+            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+            WakeOnLAN.Instance = this;
         }
 
         /// <summary>
         /// Reloads the setttings.
         /// </summary>
+        /// <param name="sender">Sender of the event.</param>
+        /// <param name="e">Event parameters.</param>
         public void ConfigurationUpdated(object sender, EventArgs e)
         {
             lock (_lock)
             {
                 _wolMACList = _wolmacFn() ?? Array.Empty<string>();
                 _timeout = _timeoutFn();
+                _port = _portFn();
             }
         }
 
@@ -121,34 +132,6 @@ namespace Common.Networking
                         catch (Exception ex)
                         {
                             _logger.LogError(ex, "WOL error to {0}.", mac);
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Send a WOL magic packet across the LAN interfaces.
-        /// </summary>
-        /// <param name="macAddress">Destination MAC.</param>
-        private async void WakeOnLan(string macAddress)
-        {
-            byte[] magicPacket = BuildMagicPacket(macAddress);
-
-            if (NetworkManager.Instance != null)
-            {
-                foreach (IPNetAddress addr in NetworkManager.Instance.GetInternalInterfaceAddresses())
-                {
-                    if (!addr.IsLoopback())
-                    {
-                        _logger.LogDebug("Multicasting to {0} on interface {1}.", macAddress, addr.Address);
-                        if (addr.IsIP6())
-                        {
-                            await SendWakeOnLan(addr.Address, IPAddress.Parse("ff02::1"), magicPacket);
-                        }
-                        else
-                        {
-                            await SendWakeOnLan(addr.Address, IPAddress.Parse("224.0.0.1"), magicPacket);
                         }
                     }
                 }
@@ -187,7 +170,32 @@ namespace Common.Networking
                 }
             }
 
-            return ms.ToArray(); // 102 bytes magic packet
+            return ms.ToArray(); // 102 bytes magic packet.
+        }
+
+        /// <summary>
+        /// Send a WOL magic packet across the LAN interfaces.
+        /// </summary>
+        /// <param name="macAddress">Destination MAC.</param>
+        private async void WakeOnLan(string macAddress)
+        {
+            byte[] magicPacket = BuildMagicPacket(macAddress);
+
+            foreach (IPNetAddress addr in _networkManager.GetInternalInterfaceAddresses())
+            {
+                if (!addr.IsLoopback())
+                {
+                    _logger.LogDebug("Multicasting to {0} on interface {1}.", macAddress, addr.Address);
+                    if (addr.IsIP6())
+                    {
+                        await SendWakeOnLan(addr.Address, IPAddress.Parse("ff02::1"), magicPacket).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await SendWakeOnLan(addr.Address, IPAddress.Parse("224.0.0.1"), magicPacket).ConfigureAwait(false);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -204,7 +212,7 @@ namespace Common.Networking
 #pragma warning disable IDE0063 // Use simple 'using' statement
                 using (UdpClient client = new UdpClient(new IPEndPoint(localIpAddress, _port)))
                 {
-                    await client.SendAsync(magicPacket, magicPacket.Length, multicastIpAddress.ToString(), 9);
+                    await client.SendAsync(magicPacket, magicPacket.Length, multicastIpAddress.ToString(), _port).ConfigureAwait(false);
                 }
 #pragma warning restore IDE0063 // Use simple 'using' statement
             }

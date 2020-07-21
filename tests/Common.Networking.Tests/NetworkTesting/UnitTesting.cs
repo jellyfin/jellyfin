@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Networking;
+using MediaBrowser.Common.Networking;
+using Emby.Server.Implementations.Networking;
 using Xunit;
 
 namespace NetworkTesting
