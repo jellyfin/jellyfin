@@ -60,20 +60,15 @@ namespace Jellyfin.Server
         /// <returns><see cref="Task" />.</returns>
         public static Task Main(string[] args)
         {
-            // For backwards compatibility.
-            // Modify any input arguments now which start with single-hyphen to POSIX standard
-            // double-hyphen to allow parsing by CommandLineParser package.
-            const string Pattern = @"^(-[^-\s]{2})"; // Match -xx, not -x, not --xx, not xx
-            const string Substitution = @"-$1"; // Prepend with additional single-hyphen
-            var regex = new Regex(Pattern);
-            for (var i = 0; i < args.Length; i++)
+            static Task ErrorParsingArguments(IEnumerable<Error> errors)
             {
-                args[i] = regex.Replace(args[i], Substitution);
+                Environment.ExitCode = 1;
+                return Task.CompletedTask;
             }
 
             // Parse the command line arguments and either start the app or exit indicating error
             return Parser.Default.ParseArguments<StartupOptions>(args)
-                .MapResult(StartApp, _ => Task.CompletedTask);
+                .MapResult(StartApp, ErrorParsingArguments);
         }
 
         /// <summary>
