@@ -29,19 +29,19 @@ namespace MediaBrowser.Controller.Net
         void Init(IEnumerable<Type> serviceTypes, IEnumerable<IWebSocketListener> listener, IEnumerable<string> urlPrefixes);
 
         /// <summary>
-        /// If set, all requests will respond with this message
+        /// If set, all requests will respond with this message.
         /// </summary>
         string GlobalResponse { get; set; }
 
         /// <summary>
-        /// The HTTP request handler
+        /// The HTTP request handler.
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         Task RequestHandler(HttpContext context);
 
         /// <summary>
-        /// Get the default CORS headers
+        /// Get the default CORS headers.
         /// </summary>
         /// <param name="req"></param>
         /// <returns></returns>

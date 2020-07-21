@@ -140,14 +140,14 @@ namespace MediaBrowser.Controller.LiveTv
 
         /// <summary>
         /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
+        /// If the item is a folder, it returns the folder itself.
         /// </summary>
         /// <value>The containing folder path.</value>
         [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
         //[JsonIgnore]
-        //public override string MediaType
+        // public override string MediaType
         //{
         //    get
         //    {

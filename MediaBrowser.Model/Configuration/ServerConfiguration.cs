@@ -2,7 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -80,8 +82,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableRemoteAccess { get; set; }
 
-        public bool CollectionsUpgraded { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
         /// </summary>
@@ -111,19 +111,19 @@ namespace MediaBrowser.Model.Configuration
         public string MetadataCountryCode { get; set; }
 
         /// <summary>
-        /// Characters to be replaced with a ' ' in strings to create a sort name
+        /// Characters to be replaced with a ' ' in strings to create a sort name.
         /// </summary>
         /// <value>The sort replace characters.</value>
         public string[] SortReplaceCharacters { get; set; }
 
         /// <summary>
-        /// Characters to be removed from strings to create a sort name
+        /// Characters to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove characters.</value>
         public string[] SortRemoveCharacters { get; set; }
 
         /// <summary>
-        /// Words to be removed from strings to create a sort name
+        /// Words to be removed from strings to create a sort name.
         /// </summary>
         /// <value>The sort remove words.</value>
         public string[] SortRemoveWords { get; set; }
@@ -229,6 +229,8 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] CodecsUsed { get; set; }
 
+        public List<RepositoryInfo> PluginRepositories { get; set; }
+
         public bool IgnoreVirtualInterfaces { get; set; }
 
         public bool EnableExternalContentInSuggestions { get; set; }
@@ -275,6 +277,9 @@ namespace MediaBrowser.Model.Configuration
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = false;
+            SkipDeserializationForBasicTypes = true;
+
+            PluginRepositories = new List<RepositoryInfo>();
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
@@ -288,6 +293,9 @@ namespace MediaBrowser.Model.Configuration
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
+            EnableNormalizedItemByNameIds = true;
+            DisableLiveTvChannelUserDataName = true;
+            EnableNewOmdbSupport = true;
 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;

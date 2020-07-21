@@ -39,7 +39,6 @@ ProgramData*/
 CorePlugins*/
 ProgramData-Server*/
 ProgramData-UI*/
-MediaBrowser.WebDashboard/jellyfin-web/**
 
 #################
 ## Visual Studio
@@ -276,4 +275,4 @@ BenchmarkDotNet.Artifacts
 # Ignore web artifacts from native builds
 web/
 web-src.*
-MediaBrowser.WebDashboard/jellyfin-web/
+MediaBrowser.WebDashboard/jellyfin-web

@@ -25,7 +25,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="streamnumber"></param>
         /// <param name="_mediafile0"></param>
@@ -33,9 +33,12 @@ namespace Jellyfin.Data.Entities
         {
             this.StreamNumber = streamnumber;
 
-            if (_mediafile0 == null) throw new ArgumentNullException(nameof(_mediafile0));
-            _mediafile0.MediaFileStreams.Add(this);
+            if (_mediafile0 == null)
+            {
+                throw new ArgumentNullException(nameof(_mediafile0));
+            }
 
+            _mediafile0.MediaFileStreams.Add(this);
 
             Init();
         }
@@ -55,7 +58,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -68,7 +71,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -79,8 +82,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -93,7 +97,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for StreamNumber
+        /// Backing field for StreamNumber.
         /// </summary>
         protected int _StreamNumber;
         /// <summary>
@@ -106,7 +110,7 @@ namespace Jellyfin.Data.Entities
         partial void GetStreamNumber(ref int result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public int StreamNumber
@@ -115,8 +119,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _StreamNumber;
                 GetStreamNumber(ref value);
-                return (_StreamNumber = value);
+                return _StreamNumber = value;
             }
+
             set
             {
                 int oldValue = _StreamNumber;
@@ -129,7 +134,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -143,7 +148,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

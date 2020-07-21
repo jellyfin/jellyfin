@@ -11,7 +11,7 @@ using MediaBrowser.Model.Querying;
 namespace MediaBrowser.Controller.Entities.TV
 {
     /// <summary>
-    /// Class Season
+    /// Class Season.
     /// </summary>
     public class Season : Folder, IHasSeries, IHasLookupInfo<SeasonInfo>
     {
@@ -68,7 +68,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This Episode's Series Instance
+        /// This Episode's Series Instance.
         /// </summary>
         /// <value>The series.</value>
         [JsonIgnore]
@@ -81,6 +81,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     seriesId = FindSeriesId();
                 }
+
                 return seriesId == Guid.Empty ? null : (LibraryManager.GetItemById(seriesId) as Series);
             }
         }
@@ -225,7 +226,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)

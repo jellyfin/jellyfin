@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,8 +65,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
 
-            var keyTypes = new[] { KeyType.Season, KeyType.Seasonwide, KeyType.Fanart };
-            foreach (var keyType in keyTypes)
+            var keyTypes = _tvdbClientManager.GetImageKeyTypesForSeasonAsync(tvdbId, language, cancellationToken).ConfigureAwait(false);
+            await foreach (var keyType in keyTypes)
             {
                 var imageQuery = new ImagesQuery
                 {

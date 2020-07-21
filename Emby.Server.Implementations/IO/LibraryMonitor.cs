@@ -266,7 +266,6 @@ namespace Emby.Server.Implementations.IO
                     {
                         DisposeWatcher(newWatcher, false);
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -393,7 +392,6 @@ namespace Emby.Server.Implementations.IO
                 }
 
                 return false;
-
             }))
             {
                 monitorPath = false;

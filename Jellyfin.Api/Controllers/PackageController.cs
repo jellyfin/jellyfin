@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,14 +21,17 @@ namespace Jellyfin.Api.Controllers
     public class PackageController : BaseJellyfinApiController
     {
         private readonly IInstallationManager _installationManager;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PackageController"/> class.
         /// </summary>
-        /// <param name="installationManager">Instance of <see cref="IInstallationManager"/>Installation Manager.</param>
-        public PackageController(IInstallationManager installationManager)
+        /// <param name="installationManager">Instance of the <see cref="IInstallationManager"/> interface.</param>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        public PackageController(IInstallationManager installationManager, IServerConfigurationManager serverConfigurationManager)
         {
             _installationManager = installationManager;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <summary>
@@ -110,10 +114,38 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("/Installing/{packageId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult CancelPackageInstallation(
+        public ActionResult CancelPackageInstallation(
             [FromRoute] [Required] Guid packageId)
         {
             _installationManager.CancelInstallation(packageId);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Gets all package repositories.
+        /// </summary>
+        /// <response code="200">Package repositories returned.</response>
+        /// <returns>An <see cref="OkResult"/> containing the list of package repositories.</returns>
+        [HttpGet("/Repositories")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
+        {
+            return _serverConfigurationManager.Configuration.PluginRepositories;
+        }
+
+        /// <summary>
+        /// Sets the enabled and existing package repositories.
+        /// </summary>
+        /// <param name="repositoryInfos">The list of package repositories.</param>
+        /// <response code="204">Package repositories saved.</response>
+        /// <returns>A <see cref="NoContentResult"/>.</returns>
+        [HttpOptions("/Repositories")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult SetRepositories([FromBody] List<RepositoryInfo> repositoryInfos)
+        {
+            _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
             return NoContent();
         }
     }

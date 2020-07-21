@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Library;
 namespace MediaBrowser.Controller.Sorting
 {
     /// <summary>
-    /// Represents a BaseItem comparer that requires a User to perform it's comparison
+    /// Represents a BaseItem comparer that requires a User to perform it's comparison.
     /// </summary>
     public interface IUserBaseItemComparer : IBaseItemComparer
     {

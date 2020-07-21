@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="urlid">This is whats gets displayed in the Urls and API requests. This could also be a string.</param>
         public CustomItem(Guid urlid, DateTime dateadded)
@@ -62,7 +62,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("Release_Releases_Id")]
         public virtual ICollection<Release> Releases { get; protected set; }
-
     }
 }
 

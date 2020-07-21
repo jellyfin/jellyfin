@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -63,7 +65,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     result.Item = new Season();
 
                     // Don't use moviedb season names for now until if/when we have field-level configuration
-                    //result.Item.Name = seasonInfo.name;
+                    // result.Item.Name = seasonInfo.name;
 
                     result.Item.Name = info.Name;
 
@@ -79,17 +81,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     var credits = seasonInfo.Credits;
                     if (credits != null)
                     {
-                        //Actors, Directors, Writers - all in People
-                        //actors come from cast
+                        // Actors, Directors, Writers - all in People
+                        // actors come from cast
                         if (credits.Cast != null)
                         {
-                            //foreach (var actor in credits.cast.OrderBy(a => a.order)) result.Item.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                            // foreach (var actor in credits.cast.OrderBy(a => a.order)) result.Item.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
                         }
 
-                        //and the rest from crew
+                        // and the rest from crew
                         if (credits.Crew != null)
                         {
-                            //foreach (var person in credits.crew) result.Item.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                            // foreach (var person in credits.crew) result.Item.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
                         }
                     }
 

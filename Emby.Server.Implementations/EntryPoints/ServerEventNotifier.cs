@@ -159,7 +159,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception)
             {
-
             }
         }
 
@@ -175,7 +174,6 @@ namespace Emby.Server.Implementations.EntryPoints
             }
             catch (Exception)
             {
-
             }
         }
 

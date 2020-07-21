@@ -14,9 +14,9 @@ namespace MediaBrowser.Controller.SyncPlay
     public class GroupInfo
     {
         /// <summary>
-        /// Default ping value used for sessions.
+        /// Gets the default ping value used for sessions.
         /// </summary>
-        public long DefaulPing { get; } = 500;
+        public long DefaultPing { get; } = 500;
 
         /// <summary>
         /// Gets or sets the group identifier.
@@ -31,13 +31,13 @@ namespace MediaBrowser.Controller.SyncPlay
         public BaseItem PlayingItem { get; set; }
 
         /// <summary>
-        /// Gets or sets whether playback is paused.
+        /// Gets or sets a value indicating whether playback is paused.
         /// </summary>
         /// <value>Playback is paused.</value>
         public bool IsPaused { get; set; }
 
         /// <summary>
-        /// Gets or sets the position ticks.
+        /// Gets or sets a value indicating whether there are position ticks.
         /// </summary>
         /// <value>The position ticks.</value>
         public long PositionTicks { get; set; }
@@ -70,16 +70,16 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         public void AddSession(SessionInfo session)
         {
-            if (ContainsSession(session.Id.ToString()))
+            if (ContainsSession(session.Id))
             {
                 return;
             }
 
             var member = new GroupMember();
             member.Session = session;
-            member.Ping = DefaulPing;
+            member.Ping = DefaultPing;
             member.IsBuffering = false;
-            Participants[session.Id.ToString()] = member;
+            Participants[session.Id] = member;
         }
 
         /// <summary>
@@ -88,12 +88,12 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         public void RemoveSession(SessionInfo session)
         {
-            if (!ContainsSession(session.Id.ToString()))
+            if (!ContainsSession(session.Id))
             {
                 return;
             }
 
-            Participants.Remove(session.Id.ToString(), out _);
+            Participants.Remove(session.Id, out _);
         }
 
         /// <summary>
@@ -103,12 +103,12 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="ping">The ping.</param>
         public void UpdatePing(SessionInfo session, long ping)
         {
-            if (!ContainsSession(session.Id.ToString()))
+            if (!ContainsSession(session.Id))
             {
                 return;
             }
 
-            Participants[session.Id.ToString()].Ping = ping;
+            Participants[session.Id].Ping = ping;
         }
 
         /// <summary>
@@ -117,11 +117,12 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <value name="session">The highest ping in the group.</value>
         public long GetHighestPing()
         {
-            long max = Int64.MinValue;
+            long max = long.MinValue;
             foreach (var session in Participants.Values)
             {
                 max = Math.Max(max, session.Ping);
             }
+
             return max;
         }
 
@@ -132,12 +133,12 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="isBuffering">The state.</param>
         public void SetBuffering(SessionInfo session, bool isBuffering)
         {
-            if (!ContainsSession(session.Id.ToString()))
+            if (!ContainsSession(session.Id))
             {
                 return;
             }
 
-            Participants[session.Id.ToString()].IsBuffering = isBuffering;
+            Participants[session.Id].IsBuffering = isBuffering;
         }
 
         /// <summary>

@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Tasks
     public interface ITaskManager : IDisposable
     {
         /// <summary>
-        /// Gets the list of Scheduled Tasks
+        /// Gets the list of Scheduled Tasks.
         /// </summary>
         /// <value>The scheduled tasks.</value>
         IScheduledTaskWorker[] ScheduledTasks { get; }

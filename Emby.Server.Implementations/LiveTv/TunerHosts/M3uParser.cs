@@ -210,7 +210,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         }
                     }
                 }
-
             }
 
             if (!IsValidChannelNumber(numberString))
@@ -284,7 +283,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                     if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
                     {
-                        //channel.Number = number.ToString();
+                        // channel.Number = number.ToString();
                         nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
                     }
                 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -125,7 +127,7 @@ namespace MediaBrowser.Providers.Manager
                         ApplySearchResult(id, refreshOptions.SearchResult);
                     }
 
-                    //await FindIdentities(id, cancellationToken).ConfigureAwait(false);
+                    // await FindIdentities(id, cancellationToken).ConfigureAwait(false);
                     id.IsAutomated = refreshOptions.IsAutomated;
 
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
@@ -210,6 +212,7 @@ namespace MediaBrowser.Providers.Manager
                 LibraryManager.UpdatePeople(baseItem, result.People);
                 SavePeopleMetadata(result.People, libraryOptions, cancellationToken);
             }
+
             result.Item.UpdateToRepository(reason, cancellationToken);
         }
 
@@ -252,7 +255,7 @@ namespace MediaBrowser.Providers.Manager
 
         private void AddPersonImage(Person personEntity, LibraryOptions libraryOptions, string imageUrl, CancellationToken cancellationToken)
         {
-            //if (libraryOptions.DownloadImagesInAdvance)
+            // if (libraryOptions.DownloadImagesInAdvance)
             //{
             //    try
             //    {
@@ -324,6 +327,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     return true;
                 }
+
                 var folder = item as Folder;
                 if (folder != null)
                 {
@@ -389,7 +393,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (!child.IsFolder)
                     {
-                        ticks += (child.RunTimeTicks ?? 0);
+                        ticks += child.RunTimeTicks ?? 0;
                     }
                 }
 
@@ -422,6 +426,7 @@ namespace MediaBrowser.Providers.Manager
                         {
                             dateLastMediaAdded = childDateCreated;
                         }
+
                         any = true;
                     }
                 }
@@ -718,7 +723,7 @@ namespace MediaBrowser.Providers.Manager
                             userDataList.AddRange(localItem.UserDataList);
                         }
 
-                        MergeData(localItem, temp, new MetadataField[] { }, !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -726,6 +731,7 @@ namespace MediaBrowser.Providers.Manager
                         {
                             hasLocalMetadata = true;
                         }
+
                         break;
                     }
 
@@ -772,14 +778,14 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            //var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
+            // var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
 
             foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
             {
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            //ImportUserData(item, userDataList, cancellationToken);
+            // ImportUserData(item, userDataList, cancellationToken);
 
             return refreshResult;
         }
@@ -843,7 +849,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         result.Provider = provider.Name;
 
-                        MergeData(result, temp, new MetadataField[] { }, false, false);
+                        MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
                         MergeNewData(temp.Item, id);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
@@ -874,6 +880,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 return "en";
             }
+
             return language;
         }
 
@@ -906,7 +913,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 var hasChanged = changeMonitor.HasChanged(item, directoryService);
 
-                //if (hasChanged)
+                // if (hasChanged)
                 //{
                 //    logger.LogDebug("{0} reports change to {1}", changeMonitor.GetType().Name, item.Path ?? item.Name);
                 //}
@@ -924,7 +931,9 @@ namespace MediaBrowser.Providers.Manager
     public class RefreshResult
     {
         public ItemUpdateType UpdateType { get; set; }
+
         public string ErrorMessage { get; set; }
+
         public int Failures { get; set; }
     }
 }

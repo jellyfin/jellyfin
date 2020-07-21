@@ -28,19 +28,27 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="path">Relative to the LibraryRoot</param>
+        /// <param name="path">Relative to the LibraryRoot.</param>
         /// <param name="kind"></param>
         /// <param name="_release0"></param>
         public MediaFile(string path, Enums.MediaFileKind kind, Release _release0)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             this.Path = path;
 
             this.Kind = kind;
 
-            if (_release0 == null) throw new ArgumentNullException(nameof(_release0));
+            if (_release0 == null)
+            {
+                throw new ArgumentNullException(nameof(_release0));
+            }
+
             _release0.MediaFiles.Add(this);
 
             this.MediaFileStreams = new HashSet<MediaFileStream>();
@@ -51,7 +59,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="path">Relative to the LibraryRoot</param>
+        /// <param name="path">Relative to the LibraryRoot.</param>
         /// <param name="kind"></param>
         /// <param name="_release0"></param>
         public static MediaFile Create(string path, Enums.MediaFileKind kind, Release _release0)
@@ -64,7 +72,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -77,7 +85,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -88,8 +96,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -102,7 +111,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Path
+        /// Backing field for Path.
         /// </summary>
         protected string _Path;
         /// <summary>
@@ -116,7 +125,7 @@ namespace Jellyfin.Data.Entities
 
         /// <summary>
         /// Required, Max length = 65535
-        /// Relative to the LibraryRoot
+        /// Relative to the LibraryRoot.
         /// </summary>
         [Required]
         [MaxLength(65535)]
@@ -127,8 +136,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Path;
                 GetPath(ref value);
-                return (_Path = value);
+                return _Path = value;
             }
+
             set
             {
                 string oldValue = _Path;
@@ -141,7 +151,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Kind
+        /// Backing field for Kind.
         /// </summary>
         protected Enums.MediaFileKind _Kind;
         /// <summary>
@@ -154,7 +164,7 @@ namespace Jellyfin.Data.Entities
         partial void GetKind(ref Enums.MediaFileKind result);
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [Required]
         public Enums.MediaFileKind Kind
@@ -163,8 +173,9 @@ namespace Jellyfin.Data.Entities
             {
                 Enums.MediaFileKind value = _Kind;
                 GetKind(ref value);
-                return (_Kind = value);
+                return _Kind = value;
             }
+
             set
             {
                 Enums.MediaFileKind oldValue = _Kind;
@@ -177,7 +188,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -194,7 +205,6 @@ namespace Jellyfin.Data.Entities
 
         [ForeignKey("MediaFileStream_MediaFileStreams_Id")]
         public virtual ICollection<MediaFileStream> MediaFileStreams { get; protected set; }
-
     }
 }
 
