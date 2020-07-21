@@ -9,7 +9,11 @@ set -o xtrace
 pushd ${SOURCE_DIR}
 
 # Get version
-version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
+if [[ ${IS_UNSTABLE} == 'yes' ]]; then
+    version="${BUILD_ID}"
+else
+    version="$( grep "version:" ./build.yaml | sed -E 's/version: "([0-9\.]+.*)"/\1/' )"
+fi
 
 # Build archives
 dotnet publish Jellyfin.Server --configuration Release --output dist/jellyfin-server_${version}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"

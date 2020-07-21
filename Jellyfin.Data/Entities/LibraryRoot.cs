@@ -25,14 +25,17 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="path">Absolute Path</param>
+        /// <param name="path">Absolute Path.</param>
         public LibraryRoot(string path)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
-            this.Path = path;
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
 
+            this.Path = path;
 
             Init();
         }
@@ -40,7 +43,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="path">Absolute Path</param>
+        /// <param name="path">Absolute Path.</param>
         public static LibraryRoot Create(string path)
         {
             return new LibraryRoot(path);
@@ -51,7 +54,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -64,7 +67,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -75,8 +78,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -89,7 +93,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Path
+        /// Backing field for Path.
         /// </summary>
         protected string _Path;
         /// <summary>
@@ -103,7 +107,7 @@ namespace Jellyfin.Data.Entities
 
         /// <summary>
         /// Required, Max length = 65535
-        /// Absolute Path
+        /// Absolute Path.
         /// </summary>
         [Required]
         [MaxLength(65535)]
@@ -114,8 +118,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Path;
                 GetPath(ref value);
-                return (_Path = value);
+                return _Path = value;
             }
+
             set
             {
                 string oldValue = _Path;
@@ -128,7 +133,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for NetworkPath
+        /// Backing field for NetworkPath.
         /// </summary>
         protected string _NetworkPath;
         /// <summary>
@@ -152,8 +157,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _NetworkPath;
                 GetNetworkPath(ref value);
-                return (_NetworkPath = value);
+                return _NetworkPath = value;
             }
+
             set
             {
                 string oldValue = _NetworkPath;
@@ -166,7 +172,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -182,11 +188,10 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [ForeignKey("Library_Id")]
         public virtual Library Library { get; set; }
-
     }
 }
 

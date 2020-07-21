@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -137,14 +136,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult DeleteUser([FromRoute] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
-
-            if (user == null)
-            {
-                return NotFound("User not found");
-            }
-
             _sessionManager.RevokeUserTokens(user.Id, null);
-            _userManager.DeleteUser(user);
+            _userManager.DeleteUser(userId);
             return NoContent();
         }
 

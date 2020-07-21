@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +28,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 throw new ArgumentNullException(nameof(source));
             }
+
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));
@@ -111,7 +114,6 @@ namespace MediaBrowser.Providers.Manager
                 if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
                 {
                     targetResult.People = sourceResult.People;
-
                 }
                 else if (targetResult.People != null && sourceResult.People != null)
                 {

@@ -1,0 +1,163 @@
+jobs:
+- job: BuildPackage
+  displayName: 'Build Packages'
+
+  strategy:
+    matrix:
+      CentOS.amd64:
+        BuildConfiguration: centos.amd64
+      Fedora.amd64:
+        BuildConfiguration: fedora.amd64
+      Debian.amd64:
+        BuildConfiguration: debian.amd64
+      Debian.arm64:
+        BuildConfiguration: debian.arm64
+      Debian.armhf:
+        BuildConfiguration: debian.armhf
+      Ubuntu.amd64:
+        BuildConfiguration: ubuntu.amd64
+      Ubuntu.arm64:
+        BuildConfiguration: ubuntu.arm64
+      Ubuntu.armhf:
+        BuildConfiguration: ubuntu.armhf
+      Linux.amd64:
+        BuildConfiguration: linux.amd64
+      Windows.amd64:
+        BuildConfiguration: windows.amd64
+      MacOS:
+        BuildConfiguration: macos
+      Portable:
+        BuildConfiguration: portable
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) deployment'
+    displayName: 'Build Dockerfile'
+
+  - script: 'docker image ls -a && docker run -v $(pwd)/deployment/dist:/dist -v $(pwd):/jellyfin -e IS_UNSTABLE="yes" -e BUILD_ID=$(Build.BuildNumber) jellyfin-server-$(BuildConfiguration)'
+    displayName: 'Run Dockerfile (unstable)'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+
+  - script: 'docker image ls -a && docker run -v $(pwd)/deployment/dist:/dist -v $(pwd):/jellyfin -e IS_UNSTABLE="no" -e BUILD_ID=$(Build.BuildNumber) jellyfin-server-$(BuildConfiguration)'
+    displayName: 'Run Dockerfile (stable)'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publish Release'
+    inputs:
+      targetPath: '$(Build.SourcesDirectory)/deployment/dist'
+      artifactName: 'jellyfin-server-$(BuildConfiguration)'
+
+  - task: SSH@0
+    displayName: 'Create target directory on repository server'
+    inputs:
+      sshEndpoint: repository
+      runOptions: 'inline'
+      inline: 'mkdir -p /srv/repository/incoming/azure/$(Build.BuildNumber)/$(BuildConfiguration)'
+
+  - task: CopyFilesOverSSH@0
+    displayName: 'Upload artifacts to repository server'
+    inputs:
+      sshEndpoint: repository
+      sourceFolder: '$(Build.SourcesDirectory)/deployment/dist'
+      contents: '**'
+      targetFolder: '/srv/repository/incoming/azure/$(Build.BuildNumber)/$(BuildConfiguration)'
+
+- job: BuildDocker
+  displayName: 'Build Docker'
+
+  strategy:
+    matrix:
+      amd64:
+        BuildConfiguration: amd64
+      arm64:
+        BuildConfiguration: arm64
+      armhf:
+        BuildConfiguration: armhf
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: Docker@2
+    displayName: 'Push Unstable Image'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+    inputs:
+      repository: 'jellyfin/jellyfin-server'
+      command: buildAndPush
+      buildContext: '.'
+      Dockerfile: 'deployment/Dockerfile.docker.$(BuildConfiguration)'
+      containerRegistry: Docker Hub
+      tags: |
+        unstable-$(Build.BuildNumber)-$(BuildConfiguration)
+        unstable-$(BuildConfiguration)
+
+  - task: Docker@2
+    displayName: 'Push Stable Image'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    inputs:
+      repository: 'jellyfin/jellyfin-server'
+      command: buildAndPush
+      buildContext: '.'
+      Dockerfile: 'deployment/Dockerfile.docker.$(BuildConfiguration)'
+      containerRegistry: Docker Hub
+      tags: |
+        stable-$(Build.BuildNumber)-$(BuildConfiguration)
+        stable-$(BuildConfiguration)
+
+- job: CollectArtifacts
+  displayName: 'Collect Artifacts'
+  dependsOn:
+  - BuildPackage
+  - BuildDocker
+  condition: and(succeeded('BuildPackage'), succeeded('BuildDocker'))
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: SSH@0
+    displayName: 'Update Unstable Repository'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
+    inputs:
+      sshEndpoint: repository
+      runOptions: 'inline'
+      inline: |
+        sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable
+        rm $0
+        exit
+
+  - task: SSH@0
+    displayName: 'Update Stable Repository'
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+    inputs:
+      sshEndpoint: repository
+      runOptions: 'inline'
+      inline: |
+        sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)
+        rm $0
+        exit
+
+- job: PublishNuget
+  displayName: 'Publish NuGet packages'
+  dependsOn:
+  - BuildPackage
+  condition: and(succeeded('BuildPackage'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+  
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: NuGetCommand@2
+    inputs:
+      command: 'pack'
+      packagesToPack: Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj
+      packDestination: '$(Build.ArtifactStagingDirectory)'
+
+  - task: NuGetCommand@2
+    inputs:
+      command: 'push'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+      includeNugetOrg: 'true'

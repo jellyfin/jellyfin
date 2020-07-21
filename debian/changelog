@@ -1,3 +1,9 @@
+jellyfin-server (10.6.0-2) unstable; urgency=medium
+
+  * Fix upgrade bug
+
+ -- Joshua Boniface <joshua@boniface.me>  Sun, 19 Jul 22:47:27 -0400
+
 jellyfin-server (10.6.0-1) unstable; urgency=medium
 
   * Forthcoming stable release

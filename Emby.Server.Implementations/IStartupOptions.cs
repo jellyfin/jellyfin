@@ -37,11 +37,6 @@ namespace Emby.Server.Implementations
         string RestartArgs { get; }
 
         /// <summary>
-        /// Gets the value of the --plugin-manifest-url command line option.
-        /// </summary>
-        string PluginManifestUrl { get; }
-
-        /// <summary>
         /// Gets the value of the --published-server-url command line option.
         /// </summary>
         Uri PublishedServerUrl { get; }

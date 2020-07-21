@@ -111,7 +111,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 ChannelType = ChannelType.TV,
                 IsLegacyTuner = (i.URL ?? string.Empty).StartsWith("hdhomerun", StringComparison.OrdinalIgnoreCase),
                 Path = i.URL
-
             }).Cast<ChannelInfo>().ToList();
         }
 
@@ -171,6 +170,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             _modelCache[cacheKey] = response;
                         }
                     }
+
                     return response;
                 }
 
@@ -201,7 +201,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var index = line.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
                         var name = line.Substring(0, index - 1);
                         var currentChannel = line.Substring(index + 7);
-                        if (currentChannel != "none") { status = LiveTvTunerStatus.LiveTv; } else { status = LiveTvTunerStatus.Available; }
+                        if (currentChannel != "none")
+                        {
+                            status = LiveTvTunerStatus.LiveTv;
+                        }
+                        else
+                        {
+                            status = LiveTvTunerStatus.Available;
+                        }
+
                         tuners.Add(new LiveTvTunerInfo
                         {
                             Name = name,
@@ -230,11 +238,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     inside = true;
                     continue;
                 }
+
                 if (let == '>')
                 {
                     inside = false;
                     continue;
                 }
+
                 if (!inside)
                 {
                     buffer[bufferIndex] = let;
@@ -332,12 +342,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private class Channels
         {
             public string GuideNumber { get; set; }
+
             public string GuideName { get; set; }
+
             public string VideoCodec { get; set; }
+
             public string AudioCodec { get; set; }
+
             public string URL { get; set; }
+
             public bool Favorite { get; set; }
+
             public bool DRM { get; set; }
+
             public int HD { get; set; }
         }
 
@@ -481,7 +498,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 Height = height,
                                 BitRate = videoBitrate,
                                 NalLengthSize = nal
-
                             },
                             new MediaStream
                             {
@@ -502,8 +518,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 SupportsTranscoding = true,
                 IsInfiniteStream = true,
                 IgnoreDts = true,
-                //IgnoreIndex = true,
-                //ReadAtNativeFramerate = true
+                // IgnoreIndex = true,
+                // ReadAtNativeFramerate = true
             };
 
             mediaSource.InferTotalBitrate();
@@ -659,13 +675,21 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         public class DiscoverResponse
         {
             public string FriendlyName { get; set; }
+
             public string ModelNumber { get; set; }
+
             public string FirmwareName { get; set; }
+
             public string FirmwareVersion { get; set; }
+
             public string DeviceID { get; set; }
+
             public string DeviceAuth { get; set; }
+
             public string BaseURL { get; set; }
+
             public string LineupURL { get; set; }
+
             public int TunerCount { get; set; }
 
             public bool SupportsTranscoding
@@ -674,7 +698,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     var model = ModelNumber ?? string.Empty;
 
-                    if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                    if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         return true;
                     }
@@ -722,7 +746,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             }
                         }
                     }
-
                 }
                 catch (OperationCanceledException)
                 {

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -28,10 +30,12 @@ namespace MediaBrowser.Providers.Movies
             {
                 return false;
             }
+
             if (!item.ProductionYear.HasValue)
             {
                 return false;
             }
+
             return base.IsFullLocalMetadata(item);
         }
 

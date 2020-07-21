@@ -28,7 +28,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
         /// <param name="providerid"></param>
         /// <param name="_metadata0"></param>
@@ -40,21 +40,40 @@ namespace Jellyfin.Data.Entities
             // NOTE: This class has one-to-one associations with MetadataProviderId.
             // One-to-one associations are not validated in constructors since this causes a scenario where each one must be constructed before the other.
 
-            if (string.IsNullOrEmpty(providerid)) throw new ArgumentNullException(nameof(providerid));
+            if (string.IsNullOrEmpty(providerid))
+            {
+                throw new ArgumentNullException(nameof(providerid));
+            }
+
             this.ProviderId = providerid;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
+
             _metadata0.Sources.Add(this);
 
-            if (_person1 == null) throw new ArgumentNullException(nameof(_person1));
+            if (_person1 == null)
+            {
+                throw new ArgumentNullException(nameof(_person1));
+            }
+
             _person1.Sources.Add(this);
 
-            if (_personrole2 == null) throw new ArgumentNullException(nameof(_personrole2));
+            if (_personrole2 == null)
+            {
+                throw new ArgumentNullException(nameof(_personrole2));
+            }
+
             _personrole2.Sources.Add(this);
 
-            if (_ratingsource3 == null) throw new ArgumentNullException(nameof(_ratingsource3));
-            _ratingsource3.Source = this;
+            if (_ratingsource3 == null)
+            {
+                throw new ArgumentNullException(nameof(_ratingsource3));
+            }
 
+            _ratingsource3.Source = this;
 
             Init();
         }
@@ -77,7 +96,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Id
+        /// Backing field for Id.
         /// </summary>
         internal int _Id;
         /// <summary>
@@ -90,7 +109,7 @@ namespace Jellyfin.Data.Entities
         partial void GetId(ref int result);
 
         /// <summary>
-        /// Identity, Indexed, Required
+        /// Identity, Indexed, Required.
         /// </summary>
         [Key]
         [Required]
@@ -101,8 +120,9 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
+
             protected set
             {
                 int oldValue = _Id;
@@ -115,7 +135,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for ProviderId
+        /// Backing field for ProviderId.
         /// </summary>
         protected string _ProviderId;
         /// <summary>
@@ -139,8 +159,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _ProviderId;
                 GetProviderId(ref value);
-                return (_ProviderId = value);
+                return _ProviderId = value;
             }
+
             set
             {
                 string oldValue = _ProviderId;
@@ -153,7 +174,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Required, ConcurrenyToken
+        /// Required, ConcurrenyToken.
         /// </summary>
         [ConcurrencyCheck]
         [Required]
@@ -169,11 +190,10 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Required
+        /// Required.
         /// </summary>
         [ForeignKey("MetadataProvider_Id")]
         public virtual MetadataProvider MetadataProvider { get; set; }
-
     }
 }
 

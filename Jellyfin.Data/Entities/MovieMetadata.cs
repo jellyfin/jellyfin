@@ -28,20 +28,32 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_movie0"></param>
         public MovieMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Movie _movie0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_movie0 == null) throw new ArgumentNullException(nameof(_movie0));
+            if (_movie0 == null)
+            {
+                throw new ArgumentNullException(nameof(_movie0));
+            }
+
             _movie0.MovieMetadata.Add(this);
 
             this.Studios = new HashSet<Company>();
@@ -52,8 +64,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_movie0"></param>
         public static MovieMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Movie _movie0)
         {
@@ -65,7 +77,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Outline
+        /// Backing field for Outline.
         /// </summary>
         protected string _Outline;
         /// <summary>
@@ -88,8 +100,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Outline;
                 GetOutline(ref value);
-                return (_Outline = value);
+                return _Outline = value;
             }
+
             set
             {
                 string oldValue = _Outline;
@@ -102,7 +115,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Plot
+        /// Backing field for Plot.
         /// </summary>
         protected string _Plot;
         /// <summary>
@@ -125,8 +138,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Plot;
                 GetPlot(ref value);
-                return (_Plot = value);
+                return _Plot = value;
             }
+
             set
             {
                 string oldValue = _Plot;
@@ -139,7 +153,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Tagline
+        /// Backing field for Tagline.
         /// </summary>
         protected string _Tagline;
         /// <summary>
@@ -162,8 +176,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Tagline;
                 GetTagline(ref value);
-                return (_Tagline = value);
+                return _Tagline = value;
             }
+
             set
             {
                 string oldValue = _Tagline;
@@ -176,7 +191,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Country
+        /// Backing field for Country.
         /// </summary>
         protected string _Country;
         /// <summary>
@@ -199,8 +214,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Country;
                 GetCountry(ref value);
-                return (_Country = value);
+                return _Country = value;
             }
+
             set
             {
                 string oldValue = _Country;
@@ -217,7 +233,6 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
         [ForeignKey("Company_Studios_Id")]
         public virtual ICollection<Company> Studios { get; protected set; }
-
     }
 }
 

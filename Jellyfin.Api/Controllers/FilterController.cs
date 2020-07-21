@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Dto;
