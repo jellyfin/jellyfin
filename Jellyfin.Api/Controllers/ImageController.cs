@@ -100,6 +100,11 @@ namespace Jellyfin.Api.Controllers
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(_serverConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+            if (user.ProfileImage != null)
+            {
+                _userManager.ClearProfileImage(user);
+            }
+
             user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
 
             await _providerManager
