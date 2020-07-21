@@ -1547,7 +1547,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         IsFolder = false,
                         Recursive = true,
                         DtoOptions = new DtoOptions(true)
-
                     })
                     .Where(i => i.IsFileProtocol && File.Exists(i.Path))
                     .Skip(seriesTimer.KeepUpTo - 1)

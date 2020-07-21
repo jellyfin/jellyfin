@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string providerName,
-            [FromQuery] bool includeAllLanguages)
+            [FromQuery] bool includeAllLanguages = false)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -208,7 +208,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> DownloadRemoteImage(
             [FromRoute] Guid itemId,
             [FromQuery, BindRequired] ImageType type,
-            [FromQuery] string imageUrl)
+            [FromQuery] string? imageUrl)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)

@@ -124,6 +124,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is post padding required; otherwise, <c>false</c>.</value>
         public bool IsPostPaddingRequired { get; set; }
+
         public KeepUntil KeepUntil { get; set; }
     }
 }

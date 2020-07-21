@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
-        /// Name of the program
+        /// Name of the program.
         /// </summary>
         public string Name { get; set; }
 
@@ -95,13 +95,13 @@ namespace MediaBrowser.Controller.LiveTv
         public string EpisodeTitle { get; set; }
 
         /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system
+        /// Supply the image path if it can be accessed directly from the file system.
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
 
         /// <summary>
-        /// Supply the image url if it can be downloaded
+        /// Supply the image url if it can be downloaded.
         /// </summary>
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }
@@ -199,6 +199,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string Etag { get; set; }
 
         public Dictionary<string, string> ProviderIds { get; set; }
+
         public Dictionary<string, string> SeriesProviderIds { get; set; }
 
         public ProgramInfo()

@@ -24,22 +24,33 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Public constructor with required data
+        /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_company0"></param>
         public CompanyMetadata(string title, string language, DateTime dateadded, DateTime datemodified, Company _company0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_company0 == null) throw new ArgumentNullException(nameof(_company0));
-            _company0.CompanyMetadata.Add(this);
+            if (_company0 == null)
+            {
+                throw new ArgumentNullException(nameof(_company0));
+            }
 
+            _company0.CompanyMetadata.Add(this);
 
             Init();
         }
@@ -47,8 +58,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_company0"></param>
         public static CompanyMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, Company _company0)
         {
@@ -60,7 +71,7 @@ namespace Jellyfin.Data.Entities
          *************************************************************************/
 
         /// <summary>
-        /// Backing field for Description
+        /// Backing field for Description.
         /// </summary>
         protected string _Description;
         /// <summary>
@@ -83,8 +94,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Description;
                 GetDescription(ref value);
-                return (_Description = value);
+                return _Description = value;
             }
+
             set
             {
                 string oldValue = _Description;
@@ -97,7 +109,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Headquarters
+        /// Backing field for Headquarters.
         /// </summary>
         protected string _Headquarters;
         /// <summary>
@@ -120,8 +132,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Headquarters;
                 GetHeadquarters(ref value);
-                return (_Headquarters = value);
+                return _Headquarters = value;
             }
+
             set
             {
                 string oldValue = _Headquarters;
@@ -134,7 +147,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Country
+        /// Backing field for Country.
         /// </summary>
         protected string _Country;
         /// <summary>
@@ -157,8 +170,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Country;
                 GetCountry(ref value);
-                return (_Country = value);
+                return _Country = value;
             }
+
             set
             {
                 string oldValue = _Country;
@@ -171,7 +185,7 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Backing field for Homepage
+        /// Backing field for Homepage.
         /// </summary>
         protected string _Homepage;
         /// <summary>
@@ -194,8 +208,9 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Homepage;
                 GetHomepage(ref value);
-                return (_Homepage = value);
+                return _Homepage = value;
             }
+
             set
             {
                 string oldValue = _Homepage;
@@ -210,7 +225,6 @@ namespace Jellyfin.Data.Entities
         /*************************************************************************
          * Navigation properties
          *************************************************************************/
-
     }
 }
 

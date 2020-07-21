@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -137,14 +136,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult DeleteUser([FromRoute] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
-
-            if (user == null)
-            {
-                return NotFound("User not found");
-            }
-
             _sessionManager.RevokeUserTokens(user.Id, null);
-            _userManager.DeleteUser(user);
+            _userManager.DeleteUser(userId);
             return NoContent();
         }
 
@@ -164,8 +157,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
             [FromRoute, Required] Guid userId,
-            [FromQuery, BindRequired] string pw,
-            [FromQuery, BindRequired] string password)
+            [FromQuery, BindRequired] string? pw,
+            [FromQuery, BindRequired] string? password)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -483,7 +476,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing a <see cref="ForgotPasswordResult"/>.</returns>
         [HttpPost("ForgotPassword")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string enteredUsername)
+        public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody] string? enteredUsername)
         {
             var isLocal = HttpContext.Connection.RemoteIpAddress.Equals(HttpContext.Connection.LocalIpAddress)
                           || _networkManager.IsInLocalNetwork(HttpContext.Connection.RemoteIpAddress.ToString());
@@ -501,7 +494,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing a <see cref="PinRedeemResult"/>.</returns>
         [HttpPost("ForgotPassword/Pin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string pin)
+        public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string? pin)
         {
             var result = await _userManager.RedeemPasswordResetPin(pin).ConfigureAwait(false);
             return result;

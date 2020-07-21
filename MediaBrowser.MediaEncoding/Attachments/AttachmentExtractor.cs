@@ -269,7 +269,6 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             if (disposing)
             {
-
             }
 
             _disposed = true;

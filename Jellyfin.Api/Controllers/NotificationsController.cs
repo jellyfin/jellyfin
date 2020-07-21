@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Models.NotificationDtos;
@@ -93,8 +92,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CreateAdminNotification(
-            [FromQuery] string name,
-            [FromQuery] string description,
+            [FromQuery] string? name,
+            [FromQuery] string? description,
             [FromQuery] string? url,
             [FromQuery] NotificationLevel? level)
         {

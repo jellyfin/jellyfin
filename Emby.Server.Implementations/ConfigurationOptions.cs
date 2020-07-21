@@ -17,7 +17,6 @@ namespace Emby.Server.Implementations
         {
             { HostWebClientKey, bool.TrueString },
             { HttpListenerHost.DefaultRedirectKey, "web/index.html" },
-            { InstallationManager.PluginManifestUrlKey, "https://repo.jellyfin.org/releases/plugin/manifest-stable.json" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" },
             { PlaylistsAllowDuplicatesKey, bool.TrueString }

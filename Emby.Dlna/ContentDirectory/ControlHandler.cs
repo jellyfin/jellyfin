@@ -466,12 +466,12 @@ namespace Emby.Dlna.ContentDirectory
             }
             else if (search.SearchType == SearchType.Playlist)
             {
-                //items = items.OfType<Playlist>();
+                // items = items.OfType<Playlist>();
                 isFolder = true;
             }
             else if (search.SearchType == SearchType.MusicAlbum)
             {
-                //items = items.OfType<MusicAlbum>();
+                // items = items.OfType<MusicAlbum>();
                 isFolder = true;
             }
 
@@ -926,7 +926,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMovieCollections(User user, InternalItemsQuery query)
         {
             query.Recursive = true;
-            //query.Parent = parent;
+            // query.Parent = parent;
             query.SetUser(user);
 
             query.IncludeItemTypes = new[] { typeof(BoxSet).Name };
@@ -1357,6 +1357,7 @@ namespace Emby.Dlna.ContentDirectory
     internal class ServerItem
     {
         public BaseItem Item { get; set; }
+
         public StubType? StubType { get; set; }
 
         public ServerItem(BaseItem item)

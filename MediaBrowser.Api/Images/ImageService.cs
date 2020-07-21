@@ -41,7 +41,7 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class GetPersonImage
+    /// Class GetPersonImage.
     /// </summary>
     [Route("/Artists/{Name}/Images/{Type}", "GET")]
     [Route("/Artists/{Name}/Images/{Type}/{Index}", "GET")]
@@ -78,7 +78,7 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class GetUserImage
+    /// Class GetUserImage.
     /// </summary>
     [Route("/Users/{Id}/Images/{Type}", "GET")]
     [Route("/Users/{Id}/Images/{Type}/{Index}", "GET")]
@@ -95,7 +95,7 @@ namespace MediaBrowser.Api.Images
     }
 
     /// <summary>
-    /// Class ImageService
+    /// Class ImageService.
     /// </summary>
     public class ImageService : BaseApiService
     {
@@ -405,7 +405,6 @@ namespace MediaBrowser.Api.Images
                 Path = imageResult.Item1,
 
                 FileShare = FileShare.Read
-
             }).ConfigureAwait(false);
         }
 
@@ -558,6 +557,11 @@ namespace MediaBrowser.Api.Images
             // Handle image/png; charset=utf-8
             mimeType = mimeType.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+            if (user.ProfileImage != null)
+            {
+                _userManager.ClearProfileImage(user);
+            }
+            
             user.ProfileImage = new Jellyfin.Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
 
             await _providerManager

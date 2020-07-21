@@ -28,7 +28,6 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback
 {
-    [Route("/Items/{Id}/PlaybackInfo", "GET", Summary = "Gets live playback media info for an item")]
     public class GetPlaybackInfo : IReturn<PlaybackInfoResponse>
     {
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
@@ -38,24 +37,20 @@ namespace MediaBrowser.Api.Playback
         public Guid UserId { get; set; }
     }
 
-    [Route("/Items/{Id}/PlaybackInfo", "POST", Summary = "Gets live playback media info for an item")]
     public class GetPostedPlaybackInfo : PlaybackInfoRequest, IReturn<PlaybackInfoResponse>
     {
     }
 
-    [Route("/LiveStreams/Open", "POST", Summary = "Opens a media source")]
     public class OpenMediaSource : LiveStreamRequest, IReturn<LiveStreamResponse>
     {
     }
 
-    [Route("/LiveStreams/Close", "POST", Summary = "Closes a media source")]
     public class CloseMediaSource : IReturnVoid
     {
         [ApiMember(Name = "LiveStreamId", Description = "LiveStreamId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string LiveStreamId { get; set; }
     }
 
-    [Route("/Playback/BitrateTest", "GET")]
     public class GetBitrateTestBytes
     {
         [ApiMember(Name = "Size", Description = "Size", IsRequired = true, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -551,10 +546,12 @@ namespace MediaBrowser.Api.Playback
                             {
                                 mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
                             }
+
                             if (!allowAudioStreamCopy)
                             {
                                 mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
                             }
+
                             mediaSource.TranscodingContainer = streamInfo.Container;
                             mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                         }
@@ -646,7 +643,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 // Let's assume direct streaming a file is just as desirable as direct playing a remote url
@@ -656,7 +652,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(i =>
             {
                 return i.Protocol switch
@@ -672,7 +667,6 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return 1;
-
             }).ThenBy(originalList.IndexOf)
             .ToArray();
         }

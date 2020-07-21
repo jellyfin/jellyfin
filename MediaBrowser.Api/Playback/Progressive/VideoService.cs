@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback.Progressive
 {
     /// <summary>
-    /// Class GetVideoStream
+    /// Class GetVideoStream.
     /// </summary>
     [Route("/Videos/{Id}/stream.mpegts", "GET")]
     [Route("/Videos/{Id}/stream.ts", "GET")]
@@ -59,11 +59,10 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream", "HEAD")]
     public class GetVideoStream : VideoStreamRequest
     {
-
     }
 
     /// <summary>
-    /// Class VideoService
+    /// Class VideoService.
     /// </summary>
     // TODO: In order to autheneticate this in the future, Dlna playback will require updating
     //[Authenticated]

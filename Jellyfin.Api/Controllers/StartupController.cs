@@ -40,7 +40,6 @@ namespace Jellyfin.Api.Controllers
         public ActionResult CompleteWizard()
         {
             _config.Configuration.IsStartupWizardCompleted = true;
-            _config.SetOptimalValues();
             _config.SaveConfiguration();
             return NoContent();
         }
@@ -75,9 +74,9 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Configuration")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateInitialConfiguration(
-            [FromForm] string uiCulture,
-            [FromForm] string metadataCountryCode,
-            [FromForm] string preferredMetadataLanguage)
+            [FromForm] string? uiCulture,
+            [FromForm] string? metadataCountryCode,
+            [FromForm] string? preferredMetadataLanguage)
         {
             _config.Configuration.UICulture = uiCulture;
             _config.Configuration.MetadataCountryCode = metadataCountryCode;

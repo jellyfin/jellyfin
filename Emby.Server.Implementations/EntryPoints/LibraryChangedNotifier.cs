@@ -132,7 +132,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
                 catch
                 {
-
                 }
             }
         }

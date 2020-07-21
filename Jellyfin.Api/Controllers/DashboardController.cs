@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Jellyfin.Api.Models;
@@ -122,7 +121,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/web/ConfigurationPage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult GetDashboardConfigurationPage([FromQuery] string name)
+        public ActionResult GetDashboardConfigurationPage([FromQuery] string? name)
         {
             IPlugin? plugin = null;
             Stream? stream = null;

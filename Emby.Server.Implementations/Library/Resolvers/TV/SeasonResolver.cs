@@ -23,8 +23,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="config">The config.</param>
         /// <param name="libraryManager">The library manager.</param>
-        /// <param name="localization">The localization</param>
-        /// <param name="logger">The logger</param>
+        /// <param name="localization">The localization.</param>
+        /// <param name="logger">The logger.</param>
         public SeasonResolver(
             IServerConfigurationManager config,
             ILibraryManager libraryManager,
@@ -94,7 +94,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             _localization.GetLocalizedString("NameSeasonNumber"),
                             seasonNumber,
                             args.GetLibraryOptions().PreferredMetadataLanguage);
-
                 }
 
                 return season;

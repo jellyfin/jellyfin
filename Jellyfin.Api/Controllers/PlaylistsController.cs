@@ -84,11 +84,11 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddToPlaylist(
-            [FromRoute] string playlistId,
-            [FromQuery] string ids,
-            [FromQuery] Guid userId)
+            [FromRoute] string? playlistId,
+            [FromQuery] string? ids,
+            [FromQuery] Guid? userId)
         {
-            _playlistManager.AddToPlaylist(playlistId, RequestHelpers.GetGuids(ids), userId);
+            _playlistManager.AddToPlaylist(playlistId, RequestHelpers.GetGuids(ids), userId ?? Guid.Empty);
             return NoContent();
         }
 
@@ -103,8 +103,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("{playlistId}/Items/{itemId}/Move/{newIndex}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult MoveItem(
-            [FromRoute] string playlistId,
-            [FromRoute] string itemId,
+            [FromRoute] string? playlistId,
+            [FromRoute] string? itemId,
             [FromRoute] int newIndex)
         {
             _playlistManager.MoveItem(playlistId, itemId, newIndex);
@@ -120,7 +120,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="NoContentResult"/> on success.</returns>
         [HttpDelete("{playlistId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RemoveFromPlaylist([FromRoute] string playlistId, [FromQuery] string entryIds)
+        public ActionResult RemoveFromPlaylist([FromRoute] string? playlistId, [FromQuery] string? entryIds)
         {
             _playlistManager.RemoveFromPlaylist(playlistId, RequestHelpers.Split(entryIds, ',', true));
             return NoContent();
@@ -147,11 +147,11 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] Guid userId,
             [FromRoute] int? startIndex,
             [FromRoute] int? limit,
-            [FromRoute] string fields,
+            [FromRoute] string? fields,
             [FromRoute] bool? enableImages,
             [FromRoute] bool? enableUserData,
             [FromRoute] int? imageTypeLimit,
-            [FromRoute] string enableImageTypes)
+            [FromRoute] string? enableImageTypes)
         {
             var playlist = (Playlist)_libraryManager.GetItemById(playlistId);
             if (playlist == null)

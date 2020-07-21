@@ -61,8 +61,8 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<SessionInfo>> GetSessions(
-            [FromQuery] Guid controllableByUserId,
-            [FromQuery] string deviceId,
+            [FromQuery] Guid? controllableByUserId,
+            [FromQuery] string? deviceId,
             [FromQuery] int? activeWithinSeconds)
         {
             var result = _sessionManager.Sessions;
@@ -72,15 +72,15 @@ namespace Jellyfin.Api.Controllers
                 result = result.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!controllableByUserId.Equals(Guid.Empty))
+            if (controllableByUserId.HasValue && !controllableByUserId.Equals(Guid.Empty))
             {
                 result = result.Where(i => i.SupportsRemoteControl);
 
-                var user = _userManager.GetUserById(controllableByUserId);
+                var user = _userManager.GetUserById(controllableByUserId.Value);
 
                 if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
                 {
-                    result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(controllableByUserId));
+                    result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(controllableByUserId.Value));
                 }
 
                 if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
@@ -123,10 +123,10 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/{sessionId}/Viewing")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult DisplayContent(
-            [FromRoute] string sessionId,
-            [FromQuery] string itemType,
-            [FromQuery] string itemId,
-            [FromQuery] string itemName)
+            [FromRoute] string? sessionId,
+            [FromQuery] string? itemType,
+            [FromQuery] string? itemId,
+            [FromQuery] string? itemName)
         {
             var command = new BrowseRequest
             {
@@ -157,7 +157,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/{sessionId}/Playing")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play(
-            [FromRoute] string sessionId,
+            [FromRoute] string? sessionId,
             [FromQuery] Guid[] itemIds,
             [FromQuery] long? startPositionTicks,
             [FromQuery] PlayCommand playCommand,
@@ -191,7 +191,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/{sessionId}/Playing/{command}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendPlaystateCommand(
-            [FromRoute] string sessionId,
+            [FromRoute] string? sessionId,
             [FromBody] PlaystateRequest playstateRequest)
         {
             _sessionManager.SendPlaystateCommand(
@@ -213,8 +213,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/{sessionId}/System/{command}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendSystemCommand(
-            [FromRoute] string sessionId,
-            [FromRoute] string command)
+            [FromRoute] string? sessionId,
+            [FromRoute] string? command)
         {
             var name = command;
             if (Enum.TryParse(name, true, out GeneralCommandType commandType))
@@ -244,8 +244,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/{sessionId}/Command/{Command}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendGeneralCommand(
-            [FromRoute] string sessionId,
-            [FromRoute] string command)
+            [FromRoute] string? sessionId,
+            [FromRoute] string? command)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
 
@@ -270,7 +270,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/{sessionId}/Command")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendFullGeneralCommand(
-            [FromRoute] string sessionId,
+            [FromRoute] string? sessionId,
             [FromBody, Required] GeneralCommand command)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
@@ -303,9 +303,9 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/{sessionId}/Message")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendMessageCommand(
-            [FromRoute] string sessionId,
-            [FromQuery] string text,
-            [FromQuery] string header,
+            [FromRoute] string? sessionId,
+            [FromQuery] string? text,
+            [FromQuery] string? header,
             [FromQuery] long? timeoutMs)
         {
             var command = new MessageCommand
@@ -330,7 +330,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/{sessionId}/User/{userId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddUserToSession(
-            [FromRoute] string sessionId,
+            [FromRoute] string? sessionId,
             [FromRoute] Guid userId)
         {
             _sessionManager.AddAdditionalUser(sessionId, userId);
@@ -347,7 +347,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("/Sessions/{sessionId}/User/{userId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RemoveUserFromSession(
-            [FromRoute] string sessionId,
+            [FromRoute] string? sessionId,
             [FromRoute] Guid userId)
         {
             _sessionManager.RemoveAdditionalUser(sessionId, userId);
@@ -368,11 +368,11 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/Capabilities")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostCapabilities(
-            [FromQuery] string id,
-            [FromQuery] string playableMediaTypes,
-            [FromQuery] string supportedCommands,
-            [FromQuery] bool supportsMediaControl,
-            [FromQuery] bool supportsSync,
+            [FromQuery] string? id,
+            [FromQuery] string? playableMediaTypes,
+            [FromQuery] string? supportedCommands,
+            [FromQuery] bool supportsMediaControl = false,
+            [FromQuery] bool supportsSync = false,
             [FromQuery] bool supportsPersistentIdentifier = true)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -401,7 +401,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/Capabilities/Full")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostFullCapabilities(
-            [FromQuery] string id,
+            [FromQuery] string? id,
             [FromBody, Required] ClientCapabilities capabilities)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -424,8 +424,8 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("/Sessions/Viewing")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult ReportViewing(
-            [FromQuery] string sessionId,
-            [FromQuery] string itemId)
+            [FromQuery] string? sessionId,
+            [FromQuery] string? itemId)
         {
             string session = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
 

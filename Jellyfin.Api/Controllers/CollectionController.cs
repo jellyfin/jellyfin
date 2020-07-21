@@ -44,17 +44,17 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="name">The name of the collection.</param>
         /// <param name="ids">Item Ids to add to the collection.</param>
-        /// <param name="isLocked">Whether or not to lock the new collection.</param>
         /// <param name="parentId">Optional. Create the collection within a specific folder.</param>
+        /// <param name="isLocked">Whether or not to lock the new collection.</param>
         /// <response code="200">Collection created.</response>
         /// <returns>A <see cref="CollectionCreationOptions"/> with information about the new collection.</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<CollectionCreationResult> CreateCollection(
-            [FromQuery] string name,
-            [FromQuery] string ids,
-            [FromQuery] bool isLocked,
-            [FromQuery] Guid? parentId)
+            [FromQuery] string? name,
+            [FromQuery] string? ids,
+            [FromQuery] Guid? parentId,
+            [FromQuery] bool isLocked = false)
         {
             var userId = _authContext.GetAuthorizationInfo(Request).UserId;
 
@@ -86,7 +86,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult AddToCollection([FromRoute] Guid collectionId, [FromQuery] string itemIds)
+        public ActionResult AddToCollection([FromRoute] Guid collectionId, [FromQuery] string? itemIds)
         {
             _collectionManager.AddToCollection(collectionId, RequestHelpers.Split(itemIds, ',', true));
             return NoContent();
@@ -101,7 +101,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpDelete("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery] string itemIds)
+        public ActionResult RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery] string? itemIds)
         {
             _collectionManager.RemoveFromCollection(collectionId, RequestHelpers.Split(itemIds, ',', true));
             return NoContent();
