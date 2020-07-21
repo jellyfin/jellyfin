@@ -73,10 +73,13 @@ namespace Rssdp.Infrastructure
         /// <param name="networkManager">The networkManager<see cref="INetworkManager"/>.</param>
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <param name="enableMultiSocketBinding">The enableMultiSocketBinding<see cref="bool"/>.</param>
-        public SsdpCommunicationsServer(IServerConfigurationManager config, ISocketFactory socketFactory,
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory,
-            INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
+        public SsdpCommunicationsServer(
+            IServerConfigurationManager config,
+            ISocketFactory socketFactory,
+            INetworkManager networkManager,
+            ILogger logger,
+            bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
             _config = config;
@@ -559,7 +562,6 @@ namespace Rssdp.Infrastructure
             }
 
             this.RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnLocalIpAddress));
-            }
         }
 
         private void OnResponseReceived(HttpResponseMessage data, IPEndPoint endPoint, IPAddress localIpAddress)

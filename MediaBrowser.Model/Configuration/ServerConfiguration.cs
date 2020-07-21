@@ -2,7 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -241,6 +243,8 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] CodecsUsed { get; set; }
 
+        public List<RepositoryInfo> PluginRepositories { get; set; }
+
         public bool IgnoreVirtualInterfaces { get; set; }
 
         public bool EnableExternalContentInSuggestions { get; set; }
@@ -277,7 +281,11 @@ namespace MediaBrowser.Model.Configuration
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false; // Unused.
             EnableSimpleArtistDetection = false;
+            SkipDeserializationForBasicTypes = true;
+
             EnableIPV6 = false;
+
+            PluginRepositories = new List<RepositoryInfo>();
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;

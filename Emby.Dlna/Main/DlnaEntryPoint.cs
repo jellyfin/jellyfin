@@ -235,7 +235,7 @@ namespace Emby.Dlna.Main
                 try
                 {
                     RegisterServerEndpoints();
-                    _publisher.SetBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+                    _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
                 }
                 catch (Exception ex)
                 {
@@ -259,7 +259,7 @@ namespace Emby.Dlna.Main
                 };
 
                 RegisterServerEndpoints();
-                _publisher.SetBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
+                _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
             }
             catch (Exception ex)
             {

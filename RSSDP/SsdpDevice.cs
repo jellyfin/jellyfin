@@ -327,7 +327,9 @@ namespace Rssdp
             if (wasRemoved)
             {
                 OnDeviceRemoved(device);
+            }
         }
+
         public override string ToString()
         {
             return $"{DeviceType} - {Uuid}";
