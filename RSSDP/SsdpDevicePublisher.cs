@@ -16,72 +16,20 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public class SsdpDevicePublisher : DisposableManagedObjectBase, ISsdpDevicePublisher
     {
-        /// <summary>
-        /// Defines the _CommsServer.
-        /// </summary>
         private ISsdpCommunicationsServer _CommsServer;
-
         private ILogger _logger;
-
-        /// <summary>
-        /// Defines the _OSName.
-        /// </summary>
         private string _OSName;
-
-        /// <summary>
-        /// Defines the _OSVersion.
-        /// </summary>
         private string _OSVersion;
-
-        /// <summary>
-        /// Defines the _sendOnlyMatchedHost.
-        /// </summary>
         private bool _sendOnlyMatchedHost;
-
-        /// <summary>
-        /// Defines the _SupportPnpRootDevice.
-        /// </summary>
         private bool _SupportPnpRootDevice;
-
-        /// <summary>
-        /// Defines the _Devices.
-        /// </summary>
         private IList<SsdpRootDevice> _Devices;
-
-        /// <summary>
-        /// Defines the _ReadOnlyDevices.
-        /// </summary>
         private IReadOnlyList<SsdpRootDevice> _ReadOnlyDevices;
-
-        /// <summary>
-        /// Defines the _RebroadcastAliveNotificationsTimer.
-        /// </summary>
         private Timer _RebroadcastAliveNotificationsTimer;
-
-        /// <summary>
-        /// Defines the _RecentSearchRequests.
-        /// </summary>
         private IDictionary<string, SearchRequest> _RecentSearchRequests;
-
-        /// <summary>
-        /// Defines the _Random.
-        /// </summary>
         private Random _Random;
-
-        /// <summary>
-        /// Defines the ServerVersion.
-        /// </summary>
         private const string ServerVersion = "1.0";
-
         private INetworkManager _networkManager;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SsdpDevicePublisher"/> class.
-        /// </summary>
-        /// <param name="communicationsServer">The communicationsServer<see cref="ISsdpCommunicationsServer"/>.</param>
-        /// <param name="osName">The osName<see cref="string"/>.</param>
-        /// <param name="osVersion">The osVersion<see cref="string"/>.</param>
-        /// <param name="sendOnlyMatchedHost">The sendOnlyMatchedHost<see cref="bool"/>.</param>
         public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, string osName, string osVersion, ILogger logger, INetworkManager networkManager, bool sendOnlyMatchedHost)
         {
             if (communicationsServer == null)
@@ -287,9 +235,9 @@ namespace Rssdp.Infrastructure
                 return; 
             }
 
-            //Wait on random interval up to MX, as per SSDP spec.
-            //Also, as per UPnP 1.1/SSDP spec ignore missing/bank MX header. If over 120, assume random value between 0 and 120.
-            //Using 16 as minimum as that's often the minimum system clock frequency anyway.
+            // Wait on random interval up to MX, as per SSDP spec.
+            // Also, as per UPnP 1.1/SSDP spec ignore missing/bank MX header. If over 120, assume random value between 0 and 120.
+            // Using 16 as minimum as that's often the minimum system clock frequency anyway.
             int maxWaitInterval = 0;
             if (String.IsNullOrEmpty(mx))
             {
@@ -384,12 +332,6 @@ namespace Rssdp.Infrastructure
             SendSearchResponse(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, receivedOnlocalIpAddress, cancellationToken);
         }
 
-        /// <summary>
-        /// The GetUsn.
-        /// </summary>
-        /// <param name="udn">The udn<see cref="string"/>.</param>
-        /// <param name="fullDeviceType">The fullDeviceType<see cref="string"/>.</param>
-        /// <returns>The <see cref="string"/>.</returns>
         private string GetUsn(string udn, string fullDeviceType)
         {
             return string.Format(CultureInfo.InvariantCulture, "{0}::{1}", udn, fullDeviceType);
