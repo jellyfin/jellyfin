@@ -58,7 +58,7 @@ namespace Emby.Dlna.Ssdp
         public DeviceDiscovery(IServerConfigurationManager config,  ILoggerFactory loggerFactory)
         {
             _config = config;
-            _logger = loggerFactory.CreateLogger("DeviceLocator");
+            _logger = loggerFactory.CreateLogger<DeviceDiscovery>();
         }
 
         // Call this method from somewhere in your code to start the search.

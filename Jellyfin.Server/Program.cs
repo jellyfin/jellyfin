@@ -13,6 +13,7 @@ using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.IO;
+using Emby.Server.Implementations.Networking;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller.Extensions;
@@ -275,20 +276,20 @@ namespace Jellyfin.Server
             return builder
                 .UseKestrel((builderContext, options) =>
                 {
-                    NetCollection addresses = appHost.NetManager.GetBindInterfaces();
+                    NetCollection addresses = NetworkManager.Instance.GetBindInterfaces();
 
                     if (addresses.Count > 0 && !addresses.Exists(IPAddress.Any))
                     {
                         // we must listen on loopback for LiveTV to function regardless of the settings
                         addresses.Add(IPAddress.Loopback);
 
-                        foreach (IPObject? netAdd in addresses)
+                        foreach (IPObject netAdd in addresses)
                         {
-                            _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd!.Address!);
-                            options.Listen(netAdd!.Address, appHost.HttpPort);
+                            _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd.Address);
+                            options.Listen(netAdd.Address, appHost.HttpPort);
                             if (appHost.ListenWithHttps)
                             {
-                                options.Listen(netAdd!.Address, appHost.HttpsPort, listenOptions =>
+                                options.Listen(netAdd.Address, appHost.HttpsPort, listenOptions =>
                                 {
                                     listenOptions.UseHttps(appHost.Certificate);
                                     listenOptions.Protocols = HttpProtocols.Http1AndHttp2;

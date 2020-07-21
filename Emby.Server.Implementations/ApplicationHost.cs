@@ -1191,7 +1191,7 @@ namespace Emby.Server.Implementations
 
                     if (addresses.Count > 0)
                     {
-                        _cachedLocalApiUrl = GetLocalApiUrl(addresses.Items[0].Address);
+                        _cachedLocalApiUrl = GetLocalApiUrl(addresses[0].Address);
                     }
                     else
                     {

@@ -58,14 +58,32 @@ namespace MediaBrowser.Common.Networking
         public int Count => Items.Count;
 
         /// <summary>
-        /// Gets direct access to the list.
-        /// </summary>
-        public List<IPObject> Items { get; }
-
-        /// <summary>
         /// Gets a value indicating whether this collection is readonly.
         /// </summary>
         public bool IsReadOnly => false;
+
+        /// <summary>
+        /// Gets direct access to the list.
+        /// </summary>
+        private List<IPObject> Items { get; }
+
+        /// <summary>
+        /// Collection index.
+        /// </summary>
+        /// <param name="index">The index offset.</param>
+        /// <returns>The item at the position in the collection.</returns>
+        public IPObject this[int index]
+        {
+            get
+            {
+                return (IPObject)Items[index];
+            }
+
+            set
+            {
+                Items[index] = value;
+            }
+        }
 
         /// <summary>
         /// Trys to identify the string and return an object of that class.
@@ -402,17 +420,17 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Enumerator function.
         /// </summary>
-        /// <returns>The enumerator function.</returns>
-        public IEnumerator GetEnumerator()
+        /// <returns>The IEnumerator function.</returns>
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return Items.GetEnumerator();
+            return GetEnumerator();
         }
 
         /// <summary>
         /// Enumerator function.
         /// </summary>
-        /// <returns>The enumerator function.</returns>
-        IEnumerator<IPObject> IEnumerable<IPObject>.GetEnumerator()
+        /// <returns>The IEnumerator{IPObject} function.</returns>
+        public IEnumerator<IPObject> GetEnumerator()
         {
             return Items.GetEnumerator();
         }

@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
 #pragma warning disable CA2211 // Non-constant fields should not be visible
 #pragma warning disable SA1401 // Fields should be private
-        public static NetworkManager? Instance;
+        public static NetworkManager Instance = null!;
 #pragma warning restore SA1401 // Fields should be private
 #pragma warning restore CA2211 // Non-constant fields should not be visible
 
@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.Networking
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
-            NetworkManager.Instance = this;
+            Instance = this;
         }
 
         /// <summary>
@@ -346,7 +346,7 @@ namespace Emby.Server.Implementations.Networking
                         return new NetCollection(_interfaceAddresses.Exclude(_bindExclusions));
                     }
 
-                    // Return all interfaces.
+                    // Return no interfaces.
                     return new NetCollection();
                 }
 
@@ -428,8 +428,8 @@ namespace Emby.Server.Implementations.Networking
             CancellationToken cancellationToken)
         {
             NetCollection interfaces = GetBindInterfaces();
-            // GetBindInterfaces returns zero items for all interfaces.
-            // We require all the individual interfaces.
+            // If GetBindInterfaces returns zero items for all interfaces,
+            // we require all the individual interfaces.
             if (interfaces.Count == 0)
             {
                 lock (_intLock)

@@ -184,9 +184,9 @@ namespace NetworkTesting
 
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(";"));
-            ncSource.Items[0].Tag = 1;
-            ncSource.Items[1].Tag = 2;
-            ncSource.Items[2].Tag = 3;
+            ncSource[0].Tag = 1;
+            ncSource[1].Tag = 2;
+            ncSource[2].Tag = 3;
             NetCollection first = ncSource.Callback(TestAsync, new CancellationToken(), 1);
             Assert.True(first.Count == 1);
         }

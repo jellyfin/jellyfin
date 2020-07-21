@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
+using Emby.Server.Implementations.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Configuration;
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Udp
         {
             _endpoint = new IPEndPoint(IPAddress.Any, port);
 
-            if (_appHost.NetManager.IsIP6Enabled)
+            if (NetworkManager.Instance.IsIP6Enabled)
             {
                 _udpSocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
                 _udpSocket.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
@@ -161,7 +161,7 @@ namespace Emby.Server.Implementations.Udp
                     var result = task.Result;
 
                     // If this from an excluded address don't both responding to it.
-                    if (!_appHost.NetManager.IsExcluded(((IPEndPoint)result.RemoteEndPoint).Address))
+                    if (!NetworkManager.Instance.IsExcluded(((IPEndPoint)result.RemoteEndPoint).Address))
                     {
                         var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
                         if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
