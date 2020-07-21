@@ -93,6 +93,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 overview = FFProbeHelpers.GetDictionaryValue(tags, "description");
             }
+
             if (string.IsNullOrWhiteSpace(overview))
             {
                 overview = FFProbeHelpers.GetDictionaryValue(tags, "desc");
@@ -274,10 +275,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                                             reader.Read();
                                             continue;
                                         }
+
                                         using (var subtree = reader.ReadSubtree())
                                         {
                                             ReadFromDictNode(subtree, info);
                                         }
+
                                         break;
                                     default:
                                         reader.Skip();
@@ -319,6 +322,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                             {
                                 ProcessPairs(currentKey, pairs, info);
                             }
+
                             currentKey = reader.ReadElementContentAsString();
                             pairs = new List<NameValuePair>();
                             break;
@@ -332,6 +336,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     Value = value
                                 });
                             }
+
                             break;
                         case "array":
                             if (reader.IsEmptyElement)
@@ -339,6 +344,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                 reader.Read();
                                 continue;
                             }
+
                             using (var subtree = reader.ReadSubtree())
                             {
                                 if (!string.IsNullOrWhiteSpace(currentKey))
@@ -346,6 +352,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     pairs.AddRange(ReadValueArray(subtree));
                                 }
                             }
+
                             break;
                         default:
                             reader.Skip();
@@ -381,6 +388,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                 reader.Read();
                                 continue;
                             }
+
                             using (var subtree = reader.ReadSubtree())
                             {
                                 var dict = GetNameValuePair(subtree);
@@ -389,6 +397,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                                     pairs.Add(dict);
                                 }
                             }
+
                             break;
                         default:
                             reader.Skip();
@@ -515,7 +524,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts ffprobe stream info to our MediaAttachment class
+        /// Converts ffprobe stream info to our MediaAttachment class.
         /// </summary>
         /// <param name="streamInfo">The stream info.</param>
         /// <returns>MediaAttachments.</returns>
@@ -548,7 +557,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Converts ffprobe stream info to our MediaStream class
+        /// Converts ffprobe stream info to our MediaStream class.
         /// </summary>
         /// <param name="isAudio">if set to <c>true</c> [is info].</param>
         /// <param name="streamInfo">The stream info.</param>
@@ -767,7 +776,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets a string from an FFProbeResult tags dictionary
+        /// Gets a string from an FFProbeResult tags dictionary.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
@@ -948,6 +957,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
                 }
+
                 audio.People = peoples.ToArray();
             }
 
@@ -979,6 +989,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
                 }
+
                 audio.People = peoples.ToArray();
             }
 
@@ -997,7 +1008,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 var artist = FFProbeHelpers.GetDictionaryValue(tags, "artist");
                 if (string.IsNullOrWhiteSpace(artist))
                 {
-                    audio.Artists = new string[] { };
+                    audio.Artists = Array.Empty<string>();
                 }
                 else
                 {
@@ -1012,6 +1023,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album artist");
             }
+
             if (string.IsNullOrWhiteSpace(albumArtist))
             {
                 albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "album_artist");
@@ -1019,7 +1031,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (string.IsNullOrWhiteSpace(albumArtist))
             {
-                audio.AlbumArtists = new string[] { };
+                audio.AlbumArtists = Array.Empty<string>();
             }
             else
             {
@@ -1053,23 +1065,43 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // These support mulitple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
+            }
+
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
+            }
+
             audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
+            }
+
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
+            }
+
             audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
-            if (mb == null) mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
+            if (mb == null)
+            {
+                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
+            }
+
             audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
 
@@ -1154,7 +1186,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the studios from the tags collection
+        /// Gets the studios from the tags collection.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <param name="tags">The tags.</param>
@@ -1175,6 +1207,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     {
                         continue;
                     }
+
                     if (info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
@@ -1191,7 +1224,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets the genres from the tags collection
+        /// Gets the genres from the tags collection.
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="tags">The tags.</param>
@@ -1351,14 +1384,18 @@ namespace MediaBrowser.MediaEncoding.Probing
                             description = string.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
                         }
                         else
+                        {
                             throw new Exception(); // Switch to default parsing
+                        }
                     }
                     catch // Default parsing
                     {
                         if (subtitle.Contains(".")) // skip the comment, keep the subtitle
                             description = string.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
                         else
+                        {
                             description = subtitle.Trim(); // Clean up whitespaces and save it
+                        }
                     }
                 }
             }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +28,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 throw new ArgumentNullException(nameof(source));
             }
+
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));

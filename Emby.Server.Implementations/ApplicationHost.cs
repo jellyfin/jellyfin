@@ -519,12 +519,10 @@ namespace Emby.Server.Implementations
 
                 foreach (var plugin in Plugins)
                 {
-                    pluginBuilder.AppendLine(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0} {1}",
-                            plugin.Name,
-                            plugin.Version));
+                    pluginBuilder.Append(plugin.Name)
+                        .Append(' ')
+                        .Append(plugin.Version)
+                        .AppendLine();
                 }
 
                 Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
@@ -602,10 +600,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            // TODO: Add StartupOptions.FFmpegPath to IConfiguration and remove this custom activation
             serviceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
-            serviceCollection.AddSingleton<IMediaEncoder>(provider =>
-                ActivatorUtilities.CreateInstance<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(provider, _startupOptions.FFmpegPath ?? string.Empty));
+            serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -909,6 +905,11 @@ namespace Emby.Server.Implementations
                     Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
                     continue;
                 }
+                catch (TypeLoadException ex)
+                {
+                    Logger.LogError(ex, "Error loading types from {Assembly}.", ass.FullName);
+                    continue;
+                }
 
                 foreach (Type type in exportedTypes)
                 {
@@ -992,7 +993,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Notifies that the kernel that a change has been made that requires a restart
+        /// Notifies that the kernel that a change has been made that requires a restart.
         /// </summary>
         public void NotifyPendingRestart()
         {

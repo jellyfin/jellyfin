@@ -51,6 +51,7 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
+                retVal.EnableBroadcast = true;
                 // seeing occasional exceptions thrown on qnap
                 // System.Net.Sockets.SocketException (0x80004005): Protocol not available
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -105,6 +106,7 @@ namespace Emby.Server.Implementations.Net
 
             try
             {
+                retVal.EnableBroadcast = true;
                 // seeing occasional exceptions thrown on qnap
                 // System.Net.Sockets.SocketException (0x80004005): Protocol not available
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);

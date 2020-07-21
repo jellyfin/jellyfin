@@ -18,19 +18,14 @@ namespace Emby.Server.Implementations.Udp
     /// </summary>
     public sealed class UdpServer : IDisposable
     {
-        /// <summary>
-        /// Address Override Configuration Key.
-        /// </summary>
-        public const string AddressOverrideConfigKey = "PublishedServerUrl";
-
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _config;
 
         /// <summary>
-        /// Receive buffer.
+        /// Address Override Configuration Key.
         /// </summary>
-        private readonly byte[] _receiveBuffer = new byte[8192];
+        public const string AddressOverrideConfigKey = "PublishedServerUrl";
 
         /// <summary>
         /// UDP socket being used.
@@ -41,6 +36,8 @@ namespace Emby.Server.Implementations.Udp
         /// IPAddress.Any endpoint.
         /// </summary>
         private IPEndPoint _endpoint;
+
+        private readonly byte[] _receiveBuffer = new byte[8192];
 
         /// <summary>
         /// Not quite sure why this is here.
@@ -58,6 +55,49 @@ namespace Emby.Server.Implementations.Udp
             _logger = logger;
             _appHost = appHost;
             _config = configuration;
+        }
+
+        /// <summary>
+        /// Processes any received data.
+        /// </summary>
+        /// <param name="messageText">Message text received.</param>
+        /// <param name="endpoint">Received from.</param>
+        /// <param name="cancellationToken">Cancellation Token.</param>
+        /// <returns>Task.</returns>
+        private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
+        {
+            string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
+                ? _config[AddressOverrideConfigKey]
+                : _appHost.GetLocalApiUrl(cancellationToken);
+
+            if (!string.IsNullOrEmpty(localUrl))
+            {
+                var response = new ServerDiscoveryInfo
+                {
+                    Address = localUrl,
+                    Id = _appHost.SystemId,
+                    Name = _appHost.FriendlyName
+                };
+
+                try
+                {
+                    await _udpSocket.SendToAsync(JsonSerializer.SerializeToUtf8Bytes(response), SocketFlags.None, endpoint).ConfigureAwait(false);
+                }
+                catch (SocketException ex)
+                {
+                    _logger.LogError(ex, "Error sending response message");
+                }
+
+                var parts = messageText.Split('|');
+                if (parts.Length > 1)
+                {
+                    _appHost.EnableLoopback(parts[1]);
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Unable to respond to udp request because the local ip address could not be determined.");
+            }
         }
 
         /// <summary>
@@ -107,11 +147,18 @@ namespace Emby.Server.Implementations.Udp
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                var infiniteTask = Task.Delay(-1, cancellationToken);
                 try
                 {
-                    var result = await _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint).ConfigureAwait(false);
+                    var task = _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint);
+                    await Task.WhenAny(task, infiniteTask).ConfigureAwait(false);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (!task.IsCompleted)
+                    {
+                        return;
+                    }
+
+                    var result = task.Result;
 
                     // If this from an excluded address don't both responding to it.
                     if (!_appHost.NetManager.IsExcluded(((IPEndPoint)result.RemoteEndPoint).Address))
@@ -135,49 +182,6 @@ namespace Emby.Server.Implementations.Udp
                 {
                     // Don't throw
                 }
-            }
-        }
-
-        /// <summary>
-        /// Processes any received data.
-        /// </summary>
-        /// <param name="messageText">Message text received.</param>
-        /// <param name="endpoint">Received from.</param>
-        /// <param name="cancellationToken">Cancellation Token.</param>
-        /// <returns>Task.</returns>
-        private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
-        {
-            string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
-                ? _config[AddressOverrideConfigKey]
-                : _appHost.GetLocalApiUrl(cancellationToken);
-
-            if (!string.IsNullOrEmpty(localUrl))
-            {
-                var response = new ServerDiscoveryInfo
-                {
-                    Address = localUrl,
-                    Id = _appHost.SystemId,
-                    Name = _appHost.FriendlyName
-                };
-
-                try
-                {
-                    await _udpSocket.SendToAsync(JsonSerializer.SerializeToUtf8Bytes(response), SocketFlags.None, endpoint).ConfigureAwait(false);
-                }
-                catch (SocketException ex)
-                {
-                    _logger.LogError(ex, "Error sending response message");
-                }
-
-                var parts = messageText.Split('|');
-                if (parts.Length > 1)
-                {
-                    _appHost.EnableLoopback(parts[1]);
-                }
-            }
-            else
-            {
-                _logger.LogWarning("Unable to respond to udp request because the local ip address could not be determined.");
             }
         }
     }

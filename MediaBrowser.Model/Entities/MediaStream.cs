@@ -13,7 +13,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Class MediaStream
+    /// Class MediaStream.
     /// </summary>
     public class MediaStream
     {
@@ -125,6 +125,7 @@ namespace MediaBrowser.Model.Entities
                     {
                         attributes.Add(StringHelper.FirstToUpper(Language));
                     }
+
                     if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))
                     {
                         attributes.Add(AudioCodec.GetFriendlyName(Codec));
@@ -142,6 +143,7 @@ namespace MediaBrowser.Model.Entities
                     {
                         attributes.Add(Channels.Value.ToString(CultureInfo.InvariantCulture) + " ch");
                     }
+
                     if (IsDefault)
                     {
                         attributes.Add("Default");
@@ -227,30 +229,37 @@ namespace MediaBrowser.Model.Entities
                 {
                     return "4K";
                 }
+
                 if (width >= 2500)
                 {
                     if (i.IsInterlaced)
                     {
                         return "1440i";
                     }
+
                     return "1440p";
                 }
+
                 if (width >= 1900 || height >= 1000)
                 {
                     if (i.IsInterlaced)
                     {
                         return "1080i";
                     }
+
                     return "1080p";
                 }
+
                 if (width >= 1260 || height >= 700)
                 {
                     if (i.IsInterlaced)
                     {
                         return "720i";
                     }
+
                     return "720p";
                 }
+
                 if (width >= 700 || height >= 440)
                 {
 
@@ -258,11 +267,13 @@ namespace MediaBrowser.Model.Entities
                     {
                         return "480i";
                     }
+
                     return "480p";
                 }
 
                 return "SD";
             }
+
             return null;
         }
 
@@ -410,7 +421,10 @@ namespace MediaBrowser.Model.Entities
         {
             get
             {
-                if (Type != MediaStreamType.Subtitle) return false;
+                if (Type != MediaStreamType.Subtitle)
+                {
+                    return false;
+                }
 
                 if (string.IsNullOrEmpty(Codec) && !IsExternal)
                 {
@@ -448,6 +462,7 @@ namespace MediaBrowser.Model.Entities
             {
                 return false;
             }
+
             if (string.Equals(fromCodec, "ssa", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
@@ -458,6 +473,7 @@ namespace MediaBrowser.Model.Entities
             {
                 return false;
             }
+
             if (string.Equals(toCodec, "ssa", StringComparison.OrdinalIgnoreCase))
             {
                 return false;

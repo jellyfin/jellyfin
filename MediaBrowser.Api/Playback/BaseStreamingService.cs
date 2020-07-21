@@ -28,7 +28,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback
 {
     /// <summary>
-    /// Class BaseStreamingService
+    /// Class BaseStreamingService.
     /// </summary>
     public abstract class BaseStreamingService : BaseApiService
     {
@@ -303,6 +303,7 @@ namespace MediaBrowser.Api.Playback
             {
                 StartThrottler(state, transcodingJob);
             }
+
             Logger.LogDebug("StartFfMpeg() finished successfully");
 
             return transcodingJob;
@@ -608,6 +609,7 @@ namespace MediaBrowser.Api.Playback
             {
                 throw new ArgumentException("Invalid timeseek header");
             }
+
             int index = value.IndexOf('-');
             value = index == -1
                 ? value.Substring(Npt.Length)
@@ -639,8 +641,10 @@ namespace MediaBrowser.Api.Playback
                 {
                     throw new ArgumentException("Invalid timeseek header");
                 }
+
                 timeFactor /= 60;
             }
+
             return TimeSpan.FromSeconds(secondsSum).Ticks;
         }
 

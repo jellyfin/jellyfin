@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 namespace MediaBrowser.Controller
 {
     /// <summary>
-    /// Interface IServerApplicationHost
+    /// Interface IServerApplicationHost.
     /// </summary>
     public interface IServerApplicationHost : IApplicationHost
     {

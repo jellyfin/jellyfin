@@ -38,7 +38,7 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 namespace MediaBrowser.Providers.Manager
 {
     /// <summary>
-    /// Class ProviderManager
+    /// Class ProviderManager.
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
@@ -102,7 +102,7 @@ namespace MediaBrowser.Providers.Manager
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
-            _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
+            _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
             _savers = metadataSavers.Where(i =>
             {
@@ -787,6 +787,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 searchInfo.SearchInfo.MetadataLanguage = _configurationManager.Configuration.PreferredMetadataLanguage;
             }
+
             if (string.IsNullOrWhiteSpace(searchInfo.SearchInfo.MetadataCountryCode))
             {
                 searchInfo.SearchInfo.MetadataCountryCode = _configurationManager.Configuration.MetadataCountryCode;
@@ -899,7 +900,7 @@ namespace MediaBrowser.Providers.Manager
 
                 return new ExternalUrl
                 {
-                    Name = i.Name,
+                    Name = i.ProviderName,
                     Url = string.Format(
                         CultureInfo.InvariantCulture,
                         i.UrlFormatString,
@@ -913,8 +914,9 @@ namespace MediaBrowser.Providers.Manager
             return GetExternalIds(item)
                 .Select(i => new ExternalIdInfo
                 {
-                    Name = i.Name,
+                    Name = i.ProviderName,
                     Key = i.Key,
+                    Type = i.Type,
                     UrlFormatString = i.UrlFormatString
                 });
         }

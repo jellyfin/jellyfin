@@ -62,8 +62,7 @@ namespace Jellyfin.Server
             // TODO: Set up scoping and use AddDbContextPool
             serviceCollection.AddDbContext<JellyfinDb>(
                 options => options
-                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}")
-                    .UseLazyLoadingProxies(),
+                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
                 ServiceLifetime.Transient);
 
             serviceCollection.AddSingleton<JellyfinDbProvider>();

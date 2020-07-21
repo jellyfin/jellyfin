@@ -19,8 +19,8 @@
     "Sync": "Sinkroniseer",
     "HeaderFavoriteSongs": "Gunsteling Liedjies",
     "Songs": "Liedjies",
-    "DeviceOnlineWithName": "{0} is verbind",
-    "DeviceOfflineWithName": "{0} het afgesluit",
+    "DeviceOnlineWithName": "{0} gekoppel is",
+    "DeviceOfflineWithName": "{0} is ontkoppel",
     "Collections": "Versamelings",
     "Inherit": "Ontvang",
     "HeaderLiveTV": "Live TV",
@@ -91,5 +91,9 @@
     "ChapterNameValue": "Hoofstuk",
     "CameraImageUploadedFrom": "'n Nuwe kamera photo opgelaai van {0}",
     "AuthenticationSucceededWithUserName": "{0} suksesvol geverifieer",
-    "Albums": "Albums"
+    "Albums": "Albums",
+    "TasksChannelsCategory": "Internet kanale",
+    "TasksApplicationCategory": "aansoek",
+    "TasksLibraryCategory": "biblioteek",
+    "TasksMaintenanceCategory": "onderhoud"
 }

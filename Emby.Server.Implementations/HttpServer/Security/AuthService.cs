@@ -52,6 +52,22 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return user;
         }
 
+        public AuthorizationInfo Authenticate(HttpRequest request)
+        {
+            var auth = _authorizationContext.GetAuthorizationInfo(request);
+            if (auth?.User == null)
+            {
+                return null;
+            }
+
+            if (auth.User.HasPermission(PermissionKind.IsDisabled))
+            {
+                throw new SecurityException("User account has been disabled.");
+            }
+
+            return auth;
+        }
+
         private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)
         {
             // This code is executed before the service
@@ -141,6 +157,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             {
                 return true;
             }
+
             if (authAttribtues.AllowLocalOnly && request.IsLocal)
             {
                 return true;

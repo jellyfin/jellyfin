@@ -31,7 +31,7 @@ using Microsoft.Net.Http.Headers;
 namespace MediaBrowser.Api.LiveTv
 {
     /// <summary>
-    /// This is insecure right now to avoid windows phone refactoring
+    /// This is insecure right now to avoid windows phone refactoring.
     /// </summary>
     [Route("/LiveTv/Info", "GET", Summary = "Gets available live tv services.")]
     [Authenticated]
@@ -72,7 +72,7 @@ namespace MediaBrowser.Api.LiveTv
         public bool? IsSports { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -100,7 +100,7 @@ namespace MediaBrowser.Api.LiveTv
         public string EnableImageTypes { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -188,7 +188,7 @@ namespace MediaBrowser.Api.LiveTv
         public string EnableImageTypes { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -200,10 +200,15 @@ namespace MediaBrowser.Api.LiveTv
         public bool? EnableUserData { get; set; }
 
         public bool? IsMovie { get; set; }
+
         public bool? IsSeries { get; set; }
+
         public bool? IsKids { get; set; }
+
         public bool? IsSports { get; set; }
+
         public bool? IsNews { get; set; }
+
         public bool? IsLibraryItem { get; set; }
 
         public GetRecordings()
@@ -250,7 +255,7 @@ namespace MediaBrowser.Api.LiveTv
         public string EnableImageTypes { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -348,6 +353,7 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "HasAired", Description = "Optional. Filter by programs that have completed airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasAired { get; set; }
+
         public bool? IsAiring { get; set; }
 
         [ApiMember(Name = "MaxStartDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
@@ -407,10 +413,11 @@ namespace MediaBrowser.Api.LiveTv
         public bool? EnableUserData { get; set; }
 
         public string SeriesTimerId { get; set; }
+
         public Guid LibrarySeriesId { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -473,7 +480,7 @@ namespace MediaBrowser.Api.LiveTv
         public string GenreIds { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -601,7 +608,9 @@ namespace MediaBrowser.Api.LiveTv
     public class AddListingProvider : ListingsProviderInfo, IReturn<ListingsProviderInfo>
     {
         public bool ValidateLogin { get; set; }
+
         public bool ValidateListings { get; set; }
+
         public string Pw { get; set; }
     }
 
@@ -650,15 +659,20 @@ namespace MediaBrowser.Api.LiveTv
     {
         [ApiMember(Name = "Id", Description = "Provider id", IsRequired = true, DataType = "string", ParameterType = "query")]
         public string ProviderId { get; set; }
+
         public string TunerChannelId { get; set; }
+
         public string ProviderChannelId { get; set; }
     }
 
     public class ChannelMappingOptions
     {
         public List<TunerChannelMapping> TunerChannels { get; set; }
+
         public List<NameIdPair> ProviderChannels { get; set; }
+
         public NameValuePair[] Mappings { get; set; }
+
         public string ProviderName { get; set; }
     }
 
@@ -666,6 +680,7 @@ namespace MediaBrowser.Api.LiveTv
     public class GetLiveStreamFile
     {
         public string Id { get; set; }
+
         public string Container { get; set; }
     }
 

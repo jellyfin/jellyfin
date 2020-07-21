@@ -13,7 +13,7 @@ using MediaBrowser.Model.SyncPlay;
 namespace MediaBrowser.Controller.Session
 {
     /// <summary>
-    /// Interface ISessionManager
+    /// Interface ISessionManager.
     /// </summary>
     public interface ISessionManager
     {
@@ -79,14 +79,14 @@ namespace MediaBrowser.Controller.Session
         void UpdateDeviceName(string sessionId, string reportedDeviceName);
 
         /// <summary>
-        /// Used to report that playback has started for an item
+        /// Used to report that playback has started for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
         Task OnPlaybackStart(PlaybackStartInfo info);
 
         /// <summary>
-        /// Used to report playback progress for an item
+        /// Used to report playback progress for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Session
         Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
 
         /// <summary>
-        /// Used to report that playback has ended for an item
+        /// Used to report that playback has ended for an item.
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>

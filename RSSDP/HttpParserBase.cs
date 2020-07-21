@@ -11,15 +11,8 @@ namespace Rssdp.Infrastructure
     /// <typeparam name="T"></typeparam>
     public abstract class HttpParserBase<T> where T : new()
     {
-
-        #region Fields
-
         private readonly string[] LineTerminators = new string[] { "\r\n", "\n" };
         private readonly char[] SeparatorCharacters = new char[] { ',', ';' };
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Parses the <paramref name="data"/> provided into either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
@@ -38,9 +31,20 @@ namespace Rssdp.Infrastructure
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Honestly, it's fine. MemoryStream doesn't mind.")]
         protected virtual void Parse(T message, System.Net.Http.Headers.HttpHeaders headers, string data)
         {
-            if (data == null) throw new ArgumentNullException(nameof(data));
-            if (data.Length == 0) throw new ArgumentException("data cannot be an empty string.", nameof(data));
-            if (!LineTerminators.Any(data.Contains)) throw new ArgumentException("data is not a valid request, it does not contain any CRLF/LF terminators.", nameof(data));
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            if (data.Length == 0)
+            {
+                throw new ArgumentException("data cannot be an empty string.", nameof(data));
+            }
+
+            if (!LineTerminators.Any(data.Contains))
+            {
+                throw new ArgumentException("data is not a valid request, it does not contain any CRLF/LF terminators.", nameof(data));
+            }
 
             using (var retVal = new ByteArrayContent(Array.Empty<byte>()))
             {
@@ -73,17 +77,19 @@ namespace Rssdp.Infrastructure
         /// <returns>A <see cref="Version"/> object containing the parsed version data.</returns>
         protected Version ParseHttpVersion(string versionData)
         {
-            if (versionData == null) throw new ArgumentNullException(nameof(versionData));
+            if (versionData == null)
+            {
+                throw new ArgumentNullException(nameof(versionData));
+            }
 
             var versionSeparatorIndex = versionData.IndexOf('/');
-            if (versionSeparatorIndex <= 0 || versionSeparatorIndex == versionData.Length) throw new ArgumentException("request header line is invalid. Http Version not supplied or incorrect format.", nameof(versionData));
+            if (versionSeparatorIndex <= 0 || versionSeparatorIndex == versionData.Length)
+            {
+                throw new ArgumentException("request header line is invalid. Http Version not supplied or incorrect format.", nameof(versionData));
+            }
 
             return Version.Parse(versionData.Substring(versionSeparatorIndex + 1));
         }
-
-        #endregion
-
-        #region Private Methods
 
         /// <summary>
         /// Parses a line from an HTTP request or response message containing a header name and value pair.
@@ -108,9 +114,13 @@ namespace Rssdp.Infrastructure
             var headersToAddTo = IsContentHeader(headerName) ? contentHeaders : headers;
 
             if (values.Count > 1)
+            {
                 headersToAddTo.TryAddWithoutValidation(headerName, values);
+            }
             else
+            {
                 headersToAddTo.TryAddWithoutValidation(headerName, values.First());
+            }
         }
 
         private int ParseHeaders(System.Net.Http.Headers.HttpHeaders headers, System.Net.Http.Headers.HttpHeaders contentHeaders, string[] lines)
@@ -130,11 +140,14 @@ namespace Rssdp.Infrastructure
                         lineIndex++;
                     }
                     else
+                    {
                         break;
+                    }
                 }
 
                 ParseHeader(line, headers, contentHeaders);
             }
+
             return lineIndex;
         }
 
@@ -153,7 +166,9 @@ namespace Rssdp.Infrastructure
 
             var indexOfSeparator = headerValue.IndexOfAny(SeparatorCharacters);
             if (indexOfSeparator <= 0)
+            {
                 values.Add(headerValue);
+            }
             else
             {
                 var segments = headerValue.Split(SeparatorCharacters);
@@ -163,13 +178,17 @@ namespace Rssdp.Infrastructure
                     {
                         var segment = segments[segmentIndex];
                         if (segment.Trim().StartsWith("\"", StringComparison.OrdinalIgnoreCase))
+                        {
                             segment = CombineQuotedSegments(segments, ref segmentIndex, segment);
+                        }
 
                         values.Add(segment);
                     }
                 }
                 else
+                {
                     values.AddRange(segments);
+                }
             }
 
             return values;
@@ -192,17 +211,20 @@ namespace Rssdp.Infrastructure
                 }
 
                 if (index + 1 < segments.Length)
+                {
                     trimmedSegment += "," + segments[index + 1].TrimEnd();
+                }
             }
 
             segmentIndex = segments.Length;
             if (trimmedSegment.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && trimmedSegment.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+            {
                 return trimmedSegment.Substring(1, trimmedSegment.Length - 2);
+            }
             else
+            {
                 return trimmedSegment;
+            }
         }
-
-        #endregion
-
     }
 }

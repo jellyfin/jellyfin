@@ -1,6 +1,6 @@
 {
     "Albums": "專輯",
-    "AppDeviceValues": "軟件: {0}, 設備: {1}",
+    "AppDeviceValues": "程式: {0}, 設備: {1}",
     "Application": "應用程式",
     "Artists": "藝人",
     "AuthenticationSucceededWithUserName": "{0} 授權成功",
@@ -113,5 +113,6 @@
     "TaskCleanCacheDescription": "刪除系統不再需要的緩存文件。",
     "TaskCleanCache": "清理緩存目錄",
     "TasksChannelsCategory": "互聯網頻道",
-    "TasksLibraryCategory": "庫"
+    "TasksLibraryCategory": "庫",
+    "TaskRefreshPeople": "刷新人物"
 }

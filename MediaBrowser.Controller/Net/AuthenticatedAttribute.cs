@@ -31,9 +31,9 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// The request filter is executed before the service.
         /// </summary>
-        /// <param name="request">The http request wrapper</param>
-        /// <param name="response">The http response wrapper</param>
-        /// <param name="requestDto">The request DTO</param>
+        /// <param name="request">The http request wrapper.</param>
+        /// <param name="response">The http response wrapper.</param>
+        /// <param name="requestDto">The request DTO.</param>
         public void RequestFilter(IRequest request, HttpResponse response, object requestDto)
         {
             AuthService.Authenticate(request, this);
@@ -58,8 +58,11 @@ namespace MediaBrowser.Controller.Net
     public interface IAuthenticationAttributes
     {
         bool EscapeParentalControl { get; }
+
         bool AllowBeforeStartupWizard { get; }
+
         bool AllowLocal { get; }
+
         bool AllowLocalOnly { get; }
 
         string[] GetRoles();

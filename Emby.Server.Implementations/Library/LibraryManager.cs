@@ -97,13 +97,13 @@ namespace Emby.Server.Implementations.Library
         private IIntroProvider[] IntroProviders { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of entity resolution ignore rules
+        /// Gets or sets the list of entity resolution ignore rules.
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
         private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of currently registered entity resolvers
+        /// Gets or sets the list of currently registered entity resolvers.
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
         private IItemResolver[] EntityResolvers { get; set; }
@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
         /// </summary>
-        /// <param name="appHost">The application host</param>
+        /// <param name="appHost">The application host.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="taskManager">The task manager.</param>
         /// <param name="userManager">The user manager.</param>
@@ -209,12 +209,12 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The _root folder
+        /// The _root folder.
         /// </summary>
         private volatile AggregateFolder _rootFolder;
 
         /// <summary>
-        /// The _root folder sync lock
+        /// The _root folder sync lock.
         /// </summary>
         private readonly object _rootFolderSyncLock = new object();
 
@@ -341,7 +341,7 @@ namespace Emby.Server.Implementations.Library
             if (item is LiveTvProgram)
             {
                 _logger.LogDebug(
-                    "Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -350,7 +350,7 @@ namespace Emby.Server.Implementations.Library
             else
             {
                 _logger.LogInformation(
-                    "Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -368,7 +368,12 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                _logger.LogDebug("Deleting path {MetadataPath}", metadataPath);
+                _logger.LogDebug(
+                    "Deleting metadata path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    item.GetType().Name,
+                    item.Name ?? "Unknown name",
+                    metadataPath,
+                    item.Id);
 
                 try
                 {
@@ -392,7 +397,13 @@ namespace Emby.Server.Implementations.Library
                     {
                         try
                         {
-                            _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
+                            _logger.LogInformation(
+                                "Deleting item path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                                item.GetType().Name,
+                                item.Name ?? "Unknown name",
+                                fileSystemInfo.FullName,
+                                item.Id);
+
                             if (fileSystemInfo.IsDirectory)
                             {
                                 Directory.Delete(fileSystemInfo.FullName, true);
@@ -514,8 +525,8 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null, bool allowIgnorePath = true)
-            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent, allowIgnorePath: allowIgnorePath);
+        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null)
+            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent);
 
         private BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
@@ -523,8 +534,7 @@ namespace Emby.Server.Implementations.Library
             IItemResolver[] resolvers,
             Folder parent = null,
             string collectionType = null,
-            LibraryOptions libraryOptions = null,
-            bool allowIgnorePath = true)
+            LibraryOptions libraryOptions = null)
         {
             if (fileInfo == null)
             {
@@ -548,7 +558,7 @@ namespace Emby.Server.Implementations.Library
             };
 
             // Return null if ignore rules deem that we should do so
-            if (allowIgnorePath && IgnoreFile(args.FileInfo, args.Parent))
+            if (IgnoreFile(args.FileInfo, args.Parent))
             {
                 return null;
             }
@@ -627,7 +637,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Determines whether a path should be ignored based on its contents - called after the contents have been read
+        /// Determines whether a path should be ignored based on its contents - called after the contents have been read.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
@@ -713,7 +723,7 @@ namespace Emby.Server.Implementations.Library
             Directory.CreateDirectory(rootFolderPath);
 
             var rootFolder = GetItemById(GetNewItemId(rootFolderPath, typeof(AggregateFolder))) as AggregateFolder ??
-                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath), allowIgnorePath: false))
+                             ((Folder) ResolvePath(_fileSystem.GetDirectoryInfo(rootFolderPath)))
                              .DeepCopy<Folder, AggregateFolder>();
 
             // In case program data folder was moved
@@ -795,7 +805,7 @@ namespace Emby.Server.Implementations.Library
                         if (tmpItem == null)
                         {
                             _logger.LogDebug("Creating new userRootFolder with DeepCopy");
-                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath), allowIgnorePath: false)).DeepCopy<Folder, UserRootFolder>();
+                            tmpItem = ((Folder)ResolvePath(_fileSystem.GetDirectoryInfo(userRootPath))).DeepCopy<Folder, UserRootFolder>();
                         }
 
                         // In case program data folder was moved
@@ -909,7 +919,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
@@ -990,7 +1000,7 @@ namespace Emby.Server.Implementations.Library
         }
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -1793,7 +1803,7 @@ namespace Emby.Server.Implementations.Library
         /// Creates the items.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <param name="parent">The parent item</param>
+        /// <param name="parent">The parent item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         public void CreateItems(IEnumerable<BaseItem> items, BaseItem parent, CancellationToken cancellationToken)
         {
@@ -1894,9 +1904,19 @@ namespace Emby.Server.Implementations.Library
                     }
                 }
 
-                ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
-                image.Width = size.Width;
-                image.Height = size.Height;
+                try
+                {
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                    image.Width = size.Width;
+                    image.Height = size.Height;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
+                    image.Width = 0;
+                    image.Height = 0;
+                    continue;
+                }
 
                 try
                 {
@@ -2784,10 +2804,12 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (string.IsNullOrWhiteSpace(from))
             {
                 throw new ArgumentNullException(nameof(from));
             }
+
             if (string.IsNullOrWhiteSpace(to))
             {
                 throw new ArgumentNullException(nameof(to));
@@ -2895,7 +2917,8 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (HttpException ex)
                 {
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
+                    if (ex.StatusCode.HasValue
+                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
                     {
                         continue;
                     }
@@ -2988,21 +3011,6 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        private static bool ValidateNetworkPath(string path)
-        {
-            // if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            //{
-            //    // We can't validate protocol-based paths, so just allow them
-            //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)
-            //    {
-            //        return Directory.Exists(path);
-            //    }
-            //}
-
-            // Without native support for unc, we cannot validate this when running under mono
-            return true;
-        }
-
         private const string ShortcutFileExtension = ".mblink";
 
         public void AddMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
@@ -3027,11 +3035,6 @@ namespace Emby.Server.Implementations.Library
             if (!Directory.Exists(path))
             {
                 throw new FileNotFoundException("The path does not exist.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
-            {
-                throw new FileNotFoundException("The network path does not exist.");
             }
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
@@ -3070,11 +3073,6 @@ namespace Emby.Server.Implementations.Library
             if (pathInfo == null)
             {
                 throw new ArgumentNullException(nameof(pathInfo));
-            }
-
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
-            {
-                throw new FileNotFoundException("The network path does not exist.");
             }
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;

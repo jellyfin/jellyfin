@@ -31,7 +31,7 @@ using Series = MediaBrowser.Controller.Entities.TV.Series;
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Folder
+    /// Class Folder.
     /// </summary>
     public class Folder : BaseItem
     {
@@ -126,10 +126,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (this is UserView)
             {
                 return false;
             }
+
             return true;
         }
 
@@ -156,6 +158,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 item.DateCreated = DateTime.UtcNow;
             }
+
             if (item.DateModified == DateTime.MinValue)
             {
                 item.DateModified = DateTime.UtcNow;
@@ -172,7 +175,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual IEnumerable<BaseItem> Children => LoadChildren();
 
         /// <summary>
-        /// thread-safe access to all recursive children of this folder - without regard to user
+        /// thread-safe access to all recursive children of this folder - without regard to user.
         /// </summary>
         /// <value>The recursive children.</value>
         [JsonIgnore]
@@ -229,7 +232,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Validates that the children of the folder still exist
+        /// Validates that the children of the folder still exist.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -477,7 +480,7 @@ namespace MediaBrowser.Controller.Entities
                 innerProgress.RegisterAction(p =>
                 {
                     double innerPercent = currentInnerPercent;
-                    innerPercent += p / (count);
+                    innerPercent += p / count;
                     progress.Report(innerPercent);
                 });
 
@@ -501,6 +504,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
             }
+
             await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
         }
 
@@ -552,7 +556,7 @@ namespace MediaBrowser.Controller.Entities
                 innerProgress.RegisterAction(p =>
                 {
                     double innerPercent = currentInnerPercent;
-                    innerPercent += p / (count);
+                    innerPercent += p / count;
                     progress.Report(innerPercent);
                 });
 
@@ -570,7 +574,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Get the children of this folder from the actual file system
+        /// Get the children of this folder from the actual file system.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
@@ -582,7 +586,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Get our children from the repo - stubbed for now
+        /// Get our children from the repo - stubbed for now.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected List<BaseItem> GetCachedChildren()
@@ -939,6 +943,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
             }
+
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
                 items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
@@ -989,18 +994,22 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (queryParent is Series)
             {
                 return false;
             }
+
             if (queryParent is Season)
             {
                 return false;
             }
+
             if (queryParent is MusicAlbum)
             {
                 return false;
             }
+
             if (queryParent is MusicArtist)
             {
                 return false;
@@ -1030,22 +1039,27 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (request.IsFavoriteOrLiked.HasValue)
             {
                 return false;
             }
+
             if (request.IsLiked.HasValue)
             {
                 return false;
             }
+
             if (request.IsPlayed.HasValue)
             {
                 return false;
             }
+
             if (request.IsResumable.HasValue)
             {
                 return false;
             }
+
             if (request.IsFolder.HasValue)
             {
                 return false;
@@ -1286,7 +1300,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets allowed recursive children of an item
+        /// Gets allowed recursive children of an item.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
@@ -1391,6 +1405,7 @@ namespace MediaBrowser.Controller.Entities
                     list.Add(child);
                 }
             }
+
             return list;
         }
 
@@ -1413,6 +1428,7 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -1665,22 +1681,27 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+
                 if (this is UserView)
                 {
                     return false;
                 }
+
                 if (this is UserRootFolder)
                 {
                     return false;
                 }
+
                 if (this is Channel)
                 {
                     return false;
                 }
+
                 if (SourceType != SourceType.Library)
                 {
                     return false;
                 }
+
                 var iItemByName = this as IItemByName;
                 if (iItemByName != null)
                 {

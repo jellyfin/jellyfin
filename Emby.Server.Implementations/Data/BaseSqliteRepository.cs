@@ -247,12 +247,12 @@ namespace Emby.Server.Implementations.Data
     public enum SynchronousMode
     {
         /// <summary>
-        /// SQLite continues without syncing as soon as it has handed data off to the operating system
+        /// SQLite continues without syncing as soon as it has handed data off to the operating system.
         /// </summary>
         Off = 0,
 
         /// <summary>
-        /// SQLite database engine will still sync at the most critical moments
+        /// SQLite database engine will still sync at the most critical moments.
         /// </summary>
         Normal = 1,
 

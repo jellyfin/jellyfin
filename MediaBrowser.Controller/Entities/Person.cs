@@ -19,6 +19,7 @@ namespace MediaBrowser.Controller.Entities
             list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
+
         public override string CreatePresentationUniqueKey()
         {
             return GetUserDataKeys()[0];
@@ -46,7 +47,7 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself
+        /// If the item is a folder, it returns the folder itself.
         /// </summary>
         /// <value>The containing folder path.</value>
         [JsonIgnore]
@@ -114,11 +115,12 @@ namespace MediaBrowser.Controller.Entities
                 Logger.LogDebug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
                 return true;
             }
+
             return base.RequiresRefresh();
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
         public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
         {

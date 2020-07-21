@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -159,7 +161,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         {
             var mainResult = await FetchMainResult(tmdbId, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
 
-            if (mainResult == null) return;
+            if (mainResult == null)
+            {
+                return;
+            }
 
             var dataFilePath = GetDataFilePath(_config.ApplicationPaths, tmdbId, preferredMetadataLanguage);
 

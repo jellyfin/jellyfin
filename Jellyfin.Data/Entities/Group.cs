@@ -99,7 +99,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="name">The name of this group</param>
+        /// <param name="name">The name of this group.</param>
         public static Group Create(string name)
         {
             return new Group(name);

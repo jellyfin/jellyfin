@@ -67,5 +67,7 @@
     "Artists": "นักแสดง",
     "Application": "แอปพลิเคชั่น",
     "AppDeviceValues": "App: {0}, อุปกรณ์: {1}",
-    "Albums": "อัลบั้ม"
+    "Albums": "อัลบั้ม",
+    "ScheduledTaskStartedWithName": "{0} เริ่มต้น",
+    "ScheduledTaskFailedWithName": "{0} ล้มเหลว"
 }

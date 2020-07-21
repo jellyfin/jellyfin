@@ -33,74 +33,26 @@ namespace Rssdp.Infrastructure
          * which isn't port 1900 so the MS service doesn't steal them. While the caller can specify a local
          * port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
          */
-        /// <summary>
-        /// Defines the _BroadcastListenSocketSynchroniser.
-        /// </summary>
-        private object _BroadcastListenSocketSynchroniser = new object();
 
-        /// <summary>
-        /// Defines the _BroadcastListenSocket.
-        /// </summary>
+        private object _BroadcastListenSocketSynchroniser = new object();
         private ISocket _BroadcastListenSocket;
 
-        /// <summary>
-        /// Defines the _SendSocketSynchroniser.
-        /// </summary>
         private object _SendSocketSynchroniser = new object();
-
-        /// <summary>
-        /// Defines the _sendSockets.
-        /// </summary>
         private List<ISocket> _sendSockets;
 
-        /// <summary>
-        /// Defines the _RequestParser.
-        /// </summary>
         private HttpRequestParser _RequestParser;
-
-        /// <summary>
-        /// Defines the _ResponseParser.
-        /// </summary>
         private HttpResponseParser _ResponseParser;
-
-        /// <summary>
-        /// Defines the _logger.
-        /// </summary>
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// Defines the _SocketFactory.
-        /// </summary>
         private ISocketFactory _SocketFactory;
 
-        /// <summary>
-        /// Defines the _networkManager.
-        /// </summary>
         private readonly INetworkManager _networkManager;
 
-        /// <summary>
-        /// Defines the _config.
-        /// </summary>
         private readonly IServerConfigurationManager _config;
 
-        /// <summary>
-        /// Defines the _LocalPort.
-        /// </summary>
         private int _LocalPort;
-
-        /// <summary>
-        /// Defines the _MulticastTtl.
-        /// </summary>
         private int _MulticastTtl;
 
-        /// <summary>
-        /// Defines the _IsShared.
-        /// </summary>
         private bool _IsShared;
-
-        /// <summary>
-        /// Defines the _enableMultiSocketBinding.
-        /// </summary>
         private readonly bool _enableMultiSocketBinding;
 
         /// <summary>
@@ -122,6 +74,8 @@ namespace Rssdp.Infrastructure
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <param name="enableMultiSocketBinding">The enableMultiSocketBinding<see cref="bool"/>.</param>
         public SsdpCommunicationsServer(IServerConfigurationManager config, ISocketFactory socketFactory,
+        /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
+        public SsdpCommunicationsServer(ISocketFactory socketFactory,
             INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
@@ -137,6 +91,8 @@ namespace Rssdp.Infrastructure
         /// <param name="networkManager">The networkManager<see cref="INetworkManager"/>.</param>
         /// <param name="logger">The logger<see cref="ILogger"/>.</param>
         /// <param name="enableMultiSocketBinding">The enableMultiSocketBinding<see cref="bool"/>.</param>
+        /// /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
         public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
         {
             if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
@@ -244,14 +200,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        /// <summary>
-        /// The SendFromSocket.
-        /// </summary>
-        /// <param name="socket">.</param>
-        /// <param name="messageData">.</param>
-        /// <param name="destination">.</param>
-        /// <param name="cancellationToken">.</param>
-        /// <returns>.</returns>
         private async Task SendFromSocket(ISocket socket, byte[] messageData, IPEndPoint destination, CancellationToken cancellationToken)
         {
             try
@@ -329,13 +277,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        /// <summary>
-        /// The SendMulticastMessage.
-        /// </summary>
-        /// <param name="message">.</param>
-        /// <param name="fromLocalIpAddress">.</param>
-        /// <param name="cancellationToken">.</param>
-        /// <returns>.</returns>
         public Task SendMulticastMessage(string message, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
             return SendMulticastMessage(message, SsdpConstants.UdpResendCount, fromLocalIpAddress, cancellationToken);
@@ -344,14 +285,12 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        /// <param name="message">The message<see cref="string"/>.</param>
-        /// <param name="sendCount">The sendCount<see cref="int"/>.</param>
-        /// <param name="fromLocalIpAddress">The fromLocalIpAddress<see cref="IPAddress"/>.</param>
-        /// <param name="cancellationToken">The cancellationToken<see cref="CancellationToken"/>.</param>
-        /// <returns>The <see cref="Task"/>.</returns>
         public async Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
-            if (message == null) throw new ArgumentNullException(nameof(message));
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
 
             byte[] messageData = Encoding.UTF8.GetBytes(message);
 
@@ -402,19 +341,19 @@ namespace Rssdp.Infrastructure
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether IsShared
-        /// Gets or sets a boolean value indicating whether or not this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances..
+        /// Gets or sets a boolean value indicating whether or not this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
         /// </summary>
         public bool IsShared
         {
             get { return _IsShared; }
+
             set { _IsShared = value; }
         }
 
         /// <summary>
         /// Stops listening for requests, disposes this instance and all internal resources.
         /// </summary>
-        /// <param name="disposing">.</param>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -460,20 +399,9 @@ namespace Rssdp.Infrastructure
         /// <returns>.</returns>
         private ISocket ListenForBroadcastsAsync()
         {
-            ISocket socket = null;
+            var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
 
-            try
-            {
-                socket = _SocketFactory.CreateUdpMulticastSocket(
-                    _networkManager.IsIP6Enabled ? SsdpConstants.MulticastLocalAdminAddressV6 : SsdpConstants.MulticastLocalAdminAddress,
-                    _MulticastTtl,
-                    SsdpConstants.MulticastPort);
-                _ = ListenToSocketInternal(socket);
-            }
-            catch (SocketException ex)
-            {
-                _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", SsdpConstants.MulticastLocalAdminAddress);
-            }
+            _ = ListenToSocketInternal(socket);
 
             return socket;
         }
@@ -522,11 +450,6 @@ namespace Rssdp.Infrastructure
             return sockets;
         }
 
-        /// <summary>
-        /// The ListenToSocketInternal.
-        /// </summary>
-        /// <param name="socket">The socket<see cref="ISocket"/>.</param>
-        /// <returns>The <see cref="Task"/>.</returns>
         private async Task ListenToSocketInternal(ISocket socket)
         {
             var cancelled = false;
@@ -538,7 +461,6 @@ namespace Rssdp.Infrastructure
                 {
                     var result = await socket.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, CancellationToken.None).ConfigureAwait(false);
 
-                    // If this is from a user defined excluded address ignore it.
                     if (result.ReceivedBytes > 0)
                     {
                         // Strange cannot convert compiler error here if I don't explicitly
@@ -558,9 +480,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        /// <summary>
-        /// The EnsureSendSocketCreated.
-        /// </summary>
         private void EnsureSendSocketCreated()
         {
             if (_sendSockets == null)
@@ -575,12 +494,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        /// <summary>
-        /// The ProcessMessage.
-        /// </summary>
-        /// <param name="data">The data<see cref="string"/>.</param>
-        /// <param name="endPoint">The endPoint<see cref="IPEndPoint"/>.</param>
-        /// <param name="receivedOnLocalIpAddress">The receivedOnLocalIpAddress<see cref="IPAddress"/>.</param>
         private void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress)
         {
             if (_networkManager.IsExcluded(receivedOnLocalIpAddress))
@@ -635,12 +548,6 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        /// <summary>
-        /// The OnRequestReceived.
-        /// </summary>
-        /// <param name="data">The data<see cref="HttpRequestMessage"/>.</param>
-        /// <param name="remoteEndPoint">The remoteEndPoint<see cref="IPEndPoint"/>.</param>
-        /// <param name="receivedOnLocalIpAddress">The receivedOnLocalIpAddress<see cref="IPAddress"/>.</param>
         private void OnRequestReceived(HttpRequestMessage data, IPEndPoint remoteEndPoint, IPAddress receivedOnLocalIpAddress)
         {
             // SSDP specification says only * is currently used but other uri's might
@@ -652,14 +559,9 @@ namespace Rssdp.Infrastructure
             }
 
             this.RequestReceived?.Invoke(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnLocalIpAddress));
+            }
         }
 
-        /// <summary>
-        /// The OnResponseReceived.
-        /// </summary>
-        /// <param name="data">The data<see cref="HttpResponseMessage"/>.</param>
-        /// <param name="endPoint">The endPoint<see cref="IPEndPoint"/>.</param>
-        /// <param name="localIpAddress">The localIpAddress<see cref="IPAddress"/>.</param>
         private void OnResponseReceived(HttpResponseMessage data, IPEndPoint endPoint, IPAddress localIpAddress)
         {
             this.ResponseReceived?.Invoke(this, new ResponseReceivedEventArgs(data, endPoint)

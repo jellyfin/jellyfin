@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -104,6 +106,7 @@ namespace MediaBrowser.Providers.Subtitles
                         _logger.LogError(ex, "Error downloading subtitles from {Provider}", provider.Name);
                     }
                 }
+
                 return Array.Empty<RemoteSubtitleInfo>();
             }
 

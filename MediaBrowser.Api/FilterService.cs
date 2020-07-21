@@ -73,11 +73,17 @@ namespace MediaBrowser.Api
         }
 
         public bool? IsAiring { get; set; }
+
         public bool? IsMovie { get; set; }
+
         public bool? IsSports { get; set; }
+
         public bool? IsKids { get; set; }
+
         public bool? IsNews { get; set; }
+
         public bool? IsSeries { get; set; }
+
         public bool? Recursive { get; set; }
     }
 
@@ -119,7 +125,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { },
+                    Fields = Array.Empty<ItemFields>(),
                     EnableImages = false,
                     EnableUserData = false
                 },

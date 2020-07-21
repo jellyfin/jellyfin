@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -72,6 +74,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     seasons = series.Children.OfType<Season>().ToList();
                 }
+
                 var existingSeason = seasons
                     .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == seasonNumber);
 

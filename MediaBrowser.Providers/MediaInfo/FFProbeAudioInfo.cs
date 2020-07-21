@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,7 +21,7 @@ using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
-    class FFProbeAudioInfo
+    public class FFProbeAudioInfo
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
@@ -99,7 +101,7 @@ namespace MediaBrowser.Providers.MediaInfo
         }
 
         /// <summary>
-        /// Fetches data from the tags dictionary
+        /// Fetches data from the tags dictionary.
         /// </summary>
         /// <param name="audio">The audio.</param>
         /// <param name="data">The data.</param>

@@ -22,7 +22,7 @@ namespace MediaBrowser.Api.System
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -56,7 +56,10 @@ namespace MediaBrowser.Api.System
                 DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
 
             var filterFunc = new Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>>(
-                entries => entries.Where(entry => entry.DateCreated >= minDate));
+                entries => entries.Where(entry => entry.DateCreated >= minDate
+                                                  && (!request.HasUserId.HasValue || (request.HasUserId.Value
+                                                      ? entry.UserId != Guid.Empty
+                                                      : entry.UserId == Guid.Empty))));
 
             var result = _activityManager.GetPagedResult(filterFunc, request.StartIndex, request.Limit);
 

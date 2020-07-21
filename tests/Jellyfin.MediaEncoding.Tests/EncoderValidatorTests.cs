@@ -17,6 +17,7 @@ namespace Jellyfin.MediaEncoding.Tests
         }
 
         [Theory]
+        [InlineData(EncoderValidatorTestsData.FFmpegV43Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV421Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV42Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV414Output, true)]
@@ -32,6 +33,7 @@ namespace Jellyfin.MediaEncoding.Tests
         {
             public IEnumerator<object?[]> GetEnumerator()
             {
+                yield return new object?[] { EncoderValidatorTestsData.FFmpegV43Output, new Version(4, 3) };
                 yield return new object?[] { EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1) };
                 yield return new object?[] { EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2) };
                 yield return new object?[] { EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4) };
