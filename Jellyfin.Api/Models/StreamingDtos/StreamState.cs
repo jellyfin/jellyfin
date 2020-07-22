@@ -19,7 +19,7 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamState" /> class.
         /// </summary>
-        /// <param name="mediaSourceManager">Instance of the <see cref="mediaSourceManager" /> interface.</param>
+        /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager" /> interface.</param>
         /// <param name="transcodingType">The <see cref="TranscodingJobType" />.</param>
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper" /> singleton.</param>
         public StreamState(IMediaSourceManager mediaSourceManager, TranscodingJobType transcodingType, TranscodingJobHelper transcodingJobHelper)
@@ -34,29 +34,28 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// </summary>
         public string? RequestedUrl { get; set; }
 
-        // /// <summary>
-        // /// Gets or sets the request.
-        // /// </summary>
-        // public StreamRequest Request
-        // {
-        //     get => (StreamRequest)BaseRequest;
-        //     set
-        //     {
-        //         BaseRequest = value;
-        //
-        //         IsVideoRequest = VideoRequest != null;
-        //     }
-        // }
+        /// <summary>
+        /// Gets or sets the request.
+        /// </summary>
+        public StreamingRequestDto Request
+        {
+            get => (StreamingRequestDto)BaseRequest;
+            set
+            {
+                BaseRequest = value;
+                IsVideoRequest = VideoRequest != null;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the transcoding throttler.
         /// </summary>
         public TranscodingThrottler? TranscodingThrottler { get; set; }
 
-        /*/// <summary>
+        /// <summary>
         /// Gets the video request.
         /// </summary>
-        public VideoStreamRequest VideoRequest => Request as VideoStreamRequest;*/
+        public VideoRequestDto? VideoRequest => Request! as VideoRequestDto;
 
         /// <summary>
         /// Gets or sets the direct stream provicer.
@@ -68,10 +67,10 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// </summary>
         public string? WaitForPath { get; set; }
 
-        /*/// <summary>
+        /// <summary>
         /// Gets a value indicating whether the request outputs video.
         /// </summary>
-        public bool IsOutputVideo => Request is VideoStreamRequest;*/
+        public bool IsOutputVideo => Request is VideoRequestDto;
 
         /// <summary>
         /// Gets the segment length.
@@ -161,36 +160,6 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// </summary>
         public TranscodingJobDto? TranscodingJob { get; set; }
 
-        /// <summary>
-        /// Gets or sets the device id.
-        /// </summary>
-        public string? DeviceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the play session id.
-        /// </summary>
-        public string? PlaySessionId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the live stream id.
-        /// </summary>
-        public string? LiveStreamId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the video coded.
-        /// </summary>
-        public string? VideoCodec { get; set; }
-
-        /// <summary>
-        /// Gets or sets the audio codec.
-        /// </summary>
-        public string? AudioCodec { get; set; }
-
-        /// <summary>
-        /// Gets or sets the subtitle codec.
-        /// </summary>
-        public string? SubtitleCodec { get; set; }
-
         /// <inheritdoc />
         public void Dispose()
         {
@@ -219,7 +188,7 @@ namespace Jellyfin.Api.Models.StreamingDtos
             {
                 // REVIEW: Is this the right place for this?
                 if (MediaSource.RequiresClosing
-                    && string.IsNullOrWhiteSpace(LiveStreamId)
+                    && string.IsNullOrWhiteSpace(Request.LiveStreamId)
                     && !string.IsNullOrWhiteSpace(MediaSource.LiveStreamId))
                 {
                     _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId).GetAwaiter().GetResult();

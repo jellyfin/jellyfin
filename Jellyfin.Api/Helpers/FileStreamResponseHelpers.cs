@@ -23,13 +23,11 @@ namespace Jellyfin.Api.Helpers
         /// <param name="state">The current <see cref="StreamState"/>.</param>
         /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
         /// <param name="controller">The <see cref="ControllerBase"/> managing the response.</param>
-        /// <param name="cancellationTokenSource">The <see cref="CancellationTokenSource"/>.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the API response.</returns>
         public static async Task<ActionResult> GetStaticRemoteStreamResult(
             StreamState state,
             bool isHeadRequest,
-            ControllerBase controller,
-            CancellationTokenSource cancellationTokenSource)
+            ControllerBase controller)
         {
             HttpClient httpClient = new HttpClient();
 
@@ -59,16 +57,12 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="path">The path to the file.</param>
         /// <param name="contentType">The content type of the file.</param>
-        /// <param name="dateLastModified">The <see cref="DateTime"/> of the last modification of the file.</param>
-        /// <param name="cacheDuration">The cache duration of the file.</param>
         /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
         /// <param name="controller">The <see cref="ControllerBase"/> managing the response.</param>
         /// <returns>An <see cref="ActionResult"/> the file.</returns>
         public static ActionResult GetStaticFileResult(
             string path,
             string contentType,
-            DateTime dateLastModified,
-            TimeSpan? cacheDuration,
             bool isHeadRequest,
             ControllerBase controller)
         {
@@ -135,10 +129,11 @@ namespace Jellyfin.Api.Helpers
                     state.Dispose();
                 }
 
-                Stream stream = new MemoryStream();
-
-                await new ProgressiveFileCopier(streamHelper, outputPath).WriteToAsync(stream, CancellationToken.None).ConfigureAwait(false);
-                return controller.File(stream, contentType);
+                using (var memoryStream = new MemoryStream())
+                {
+                    await new ProgressiveFileCopier(streamHelper, outputPath).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+                    return controller.File(memoryStream, contentType);
+                }
             }
             finally
             {

@@ -443,7 +443,7 @@ namespace Jellyfin.Api.Helpers
                 job.BitRate = bitRate;
             }
 
-            var deviceId = state.DeviceId;
+            var deviceId = state.Request.DeviceId;
 
             if (!string.IsNullOrWhiteSpace(deviceId))
             {
@@ -486,7 +486,7 @@ namespace Jellyfin.Api.Helpers
             HttpRequest request,
             TranscodingJobType transcodingJobType,
             CancellationTokenSource cancellationTokenSource,
-            string workingDirectory = null)
+            string? workingDirectory = null)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
@@ -525,12 +525,12 @@ namespace Jellyfin.Api.Helpers
 
             var transcodingJob = this.OnTranscodeBeginning(
                 outputPath,
-                state.PlaySessionId,
+                state.Request.PlaySessionId,
                 state.MediaSource.LiveStreamId,
                 Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 transcodingJobType,
                 process,
-                state.DeviceId,
+                state.Request.DeviceId,
                 state,
                 cancellationTokenSource);
 
@@ -706,9 +706,9 @@ namespace Jellyfin.Api.Helpers
                 _transcodingLocks.Remove(path);
             }
 
-            if (!string.IsNullOrWhiteSpace(state.DeviceId))
+            if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
             {
-                _sessionManager.ClearTranscodingInfo(state.DeviceId);
+                _sessionManager.ClearTranscodingInfo(state.Request.DeviceId);
             }
         }
 
@@ -747,7 +747,7 @@ namespace Jellyfin.Api.Helpers
                 state.IsoMount = await _isoManager.Mount(state.MediaPath, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
-            if (state.MediaSource.RequiresOpening && string.IsNullOrWhiteSpace(state.LiveStreamId))
+            if (state.MediaSource.RequiresOpening && string.IsNullOrWhiteSpace(state.Request.LiveStreamId))
             {
                 var liveStreamResponse = await _mediaSourceManager.OpenLiveStream(
                     new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },

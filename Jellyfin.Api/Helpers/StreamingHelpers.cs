@@ -30,22 +30,29 @@ namespace Jellyfin.Api.Helpers
     /// </summary>
     public static class StreamingHelpers
     {
+        /// <summary>
+        /// Gets the current streaming state.
+        /// </summary>
+        /// <param name="streamingRequest">The <see cref="StreamingRequestDto"/>.</param>
+        /// <param name="httpRequest">The <see cref="HttpRequest"/>.</param>
+        /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
+        /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
+        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
+        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
+        /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
+        /// <param name="transcodingJobHelper">Initialized <see cref="TranscodingJobHelper"/>.</param>
+        /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <returns>A <see cref="Task"/> containing the current <see cref="StreamState"/>.</returns>
         public static async Task<StreamState> GetStreamingState(
-            Guid itemId,
-            long? startTimeTicks,
-            string? audioCodec,
-            string? subtitleCodec,
-            string? videoCodec,
-            string? @params,
-            bool? @static,
-            string? container,
-            string? liveStreamId,
-            string? playSessionId,
-            string? mediaSourceId,
-            string? deviceId,
-            string? deviceProfileId,
-            int? audioBitRate,
-            HttpRequest request,
+            StreamingRequestDto streamingRequest,
+            HttpRequest httpRequest,
             IAuthorizationContext authorizationContext,
             IMediaSourceManager mediaSourceManager,
             IUserManager userManager,
@@ -59,49 +66,43 @@ namespace Jellyfin.Api.Helpers
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             TranscodingJobType transcodingJobType,
-            bool isVideoRequest,
             CancellationToken cancellationToken)
         {
             EncodingHelper encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
             // Parse the DLNA time seek header
-            if (!startTimeTicks.HasValue)
+            if (!streamingRequest.StartTimeTicks.HasValue)
             {
-                var timeSeek = request.Headers["TimeSeekRange.dlna.org"];
+                var timeSeek = httpRequest.Headers["TimeSeekRange.dlna.org"];
 
-                startTimeTicks = ParseTimeSeekHeader(timeSeek);
+                streamingRequest.StartTimeTicks = ParseTimeSeekHeader(timeSeek);
             }
 
-            if (!string.IsNullOrWhiteSpace(@params))
+            if (!string.IsNullOrWhiteSpace(streamingRequest.Params))
             {
-                // What is this?
-                ParseParams(request);
+                ParseParams(streamingRequest);
             }
 
-            var streamOptions = ParseStreamOptions(request.Query);
+            streamingRequest.StreamOptions = ParseStreamOptions(httpRequest.Query);
 
-            var url = request.Path.Value.Split('.').Last();
+            var url = httpRequest.Path.Value.Split('.').Last();
 
-            if (string.IsNullOrEmpty(audioCodec))
+            if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
             {
-                audioCodec = encodingHelper.InferAudioCodec(url);
+                streamingRequest.AudioCodec = encodingHelper.InferAudioCodec(url);
             }
 
-            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(@params) ||
-                                    string.Equals(request.Headers["GetContentFeatures.DLNA.ORG"], "1", StringComparison.OrdinalIgnoreCase);
+            var enableDlnaHeaders = !string.IsNullOrWhiteSpace(streamingRequest.Params) ||
+                                    string.Equals(httpRequest.Headers["GetContentFeatures.DLNA.ORG"], "1", StringComparison.OrdinalIgnoreCase);
 
             var state = new StreamState(mediaSourceManager, transcodingJobType, transcodingJobHelper)
             {
-                // TODO request was the StreamingRequest living in MediaBrowser.Api.Playback.Progressive
-                // Request = request,
-                DeviceId = deviceId,
-                PlaySessionId = playSessionId,
-                LiveStreamId = liveStreamId,
+                Request = streamingRequest,
                 RequestedUrl = url,
-                UserAgent = request.Headers[HeaderNames.UserAgent],
+                UserAgent = httpRequest.Headers[HeaderNames.UserAgent],
                 EnableDlnaHeaders = enableDlnaHeaders
             };
 
-            var auth = authorizationContext.GetAuthorizationInfo(request);
+            var auth = authorizationContext.GetAuthorizationInfo(httpRequest);
             if (!auth.UserId.Equals(Guid.Empty))
             {
                 state.User = userManager.GetUserById(auth.UserId);
@@ -116,27 +117,27 @@ namespace Jellyfin.Api.Helpers
             }
             */
 
-            if (state.IsVideoRequest && !string.IsNullOrWhiteSpace(state.VideoCodec))
+            if (state.IsVideoRequest && !string.IsNullOrWhiteSpace(state.Request.VideoCodec))
             {
-                state.SupportedVideoCodecs = state.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-                state.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
+                state.SupportedVideoCodecs = state.Request.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                state.Request.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
             }
 
-            if (!string.IsNullOrWhiteSpace(audioCodec))
+            if (!string.IsNullOrWhiteSpace(streamingRequest.AudioCodec))
             {
-                state.SupportedAudioCodecs = audioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-                state.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToAudioCodec(i))
+                state.SupportedAudioCodecs = streamingRequest.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToAudioCodec(i))
                                            ?? state.SupportedAudioCodecs.FirstOrDefault();
             }
 
-            if (!string.IsNullOrWhiteSpace(subtitleCodec))
+            if (!string.IsNullOrWhiteSpace(streamingRequest.SubtitleCodec))
             {
-                state.SupportedSubtitleCodecs = subtitleCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-                state.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToSubtitleCodec(i))
+                state.SupportedSubtitleCodecs = streamingRequest.SubtitleCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToSubtitleCodec(i))
                                               ?? state.SupportedSubtitleCodecs.FirstOrDefault();
             }
 
-            var item = libraryManager.GetItemById(itemId);
+            var item = libraryManager.GetItemById(streamingRequest.Id);
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
@@ -150,10 +151,10 @@ namespace Jellyfin.Api.Helpers
             */
 
             MediaSourceInfo? mediaSource = null;
-            if (string.IsNullOrWhiteSpace(liveStreamId))
+            if (string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
             {
-                var currentJob = !string.IsNullOrWhiteSpace(playSessionId)
-                    ? transcodingJobHelper.GetTranscodingJob(playSessionId)
+                var currentJob = !string.IsNullOrWhiteSpace(streamingRequest.PlaySessionId)
+                    ? transcodingJobHelper.GetTranscodingJob(streamingRequest.PlaySessionId)
                     : null;
 
                 if (currentJob != null)
@@ -163,13 +164,13 @@ namespace Jellyfin.Api.Helpers
 
                 if (mediaSource == null)
                 {
-                    var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById(itemId), null, false, false, cancellationToken).ConfigureAwait(false);
+                    var mediaSources = await mediaSourceManager.GetPlaybackMediaSources(libraryManager.GetItemById(streamingRequest.Id), null, false, false, cancellationToken).ConfigureAwait(false);
 
-                    mediaSource = string.IsNullOrEmpty(mediaSourceId)
+                    mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                         ? mediaSources[0]
-                        : mediaSources.Find(i => string.Equals(i.Id, mediaSourceId, StringComparison.InvariantCulture));
+                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.InvariantCulture));
 
-                    if (mediaSource == null && Guid.Parse(mediaSourceId) == itemId)
+                    if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId) == streamingRequest.Id)
                     {
                         mediaSource = mediaSources[0];
                     }
@@ -177,7 +178,7 @@ namespace Jellyfin.Api.Helpers
             }
             else
             {
-                var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(liveStreamId, cancellationToken).ConfigureAwait(false);
+                var liveStreamInfo = await mediaSourceManager.GetLiveStreamWithDirectStreamProvider(streamingRequest.LiveStreamId, cancellationToken).ConfigureAwait(false);
                 mediaSource = liveStreamInfo.Item1;
                 state.DirectStreamProvider = liveStreamInfo.Item2;
             }
@@ -186,28 +187,28 @@ namespace Jellyfin.Api.Helpers
 
             var containerInternal = Path.GetExtension(state.RequestedUrl);
 
-            if (string.IsNullOrEmpty(container))
+            if (string.IsNullOrEmpty(streamingRequest.Container))
             {
-                containerInternal = container;
+                containerInternal = streamingRequest.Container;
             }
 
             if (string.IsNullOrEmpty(containerInternal))
             {
-                containerInternal = (@static.HasValue && @static.Value) ? StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio) : GetOutputFileExtension(state);
+                containerInternal = (streamingRequest.Static && streamingRequest.Static) ? StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio) : GetOutputFileExtension(state);
             }
 
             state.OutputContainer = (containerInternal ?? string.Empty).TrimStart('.');
 
-            state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(audioBitRate, state.AudioStream);
+            state.OutputAudioBitrate = encodingHelper.GetAudioBitrateParam(streamingRequest.AudioBitRate, state.AudioStream);
 
-            state.OutputAudioCodec = audioCodec;
+            state.OutputAudioCodec = streamingRequest.AudioCodec;
 
             state.OutputAudioChannels = encodingHelper.GetNumAudioChannelsParam(state, state.AudioStream, state.OutputAudioCodec);
 
-            if (isVideoRequest)
+            if (state.VideoRequest != null)
             {
-                state.OutputVideoCodec = state.VideoCodec;
-                state.OutputVideoBitrate = EncodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
+                state.OutputVideoCodec = state.Request.VideoCodec;
+                state.OutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
                 encodingHelper.TryStreamCopy(state);
 
@@ -220,21 +221,21 @@ namespace Jellyfin.Api.Helpers
                         state.OutputVideoBitrate.Value,
                         state.VideoStream?.Codec,
                         state.OutputVideoCodec,
-                        videoRequest.MaxWidth,
-                        videoRequest.MaxHeight);
+                        state.VideoRequest.MaxWidth,
+                        state.VideoRequest.MaxHeight);
 
-                    videoRequest.MaxWidth = resolution.MaxWidth;
-                    videoRequest.MaxHeight = resolution.MaxHeight;
+                    state.VideoRequest.MaxWidth = resolution.MaxWidth;
+                    state.VideoRequest.MaxHeight = resolution.MaxHeight;
                 }
             }
 
-            ApplyDeviceProfileSettings(state, dlnaManager, deviceManager, request, deviceProfileId, @static);
+            ApplyDeviceProfileSettings(state, dlnaManager, deviceManager, httpRequest, streamingRequest.DeviceProfileId, streamingRequest.Static);
 
             var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
                 ? GetOutputFileExtension(state)
                 : ('.' + state.OutputContainer);
 
-            state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, deviceId, playSessionId);
+            state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
             return state;
         }
@@ -319,7 +320,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="value">The time seek header string.</param>
         /// <returns>A nullable <see cref="long"/> representing the seek time in ticks.</returns>
-        public static long? ParseTimeSeekHeader(string value)
+        private static long? ParseTimeSeekHeader(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -375,7 +376,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="queryString">The query string.</param>
         /// <returns>A <see cref="Dictionary{String,String}"/> containing the stream options.</returns>
-        public static Dictionary<string, string> ParseStreamOptions(IQueryCollection queryString)
+        private static Dictionary<string, string> ParseStreamOptions(IQueryCollection queryString)
         {
             Dictionary<string, string> streamOptions = new Dictionary<string, string>();
             foreach (var param in queryString)
@@ -398,7 +399,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="state">The current <see cref="StreamState"/>.</param>
         /// <param name="responseHeaders">The <see cref="IHeaderDictionary"/> of the response.</param>
         /// <param name="startTimeTicks">The start time in ticks.</param>
-        public static void AddTimeSeekResponseHeaders(StreamState state, IHeaderDictionary responseHeaders, long? startTimeTicks)
+        private static void AddTimeSeekResponseHeaders(StreamState state, IHeaderDictionary responseHeaders, long? startTimeTicks)
         {
             var runtimeSeconds = TimeSpan.FromTicks(state.RunTimeTicks!.Value).TotalSeconds.ToString(CultureInfo.InvariantCulture);
             var startSeconds = TimeSpan.FromTicks(startTimeTicks ?? 0).TotalSeconds.ToString(CultureInfo.InvariantCulture);
@@ -420,7 +421,7 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        public static string? GetOutputFileExtension(StreamState state)
+        private static string? GetOutputFileExtension(StreamState state)
         {
             var ext = Path.GetExtension(state.RequestedUrl);
 
@@ -432,7 +433,7 @@ namespace Jellyfin.Api.Helpers
             // Try to infer based on the desired video codec
             if (state.IsVideoRequest)
             {
-                var videoCodec = state.VideoCodec;
+                var videoCodec = state.Request.VideoCodec;
 
                 if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(videoCodec, "h265", StringComparison.OrdinalIgnoreCase))
@@ -459,7 +460,7 @@ namespace Jellyfin.Api.Helpers
             // Try to infer based on the desired audio codec
             if (!state.IsVideoRequest)
             {
-                var audioCodec = state.AudioCodec;
+                var audioCodec = state.Request.AudioCodec;
 
                 if (string.Equals("aac", audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
@@ -570,7 +571,7 @@ namespace Jellyfin.Api.Helpers
                     // state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                     state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                    if (!state.IsVideoRequest)
+                    if (state.VideoRequest != null)
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
                         state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
@@ -583,11 +584,16 @@ namespace Jellyfin.Api.Helpers
         /// Parses the parameters.
         /// </summary>
         /// <param name="request">The request.</param>
-        private void ParseParams(StreamRequest request)
+        private static void ParseParams(StreamingRequestDto request)
         {
+            if (string.IsNullOrEmpty(request.Params))
+            {
+                return;
+            }
+
             var vals = request.Params.Split(';');
 
-            var videoRequest = request as VideoStreamRequest;
+            var videoRequest = request as VideoRequestDto;
 
             for (var i = 0; i < vals.Length; i++)
             {

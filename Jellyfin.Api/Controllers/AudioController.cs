@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -141,10 +142,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("{itemId}/stream.{container}")]
+        [HttpGet("{itemId}/{stream=stream}.{container?}")]
         [HttpGet("{itemId}/stream")]
-        [HttpHead("{itemId}/stream.{container}")]
-        [HttpGet("{itemId}/stream")]
+        [HttpHead("{itemId}/{stream=stream}.{container?}")]
+        [HttpHead("{itemId}/stream")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetAudioStream(
             [FromRoute] Guid itemId,
@@ -201,21 +202,61 @@ namespace Jellyfin.Api.Controllers
 
             var cancellationTokenSource = new CancellationTokenSource();
 
+            StreamingRequestDto streamingRequest = new StreamingRequestDto
+            {
+                Id = itemId,
+                Container = container,
+                Static = @static.HasValue ? @static.Value : true,
+                Params = @params,
+                Tag = tag,
+                DeviceProfileId = deviceProfileId,
+                PlaySessionId = playSessionId,
+                SegmentContainer = segmentContainer,
+                SegmentLength = segmentLength,
+                MinSegments = minSegments,
+                MediaSourceId = mediaSourceId,
+                DeviceId = deviceId,
+                AudioCodec = audioCodec,
+                EnableAutoStreamCopy = enableAutoStreamCopy.HasValue ? enableAutoStreamCopy.Value : true,
+                AllowAudioStreamCopy = allowAudioStreamCopy.HasValue ? allowAudioStreamCopy.Value : true,
+                AllowVideoStreamCopy = allowVideoStreamCopy.HasValue ? allowVideoStreamCopy.Value : true,
+                BreakOnNonKeyFrames = breakOnNonKeyFrames.HasValue ? breakOnNonKeyFrames.Value : false,
+                AudioSampleRate = audioSampleRate,
+                MaxAudioChannels = maxAudioChannels,
+                AudioBitRate = audioBitRate,
+                MaxAudioBitDepth = maxAudioBitDepth,
+                AudioChannels = audioChannels,
+                Profile = profile,
+                Level = level,
+                Framerate = framerate,
+                MaxFramerate = maxFramerate,
+                CopyTimestamps = copyTimestamps.HasValue ? copyTimestamps.Value : true,
+                StartTimeTicks = startTimeTicks,
+                Width = width,
+                Height = height,
+                VideoBitRate = videoBitRate,
+                SubtitleStreamIndex = subtitleStreamIndex,
+                SubtitleMethod = subtitleMethod,
+                MaxRefFrames = maxRefFrames,
+                MaxVideoBitDepth = maxVideoBitDepth,
+                RequireAvc = requireAvc.HasValue ? requireAvc.Value : true,
+                DeInterlace = deInterlace.HasValue ? deInterlace.Value : true,
+                RequireNonAnamorphic = requireNonAnamorphic.HasValue ? requireNonAnamorphic.Value : true,
+                TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
+                CpuCoreLimit = cpuCoreLimit,
+                LiveStreamId = liveStreamId,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode.HasValue ? enableMpegtsM2TsMode.Value : true,
+                VideoCodec = videoCodec,
+                SubtitleCodec = subtitleCodec,
+                TranscodeReasons = transcodingReasons,
+                AudioStreamIndex = audioStreamIndex,
+                VideoStreamIndex = videoStreamIndex,
+                Context = context,
+                StreamOptions = streamOptions
+            };
+
             var state = await StreamingHelpers.GetStreamingState(
-                    itemId,
-                    startTimeTicks,
-                    audioCodec,
-                    subtitleCodec,
-                    videoCodec,
-                    @params,
-                    @static,
-                    container,
-                    liveStreamId,
-                    playSessionId,
-                    mediaSourceId,
-                    deviceId,
-                    deviceProfileId,
-                    audioBitRate,
+                    streamingRequest,
                     Request,
                     _authContext,
                     _mediaSourceManager,
@@ -230,7 +271,6 @@ namespace Jellyfin.Api.Controllers
                     _deviceManager,
                     _transcodingJobHelper,
                     _transcodingJobType,
-                    false,
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
@@ -255,7 +295,7 @@ namespace Jellyfin.Api.Controllers
 
                 using (state)
                 {
-                    return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, cancellationTokenSource).ConfigureAwait(false);
+                    return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this).ConfigureAwait(false);
                 }
             }
 
@@ -297,8 +337,6 @@ namespace Jellyfin.Api.Controllers
                     return FileStreamResponseHelpers.GetStaticFileResult(
                         state.MediaPath,
                         contentType,
-                        _fileSystem.GetLastWriteTimeUtc(state.MediaPath),
-                        cacheDuration,
                         isHeadRequest,
                         this);
                 }
