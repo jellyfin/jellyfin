@@ -108,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="204">Play request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost]
+        [HttpPost("Play")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play()
         {
@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="204">Pause request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost]
+        [HttpPost("Pause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Pause()
         {
@@ -145,7 +145,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="positionTicks">The playback position in ticks.</param>
         /// <response code="204">Seek request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost]
+        [HttpPost("Seek")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Seek([FromQuery] long positionTicks)
         {
@@ -167,7 +167,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="bufferingDone">Whether the buffering is done.</param>
         /// <response code="204">Buffering request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost]
+        [HttpPost("Buffering")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Buffering([FromQuery] DateTime when, [FromQuery] long positionTicks, [FromQuery] bool bufferingDone)
         {
