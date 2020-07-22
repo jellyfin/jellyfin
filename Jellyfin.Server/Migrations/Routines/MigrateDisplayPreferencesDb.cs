@@ -68,6 +68,11 @@ namespace Jellyfin.Server.Migrations.Routines
                 foreach (var result in results)
                 {
                     var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToString(), _jsonOptions);
+                    var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
+                        ? Enum.TryParse<ChromecastVersion>(version, true, out var parsed)
+                            ? parsed
+                            : ChromecastVersion.Stable
+                        : ChromecastVersion.Stable;
 
                     var displayPreferences = new DisplayPreferences(result[2].ToString(), new Guid(result[1].ToBlob()))
                     {
@@ -79,7 +84,8 @@ namespace Jellyfin.Server.Migrations.Routines
                         SortOrder = dto.SortOrder,
                         RememberIndexing = dto.RememberIndexing,
                         RememberSorting = dto.RememberSorting,
-                        ScrollDirection = dto.ScrollDirection
+                        ScrollDirection = dto.ScrollDirection,
+                        ChromecastVersion = chromecastVersion
                     };
 
                     for (int i = 0; i < 7; i++)

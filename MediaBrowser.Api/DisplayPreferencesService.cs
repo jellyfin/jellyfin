@@ -103,6 +103,8 @@ namespace MediaBrowser.Api
                 dto.CustomPrefs["homesection" + homeSection.Order] = homeSection.Type.ToString().ToLowerInvariant();
             }
 
+            dto.CustomPrefs["chromecastVersion"] = result.ChromecastVersion.ToString().ToLowerInvariant();
+
             return ToOptimizedResult(dto);
         }
 
