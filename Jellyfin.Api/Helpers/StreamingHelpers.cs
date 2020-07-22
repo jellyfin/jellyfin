@@ -185,7 +185,7 @@ namespace Jellyfin.Api.Helpers
 
             encodingHelper.AttachMediaSourceInfo(state, mediaSource, url);
 
-            var containerInternal = Path.GetExtension(state.RequestedUrl);
+            string? containerInternal = Path.GetExtension(state.RequestedUrl);
 
             if (string.IsNullOrEmpty(streamingRequest.Container))
             {
