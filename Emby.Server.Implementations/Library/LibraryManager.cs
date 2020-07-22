@@ -1876,69 +1876,66 @@ namespace Emby.Server.Implementations.Library
             }
 
             var outdated = forceUpdate ? item.ImageInfos.Where(i => i.Path != null).ToArray() : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
-            if (outdated.Length == 0)
+            // Skip image processing if current or live tv source
+            if (outdated.Length == 0 || item.SourceType != SourceType.Library)
             {
                 RegisterItem(item);
                 return;
             }
 
-            // Skip image processing for live tv
-            if (item.SourceType == SourceType.Library)
+            foreach (var img in outdated)
             {
-                foreach (var img in outdated)
+                var image = img;
+                if (!img.IsLocalFile)
                 {
-                    var image = img;
-                    if (!img.IsLocalFile)
-                    {
-                        try
-                        {
-                            var index = item.GetImageIndex(img);
-                            image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
-                        }
-                        catch (ArgumentException)
-                        {
-                            _logger.LogWarning("Cannot get image index for {0}", img.Path);
-                            continue;
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            _logger.LogWarning("Cannot fetch image from {0}", img.Path);
-                            continue;
-                        }
-                    }
-
                     try
                     {
-                        ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
-                        image.Width = size.Width;
-                        image.Height = size.Height;
+                        var index = item.GetImageIndex(img);
+                        image = ConvertImageToLocal(item, img, index).ConfigureAwait(false).GetAwaiter().GetResult();
                     }
-                    catch (Exception ex)
+                    catch (ArgumentException)
                     {
-                        _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
-                        image.Width = 0;
-                        image.Height = 0;
+                        _logger.LogWarning("Cannot get image index for {0}", img.Path);
                         continue;
                     }
+                    catch (InvalidOperationException)
+                    {
+                        _logger.LogWarning("Cannot fetch image from {0}", img.Path);
+                        continue;
+                    }
+                }
 
-                    try
-                    {
-                        image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Cannot compute blurhash for {0}", image.Path);
-                        image.BlurHash = string.Empty;
-                    }
+                try
+                {
+                    ImageDimensions size = _imageProcessor.GetImageDimensions(item, image);
+                    image.Width = size.Width;
+                    image.Height = size.Height;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannnot get image dimensions for {0}", image.Path);
+                    image.Width = 0;
+                    image.Height = 0;
+                    continue;
+                }
 
-                    try
-                    {
-                        image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Cannot update DateModified for {0}", image.Path);
-                    }
+                try
+                {
+                    image.BlurHash = _imageProcessor.GetImageBlurHash(image.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot compute blurhash for {0}", image.Path);
+                    image.BlurHash = string.Empty;
+                }
+
+                try
+                {
+                    image.DateModified = _fileSystem.GetLastWriteTimeUtc(image.Path);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cannot update DateModified for {0}", image.Path);
                 }
             }
 
