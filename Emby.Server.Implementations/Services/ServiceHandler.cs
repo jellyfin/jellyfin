@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Mime;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,11 +60,11 @@ namespace Emby.Server.Implementations.Services
         {
             if (format.Equals("json", StringComparison.Ordinal))
             {
-                return "application/json";
+                return MediaTypeNames.Application.Json;
             }
             else if (format.Equals("xml", StringComparison.Ordinal))
             {
-                return "application/xml";
+                return MediaTypeNames.Application.Xml;
             }
 
             return null;

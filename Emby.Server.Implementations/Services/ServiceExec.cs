@@ -111,7 +111,8 @@ namespace Emby.Server.Implementations.Services
                     CultureInfo.InvariantCulture,
                     "Could not find method named {1}({0}) or Any({0}) on Service {2}",
                     requestDto.GetType().GetMethodName(),
-                    expectedMethodName, serviceType.GetMethodName()));
+                    expectedMethodName,
+                    serviceType.GetMethodName()));
         }
 
         private static async Task<object> GetTaskResult(Task task)
