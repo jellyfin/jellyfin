@@ -512,7 +512,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
             else
             {
-                IncrementInvalidLoginAttemptCount(user);
+                await IncrementInvalidLoginAttemptCount(user).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Authentication request for {UserName} has been denied (IP: {IP}).",
                     user.Username,
@@ -882,7 +882,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
-        private void IncrementInvalidLoginAttemptCount(User user)
+        private async Task IncrementInvalidLoginAttemptCount(User user)
         {
             user.InvalidLoginAttemptCount++;
             int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
@@ -896,7 +896,7 @@ namespace Jellyfin.Server.Implementations.Users
                     user.InvalidLoginAttemptCount);
             }
 
-            UpdateUser(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
         }
     }
 }
