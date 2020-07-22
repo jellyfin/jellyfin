@@ -372,7 +372,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int GetVideoProfileScore(string profile)
         {
             // strip spaces because they may be stripped out on the query string
-            profile = profile.Replace(" ", string.Empty, CultureInfo.InvariantCulture);
+            profile = profile.Replace(" ", string.Empty, StringComparison.Ordinal);
             return Array.FindIndex(_videoProfiles, x => string.Equals(x, profile, StringComparison.OrdinalIgnoreCase));
         }
 
