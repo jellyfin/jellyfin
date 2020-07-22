@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -105,7 +106,12 @@ namespace Emby.Server.Implementations.Services
             }
 
             var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLowerInvariant();
-            throw new NotImplementedException(string.Format("Could not find method named {1}({0}) or Any({0}) on Service {2}", requestDto.GetType().GetMethodName(), expectedMethodName, serviceType.GetMethodName()));
+            throw new NotImplementedException(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Could not find method named {1}({0}) or Any({0}) on Service {2}",
+                    requestDto.GetType().GetMethodName(),
+                    expectedMethodName, serviceType.GetMethodName()));
         }
 
         private static async Task<object> GetTaskResult(Task task)

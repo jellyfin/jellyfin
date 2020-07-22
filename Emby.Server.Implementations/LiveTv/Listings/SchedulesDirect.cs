@@ -461,7 +461,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private async Task<List<ScheduleDirect.ShowImages>> GetImageForPrograms(
             ListingsProviderInfo info,
             List<string> programIds,
-           CancellationToken cancellationToken)
+            CancellationToken cancellationToken)
         {
             if (programIds.Count == 0)
             {
@@ -474,7 +474,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 var imageId = i.Substring(0, 10);
 
-                if (!imageIdString.Contains(imageId))
+                if (!imageIdString.Contains(imageId, StringComparison.Ordinal))
                 {
                     imageIdString += "\"" + imageId + "\",";
                 }

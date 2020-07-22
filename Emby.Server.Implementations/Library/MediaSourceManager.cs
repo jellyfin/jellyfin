@@ -869,7 +869,7 @@ namespace Emby.Server.Implementations.Library
 
             var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture), keys[0], StringComparison.OrdinalIgnoreCase));
 
-            var splitIndex = key.IndexOf(LiveStreamIdDelimeter);
+            var splitIndex = key.IndexOf(LiveStreamIdDelimeter, StringComparison.Ordinal);
             var keyId = key.Substring(splitIndex + 1);
 
             return new Tuple<IMediaSourceProvider, string>(provider, keyId);
@@ -881,6 +881,7 @@ namespace Emby.Server.Implementations.Library
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private readonly object _disposeLock = new object();

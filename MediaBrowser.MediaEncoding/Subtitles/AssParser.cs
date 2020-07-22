@@ -35,7 +35,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         continue;
                     }
 
-                    if (line.StartsWith("["))
+                    if (line[0] == '[')
                     {
                         break;
                     }
@@ -62,7 +62,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return trackInfo;
         }
 
-        long GetTicks(string time)
+        private long GetTicks(ReadOnlySpan<char> time)
         {
             return TimeSpan.TryParseExact(time, @"h\:mm\:ss\.ff", _usCulture, out var span)
                 ? span.Ticks : 0;

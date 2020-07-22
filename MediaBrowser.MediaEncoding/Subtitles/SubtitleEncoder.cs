@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -365,7 +367,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>System.Object.</returns>
         private SemaphoreSlim GetLock(string filename)
         {
-            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+            return _semaphoreLocks.GetOrAdd(filename, _ => new SemaphoreSlim(1, 1));
         }
 
         /// <summary>
