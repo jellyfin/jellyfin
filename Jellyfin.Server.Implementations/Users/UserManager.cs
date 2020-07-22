@@ -216,7 +216,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             var newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
 
-            await dbContext.Users.AddAsync(newUser).ConfigureAwait(false);
+            dbContext.Users.Add(newUser);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             OnUserCreated?.Invoke(this, new GenericEventArgs<User>(newUser));
@@ -608,7 +608,7 @@ namespace Jellyfin.Server.Implementations.Users
             newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
             newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
 
-            await dbContext.Users.AddAsync(newUser).ConfigureAwait(false);
+            dbContext.Users.Add(newUser);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
