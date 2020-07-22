@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CA1307
+
+using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller;
@@ -26,14 +28,15 @@ namespace Jellyfin.Server.Implementations.Users
         public DisplayPreferences GetDisplayPreferences(Guid userId, string client)
         {
             using var dbContext = _dbProvider.CreateContext();
-            var user = dbContext.Users.Find(userId);
-#pragma warning disable CA1307
-            var prefs = user.DisplayPreferences.FirstOrDefault(pref => string.Equals(pref.Client, client));
+            var prefs = dbContext.DisplayPreferences
+                .Include(pref => pref.HomeSections)
+                .FirstOrDefault(pref =>
+                    pref.UserId == userId && pref.ItemId == null && string.Equals(pref.Client, client));
 
             if (prefs == null)
             {
                 prefs = new DisplayPreferences(client, userId);
-                user.DisplayPreferences.Add(prefs);
+                dbContext.DisplayPreferences.Add(prefs);
             }
 
             return prefs;
