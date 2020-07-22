@@ -188,7 +188,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="ping">The ping.</param>
         /// <response code="204">Ping updated.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost]
+        [HttpPost("Ping")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Ping([FromQuery] double ping)
         {
