@@ -79,9 +79,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageType">(Unused) Image type.</param>
         /// <param name="index">(Unused) Image index.</param>
         /// <response code="204">Image updated.</response>
+        /// <response code="403">User does not have permission to delete the image.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("/Users/{userId}/Images/{imageType}")]
         [HttpPost("/Users/{userId}/Images/{imageType}/{index?}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> PostUserImage(
@@ -122,12 +125,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageType">(Unused) Image type.</param>
         /// <param name="index">(Unused) Image index.</param>
         /// <response code="204">Image deleted.</response>
+        /// <response code="403">User does not have permission to delete the image.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpDelete("/Users/{userId}/Images/{itemType}")]
         [HttpDelete("/Users/{userId}/Images/{itemType}/{index?}")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public ActionResult DeleteUserImage(
             [FromRoute] Guid userId,
             [FromRoute] ImageType imageType,
@@ -188,7 +193,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageType">Image type.</param>
         /// <param name="imageIndex">(Unused) Image index.</param>
         /// <response code="204">Image saved.</response>
-        /// <response code="400">Item not found.</response>
+        /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpPost("/Items/{itemId}/Images/{imageType}")]
         [HttpPost("/Items/{itemId}/Images/{imageType}/{imageIndex?}")]
