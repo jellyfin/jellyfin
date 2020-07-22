@@ -2,6 +2,7 @@
 using System.Linq;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -24,7 +25,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public DisplayPreferences GetDisplayPreferences(Guid userId, string client)
         {
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users.Find(userId);
 #pragma warning disable CA1307
             var prefs = user.DisplayPreferences.FirstOrDefault(pref => string.Equals(pref.Client, client));
@@ -41,7 +42,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public void SaveChanges(DisplayPreferences preferences)
         {
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
             dbContext.Update(preferences);
             dbContext.SaveChanges();
         }
