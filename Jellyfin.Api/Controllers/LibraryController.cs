@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -146,11 +145,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<ThemeMediaResult> GetThemeSongs(
             [FromRoute] Guid itemId,
-            [FromQuery] Guid userId,
-            [FromQuery] bool inheritFromParent)
+            [FromQuery] Guid? userId,
+            [FromQuery] bool inheritFromParent = false)
         {
-            var user = !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId)
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
                 : null;
 
             var item = itemId.Equals(Guid.Empty)
@@ -212,11 +211,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<ThemeMediaResult> GetThemeVideos(
             [FromRoute] Guid itemId,
-            [FromQuery] Guid userId,
-            [FromQuery] bool inheritFromParent)
+            [FromQuery] Guid? userId,
+            [FromQuery] bool inheritFromParent = false)
         {
-            var user = !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId)
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
                 : null;
 
             var item = itemId.Equals(Guid.Empty)
@@ -277,8 +276,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<AllThemeMediaResult> GetThemeMedia(
             [FromRoute] Guid itemId,
-            [FromQuery] Guid userId,
-            [FromQuery] bool inheritFromParent)
+            [FromQuery] Guid? userId,
+            [FromQuery] bool inheritFromParent = false)
         {
             var themeSongs = GetThemeSongs(
                 itemId,
@@ -361,12 +360,14 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItems([FromQuery] string ids)
+        public ActionResult DeleteItems([FromQuery] string? ids)
         {
-            var itemIds = string.IsNullOrWhiteSpace(ids)
-                ? Array.Empty<string>()
-                : RequestHelpers.Split(ids, ',', true);
+            if (string.IsNullOrEmpty(ids))
+            {
+                return NoContent();
+            }
 
+            var itemIds = RequestHelpers.Split(ids, ',', true);
             foreach (var i in itemIds)
             {
                 var item = _libraryManager.GetItemById(i);
@@ -403,12 +404,12 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<ItemCounts> GetItemCounts(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] bool? isFavorite)
         {
-            var user = userId.Equals(Guid.Empty)
-                ? null
-                : _userManager.GetUserById(userId);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             var counts = new ItemCounts
             {
@@ -437,7 +438,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute] Guid itemId, [FromQuery] Guid userId)
+        public ActionResult<IEnumerable<BaseItemDto>> GetAncestors([FromRoute] Guid itemId, [FromQuery] Guid? userId)
         {
             var item = _libraryManager.GetItemById(itemId);
 
@@ -448,8 +449,8 @@ namespace Jellyfin.Api.Controllers
 
             var baseItemDtos = new List<BaseItemDto>();
 
-            var user = !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId)
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
                 : null;
 
             var dtoOptions = new DtoOptions().AddClientFields(Request);
@@ -688,7 +689,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
             [FromRoute] Guid itemId,
             [FromQuery] string? excludeArtistIds,
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields)
         {
@@ -737,7 +738,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("/Libraries/AvailableOptions")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo([FromQuery] string? libraryContentType, [FromQuery] bool isNewLibrary)
+        public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo(
+            [FromQuery] string? libraryContentType,
+            [FromQuery] bool isNewLibrary = false)
         {
             var result = new LibraryOptionsResultDto();
 
@@ -878,13 +881,15 @@ namespace Jellyfin.Api.Controllers
         private QueryResult<BaseItemDto> GetSimilarItemsResult(
             BaseItem item,
             string? excludeArtistIds,
-            Guid userId,
+            Guid? userId,
             int? limit,
             string? fields,
             string[] includeItemTypes,
             bool isMovie)
         {
-            var user = !userId.Equals(Guid.Empty) ? _userManager.GetUserById(userId) : null;
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
             var dtoOptions = new DtoOptions()
                 .AddItemFields(fields)
                 .AddClientFields(Request);

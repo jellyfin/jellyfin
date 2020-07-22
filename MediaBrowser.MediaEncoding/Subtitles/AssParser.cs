@@ -23,6 +23,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 string line;
                 while (reader.ReadLine() != "[Events]")
                 { }
+
                 var headers = ParseFieldHeaders(reader.ReadLine());
 
                 while ((line = reader.ReadLine()) != null)
@@ -56,6 +57,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     trackEvents.Add(subEvent);
                 }
             }
+
             trackInfo.TrackEvents = trackEvents.ToArray();
             return trackInfo;
         }
@@ -112,11 +114,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     pre = s.Substring(0, 5) + "}";
                 }
+
                 int indexOfEnd = p.Text.IndexOf('}');
                 p.Text = p.Text.Remove(indexOfBegin, (indexOfEnd - indexOfBegin) + 1);
 
                 indexOfBegin = p.Text.IndexOf('{');
             }
+
             p.Text = pre + p.Text;
         }
     }

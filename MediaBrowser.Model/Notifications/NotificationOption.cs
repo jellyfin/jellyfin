@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Notifications
         public string Type { get; set; }
 
         /// <summary>
-        /// User Ids to not monitor (it's opt out)
+        /// User Ids to not monitor (it's opt out).
         /// </summary>
         public string[] DisabledMonitorUsers { get; set; }
 

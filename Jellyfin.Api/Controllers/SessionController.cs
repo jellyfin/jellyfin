@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<SessionInfo>> GetSessions(
-            [FromQuery] Guid controllableByUserId,
+            [FromQuery] Guid? controllableByUserId,
             [FromQuery] string? deviceId,
             [FromQuery] int? activeWithinSeconds)
         {
@@ -72,15 +72,15 @@ namespace Jellyfin.Api.Controllers
                 result = result.Where(i => string.Equals(i.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (!controllableByUserId.Equals(Guid.Empty))
+            if (controllableByUserId.HasValue && !controllableByUserId.Equals(Guid.Empty))
             {
                 result = result.Where(i => i.SupportsRemoteControl);
 
-                var user = _userManager.GetUserById(controllableByUserId);
+                var user = _userManager.GetUserById(controllableByUserId.Value);
 
                 if (!user.HasPermission(PermissionKind.EnableRemoteControlOfOtherUsers))
                 {
-                    result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(controllableByUserId));
+                    result = result.Where(i => i.UserId.Equals(Guid.Empty) || i.ContainsUser(controllableByUserId.Value));
                 }
 
                 if (!user.HasPermission(PermissionKind.EnableSharedDeviceControl))
@@ -371,8 +371,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? id,
             [FromQuery] string? playableMediaTypes,
             [FromQuery] string? supportedCommands,
-            [FromQuery] bool supportsMediaControl,
-            [FromQuery] bool supportsSync,
+            [FromQuery] bool supportsMediaControl = false,
+            [FromQuery] bool supportsSync = false,
             [FromQuery] bool supportsPersistentIdentifier = true)
         {
             if (string.IsNullOrWhiteSpace(id))

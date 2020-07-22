@@ -40,7 +40,9 @@ namespace Emby.Server.Implementations.Services
             if (httpResult != null)
             {
                 if (httpResult.RequestContext == null)
+                {
                     httpResult.RequestContext = request;
+                }
 
                 response.StatusCode = httpResult.Status;
             }
@@ -59,8 +61,8 @@ namespace Emby.Server.Implementations.Services
                 }
             }
 
-            //ContentType='text/html' is the default for a HttpResponse
-            //Do not override if another has been set
+            // ContentType='text/html' is the default for a HttpResponse
+            // Do not override if another has been set
             if (response.ContentType == null || response.ContentType == "text/html")
             {
                 response.ContentType = defaultContentType;

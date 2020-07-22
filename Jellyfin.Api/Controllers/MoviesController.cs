@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
@@ -55,32 +54,22 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="enableImages">(Unused) Optional. include image information in output.</param>
-        /// <param name="enableUserData">(Unused) Optional. include user data.</param>
-        /// <param name="imageTypeLimit">(Unused) Optional. the max number of images to return, per image type.</param>
-        /// <param name="enableImageTypes">(Unused) Optional. The image types to include in the output.</param>
         /// <param name="fields">Optional. The fields to return.</param>
         /// <param name="categoryLimit">The max number of categories to return.</param>
         /// <param name="itemLimit">The max number of items to return per category.</param>
         /// <response code="200">Movie recommendations returned.</response>
         /// <returns>The list of movie recommendations.</returns>
         [HttpGet("Recommendations")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableImages", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableUserData", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageTypeLimit", Justification = "Imported from ServiceStack")]
-        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "enableImageTypes", Justification = "Imported from ServiceStack")]
         public ActionResult<IEnumerable<RecommendationDto>> GetMovieRecommendations(
-            [FromQuery] Guid userId,
-            [FromQuery] string parentId,
-            [FromQuery] bool? enableImages,
-            [FromQuery] bool? enableUserData,
-            [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery] Guid? userId,
+            [FromQuery] string? parentId,
             [FromQuery] string? fields,
             [FromQuery] int categoryLimit = 5,
             [FromQuery] int itemLimit = 8)
         {
-            var user = _userManager.GetUserById(userId);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
             var dtoOptions = new DtoOptions()
                 .AddItemFields(fields)
                 .AddClientFields(Request);
@@ -185,7 +174,7 @@ namespace Jellyfin.Api.Controllers
         }
 
         private IEnumerable<RecommendationDto> GetWithDirector(
-            User user,
+            User? user,
             IEnumerable<string> names,
             int itemLimit,
             DtoOptions dtoOptions,
@@ -230,7 +219,7 @@ namespace Jellyfin.Api.Controllers
             }
         }
 
-        private IEnumerable<RecommendationDto> GetWithActor(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetWithActor(User? user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
             var itemTypes = new List<string> { nameof(Movie) };
             if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
@@ -270,7 +259,7 @@ namespace Jellyfin.Api.Controllers
             }
         }
 
-        private IEnumerable<RecommendationDto> GetSimilarTo(User user, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
+        private IEnumerable<RecommendationDto> GetSimilarTo(User? user, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
             var itemTypes = new List<string> { nameof(Movie) };
             if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)

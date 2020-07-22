@@ -4,7 +4,6 @@ using System.Linq;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -21,14 +20,16 @@ namespace Jellyfin.Api.Helpers
             IUserManager userManager,
             ILibraryManager libraryManager,
             IDtoService dtoService,
-            Guid userId,
+            Guid? userId,
             string id,
             string? excludeArtistIds,
             int? limit,
             Type[] includeTypes,
             Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
-            var user = !userId.Equals(Guid.Empty) ? userManager.GetUserById(userId) : null;
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? userManager.GetUserById(userId.Value)
+                : null;
 
             var item = string.IsNullOrEmpty(id) ?
                 (!userId.Equals(Guid.Empty) ? libraryManager.GetUserRootFolder() :
@@ -38,10 +39,9 @@ namespace Jellyfin.Api.Helpers
             {
                 IncludeItemTypes = includeTypes.Select(i => i.Name).ToArray(),
                 Recursive = true,
-                DtoOptions = dtoOptions
+                DtoOptions = dtoOptions,
+                ExcludeArtistIds = RequestHelpers.GetGuids(excludeArtistIds)
             };
-
-            query.ExcludeArtistIds = RequestHelpers.GetGuids(excludeArtistIds);
 
             var inputItems = libraryManager.GetItemList(query);
 

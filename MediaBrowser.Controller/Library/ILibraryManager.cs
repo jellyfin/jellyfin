@@ -21,7 +21,7 @@ using Person = MediaBrowser.Controller.Entities.Person;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface ILibraryManager
+    /// Interface ILibraryManager.
     /// </summary>
     public interface ILibraryManager
     {
@@ -30,15 +30,13 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
-        /// <param name="allowIgnorePath">Allow the path to be ignored.</param>
         /// <returns>BaseItem.</returns>
         BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
-            Folder parent = null,
-            bool allowIgnorePath = true);
+            Folder parent = null);
 
         /// <summary>
-        /// Resolves a set of files into a list of BaseItem
+        /// Resolves a set of files into a list of BaseItem.
         /// </summary>
         IEnumerable<BaseItem> ResolvePaths(
             IEnumerable<FileSystemMetadata> files,
@@ -54,7 +52,7 @@ namespace MediaBrowser.Controller.Library
         AggregateFolder RootFolder { get; }
 
         /// <summary>
-        /// Gets a Person
+        /// Gets a Person.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Person}.</returns>
@@ -75,14 +73,14 @@ namespace MediaBrowser.Controller.Library
         MusicArtist GetArtist(string name);
         MusicArtist GetArtist(string name, DtoOptions options);
         /// <summary>
-        /// Gets a Studio
+        /// Gets a Studio.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Studio}.</returns>
         Studio GetStudio(string name);
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
@@ -96,7 +94,7 @@ namespace MediaBrowser.Controller.Library
         MusicGenre GetMusicGenre(string name);
 
         /// <summary>
-        /// Gets a Year
+        /// Gets a Year.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
@@ -113,7 +111,7 @@ namespace MediaBrowser.Controller.Library
         Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>

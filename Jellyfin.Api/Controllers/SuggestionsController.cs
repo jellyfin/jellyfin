@@ -44,9 +44,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user id.</param>
         /// <param name="mediaType">The media types.</param>
         /// <param name="type">The type.</param>
-        /// <param name="enableTotalRecordCount">Whether to enable the total record count.</param>
         /// <param name="startIndex">Optional. The start index.</param>
         /// <param name="limit">Optional. The limit.</param>
+        /// <param name="enableTotalRecordCount">Whether to enable the total record count.</param>
         /// <response code="200">Suggestions returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the suggestions.</returns>
         [HttpGet("/Users/{userId}/Suggestions")]
@@ -55,9 +55,9 @@ namespace Jellyfin.Api.Controllers
             [FromRoute] Guid userId,
             [FromQuery] string? mediaType,
             [FromQuery] string? type,
-            [FromQuery] bool enableTotalRecordCount,
             [FromQuery] int? startIndex,
-            [FromQuery] int? limit)
+            [FromQuery] int? limit,
+            [FromQuery] bool enableTotalRecordCount = false)
         {
             var user = !userId.Equals(Guid.Empty) ? _userManager.GetUserById(userId) : null;
 

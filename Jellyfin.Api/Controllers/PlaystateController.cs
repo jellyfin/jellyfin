@@ -182,12 +182,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">User id.</param>
         /// <param name="itemId">Item id.</param>
         /// <param name="mediaSourceId">The id of the MediaSource.</param>
-        /// <param name="canSeek">Indicates if the client can seek.</param>
         /// <param name="audioStreamIndex">The audio stream index.</param>
         /// <param name="subtitleStreamIndex">The subtitle stream index.</param>
         /// <param name="playMethod">The play method.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="playSessionId">The play session id.</param>
+        /// <param name="canSeek">Indicates if the client can seek.</param>
         /// <response code="204">Play start recorded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("/Users/{userId}/PlayingItems/{itemId}")]
@@ -196,13 +196,13 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> OnPlaybackStart(
             [FromRoute] Guid userId,
             [FromRoute] Guid itemId,
-            [FromQuery] string mediaSourceId,
-            [FromQuery] bool canSeek,
+            [FromQuery] string? mediaSourceId,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] PlayMethod playMethod,
-            [FromQuery] string liveStreamId,
-            [FromQuery] string playSessionId)
+            [FromQuery] string? liveStreamId,
+            [FromQuery] string playSessionId,
+            [FromQuery] bool canSeek = false)
         {
             var playbackStartInfo = new PlaybackStartInfo
             {
@@ -229,8 +229,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <param name="mediaSourceId">The id of the MediaSource.</param>
         /// <param name="positionTicks">Optional. The current position, in ticks. 1 tick = 10000 ms.</param>
-        /// <param name="isPaused">Indicates if the player is paused.</param>
-        /// <param name="isMuted">Indicates if the player is muted.</param>
         /// <param name="audioStreamIndex">The audio stream index.</param>
         /// <param name="subtitleStreamIndex">The subtitle stream index.</param>
         /// <param name="volumeLevel">Scale of 0-100.</param>
@@ -238,6 +236,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="repeatMode">The repeat mode.</param>
+        /// <param name="isPaused">Indicates if the player is paused.</param>
+        /// <param name="isMuted">Indicates if the player is muted.</param>
         /// <response code="204">Play progress recorded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("/Users/{userId}/PlayingItems/{itemId}/Progress")]
@@ -246,17 +246,17 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> OnPlaybackProgress(
             [FromRoute] Guid userId,
             [FromRoute] Guid itemId,
-            [FromQuery] string mediaSourceId,
+            [FromQuery] string? mediaSourceId,
             [FromQuery] long? positionTicks,
-            [FromQuery] bool isPaused,
-            [FromQuery] bool isMuted,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? volumeLevel,
             [FromQuery] PlayMethod playMethod,
-            [FromQuery] string liveStreamId,
+            [FromQuery] string? liveStreamId,
             [FromQuery] string playSessionId,
-            [FromQuery] RepeatMode repeatMode)
+            [FromQuery] RepeatMode repeatMode,
+            [FromQuery] bool isPaused = false,
+            [FromQuery] bool isMuted = false)
         {
             var playbackProgressInfo = new PlaybackProgressInfo
             {
@@ -298,11 +298,11 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> OnPlaybackStopped(
             [FromRoute] Guid userId,
             [FromRoute] Guid itemId,
-            [FromQuery] string mediaSourceId,
-            [FromQuery] string nextMediaType,
+            [FromQuery] string? mediaSourceId,
+            [FromQuery] string? nextMediaType,
             [FromQuery] long? positionTicks,
-            [FromQuery] string liveStreamId,
-            [FromQuery] string playSessionId)
+            [FromQuery] string? liveStreamId,
+            [FromQuery] string? playSessionId)
         {
             var playbackStopInfo = new PlaybackStopInfo
             {

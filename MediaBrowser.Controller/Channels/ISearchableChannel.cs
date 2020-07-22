@@ -35,12 +35,10 @@ namespace MediaBrowser.Controller.Channels
 
     public interface IDisableMediaSourceDisplay
     {
-
     }
 
     public interface ISupportsMediaProbe
     {
-
     }
 
     public interface IHasFolderAttributes

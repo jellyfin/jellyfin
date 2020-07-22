@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -127,7 +129,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Url = url,
                 CancellationToken = cancellationToken,
                 AcceptHeader = TmdbUtils.AcceptHeader
-
             }).ConfigureAwait(false))
             {
                 using (var json = response.Content)

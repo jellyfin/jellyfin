@@ -15,14 +15,14 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Playback.Progressive
 {
     /// <summary>
-    /// Class GetAudioStream
+    /// Class GetAudioStream.
     /// </summary>
     public class GetAudioStream : StreamRequest
     {
     }
 
     /// <summary>
-    /// Class AudioService
+    /// Class AudioService.
     /// </summary>
     // TODO: In order to autheneticate this in the future, Dlna playback will require updating
     //[Authenticated]

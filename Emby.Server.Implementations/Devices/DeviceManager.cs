@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.Devices
         {
             IEnumerable<AuthenticationInfo> sessions = _authRepo.Get(new AuthenticationInfoQuery
             {
-                //UserId = query.UserId
+                // UserId = query.UserId
                 HasUser = true
             }).Items;
 
@@ -169,6 +169,7 @@ namespace Emby.Server.Implementations.Devices
             {
                 throw new ArgumentException("user not found");
             }
+
             if (string.IsNullOrEmpty(deviceId))
             {
                 throw new ArgumentNullException(nameof(deviceId));

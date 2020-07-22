@@ -406,8 +406,8 @@ namespace Emby.Server.Implementations.LiveTv
             if (!(service is EmbyTV.EmbyTV))
             {
                 // We can't trust that we'll be able to direct stream it through emby server, no matter what the provider says
-                //mediaSource.SupportsDirectPlay = false;
-                //mediaSource.SupportsDirectStream = false;
+                // mediaSource.SupportsDirectPlay = false;
+                // mediaSource.SupportsDirectStream = false;
                 mediaSource.SupportsTranscoding = true;
                 foreach (var stream in mediaSource.MediaStreams)
                 {
@@ -556,9 +556,10 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.ParentId = channel.Id;
 
-            //item.ChannelType = channelType;
+            // item.ChannelType = channelType;
 
             item.Audio = info.Audio;
             item.ChannelId = channel.Id;
@@ -575,6 +576,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.ExternalSeriesId = seriesId;
 
             var isSeries = info.IsSeries || !string.IsNullOrEmpty(info.EpisodeTitle);
@@ -589,30 +591,37 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 tags.Add("Live");
             }
+
             if (info.IsPremiere)
             {
                 tags.Add("Premiere");
             }
+
             if (info.IsNews)
             {
                 tags.Add("News");
             }
+
             if (info.IsSports)
             {
                 tags.Add("Sports");
             }
+
             if (info.IsKids)
             {
                 tags.Add("Kids");
             }
+
             if (info.IsRepeat)
             {
                 tags.Add("Repeat");
             }
+
             if (info.IsMovie)
             {
                 tags.Add("Movie");
             }
+
             if (isSeries)
             {
                 tags.Add("Series");
@@ -635,6 +644,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.IsSeries = isSeries;
 
             item.Name = info.Name;
@@ -652,12 +662,14 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 forceUpdate = true;
             }
+
             item.StartDate = info.StartDate;
 
             if (item.EndDate != info.EndDate)
             {
                 forceUpdate = true;
             }
+
             item.EndDate = info.EndDate;
 
             item.ProductionYear = info.ProductionYear;
@@ -1168,7 +1180,6 @@ namespace Emby.Server.Implementations.LiveTv
                         IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
                         ChannelIds = new Guid[] { currentChannel.Id },
                         DtoOptions = new DtoOptions(true)
-
                     }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
 
                     var newPrograms = new List<LiveTvProgram>();
@@ -1368,10 +1379,10 @@ namespace Emby.Server.Implementations.LiveTv
                 // limit = (query.Limit ?? 10) * 2;
                 limit = null;
 
-                //var allActivePaths = EmbyTV.EmbyTV.Current.GetAllActiveRecordings().Select(i => i.Path).ToArray();
-                //var items = allActivePaths.Select(i => _libraryManager.FindByPath(i, false)).Where(i => i != null).ToArray();
+                // var allActivePaths = EmbyTV.EmbyTV.Current.GetAllActiveRecordings().Select(i => i.Path).ToArray();
+                // var items = allActivePaths.Select(i => _libraryManager.FindByPath(i, false)).Where(i => i != null).ToArray();
 
-                //return new QueryResult<BaseItem>
+                // return new QueryResult<BaseItem>
                 //{
                 //    Items = items,
                 //    TotalRecordCount = items.Length
@@ -1738,7 +1749,6 @@ namespace Emby.Server.Implementations.LiveTv
             var results = await GetTimers(new TimerQuery
             {
                 Id = id
-
             }, cancellationToken).ConfigureAwait(false);
 
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
@@ -1790,7 +1800,6 @@ namespace Emby.Server.Implementations.LiveTv
                 .Select(i =>
                 {
                     return i.Item1;
-
                 })
                 .ToArray();
 
@@ -1845,7 +1854,6 @@ namespace Emby.Server.Implementations.LiveTv
                     }
 
                     return _tvDtoService.GetSeriesTimerInfoDto(i.Item1, i.Item2, channelName);
-
                 })
                 .ToArray();
 
@@ -1878,7 +1886,6 @@ namespace Emby.Server.Implementations.LiveTv
                 OrderBy = new[] { (ItemSortBy.StartDate, SortOrder.Ascending) },
                 TopParentIds = new[] { GetInternalLiveTvFolder(CancellationToken.None).Id },
                 DtoOptions = options
-
             }) : new List<BaseItem>();
 
             RemoveFields(options);
@@ -1956,7 +1963,7 @@ namespace Emby.Server.Implementations.LiveTv
                     OriginalAirDate = program.PremiereDate,
                     Overview = program.Overview,
                     StartDate = program.StartDate,
-                    //ImagePath = program.ExternalImagePath,
+                    // ImagePath = program.ExternalImagePath,
                     Name = program.Name,
                     OfficialRating = program.OfficialRating
                 };
@@ -2456,7 +2463,6 @@ namespace Emby.Server.Implementations.LiveTv
                 UserId = user.Id,
                 IsRecordingsFolder = true,
                 RefreshLatestChannelItems = refreshChannels
-
             }).Items);
 
             return folders.Cast<BaseItem>().ToList();

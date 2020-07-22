@@ -52,7 +52,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarAlbums(
             [FromRoute] string albumId,
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? excludeArtistIds,
             [FromQuery] int? limit)
         {
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarArtists(
             [FromRoute] string artistId,
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] string? excludeArtistIds,
             [FromQuery] int? limit)
         {

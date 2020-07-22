@@ -53,7 +53,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetChannels(
-            [FromQuery] Guid userId,
+            [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] bool? supportsLatestItems,
@@ -64,7 +64,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                UserId = userId,
+                UserId = userId ?? Guid.Empty,
                 SupportsLatestItems = supportsLatestItems,
                 SupportsMediaDeletion = supportsMediaDeletion,
                 IsFavorite = isFavorite
@@ -124,9 +124,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? sortBy,
             [FromQuery] string? fields)
         {
-            var user = userId == null
-                ? null
-                : _userManager.GetUserById(userId.Value);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             var query = new InternalItemsQuery(user)
             {
@@ -195,13 +195,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string filters,
-            [FromQuery] string fields,
-            [FromQuery] string channelIds)
+            [FromQuery] string? filters,
+            [FromQuery] string? fields,
+            [FromQuery] string? channelIds)
         {
-            var user = userId == null || userId == Guid.Empty
-                ? null
-                : _userManager.GetUserById(userId.Value);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
 
             var query = new InternalItemsQuery(user)
             {

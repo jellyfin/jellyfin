@@ -453,6 +453,7 @@ namespace Emby.Server.Implementations.HttpServer
                     {
                         httpRes.Headers.Add(key, value);
                     }
+
                     httpRes.ContentType = "text/plain";
                     await httpRes.WriteAsync(string.Empty, cancellationToken).ConfigureAwait(false);
                     return;
@@ -591,7 +592,7 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Get the default CORS headers
+        /// Get the default CORS headers.
         /// </summary>
         /// <param name="req"></param>
         /// <returns></returns>

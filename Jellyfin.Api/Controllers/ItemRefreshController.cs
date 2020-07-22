@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;

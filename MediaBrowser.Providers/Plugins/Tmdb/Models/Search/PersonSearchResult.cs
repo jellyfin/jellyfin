@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Providers.Plugins.Tmdb.Models.Search
 {
     public class PersonSearchResult

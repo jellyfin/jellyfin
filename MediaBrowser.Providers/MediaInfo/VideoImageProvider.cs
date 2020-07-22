@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,6 +95,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         videoIndex++;
                     }
+
                     if (mediaStream == imageStream)
                     {
                         break;
@@ -132,6 +135,7 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 return false;
             }
+
             if (!item.IsFileProtocol)
             {
                 return false;

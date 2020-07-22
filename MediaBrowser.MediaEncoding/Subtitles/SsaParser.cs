@@ -41,7 +41,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     lineNumber++;
                     if (!eventsStarted)
+                    {
                         header.AppendLine(line);
+                    }
 
                     if (line.Trim().ToLowerInvariant() == "[events]")
                     {
@@ -62,17 +64,29 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                                 for (int i = 0; i < format.Length; i++)
                                 {
                                     if (format[i].Trim().ToLowerInvariant() == "layer")
+                                    {
                                         indexLayer = i;
+                                    }
                                     else if (format[i].Trim().ToLowerInvariant() == "start")
+                                    {
                                         indexStart = i;
+                                    }
                                     else if (format[i].Trim().ToLowerInvariant() == "end")
+                                    {
                                         indexEnd = i;
+                                    }
                                     else if (format[i].Trim().ToLowerInvariant() == "text")
+                                    {
                                         indexText = i;
+                                    }
                                     else if (format[i].Trim().ToLowerInvariant() == "effect")
+                                    {
                                         indexEffect = i;
+                                    }
                                     else if (format[i].Trim().ToLowerInvariant() == "style")
+                                    {
                                         indexStyle = i;
+                                    }
                                 }
                             }
                         }
@@ -89,28 +103,48 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                             string[] splittedLine;
 
                             if (s.StartsWith("dialogue:"))
+                            {
                                 splittedLine = line.Substring(10).Split(',');
+                            }
                             else
+                            {
                                 splittedLine = line.Split(',');
+                            }
 
                             for (int i = 0; i < splittedLine.Length; i++)
                             {
                                 if (i == indexStart)
+                                {
                                     start = splittedLine[i].Trim();
+                                }
                                 else if (i == indexEnd)
+                                {
                                     end = splittedLine[i].Trim();
+                                }
                                 else if (i == indexLayer)
+                                {
                                     layer = splittedLine[i];
+                                }
                                 else if (i == indexEffect)
+                                {
                                     effect = splittedLine[i];
+                                }
                                 else if (i == indexText)
+                                {
                                     text = splittedLine[i];
+                                }
                                 else if (i == indexStyle)
+                                {
                                     style = splittedLine[i];
+                                }
                                 else if (i == indexName)
+                                {
                                     name = splittedLine[i];
+                                }
                                 else if (i > indexText)
+                                {
                                     text += "," + splittedLine[i];
+                                }
                             }
 
                             try
@@ -130,11 +164,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     }
                 }
 
-                //if (header.Length > 0)
-                //subtitle.Header = header.ToString();
+                // if (header.Length > 0)
+                // subtitle.Header = header.ToString();
 
-                //subtitle.Renumber(1);
+                // subtitle.Renumber(1);
             }
+
             trackInfo.TrackEvents = trackEvents.ToArray();
             return trackInfo;
         }
@@ -168,15 +203,23 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         CheckAndAddSubTags(ref fontName, ref extraTags, out italic);
                         text = text.Remove(start, end - start + 1);
                         if (italic)
+                        {
                             text = text.Insert(start, "<font face=\"" + fontName + "\"" + extraTags + "><i>");
+                        }
                         else
+                        {
                             text = text.Insert(start, "<font face=\"" + fontName + "\"" + extraTags + ">");
+                        }
 
                         int indexOfEndTag = text.IndexOf("{\\fn}", start);
                         if (indexOfEndTag > 0)
+                        {
                             text = text.Remove(indexOfEndTag, "{\\fn}".Length).Insert(indexOfEndTag, "</font>");
+                        }
                         else
+                        {
                             text += "</font>";
+                        }
                     }
                 }
 
@@ -193,15 +236,23 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             text = text.Remove(start, end - start + 1);
                             if (italic)
+                            {
                                 text = text.Insert(start, "<font size=\"" + fontSize + "\"" + extraTags + "><i>");
+                            }
                             else
+                            {
                                 text = text.Insert(start, "<font size=\"" + fontSize + "\"" + extraTags + ">");
+                            }
 
                             int indexOfEndTag = text.IndexOf("{\\fs}", start);
                             if (indexOfEndTag > 0)
+                            {
                                 text = text.Remove(indexOfEndTag, "{\\fs}".Length).Insert(indexOfEndTag, "</font>");
+                            }
                             else
+                            {
                                 text += "</font>";
+                            }
                         }
                     }
                 }
@@ -225,14 +276,22 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                         text = text.Remove(start, end - start + 1);
                         if (italic)
+                        {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + "><i>");
+                        }
                         else
+                        {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
+                        }
                         int indexOfEndTag = text.IndexOf("{\\c}", start);
                         if (indexOfEndTag > 0)
+                        {
                             text = text.Remove(indexOfEndTag, "{\\c}".Length).Insert(indexOfEndTag, "</font>");
+                        }
                         else
+                        {
                             text += "</font>";
+                        }
                     }
                 }
 
@@ -255,32 +314,41 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                         text = text.Remove(start, end - start + 1);
                         if (italic)
+                        {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + "><i>");
+                        }
                         else
+                        {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
+                        }
                         text += "</font>";
                     }
                 }
-
             }
 
             text = text.Replace(@"{\i1}", "<i>");
             text = text.Replace(@"{\i0}", "</i>");
             text = text.Replace(@"{\i}", "</i>");
             if (CountTagInText(text, "<i>") > CountTagInText(text, "</i>"))
+            {
                 text += "</i>";
+            }
 
             text = text.Replace(@"{\u1}", "<u>");
             text = text.Replace(@"{\u0}", "</u>");
             text = text.Replace(@"{\u}", "</u>");
             if (CountTagInText(text, "<u>") > CountTagInText(text, "</u>"))
+            {
                 text += "</u>";
+            }
 
             text = text.Replace(@"{\b1}", "<b>");
             text = text.Replace(@"{\b0}", "</b>");
             text = text.Replace(@"{\b}", "</b>");
             if (CountTagInText(text, "<b>") > CountTagInText(text, "</b>"))
+            {
                 text += "</b>";
+            }
 
             return text;
         }
@@ -288,7 +356,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private static bool IsInteger(string s)
         {
             if (int.TryParse(s, out var i))
+            {
                 return true;
+            }
+
             return false;
         }
 
@@ -300,9 +371,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 count++;
                 if (index == text.Length)
+                {
                     return count;
+                }
+
                 index = text.IndexOf(tag, index + 1);
             }
+
             return count;
         }
 
@@ -330,6 +405,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             rest = string.Empty;
                         }
+
                         extraTags += " size=\"" + fontSize.Substring(2) + "\"";
                     }
                     else if (rest.StartsWith("fn") && rest.Length > 2)
@@ -345,6 +421,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             rest = string.Empty;
                         }
+
                         extraTags += " face=\"" + fontName.Substring(2) + "\"";
                     }
                     else if (rest.StartsWith("c") && rest.Length > 2)

@@ -426,7 +426,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private object GetCachedResult(IRequest requestContext, IDictionary<string, string> responseHeaders, StaticResultOptions options)
         {
-            bool noCache = (requestContext.Headers[HeaderNames.CacheControl].ToString()).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
+            bool noCache = requestContext.Headers[HeaderNames.CacheControl].ToString().IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
             AddCachingHeaders(responseHeaders, options.CacheDuration, noCache, options.DateLastModified);
 
             if (!noCache)
@@ -580,13 +580,12 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (NotSupportedException)
                 {
-
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(rangeHeader) && totalContentLength.HasValue)
             {
-                var hasHeaders = new RangeRequestWriter(rangeHeader, totalContentLength.Value, stream, contentType, isHeadRequest, _logger)
+                var hasHeaders = new RangeRequestWriter(rangeHeader, totalContentLength.Value, stream, contentType, isHeadRequest)
                 {
                     OnComplete = options.OnComplete
                 };
@@ -623,8 +622,11 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the caching responseHeaders.
         /// </summary>
-        private void AddCachingHeaders(IDictionary<string, string> responseHeaders, TimeSpan? cacheDuration,
-            bool noCache, DateTime? lastModifiedDate)
+        private void AddCachingHeaders(
+            IDictionary<string, string> responseHeaders,
+            TimeSpan? cacheDuration,
+            bool noCache,
+            DateTime? lastModifiedDate)
         {
             if (noCache)
             {
@@ -693,7 +695,7 @@ namespace Emby.Server.Implementations.HttpServer
 
 
         /// <summary>
-        /// When the browser sends the IfModifiedDate, it's precision is limited to seconds, so this will account for that
+        /// When the browser sends the IfModifiedDate, it's precision is limited to seconds, so this will account for that.
         /// </summary>
         /// <param name="date">The date.</param>
         /// <returns>DateTime.</returns>
