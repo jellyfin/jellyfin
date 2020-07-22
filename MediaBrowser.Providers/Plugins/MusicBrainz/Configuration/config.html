@@ -40,8 +40,20 @@
                 .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
-                        document.querySelector('#server').value = config.Server;
-                        document.querySelector('#rateLimit').value = config.RateLimit;
+                        var server = document.querySelector('#server');
+                        server.value = config.Server;
+                        server.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+                        
+                        var rateLimit = document.querySelector('#rateLimit');
+                        rateLimit.value = config.RateLimit;
+                        rateLimit.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+                        
                         document.querySelector('#enable').checked = config.Enable;
                         document.querySelector('#replaceArtistName').checked = config.ReplaceArtistName;
 
