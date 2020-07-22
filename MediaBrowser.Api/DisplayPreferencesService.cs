@@ -148,7 +148,7 @@ namespace MediaBrowser.Api
 
             foreach (var key in request.CustomPrefs.Keys.Where(key => key.StartsWith("homesection")))
             {
-                var order = int.Parse(key.Substring("homesection".Length));
+                var order = int.Parse(key.AsSpan().Slice("homesection".Length));
                 if (!Enum.TryParse<HomeSectionType>(request.CustomPrefs[key], true, out var type))
                 {
                     type = order < 7 ? defaults[order] : HomeSectionType.None;

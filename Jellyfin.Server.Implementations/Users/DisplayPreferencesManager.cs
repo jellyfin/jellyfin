@@ -3,7 +3,7 @@ using System.Linq;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller;
 
-namespace Jellyfin.Server.Implementations
+namespace Jellyfin.Server.Implementations.Users
 {
     /// <summary>
     /// Manages the storage and retrieval of display preferences through Entity Framework.
