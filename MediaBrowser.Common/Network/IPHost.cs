@@ -38,7 +38,15 @@ namespace MediaBrowser.Common.Networking
             }
             else
             {
-                _addresses = Array.Empty<IPAddress>();
+                // If it is an ip address, resolve immediately.
+                if (IPAddress.TryParse(HostName, out IPAddress address))
+                {
+                    _addresses = new IPAddress[] { address };
+                }
+                else
+                {
+                    _addresses = Array.Empty<IPAddress>();
+                }
             }
 
             NotAttemptedBefore = true;

@@ -23,7 +23,7 @@ namespace MediaBrowser.Common.Networking
         public IPNetAddress(IPAddress address)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
-            Mask = IPAddress.None;
+            Mask = IPAddress.Any;
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace MediaBrowser.Common.Networking
             _address = address ?? throw new ArgumentNullException(nameof(address));
             if (Address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                Mask = IPAddress.None;
+                Mask = IPAddress.Any;
             }
             else
             {
@@ -188,12 +188,10 @@ namespace MediaBrowser.Common.Networking
 
                     if (Address.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        if (!Mask.Equals(IPAddress.None))
+                        if (!Mask.Equals(IPAddress.Any))
                         {
                             // Return true if ipObj is a host and we're a network and the host matches ours.
-                            return Address.Equals(otherObj.Address) &&
-                                    (Mask.Equals(otherObj.Mask) ||
-                                    otherObj.Mask.Equals(IPAddress.Broadcast));
+                            return Address.Equals(otherObj.Address) && Mask.Equals(otherObj.Mask);
                         }
 
                         return Address.Equals(otherObj.Address);
@@ -273,7 +271,7 @@ namespace MediaBrowser.Common.Networking
         {
             if (!Address.Equals(IPAddress.None))
             {
-                if (!Mask.Equals(IPAddress.None))
+                if (!Mask.Equals(IPAddress.Any))
                 {
                     return $"{Address}/" + IPObject.MaskToCidr(Mask);
                 }

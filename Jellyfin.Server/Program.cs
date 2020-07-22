@@ -274,14 +274,14 @@ namespace Jellyfin.Server
                 {
                     NetCollection addresses = NetworkManager.Instance.GetBindInterfaces();
 
-                    if (addresses.Count > 0 && !addresses.Exists(IPAddress.Any))
+                    if (addresses.Count > 0)
                     {
                         // we must listen on loopback for LiveTV to function regardless of the settings
                         addresses.Add(IPAddress.Loopback);
 
                         foreach (IPObject netAdd in addresses)
                         {
-                            _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd.Address);
+                            _logger.LogInformation("Kestrel listening on {IpAddress}", netAdd);
                             options.Listen(netAdd.Address, appHost.HttpPort);
                             if (appHost.ListenWithHttps)
                             {

@@ -265,8 +265,7 @@ namespace MediaBrowser.Common.Networking
 
             foreach (var i in Items)
             {
-                if (i.AddressFamily == item.AddressFamily
-                    && i.Contains(item))
+                if (i.AddressFamily == item.AddressFamily && i.Contains(item))
                 {
                     return true;
                 }
@@ -310,9 +309,9 @@ namespace MediaBrowser.Common.Networking
 
             NetCollection nc = new NetCollection();
 
-            foreach (IPObject i in target)
+            foreach (IPObject i in Items)
             {
-                if (Equals(i))
+                if (target.Contains(i))
                 {
                     nc.Add(i);
                 }

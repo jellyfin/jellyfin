@@ -182,7 +182,7 @@ namespace MediaBrowser.Common.Networking
             }
 
             int cidrnet = 0;
-            if (!mask.Equals(IPAddress.None))
+            if (!mask.Equals(IPAddress.Any))
             {
                 byte[] bytes = mask.GetAddressBytes();
 
@@ -225,7 +225,7 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentNullException(address == null ? nameof(address) : nameof(address));
             }
 
-            if (address.Equals(IPAddress.None) || mask.Equals(IPAddress.None))
+            if (address.Equals(IPAddress.None) || mask.Equals(IPAddress.Any))
             {
                 throw new ArgumentException("{0} must contain a value.", address.Equals(IPAddress.None) ? nameof(address) : nameof(mask));
             }
