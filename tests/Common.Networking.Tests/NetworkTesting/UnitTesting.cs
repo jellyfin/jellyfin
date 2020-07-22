@@ -28,7 +28,7 @@ namespace NetworkTesting
 
         public void TestCollectionCreation(string address)
         {
-            Assert.True(NetCollection.TryParse(address, out IPObject? result));
+            Assert.True(NetCollection.TryParse(address, out _));
         }
 
         [Theory]
@@ -38,7 +38,7 @@ namespace NetworkTesting
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         public void TestInvalidCollectionCreation(string address)
         {
-            Assert.False(NetCollection.TryParse(address, out IPObject? result));
+            Assert.False(NetCollection.TryParse(address, out _));
         }
 
         [Theory]

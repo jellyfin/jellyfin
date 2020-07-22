@@ -16,12 +16,6 @@ namespace MediaBrowser.Common.Networking
     public sealed class NetCollection : ICollection<IPObject>
     {
         /// <summary>
-        /// Optimization flag.
-        /// When set, don't recalculate network addresses of items as this collection only contains network addresses.
-        /// </summary>
-        private bool _network;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="NetCollection"/> class.
         /// </summary>
         /// <param name="item">Items to assign.</param>
@@ -96,13 +90,13 @@ namespace MediaBrowser.Common.Networking
             if (!string.IsNullOrEmpty(addr))
             {
                 // Is it an IP address
-                if (IPNetAddress.TryParse(addr, out IPNetAddress? nw))
+                if (IPNetAddress.TryParse(addr, out IPNetAddress nw))
                 {
                     result = nw;
                     return true;
                 }
 
-                if (IPHost.TryParse(addr, out IPHost? h))
+                if (IPHost.TryParse(addr, out IPHost h))
                 {
                     result = h;
                     return true;
@@ -122,7 +116,7 @@ namespace MediaBrowser.Common.Networking
         {
             if (nc == null)
             {
-                throw new ArgumentException("Parameter cannot be null.");
+                throw new ArgumentNullException(nameof(nc));
             }
 
             NetCollection res = new NetCollection();
@@ -138,13 +132,14 @@ namespace MediaBrowser.Common.Networking
                         {
                             Tag = i.Tag
                         };
+
                         res.Add(lan);
                     }
                 }
                 else
                 {
                     // Flatten out IPHost and add all its ip addresses.
-                    foreach (var addr in ((IPHost)i).Addresses)
+                    foreach (var addr in ((IPHost)i).GetAddresses())
                     {
                         if (!IPObject.IsLoopback(addr))
                         {
@@ -152,13 +147,13 @@ namespace MediaBrowser.Common.Networking
                             {
                                 Tag = i.Tag
                             };
+
                             res.Add(host);
                         }
                     }
                 }
             }
 
-            res._network = true;
             return res;
         }
 
@@ -171,7 +166,6 @@ namespace MediaBrowser.Common.Networking
             if (!Exists(ip))
             {
                 Items.Add(new IPNetAddress(ip, 32));
-                _network = false;
             }
         }
 
@@ -184,7 +178,6 @@ namespace MediaBrowser.Common.Networking
             if (!Exists(item))
             {
                 Items.Add(item);
-                _network = false;
             }
         }
 
@@ -194,7 +187,6 @@ namespace MediaBrowser.Common.Networking
         public void Clear()
         {
             Items.Clear();
-            _network = false;
         }
 
         /// <summary>
@@ -208,7 +200,7 @@ namespace MediaBrowser.Common.Networking
 
             if (excludeList == null)
             {
-                throw new ArgumentException("Argument cannot be null.");
+                throw new ArgumentNullException(nameof(excludeList));
             }
 
             bool found;
@@ -231,7 +223,6 @@ namespace MediaBrowser.Common.Networking
                 }
             }
 
-            results._network = excludeList._network;
             return results;
         }
 
@@ -244,7 +235,7 @@ namespace MediaBrowser.Common.Networking
         {
             if (item == null)
             {
-                throw new ArgumentException("Argument cannot be null.");
+                throw new ArgumentNullException(nameof(item));
             }
 
             foreach (IPObject i in Items)
@@ -269,7 +260,7 @@ namespace MediaBrowser.Common.Networking
         {
             if (item == null)
             {
-                throw new ArgumentException("Argument cannot be null.");
+                throw new ArgumentNullException(nameof(item));
             }
 
             foreach (var i in Items)
@@ -314,7 +305,7 @@ namespace MediaBrowser.Common.Networking
         {
             if (target == null)
             {
-                throw new ArgumentException("Argument cannot be null.");
+                throw new ArgumentNullException(nameof(target));
             }
 
             NetCollection nc = new NetCollection();
@@ -339,7 +330,7 @@ namespace MediaBrowser.Common.Networking
         {
             if (networkItem == null)
             {
-                throw new ArgumentException("Argument cannot be null.");
+                throw new ArgumentNullException(nameof(networkItem));
             }
 
             foreach (IPObject i in Items)
@@ -383,7 +374,7 @@ namespace MediaBrowser.Common.Networking
         {
             if (networkItem == null)
             {
-                throw new ArgumentException("Argument cannot be null.");
+                throw new ArgumentNullException(nameof(networkItem));
             }
 
             foreach (IPObject i in Items)

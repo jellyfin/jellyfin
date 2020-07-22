@@ -97,12 +97,12 @@ namespace Emby.Server.Implementations.Networking
         /// <param name="configurationManager">IServerConfigurationManager object.</param>
         /// <param name="logger">Logger to use for messages.</param>
 
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. : values are set in InitialiseLAN function.
-        public NetworkManager(IServerConfigurationManager configurationManager, ILogger<NetworkManager>? logger)
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. : Values are set in InitialiseLAN function. Compiler doesn't yet recognise this.
+        public NetworkManager(IServerConfigurationManager configurationManager, ILogger<NetworkManager> logger)
 #pragma warning restore CS8618 // Non-nullable field is uninitialized.
         {
             _logger = logger;
-            _configurationManager = configurationManager;
+            _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
 
             _interfaceAddresses = new NetCollection();
             _macAddresses = new List<PhysicalAddress>();
@@ -123,7 +123,7 @@ namespace Emby.Server.Implementations.Networking
         /// <summary>
         /// Initializes a new instance of the <see cref="NetworkManager"/> class FOR TESTING PURPOSE ONLY.
         /// </summary>
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Used in Testing Only.
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. PROVIDED FOR USE IN TESTING UNITS ONLY.
         public NetworkManager()
         {
         }
@@ -138,6 +138,16 @@ namespace Emby.Server.Implementations.Networking
         /// Gets the singleton of this object.
         /// </summary>
         public static NetworkManager Instance { get => _instance; }
+
+        /// <summary>
+        /// Gets the IP4Loopback address host.
+        /// </summary>
+        public IPHost IP4Loopback { get; } = IPHost.Parse("127.0.0.1");
+
+        /// <summary>
+        /// Gets the IP6Loopback address host.
+        /// </summary>
+        public IPHost IP6Loopback { get; } = IPHost.Parse("::1");
 
         /// <summary>
         /// Gets returns the remote address filter.
@@ -181,7 +191,7 @@ namespace Emby.Server.Implementations.Networking
 
         /// <summary>
         /// Sets the internal status of the IPv6 flag.
-        /// Used for TESTING ONLY.
+        /// PROVIDED FOR TESTING PURPOSES ONLY.
         /// </summary>
         /// <param name="value">New value.</param>
         public void SetIP6(bool value)
@@ -334,15 +344,23 @@ namespace Emby.Server.Implementations.Networking
         {
             lock (_intLock)
             {
-                if (_bindAddresses.Count == 0)
+                int count = _bindAddresses.Count;
+
+                if (count == 0)
                 {
                     if (_bindExclusions.Count > 0)
                     {
                         // Return all the interfaces except the one excluded.
-                        return new NetCollection(_interfaceAddresses.Exclude(_bindExclusions));
+                        return _interfaceAddresses.Exclude(_bindExclusions);
                     }
 
-                    // Return no interfaces.
+                    // No bind address, so isten on any address.
+                    return new NetCollection();
+                }
+
+                if (count == 1 && _bindAddresses[0].Equals(IPAddress.Any))
+                {
+                    // If bind address is 0.0.0.0 listen on any address.
                     return new NetCollection();
                 }
 
@@ -353,8 +371,8 @@ namespace Emby.Server.Implementations.Networking
                     return new NetCollection();
                 }
 
-                // Otherwise, return only valid interface addresses.
-                return new NetCollection(_bindAddresses.Union(_interfaceAddresses));
+                // Return only valid interface addresses.
+                return _bindAddresses.Union(_interfaceAddresses);
             }
         }
 
@@ -362,18 +380,23 @@ namespace Emby.Server.Implementations.Networking
         /// Returns true if the address is a private address.
         /// The config option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
-        /// <param name="addr">Address to check.</param>
+        /// <param name="address">Address to check.</param>
         /// <returns>True or False.</returns>
-        public bool IsPrivateAddressRange(IPObject addr)
+        public bool IsPrivateAddressRange(IPObject address)
         {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
-            if (_configurationManager.Configuration.TrustIP6Interfaces && addr.IsIP6())
+            if (_configurationManager.Configuration.TrustIP6Interfaces && address.IsIP6())
             {
                 return true;
             }
             else
             {
-                return addr.IsPrivateAddressRange();
+                return address.IsPrivateAddressRange();
             }
         }
 
@@ -385,7 +408,7 @@ namespace Emby.Server.Implementations.Networking
         {
             lock (_intLock)
             {
-                return new NetCollection(_bindExclusions.Union(_interfaceAddresses));
+                return _bindExclusions.Union(_interfaceAddresses);
             }
         }
 
@@ -403,7 +426,7 @@ namespace Emby.Server.Implementations.Networking
                     return new NetCollection(_filteredLANAddresses);
                 }
 
-                return new NetCollection(_lanAddresses.Exclude(filter));
+                return _lanAddresses.Exclude(filter);
             }
         }
 
@@ -485,8 +508,7 @@ namespace Emby.Server.Implementations.Networking
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (iface.Tag == index
-                        && ((!IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)
-                            || IsIP6Enabled))
+                        && ((!IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6) || IsIP6Enabled))
                     {
                         col.Add(iface);
                     }
@@ -494,9 +516,7 @@ namespace Emby.Server.Implementations.Networking
             }
             else if (NetCollection.TryParse(token, out IPObject? obj))
             {
-                // TryParse returned true, so obj is non-null
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8602 // Dereference of a possibly null reference : If TryParse is true, obj is not null.
 #pragma warning disable CS8604 // Possible null reference argument.
                 if (!IsIP6Enabled)
                 {
@@ -718,7 +738,7 @@ namespace Emby.Server.Implementations.Networking
                         _logger?.LogWarning("No interfaces information available. Using loopback.");
 
                         IPHost host = new IPHost(Dns.GetHostName());
-                        foreach (var a in host.Addresses)
+                        foreach (var a in host.GetAddresses())
                         {
                             _interfaceAddresses.Add(a);
                         }
@@ -726,8 +746,8 @@ namespace Emby.Server.Implementations.Networking
                         if (_interfaceAddresses.Count == 0)
                         {
                             _logger?.LogError("No interfaces information available. Resolving DNS name.");
-                            // Last ditch attempt - use loopback.
-                            _interfaceAddresses.Add(IPAddress.Parse("127.0.0.1"));
+                            // Last ditch attempt - use loopback address.
+                            _interfaceAddresses.Add(IP4Loopback);
                         }
                     }
                 }

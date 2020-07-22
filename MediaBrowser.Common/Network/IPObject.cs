@@ -11,8 +11,15 @@ namespace MediaBrowser.Common.Networking
     /// </summary>
     public abstract class IPObject : IEquatable<IPObject>
     {
-        private static readonly byte[] _ipv6loopback = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
-        private static readonly byte[] _ipv4loopback = { 127, 0, 0, 1 };
+        /// <summary>
+        /// IPv6 Loopback address.
+        /// </summary>
+        protected static readonly byte[] Ipv6Loopback = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+
+        /// <summary>
+        /// IPv4 Loopback address.
+        /// </summary>
+        protected static readonly byte[] Ipv4Loopback = { 127, 0, 0, 1 };
 
         /// <summary>
         /// Gets or sets the user defined functions that need storage in this object.
@@ -31,26 +38,32 @@ namespace MediaBrowser.Common.Networking
         {
             get
             {
-                IPAddress? i = Address;
-                return i != null ? i.AddressFamily : AddressFamily.Unspecified;
+                // Keep terms separate as Address performs other functions in inherited objects.
+                IPAddress address = Address;
+                return address.Equals(IPAddress.None) ? AddressFamily.Unspecified : address.AddressFamily;
             }
         }
 
         /// <summary>
         /// Tests to see if the ip address is an AIPIPA address. (169.254.x.x).
         /// </summary>
-        /// <param name="i">Value to test.</param>
+        /// <param name="address">Value to test.</param>
         /// <returns>True if it is.</returns>
-        public static bool IsAIPIPA(IPAddress i)
+        public static bool IsAIPIPA(IPAddress address)
         {
-            if (i != null)
+            if (address == null)
             {
-                if (i.IsIPv6LinkLocal)
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            if (!address.Equals(IPAddress.None))
+            {
+                if (address.IsIPv6LinkLocal)
                 {
                     return true;
                 }
 
-                byte[] b = i.GetAddressBytes();
+                byte[] b = address.GetAddressBytes();
                 return b[0] == 169 && b[1] == 254;
             }
 
@@ -60,19 +73,24 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Tests to see if the ip address is a Loopback address.
         /// </summary>
-        /// <param name="i">Value to test.</param>
+        /// <param name="address">Value to test.</param>
         /// <returns>True if it is.</returns>
-        public static bool IsLoopback(IPAddress i)
+        public static bool IsLoopback(IPAddress address)
         {
-            if (i != null)
+            if (address == null)
             {
-                byte[] b = i.GetAddressBytes();
-                if (i.AddressFamily == AddressFamily.InterNetwork)
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            if (!address.Equals(IPAddress.None))
+            {
+                byte[] b = address.GetAddressBytes();
+                if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    return CompareByteArray(b, _ipv4loopback, 4);
+                    return CompareByteArray(b, Ipv4Loopback, 4);
                 }
 
-                return CompareByteArray(b, _ipv6loopback, 16);
+                return CompareByteArray(b, Ipv6Loopback, 16);
             }
 
             return false;
@@ -81,40 +99,49 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Tests to see if the ip address is an IP6 address.
         /// </summary>
-        /// <param name="i">Value to test.</param>
+        /// <param name="address">Value to test.</param>
         /// <returns>True if it is.</returns>
-        public static bool IsIP6(IPAddress i)
+        public static bool IsIP6(IPAddress address)
         {
-            return (i != null) && (i.AddressFamily == AddressFamily.InterNetworkV6);
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            return !address.Equals(IPAddress.None) && (address.AddressFamily == AddressFamily.InterNetworkV6);
         }
 
         /// <summary>
         /// Tests to see if the address in the private address range.
         /// </summary>
-        /// <param name="i">Object to test.</param>
+        /// <param name="address">Object to test.</param>
         /// <returns>True if it contains a private address.</returns>
-        public static bool IsPrivateAddressRange(IPAddress i)
+        public static bool IsPrivateAddressRange(IPAddress address)
         {
-            if (i != null)
+            if (address == null)
             {
-                if (i.AddressFamily == AddressFamily.InterNetwork)
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            if (!address.Equals(IPAddress.None))
+            {
+                if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    byte[] octet = i.GetAddressBytes();
+                    byte[] octet = address.GetAddressBytes();
 
                     return (octet[0] == 10) ||
                         (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) || // RFC1918
                         (octet[0] == 192 && octet[1] == 168) || // RFC1918
                         (octet[0] == 127); // RFC1122
-                        //  || (octet[0] == 169 && octet[1] == 254 // RFC3927
                 }
                 else
                 {
-                    if (i.IsIPv6SiteLocal)
+                    if (address.IsIPv6SiteLocal)
                     {
                         return true;
                     }
 
-                    byte[] octet = i.GetAddressBytes();
+                    byte[] octet = address.GetAddressBytes();
                     uint word = (uint)(octet[0] << 8);
 
                     return (word == 0xfc00 && word <= 0xfdff) // Unique local address. (fc00::/7)
@@ -149,8 +176,13 @@ namespace MediaBrowser.Common.Networking
         /// <returns>Byte CIDR representing the mask.</returns>
         public static int MaskToCidr(IPAddress mask)
         {
+            if (mask == null)
+            {
+                throw new ArgumentNullException(nameof(mask));
+            }
+
             int cidrnet = 0;
-            if (mask != null)
+            if (!mask.Equals(IPAddress.None))
             {
                 byte[] bytes = mask.GetAddressBytes();
 
@@ -186,20 +218,20 @@ namespace MediaBrowser.Common.Networking
         /// <param name="address">IP address.</param>
         /// <param name="mask">Submask.</param>
         /// <returns>The network ip address of the subnet.</returns>
-        public static IPAddress NetworkAddress(IPAddress address, IPAddress? mask)
+        public static IPAddress NetworkAddress(IPAddress address, IPAddress mask)
         {
-            if (address == null)
+            if (address == null || mask == null)
             {
-                throw new ArgumentException("Mask required to calculate the network address.");
+                throw new ArgumentNullException(address == null ? nameof(address) : nameof(address));
+            }
+
+            if (address.Equals(IPAddress.None) || mask.Equals(IPAddress.None))
+            {
+                throw new ArgumentException("{0} must contain a value.", address.Equals(IPAddress.None) ? nameof(address) : nameof(mask));
             }
 
             if (address.AddressFamily == AddressFamily.InterNetwork)
             {
-                if (mask == null)
-                {
-                    throw new ArgumentException("Mask required to calculate the network address.");
-                }
-
                 byte[] addressBytes4 = address.GetAddressBytes();
                 byte[] maskBytes4 = mask.GetAddressBytes();
 
@@ -229,13 +261,7 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if it is.</returns>
         public virtual bool IsLoopback()
         {
-            IPAddress? addr = Address;
-            if (addr != null)
-            {
-                return IsLoopback(addr);
-            }
-
-            return false;
+            return IsLoopback(Address);
         }
 
         /// <summary>
@@ -252,13 +278,7 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if it is.</returns>
         public virtual bool IsIP6()
         {
-            IPAddress? addr = Address;
-            if (addr != null)
-            {
-                return IsIP6(addr);
-            }
-
-            return false;
+            return IsIP6(Address);
         }
 
         /// <summary>
@@ -267,29 +287,7 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True this object has a private address.</returns>
         public virtual bool IsPrivateAddressRange()
         {
-            IPAddress? addr = Address;
-            if (addr != null)
-            {
-                return IsPrivateAddressRange(addr);
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Compares this to the object passed as a parameter.
-        /// </summary>
-        /// <param name="other">Object to compare to.</param>
-        /// <returns>Equality result.</returns>
-        public virtual bool Equals(IPObject other)
-        {
-            IPAddress? addr = Address;
-            if (addr != null && other != null)
-            {
-                return addr.Equals(other.Address);
-            }
-
-            return false;
+            return IsPrivateAddressRange(Address);
         }
 
         /// <summary>
@@ -305,13 +303,28 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Compares this to the object passed as a parameter.
         /// </summary>
-        /// <param name="obj">Object to compare to.</param>
+        /// <param name="other">Object to compare to.</param>
         /// <returns>Equality result.</returns>
-        public override bool Equals(object obj)
+        public virtual bool Equals(IPObject other)
         {
-            if (obj is IPObject objIp)
+            if (other != null && other is IPObject otherObj)
             {
-                return Equals(objIp);
+                return !Address.Equals(IPAddress.None) && Address.Equals(otherObj.Address);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Compares this to the object passed as a parameter.
+        /// </summary>
+        /// <param name="other">Object to compare to.</param>
+        /// <returns>Equality result.</returns>
+        public override bool Equals(object other)
+        {
+            if (other != null && other is IPObject otherObj)
+            {
+                return Equals(otherObj);
             }
 
             return false;
@@ -320,29 +333,29 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Compares the address in this object and the address in the object passed as a parameter.
         /// </summary>
-        /// <param name="ip">Object's IP address to compare to.</param>
+        /// <param name="address">Object's IP address to compare to.</param>
         /// <returns>Comparison result.</returns>
-        public virtual bool Contains(IPObject ip)
+        public virtual bool Contains(IPObject address)
         {
-            return Equals(ip);
+            return Equals(address);
         }
 
         /// <summary>
         /// Compares the address in this object and the address in the object passed as a parameter.
         /// </summary>
-        /// <param name="ip">Object's IP address to compare to.</param>
+        /// <param name="address">Object's IP address to compare to.</param>
         /// <returns>Comparison result.</returns>
-        public virtual bool Contains(IPAddress ip)
+        public virtual bool Contains(IPAddress address)
         {
-            return this.Equals(ip);
+            return Equals(address);
         }
 
         /// <summary>
         /// Returns true if IP exists in this parameter.
         /// </summary>
-        /// <param name="ip">Address to check for.</param>
+        /// <param name="address">Address to check for.</param>
         /// <returns>Existential result.</returns>
-        public virtual bool Exists(IPAddress ip)
+        public virtual bool Exists(IPAddress address)
         {
             return false;
         }
@@ -350,8 +363,7 @@ namespace MediaBrowser.Common.Networking
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            IPAddress? a = Address;
-            return (a == null) ? 0 : a.GetHashCode();
+            return Address.Equals(IPAddress.None) ? 0 : Address.GetHashCode();
         }
 
         /// <summary>

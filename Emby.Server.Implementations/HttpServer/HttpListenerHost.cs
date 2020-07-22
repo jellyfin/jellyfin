@@ -291,44 +291,39 @@ namespace Emby.Server.Implementations.HttpServer
         }
 
         /// <summary>
-        /// Checks to see if a host is part of the internal network.
+        /// Validate that if the host is an internal address, it is in the defined LAN addresses.
         /// </summary>
         /// <param name="host">Hostname to check.</param>
-        /// <returns>Returns true of host is part of the defined LAN network, or true if it's external.</returns>
+        /// <returns>Returns true of host is part of the defined LAN network.</returns>
         private bool ValidateHost(string host)
         {
             NetCollection nc = _networkManager.GetFilteredLANAddresses();
-
-            // If no LAN networks defined, return true.
             if (nc.Count == 0)
             {
-                return true;
+                return true; // All Local LAN addresses are valid.
             }
 
             if (IPHost.TryParse(host, out IPHost h))
             {
                 if (!h.HasAddress)
                 {
-                    _logger.LogWarning("Recieved request from {0}. Unable to resolve name.", host);
-                    // Unresolvable item - return false;
-                    return false;
+                    // Valid host name, but we can't resolve it.
+                    _logger.LogWarning("Unable to resolve {0}.", host);
+                    return true; // Assume the host isn't on the local LAN.
                 }
 
-                if (_networkManager.IsPrivateAddressRange(h))
+                if (_config.Configuration.EnableIPV6)
                 {
-                    // LAN if undefined will be the network interfaces.
-                    if (_config.Configuration.EnableIPV6)
-                    {
-                        nc.Add(IPHost.Parse("::1"));
-                    }
-
-                    nc.Add(IPHost.Parse("127.0.0.1"));
-
-                    return nc.Contains(h);
+                    nc.Add(_networkManager.IP6Loopback);
                 }
+
+                nc.Add(_networkManager.IP4Loopback);
+
+                // Check to see if our host string is part of the internal network.
+                return nc.Contains(h);
             }
 
-            return true;
+            return true; // Not Local LAN.
         }
 
         private bool ValidateRequest(string remoteIp, bool isLocal)
@@ -361,10 +356,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 else
                 {
-                    if (!_networkManager.IsInLocalNetwork(remoteIPObj))
-                    {
-                        return false;
-                    }
+                    return _networkManager.IsInLocalNetwork(remoteIPObj);
                 }
             }
             else

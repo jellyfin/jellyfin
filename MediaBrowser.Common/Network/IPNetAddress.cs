@@ -19,11 +19,11 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
-        /// <param name="ip">Address to assign.</param>
-        public IPNetAddress(IPAddress ip)
+        /// <param name="address">Address to assign.</param>
+        public IPNetAddress(IPAddress address)
         {
-            _address = ip;
-            Mask = null;
+            _address = address ?? throw new ArgumentNullException(nameof(address));
+            Mask = IPAddress.None;
         }
 
         /// <summary>
@@ -31,10 +31,10 @@ namespace MediaBrowser.Common.Networking
         /// </summary>
         /// <param name="address">Address to assign.</param>
         /// <param name="subnet">Mask to assign.</param>
-        public IPNetAddress(IPAddress address, IPAddress? subnet)
+        public IPNetAddress(IPAddress address, IPAddress subnet)
         {
-            _address = address;
-            Mask = subnet;
+            _address = address ?? throw new ArgumentNullException(nameof(address));
+            Mask = subnet ?? throw new ArgumentNullException(nameof(subnet));
         }
 
         /// <summary>
@@ -44,21 +44,14 @@ namespace MediaBrowser.Common.Networking
         /// <param name="cidr">Mask as a CIDR.</param>
         public IPNetAddress(IPAddress address, byte cidr)
         {
-            if (address != null)
+            _address = address ?? throw new ArgumentNullException(nameof(address));
+            if (Address.AddressFamily == AddressFamily.InterNetworkV6)
             {
-                _address = address;
-                if (Address.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    Mask = null;
-                }
-                else
-                {
-                    Mask = CidrToMask(cidr);
-                }
+                Mask = IPAddress.None;
             }
             else
             {
-                throw new ArgumentException("Address cannot be null.");
+                Mask = CidrToMask(cidr);
             }
         }
 
@@ -74,14 +67,14 @@ namespace MediaBrowser.Common.Networking
 
             set
             {
-                _address = value ?? throw new ArgumentException("Unable to assign a null value as an address.");
+                _address = value ?? IPAddress.None;
             }
         }
 
         /// <summary>
         /// Gets the subnet mask of this object.
         /// </summary>
-        public IPAddress? Mask { get; }
+        public IPAddress Mask { get; }
 
         /// <summary>
         /// Try to parse the address and subnet strings into an IPNetAddress object.
@@ -89,7 +82,7 @@ namespace MediaBrowser.Common.Networking
         /// <param name="addr">IP address to parse. Can be CIDR or X.X.X.X notation.</param>
         /// <param name="ip">Resultant object.</param>
         /// <returns>True if the values parsed successfully. False if not, resulting in the IP being null.</returns>
-        public static bool TryParse(string addr, out IPNetAddress? ip)
+        public static bool TryParse(string addr, out IPNetAddress ip)
         {
             if (!string.IsNullOrEmpty(addr))
             {
@@ -127,7 +120,7 @@ namespace MediaBrowser.Common.Networking
                 }
             }
 
-            ip = null;
+            ip = new IPNetAddress(IPAddress.None);
             return false;
         }
 
@@ -138,11 +131,9 @@ namespace MediaBrowser.Common.Networking
         /// <returns>IPNetAddress object.</returns>
         public static IPNetAddress Parse(string addr)
         {
-            if (IPNetAddress.TryParse(addr, out IPNetAddress? o))
+            if (TryParse(addr, out IPNetAddress o))
             {
-#pragma warning disable CS8603 // Possible null reference return.
                 return o;
-#pragma warning restore CS8603 // Possible null reference return.
             }
 
             throw new ArgumentException("Unable to recognise object :" + addr);
@@ -151,44 +142,36 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Compares the address in this object and the address in the object passed as a parameter.
         /// </summary>
-        /// <param name="ip">Object's IP address to compare to.</param>
+        /// <param name="address">Object's IP address to compare to.</param>
         /// <returns>Comparison result.</returns>
-        public override bool Contains(IPAddress ip)
+        public override bool Contains(IPAddress address)
         {
-            IPAddress? nwAdd1 = IPObject.NetworkAddress(Address, Mask);
-            IPAddress? nwAdd2 = IPObject.NetworkAddress(ip, Mask);
+            IPAddress nwAdd1 = IPObject.NetworkAddress(Address, Mask);
+            IPAddress nwAdd2 = IPObject.NetworkAddress(address, Mask);
 
-            if (nwAdd1 != null && nwAdd2 != null)
-            {
-                return nwAdd1.Equals(nwAdd2);
-            }
-
-            return false;
+            return nwAdd1.Equals(nwAdd2) && !nwAdd1.Equals(IPAddress.None);
         }
 
         /// <summary>
         /// Compares the address in this object and the address in the object passed as a parameter.
         /// </summary>
-        /// <param name="ip">Object's IP address to compare to.</param>
+        /// <param name="address">Object's IP address to compare to.</param>
         /// <returns>Comparison result.</returns>
-        public override bool Contains(IPObject ip)
+        public override bool Contains(IPObject address)
         {
-            if (ip is IPHost ipObj)
+            if (address is IPHost addressObj && addressObj.HasAddress)
             {
-                if (ipObj.Addresses != null)
+                foreach (IPAddress addr in addressObj.GetAddresses())
                 {
-                    foreach (IPAddress a in ipObj.Addresses)
+                    if (Contains(addr))
                     {
-                        if (Contains(a))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
-            else if (ip is IPNetAddress naObj)
+            else if (address is IPNetAddress netaddrObj)
             {
-                return Contains(naObj.Address);
+                return Contains(netaddrObj.Address);
             }
 
             return false;
@@ -197,30 +180,28 @@ namespace MediaBrowser.Common.Networking
         /// <inheritdoc/>
         public override bool Equals(IPObject other)
         {
-            if (Address != null
-                && other is IPNetAddress ipObj
-                && ipObj.Address != null)
+            if (other is IPNetAddress otherObj && !Address.Equals(IPAddress.None) && !otherObj.Address.Equals(IPAddress.None))
             {
-                if (Address.AddressFamily == ipObj.Address.AddressFamily)
+                if (Address.AddressFamily == otherObj.Address.AddressFamily)
                 {
                     // Compare only the address for IPv6, but both Address and Mask for IPv4.
 
                     if (Address.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        if (Mask != null)
+                        if (!Mask.Equals(IPAddress.None))
                         {
                             // Return true if ipObj is a host and we're a network and the host matches ours.
-                            bool eqAdd = Address.Equals(ipObj.Address);
-                            return (eqAdd && Mask.Equals(ipObj.Mask)) ||
-                                (eqAdd && ipObj.Mask != null && ipObj.Mask.Equals(IPAddress.Broadcast));
+                            return Address.Equals(otherObj.Address) &&
+                                    (Mask.Equals(otherObj.Mask) ||
+                                    otherObj.Mask.Equals(IPAddress.Broadcast));
                         }
 
-                        return Address.Equals(ipObj.Address);
+                        return Address.Equals(otherObj.Address);
                     }
 
                     if (Address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        return Address.Equals(ipObj.Address);
+                        return Address.Equals(otherObj.Address);
                     }
                 }
                 else if (Address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -228,16 +209,14 @@ namespace MediaBrowser.Common.Networking
                     // Is one an ipv4 to ipv6 mapping?
                     return string.Equals(
                         Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-#pragma warning disable CA1062 // Validate arguments of public methods : "ip has a value here."
-                        other.ToString(),
-#pragma warning restore CA1062 // Validate arguments of public methods
+                        otherObj.ToString(),
                         StringComparison.OrdinalIgnoreCase);
                 }
                 else if (Address.AddressFamily == AddressFamily.InterNetwork)
                 {
                     // Is one an ipv4 to ipv6 mapping?
                     return string.Equals(
-                        other.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+                        otherObj.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
                         Address.ToString(),
                         StringComparison.OrdinalIgnoreCase);
                 }
@@ -247,14 +226,13 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <inheritdoc/>
-        public override bool Equals(IPAddress ip)
+        public override bool Equals(IPAddress address)
         {
-            if (Address != null
-                && ip != null)
+            if (address != null && !address.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
             {
-                if (Address.AddressFamily == ip.AddressFamily)
+                if (Address.AddressFamily == address.AddressFamily)
                 {
-                    return ip.Equals(Address);
+                    return address.Equals(Address);
                 }
 
                 if (Address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -262,7 +240,7 @@ namespace MediaBrowser.Common.Networking
                     // Is one an ipv4 to ipv6 mapping?
                     return string.Equals(
                         Address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
-                        ip.ToString(),
+                        address.ToString(),
                         StringComparison.OrdinalIgnoreCase);
                 }
 
@@ -270,7 +248,7 @@ namespace MediaBrowser.Common.Networking
                 {
                     // Is one an ipv4 to ipv6 mapping?
                     return string.Equals(
-                        ip.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
+                        address.ToString().Replace("::ffff:", string.Empty, StringComparison.OrdinalIgnoreCase),
                         Address.ToString(),
                         StringComparison.OrdinalIgnoreCase);
                 }
@@ -280,11 +258,11 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <inheritdoc/>
-        public override bool Exists(IPAddress ip)
+        public override bool Exists(IPAddress address)
         {
-            if (Address != null && ip != null)
+            if (address != null && Address.Equals(IPAddress.None))
             {
-                return ip.Equals(Address);
+                return Address.Equals(address);
             }
 
             return false;
@@ -293,9 +271,9 @@ namespace MediaBrowser.Common.Networking
         /// <inheritdoc/>
         public override string ToString()
         {
-            if (Address != null)
+            if (!Address.Equals(IPAddress.None))
             {
-                if (Mask != null)
+                if (!Mask.Equals(IPAddress.None))
                 {
                     return $"{Address}/" + IPObject.MaskToCidr(Mask);
                 }

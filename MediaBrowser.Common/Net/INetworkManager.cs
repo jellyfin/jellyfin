@@ -26,6 +26,16 @@ namespace MediaBrowser.Common.Net
         bool IsIP6Enabled { get; }
 
         /// <summary>
+        /// Gets the IP4Loopback address host.
+        /// </summary>
+        public IPHost IP4Loopback { get; }
+
+        /// <summary>
+        /// Gets the IP6Loopback address host.
+        /// </summary>
+        public IPHost IP6Loopback { get; }
+
+        /// <summary>
         /// Gets returns the remote address filter.
         /// </summary>
         NetCollection RemoteAddressFilter { get; }
