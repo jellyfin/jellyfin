@@ -102,7 +102,16 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds => _dbProvider.CreateContext().Users.Select(u => u.Id);
+        public IEnumerable<Guid> UsersIds
+        {
+            get
+            {
+                using var dbContext = _dbProvider.CreateContext();
+                return dbContext.Users
+                    .Select(user => user.Id)
+                    .ToList();
+            }
+        }
 
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
@@ -637,7 +646,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void UpdateConfiguration(Guid userId, UserConfiguration config)
         {
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -670,7 +679,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void UpdatePolicy(Guid userId, UserPolicy policy)
         {
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
