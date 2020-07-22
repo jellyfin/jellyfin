@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -42,8 +43,10 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Create a new SyncPlay group.
         /// </summary>
+        /// <response code="204">New group created.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("New")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CreateNewGroup()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -55,8 +58,10 @@ namespace Jellyfin.Api.Controllers
         /// Join an existing SyncPlay group.
         /// </summary>
         /// <param name="groupId">The sync play group id.</param>
+        /// <response code="204">Group join successful.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Join")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult JoinGroup([FromQuery, Required] Guid groupId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -73,8 +78,10 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Leave the joined SyncPlay group.
         /// </summary>
+        /// <response code="204">Group leave successful.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Leave")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult LeaveGroup()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -86,8 +93,10 @@ namespace Jellyfin.Api.Controllers
         /// Gets all SyncPlay groups.
         /// </summary>
         /// <param name="filterItemId">Optional. Filter by item id.</param>
+        /// <response code="200">Groups returned.</response>
         /// <returns>An <see cref="IEnumerable{GrouüInfoView}"/> containing the available SyncPlay groups.</returns>
         [HttpGet("List")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<GroupInfoView>> GetSyncPlayGroups([FromQuery] Guid? filterItemId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -97,8 +106,10 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Request play in SyncPlay group.
         /// </summary>
+        /// <response code="204">Play request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -113,8 +124,10 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Request pause in SyncPlay group.
         /// </summary>
+        /// <response code="204">Pause request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Pause()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -130,8 +143,10 @@ namespace Jellyfin.Api.Controllers
         /// Request seek in SyncPlay group.
         /// </summary>
         /// <param name="positionTicks">The playback position in ticks.</param>
+        /// <response code="204">Seek request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Seek([FromQuery] long positionTicks)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -150,8 +165,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="when">When the request has been made by the client.</param>
         /// <param name="positionTicks">The playback position in ticks.</param>
         /// <param name="bufferingDone">Whether the buffering is done.</param>
+        /// <response code="204">Buffering request sent to all group members.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Buffering([FromQuery] DateTime when, [FromQuery] long positionTicks, [FromQuery] bool bufferingDone)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -169,8 +186,10 @@ namespace Jellyfin.Api.Controllers
         /// Update session ping.
         /// </summary>
         /// <param name="ping">The ping.</param>
+        /// <response code="204">Ping updated.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Ping([FromQuery] double ping)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
