@@ -53,10 +53,10 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// </summary>
         public TranscodingThrottler? TranscodingThrottler { get; set; }
 
-        /// <summary>
+        /*/// <summary>
         /// Gets the video request.
         /// </summary>
-        public VideoStreamRequest VideoRequest => Request as VideoStreamRequest;
+        public VideoStreamRequest VideoRequest => Request as VideoStreamRequest;*/
 
         /// <summary>
         /// Gets or sets the direct stream provicer.
@@ -68,10 +68,10 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// </summary>
         public string? WaitForPath { get; set; }
 
-        /// <summary>
+        /*/// <summary>
         /// Gets a value indicating whether the request outputs video.
         /// </summary>
-        public bool IsOutputVideo => Request is VideoStreamRequest;
+        public bool IsOutputVideo => Request is VideoStreamRequest;*/
 
         /// <summary>
         /// Gets the segment length.
@@ -161,6 +161,36 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// </summary>
         public TranscodingJobDto? TranscodingJob { get; set; }
 
+        /// <summary>
+        /// Gets or sets the device id.
+        /// </summary>
+        public string? DeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play session id.
+        /// </summary>
+        public string? PlaySessionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the live stream id.
+        /// </summary>
+        public string? LiveStreamId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video coded.
+        /// </summary>
+        public string? VideoCodec { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio codec.
+        /// </summary>
+        public string? AudioCodec { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subtitle codec.
+        /// </summary>
+        public string? SubtitleCodec { get; set; }
+
         /// <inheritdoc />
         public void Dispose()
         {
@@ -189,7 +219,7 @@ namespace Jellyfin.Api.Models.StreamingDtos
             {
                 // REVIEW: Is this the right place for this?
                 if (MediaSource.RequiresClosing
-                    && string.IsNullOrWhiteSpace(Request.LiveStreamId)
+                    && string.IsNullOrWhiteSpace(LiveStreamId)
                     && !string.IsNullOrWhiteSpace(MediaSource.LiveStreamId))
                 {
                     _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId).GetAwaiter().GetResult();

@@ -443,7 +443,7 @@ namespace Jellyfin.Api.Helpers
                 job.BitRate = bitRate;
             }
 
-            var deviceId = state.Request.DeviceId;
+            var deviceId = state.DeviceId;
 
             if (!string.IsNullOrWhiteSpace(deviceId))
             {
@@ -525,12 +525,12 @@ namespace Jellyfin.Api.Helpers
 
             var transcodingJob = this.OnTranscodeBeginning(
                 outputPath,
-                state.Request.PlaySessionId,
+                state.PlaySessionId,
                 state.MediaSource.LiveStreamId,
                 Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
                 transcodingJobType,
                 process,
-                state.Request.DeviceId,
+                state.DeviceId,
                 state,
                 cancellationTokenSource);
 
@@ -647,12 +647,12 @@ namespace Jellyfin.Api.Helpers
         /// <returns>TranscodingJob.</returns>
         public TranscodingJobDto OnTranscodeBeginning(
             string path,
-            string playSessionId,
-            string liveStreamId,
+            string? playSessionId,
+            string? liveStreamId,
             string transcodingJobId,
             TranscodingJobType type,
             Process process,
-            string deviceId,
+            string? deviceId,
             StreamState state,
             CancellationTokenSource cancellationTokenSource)
         {
@@ -706,9 +706,9 @@ namespace Jellyfin.Api.Helpers
                 _transcodingLocks.Remove(path);
             }
 
-            if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
+            if (!string.IsNullOrWhiteSpace(state.DeviceId))
             {
-                _sessionManager.ClearTranscodingInfo(state.Request.DeviceId);
+                _sessionManager.ClearTranscodingInfo(state.DeviceId);
             }
         }
 
@@ -747,7 +747,7 @@ namespace Jellyfin.Api.Helpers
                 state.IsoMount = await _isoManager.Mount(state.MediaPath, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
-            if (state.MediaSource.RequiresOpening && string.IsNullOrWhiteSpace(state.Request.LiveStreamId))
+            if (state.MediaSource.RequiresOpening && string.IsNullOrWhiteSpace(state.LiveStreamId))
             {
                 var liveStreamResponse = await _mediaSourceManager.OpenLiveStream(
                     new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },

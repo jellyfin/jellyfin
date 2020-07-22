@@ -92,7 +92,10 @@ namespace Jellyfin.Api.Helpers
             var state = new StreamState(mediaSourceManager, transcodingJobType, transcodingJobHelper)
             {
                 // TODO request was the StreamingRequest living in MediaBrowser.Api.Playback.Progressive
-                Request = request,
+                // Request = request,
+                DeviceId = deviceId,
+                PlaySessionId = playSessionId,
+                LiveStreamId = liveStreamId,
                 RequestedUrl = url,
                 UserAgent = request.Headers[HeaderNames.UserAgent],
                 EnableDlnaHeaders = enableDlnaHeaders
@@ -113,23 +116,23 @@ namespace Jellyfin.Api.Helpers
             }
             */
 
-            if (state.VideoRequest != null && !string.IsNullOrWhiteSpace(state.VideoRequest.VideoCodec))
+            if (state.IsVideoRequest && !string.IsNullOrWhiteSpace(state.VideoCodec))
             {
-                state.SupportedVideoCodecs = state.VideoRequest.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-                state.VideoRequest.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
+                state.SupportedVideoCodecs = state.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                state.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
             }
 
             if (!string.IsNullOrWhiteSpace(audioCodec))
             {
                 state.SupportedAudioCodecs = audioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToAudioCodec(i))
+                state.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToAudioCodec(i))
                                            ?? state.SupportedAudioCodecs.FirstOrDefault();
             }
 
             if (!string.IsNullOrWhiteSpace(subtitleCodec))
             {
                 state.SupportedSubtitleCodecs = subtitleCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-                state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToSubtitleCodec(i))
+                state.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToSubtitleCodec(i))
                                               ?? state.SupportedSubtitleCodecs.FirstOrDefault();
             }
 
@@ -203,7 +206,7 @@ namespace Jellyfin.Api.Helpers
 
             if (isVideoRequest)
             {
-                state.OutputVideoCodec = state.VideoRequest.VideoCodec;
+                state.OutputVideoCodec = state.VideoCodec;
                 state.OutputVideoBitrate = EncodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
                 encodingHelper.TryStreamCopy(state);
@@ -288,7 +291,7 @@ namespace Jellyfin.Api.Helpers
 
             var audioCodec = state.ActualOutputAudioCodec;
 
-            if (state.VideoRequest == null)
+            if (!state.IsVideoRequest)
             {
                 responseHeaders.Add("contentFeatures.dlna.org", new ContentFeatureBuilder(profile).BuildAudioHeader(
                     state.OutputContainer,
@@ -426,12 +429,10 @@ namespace Jellyfin.Api.Helpers
                 return ext;
             }
 
-            var isVideoRequest = state.VideoRequest != null;
-
             // Try to infer based on the desired video codec
-            if (isVideoRequest)
+            if (state.IsVideoRequest)
             {
-                var videoCodec = state.VideoRequest.VideoCodec;
+                var videoCodec = state.VideoCodec;
 
                 if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(videoCodec, "h265", StringComparison.OrdinalIgnoreCase))
@@ -456,9 +457,9 @@ namespace Jellyfin.Api.Helpers
             }
 
             // Try to infer based on the desired audio codec
-            if (!isVideoRequest)
+            if (!state.IsVideoRequest)
             {
-                var audioCodec = state.Request.AudioCodec;
+                var audioCodec = state.AudioCodec;
 
                 if (string.Equals("aac", audioCodec, StringComparison.OrdinalIgnoreCase))
                 {
@@ -531,7 +532,7 @@ namespace Jellyfin.Api.Helpers
             var audioCodec = state.ActualOutputAudioCodec;
             var videoCodec = state.ActualOutputVideoCodec;
 
-            var mediaProfile = state.VideoRequest == null
+            var mediaProfile = !state.IsVideoRequest
                 ? profile.GetAudioMediaProfile(state.OutputContainer, audioCodec, state.OutputAudioChannels, state.OutputAudioBitrate, state.OutputAudioSampleRate, state.OutputAudioBitDepth)
                 : profile.GetVideoMediaProfile(
                     state.OutputContainer,
@@ -561,7 +562,7 @@ namespace Jellyfin.Api.Helpers
 
             if (!(@static.HasValue && @static.Value))
             {
-                var transcodingProfile = state.VideoRequest == null ? profile.GetAudioTranscodingProfile(state.OutputContainer, audioCodec) : profile.GetVideoTranscodingProfile(state.OutputContainer, audioCodec, videoCodec);
+                var transcodingProfile = !state.IsVideoRequest ? profile.GetAudioTranscodingProfile(state.OutputContainer, audioCodec) : profile.GetVideoTranscodingProfile(state.OutputContainer, audioCodec, videoCodec);
 
                 if (transcodingProfile != null)
                 {
@@ -569,7 +570,7 @@ namespace Jellyfin.Api.Helpers
                     // state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
                     state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
 
-                    if (state.VideoRequest != null)
+                    if (!state.IsVideoRequest)
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
                         state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
