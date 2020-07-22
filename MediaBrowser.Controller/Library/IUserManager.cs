@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Initializes the user manager and ensures that a user exists.
         /// </summary>
-        void Initialize();
+        Task InitializeAsync();
 
         /// <summary>
         /// Gets a user by Id.
@@ -106,7 +106,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>The created user.</returns>
         /// <exception cref="ArgumentNullException">name</exception>
         /// <exception cref="ArgumentException"></exception>
-        User CreateUser(string name);
+        Task<User> CreateUserAsync(string name);
 
         /// <summary>
         /// Deletes the specified user.
