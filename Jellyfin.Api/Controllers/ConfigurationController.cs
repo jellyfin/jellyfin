@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
@@ -21,6 +22,8 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IMediaEncoder _mediaEncoder;
+
+        private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationController"/> class.
@@ -87,7 +90,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string? key)
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
-            var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType).ConfigureAwait(false);
+            var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType, _serializerOptions).ConfigureAwait(false);
             _configurationManager.SaveConfiguration(key, configuration);
             return NoContent();
         }
