@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" },
             { PlaylistsAllowDuplicatesKey, bool.TrueString },
-            { BindToUnixSocketKey, bool.TrueString }
+            { BindToUnixSocketKey, bool.FalseString }
         };
     }
 }
