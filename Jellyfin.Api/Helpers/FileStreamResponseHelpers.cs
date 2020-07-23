@@ -23,14 +23,14 @@ namespace Jellyfin.Api.Helpers
         /// <param name="state">The current <see cref="StreamState"/>.</param>
         /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
         /// <param name="controller">The <see cref="ControllerBase"/> managing the response.</param>
+        /// <param name="httpClient">The <see cref="HttpClient"/> making the remote request.</param>
         /// <returns>A <see cref="Task{ActionResult}"/> containing the API response.</returns>
         public static async Task<ActionResult> GetStaticRemoteStreamResult(
             StreamState state,
             bool isHeadRequest,
-            ControllerBase controller)
+            ControllerBase controller,
+            HttpClient httpClient)
         {
-            HttpClient httpClient = new HttpClient();
-
             if (state.RemoteHttpHeaders.TryGetValue(HeaderNames.UserAgent, out var useragent))
             {
                 httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, useragent);

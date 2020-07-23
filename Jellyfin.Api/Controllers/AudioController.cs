@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
@@ -40,6 +41,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
+        private readonly HttpClient _httpClient;
 
         private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -59,6 +61,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
+        /// <param name="httpClient">Instance of the <see cref="HttpClient"/>.</param>
         public AudioController(
             IDlnaManager dlnaManager,
             IUserManager userManger,
@@ -72,7 +75,8 @@ namespace Jellyfin.Api.Controllers
             ISubtitleEncoder subtitleEncoder,
             IConfiguration configuration,
             IDeviceManager deviceManager,
-            TranscodingJobHelper transcodingJobHelper)
+            TranscodingJobHelper transcodingJobHelper,
+            HttpClient httpClient)
         {
             _dlnaManager = dlnaManager;
             _authContext = authorizationContext;
@@ -87,6 +91,7 @@ namespace Jellyfin.Api.Controllers
             _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
+            _httpClient = httpClient;
         }
 
         /// <summary>
@@ -295,7 +300,7 @@ namespace Jellyfin.Api.Controllers
 
                 using (state)
                 {
-                    return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this).ConfigureAwait(false);
+                    return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, _httpClient).ConfigureAwait(false);
                 }
             }
 
@@ -325,13 +330,6 @@ namespace Jellyfin.Api.Controllers
                         await new ProgressiveFileCopier(_streamHelper, state.MediaPath).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
 
                         return File(Response.Body, contentType);
-                    }
-
-                    TimeSpan? cacheDuration = null;
-
-                    if (!string.IsNullOrEmpty(tag))
-                    {
-                        cacheDuration = TimeSpan.FromDays(365);
                     }
 
                     return FileStreamResponseHelpers.GetStaticFileResult(

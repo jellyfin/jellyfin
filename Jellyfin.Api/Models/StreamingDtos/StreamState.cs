@@ -94,11 +94,6 @@ namespace Jellyfin.Api.Models.StreamingDtos
                         userAgent.IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
                         userAgent.IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
                     {
-                        if (IsSegmentedLiveStream)
-                        {
-                            return 6;
-                        }
-
                         return 6;
                     }
 
