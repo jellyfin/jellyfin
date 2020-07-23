@@ -203,8 +203,24 @@ namespace Jellyfin.Server.Implementations.Users
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
+        internal async Task<User> CreateUserInternalAsync(string name, JellyfinDb dbContext)
+        {
+            // TODO: Remove after user item data is migrated.
+            var max = await dbContext.Users.AnyAsync().ConfigureAwait(false)
+                ? await dbContext.Users.Select(u => u.InternalId).MaxAsync().ConfigureAwait(false)
+                : 0;
+
+            return new User(
+                name,
+                _defaultAuthenticationProvider.GetType().FullName,
+                _defaultPasswordResetProvider.GetType().FullName)
+            {
+                InternalId = max + 1
+            };
+        }
+
         /// <inheritdoc/>
-        public User CreateUser(string name)
+        public async Task<User> CreateUserAsync(string name)
         {
             if (!IsValidUsername(name))
             {
@@ -213,18 +229,10 @@ namespace Jellyfin.Server.Implementations.Users
 
             using var dbContext = _dbProvider.CreateContext();
 
-            // TODO: Remove after user item data is migrated.
-            var max = dbContext.Users.Any() ? dbContext.Users.Select(u => u.InternalId).Max() : 0;
+            var newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
 
-            var newUser = new User(
-                name,
-                _defaultAuthenticationProvider.GetType().FullName,
-                _defaultPasswordResetProvider.GetType().FullName)
-            {
-                InternalId = max + 1
-            };
             dbContext.Users.Add(newUser);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             OnUserCreated?.Invoke(this, new GenericEventArgs<User>(newUser));
 
@@ -581,12 +589,12 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public void Initialize()
+        public async Task InitializeAsync()
         {
             // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
             using var dbContext = _dbProvider.CreateContext();
 
-            if (dbContext.Users.Any())
+            if (await dbContext.Users.AnyAsync().ConfigureAwait(false))
             {
                 return;
             }
@@ -604,13 +612,13 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Provided username is not valid!", defaultName);
             }
 
-            var newUser = CreateUser(defaultName);
+            var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
             newUser.SetPermission(PermissionKind.IsAdministrator, true);
             newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
             newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
 
-            dbContext.Users.Update(newUser);
-            dbContext.SaveChanges();
+            dbContext.Users.Add(newUser);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
