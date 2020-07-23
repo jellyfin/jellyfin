@@ -344,11 +344,24 @@ namespace Jellyfin.Server
                         }
                     }
 
-                    // Bind to unix socket (only on OSX and Linux)
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    // Bind to unix socket (only on macOS and Linux)
+                    if (startupConfig.UseUnixSocket() && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        // TODO: allow configuration of socket path
-                        var socketPath = $"{appPaths.DataPath}/socket.sock";
+                        var socketPath = startupConfig.GetUnixSocketPath();
+                        if (string.IsNullOrEmpty(socketPath))
+                        {
+                            var xdgRuntimeDir = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR");
+                            if (xdgRuntimeDir == null)
+                            {
+                                // Fall back to config dir
+                                socketPath = Path.Join(appPaths.ConfigurationDirectoryPath, "socket.sock");
+                            }
+                            else
+                            {
+                                socketPath = Path.Join(xdgRuntimeDir, "jellyfin-socket");
+                            }
+                        }
+
                         // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
                         if (File.Exists(socketPath))
                         {
