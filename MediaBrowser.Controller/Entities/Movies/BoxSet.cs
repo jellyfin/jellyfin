@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
-    /// Class BoxSet
+    /// Class BoxSet.
     /// </summary>
     public class BoxSet : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>
     {
@@ -45,9 +45,9 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <value>The display order.</value>
         public string DisplayOrder { get; set; }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
+        protected override bool GetBlockUnratedValue(User user)
         {
-            return config.BlockUnratedItems.Contains(UnratedItem.Movie);
+            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Movie.ToString());
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -198,7 +198,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public Guid[] GetLibraryFolderIds()
         {
-            var expandedFolders = new List<Guid>() { };
+            var expandedFolders = new List<Guid>();
 
             return FlattenItems(this, expandedFolders)
                 .SelectMany(i => LibraryManager.GetCollectionFolders(i))

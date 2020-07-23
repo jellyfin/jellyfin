@@ -1,16 +1,22 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
     public class AudioDbAlbumExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheAudioDb";
+        public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbAlbum.ToString();
+        public string Key => MetadataProvider.AudioDbAlbum.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdMediaType? Type => null;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/album/{0}";
@@ -22,10 +28,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     public class AudioDbOtherAlbumExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheAudioDb Album";
+        public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbAlbum.ToString();
+        public string Key => MetadataProvider.AudioDbAlbum.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/album/{0}";
@@ -37,10 +46,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     public class AudioDbArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheAudioDb";
+        public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbArtist.ToString();
+        public string Key => MetadataProvider.AudioDbArtist.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Artist;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/artist/{0}";
@@ -52,10 +64,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     public class AudioDbOtherArtistExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "TheAudioDb Artist";
+        public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.AudioDbArtist.ToString();
+        public string Key => MetadataProvider.AudioDbArtist.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.theaudiodb.com/artist/{0}";

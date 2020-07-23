@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -72,11 +73,17 @@ namespace MediaBrowser.Api
         }
 
         public bool? IsAiring { get; set; }
+
         public bool? IsMovie { get; set; }
+
         public bool? IsSports { get; set; }
+
         public bool? IsKids { get; set; }
+
         public bool? IsNews { get; set; }
+
         public bool? IsSeries { get; set; }
+
         public bool? Recursive { get; set; }
     }
 
@@ -118,7 +125,7 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { },
+                    Fields = Array.Empty<ItemFields>(),
                     EnableImages = false,
                     EnableUserData = false
                 },
@@ -133,7 +140,7 @@ namespace MediaBrowser.Api
             // Non recursive not yet supported for library folders
             if ((request.Recursive ?? true) || parentItem is UserView || parentItem is ICollectionFolder)
             {
-                genreQuery.AncestorIds = parentItem == null ? Array.Empty<Guid>() : new Guid[] { parentItem.Id };
+                genreQuery.AncestorIds = parentItem == null ? Array.Empty<Guid>() : new[] { parentItem.Id };
             }
             else
             {
@@ -149,7 +156,6 @@ namespace MediaBrowser.Api
                 {
                     Name = i.Item1.Name,
                     Id = i.Item1.Id
-
                 }).ToArray();
             }
             else
@@ -158,7 +164,6 @@ namespace MediaBrowser.Api
                 {
                     Name = i.Item1.Name,
                     Id = i.Item1.Id
-
                 }).ToArray();
             }
 
@@ -231,7 +236,7 @@ namespace MediaBrowser.Api
                 EnableTotalRecordCount = false,
                 DtoOptions = new Controller.Dto.DtoOptions
                 {
-                    Fields = new ItemFields[] { ItemFields.Genres, ItemFields.Tags },
+                    Fields = new[] { ItemFields.Genres, ItemFields.Tags },
                     EnableImages = false,
                     EnableUserData = false
                 }

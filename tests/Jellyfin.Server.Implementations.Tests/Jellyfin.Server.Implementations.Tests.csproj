@@ -1,24 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-      <TargetFramework>netcoreapp3.1</TargetFramework>
-      <IsPackable>false</IsPackable>
-      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-      <Nullable>enable</Nullable>
-      <RootNamespace>Jellyfin.Server.Implementations.Tests</RootNamespace>
-    </PropertyGroup>
+  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
+  <PropertyGroup>
+    <ProjectGuid>{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}</ProjectGuid>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="AutoFixture" Version="4.11.0" />
-      <PackageReference Include="AutoFixture.AutoMoq" Version="4.11.0" />
-      <PackageReference Include="Moq" Version="4.13.1" />
-      <PackageReference Include="xunit" Version="2.4.1" />
-      <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
-      <PackageReference Include="coverlet.collector" Version="1.2.0" />
-    </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Jellyfin.Server.Implementations.Tests</RootNamespace>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AutoFixture" Version="4.13.0" />
+    <PackageReference Include="AutoFixture.AutoMoq" Version="4.12.0" />
+    <PackageReference Include="Moq" Version="4.14.5" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Include="coverlet.collector" Version="1.3.0" />
+  </ItemGroup>
+
+  <!-- Code Analyzers -->
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
+    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
 
 </Project>

@@ -32,6 +32,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The path.</value>
         public MediaSourceInfo MediaSource { get; set; }
+
         public string Path { get; set; }
         /// <summary>
         /// Gets or sets the type.
@@ -43,6 +44,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The process.</value>
         public Process Process { get; set; }
+
         public ILogger Logger { get; private set; }
         /// <summary>
         /// Gets or sets the active request count.
@@ -62,18 +64,23 @@ namespace MediaBrowser.Api
         public object ProcessLock = new object();
 
         public bool HasExited { get; set; }
+
         public bool IsUserPaused { get; set; }
 
         public string Id { get; set; }
 
         public float? Framerate { get; set; }
+
         public double? CompletionPercentage { get; set; }
 
         public long? BytesDownloaded { get; set; }
+
         public long? BytesTranscoded { get; set; }
+
         public int? BitRate { get; set; }
 
         public long? TranscodingPositionTicks { get; set; }
+
         public long? DownloadPositionTicks { get; set; }
 
         public TranscodingThrottler TranscodingThrottler { get; set; }
@@ -81,6 +88,7 @@ namespace MediaBrowser.Api
         private readonly object _timerLock = new object();
 
         public DateTime LastPingDate { get; set; }
+
         public int PingTimeout { get; set; }
 
         public TranscodingJob(ILogger logger)
@@ -92,10 +100,7 @@ namespace MediaBrowser.Api
         {
             lock (_timerLock)
             {
-                if (KillTimer != null)
-                {
-                    KillTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                }
+                KillTimer?.Change(Timeout.Infinite, Timeout.Infinite);
             }
         }
 

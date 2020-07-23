@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+using System.Linq;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
@@ -20,7 +22,7 @@ namespace MediaBrowser.Api.System
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -53,7 +55,13 @@ namespace MediaBrowser.Api.System
                 (DateTime?)null :
                 DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
 
-            var result = _activityManager.GetActivityLogEntries(minDate, request.HasUserId, request.StartIndex, request.Limit);
+            var filterFunc = new Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>>(
+                entries => entries.Where(entry => entry.DateCreated >= minDate
+                                                  && (!request.HasUserId.HasValue || (request.HasUserId.Value
+                                                      ? entry.UserId != Guid.Empty
+                                                      : entry.UserId == Guid.Empty))));
+
+            var result = _activityManager.GetPagedResult(filterFunc, request.StartIndex, request.Limit);
 
             return ToOptimizedResult(result);
         }

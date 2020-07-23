@@ -1,9 +1,12 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -76,7 +79,8 @@ namespace Emby.Server.Implementations.Services
             var request = await CreateRequest(httpHost, httpReq, _restPath, logger).ConfigureAwait(false);
 
             httpHost.ApplyRequestFilters(httpReq, httpRes, request);
-
+            
+            httpRes.HttpContext.SetServiceStackRequest(httpReq);
             var response = await httpHost.ServiceController.Execute(httpHost, request, httpReq).ConfigureAwait(false);
 
             // Apply response filters
@@ -178,7 +182,7 @@ namespace Emby.Server.Implementations.Services
             => string.Equals(method, expected, StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Duplicate params have their values joined together in a comma-delimited string
+        /// Duplicate params have their values joined together in a comma-delimited string.
         /// </summary>
         private static Dictionary<string, string> GetFlattenedRequestParams(HttpRequest request)
         {

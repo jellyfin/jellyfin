@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using CommandLine;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.EntryPoints;
+using Emby.Server.Implementations.Udp;
+using Emby.Server.Implementations.Updates;
 using MediaBrowser.Controller.Extensions;
 
 namespace Jellyfin.Server
@@ -76,6 +79,10 @@ namespace Jellyfin.Server
         [Option("restartargs", Required = false, HelpText = "Arguments for restart script.")]
         public string? RestartArgs { get; set; }
 
+        /// <inheritdoc />
+        [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
+        public Uri? PublishedServerUrl { get; set; }
+
         /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>
@@ -87,6 +94,16 @@ namespace Jellyfin.Server
             if (NoWebClient)
             {
                 config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
+            }
+
+            if (PublishedServerUrl != null)
+            {
+                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl.ToString());
+            }
+
+            if (FFmpegPath != null)
+            {
+                config.Add(ConfigurationExtensions.FfmpegPathKey, FFmpegPath);
             }
 
             return config;

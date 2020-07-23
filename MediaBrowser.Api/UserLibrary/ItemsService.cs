@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
@@ -14,11 +15,12 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetItems
+    /// Class GetItems.
     /// </summary>
     [Route("/Items", "GET", Summary = "Gets items based on a query.")]
     [Route("/Users/{UserId}/Items", "GET", Summary = "Gets items based on a query.")]
@@ -32,18 +34,18 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class ItemsService
+    /// Class ItemsService.
     /// </summary>
     [Authenticated]
     public class ItemsService : BaseApiService
     {
         /// <summary>
-        /// The _user manager
+        /// The _user manager.
         /// </summary>
         private readonly IUserManager _userManager;
 
         /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
@@ -59,7 +61,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="localization">The localization.</param>
         /// <param name="dtoService">The dto service.</param>
         public ItemsService(
-            ILogger logger,
+            ILogger<ItemsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -86,7 +88,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var ancestorIds = Array.Empty<Guid>();
 
-            var excludeFolderIds = user.Configuration.LatestItemsExcludes;
+            var excludeFolderIds = user.GetPreference(PreferenceKind.LatestItemExcludes);
             if (parentIdGuid.Equals(Guid.Empty) && excludeFolderIds.Length > 0)
             {
                 ancestorIds = _libraryManager.GetUserRootFolder().GetChildren(user, true)
@@ -199,25 +201,26 @@ namespace MediaBrowser.Api.UserLibrary
                 item = _libraryManager.GetUserRootFolder();
             }
 
-            Folder folder = item as Folder;
-            if (folder == null)
+            if (!(item is Folder folder))
             {
                 folder = _libraryManager.GetUserRootFolder();
             }
 
-            var hasCollectionType = folder as IHasCollectionType;
-            if (hasCollectionType != null
+            if (folder is IHasCollectionType hasCollectionType
                 && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 request.Recursive = true;
                 request.IncludeItemTypes = "Playlist";
             }
 
-            bool isInEnabledFolder = user.Policy.EnabledFolders.Any(i => new Guid(i) == item.Id);
+            bool isInEnabledFolder = user.GetPreference(PreferenceKind.EnabledFolders).Any(i => new Guid(i) == item.Id)
+                    // Assume all folders inside an EnabledChannel are enabled
+                    || user.GetPreference(PreferenceKind.EnabledChannels).Any(i => new Guid(i) == item.Id);
+
             var collectionFolders = _libraryManager.GetCollectionFolders(item);
             foreach (var collectionFolder in collectionFolders)
             {
-                if (user.Policy.EnabledFolders.Contains(
+                if (user.GetPreference(PreferenceKind.EnabledFolders).Contains(
                     collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
                     StringComparer.OrdinalIgnoreCase))
                 {
@@ -225,9 +228,12 @@ namespace MediaBrowser.Api.UserLibrary
                 }
             }
 
-            if (!(item is UserRootFolder) && !user.Policy.EnableAllFolders && !isInEnabledFolder)
+            if (!(item is UserRootFolder)
+                && !isInEnabledFolder
+                && !user.HasPermission(PermissionKind.EnableAllFolders)
+                && !user.HasPermission(PermissionKind.EnableAllChannels))
             {
-                Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Name, item.Name);
+                Logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
                 return new QueryResult<BaseItem>
                 {
                     Items = Array.Empty<BaseItem>(),
@@ -241,11 +247,11 @@ namespace MediaBrowser.Api.UserLibrary
                 return folder.GetItems(GetItemsQuery(request, dtoOptions, user));
             }
 
-            var itemsArray = folder.GetChildren(user, true).ToArray();
+            var itemsArray = folder.GetChildren(user, true);
             return new QueryResult<BaseItem>
             {
                 Items = itemsArray,
-                TotalRecordCount = itemsArray.Length,
+                TotalRecordCount = itemsArray.Count,
                 StartIndex = 0
             };
         }
@@ -490,7 +496,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class DateCreatedComparer
+    /// Class DateCreatedComparer.
     /// </summary>
     public class DateCreatedComparer : IComparer<BaseItem>
     {

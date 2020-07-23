@@ -113,6 +113,7 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
             }
+
             return false;
         }
     }

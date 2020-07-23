@@ -111,14 +111,14 @@ namespace MediaBrowser.Api.UserLibrary
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Whether or not to perform the query recursively
+        /// Whether or not to perform the query recursively.
         /// </summary>
         /// <value><c>true</c> if recursive; otherwise, <c>false</c>.</value>
         [ApiMember(Name = "Recursive", Description = "When searching within folders, this determines whether or not the search will be recursive. true/false", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
@@ -141,7 +141,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string ParentId { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -162,14 +162,14 @@ namespace MediaBrowser.Api.UserLibrary
         public string IncludeItemTypes { get; set; }
 
         /// <summary>
-        /// Filters to apply to the results
+        /// Filters to apply to the results.
         /// </summary>
         /// <value>The filters.</value>
         [ApiMember(Name = "Filters", Description = "Optional. Specify additional filters to apply. This allows multiple, comma delimeted. Options: IsFolder, IsNotFolder, IsUnplayed, IsPlayed, IsFavorite, IsResumable, Likes, Dislikes", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Filters { get; set; }
 
         /// <summary>
-        /// Gets or sets the Isfavorite option
+        /// Gets or sets the Isfavorite option.
         /// </summary>
         /// <value>IsFavorite</value>
         [ApiMember(Name = "IsFavorite", Description = "Optional filter by items that are marked as favorite, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
@@ -190,7 +190,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string ImageTypes { get; set; }
 
         /// <summary>
-        /// What to sort the results by
+        /// What to sort the results by.
         /// </summary>
         /// <value>The sort by.</value>
         [ApiMember(Name = "SortBy", Description = "Optional. Specify one or more sort orders, comma delimeted. Options: Album, AlbumArtist, Artist, Budget, CommunityRating, CriticRating, DateCreated, DatePlayed, PlayCount, PremiereDate, ProductionYear, SortName, Random, Revenue, Runtime", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -200,7 +200,7 @@ namespace MediaBrowser.Api.UserLibrary
         public bool? IsPlayed { get; set; }
 
         /// <summary>
-        /// Limit results to items containing specific genres
+        /// Limit results to items containing specific genres.
         /// </summary>
         /// <value>The genres.</value>
         [ApiMember(Name = "Genres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -215,7 +215,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string Tags { get; set; }
 
         /// <summary>
-        /// Limit results to items containing specific years
+        /// Limit results to items containing specific years.
         /// </summary>
         /// <value>The years.</value>
         [ApiMember(Name = "Years", Description = "Optional. If specified, results will be filtered based on production year. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -234,7 +234,7 @@ namespace MediaBrowser.Api.UserLibrary
         public string EnableImageTypes { get; set; }
 
         /// <summary>
-        /// Limit results to items containing a specific person
+        /// Limit results to items containing a specific person.
         /// </summary>
         /// <value>The person.</value>
         [ApiMember(Name = "Person", Description = "Optional. If specified, results will be filtered to include only those containing the specified person.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -244,14 +244,14 @@ namespace MediaBrowser.Api.UserLibrary
         public string PersonIds { get; set; }
 
         /// <summary>
-        /// If the Person filter is used, this can also be used to restrict to a specific person type
+        /// If the Person filter is used, this can also be used to restrict to a specific person type.
         /// </summary>
         /// <value>The type of the person.</value>
         [ApiMember(Name = "PersonTypes", Description = "Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string PersonTypes { get; set; }
 
         /// <summary>
-        /// Limit results to items containing specific studios
+        /// Limit results to items containing specific studios.
         /// </summary>
         /// <value>The studios.</value>
         [ApiMember(Name = "Studios", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -322,8 +322,11 @@ namespace MediaBrowser.Api.UserLibrary
         public bool? CollapseBoxSetItems { get; set; }
 
         public int? MinWidth { get; set; }
+
         public int? MinHeight { get; set; }
+
         public int? MaxWidth { get; set; }
+
         public int? MaxHeight { get; set; }
 
         /// <summary>
@@ -396,12 +399,10 @@ namespace MediaBrowser.Api.UserLibrary
 
         public VideoType[] GetVideoTypes()
         {
-            if (string.IsNullOrEmpty(VideoTypes))
-            {
-                return Array.Empty<VideoType>();
-            }
-
-            return VideoTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
+            return string.IsNullOrEmpty(VideoTypes)
+                ? Array.Empty<VideoType>()
+                : VideoTypes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(v => Enum.Parse<VideoType>(v, true)).ToArray();
         }
 
         /// <summary>
@@ -412,12 +413,10 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var val = Filters;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ItemFilter[] { };
-            }
-
-            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (ItemFilter)Enum.Parse(typeof(ItemFilter), v, true)).ToArray();
+            return string.IsNullOrEmpty(val)
+                ? Array.Empty<ItemFilter>()
+                : val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(v => Enum.Parse<ItemFilter>(v, true)).ToArray();
         }
 
         /// <summary>
@@ -428,12 +427,9 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var val = ImageTypes;
 
-            if (string.IsNullOrEmpty(val))
-            {
-                return new ImageType[] { };
-            }
-
-            return val.Split(',').Select(v => (ImageType)Enum.Parse(typeof(ImageType), v, true)).ToArray();
+            return string.IsNullOrEmpty(val)
+                ? Array.Empty<ImageType>()
+                : val.Split(',').Select(v => Enum.Parse<ImageType>(v, true)).ToArray();
         }
 
         /// <summary>
@@ -469,7 +465,9 @@ namespace MediaBrowser.Api.UserLibrary
                 var sortOrderIndex = sortOrders.Length > i ? i : 0;
 
                 var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
-                var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase) ? MediaBrowser.Model.Entities.SortOrder.Descending : MediaBrowser.Model.Entities.SortOrder.Ascending;
+                var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase)
+                    ? MediaBrowser.Model.Entities.SortOrder.Descending
+                    : MediaBrowser.Model.Entities.SortOrder.Ascending;
 
                 result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
             }

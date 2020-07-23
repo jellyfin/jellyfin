@@ -1,26 +1,25 @@
 parameters:
-  - name: ImageNames
-    type: object
-    default:
-      Linux: "ubuntu-latest"
-      Windows: "windows-latest"
-      macOS: "macos-latest"
-  - name: TestProjects
-    type: string
-    default: "tests/**/*Tests.csproj"
-  - name: DotNetSdkVersion
-    type: string
-    default: 3.1.100
+- name: ImageNames
+  type: object
+  default:
+    Linux: "ubuntu-latest"
+    Windows: "windows-latest"
+    macOS: "macos-latest"
+- name: TestProjects
+  type: string
+  default: "tests/**/*Tests.csproj"
+- name: DotNetSdkVersion
+  type: string
+  default: 3.1.100
 
 jobs:
-  - job: MainTest
-    displayName: Main Test
+  - job: Test
+    displayName: Test
     strategy:
       matrix:
         ${{ each imageName in parameters.ImageNames }}:
           ${{ imageName.key }}:
             ImageName: ${{ imageName.value }}
-      maxParallel: 3
     pool:
       vmImage: "$(ImageName)"
     steps:
@@ -29,14 +28,31 @@ jobs:
         submodules: true
         persistCredentials: false
 
+      # This is required for the SonarCloud analyzer
+      - task: UseDotNet@2
+        displayName: "Install .NET Core SDK 2.1"
+        condition: eq(variables['ImageName'], 'ubuntu-latest')
+        inputs:
+          packageType: sdk
+          version: '2.1.805'
+
       - task: UseDotNet@2
         displayName: "Update DotNet"
         inputs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
 
+      - task: SonarCloudPrepare@1
+        displayName: 'Prepare analysis on SonarCloud'
+        condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
+        inputs:
+          SonarCloud: 'Sonarcloud for Jellyfin'
+          organization: 'jellyfin'
+          projectKey: 'jellyfin_jellyfin'
+
       - task: DotNetCoreCLI@2
-        displayName: Run .NET Core CLI tests
+        displayName: 'Run CLI Tests'
         inputs:
           command: "test"
           projects: ${{ parameters.TestProjects }}
@@ -45,9 +61,20 @@ jobs:
           testRunTitle: $(Agent.JobName)
           workingDirectory: "$(Build.SourcesDirectory)"
 
+      - task: SonarCloudAnalyze@1
+        displayName: 'Run Code Analysis'
+        condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
+
+      - task: SonarCloudPublish@1
+        displayName: 'Publish Quality Gate Result'
+        condition: eq(variables['ImageName'], 'ubuntu-latest')
+        enabled: false
+
       - task: Palmmedia.reportgenerator.reportgenerator-build-release-task.reportgenerator@4
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
-        displayName: ReportGenerator (merge)
+        displayName: 'Run ReportGenerator'
+        enabled: false
         inputs:
           reports: "$(Agent.TempDirectory)/**/coverage.cobertura.xml"
           targetdir: "$(Agent.TempDirectory)/merged/"
@@ -56,7 +83,8 @@ jobs:
       ## V2 is already in the repository but it does not work "wrong number of segments" YAML error.
       - task: PublishCodeCoverageResults@1
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux')) # !! THIS is for V1 only V2 will/should support merging
-        displayName: Publish Code Coverage
+        displayName: 'Publish Code Coverage'
+        enabled: false
         inputs:
           codeCoverageTool: "cobertura"
           #summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml' # !!THIS IS FOR V2

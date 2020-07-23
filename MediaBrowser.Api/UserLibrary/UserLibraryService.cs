@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.UserLibrary
 {
     /// <summary>
-    /// Class GetItem
+    /// Class GetItem.
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}", "GET", Summary = "Gets an item from a user's library")]
     public class GetItem : IReturn<BaseItemDto>
@@ -41,7 +41,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetItem
+    /// Class GetItem.
     /// </summary>
     [Route("/Users/{UserId}/Items/Root", "GET", Summary = "Gets the root folder from a user's library")]
     public class GetRootFolder : IReturn<BaseItemDto>
@@ -55,7 +55,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetIntros
+    /// Class GetIntros.
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Intros", "GET", Summary = "Gets intros to play before the main media item plays")]
     public class GetIntros : IReturn<QueryResult<BaseItemDto>>
@@ -76,7 +76,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class MarkFavoriteItem
+    /// Class MarkFavoriteItem.
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "POST", Summary = "Marks an item as a favorite")]
     public class MarkFavoriteItem : IReturn<UserItemDataDto>
@@ -97,7 +97,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class UnmarkFavoriteItem
+    /// Class UnmarkFavoriteItem.
     /// </summary>
     [Route("/Users/{UserId}/FavoriteItems/{Id}", "DELETE", Summary = "Unmarks an item as a favorite")]
     public class UnmarkFavoriteItem : IReturn<UserItemDataDto>
@@ -118,7 +118,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class ClearUserItemRating
+    /// Class ClearUserItemRating.
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Rating", "DELETE", Summary = "Deletes a user's saved personal rating for an item")]
     public class DeleteUserItemRating : IReturn<UserItemDataDto>
@@ -139,7 +139,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class UpdateUserItemRating
+    /// Class UpdateUserItemRating.
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/Rating", "POST", Summary = "Updates a user's rating for an item")]
     public class UpdateUserItemRating : IReturn<UserItemDataDto>
@@ -167,7 +167,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetLocalTrailers
+    /// Class GetLocalTrailers.
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/LocalTrailers", "GET", Summary = "Gets local trailers for an item")]
     public class GetLocalTrailers : IReturn<BaseItemDto[]>
@@ -188,7 +188,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class GetSpecialFeatures
+    /// Class GetSpecialFeatures.
     /// </summary>
     [Route("/Users/{UserId}/Items/{Id}/SpecialFeatures", "GET", Summary = "Gets special features for an item")]
     public class GetSpecialFeatures : IReturn<BaseItemDto[]>
@@ -259,7 +259,7 @@ namespace MediaBrowser.Api.UserLibrary
     }
 
     /// <summary>
-    /// Class UserLibraryService
+    /// Class UserLibraryService.
     /// </summary>
     [Authenticated]
     public class UserLibraryService : BaseApiService
@@ -312,7 +312,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (!request.IsPlayed.HasValue)
             {
-                if (user.Configuration.HidePlayedInLatest)
+                if (user.HidePlayedInLatest)
                 {
                     request.IsPlayed = false;
                 }
@@ -361,7 +361,8 @@ namespace MediaBrowser.Api.UserLibrary
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtos = item.GetDisplayExtras()
+            var dtos = item
+                .GetExtras(BaseItem.DisplayExtraTypes)
                 .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
             return dtos.ToArray();

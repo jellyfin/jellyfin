@@ -10,6 +10,7 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
+
         public string[] PathParts { get; set; }
         /// <summary>
         /// Gets or sets the protocol.

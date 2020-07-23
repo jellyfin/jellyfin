@@ -1,8 +1,9 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
+using System.Linq;
 using System.Xml.Serialization;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
@@ -26,16 +27,25 @@ namespace MediaBrowser.Model.Dlna
         public DeviceIdentification Identification { get; set; }
 
         public string FriendlyName { get; set; }
+
         public string Manufacturer { get; set; }
+
         public string ManufacturerUrl { get; set; }
+
         public string ModelName { get; set; }
+
         public string ModelDescription { get; set; }
+
         public string ModelNumber { get; set; }
+
         public string ModelUrl { get; set; }
+
         public string SerialNumber { get; set; }
 
         public bool EnableAlbumArtInDidl { get; set; }
+
         public bool EnableSingleAlbumArtLimit { get; set; }
+
         public bool EnableSingleSubtitleLimit { get; set; }
 
         public string SupportedMediaTypes { get; set; }
@@ -45,15 +55,19 @@ namespace MediaBrowser.Model.Dlna
         public string AlbumArtPn { get; set; }
 
         public int MaxAlbumArtWidth { get; set; }
+
         public int MaxAlbumArtHeight { get; set; }
 
         public int? MaxIconWidth { get; set; }
+
         public int? MaxIconHeight { get; set; }
 
         public long? MaxStreamingBitrate { get; set; }
+
         public long? MaxStaticBitrate { get; set; }
 
         public int? MusicStreamingTranscodingBitrate { get; set; }
+
         public int? MaxStaticMusicBitrate { get; set; }
 
         /// <summary>
@@ -64,10 +78,13 @@ namespace MediaBrowser.Model.Dlna
         public string ProtocolInfo { get; set; }
 
         public int TimelineOffsetSeconds { get; set; }
+
         public bool RequiresPlainVideoItems { get; set; }
+
         public bool RequiresPlainFolders { get; set; }
 
         public bool EnableMSMediaReceiverRegistrar { get; set; }
+
         public bool IgnoreTranscodeByteRangeRequests { get; set; }
 
         public XmlAttribute[] XmlRootAttributes { get; set; }
@@ -87,20 +104,21 @@ namespace MediaBrowser.Model.Dlna
         public ContainerProfile[] ContainerProfiles { get; set; }
 
         public CodecProfile[] CodecProfiles { get; set; }
+
         public ResponseProfile[] ResponseProfiles { get; set; }
 
         public SubtitleProfile[] SubtitleProfiles { get; set; }
 
         public DeviceProfile()
         {
-            DirectPlayProfiles = new DirectPlayProfile[] { };
-            TranscodingProfiles = new TranscodingProfile[] { };
-            ResponseProfiles = new ResponseProfile[] { };
-            CodecProfiles = new CodecProfile[] { };
-            ContainerProfiles = new ContainerProfile[] { };
+            DirectPlayProfiles = Array.Empty<DirectPlayProfile>();
+            TranscodingProfiles = Array.Empty<TranscodingProfile>();
+            ResponseProfiles = Array.Empty<ResponseProfile>();
+            CodecProfiles = Array.Empty<CodecProfile>();
+            ContainerProfiles = Array.Empty<ContainerProfile>();
             SubtitleProfiles = Array.Empty<SubtitleProfile>();
 
-            XmlRootAttributes = new XmlAttribute[] { };
+            XmlRootAttributes = Array.Empty<XmlAttribute>();
 
             SupportedMediaTypes = "Audio,Photo,Video";
             MaxStreamingBitrate = 8000000;
@@ -129,13 +147,14 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!ListHelper.ContainsIgnoreCase(i.GetAudioCodecs(), audioCodec ?? string.Empty))
+                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
                 return i;
             }
+
             return null;
         }
 
@@ -155,7 +174,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!ListHelper.ContainsIgnoreCase(i.GetAudioCodecs(), audioCodec ?? string.Empty))
+                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -167,6 +186,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return i;
             }
+
             return null;
         }
 
@@ -185,7 +205,7 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 var audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Length > 0 && !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec ?? string.Empty))
+                if (audioCodecs.Length > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -207,6 +227,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return i;
             }
+
             return null;
         }
 
@@ -252,6 +273,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return i;
             }
+
             return null;
         }
 
@@ -288,13 +310,13 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 var audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Length > 0 && !ListHelper.ContainsIgnoreCase(audioCodecs, audioCodec ?? string.Empty))
+                if (audioCodecs.Length > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
                 var videoCodecs = i.GetVideoCodecs();
-                if (videoCodecs.Length > 0 && !ListHelper.ContainsIgnoreCase(videoCodecs, videoCodec ?? string.Empty))
+                if (videoCodecs.Length > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -316,6 +338,7 @@ namespace MediaBrowser.Model.Dlna
 
                 return i;
             }
+
             return null;
         }
     }

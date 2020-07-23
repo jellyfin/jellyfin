@@ -1,19 +1,25 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Movies
 {
     public class ImdbExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "IMDb";
+        public string ProviderName => "IMDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Imdb.ToString();
+        public string Key => MetadataProvider.Imdb.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdMediaType? Type => null;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.imdb.com/title/{0}";
@@ -34,10 +40,13 @@ namespace MediaBrowser.Providers.Movies
     public class ImdbPersonExternalId : IExternalId
     {
         /// <inheritdoc />
-        public string Name => "IMDb";
+        public string ProviderName => "IMDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProviders.Imdb.ToString();
+        public string Key => MetadataProvider.Imdb.ToString();
+
+        /// <inheritdoc />
+        public ExternalIdMediaType? Type => ExternalIdMediaType.Person;
 
         /// <inheritdoc />
         public string UrlFormatString => "https://www.imdb.com/name/{0}";

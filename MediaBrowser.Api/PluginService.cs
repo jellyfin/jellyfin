@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api
 {
     /// <summary>
-    /// Class Plugins
+    /// Class Plugins.
     /// </summary>
     [Route("/Plugins", "GET", Summary = "Gets a list of currently installed plugins")]
     [Authenticated]
@@ -25,7 +25,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UninstallPlugin
+    /// Class UninstallPlugin.
     /// </summary>
     [Route("/Plugins/{Id}", "DELETE", Summary = "Uninstalls a plugin")]
     [Authenticated(Roles = "Admin")]
@@ -40,7 +40,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetPluginConfiguration
+    /// Class GetPluginConfiguration.
     /// </summary>
     [Route("/Plugins/{Id}/Configuration", "GET", Summary = "Gets a plugin's configuration")]
     [Authenticated]
@@ -55,7 +55,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdatePluginConfiguration
+    /// Class UpdatePluginConfiguration.
     /// </summary>
     [Route("/Plugins/{Id}/Configuration", "POST", Summary = "Updates a plugin's configuration")]
     [Authenticated]
@@ -69,13 +69,13 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
 
         /// <summary>
-        /// The raw Http Request Input Stream
+        /// The raw Http Request Input Stream.
         /// </summary>
         /// <value>The request stream.</value>
         public Stream RequestStream { get; set; }
     }
 
-    //TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
+    // TODO Once we have proper apps and plugins and decide to break compatibility with paid plugins,
     // delete all these registration endpoints. They are only kept for compatibility.
     [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature", IsHidden = true)]
     [Authenticated]
@@ -86,7 +86,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class GetPluginSecurityInfo
+    /// Class GetPluginSecurityInfo.
     /// </summary>
     [Route("/Plugins/SecurityInfo", "GET", Summary = "Gets plugin registration information", IsHidden = true)]
     [Authenticated]
@@ -95,7 +95,7 @@ namespace MediaBrowser.Api
     }
 
     /// <summary>
-    /// Class UpdatePluginSecurityInfo
+    /// Class UpdatePluginSecurityInfo.
     /// </summary>
     [Route("/Plugins/SecurityInfo", "POST", Summary = "Updates plugin registration information", IsHidden = true)]
     [Authenticated(Roles = "Admin")]
@@ -115,38 +115,47 @@ namespace MediaBrowser.Api
     public class RegistrationInfo
     {
         public string Name { get; set; }
+
         public DateTime ExpirationDate { get; set; }
+
         public bool IsTrial { get; set; }
+
         public bool IsRegistered { get; set; }
     }
 
     public class MBRegistrationRecord
     {
         public DateTime ExpirationDate { get; set; }
+
         public bool IsRegistered { get; set; }
+
         public bool RegChecked { get; set; }
+
         public bool RegError { get; set; }
+
         public bool TrialVersion { get; set; }
+
         public bool IsValid { get; set; }
     }
 
     public class PluginSecurityInfo
     {
         public string SupporterKey { get; set; }
+
         public bool IsMBSupporter { get; set; }
     }
     /// <summary>
-    /// Class PluginsService
+    /// Class PluginsService.
     /// </summary>
     public class PluginService : BaseApiService
     {
         /// <summary>
-        /// The _json serializer
+        /// The _json serializer.
         /// </summary>
         private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
-        /// The _app host
+        /// The _app host.
         /// </summary>
         private readonly IApplicationHost _appHost;
         private readonly IInstallationManager _installationManager;
@@ -243,9 +252,7 @@ namespace MediaBrowser.Api
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = Guid.Parse(GetPathValue(1));
 
-            var plugin = _appHost.Plugins.First(p => p.Id == id) as IHasPluginConfiguration;
-
-            if (plugin == null)
+            if (!(_appHost.Plugins.First(p => p.Id == id) is IHasPluginConfiguration plugin))
             {
                 throw new FileNotFoundException();
             }

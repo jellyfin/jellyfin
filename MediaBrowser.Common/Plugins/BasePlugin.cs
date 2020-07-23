@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
@@ -50,6 +51,12 @@ namespace MediaBrowser.Common.Plugins
         public string DataFolderPath { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether the plugin can be uninstalled.
+        /// </summary>
+        public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath)
+            .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.InvariantCulture);
+
+        /// <summary>
         /// Gets the plugin info.
         /// </summary>
         /// <returns>PluginInfo.</returns>
@@ -60,14 +67,15 @@ namespace MediaBrowser.Common.Plugins
                 Name = Name,
                 Version = Version.ToString(),
                 Description = Description,
-                Id = Id.ToString()
+                Id = Id.ToString(),
+                CanUninstall = CanUninstall
             };
 
             return info;
         }
 
         /// <summary>
-        /// Called when just before the plugin is uninstalled from the server.
+        /// Called just before the plugin is uninstalled from the server.
         /// </summary>
         public virtual void OnUninstalling()
         {
@@ -101,7 +109,7 @@ namespace MediaBrowser.Common.Plugins
         private readonly object _configurationSyncLock = new object();
 
         /// <summary>
-        /// The save lock.
+        /// The configuration save lock.
         /// </summary>
         private readonly object _configurationSaveLock = new object();
 
@@ -148,7 +156,7 @@ namespace MediaBrowser.Common.Plugins
         protected string AssemblyFileName => Path.GetFileName(AssemblyFilePath);
 
         /// <summary>
-        /// Gets or sets the plugin's configuration.
+        /// Gets or sets the plugin configuration.
         /// </summary>
         /// <value>The configuration.</value>
         public TConfigurationType Configuration
@@ -186,7 +194,7 @@ namespace MediaBrowser.Common.Plugins
         public string ConfigurationFilePath => Path.Combine(ApplicationPaths.PluginConfigurationsPath, ConfigurationFileName);
 
         /// <summary>
-        /// Gets the plugin's configuration.
+        /// Gets the plugin configuration.
         /// </summary>
         /// <value>The configuration.</value>
         BasePluginConfiguration IHasPluginConfiguration.Configuration => Configuration;

@@ -4,7 +4,7 @@ using MediaBrowser.Model.Configuration;
 namespace MediaBrowser.Controller.Configuration
 {
     /// <summary>
-    /// Interface IServerConfigurationManager
+    /// Interface IServerConfigurationManager.
     /// </summary>
     public interface IServerConfigurationManager : IConfigurationManager
     {
@@ -19,7 +19,5 @@ namespace MediaBrowser.Controller.Configuration
         /// </summary>
         /// <value>The configuration.</value>
         ServerConfiguration Configuration { get; }
-
-        bool SetOptimalValues();
     }
 }

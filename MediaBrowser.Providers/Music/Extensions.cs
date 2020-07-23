@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Linq;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -21,11 +23,11 @@ namespace MediaBrowser.Providers.Music
 
         public static string GetReleaseGroupId(this AlbumInfo info)
         {
-            var id = info.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
+            var id = info.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
 
             if (string.IsNullOrEmpty(id))
             {
-                return info.SongInfos.Select(i => i.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup))
+                return info.SongInfos.Select(i => i.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup))
                     .FirstOrDefault(i => !string.IsNullOrEmpty(i));
             }
 
@@ -34,11 +36,11 @@ namespace MediaBrowser.Providers.Music
 
         public static string GetReleaseId(this AlbumInfo info)
         {
-            var id = info.GetProviderId(MetadataProviders.MusicBrainzAlbum);
+            var id = info.GetProviderId(MetadataProvider.MusicBrainzAlbum);
 
             if (string.IsNullOrEmpty(id))
             {
-                return info.SongInfos.Select(i => i.GetProviderId(MetadataProviders.MusicBrainzAlbum))
+                return info.SongInfos.Select(i => i.GetProviderId(MetadataProvider.MusicBrainzAlbum))
                     .FirstOrDefault(i => !string.IsNullOrEmpty(i));
             }
 
@@ -47,16 +49,16 @@ namespace MediaBrowser.Providers.Music
 
         public static string GetMusicBrainzArtistId(this AlbumInfo info)
         {
-            info.ProviderIds.TryGetValue(MetadataProviders.MusicBrainzAlbumArtist.ToString(), out string id);
+            info.ProviderIds.TryGetValue(MetadataProvider.MusicBrainzAlbumArtist.ToString(), out string id);
 
             if (string.IsNullOrEmpty(id))
             {
-                info.ArtistProviderIds.TryGetValue(MetadataProviders.MusicBrainzArtist.ToString(), out id);
+                info.ArtistProviderIds.TryGetValue(MetadataProvider.MusicBrainzArtist.ToString(), out id);
             }
 
             if (string.IsNullOrEmpty(id))
             {
-                return info.SongInfos.Select(i => i.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist))
+                return info.SongInfos.Select(i => i.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist))
                     .FirstOrDefault(i => !string.IsNullOrEmpty(i));
             }
 
@@ -65,11 +67,11 @@ namespace MediaBrowser.Providers.Music
 
         public static string GetMusicBrainzArtistId(this ArtistInfo info)
         {
-            info.ProviderIds.TryGetValue(MetadataProviders.MusicBrainzArtist.ToString(), out var id);
+            info.ProviderIds.TryGetValue(MetadataProvider.MusicBrainzArtist.ToString(), out var id);
 
             if (string.IsNullOrEmpty(id))
             {
-                return info.SongInfos.Select(i => i.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist))
+                return info.SongInfos.Select(i => i.GetProviderId(MetadataProvider.MusicBrainzAlbumArtist))
                     .FirstOrDefault(i => !string.IsNullOrEmpty(i));
             }
 

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,8 +24,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         internal static TvdbSeriesProvider Current { get; private set; }
+
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbSeriesProvider> _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly TvdbClientManager _tvdbClientManager;
@@ -94,22 +97,22 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         {
             var series = result.Item;
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(tvdbId))
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Tvdb.ToString(), out var tvdbId) && !string.IsNullOrEmpty(tvdbId))
             {
-                series.SetProviderId(MetadataProviders.Tvdb, tvdbId);
+                series.SetProviderId(MetadataProvider.Tvdb, tvdbId);
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out var imdbId) && !string.IsNullOrEmpty(imdbId))
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out var imdbId) && !string.IsNullOrEmpty(imdbId))
             {
-                series.SetProviderId(MetadataProviders.Imdb, imdbId);
-                tvdbId = await GetSeriesByRemoteId(imdbId, MetadataProviders.Imdb.ToString(), metadataLanguage,
+                series.SetProviderId(MetadataProvider.Imdb, imdbId);
+                tvdbId = await GetSeriesByRemoteId(imdbId, MetadataProvider.Imdb.ToString(), metadataLanguage,
                     cancellationToken).ConfigureAwait(false);
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Zap2It.ToString(), out var zap2It) && !string.IsNullOrEmpty(zap2It))
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Zap2It.ToString(), out var zap2It) && !string.IsNullOrEmpty(zap2It))
             {
-                series.SetProviderId(MetadataProviders.Zap2It, zap2It);
-                tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProviders.Zap2It.ToString(), metadataLanguage,
+                series.SetProviderId(MetadataProvider.Zap2It, zap2It);
+                tvdbId = await GetSeriesByRemoteId(zap2It, MetadataProvider.Zap2It.ToString(), metadataLanguage,
                     cancellationToken).ConfigureAwait(false);
             }
 
@@ -145,12 +148,11 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         private async Task<string> GetSeriesByRemoteId(string id, string idType, string language, CancellationToken cancellationToken)
         {
-
             TvDbResponse<SeriesSearchResult[]> result = null;
 
             try
             {
-                if (string.Equals(idType, MetadataProviders.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(idType, MetadataProvider.Zap2It.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     result = await _tvdbClientManager.GetSeriesByZap2ItIdAsync(id, language, cancellationToken)
                         .ConfigureAwait(false);
@@ -176,9 +178,9 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         /// <returns>True, if the dictionary contains a valid TV provider ID, otherwise false.</returns>
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            return seriesProviderIds.ContainsKey(MetadataProviders.Tvdb.ToString()) ||
-                   seriesProviderIds.ContainsKey(MetadataProviders.Imdb.ToString()) ||
-                   seriesProviderIds.ContainsKey(MetadataProviders.Zap2It.ToString());
+            return seriesProviderIds.ContainsKey(MetadataProvider.Tvdb.ToString()) ||
+                   seriesProviderIds.ContainsKey(MetadataProvider.Imdb.ToString()) ||
+                   seriesProviderIds.ContainsKey(MetadataProvider.Zap2It.ToString());
         }
 
         /// <summary>
@@ -245,24 +247,29 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 {
                     Name = tvdbTitles.FirstOrDefault(),
                     ProductionYear = firstAired.Year,
-                    SearchProviderName = Name,
-                    ImageUrl = TvdbUtils.BannerUrl + seriesSearchResult.Banner
-
+                    SearchProviderName = Name
                 };
+
+                if (!string.IsNullOrEmpty(seriesSearchResult.Banner))
+                {
+                    // Results from their Search endpoints already include the /banners/ part in the url, because reasons...
+                    remoteSearchResult.ImageUrl = TvdbUtils.TvdbImageBaseUrl + seriesSearchResult.Banner;
+                }
+
                 try
                 {
                     var seriesSesult =
                         await _tvdbClientManager.GetSeriesByIdAsync(seriesSearchResult.Id, language, cancellationToken)
                             .ConfigureAwait(false);
-                    remoteSearchResult.SetProviderId(MetadataProviders.Imdb, seriesSesult.Data.ImdbId);
-                    remoteSearchResult.SetProviderId(MetadataProviders.Zap2It, seriesSesult.Data.Zap2itId);
+                    remoteSearchResult.SetProviderId(MetadataProvider.Imdb, seriesSesult.Data.ImdbId);
+                    remoteSearchResult.SetProviderId(MetadataProvider.Zap2It, seriesSesult.Data.Zap2itId);
                 }
                 catch (TvDbServerException e)
                 {
                     _logger.LogError(e, "Unable to retrieve series with id {TvdbId}", seriesSearchResult.Id);
                 }
 
-                remoteSearchResult.SetProviderId(MetadataProviders.Tvdb, seriesSearchResult.Id.ToString());
+                remoteSearchResult.SetProviderId(MetadataProvider.Tvdb, seriesSearchResult.Id.ToString());
                 list.Add(new Tuple<List<string>, RemoteSearchResult>(tvdbTitles, remoteSearchResult));
             }
 
@@ -274,15 +281,6 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         }
 
         /// <summary>
-        /// The remove
-        /// </summary>
-        const string remove = "\"'!`?";
-        /// <summary>
-        /// The spacers
-        /// </summary>
-        const string spacers = "/,.:;\\(){}[]+-_=–*";  // (there are two types of dashes, short and long)
-
-        /// <summary>
         /// Gets the name of the comparable.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -291,47 +289,25 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         {
             name = name.ToLowerInvariant();
             name = name.Normalize(NormalizationForm.FormKD);
-            var sb = new StringBuilder();
-            foreach (var c in name)
-            {
-                if (c >= 0x2B0 && c <= 0x0333)
-                {
-                    // skip char modifier and diacritics
-                }
-                else if (remove.IndexOf(c) > -1)
-                {
-                    // skip chars we are removing
-                }
-                else if (spacers.IndexOf(c) > -1)
-                {
-                    sb.Append(" ");
-                }
-                else if (c == '&')
-                {
-                    sb.Append(" and ");
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
-            sb.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
-
-            return Regex.Replace(sb.ToString().Trim(), @"\s+", " ");
+            name = name.Replace(", the", string.Empty).Replace("the ", " ").Replace(" the ", " ");
+            name = name.Replace("&", " and " );
+            name = Regex.Replace(name, @"[\p{Lm}\p{Mn}]", string.Empty); // Remove diacritics, etc
+            name = Regex.Replace(name, @"[\W\p{Pc}]+", " "); // Replace sequences of non-word characters and _ with " "
+            return name.Trim();
         }
 
         private void MapSeriesToResult(MetadataResult<Series> result, TvDbSharper.Dto.Series tvdbSeries, string metadataLanguage)
         {
             Series series = result.Item;
-            series.SetProviderId(MetadataProviders.Tvdb, tvdbSeries.Id.ToString());
+            series.SetProviderId(MetadataProvider.Tvdb, tvdbSeries.Id.ToString());
             series.Name = tvdbSeries.SeriesName;
             series.Overview = (tvdbSeries.Overview ?? string.Empty).Trim();
             result.ResultLanguage = metadataLanguage;
             series.AirDays = TVUtils.GetAirDays(tvdbSeries.AirsDayOfWeek);
             series.AirTime = tvdbSeries.AirsTime;
             series.CommunityRating = (float?)tvdbSeries.SiteRating;
-            series.SetProviderId(MetadataProviders.Imdb, tvdbSeries.ImdbId);
-            series.SetProviderId(MetadataProviders.Zap2It, tvdbSeries.Zap2itId);
+            series.SetProviderId(MetadataProvider.Imdb, tvdbSeries.ImdbId);
+            series.SetProviderId(MetadataProvider.Zap2It, tvdbSeries.Zap2itId);
             if (Enum.TryParse(tvdbSeries.Status, true, out SeriesStatus seriesStatus))
             {
                 series.Status = seriesStatus;
@@ -394,9 +370,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Type = PersonType.Actor,
                     Name = (actor.Name ?? string.Empty).Trim(),
                     Role = actor.Role,
-                    ImageUrl = TvdbUtils.BannerUrl + actor.Image,
                     SortOrder = actor.SortOrder
                 };
+
+                if (!string.IsNullOrEmpty(actor.Image))
+                {
+                    personInfo.ImageUrl = TvdbUtils.BannerUrl + actor.Image;
+                }
 
                 if (!string.IsNullOrWhiteSpace(personInfo.Name))
                 {
@@ -409,7 +389,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
         public async Task Identify(SeriesInfo info)
         {
-            if (!string.IsNullOrWhiteSpace(info.GetProviderId(MetadataProviders.Tvdb)))
+            if (!string.IsNullOrWhiteSpace(info.GetProviderId(MetadataProvider.Tvdb)))
             {
                 return;
             }
@@ -421,8 +401,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             if (entry != null)
             {
-                var id = entry.GetProviderId(MetadataProviders.Tvdb);
-                info.SetProviderId(MetadataProviders.Tvdb, id);
+                var id = entry.GetProviderId(MetadataProvider.Tvdb);
+                info.SetProviderId(MetadataProvider.Tvdb, id);
             }
         }
 

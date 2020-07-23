@@ -1,12 +1,12 @@
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
-  - name: TestProjects
-    value: "tests/**/*Tests.csproj"
-  - name: RestoreBuildProjects
-    value: "Jellyfin.Server/Jellyfin.Server.csproj"
-  - name: DotNetSdkVersion
-    value: 3.1.100
+- name: TestProjects
+  value: 'tests/**/*Tests.csproj'
+- name: RestoreBuildProjects
+  value: 'Jellyfin.Server/Jellyfin.Server.csproj'
+- name: DotNetSdkVersion
+  value: 3.1.100
 
 pr:
   autoCancel: true
@@ -15,24 +15,22 @@ trigger:
   batch: true
 
 jobs:
+- ${{ if not(or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))) }}:
   - template: azure-pipelines-main.yml
     parameters:
-      LinuxImage: "ubuntu-latest"
+      LinuxImage: 'ubuntu-latest'
       RestoreBuildProjects: $(RestoreBuildProjects)
 
+- ${{ if not(or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))) }}:
   - template: azure-pipelines-test.yml
     parameters:
       ImageNames:
-        Linux: "ubuntu-latest"
-        Windows: "windows-latest"
-        macOS: "macos-latest"
+        Linux: 'ubuntu-latest'
+        Windows: 'windows-latest'
+        macOS: 'macos-latest'
 
-  - template: azure-pipelines-windows.yml
-    parameters:
-      WindowsImage: "windows-latest"
-      TestProjects: $(TestProjects)
-
-  - template: azure-pipelines-compat.yml
+- ${{ if not(or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))) }}:
+  - template: azure-pipelines-abi.yml
     parameters:
       Packages:
         Naming:
@@ -47,4 +45,7 @@ jobs:
         Common:
           NugetPackageName: Jellyfin.Common
           AssemblyFileName: MediaBrowser.Common.dll
-      LinuxImage: "ubuntu-latest"
+      LinuxImage: 'ubuntu-latest'
+
+- ${{ if or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
+  - template: azure-pipelines-package.yml

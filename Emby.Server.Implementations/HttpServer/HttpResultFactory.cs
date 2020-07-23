@@ -28,10 +28,16 @@ namespace Emby.Server.Implementations.HttpServer
     /// </summary>
     public class HttpResultFactory : IHttpResultFactory
     {
+        // Last-Modified and If-Modified-Since must follow strict date format,
+        // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Modified-Since
+        private const string HttpDateFormat = "ddd, dd MMM yyyy HH:mm:ss \"GMT\"";
+        // We specifically use en-US culture because both day of week and month names require it
+        private static readonly CultureInfo _enUSculture = new CultureInfo("en-US", false);
+
         /// <summary>
         /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpResultFactory> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IStreamHelper _streamHelper;
@@ -44,12 +50,13 @@ namespace Emby.Server.Implementations.HttpServer
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _streamHelper = streamHelper;
-            _logger = loggerfactory.CreateLogger("HttpResultFactory");
+            _logger = loggerfactory.CreateLogger<HttpResultFactory>();
         }
 
         /// <summary>
         /// Gets the result.
         /// </summary>
+        /// <param name="requestContext">The request context.</param>
         /// <param name="content">The content.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="responseHeaders">The response headers.</param>
@@ -249,16 +256,20 @@ namespace Emby.Server.Implementations.HttpServer
         {
             var acceptEncoding = request.Headers[HeaderNames.AcceptEncoding].ToString();
 
-            if (string.IsNullOrEmpty(acceptEncoding))
+            if (!string.IsNullOrEmpty(acceptEncoding))
             {
-                //if (_brotliCompressor != null && acceptEncoding.IndexOf("br", StringComparison.OrdinalIgnoreCase) != -1)
+                // if (_brotliCompressor != null && acceptEncoding.IndexOf("br", StringComparison.OrdinalIgnoreCase) != -1)
                 //    return "br";
 
-                if (acceptEncoding.IndexOf("deflate", StringComparison.OrdinalIgnoreCase) != -1)
+                if (acceptEncoding.Contains("deflate", StringComparison.OrdinalIgnoreCase))
+                {
                     return "deflate";
+                }
 
-                if (acceptEncoding.IndexOf("gzip", StringComparison.OrdinalIgnoreCase) != -1)
+                if (acceptEncoding.Contains("gzip", StringComparison.OrdinalIgnoreCase))
+                {
                     return "gzip";
+                }
             }
 
             return null;
@@ -415,12 +426,16 @@ namespace Emby.Server.Implementations.HttpServer
         /// </summary>
         private object GetCachedResult(IRequest requestContext, IDictionary<string, string> responseHeaders, StaticResultOptions options)
         {
-            bool noCache = (requestContext.Headers[HeaderNames.CacheControl].ToString()).IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
+            bool noCache = requestContext.Headers[HeaderNames.CacheControl].ToString().IndexOf("no-cache", StringComparison.OrdinalIgnoreCase) != -1;
             AddCachingHeaders(responseHeaders, options.CacheDuration, noCache, options.DateLastModified);
 
             if (!noCache)
             {
-                DateTime.TryParse(requestContext.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader);
+                if (!DateTime.TryParseExact(requestContext.Headers[HeaderNames.IfModifiedSince], HttpDateFormat, _enUSculture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var ifModifiedSinceHeader))
+                {
+                    _logger.LogDebug("Failed to parse If-Modified-Since header date: {0}", requestContext.Headers[HeaderNames.IfModifiedSince]);
+                    return null;
+                }
 
                 if (IsNotModified(ifModifiedSinceHeader, options.CacheDuration, options.DateLastModified))
                 {
@@ -565,13 +580,12 @@ namespace Emby.Server.Implementations.HttpServer
                 }
                 catch (NotSupportedException)
                 {
-
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(rangeHeader) && totalContentLength.HasValue)
             {
-                var hasHeaders = new RangeRequestWriter(rangeHeader, totalContentLength.Value, stream, contentType, isHeadRequest, _logger)
+                var hasHeaders = new RangeRequestWriter(rangeHeader, totalContentLength.Value, stream, contentType, isHeadRequest)
                 {
                     OnComplete = options.OnComplete
                 };
@@ -608,8 +622,11 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the caching responseHeaders.
         /// </summary>
-        private void AddCachingHeaders(IDictionary<string, string> responseHeaders, TimeSpan? cacheDuration,
-            bool noCache, DateTime? lastModifiedDate)
+        private void AddCachingHeaders(
+            IDictionary<string, string> responseHeaders,
+            TimeSpan? cacheDuration,
+            bool noCache,
+            DateTime? lastModifiedDate)
         {
             if (noCache)
             {
@@ -629,7 +646,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (lastModifiedDate.HasValue)
             {
-                responseHeaders[HeaderNames.LastModified] = lastModifiedDate.Value.ToString(CultureInfo.InvariantCulture);
+                responseHeaders[HeaderNames.LastModified] = lastModifiedDate.Value.ToUniversalTime().ToString(HttpDateFormat, _enUSculture);
             }
         }
 
@@ -678,7 +695,7 @@ namespace Emby.Server.Implementations.HttpServer
 
 
         /// <summary>
-        /// When the browser sends the IfModifiedDate, it's precision is limited to seconds, so this will account for that
+        /// When the browser sends the IfModifiedDate, it's precision is limited to seconds, so this will account for that.
         /// </summary>
         /// <param name="date">The date.</param>
         /// <returns>DateTime.</returns>

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +22,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// The _logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<PluginUpdateTask> _logger;
 
         private readonly IInstallationManager _installationManager;
         private readonly ILocalizationManager _localization;
@@ -55,9 +57,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             progress.Report(0);
 
-            var packagesToInstall = await _installationManager.GetAvailablePluginUpdates(cancellationToken)
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var packageFetchTask = _installationManager.GetAvailablePluginUpdates(cancellationToken);
+            var packagesToInstall = (await packageFetchTask.ConfigureAwait(false)).ToList();
 
             progress.Report(10);
 
@@ -81,11 +82,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (HttpException ex)
                 {
-                    _logger.LogError(ex, "Error downloading {0}", package.name);
+                    _logger.LogError(ex, "Error downloading {0}", package.Name);
                 }
                 catch (IOException ex)
                 {
-                    _logger.LogError(ex, "Error updating {0}", package.name);
+                    _logger.LogError(ex, "Error updating {0}", package.Name);
                 }
 
                 // Update progress

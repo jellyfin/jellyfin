@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Api.UserLibrary;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -30,7 +31,7 @@ using Microsoft.Net.Http.Headers;
 namespace MediaBrowser.Api.LiveTv
 {
     /// <summary>
-    /// This is insecure right now to avoid windows phone refactoring
+    /// This is insecure right now to avoid windows phone refactoring.
     /// </summary>
     [Route("/LiveTv/Info", "GET", Summary = "Gets available live tv services.")]
     [Authenticated]
@@ -71,7 +72,7 @@ namespace MediaBrowser.Api.LiveTv
         public bool? IsSports { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -99,7 +100,7 @@ namespace MediaBrowser.Api.LiveTv
         public string EnableImageTypes { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -187,7 +188,7 @@ namespace MediaBrowser.Api.LiveTv
         public string EnableImageTypes { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -199,10 +200,15 @@ namespace MediaBrowser.Api.LiveTv
         public bool? EnableUserData { get; set; }
 
         public bool? IsMovie { get; set; }
+
         public bool? IsSeries { get; set; }
+
         public bool? IsKids { get; set; }
+
         public bool? IsSports { get; set; }
+
         public bool? IsNews { get; set; }
+
         public bool? IsLibraryItem { get; set; }
 
         public GetRecordings()
@@ -249,7 +255,7 @@ namespace MediaBrowser.Api.LiveTv
         public string EnableImageTypes { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -347,6 +353,7 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "HasAired", Description = "Optional. Filter by programs that have completed airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasAired { get; set; }
+
         public bool? IsAiring { get; set; }
 
         [ApiMember(Name = "MaxStartDate", Description = "Optional. The maximum premiere date. Format = ISO", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
@@ -406,10 +413,11 @@ namespace MediaBrowser.Api.LiveTv
         public bool? EnableUserData { get; set; }
 
         public string SeriesTimerId { get; set; }
+
         public Guid LibrarySeriesId { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -472,7 +480,7 @@ namespace MediaBrowser.Api.LiveTv
         public string GenreIds { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// Fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
@@ -600,7 +608,9 @@ namespace MediaBrowser.Api.LiveTv
     public class AddListingProvider : ListingsProviderInfo, IReturn<ListingsProviderInfo>
     {
         public bool ValidateLogin { get; set; }
+
         public bool ValidateListings { get; set; }
+
         public string Pw { get; set; }
     }
 
@@ -649,15 +659,20 @@ namespace MediaBrowser.Api.LiveTv
     {
         [ApiMember(Name = "Id", Description = "Provider id", IsRequired = true, DataType = "string", ParameterType = "query")]
         public string ProviderId { get; set; }
+
         public string TunerChannelId { get; set; }
+
         public string ProviderChannelId { get; set; }
     }
 
     public class ChannelMappingOptions
     {
         public List<TunerChannelMapping> TunerChannels { get; set; }
+
         public List<NameIdPair> ProviderChannels { get; set; }
+
         public NameValuePair[] Mappings { get; set; }
+
         public string ProviderName { get; set; }
     }
 
@@ -665,6 +680,7 @@ namespace MediaBrowser.Api.LiveTv
     public class GetLiveStreamFile
     {
         public string Id { get; set; }
+
         public string Container { get; set; }
     }
 
@@ -678,7 +694,6 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated]
     public class GetTunerHostTypes : IReturn<List<NameIdPair>>
     {
-
     }
 
     [Route("/LiveTv/Tuners/Discvover", "GET")]
@@ -825,7 +840,6 @@ namespace MediaBrowser.Api.LiveTv
                 {
                     Name = i.Name,
                     Id = i.Id
-
                 }).ToList(),
 
                 Mappings = mappings,
@@ -844,7 +858,6 @@ namespace MediaBrowser.Api.LiveTv
             {
                 Url = "https://json.schedulesdirect.org/20141201/available/countries",
                 BufferContent = false
-
             }).ConfigureAwait(false);
 
             return ResultFactory.GetResult(Request, response, "application/json");
@@ -859,7 +872,7 @@ namespace MediaBrowser.Api.LiveTv
                 throw new SecurityException("Anonymous live tv management is not allowed.");
             }
 
-            if (!user.Policy.EnableLiveTvManagement)
+            if (!user.HasPermission(PermissionKind.EnableLiveTvManagement))
             {
                 throw new SecurityException("The current user does not have permission to manage live tv.");
             }
@@ -885,11 +898,10 @@ namespace MediaBrowser.Api.LiveTv
         {
             // SchedulesDirect requires a SHA1 hash of the user's password
             // https://github.com/SchedulesDirect/JSON-Service/wiki/API-20141201#obtain-a-token
-            using (SHA1 sha = SHA1.Create())
-            {
-                return Hex.Encode(
-                    sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
-            }
+            using SHA1 sha = SHA1.Create();
+
+            return Hex.Encode(
+                sha.ComputeHash(Encoding.UTF8.GetBytes(str)));
         }
 
         public void Delete(DeleteListingProvider request)
@@ -958,7 +970,6 @@ namespace MediaBrowser.Api.LiveTv
                 SortBy = request.GetOrderBy(),
                 SortOrder = request.SortOrder ?? SortOrder.Ascending,
                 AddCurrentProgram = request.AddCurrentProgram
-
             }, options, CancellationToken.None);
 
             var user = request.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(request.UserId);
@@ -1050,8 +1061,7 @@ namespace MediaBrowser.Api.LiveTv
             {
                 query.IsSeries = true;
 
-                var series = _libraryManager.GetItemById(request.LibrarySeriesId) as Series;
-                if (series != null)
+                if (_libraryManager.GetItemById(request.LibrarySeriesId) is Series series)
                 {
                     query.Name = series.Name;
                 }
@@ -1114,7 +1124,6 @@ namespace MediaBrowser.Api.LiveTv
                 Fields = request.GetItemFields(),
                 ImageTypeLimit = request.ImageTypeLimit,
                 EnableImages = request.EnableImages
-
             }, options);
 
             return ToOptimizedResult(result);
@@ -1153,7 +1162,6 @@ namespace MediaBrowser.Api.LiveTv
                 SeriesTimerId = request.SeriesTimerId,
                 IsActive = request.IsActive,
                 IsScheduled = request.IsScheduled
-
             }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
@@ -1189,7 +1197,6 @@ namespace MediaBrowser.Api.LiveTv
             {
                 SortOrder = request.SortOrder,
                 SortBy = request.SortBy
-
             }, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);

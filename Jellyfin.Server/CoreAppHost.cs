@@ -1,9 +1,21 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
+using Emby.Drawing;
 using Emby.Server.Implementations;
+using Jellyfin.Drawing.Skia;
+using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server
@@ -20,27 +32,51 @@ namespace Jellyfin.Server
         /// <param name="loggerFactory">The <see cref="ILoggerFactory" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="options">The <see cref="StartupOptions" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
-        /// <param name="imageEncoder">The <see cref="IImageEncoder" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
         public CoreAppHost(
-            ServerApplicationPaths applicationPaths,
+            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            StartupOptions options,
+            IStartupOptions options,
             IFileSystem fileSystem,
-            IImageEncoder imageEncoder,
             INetworkManager networkManager)
             : base(
                 applicationPaths,
                 loggerFactory,
                 options,
                 fileSystem,
-                imageEncoder,
                 networkManager)
         {
         }
 
-        /// <inheritdoc />
-        public override bool CanSelfRestart => StartupOptions.RestartPath != null;
+        /// <inheritdoc/>
+        protected override void RegisterServices(IServiceCollection serviceCollection)
+        {
+            // Register an image encoder
+            bool useSkiaEncoder = SkiaEncoder.IsNativeLibAvailable();
+            Type imageEncoderType = useSkiaEncoder
+                ? typeof(SkiaEncoder)
+                : typeof(NullImageEncoder);
+            serviceCollection.AddSingleton(typeof(IImageEncoder), imageEncoderType);
+
+            // Log a warning if the Skia encoder could not be used
+            if (!useSkiaEncoder)
+            {
+                Logger.LogWarning($"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
+            }
+
+            // TODO: Set up scoping and use AddDbContextPool
+            serviceCollection.AddDbContext<JellyfinDb>(
+                options => options
+                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
+                ServiceLifetime.Transient);
+
+            serviceCollection.AddSingleton<JellyfinDbProvider>();
+
+            serviceCollection.AddSingleton<IActivityManager, ActivityManager>();
+            serviceCollection.AddSingleton<IUserManager, UserManager>();
+
+            base.RegisterServices(serviceCollection);
+        }
 
         /// <inheritdoc />
         protected override void RestartInternal() => Program.Restart();
@@ -48,7 +84,11 @@ namespace Jellyfin.Server
         /// <inheritdoc />
         protected override IEnumerable<Assembly> GetAssembliesWithPartsInternal()
         {
+            // Jellyfin.Server
             yield return typeof(CoreAppHost).Assembly;
+
+            // Jellyfin.Server.Implementations
+            yield return typeof(JellyfinDb).Assembly;
         }
 
         /// <inheritdoc />

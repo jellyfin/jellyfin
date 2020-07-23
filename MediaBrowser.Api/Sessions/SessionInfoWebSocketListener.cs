@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.Sessions
 {
     /// <summary>
-    /// Class SessionInfoWebSocketListener
+    /// Class SessionInfoWebSocketListener.
     /// </summary>
     public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
     {
@@ -19,7 +19,7 @@ namespace MediaBrowser.Api.Sessions
         protected override string Name => "Sessions";
 
         /// <summary>
-        /// The _kernel
+        /// The _kernel.
         /// </summary>
         private readonly ISessionManager _sessionManager;
 
@@ -31,48 +31,48 @@ namespace MediaBrowser.Api.Sessions
         {
             _sessionManager = sessionManager;
 
-            _sessionManager.SessionStarted += _sessionManager_SessionStarted;
-            _sessionManager.SessionEnded += _sessionManager_SessionEnded;
-            _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
-            _sessionManager.PlaybackStopped += _sessionManager_PlaybackStopped;
-            _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
-            _sessionManager.CapabilitiesChanged += _sessionManager_CapabilitiesChanged;
-            _sessionManager.SessionActivity += _sessionManager_SessionActivity;
+            _sessionManager.SessionStarted += OnSessionManagerSessionStarted;
+            _sessionManager.SessionEnded += OnSessionManagerSessionEnded;
+            _sessionManager.PlaybackStart += OnSessionManagerPlaybackStart;
+            _sessionManager.PlaybackStopped += OnSessionManagerPlaybackStopped;
+            _sessionManager.PlaybackProgress += OnSessionManagerPlaybackProgress;
+            _sessionManager.CapabilitiesChanged += OnSessionManagerCapabilitiesChanged;
+            _sessionManager.SessionActivity += OnSessionManagerSessionActivity;
         }
 
-        void _sessionManager_SessionActivity(object sender, SessionEventArgs e)
+        private async void OnSessionManagerSessionActivity(object sender, SessionEventArgs e)
         {
-            SendData(false);
+            await SendData(false).ConfigureAwait(false);
         }
 
-        void _sessionManager_CapabilitiesChanged(object sender, SessionEventArgs e)
+        private async void OnSessionManagerCapabilitiesChanged(object sender, SessionEventArgs e)
         {
-            SendData(true);
+            await SendData(true).ConfigureAwait(false);
         }
 
-        void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private async void OnSessionManagerPlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
-            SendData(!e.IsAutomated);
+            await SendData(!e.IsAutomated).ConfigureAwait(false);
         }
 
-        void _sessionManager_PlaybackStopped(object sender, PlaybackStopEventArgs e)
+        private async void OnSessionManagerPlaybackStopped(object sender, PlaybackStopEventArgs e)
         {
-            SendData(true);
+            await SendData(true).ConfigureAwait(false);
         }
 
-        void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+        private async void OnSessionManagerPlaybackStart(object sender, PlaybackProgressEventArgs e)
         {
-            SendData(true);
+            await SendData(true).ConfigureAwait(false);
         }
 
-        void _sessionManager_SessionEnded(object sender, SessionEventArgs e)
+        private async void OnSessionManagerSessionEnded(object sender, SessionEventArgs e)
         {
-            SendData(true);
+            await SendData(true).ConfigureAwait(false);
         }
 
-        void _sessionManager_SessionStarted(object sender, SessionEventArgs e)
+        private async void OnSessionManagerSessionStarted(object sender, SessionEventArgs e)
         {
-            SendData(true);
+            await SendData(true).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -84,15 +84,16 @@ namespace MediaBrowser.Api.Sessions
             return Task.FromResult(_sessionManager.Sessions);
         }
 
+        /// <inheritdoc />
         protected override void Dispose(bool dispose)
         {
-            _sessionManager.SessionStarted -= _sessionManager_SessionStarted;
-            _sessionManager.SessionEnded -= _sessionManager_SessionEnded;
-            _sessionManager.PlaybackStart -= _sessionManager_PlaybackStart;
-            _sessionManager.PlaybackStopped -= _sessionManager_PlaybackStopped;
-            _sessionManager.PlaybackProgress -= _sessionManager_PlaybackProgress;
-            _sessionManager.CapabilitiesChanged -= _sessionManager_CapabilitiesChanged;
-            _sessionManager.SessionActivity -= _sessionManager_SessionActivity;
+            _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
+            _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
+            _sessionManager.PlaybackStart -= OnSessionManagerPlaybackStart;
+            _sessionManager.PlaybackStopped -= OnSessionManagerPlaybackStopped;
+            _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
+            _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
+            _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
 
             base.Dispose(dispose);
         }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Linq;
@@ -37,7 +39,7 @@ namespace MediaBrowser.Providers.MediaInfo
         IPreRefreshProvider,
         IHasItemChangeMonitor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<FFProbeProvider> _logger;
         private readonly IIsoManager _isoManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
@@ -46,7 +48,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
         private readonly IEncodingManager _encodingManager;
-        private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
@@ -134,7 +135,6 @@ namespace MediaBrowser.Providers.MediaInfo
             IApplicationPaths appPaths,
             IJsonSerializer json,
             IEncodingManager encodingManager,
-            IFileSystem fileSystem,
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
@@ -149,7 +149,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _appPaths = appPaths;
             _json = json;
             _encodingManager = encodingManager;
-            _fileSystem = fileSystem;
             _config = config;
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
@@ -157,7 +156,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _channelManager = channelManager;
             _mediaSourceManager = mediaSourceManager;
 
-            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager, fileSystem);
+            _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
         }
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -202,7 +201,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 _blurayExaminer,
                 _localization,
                 _encodingManager,
-                _fileSystem,
                 _config,
                 _subtitleManager,
                 _chapterManager,

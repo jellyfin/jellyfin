@@ -37,10 +37,13 @@ namespace MediaBrowser.Api.Playback
         public string DeviceId { get; set; }
 
         public Guid UserId { get; set; }
+
         public string AudioCodec { get; set; }
+
         public string Container { get; set; }
 
         public int? MaxAudioChannels { get; set; }
+
         public int? TranscodingAudioChannels { get; set; }
 
         public long? MaxStreamingBitrate { get; set; }
@@ -49,12 +52,17 @@ namespace MediaBrowser.Api.Playback
         public long? StartTimeTicks { get; set; }
 
         public string TranscodingContainer { get; set; }
+
         public string TranscodingProtocol { get; set; }
+
         public int? MaxAudioSampleRate { get; set; }
+
         public int? MaxAudioBitDepth { get; set; }
 
         public bool EnableRedirection { get; set; }
+
         public bool EnableRemoteMedia { get; set; }
+
         public bool BreakOnNonKeyFrames { get; set; }
 
         public BaseUniversalRequest()
@@ -75,9 +83,11 @@ namespace MediaBrowser.Api.Playback
     public class UniversalAudioService : BaseApiService
     {
         private readonly EncodingHelper _encodingHelper;
+        private readonly ILoggerFactory _loggerFactory;
 
         public UniversalAudioService(
             ILogger<UniversalAudioService> logger,
+            ILoggerFactory loggerFactory,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IHttpClient httpClient,
@@ -108,19 +118,31 @@ namespace MediaBrowser.Api.Playback
             AuthorizationContext = authorizationContext;
             NetworkManager = networkManager;
             _encodingHelper = encodingHelper;
+            _loggerFactory = loggerFactory;
         }
 
         protected IHttpClient HttpClient { get; private set; }
+
         protected IUserManager UserManager { get; private set; }
+
         protected ILibraryManager LibraryManager { get; private set; }
+
         protected IIsoManager IsoManager { get; private set; }
+
         protected IMediaEncoder MediaEncoder { get; private set; }
+
         protected IFileSystem FileSystem { get; private set; }
+
         protected IDlnaManager DlnaManager { get; private set; }
+
         protected IDeviceManager DeviceManager { get; private set; }
+
         protected IMediaSourceManager MediaSourceManager { get; private set; }
+
         protected IJsonSerializer JsonSerializer { get; private set; }
+
         protected IAuthorizationContext AuthorizationContext { get; private set; }
+
         protected INetworkManager NetworkManager { get; private set; }
 
         public Task<object> Get(GetUniversalAudioStream request)
@@ -167,7 +189,7 @@ namespace MediaBrowser.Api.Playback
                     AudioCodec = request.AudioCodec,
                     Protocol = request.TranscodingProtocol,
                     BreakOnNonKeyFrames = request.BreakOnNonKeyFrames,
-                    MaxAudioChannels = request.TranscodingAudioChannels.HasValue ? request.TranscodingAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : null
+                    MaxAudioChannels = request.TranscodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
                 }
             };
 
@@ -233,7 +255,7 @@ namespace MediaBrowser.Api.Playback
             AuthorizationContext.GetAuthorizationInfo(Request).DeviceId = request.DeviceId;
 
             var mediaInfoService = new MediaInfoService(
-                Logger,
+                _loggerFactory.CreateLogger<MediaInfoService>(),
                 ServerConfigurationManager,
                 ResultFactory,
                 MediaSourceManager,
@@ -256,7 +278,6 @@ namespace MediaBrowser.Api.Playback
                 UserId = request.UserId,
                 DeviceProfile = deviceProfile,
                 MediaSourceId = request.MediaSourceId
-
             }).ConfigureAwait(false);
 
             var mediaSource = playbackInfoResult.MediaSources[0];
@@ -277,7 +298,7 @@ namespace MediaBrowser.Api.Playback
             if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
                 var service = new DynamicHlsService(
-                    Logger,
+                    _loggerFactory.CreateLogger<DynamicHlsService>(),
                     ServerConfigurationManager,
                     ResultFactory,
                     UserManager,
@@ -300,7 +321,7 @@ namespace MediaBrowser.Api.Playback
 
                 // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
                 // TODO: remove this when we switch back to the segment muxer
-                var supportedHLSContainers = new string[] { "mpegts", "fmp4" };
+                var supportedHLSContainers = new[] { "mpegts", "fmp4" };
 
                 var newRequest = new GetMasterHlsAudioPlaylist
                 {
@@ -326,12 +347,13 @@ namespace MediaBrowser.Api.Playback
                 {
                     return await service.Head(newRequest).ConfigureAwait(false);
                 }
+
                 return await service.Get(newRequest).ConfigureAwait(false);
             }
             else
             {
                 var service = new AudioService(
-                    Logger,
+                    _loggerFactory.CreateLogger<AudioService>(),
                     ServerConfigurationManager,
                     ResultFactory,
                     HttpClient,

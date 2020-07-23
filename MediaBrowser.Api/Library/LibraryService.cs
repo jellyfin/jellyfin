@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Api.Movies;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -14,7 +15,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
@@ -27,6 +27,12 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Book = MediaBrowser.Controller.Entities.Book;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
+using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Api.Library
 {
@@ -43,7 +49,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetCriticReviews
+    /// Class GetCriticReviews.
     /// </summary>
     [Route("/Items/{Id}/CriticReviews", "GET", Summary = "Gets critic reviews for an item")]
     [Authenticated]
@@ -64,7 +70,7 @@ namespace MediaBrowser.Api.Library
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
@@ -72,7 +78,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeSongs
+    /// Class GetThemeSongs.
     /// </summary>
     [Route("/Items/{Id}/ThemeSongs", "GET", Summary = "Gets theme songs for an item")]
     [Authenticated]
@@ -97,7 +103,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeVideos
+    /// Class GetThemeVideos.
     /// </summary>
     [Route("/Items/{Id}/ThemeVideos", "GET", Summary = "Gets theme videos for an item")]
     [Authenticated]
@@ -122,7 +128,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetThemeVideos
+    /// Class GetThemeVideos.
     /// </summary>
     [Route("/Items/{Id}/ThemeMedia", "GET", Summary = "Gets theme videos and songs for an item")]
     [Authenticated]
@@ -199,7 +205,7 @@ namespace MediaBrowser.Api.Library
     }
 
     /// <summary>
-    /// Class GetPhyscialPaths
+    /// Class GetPhyscialPaths.
     /// </summary>
     [Route("/Library/PhysicalPaths", "GET", Summary = "Gets a list of physical paths from virtual folders")]
     [Authenticated(Roles = "Admin")]
@@ -279,34 +285,43 @@ namespace MediaBrowser.Api.Library
     public class GetLibraryOptionsInfo : IReturn<LibraryOptionsResult>
     {
         public string LibraryContentType { get; set; }
+
         public bool IsNewLibrary { get; set; }
     }
 
     public class LibraryOptionInfo
     {
         public string Name { get; set; }
+
         public bool DefaultEnabled { get; set; }
     }
 
     public class LibraryOptionsResult
     {
         public LibraryOptionInfo[] MetadataSavers { get; set; }
+
         public LibraryOptionInfo[] MetadataReaders { get; set; }
+
         public LibraryOptionInfo[] SubtitleFetchers { get; set; }
+
         public LibraryTypeOptions[] TypeOptions { get; set; }
     }
 
     public class LibraryTypeOptions
     {
         public string Type { get; set; }
+
         public LibraryOptionInfo[] MetadataFetchers { get; set; }
+
         public LibraryOptionInfo[] ImageFetchers { get; set; }
+
         public ImageType[] SupportedImageTypes { get; set; }
+
         public ImageOption[] DefaultImageOptions { get; set; }
     }
 
     /// <summary>
-    /// Class LibraryService
+    /// Class LibraryService.
     /// </summary>
     public class LibraryService : BaseApiService
     {
@@ -319,11 +334,14 @@ namespace MediaBrowser.Api.Library
         private readonly ILocalizationManager _localization;
         private readonly ILibraryMonitor _libraryMonitor;
 
+        private readonly ILogger<MoviesService> _moviesServiceLogger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(
             ILogger<LibraryService> logger,
+            ILogger<MoviesService> moviesServiceLogger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IProviderManager providerManager,
@@ -344,32 +362,25 @@ namespace MediaBrowser.Api.Library
             _activityManager = activityManager;
             _localization = localization;
             _libraryMonitor = libraryMonitor;
+            _moviesServiceLogger = moviesServiceLogger;
         }
 
+        // Content Types available for each Library
         private string[] GetRepresentativeItemTypes(string contentType)
         {
-            switch (contentType)
+            return contentType switch
             {
-                case CollectionType.BoxSets:
-                    return new string[] { "BoxSet" };
-                case CollectionType.Playlists:
-                    return new string[] { "Playlist" };
-                case CollectionType.Movies:
-                    return new string[] { "Movie" };
-                case CollectionType.TvShows:
-                    return new string[] { "Series", "Season", "Episode" };
-                case CollectionType.Books:
-                    return new string[] { "Book" };
-                case CollectionType.Music:
-                    return new string[] { "MusicAlbum", "MusicArtist", "Audio", "MusicVideo" };
-                case CollectionType.HomeVideos:
-                case CollectionType.Photos:
-                    return new string[] { "Video", "Photo" };
-                case CollectionType.MusicVideos:
-                    return new string[] { "MusicVideo" };
-                default:
-                    return new string[] { "Series", "Season", "Episode", "Movie" };
-            }
+                CollectionType.BoxSets => new[] {"BoxSet"},
+                CollectionType.Playlists => new[] {"Playlist"},
+                CollectionType.Movies => new[] {"Movie"},
+                CollectionType.TvShows => new[] {"Series", "Season", "Episode"},
+                CollectionType.Books => new[] {"Book"},
+                CollectionType.Music => new[] {"MusicArtist", "MusicAlbum", "Audio", "MusicVideo"},
+                CollectionType.HomeVideos => new[] {"Video", "Photo"},
+                CollectionType.Photos => new[] {"Video", "Photo"},
+                CollectionType.MusicVideos => new[] {"MusicVideo"},
+                _ => new[] {"Series", "Season", "Episode", "Movie"}
+            };
         }
 
         private bool IsSaverEnabledByDefault(string name, string[] itemTypes, bool isNewLibrary)
@@ -397,54 +408,22 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-                else if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "The Open Movie Database", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
+                    return !(string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
+                         || string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase));
                 }
 
-                return false;
+                return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(name, "MusicBrainz", StringComparison.OrdinalIgnoreCase);
             }
 
             var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
                 .Where(i => string.Equals(i.ItemType, type, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
-            if (metadataOptions.Length == 0)
-            {
-                return true;
-            }
-
-            return metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
+            return metadataOptions.Length == 0
+               || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
         }
 
         private bool IsImageFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -453,50 +432,16 @@ namespace MediaBrowser.Api.Library
             {
                 if (string.Equals(name, "TheMovieDb", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    if (string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-                else if (string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "The Open Movie Database", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                else if (string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "Emby Designs", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
+                    return !string.Equals(type, "Series", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(type, "Season", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(type, "Episode", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(type, "MusicVideo", StringComparison.OrdinalIgnoreCase);
                 }
 
-                return false;
+                return string.Equals(name, "TheTVDB", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "Screen Grabber", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "TheAudioDB", StringComparison.OrdinalIgnoreCase)
+                       || string.Equals(name, "Image Extractor", StringComparison.OrdinalIgnoreCase);
             }
 
             var metadataOptions = ServerConfigurationManager.Configuration.MetadataOptions
@@ -561,8 +506,7 @@ namespace MediaBrowser.Api.Library
 
             foreach (var type in types)
             {
-                ImageOption[] defaultImageOptions = null;
-                TypeOptions.DefaultImageOptions.TryGetValue(type, out defaultImageOptions);
+                TypeOptions.DefaultImageOptions.TryGetValue(type, out var defaultImageOptions);
 
                 typeOptions.Add(new LibraryTypeOptions
                 {
@@ -609,8 +553,6 @@ namespace MediaBrowser.Api.Library
 
         public object Get(GetSimilarItems request)
         {
-            var user = !request.UserId.Equals(Guid.Empty) ? _userManager.GetUserById(request.UserId) : null;
-
             var item = string.IsNullOrEmpty(request.Id) ?
                 (!request.UserId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
@@ -620,7 +562,7 @@ namespace MediaBrowser.Api.Library
             if (item is Movie || (program != null && program.IsMovie) || item is Trailer)
             {
                 return new MoviesService(
-                    Logger,
+                    _moviesServiceLogger,
                     ServerConfigurationManager,
                     ResultFactory,
                     _userManager,
@@ -629,7 +571,6 @@ namespace MediaBrowser.Api.Library
                     _authContext)
                 {
                     Request = Request,
-
                 }.GetSimilarItemsResult(request);
             }
 
@@ -668,7 +609,7 @@ namespace MediaBrowser.Api.Library
             // ExcludeArtistIds
             if (!string.IsNullOrEmpty(request.ExcludeArtistIds))
             {
-                query.ExcludeArtistIds = BaseApiService.GetGuids(request.ExcludeArtistIds);
+                query.ExcludeArtistIds = GetGuids(request.ExcludeArtistIds);
             }
 
             List<BaseItem> itemsResult;
@@ -689,7 +630,6 @@ namespace MediaBrowser.Api.Library
             var result = new QueryResult<BaseItemDto>
             {
                 Items = returnList,
-
                 TotalRecordCount = itemsResult.Count
             };
 
@@ -728,8 +668,7 @@ namespace MediaBrowser.Api.Library
                 {
                     EnableImages = false
                 }
-
-            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }).Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProvider.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
 
             foreach (var item in series)
             {
@@ -757,16 +696,15 @@ namespace MediaBrowser.Api.Library
                 {
                     EnableImages = false
                 }
-
             });
 
             if (!string.IsNullOrWhiteSpace(request.ImdbId))
             {
-                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
+                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProvider.Imdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else if (!string.IsNullOrWhiteSpace(request.TmdbId))
             {
-                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
+                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProvider.Tmdb), StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {
@@ -837,13 +775,12 @@ namespace MediaBrowser.Api.Library
         {
             try
             {
-                _activityManager.Create(new ActivityLogEntry
+                _activityManager.Create(new ActivityLog(
+                    string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Username, item.Name),
+                    "UserDownloadingContent",
+                    auth.UserId)
                 {
-                    Name = string.Format(_localization.GetLocalizedString("UserDownloadingItemWithValues"), user.Name, item.Name),
-                    Type = "UserDownloadingContent",
                     ShortOverview = string.Format(_localization.GetLocalizedString("AppDeviceValues"), auth.Client, auth.Device),
-                    UserId = auth.UserId
-
                 });
             }
             catch
@@ -919,12 +856,10 @@ namespace MediaBrowser.Api.Library
 
         private BaseItem TranslateParentItem(BaseItem item, User user)
         {
-            if (item.GetParent() is AggregateFolder)
-            {
-                return _libraryManager.GetUserRootFolder().GetChildren(user, true).FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path));
-            }
-
-            return item;
+            return item.GetParent() is AggregateFolder
+                ? _libraryManager.GetUserRootFolder().GetChildren(user, true)
+                    .FirstOrDefault(i => i.PhysicalLocations.Contains(item.Path))
+                : item;
         }
 
         /// <summary>
@@ -1086,7 +1021,7 @@ namespace MediaBrowser.Api.Library
             var item = string.IsNullOrEmpty(request.Id)
                            ? (!request.UserId.Equals(Guid.Empty)
                                   ? _libraryManager.GetUserRootFolder()
-                                  : (Folder)_libraryManager.RootFolder)
+                                  : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
             if (item == null)
@@ -1094,18 +1029,13 @@ namespace MediaBrowser.Api.Library
                 throw new ResourceNotFoundException("Item not found.");
             }
 
-            BaseItem[] themeItems = Array.Empty<BaseItem>();
+            IEnumerable<BaseItem> themeItems;
 
             while (true)
             {
-                themeItems = item.GetThemeSongs().ToArray();
+                themeItems = item.GetThemeSongs();
 
-                if (themeItems.Length > 0)
-                {
-                    break;
-                }
-
-                if (!request.InheritFromParent)
+                if (themeItems.Any() || !request.InheritFromParent)
                 {
                     break;
                 }
@@ -1115,15 +1045,14 @@ namespace MediaBrowser.Api.Library
                 {
                     break;
                 }
+
                 item = parent;
             }
 
             var dtoOptions = GetDtoOptions(_authContext, request);
-
-            var dtos = themeItems
-                            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
-
-            var items = dtos.ToArray();
+            var items = themeItems
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
+                .ToArray();
 
             return new ThemeMediaResult
             {
@@ -1140,9 +1069,7 @@ namespace MediaBrowser.Api.Library
         /// <returns>System.Object.</returns>
         public object Get(GetThemeVideos request)
         {
-            var result = GetThemeVideos(request);
-
-            return ToOptimizedResult(result);
+            return ToOptimizedResult(GetThemeVideos(request));
         }
 
         public ThemeMediaResult GetThemeVideos(GetThemeVideos request)
@@ -1152,7 +1079,7 @@ namespace MediaBrowser.Api.Library
             var item = string.IsNullOrEmpty(request.Id)
                            ? (!request.UserId.Equals(Guid.Empty)
                                   ? _libraryManager.GetUserRootFolder()
-                                  : (Folder)_libraryManager.RootFolder)
+                                  : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
             if (item == null)
@@ -1160,18 +1087,13 @@ namespace MediaBrowser.Api.Library
                 throw new ResourceNotFoundException("Item not found.");
             }
 
-            BaseItem[] themeItems = Array.Empty<BaseItem>();
+            IEnumerable<BaseItem> themeItems;
 
             while (true)
             {
-                themeItems = item.GetThemeVideos().ToArray();
+                themeItems = item.GetThemeVideos();
 
-                if (themeItems.Length > 0)
-                {
-                    break;
-                }
-
-                if (!request.InheritFromParent)
+                if (themeItems.Any() || !request.InheritFromParent)
                 {
                     break;
                 }
@@ -1181,15 +1103,15 @@ namespace MediaBrowser.Api.Library
                 {
                     break;
                 }
+
                 item = parent;
             }
 
             var dtoOptions = GetDtoOptions(_authContext, request);
 
-            var dtos = themeItems
-                            .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
-
-            var items = dtos.ToArray();
+            var items = themeItems
+                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item))
+                .ToArray();
 
             return new ThemeMediaResult
             {

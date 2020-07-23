@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System.Xml.Serialization;
@@ -25,12 +26,12 @@ namespace MediaBrowser.Model.Dlna
 
         public bool SupportsVideoCodec(string codec)
         {
-            return ContainerProfile.ContainsContainer(VideoCodec, codec);
+            return Type == DlnaProfileType.Video && ContainerProfile.ContainsContainer(VideoCodec, codec);
         }
 
         public bool SupportsAudioCodec(string codec)
         {
-            return ContainerProfile.ContainsContainer(AudioCodec, codec);
+            return (Type == DlnaProfileType.Audio || Type == DlnaProfileType.Video) && ContainerProfile.ContainsContainer(AudioCodec, codec);
         }
     }
 }

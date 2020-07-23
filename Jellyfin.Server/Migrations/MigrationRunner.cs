@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using MediaBrowser.Common.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Migrations
@@ -13,10 +14,15 @@ namespace Jellyfin.Server.Migrations
         /// <summary>
         /// The list of known migrations, in order of applicability.
         /// </summary>
-        internal static readonly IMigrationRoutine[] Migrations =
+        private static readonly Type[] _migrationTypes =
         {
-            new Routines.DisableTranscodingThrottling(),
-            new Routines.CreateUserLoggingConfigFile()
+            typeof(Routines.DisableTranscodingThrottling),
+            typeof(Routines.CreateUserLoggingConfigFile),
+            typeof(Routines.MigrateActivityLogDb),
+            typeof(Routines.RemoveDuplicateExtras),
+            typeof(Routines.AddDefaultPluginRepository),
+            typeof(Routines.MigrateUserDb),
+            typeof(Routines.ReaddDefaultPluginRepository)
         };
 
         /// <summary>
@@ -27,6 +33,10 @@ namespace Jellyfin.Server.Migrations
         public static void Run(CoreAppHost host, ILoggerFactory loggerFactory)
         {
             var logger = loggerFactory.CreateLogger<MigrationRunner>();
+            var migrations = _migrationTypes
+                .Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m))
+                .OfType<IMigrationRoutine>()
+                .ToArray();
             var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
 
             if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Count == 0)
@@ -34,16 +44,15 @@ namespace Jellyfin.Server.Migrations
                 // If startup wizard is not finished, this is a fresh install.
                 // Don't run any migrations, just mark all of them as applied.
                 logger.LogInformation("Marking all known migrations as applied because this is a fresh install");
-                migrationOptions.Applied.AddRange(Migrations.Select(m => (m.Id, m.Name)));
+                migrationOptions.Applied.AddRange(migrations.Where(m => !m.PerformOnNewInstall).Select(m => (m.Id, m.Name)));
                 host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
-                return;
             }
 
             var appliedMigrationIds = migrationOptions.Applied.Select(m => m.Id).ToHashSet();
 
-            for (var i = 0; i < Migrations.Length; i++)
+            for (var i = 0; i < migrations.Length; i++)
             {
-                var migrationRoutine = Migrations[i];
+                var migrationRoutine = migrations[i];
                 if (appliedMigrationIds.Contains(migrationRoutine.Id))
                 {
                     logger.LogDebug("Skipping migration '{Name}' since it is already applied", migrationRoutine.Name);
@@ -54,7 +63,7 @@ namespace Jellyfin.Server.Migrations
 
                 try
                 {
-                    migrationRoutine.Perform(host, logger);
+                    migrationRoutine.Perform();
                 }
                 catch (Exception ex)
                 {
