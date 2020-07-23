@@ -142,12 +142,12 @@ namespace Emby.Server.Implementations.Networking
         /// <summary>
         /// Gets the IP4Loopback address host.
         /// </summary>
-        public IPHost IP4Loopback { get; } = IPHost.Parse("127.0.0.1");
+        public IPNetAddress IP4Loopback { get; } = IPNetAddress.Parse("127.0.0.1/8");
 
         /// <summary>
         /// Gets the IP6Loopback address host.
         /// </summary>
-        public IPHost IP6Loopback { get; } = IPHost.Parse("::1");
+        public IPNetAddress IP6Loopback { get; } = IPNetAddress.Parse("::1");
 
         /// <summary>
         /// Gets returns the remote address filter.
@@ -253,12 +253,11 @@ namespace Emby.Server.Implementations.Networking
                 lock (_intLock)
                 {
                     // If LAN addresses haven't been defined, the code uses interface addresses.
-                    if (_usingInterfaces)
-                    {
+                    // if (_usingInterfaces)
+                    // {
                         // Ensure we're an internal address.
-                        return _filteredLANAddresses.Contains(ep) && IsPrivateAddressRange(ep);
-                    }
-
+                    //     return _filteredLANAddresses.Contains(ep) && IsPrivateAddressRange(ep);
+                    // }
                     return _filteredLANAddresses.Contains(ep);
                 }
             }
@@ -283,11 +282,11 @@ namespace Emby.Server.Implementations.Networking
             lock (_intLock)
             {
                 // If LAN addresses haven't been defined, the code uses interface addresses.
-                if (_usingInterfaces)
-                {
+                // if (_usingInterfaces)
+                // {
                     // Ensure we're an internal address.
-                    return _filteredLANAddresses.Contains(endpoint) && IsPrivateAddressRange(endpoint);
-                }
+                //    return _filteredLANAddresses.Contains(endpoint) && IsPrivateAddressRange(endpoint);
+                // }
 
                 return _filteredLANAddresses.Contains(endpoint);
             }
@@ -413,7 +412,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <summary>
-        /// Gets the filtered LAN ip networt addresses.
+        /// Gets the filtered LAN ip network addresses.
         /// </summary>
         /// <param name="filter">Filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
@@ -500,7 +499,8 @@ namespace Emby.Server.Implementations.Networking
         internal void AddToCollection(NetCollection col, string token)
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
-            if (_interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
+            // Null check required here for automated testing.
+            if (_interfaceNames != null && _interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
             {
                 _logger?.LogInformation("Interface {0} used in settings. Using its interface addresses.", token);
 
@@ -563,7 +563,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <summary>
-        /// Async task that waits for 2 seconds before re-initialising this class.
+        /// Async task that waits for 2 seconds before re-initialising the settings.
         /// </summary>
         /// <returns>The network change async.</returns>
         private async Task OnNetworkChangeAsync()
@@ -613,7 +613,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <summary>
-        /// Initialises internal variables.
+        /// Initialises internal LAN cache settings.
         /// </summary>
         private void InitialiseLAN()
         {
@@ -625,14 +625,11 @@ namespace Emby.Server.Implementations.Networking
                 string[] subnets = _configurationManager.Configuration.LocalNetworkSubnets;
 
                 // Create lists from user settings.
-                _lanAddresses = NetCollection.AsNetworks(CreateIPCollection(subnets));
-                // If no LAN addresses are specified - all interface subnets are deemed to be the LAN
-                _usingInterfaces = _lanAddresses.Count == 0;
-
+                _lanAddresses = CreateIPCollection(subnets);
                 _excludedAddresses = CreateIPCollection(subnets, true);
 
-                _logger?.LogDebug("# User defined LAN addresses : {0}", _lanAddresses);
-                _logger?.LogDebug("# User defined LAN exclusions : {0}", _excludedAddresses);
+                // If no LAN addresses are specified - all interface subnets are deemed to be the LAN
+                _usingInterfaces = _lanAddresses.Count == 0;
 
                 if (_usingInterfaces)
                 {
@@ -640,19 +637,21 @@ namespace Emby.Server.Implementations.Networking
                     _lanAddresses = new NetCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i)));
                 }
 
-                // Cache results.
-                if (_excludedAddresses.Count > 0)
+                // Add loopbacks to the LANAddresses.
+                if (IsIP6Enabled)
                 {
-                    _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Exclude(_excludedAddresses).Where(i => IsPrivateAddressRange(i)));
-                    _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses.Exclude(_excludedAddresses));
-                }
-                else
-                {
-                    _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i)));
-                    _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses);
+                    _lanAddresses.Add(IP6Loopback);
                 }
 
-                _logger?.LogDebug("Using LAN addresses: {0}", _filteredLANAddresses);
+                _lanAddresses.Add(IP4Loopback);
+
+                // Cache results.
+                _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Exclude(_excludedAddresses).Where(i => IsPrivateAddressRange(i)));
+                _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses.Exclude(_excludedAddresses));
+
+                _logger?.LogInformation("# User defined LAN addresses : {0}", _lanAddresses);
+                _logger?.LogInformation("# User defined LAN exclusions : {0}", _excludedAddresses);
+                _logger?.LogInformation("Using LAN addresses: {0}", _filteredLANAddresses);
             }
         }
 
@@ -748,6 +747,10 @@ namespace Emby.Server.Implementations.Networking
                             _logger?.LogError("No interfaces information available. Resolving DNS name.");
                             // Last ditch attempt - use loopback address.
                             _interfaceAddresses.Add(IP4Loopback);
+                            if (IsIP6Enabled)
+                            {
+                                _interfaceAddresses.Add(IP6Loopback);
+                            }
                         }
                     }
                 }

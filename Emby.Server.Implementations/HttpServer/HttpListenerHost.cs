@@ -294,7 +294,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Validate that if the host is an internal address, it is in the defined LAN addresses.
         /// </summary>
         /// <param name="host">Hostname to check.</param>
-        /// <returns>Returns true of host is part of the defined LAN network.</returns>
+        /// <returns>Returns true if host is a private address and is part of the defined LAN network.</returns>
         private bool ValidateHost(string host)
         {
             NetCollection nc = _networkManager.GetFilteredLANAddresses();
@@ -307,17 +307,18 @@ namespace Emby.Server.Implementations.HttpServer
             {
                 if (!h.HasAddress)
                 {
-                    // Valid host name, but we can't resolve it.
-                    _logger.LogWarning("Unable to resolve {0}.", host);
-                    return true; // Assume the host isn't on the local LAN.
+                    // TODO: If we don't agree with the below. Remove this "If statement".
+                    // Host is not an IP address.
+                    // Can we make Assumption is that host names are not local.
+                    // Could attempt resolve, but do we want to do this on each request?
+                    return true;
                 }
 
-                if (_config.Configuration.EnableIPV6)
+                // Only check private address ranges.
+                if (!_networkManager.IsPrivateAddressRange(h))
                 {
-                    nc.Add(_networkManager.IP6Loopback);
+                    return true;
                 }
-
-                nc.Add(_networkManager.IP4Loopback);
 
                 // Check to see if our host string is part of the internal network.
                 return nc.Contains(h);

@@ -225,7 +225,7 @@ namespace MediaBrowser.Common.Networking
                 throw new ArgumentNullException(address == null ? nameof(address) : nameof(address));
             }
 
-            if (address.Equals(IPAddress.None) || mask.Equals(IPAddress.Any))
+            if (address.Equals(IPAddress.None) || (mask.Equals(IPAddress.Any) && address.AddressFamily != AddressFamily.InterNetworkV6))
             {
                 throw new ArgumentException("{0} must contain a value.", address.Equals(IPAddress.None) ? nameof(address) : nameof(mask));
             }

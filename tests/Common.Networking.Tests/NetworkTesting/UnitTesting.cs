@@ -72,7 +72,7 @@ namespace NetworkTesting
             "[192.158.1.2/16,127.0.0.1/32]",
             "[10.10.10.10/32]",
             "[10.10.10.10/32]",
-            "[192.158.0.0/16,fd23:184f:2029::]")]
+            "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029::]")]
         public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
         {
             var nm = new NetworkManager();
@@ -157,14 +157,15 @@ namespace NetworkTesting
         }
 
         private async Task<bool> TestAsync(IPObject address, CancellationToken cancellationToken)
-        {            
+        {
             await Task.Delay(5000-(1000*address.Tag));            
-            return address.Equals(IPAddress.Broadcast);
+            return address.Equals(IPAddress.Loopback);
         }
 
         [Theory]
 
-        [InlineData("www.google.co.uk;www.helloworld.com;www.123.com;255.255.255.255")]
+        // Testing multi-task launching. Returning after the 1st success.
+        [InlineData("www.google.co.uk;www.helloworld.com;www.123.com;127.0.0.1")]
         public void TestCallback(string source)
         {
 
@@ -172,11 +173,17 @@ namespace NetworkTesting
             nm.SetIP6(true);
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(";"));
+
+            // Mark each one so we know which is which
             ncSource[0].Tag = 1;
             ncSource[1].Tag = 2;
             ncSource[2].Tag = 3;
-            NetCollection first = ncSource.Callback(TestAsync, new CancellationToken(), 1);
-            Assert.True(first.Count == 1);
+            ncSource[3].Tag = 4;
+
+            // Last one should return first.
+            NetCollection first = ncSource.Callback(TestAsync, default, 1);
+            // test that we only have one response.
+            Assert.True(first.Count == 1 && first[0].Tag == 4);
         }
     }
 }

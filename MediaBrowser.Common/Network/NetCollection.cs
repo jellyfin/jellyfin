@@ -125,31 +125,25 @@ namespace MediaBrowser.Common.Networking
             {
                 if (i is IPNetAddress nw)
                 {
-                    if (!nw.IsLoopback())
+                    // Add the subnet calculated from the interface address/mask.
+                    IPNetAddress lan = new IPNetAddress(IPObject.NetworkAddress(nw.Address, nw.Mask), nw.Mask)
                     {
-                        // Add the subnet calculated from the interface address/mask.
-                        IPNetAddress lan = new IPNetAddress(IPObject.NetworkAddress(nw.Address, nw.Mask), nw.Mask)
-                        {
-                            Tag = i.Tag
-                        };
+                        Tag = i.Tag
+                    };
 
-                        res.Add(lan);
-                    }
+                    res.Add(lan);
                 }
                 else
                 {
                     // Flatten out IPHost and add all its ip addresses.
                     foreach (var addr in ((IPHost)i).GetAddresses())
                     {
-                        if (!IPObject.IsLoopback(addr))
+                        IPNetAddress host = new IPNetAddress(addr, 32)
                         {
-                            IPNetAddress host = new IPNetAddress(addr, 32)
-                            {
-                                Tag = i.Tag
-                            };
+                            Tag = i.Tag
+                        };
 
-                            res.Add(host);
-                        }
+                        res.Add(host);
                     }
                 }
             }
@@ -196,12 +190,12 @@ namespace MediaBrowser.Common.Networking
         /// <returns>A new collection, with the items excluded.</returns>
         public NetCollection Exclude(NetCollection excludeList)
         {
-            NetCollection results = new NetCollection();
-
             if (excludeList == null)
             {
-                throw new ArgumentNullException(nameof(excludeList));
+                return new NetCollection(this);
             }
+
+            NetCollection results = new NetCollection();
 
             bool found;
             foreach (var outer in Items)
@@ -309,9 +303,9 @@ namespace MediaBrowser.Common.Networking
 
             NetCollection nc = new NetCollection();
 
-            foreach (IPObject i in Items)
+            foreach (IPObject i in target.Items)
             {
-                if (target.Contains(i))
+                if (Contains(i))
                 {
                     nc.Add(i);
                 }

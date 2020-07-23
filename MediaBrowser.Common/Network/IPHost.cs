@@ -32,24 +32,8 @@ namespace MediaBrowser.Common.Networking
         public IPHost(string name)
         {
             HostName = name ?? throw new ArgumentNullException(nameof(name));
-            if (string.Equals(name, "localhost", StringComparison.OrdinalIgnoreCase))
-            {
-                _addresses = new IPAddress[] { new IPAddress(Ipv4Loopback) };
-            }
-            else
-            {
-                // If it is an ip address, resolve immediately.
-                if (IPAddress.TryParse(HostName, out IPAddress address))
-                {
-                    _addresses = new IPAddress[] { address };
-                }
-                else
-                {
-                    _addresses = Array.Empty<IPAddress>();
-                }
-            }
-
-            NotAttemptedBefore = true;
+            _addresses = Array.Empty<IPAddress>();
+            Resolved = false;
         }
 
         /// <summary>
@@ -60,8 +44,8 @@ namespace MediaBrowser.Common.Networking
         private IPHost(string name, IPAddress address)
         {
             HostName = name ?? throw new ArgumentNullException(nameof(name));
-            NotAttemptedBefore = true;
             _addresses = new IPAddress[] { address ?? throw new ArgumentNullException(nameof(address)) };
+            Resolved = !address.Equals(IPAddress.None);
         }
 
         /// <summary>
@@ -71,7 +55,12 @@ namespace MediaBrowser.Common.Networking
         {
             get
             {
-                return this[0];
+                if (_addresses.Length == 0)
+                {
+                    ResolveHost();
+                }
+
+                return _addresses.Length > 0 ? this[0] : IPAddress.None;
             }
 
             set
@@ -97,9 +86,9 @@ namespace MediaBrowser.Common.Networking
         public string HostName { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this host has attempted to be resolved.
+        /// Gets a value indicating whether this host has attempted to be resolved.
         /// </summary>
-        private bool NotAttemptedBefore { get; set; }
+        public bool Resolved { get; private set; }
 
         /// <summary>
         /// Gets or sets the IP Addresses associated with this object.
@@ -114,7 +103,7 @@ namespace MediaBrowser.Common.Networking
                     ResolveHost();
                 }
 
-                return _addresses.Length > 0 && index < _addresses.Length ? _addresses[index] : IPAddress.None;
+                return index >= 0 && index < _addresses.Length ? _addresses[index] : IPAddress.None;
             }
         }
 
@@ -128,14 +117,6 @@ namespace MediaBrowser.Common.Networking
         {
             if (!string.IsNullOrEmpty(host))
             {
-                // See if it's an IP address first.
-                if (IPAddress.TryParse(host, out IPAddress ip))
-                {
-                    // Host name is an ip address, so fake resolve.
-                    hostObj = new IPHost(host, ip);
-                    return true;
-                }
-
                 // See if it's an IPv6 with port address e.g. [::1]:120.
                 int i = host.IndexOf("]:", StringComparison.OrdinalIgnoreCase);
                 if (i != -1)
@@ -163,10 +144,16 @@ namespace MediaBrowser.Common.Networking
                     // Remove port from IPv4 if it exists.
                     host = hosts[0];
 
-                    if (IPAddress.TryParse(host, out ip))
+                    if (string.Equals("localhost", host, StringComparison.OrdinalIgnoreCase))
+                    {
+                        hostObj = new IPHost(host, new IPAddress(Ipv4Loopback));
+                        return true;
+                    }
+
+                    if (IPNetAddress.TryParse(host, out IPNetAddress netIP))
                     {
                         // Host name is an ip address, so fake resolve.
-                        hostObj = new IPHost(host, ip);
+                        hostObj = new IPHost(host, netIP.Address);
                         return true;
                     }
                 }
@@ -201,7 +188,7 @@ namespace MediaBrowser.Common.Networking
                 return res;
             }
 
-            throw new InvalidCastException("String is not a value host name.");
+            throw new InvalidCastException("Host does not contain a valid value. {host}");
         }
 
         /// <summary>
@@ -227,6 +214,11 @@ namespace MediaBrowser.Common.Networking
                 if (string.Equals(otherObj.HostName, HostName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
+                }
+
+                if (_addresses.Length == 0)
+                {
+                    ResolveHost();
                 }
 
                 // Do any of our IP addresses match?
@@ -268,6 +260,11 @@ namespace MediaBrowser.Common.Networking
         /// <inheritdoc/>
         public override bool IsIP6()
         {
+            if (_addresses.Length == 0)
+            {
+                ResolveHost();
+            }
+
             // Returns true if interfaces are only IP6.
             if (_addresses.Length > 0)
             {
@@ -322,6 +319,11 @@ namespace MediaBrowser.Common.Networking
         /// </summary>
         public override void RemoveIP6()
         {
+            if (_addresses.Length == 0)
+            {
+                ResolveHost();
+            }
+
             if (_addresses.Length > 0)
             {
                 List<IPAddress> add = new List<IPAddress>();
@@ -354,11 +356,11 @@ namespace MediaBrowser.Common.Networking
             }
 
             // If we haven't resolved before, or out timer has run out...
-            if ((_addresses.Length == 0 && NotAttemptedBefore) || (TimeSpan.FromTicks(DateTime.Now.Ticks - _lastResolved).TotalMinutes > 30))
+            if ((_addresses.Length == 0 && !Resolved) || (TimeSpan.FromTicks(DateTime.Now.Ticks - _lastResolved).TotalMinutes > 30))
             {
                 _lastResolved = DateTime.Now.Ticks;
                 ResolveHostInternal().GetAwaiter().GetResult();
-                NotAttemptedBefore = false;
+                Resolved = true;
             }
 
             return _addresses.Length > 0;
