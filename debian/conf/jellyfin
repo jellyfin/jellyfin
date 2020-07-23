@@ -31,7 +31,7 @@ JELLYFIN_FFMPEG_OPT="--ffmpeg=/usr/lib/jellyfin-ffmpeg/ffmpeg"
 #JELLYFIN_SERVICE_OPT="--service"
 
 # [OPTIONAL] run Jellyfin without the web app
-#JELLYFIN_NOWEBAPP_OPT="--noautorunwebapp"
+#JELLYFIN_NOWEBAPP_OPT="--nowebclient"
 
 #
 # SysV init/Upstart options
@@ -40,4 +40,4 @@ JELLYFIN_FFMPEG_OPT="--ffmpeg=/usr/lib/jellyfin-ffmpeg/ffmpeg"
 # Application username
 JELLYFIN_USER="jellyfin"
 # Full application command
-JELLYFIN_ARGS="$JELLYFIN_WEB_OPT $JELLYFIN_RESTART_OPT $JELLYFIN_FFMPEG_OPT $JELLYFIN_SERVICE_OPT $JELLFIN_NOWEBAPP_OPT"
+JELLYFIN_ARGS="$JELLYFIN_WEB_OPT $JELLYFIN_RESTART_OPT $JELLYFIN_FFMPEG_OPT $JELLYFIN_SERVICE_OPT $JELLYFIN_NOWEBAPP_OPT"
