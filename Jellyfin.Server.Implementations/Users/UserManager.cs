@@ -39,12 +39,11 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly IApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
         private readonly ILogger<UserManager> _logger;
-
-        private IAuthenticationProvider[] _authenticationProviders = null!;
-        private DefaultAuthenticationProvider _defaultAuthenticationProvider = null!;
-        private InvalidAuthProvider _invalidAuthProvider = null!;
-        private IPasswordResetProvider[] _passwordResetProviders = null!;
-        private DefaultPasswordResetProvider _defaultPasswordResetProvider = null!;
+        private readonly IReadOnlyCollection<IPasswordResetProvider> _passwordResetProviders;
+        private readonly IReadOnlyCollection<IAuthenticationProvider> _authenticationProviders;
+        private readonly InvalidAuthProvider _invalidAuthProvider;
+        private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
+        private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
@@ -69,6 +68,13 @@ namespace Jellyfin.Server.Implementations.Users
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _logger = logger;
+
+            _passwordResetProviders = appHost.GetExports<IPasswordResetProvider>();
+            _authenticationProviders = appHost.GetExports<IAuthenticationProvider>();
+
+            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
+            _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
+            _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
         /// <inheritdoc/>
@@ -539,7 +545,12 @@ namespace Jellyfin.Server.Implementations.Users
             if (user != null && isInNetwork)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
-                return await passwordResetProvider.StartForgotPasswordProcess(user, isInNetwork).ConfigureAwait(false);
+                var result = await passwordResetProvider
+                    .StartForgotPasswordProcess(user, isInNetwork)
+                    .ConfigureAwait(false);
+
+                await UpdateUserAsync(user).ConfigureAwait(false);
+                return result;
             }
 
             return new ForgotPasswordResult
@@ -567,17 +578,6 @@ namespace Jellyfin.Server.Implementations.Users
                 Success = false,
                 UsersReset = Array.Empty<string>()
             };
-        }
-
-        /// <inheritdoc/>
-        public void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders, IEnumerable<IPasswordResetProvider> passwordResetProviders)
-        {
-            _authenticationProviders = authenticationProviders.ToArray();
-            _passwordResetProviders = passwordResetProviders.ToArray();
-
-            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
-            _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
-            _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
         /// <inheritdoc />
