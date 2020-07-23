@@ -372,7 +372,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         public int GetVideoProfileScore(string profile)
         {
             // strip spaces because they may be stripped out on the query string
-            profile = profile.Replace(" ", "");
+            profile = profile.Replace(" ", string.Empty, StringComparison.Ordinal);
             return Array.FindIndex(_videoProfiles, x => string.Equals(x, profile, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -468,13 +468,13 @@ namespace MediaBrowser.Controller.MediaEncoding
                         arg.Append("-hwaccel_output_format vaapi ")
                             .Append("-vaapi_device ")
                             .Append(encodingOptions.VaapiDevice)
-                            .Append(" ");
+                            .Append(' ');
                     }
                     else if (!isVaapiDecoder && isVaapiEncoder)
                     {
                         arg.Append("-vaapi_device ")
                             .Append(encodingOptions.VaapiDevice)
-                            .Append(" ");
+                            .Append(' ');
                     }
                 }
 

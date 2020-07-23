@@ -488,7 +488,8 @@ namespace Emby.Server.Implementations.Services
                         sb.Append(value);
                         for (var j = pathIx + 1; j < requestComponents.Length; j++)
                         {
-                            sb.Append(PathSeperatorChar + requestComponents[j]);
+                            sb.Append(PathSeperatorChar)
+                                .Append(requestComponents[j]);
                         }
 
                         value = sb.ToString();
@@ -505,7 +506,8 @@ namespace Emby.Server.Implementations.Services
                             pathIx++;
                             while (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                             {
-                                sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
+                                sb.Append(PathSeperatorChar)
+                                    .Append(requestComponents[pathIx++]);
                             }
 
                             value = sb.ToString();
