@@ -1,7 +1,7 @@
+using System.Runtime.InteropServices;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.IO;
-using MediaBrowser.Model.System;
 using Xunit;
 
 namespace Jellyfin.Server.Implementations.Tests.IO
@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Tests.IO
         {
             var generatedPath = _sut.MakeAbsolutePath(folderPath, filePath);
 
-            if (MediaBrowser.Common.System.OperatingSystem.Id == OperatingSystemId.Windows)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var expectedWindowsPath = expectedAbsolutePath.Replace('/', '\\');
                 Assert.Equal(expectedWindowsPath, generatedPath.Split(':')[1]);

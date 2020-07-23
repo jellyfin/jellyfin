@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -103,7 +102,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations
 {
@@ -146,13 +144,8 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                if (OperatingSystem.Id == OperatingSystemId.Windows
-                    || OperatingSystem.Id == OperatingSystemId.Darwin)
-                {
-                    return true;
-                }
-
-                return false;
+                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                       || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
             }
         }
 
@@ -681,7 +674,7 @@ namespace Emby.Server.Implementations
 
             logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
+            logger.LogInformation("Operating system: {OS}", RuntimeInformation.OSDescription);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
             logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
@@ -1106,8 +1099,8 @@ namespace Emby.Server.Implementations
                 ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
-                OperatingSystem = OperatingSystem.Id.ToString(),
-                OperatingSystemDisplayName = OperatingSystem.Name,
+                OperatingSystem = Environment.OSVersion.VersionString,
+                OperatingSystemDisplayName = RuntimeInformation.OSDescription,
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 HasUpdateAvailable = HasUpdateAvailable,
@@ -1135,7 +1128,7 @@ namespace Emby.Server.Implementations
                 Version = ApplicationVersionString,
                 ProductName = ApplicationProductName,
                 Id = SystemId,
-                OperatingSystem = OperatingSystem.Id.ToString(),
+                OperatingSystem = Environment.OSVersion.VersionString,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress
             };

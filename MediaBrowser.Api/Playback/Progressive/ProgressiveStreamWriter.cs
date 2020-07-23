@@ -1,49 +1,42 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.System;
-using Microsoft.Extensions.Logging;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
     public class ProgressiveFileCopier : IAsyncStreamWriter, IHasHeaders
     {
-        private readonly IFileSystem _fileSystem;
         private readonly TranscodingJob _job;
-        private readonly ILogger _logger;
         private readonly string _path;
         private readonly CancellationToken _cancellationToken;
         private readonly Dictionary<string, string> _outputHeaders;
 
-        private long _bytesWritten = 0;
+        private long _bytesWritten;
         public long StartPosition { get; set; }
 
         public bool AllowEndOfFile = true;
 
         private readonly IDirectStreamProvider _directStreamProvider;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(string path, Dictionary<string, string> outputHeaders, TranscodingJob job, CancellationToken cancellationToken)
         {
-            _fileSystem = fileSystem;
             _path = path;
             _outputHeaders = outputHeaders;
             _job = job;
-            _logger = logger;
             _cancellationToken = cancellationToken;
         }
 
-        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
+        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, TranscodingJob job, CancellationToken cancellationToken)
         {
             _directStreamProvider = directStreamProvider;
             _outputHeaders = outputHeaders;
             _job = job;
-            _logger = logger;
             _cancellationToken = cancellationToken;
         }
 
@@ -76,7 +69,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                 var eofCount = 0;
 
                 // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-                var allowAsyncFileRead = OperatingSystem.Id != OperatingSystemId.Windows;
+                var allowAsyncFileRead = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
                 using (var inputStream = GetInputStream(allowAsyncFileRead))
                 {

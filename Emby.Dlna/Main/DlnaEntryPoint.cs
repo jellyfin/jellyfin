@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
@@ -22,11 +23,9 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
@@ -175,8 +174,8 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
-                                                   OperatingSystem.Id == OperatingSystemId.Linux;
+                    var enableMultiSocketBinding = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                        || RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
                     _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
@@ -236,7 +235,7 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, RuntimeInformation.OSDescription, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
                     LogFunction = LogMessage,
                     SupportPnpRootDevice = false

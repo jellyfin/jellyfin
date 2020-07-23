@@ -6,12 +6,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -33,7 +32,7 @@ namespace Emby.Server.Implementations.IO
             Logger = logger;
             _tempPath = applicationPaths.TempDirectory;
 
-            _isEnvironmentCaseInsensitive = OperatingSystem.Id == OperatingSystemId.Windows;
+            _isEnvironmentCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         }
 
         public virtual void AddShortcutHandler(IShortcutHandler handler)
@@ -376,7 +375,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return;
             }
@@ -400,7 +399,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetReadOnly(string path, bool isReadOnly)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return;
             }
@@ -424,7 +423,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return;
             }
@@ -709,7 +708,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetExecutable(string path)
         {
-            if (OperatingSystem.Id == OperatingSystemId.Darwin)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 RunProcess("chmod", "+x \"" + path + "\"", Path.GetDirectoryName(path));
             }
