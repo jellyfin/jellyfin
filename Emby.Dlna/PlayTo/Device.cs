@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
-using Emby.Dlna.Server;
 using Emby.Dlna.Ssdp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -334,7 +334,7 @@ namespace Emby.Dlna.PlayTo
                 return string.Empty;
             }
 
-            return DescriptionXmlBuilder.Escape(value);
+            return SecurityElement.Escape(value);
         }
 
         private Task SetPlay(TransportCommands avCommands, CancellationToken cancellationToken)

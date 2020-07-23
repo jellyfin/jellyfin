@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -78,7 +79,8 @@ namespace Emby.Server.Implementations.Services
             var request = await CreateRequest(httpHost, httpReq, _restPath, logger).ConfigureAwait(false);
 
             httpHost.ApplyRequestFilters(httpReq, httpRes, request);
-
+            
+            httpRes.HttpContext.SetServiceStackRequest(httpReq);
             var response = await httpHost.ServiceController.Execute(httpHost, request, httpReq).ConfigureAwait(false);
 
             // Apply response filters

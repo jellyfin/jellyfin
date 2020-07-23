@@ -7,7 +7,7 @@ namespace Jellyfin.Server.Migrations.Routines
     /// <summary>
     /// Migration to initialize system configuration with the default plugin repository.
     /// </summary>
-    public class AddDefaultPluginRepository : IMigrationRoutine
+    public class ReaddDefaultPluginRepository : IMigrationRoutine
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
@@ -18,19 +18,19 @@ namespace Jellyfin.Server.Migrations.Routines
         };
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AddDefaultPluginRepository"/> class.
+        /// Initializes a new instance of the <see cref="ReaddDefaultPluginRepository"/> class.
         /// </summary>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public AddDefaultPluginRepository(IServerConfigurationManager serverConfigurationManager)
+        public ReaddDefaultPluginRepository(IServerConfigurationManager serverConfigurationManager)
         {
             _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <inheritdoc/>
-        public Guid Id => Guid.Parse("EB58EBEE-9514-4B9B-8225-12E1A40020DF");
+        public Guid Id => Guid.Parse("5F86E7F6-D966-4C77-849D-7A7B40B68C4E");
 
         /// <inheritdoc/>
-        public string Name => "AddDefaultPluginRepository";
+        public string Name => "ReaddDefaultPluginRepository";
 
         /// <inheritdoc/>
         public bool PerformOnNewInstall => true;
@@ -38,8 +38,12 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <inheritdoc/>
         public void Perform()
         {
-            _serverConfigurationManager.Configuration.PluginRepositories.Add(_defaultRepositoryInfo);
-            _serverConfigurationManager.SaveConfiguration();
+            // Only add if repository list is empty
+            if (_serverConfigurationManager.Configuration.PluginRepositories.Count == 0)
+            {
+                _serverConfigurationManager.Configuration.PluginRepositories.Add(_defaultRepositoryInfo);
+                _serverConfigurationManager.SaveConfiguration();
+            }
         }
     }
 }

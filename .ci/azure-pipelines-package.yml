@@ -139,3 +139,25 @@ jobs:
         sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)
         rm $0
         exit
+
+- job: PublishNuget
+  displayName: 'Publish NuGet packages'
+  dependsOn:
+  - BuildPackage
+  condition: and(succeeded('BuildPackage'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+  
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: NuGetCommand@2
+    inputs:
+      command: 'pack'
+      packagesToPack: Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj
+      packDestination: '$(Build.ArtifactStagingDirectory)'
+
+  - task: NuGetCommand@2
+    inputs:
+      command: 'push'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+      includeNugetOrg: 'true'

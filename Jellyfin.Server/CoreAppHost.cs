@@ -34,9 +34,9 @@ namespace Jellyfin.Server
         /// <param name="fileSystem">The <see cref="IFileSystem" /> to be used by the <see cref="CoreAppHost" />.</param>
         /// <param name="networkManager">The <see cref="INetworkManager" /> to be used by the <see cref="CoreAppHost" />.</param>
         public CoreAppHost(
-            ServerApplicationPaths applicationPaths,
+            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
-            StartupOptions options,
+            IStartupOptions options,
             IFileSystem fileSystem,
             INetworkManager networkManager)
             : base(

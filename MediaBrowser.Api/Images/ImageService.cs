@@ -895,6 +895,11 @@ namespace MediaBrowser.Api.Images
             // Handle image/png; charset=utf-8
             mimeType = mimeType.Split(';').FirstOrDefault();
             var userDataPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.UserConfigurationDirectoryPath, user.Username);
+            if (user.ProfileImage != null)
+            {
+                _userManager.ClearProfileImage(user);
+            }
+            
             user.ProfileImage = new Jellyfin.Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
 
             await _providerManager

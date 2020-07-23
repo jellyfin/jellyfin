@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Emby.Dlna.Api
 {
@@ -108,7 +109,7 @@ namespace Emby.Dlna.Api
         public string Filename { get; set; }
     }
 
-    public class DlnaServerService : IService, IRequiresRequest
+    public class DlnaServerService : IService
     {
         private const string XMLContentType = "text/xml; charset=UTF-8";
 
@@ -127,11 +128,13 @@ namespace Emby.Dlna.Api
         public DlnaServerService(
             IDlnaManager dlnaManager,
             IHttpResultFactory httpResultFactory,
-            IServerConfigurationManager configurationManager)
+            IServerConfigurationManager configurationManager,
+            IHttpContextAccessor httpContextAccessor)
         {
             _dlnaManager = dlnaManager;
             _resultFactory = httpResultFactory;
             _configurationManager = configurationManager;
+            Request = httpContextAccessor?.HttpContext.GetServiceStackRequest() ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         private string GetHeader(string name)
