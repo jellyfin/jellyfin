@@ -454,6 +454,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVaapiEncoder = outputVideoCodec.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
             var isQsvDecoder = videoDecoder.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
             var isQsvEncoder = outputVideoCodec.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
+            var isNvencHevcDecoder = videoDecoder.IndexOf("hevc_cuvid", StringComparison.OrdinalIgnoreCase) != -1;
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
@@ -509,6 +510,25 @@ namespace MediaBrowser.Controller.MediaEncoding
                         {
                             arg.Append("-init_hw_device qsv=hw -filter_hw_device hw ");
                         }
+                    }
+                }
+
+                if (state.IsVideoRequest
+                    && string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
+                {
+                    var codec = state.VideoStream.Codec.ToLowerInvariant();
+                    var isColorDepth10 = IsColorDepth10(state);
+
+                    if (isNvencHevcDecoder && isColorDepth10
+                        && _mediaEncoder.SupportsHwaccel("opencl")
+                        && encodingOptions.EnableTonemapping
+                        && !string.IsNullOrEmpty(state.VideoStream.VideoRange)
+                        && state.VideoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase))
+                    {
+                        arg.Append("-init_hw_device opencl=ocl:")
+                            .Append(encodingOptions.OpenclDevice)
+                            .Append(' ')
+                            .Append("-filter_hw_device ocl ");
                     }
                 }
             }
@@ -994,9 +1014,31 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-pix_fmt yuv420p " + param;
+            }
+
+            if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+            {
+                var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, encodingOptions) ?? string.Empty;
+                var videoStream = state.VideoStream;
+                var isColorDepth10 = IsColorDepth10(state);
+
+                if (videoDecoder.IndexOf("hevc_cuvid", StringComparison.OrdinalIgnoreCase) != -1
+                    && isColorDepth10
+                    && _mediaEncoder.SupportsHwaccel("opencl")
+                    && encodingOptions.EnableTonemapping
+                    && !string.IsNullOrEmpty(videoStream.VideoRange)
+                    && videoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase))
+                {
+                    param = "-pix_fmt nv12 " + param;
+                }
+                else
+                {
+                    param = "-pix_fmt yuv420p " + param;
+                }
             }
 
             if (string.Equals(videoEncoder, "h264_v4l2m2m", StringComparison.OrdinalIgnoreCase))
@@ -1599,45 +1641,53 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 outputSizeParam = GetOutputSizeParam(state, options, outputVideoCodec).TrimEnd('"');
 
-                var index = outputSizeParam.IndexOf("hwdownload", StringComparison.OrdinalIgnoreCase);
+                var index = outputSizeParam.IndexOf("hwupload,tonemap_opencl", StringComparison.OrdinalIgnoreCase);
                 if (index != -1)
                 {
                     outputSizeParam = outputSizeParam.Substring(index);
                 }
                 else
                 {
-                    index = outputSizeParam.IndexOf("hwupload=extra_hw_frames", StringComparison.OrdinalIgnoreCase);
+                    index = outputSizeParam.IndexOf("hwdownload", StringComparison.OrdinalIgnoreCase);
                     if (index != -1)
                     {
                         outputSizeParam = outputSizeParam.Substring(index);
                     }
                     else
                     {
-                        index = outputSizeParam.IndexOf("format", StringComparison.OrdinalIgnoreCase);
+                        index = outputSizeParam.IndexOf("hwupload=extra_hw_frames", StringComparison.OrdinalIgnoreCase);
                         if (index != -1)
                         {
                             outputSizeParam = outputSizeParam.Substring(index);
                         }
                         else
                         {
-                            index = outputSizeParam.IndexOf("yadif", StringComparison.OrdinalIgnoreCase);
+                            index = outputSizeParam.IndexOf("format", StringComparison.OrdinalIgnoreCase);
                             if (index != -1)
                             {
                                 outputSizeParam = outputSizeParam.Substring(index);
                             }
                             else
                             {
-                                index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
+                                index = outputSizeParam.IndexOf("yadif", StringComparison.OrdinalIgnoreCase);
                                 if (index != -1)
                                 {
                                     outputSizeParam = outputSizeParam.Substring(index);
                                 }
                                 else
                                 {
-                                    index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
+                                    index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
                                     if (index != -1)
                                     {
                                         outputSizeParam = outputSizeParam.Substring(index);
+                                    }
+                                    else
+                                    {
+                                        index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
+                                        if (index != -1)
+                                        {
+                                            outputSizeParam = outputSizeParam.Substring(index);
+                                        }
                                     }
                                 }
                             }
@@ -2058,11 +2108,57 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVaapiH264Encoder = outputVideoCodec.IndexOf("h264_vaapi", StringComparison.OrdinalIgnoreCase) != -1;
             var isQsvH264Encoder = outputVideoCodec.IndexOf("h264_qsv", StringComparison.OrdinalIgnoreCase) != -1;
             var isNvdecH264Decoder = videoDecoder.IndexOf("h264_cuvid", StringComparison.OrdinalIgnoreCase) != -1;
+            var isNvdecHevcDecoder = videoDecoder.IndexOf("hevc_cuvid", StringComparison.OrdinalIgnoreCase) != -1;
             var isLibX264Encoder = outputVideoCodec.IndexOf("libx264", StringComparison.OrdinalIgnoreCase) != -1;
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            var isColorDepth10 = IsColorDepth10(state);
 
             var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
+
+            // Currently only with the use of NVENC decoder can we get a decent performance.
+            // Currently only the HEVC/H265 format is supported.
+            // NVIDIA Pascal and Turing or higher are recommended.
+            if (isNvdecHevcDecoder && isColorDepth10
+                && _mediaEncoder.SupportsHwaccel("opencl")
+                && options.EnableTonemapping
+                && !string.IsNullOrEmpty(videoStream.VideoRange)
+                && videoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase))
+            {
+                var parameters = "tonemap_opencl=format=nv12:primaries=bt709:transfer=bt709:matrix=bt709:tonemap={0}:desat={1}:threshold={2}:peak={3}";
+
+                if (options.TonemappingParam != 0)
+                {
+                    parameters += ":param={4}";
+                }
+
+                if (!string.Equals(options.TonemappingRange, "auto", StringComparison.OrdinalIgnoreCase))
+                {
+                    parameters += ":range={5}";
+                }
+
+                // Upload the HDR10 or HLG data to the OpenCL device,
+                // use tonemap_opencl filter for tone mapping,
+                // and then download the SDR data to memory.
+                filters.Add("hwupload");
+                filters.Add(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        parameters,
+                        options.TonemappingAlgorithm,
+                        options.TonemappingDesat,
+                        options.TonemappingThreshold,
+                        options.TonemappingPeak,
+                        options.TonemappingParam,
+                        options.TonemappingRange));
+                filters.Add("hwdownload");
+
+                if (hasGraphicalSubs || state.DeInterlace("h265", true) || state.DeInterlace("hevc", true)
+                    || string.Equals(outputVideoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
+                {
+                    filters.Add("format=nv12");
+                }
+            }
 
             // When the input may or may not be hardware VAAPI decodable
             if (isVaapiH264Encoder)
@@ -2081,7 +2177,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (IsVaapiSupported(state) && isVaapiDecoder && isLibX264Encoder)
             {
                 var codec = videoStream.Codec.ToLowerInvariant();
-                var isColorDepth10 = IsColorDepth10(state);
 
                 // Assert 10-bit hardware VAAPI decodable
                 if (isColorDepth10 && (string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)

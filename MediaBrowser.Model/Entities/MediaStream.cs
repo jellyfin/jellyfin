@@ -36,6 +36,18 @@ namespace MediaBrowser.Model.Entities
         public string Language { get; set; }
 
         /// <summary>
+        /// Gets or sets the color range.
+        /// </summary>
+        /// <value>The color range.</value>
+        public string ColorRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color space.
+        /// </summary>
+        /// <value>The color space.</value>
+        public string ColorSpace { get; set; }
+
+        /// <summary>
         /// Gets or sets the color transfer.
         /// </summary>
         /// <value>The color transfer.</value>
@@ -46,12 +58,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The color primaries.</value>
         public string ColorPrimaries { get; set; }
-
-        /// <summary>
-        /// Gets or sets the color space.
-        /// </summary>
-        /// <value>The color space.</value>
-        public string ColorSpace { get; set; }
 
         /// <summary>
         /// Gets or sets the comment.
