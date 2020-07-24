@@ -8,8 +8,12 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
+    /// <summary>
+    /// SRT subtitle writer.
+    /// </summary>
     public class SrtWriter : ISubtitleWriter
     {
+        /// <inheritdoc />
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
         {
             using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true))

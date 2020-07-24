@@ -517,7 +517,7 @@ namespace Emby.Server.Implementations.Library
             {
                 // Try to normalize paths located underneath program-data in an attempt to make them more portable
                 key = key.Substring(_configurationManager.ApplicationPaths.ProgramDataPath.Length)
-                    .TrimStart(new[] { '/', '\\' })
+                    .TrimStart('/', '\\')
                     .Replace('/', '\\');
             }
 

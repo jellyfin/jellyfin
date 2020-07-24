@@ -369,7 +369,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistFilename = Path.GetFileNameWithoutExtension(playlist);
 
-            var indexString = Path.GetFileNameWithoutExtension(file.Name).Substring(playlistFilename.Length);
+            var indexString = Path.GetFileNameWithoutExtension(file.Name).AsSpan().Slice(playlistFilename.Length);
 
             return int.Parse(indexString, NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
