@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
+    <Compile Remove="Images\ImageService.cs" />
   </ItemGroup>
 
   <PropertyGroup>
