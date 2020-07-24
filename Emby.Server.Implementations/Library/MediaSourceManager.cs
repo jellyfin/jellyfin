@@ -29,6 +29,9 @@ namespace Emby.Server.Implementations.Library
 {
     public class MediaSourceManager : IMediaSourceManager, IDisposable
     {
+        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
+        private const char LiveStreamIdDelimeter = '_';
+
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
@@ -39,6 +42,11 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
+
+        private readonly Dictionary<string, ILiveStream> _openStreams = new Dictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
+        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
+
+        private readonly object _disposeLock = new object();
 
         private IMediaSourceProvider[] _providers;
 
@@ -368,7 +376,6 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-
             var preferredSubs = string.IsNullOrEmpty(user.SubtitleLanguagePreference)
                 ? Array.Empty<string>() : NormalizeLanguage(user.SubtitleLanguagePreference);
 
@@ -450,9 +457,6 @@ namespace Emby.Server.Implementations.Library
             })
             .ToList();
         }
-
-        private readonly Dictionary<string, ILiveStream> _openStreams = new Dictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
-        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
         public async Task<Tuple<LiveStreamResponse, IDirectStreamProvider>> OpenLiveStreamInternal(LiveStreamRequest request, CancellationToken cancellationToken)
         {
@@ -855,9 +859,6 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
-        private const char LiveStreamIdDelimeter = '_';
-
         private Tuple<IMediaSourceProvider, string> GetProvider(string key)
         {
             if (string.IsNullOrEmpty(key))
@@ -884,7 +885,6 @@ namespace Emby.Server.Implementations.Library
             GC.SuppressFinalize(this);
         }
 
-        private readonly object _disposeLock = new object();
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>

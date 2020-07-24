@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
@@ -55,7 +54,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Initializes the user manager and ensures that a user exists.
         /// </summary>
-        void Initialize();
+        Task InitializeAsync();
 
         /// <summary>
         /// Gets a user by Id.
@@ -106,7 +105,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>The created user.</returns>
         /// <exception cref="ArgumentNullException">name</exception>
         /// <exception cref="ArgumentException"></exception>
-        User CreateUser(string name);
+        Task<User> CreateUserAsync(string name);
 
         /// <summary>
         /// Deletes the specified user.
@@ -165,8 +164,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="pin">The pin.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
-
-        void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders, IEnumerable<IPasswordResetProvider> passwordResetProviders);
 
         NameIdPair[] GetAuthenticationProviders();
 

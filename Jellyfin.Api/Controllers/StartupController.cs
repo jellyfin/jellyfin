@@ -46,14 +46,12 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Configuration")]
         public StartupConfigurationDto GetStartupConfiguration()
         {
-            var result = new StartupConfigurationDto
+            return new StartupConfigurationDto
             {
                 UICulture = _config.Configuration.UICulture,
                 MetadataCountryCode = _config.Configuration.MetadataCountryCode,
                 PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
             };
-
-            return result;
         }
 
         /// <summary>
@@ -92,10 +90,10 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <returns>The first user.</returns>
         [HttpGet("User")]
-        public StartupUserDto GetFirstUser()
+        public async Task<StartupUserDto> GetFirstUser()
         {
             // TODO: Remove this method when startup wizard no longer requires an existing user.
-            _userManager.Initialize();
+            await _userManager.InitializeAsync().ConfigureAwait(false);
             var user = _userManager.Users.First();
             return new StartupUserDto
             {
