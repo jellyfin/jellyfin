@@ -426,7 +426,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             // FFmpeg automatically convert character encoding when it is UTF-16
             // If we specify character encoding, it rejects with "do not specify a character encoding" and "Unable to recode subtitle event"
-            if ((inputPath.EndsWith(".smi") || inputPath.EndsWith(".sami")) && (encodingParam == "UTF-16BE" || encodingParam == "UTF-16LE"))
+            if ((inputPath.EndsWith(".smi") || inputPath.EndsWith(".sami")) &&
+                (encodingParam.Equals("UTF-16BE", StringComparison.OrdinalIgnoreCase) ||
+                 encodingParam.Equals("UTF-16LE", StringComparison.OrdinalIgnoreCase)))
             {
                 encodingParam = "";
             }
