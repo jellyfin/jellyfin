@@ -36,12 +36,12 @@ namespace MediaBrowser.Controller.Extensions
         /// <summary>
         /// The key for a setting that indicates whether kestrel should bind to a unix socket.
         /// </summary>
-        public const string BindToUnixSocketKey = "kerstrel:socket";
+        public const string BindToUnixSocketKey = "kestrel:socket";
 
         /// <summary>
         /// The key for the unix socket path.
         /// </summary>
-        public const string UnixSocketPathKey = "kerstrel:socketPath";
+        public const string UnixSocketPathKey = "kestrel:socketPath";
 
         /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
