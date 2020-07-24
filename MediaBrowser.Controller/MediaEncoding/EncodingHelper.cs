@@ -1686,7 +1686,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                                         index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
                                         if (index != -1)
                                         {
-                                            outputSizeParam = outputSizeParam.Substring(index);
+                                            outputSizeParam = outputSizeParam.Slice(index);
                                         }
                                     }
                                 }
@@ -1771,9 +1771,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 */
                 if (isLinux)
                 {
-                    retStr = !outputSizeParam.IsEmpty ?
-                        " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay_qsv\"" :
-                        " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv\"";
+                    retStr = !outputSizeParam.IsEmpty
+                        ? " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay_qsv\""
+                        : " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv\"";
                 }
             }
 
