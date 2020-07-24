@@ -13,7 +13,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
 
 namespace Emby.Server.Implementations.Library
@@ -28,18 +27,15 @@ namespace Emby.Server.Implementations.Library
         private readonly ConcurrentDictionary<string, UserItemData> _userData =
             new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ILogger<UserDataManager> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IUserManager _userManager;
         private readonly IUserDataRepository _repository;
 
         public UserDataManager(
-            ILogger<UserDataManager> logger,
             IServerConfigurationManager config,
             IUserManager userManager,
             IUserDataRepository repository)
         {
-            _logger = logger;
             _config = config;
             _userManager = userManager;
             _repository = repository;
