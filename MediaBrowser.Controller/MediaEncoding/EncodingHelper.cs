@@ -1630,14 +1630,14 @@ namespace MediaBrowser.Controller.MediaEncoding
                                 index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
                                 if (index != -1)
                                 {
-                                    outputSizeParam = outputSizeParam.Substring(index);
+                                    outputSizeParam = outputSizeParam.Slice(index);
                                 }
                                 else
                                 {
                                     index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
                                     if (index != -1)
                                     {
-                                        outputSizeParam = outputSizeParam.Substring(index);
+                                        outputSizeParam = outputSizeParam.Slice(index);
                                     }
                                 }
                             }
