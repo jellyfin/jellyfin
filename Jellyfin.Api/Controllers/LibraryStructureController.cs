@@ -66,7 +66,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="name">The name of the virtual folder.</param>
         /// <param name="collectionType">The type of the collection.</param>
         /// <param name="paths">The paths of the virtual folder.</param>
-        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="libraryOptionsDto">The library options.</param>
         /// <param name="refreshLibrary">Whether to refresh the library.</param>
         /// <response code="204">Folder added.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
@@ -76,10 +76,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? name,
             [FromQuery] string? collectionType,
             [FromQuery] string[] paths,
-            [FromBody] LibraryOptions? libraryOptions,
+            [FromBody] LibraryOptionsDto? libraryOptionsDto,
             [FromQuery] bool refreshLibrary = false)
         {
-            libraryOptions ??= new LibraryOptions();
+            var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
 
             if (paths != null && paths.Length > 0)
             {
