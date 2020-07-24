@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -122,8 +123,15 @@ namespace MediaBrowser.Api.Subtitles
         public int SegmentLength { get; set; }
     }
 
+    [Route("/FallbackFont/Font", "GET", Summary = "Gets the fallback font file")]
+    [Authenticated]
+    public class GetFallbackFont
+    {
+    }
+
     public class SubtitleService : BaseApiService
     {
+        private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ISubtitleManager _subtitleManager;
         private readonly ISubtitleEncoder _subtitleEncoder;
@@ -145,6 +153,7 @@ namespace MediaBrowser.Api.Subtitles
             IAuthorizationContext authContext)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
+            _serverConfigurationManager = serverConfigurationManager;
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
             _subtitleEncoder = subtitleEncoder;
@@ -297,6 +306,50 @@ namespace MediaBrowser.Api.Subtitles
                     Logger.LogError(ex, "Error downloading subtitles");
                 }
             });
+        }
+
+        public async Task<object> Get(GetFallbackFont request)
+        {
+            var fallbackFontPath = EncodingConfigurationExtensions.GetEncodingOptions(_serverConfigurationManager).FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                var directoryService = new DirectoryService(_fileSystem);
+
+                try
+                {
+                    // 10 Megabytes
+                    var maxSize = 10485760;
+                    var fontFile = directoryService.GetFile(fallbackFontPath);
+                    var fileSize = fontFile?.Length;
+
+                    if (fileSize != null && fileSize > 0)
+                    {
+                        Logger.LogInformation("Fallback font size is {0} Bytes", fileSize);
+
+                        if (fileSize <= maxSize)
+                        {
+                            return await ResultFactory.GetStaticFileResult(Request, fontFile.FullName);
+                        }
+
+                        Logger.LogInformation("The selected font is too large. Maximum allowed size is 10 Megabytes");
+                    }
+                    else
+                    {
+                        Logger.LogInformation("The selected font is null or empty");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error reading fallback font file");
+                }
+            }
+            else
+            {
+                Logger.LogInformation("The path of fallback font has not been set");
+            }
+
+            return string.Empty;
         }
     }
 }

@@ -9,6 +9,10 @@ namespace MediaBrowser.Model.Configuration
 
         public string TranscodingTempPath { get; set; }
 
+        public string FallbackFontPath { get; set; }
+
+        public bool EnableFallbackFont { get; set; }
+
         public double DownMixAudioBoost { get; set; }
 
         public bool EnableThrottling { get; set; }
@@ -49,6 +53,7 @@ namespace MediaBrowser.Model.Configuration
 
         public EncodingOptions()
         {
+            EnableFallbackFont = false;
             DownMixAudioBoost = 2;
             EnableThrottling = false;
             ThrottleDelaySeconds = 180;
