@@ -95,7 +95,10 @@ namespace Jellyfin.Server.Migrations.Routines
                             : 30000,
                         SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length)
                             ? int.Parse(length, CultureInfo.InvariantCulture)
-                            : 30000
+                            : 30000,
+                        EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled)
+                            ? bool.Parse(enabled)
+                            : true
                     };
 
                     for (int i = 0; i < 7; i++)
