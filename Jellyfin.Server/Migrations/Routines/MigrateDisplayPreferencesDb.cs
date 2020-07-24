@@ -46,6 +46,9 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "MigrateDisplayPreferencesDatabase";
 
         /// <inheritdoc />
+        public bool PerformOnNewInstall => false;
+
+        /// <inheritdoc />
         public void Perform()
         {
             HomeSectionType[] defaults =
