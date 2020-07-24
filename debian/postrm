@@ -25,7 +25,7 @@ case "$1" in
   purge)
     echo PURGE | debconf-communicate $NAME > /dev/null 2>&1 || true
 
-    if [[ -x "/etc/init.d/jellyfin" ]] || [[ -e "/etc/init/jellyfin.connf" ]]; then
+    if [[ -x "/etc/init.d/jellyfin" ]] || [[ -e "/etc/init/jellyfin.conf" ]]; then
       update-rc.d jellyfin remove >/dev/null 2>&1 || true
     fi
 
@@ -54,7 +54,7 @@ case "$1" in
       rm -rf $PROGRAMDATA
     fi
     # Remove binary symlink
-    [[ -f /usr/bin/jellyfin ]] && rm /usr/bin/jellyfin
+    rm -f /usr/bin/jellyfin
     # Remove sudoers config
     [[ -f /etc/sudoers.d/jellyfin-sudoers ]] && rm /etc/sudoers.d/jellyfin-sudoers
     # Remove anything at the default locations; catches situations where the user moved the defaults
