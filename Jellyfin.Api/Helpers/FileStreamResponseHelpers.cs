@@ -36,17 +36,14 @@ namespace Jellyfin.Api.Helpers
                 httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, useragent);
             }
 
-            var response = await httpClient.GetAsync(state.MediaPath).ConfigureAwait(false);
+            using var response = await httpClient.GetAsync(state.MediaPath).ConfigureAwait(false);
             var contentType = response.Content.Headers.ContentType.ToString();
 
             controller.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
             if (isHeadRequest)
             {
-                using (response)
-                {
-                    return controller.File(Array.Empty<byte>(), contentType);
-                }
+                return controller.File(Array.Empty<byte>(), contentType);
             }
 
             return controller.File(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), contentType);
@@ -74,7 +71,7 @@ namespace Jellyfin.Api.Helpers
                 return controller.NoContent();
             }
 
-            var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
             return controller.File(stream, contentType);
         }
 
@@ -129,11 +126,9 @@ namespace Jellyfin.Api.Helpers
                     state.Dispose();
                 }
 
-                using (var memoryStream = new MemoryStream())
-                {
-                    await new ProgressiveFileCopier(streamHelper, outputPath).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
-                    return controller.File(memoryStream, contentType);
-                }
+                await using var memoryStream = new MemoryStream();
+                await new ProgressiveFileCopier(streamHelper, outputPath).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+                return controller.File(memoryStream, contentType);
             }
             finally
             {

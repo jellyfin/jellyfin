@@ -260,7 +260,7 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            var state = await StreamingHelpers.GetStreamingState(
+            using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
                     _authContext,
@@ -283,14 +283,11 @@ namespace Jellyfin.Api.Controllers
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
-                using (state)
-                {
-                    // TODO AllowEndOfFile = false
-                    await new ProgressiveFileCopier(_streamHelper, state.DirectStreamProvider).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
+                // TODO AllowEndOfFile = false
+                await new ProgressiveFileCopier(_streamHelper, state.DirectStreamProvider).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
 
-                    // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                    return File(Response.Body, MimeTypes.GetMimeType("file.ts")!);
-                }
+                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
+                return File(Response.Body, MimeTypes.GetMimeType("file.ts")!);
             }
 
             // Static remote stream
@@ -298,10 +295,7 @@ namespace Jellyfin.Api.Controllers
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
-                using (state)
-                {
-                    return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, _httpClient).ConfigureAwait(false);
-                }
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, _httpClient).ConfigureAwait(false);
             }
 
             if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
@@ -322,80 +316,35 @@ namespace Jellyfin.Api.Controllers
             {
                 var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
 
-                using (state)
+                if (state.MediaSource.IsInfiniteStream)
                 {
-                    if (state.MediaSource.IsInfiniteStream)
-                    {
-                        // TODO AllowEndOfFile = false
-                        await new ProgressiveFileCopier(_streamHelper, state.MediaPath).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
+                    // TODO AllowEndOfFile = false
+                    await new ProgressiveFileCopier(_streamHelper, state.MediaPath).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
 
-                        return File(Response.Body, contentType);
-                    }
-
-                    return FileStreamResponseHelpers.GetStaticFileResult(
-                        state.MediaPath,
-                        contentType,
-                        isHeadRequest,
-                        this);
+                    return File(Response.Body, contentType);
                 }
+
+                return FileStreamResponseHelpers.GetStaticFileResult(
+                    state.MediaPath,
+                    contentType,
+                    isHeadRequest,
+                    this);
             }
-
-            /*
-            // Not static but transcode cache file exists
-            if (isTranscodeCached && state.VideoRequest == null)
-            {
-                var contentType = state.GetMimeType(outputPath)
-                try
-                {
-                    if (transcodingJob != null)
-                    {
-                        ApiEntryPoint.Instance.OnTranscodeBeginRequest(transcodingJob);
-                    }
-                    return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
-                    {
-                        ResponseHeaders = responseHeaders,
-                        ContentType = contentType,
-                        IsHeadRequest = isHeadRequest,
-                        Path = outputPath,
-                        FileShare = FileShare.ReadWrite,
-                        OnComplete = () =>
-                        {
-                            if (transcodingJob != null)
-                            {
-                                ApiEntryPoint.Instance.OnTranscodeEndRequest(transcodingJob);
-                            }
-                    }).ConfigureAwait(false);
-                }
-                finally
-                {
-                    state.Dispose();
-                }
-            }
-            */
 
             // Need to start ffmpeg (because media can't be returned directly)
-            try
-            {
-                var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-                var encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
-                var ffmpegCommandLineArguments = encodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
-                return await FileStreamResponseHelpers.GetTranscodedFile(
-                    state,
-                    isHeadRequest,
-                    _streamHelper,
-                    this,
-                    _transcodingJobHelper,
-                    ffmpegCommandLineArguments,
-                    Request,
-                    _transcodingJobType,
-                    cancellationTokenSource).ConfigureAwait(false);
-            }
-            catch
-            {
-                state.Dispose();
-
-                throw;
-            }
+            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
+            var encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
+            var ffmpegCommandLineArguments = encodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
+            return await FileStreamResponseHelpers.GetTranscodedFile(
+                state,
+                isHeadRequest,
+                _streamHelper,
+                this,
+                _transcodingJobHelper,
+                ffmpegCommandLineArguments,
+                Request,
+                _transcodingJobType,
+                cancellationTokenSource).ConfigureAwait(false);
         }
     }
 }

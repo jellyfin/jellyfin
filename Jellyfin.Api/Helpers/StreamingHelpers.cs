@@ -74,7 +74,7 @@ namespace Jellyfin.Api.Helpers
             {
                 var timeSeek = httpRequest.Headers["TimeSeekRange.dlna.org"];
 
-                streamingRequest.StartTimeTicks = ParseTimeSeekHeader(timeSeek);
+                streamingRequest.StartTimeTicks = ParseTimeSeekHeader(timeSeek.ToString());
             }
 
             if (!string.IsNullOrWhiteSpace(streamingRequest.Params))
@@ -108,31 +108,22 @@ namespace Jellyfin.Api.Helpers
                 state.User = userManager.GetUserById(auth.UserId);
             }
 
-            /*
-            if ((Request.UserAgent ?? string.Empty).IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
-                (Request.UserAgent ?? string.Empty).IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
-                (Request.UserAgent ?? string.Empty).IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                state.SegmentLength = 6;
-            }
-            */
-
             if (state.IsVideoRequest && !string.IsNullOrWhiteSpace(state.Request.VideoCodec))
             {
-                state.SupportedVideoCodecs = state.Request.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                state.SupportedVideoCodecs = state.Request.VideoCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 state.Request.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
             }
 
             if (!string.IsNullOrWhiteSpace(streamingRequest.AudioCodec))
             {
-                state.SupportedAudioCodecs = streamingRequest.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                state.SupportedAudioCodecs = streamingRequest.AudioCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToAudioCodec(i))
                                            ?? state.SupportedAudioCodecs.FirstOrDefault();
             }
 
             if (!string.IsNullOrWhiteSpace(streamingRequest.SubtitleCodec))
             {
-                state.SupportedSubtitleCodecs = streamingRequest.SubtitleCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
+                state.SupportedSubtitleCodecs = streamingRequest.SubtitleCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToSubtitleCodec(i))
                                               ?? state.SupportedSubtitleCodecs.FirstOrDefault();
             }
@@ -140,15 +131,6 @@ namespace Jellyfin.Api.Helpers
             var item = libraryManager.GetItemById(streamingRequest.Id);
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-
-            /*
-            var primaryImage = item.GetImageInfo(ImageType.Primary, 0) ??
-                         item.Parents.Select(i => i.GetImageInfo(ImageType.Primary, 0)).FirstOrDefault(i => i != null);
-            if (primaryImage != null)
-            {
-                state.AlbumCoverPath = primaryImage.Path;
-            }
-            */
 
             MediaSourceInfo? mediaSource = null;
             if (string.IsNullOrWhiteSpace(streamingRequest.LiveStreamId))
@@ -322,25 +304,24 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="value">The time seek header string.</param>
         /// <returns>A nullable <see cref="long"/> representing the seek time in ticks.</returns>
-        private static long? ParseTimeSeekHeader(string value)
+        private static long? ParseTimeSeekHeader(ReadOnlySpan<char> value)
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if (value.IsEmpty)
             {
                 return null;
             }
 
-            const string Npt = "npt=";
-            if (!value.StartsWith(Npt, StringComparison.OrdinalIgnoreCase))
+            const string npt = "npt=";
+            if (!value.StartsWith(npt, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Invalid timeseek header");
             }
 
-            int index = value.IndexOf('-', StringComparison.InvariantCulture);
+            var index = value.IndexOf('-');
             value = index == -1
-                ? value.Substring(Npt.Length)
-                : value.Substring(Npt.Length, index - Npt.Length);
-
-            if (value.IndexOf(':', StringComparison.InvariantCulture) == -1)
+                ? value.Slice(npt.Length)
+                : value.Slice(npt.Length, index - npt.Length);
+            if (value.IndexOf(':') == -1)
             {
                 // Parses npt times in the format of '417.33'
                 if (double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var seconds))
@@ -351,26 +332,15 @@ namespace Jellyfin.Api.Helpers
                 throw new ArgumentException("Invalid timeseek header");
             }
 
-            // Parses npt times in the format of '10:19:25.7'
-            var tokens = value.Split(new[] { ':' }, 3);
-            double secondsSum = 0;
-            var timeFactor = 3600;
-
-            foreach (var time in tokens)
+            try
             {
-                if (double.TryParse(time, NumberStyles.Any, CultureInfo.InvariantCulture, out var digit))
-                {
-                    secondsSum += digit * timeFactor;
-                }
-                else
-                {
-                    throw new ArgumentException("Invalid timeseek header");
-                }
-
-                timeFactor /= 60;
+                // Parses npt times in the format of '10:19:25.7'
+                return TimeSpan.Parse(value).Ticks;
             }
-
-            return TimeSpan.FromSeconds(secondsSum).Ticks;
+            catch
+            {
+                throw new ArgumentException("Invalid timeseek header");
+            }
         }
 
         /// <summary>
