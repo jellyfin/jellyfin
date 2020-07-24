@@ -508,7 +508,7 @@ namespace Emby.Server.Implementations.Networking
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (iface.Tag == index
-                        && ((!IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6) || IsIP6Enabled))
+                        && ((!IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) || IsIP6Enabled))
                     {
                         col.Add(iface);
                     }
@@ -625,6 +625,7 @@ namespace Emby.Server.Implementations.Networking
                 string[] subnets = _configurationManager.Configuration.LocalNetworkSubnets;
 
                 // Create lists from user settings.
+
                 _lanAddresses = CreateIPCollection(subnets);
                 _excludedAddresses = CreateIPCollection(subnets, true);
 
@@ -649,8 +650,8 @@ namespace Emby.Server.Implementations.Networking
                 _internalInterfaceAddresses = new NetCollection(_interfaceAddresses.Exclude(_excludedAddresses).Where(i => IsPrivateAddressRange(i)));
                 _filteredLANAddresses = NetCollection.AsNetworks(_lanAddresses.Exclude(_excludedAddresses));
 
-                _logger?.LogInformation("# User defined LAN addresses : {0}", _lanAddresses);
-                _logger?.LogInformation("# User defined LAN exclusions : {0}", _excludedAddresses);
+                _logger?.LogInformation("Defined LAN addresses : {0}", _lanAddresses);
+                _logger?.LogInformation("Defined LAN exclusions : {0}", _excludedAddresses);
                 _logger?.LogInformation("Using LAN addresses: {0}", _filteredLANAddresses);
             }
         }
@@ -703,8 +704,8 @@ namespace Emby.Server.Implementations.Networking
                                     _interfaceAddresses.Add(nw);
 
                                     // Store interface name so we can use the name in Collections.
-                                    _interfaceNames[adapter.Name.ToLower(CultureInfo.InvariantCulture)] = (int)nw.Tag;
-                                    _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = (int)nw.Tag;
+                                    _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = nw.Tag;
+                                    _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = nw.Tag;
                                 }
                                 else if (ip6 && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
@@ -716,8 +717,8 @@ namespace Emby.Server.Implementations.Networking
                                     _interfaceAddresses.Add(nw);
 
                                     // Store interface name so we can use the name in Collections.
-                                    _interfaceNames[adapter.Name.ToLower(CultureInfo.InvariantCulture)] = (int)nw.Tag;
-                                    _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = (int)nw.Tag;
+                                    _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = nw.Tag;
+                                    _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = nw.Tag;
                                 }
                             }
                         }

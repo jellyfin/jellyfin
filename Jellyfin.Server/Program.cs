@@ -277,7 +277,7 @@ namespace Jellyfin.Server
                     if (addresses.Count > 0)
                     {
                         // we must listen on loopback for LiveTV to function regardless of the settings
-                        addresses.Add(IPAddress.Loopback);
+                        // addresses.Add(IPAddress.Loopback); - already part of address.
 
                         foreach (IPObject netAdd in addresses)
                         {
