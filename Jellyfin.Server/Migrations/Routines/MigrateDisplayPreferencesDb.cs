@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -88,7 +89,13 @@ namespace Jellyfin.Server.Migrations.Routines
                         RememberIndexing = dto.RememberIndexing,
                         RememberSorting = dto.RememberSorting,
                         ScrollDirection = dto.ScrollDirection,
-                        ChromecastVersion = chromecastVersion
+                        ChromecastVersion = chromecastVersion,
+                        SkipForwardLength = dto.CustomPrefs.TryGetValue("skipForwardLength", out var length)
+                            ? int.Parse(length, CultureInfo.InvariantCulture)
+                            : 30000,
+                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length)
+                            ? int.Parse(length, CultureInfo.InvariantCulture)
+                            : 30000
                     };
 
                     for (int i = 0; i < 7; i++)
