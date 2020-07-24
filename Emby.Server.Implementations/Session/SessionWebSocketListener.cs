@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.Session
             if (session != null)
             {
                 EnsureController(session, e.Argument);
-                await KeepAliveWebSocket(e.Argument);
+                await KeepAliveWebSocket(e.Argument).ConfigureAwait(false);
             }
             else
             {
@@ -177,7 +177,7 @@ namespace Emby.Server.Implementations.Session
             // Notify WebSocket about timeout
             try
             {
-                await SendForceKeepAlive(webSocket);
+                await SendForceKeepAlive(webSocket).ConfigureAwait(false);
             }
             catch (WebSocketException exception)
             {
@@ -233,6 +233,7 @@ namespace Emby.Server.Implementations.Session
                 if (_keepAliveCancellationToken != null)
                 {
                     _keepAliveCancellationToken.Cancel();
+                    _keepAliveCancellationToken.Dispose();
                     _keepAliveCancellationToken = null;
                 }
             }
@@ -268,7 +269,7 @@ namespace Emby.Server.Implementations.Session
                 lost = _webSockets.Where(i => (DateTime.UtcNow - i.LastKeepAliveDate).TotalSeconds >= WebSocketLostTimeout).ToList();
             }
 
-            if (inactive.Any())
+            if (inactive.Count > 0)
             {
                 _logger.LogInformation("Sending ForceKeepAlive message to {0} inactive WebSockets.", inactive.Count);
             }
@@ -277,7 +278,7 @@ namespace Emby.Server.Implementations.Session
             {
                 try
                 {
-                    await SendForceKeepAlive(webSocket);
+                    await SendForceKeepAlive(webSocket).ConfigureAwait(false);
                 }
                 catch (WebSocketException exception)
                 {
@@ -288,7 +289,7 @@ namespace Emby.Server.Implementations.Session
 
             lock (_webSocketsLock)
             {
-                if (lost.Any())
+                if (lost.Count > 0)
                 {
                     _logger.LogInformation("Lost {0} WebSockets.", lost.Count);
                     foreach (var webSocket in lost)
@@ -298,7 +299,7 @@ namespace Emby.Server.Implementations.Session
                     }
                 }
 
-                if (!_webSockets.Any())
+                if (_webSockets.Count == 0)
                 {
                     StopKeepAlive();
                 }
@@ -312,11 +313,13 @@ namespace Emby.Server.Implementations.Session
         /// <returns>Task.</returns>
         private Task SendForceKeepAlive(IWebSocketConnection webSocket)
         {
-            return webSocket.SendAsync(new WebSocketMessage<int>
-            {
-                MessageType = "ForceKeepAlive",
-                Data = WebSocketLostTimeout
-            }, CancellationToken.None);
+            return webSocket.SendAsync(
+                new WebSocketMessage<int>
+                {
+                    MessageType = "ForceKeepAlive",
+                    Data = WebSocketLostTimeout
+                },
+                CancellationToken.None);
         }
 
         /// <summary>
@@ -330,12 +333,11 @@ namespace Emby.Server.Implementations.Session
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                await callback();
-                Task task = Task.Delay(interval, cancellationToken);
+                await callback().ConfigureAwait(false);
 
                 try
                 {
-                    await task;
+                    await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {

@@ -2776,82 +2776,82 @@ namespace Emby.Server.Implementations.Data
 
         private string FixUnicodeChars(string buffer)
         {
-            if (buffer.IndexOf('\u2013') > -1)
+            if (buffer.IndexOf('\u2013', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u2013', '-'); // en dash
             }
 
-            if (buffer.IndexOf('\u2014') > -1)
+            if (buffer.IndexOf('\u2014', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u2014', '-'); // em dash
             }
 
-            if (buffer.IndexOf('\u2015') > -1)
+            if (buffer.IndexOf('\u2015', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u2015', '-'); // horizontal bar
             }
 
-            if (buffer.IndexOf('\u2017') > -1)
+            if (buffer.IndexOf('\u2017', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u2017', '_'); // double low line
             }
 
-            if (buffer.IndexOf('\u2018') > -1)
+            if (buffer.IndexOf('\u2018', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u2018', '\''); // left single quotation mark
             }
 
-            if (buffer.IndexOf('\u2019') > -1)
+            if (buffer.IndexOf('\u2019', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u2019', '\''); // right single quotation mark
             }
 
-            if (buffer.IndexOf('\u201a') > -1)
+            if (buffer.IndexOf('\u201a', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u201a', ','); // single low-9 quotation mark
             }
 
-            if (buffer.IndexOf('\u201b') > -1)
+            if (buffer.IndexOf('\u201b', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u201b', '\''); // single high-reversed-9 quotation mark
             }
 
-            if (buffer.IndexOf('\u201c') > -1)
+            if (buffer.IndexOf('\u201c', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u201c', '\"'); // left double quotation mark
             }
 
-            if (buffer.IndexOf('\u201d') > -1)
+            if (buffer.IndexOf('\u201d', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u201d', '\"'); // right double quotation mark
             }
 
-            if (buffer.IndexOf('\u201e') > -1)
+            if (buffer.IndexOf('\u201e', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u201e', '\"'); // double low-9 quotation mark
             }
 
-            if (buffer.IndexOf('\u2026') > -1)
+            if (buffer.IndexOf('\u2026', StringComparison.Ordinal) > -1)
             {
-                buffer = buffer.Replace("\u2026", "..."); // horizontal ellipsis
+                buffer = buffer.Replace("\u2026", "...", StringComparison.Ordinal); // horizontal ellipsis
             }
 
-            if (buffer.IndexOf('\u2032') > -1)
+            if (buffer.IndexOf('\u2032', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u2032', '\''); // prime
             }
 
-            if (buffer.IndexOf('\u2033') > -1)
+            if (buffer.IndexOf('\u2033', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u2033', '\"'); // double prime
             }
 
-            if (buffer.IndexOf('\u0060') > -1)
+            if (buffer.IndexOf('\u0060', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u0060', '\''); // grave accent
             }
 
-            if (buffer.IndexOf('\u00B4') > -1)
+            if (buffer.IndexOf('\u00B4', StringComparison.Ordinal) > -1)
             {
                 buffer = buffer.Replace('\u00B4', '\''); // acute accent
             }
@@ -3000,7 +3000,6 @@ namespace Emby.Server.Implementations.Data
             {
                 connection.RunInTransaction(db =>
                 {
-
                     var statements = PrepareAll(db, statementTexts).ToList();
 
                     if (!isReturningZeroItems)
@@ -4670,8 +4669,12 @@ namespace Emby.Server.Implementations.Data
 
             if (query.BlockUnratedItems.Length > 1)
             {
-                var inClause = string.Join(",", query.BlockUnratedItems.Select(i => "'" + i.ToString() + "'"));
-                whereClauses.Add(string.Format("(InheritedParentalRatingValue > 0 or UnratedType not in ({0}))", inClause));
+                var inClause = string.Join(',', query.BlockUnratedItems.Select(i => "'" + i.ToString() + "'"));
+                whereClauses.Add(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "(InheritedParentalRatingValue > 0 or UnratedType not in ({0}))",
+                        inClause));
             }
 
             if (query.ExcludeInheritedTags.Length > 0)
@@ -4680,7 +4683,7 @@ namespace Emby.Server.Implementations.Data
                 if (statement == null)
                 {
                     int index = 0;
-                    string excludedTags = string.Join(",", query.ExcludeInheritedTags.Select(t => paramName + index++));
+                    string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(t => paramName + index++));
                     whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
                 }
                 else
