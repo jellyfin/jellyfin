@@ -104,6 +104,8 @@ namespace MediaBrowser.Api
             }
 
             dto.CustomPrefs["chromecastVersion"] = result.ChromecastVersion.ToString().ToLowerInvariant();
+            dto.CustomPrefs["skipForwardLength"] = result.SkipForwardLength.ToString();
+            dto.CustomPrefs["skipBackLength"] = result.SkipBackwardLength.ToString();
 
             return ToOptimizedResult(dto);
         }
