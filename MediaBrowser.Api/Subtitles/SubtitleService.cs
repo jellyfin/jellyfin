@@ -325,18 +325,18 @@ namespace MediaBrowser.Api.Subtitles
 
                     if (fileSize != null && fileSize > 0)
                     {
-                        Logger.LogInformation("Fallback font size is {0} Bytes", fileSize);
+                        Logger.LogDebug("Fallback font size is {0} Bytes", fileSize);
 
                         if (fileSize <= maxSize)
                         {
                             return await ResultFactory.GetStaticFileResult(Request, fontFile.FullName);
                         }
 
-                        Logger.LogInformation("The selected font is too large. Maximum allowed size is 10 Megabytes");
+                        Logger.LogWarning("The selected font is too large. Maximum allowed size is 10 Megabytes");
                     }
                     else
                     {
-                        Logger.LogInformation("The selected font is null or empty");
+                        Logger.LogWarning("The selected font is null or empty");
                     }
                 }
                 catch (Exception ex)
@@ -346,7 +346,7 @@ namespace MediaBrowser.Api.Subtitles
             }
             else
             {
-                Logger.LogInformation("The path of fallback font has not been set");
+                Logger.LogWarning("The path of fallback font has not been set");
             }
 
             return string.Empty;
