@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.Services
             {
                 var component = components[i];
 
-                if (component.StartsWith(VariablePrefix))
+                if (component.StartsWith(VariablePrefix, StringComparison.Ordinal))
                 {
                     var variableName = component.Substring(1, component.Length - 2);
                     if (variableName[variableName.Length - 1] == WildCardChar)

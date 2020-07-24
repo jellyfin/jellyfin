@@ -390,7 +390,7 @@ namespace Emby.Server.Implementations.Networking
                         var host = uri.DnsSafeHost;
                         _logger.LogDebug("Resolving host {0}", host);
 
-                        address = GetIpAddresses(host).Result.FirstOrDefault();
+                        address = GetIpAddresses(host).GetAwaiter().GetResult().FirstOrDefault();
 
                         if (address != null)
                         {
