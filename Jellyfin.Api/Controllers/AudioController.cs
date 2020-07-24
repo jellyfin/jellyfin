@@ -205,13 +205,13 @@ namespace Jellyfin.Api.Controllers
         {
             bool isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
 
-            var cancellationTokenSource = new CancellationTokenSource();
+            using var cancellationTokenSource = new CancellationTokenSource();
 
             StreamingRequestDto streamingRequest = new StreamingRequestDto
             {
                 Id = itemId,
                 Container = container,
-                Static = @static.HasValue ? @static.Value : true,
+                Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -222,10 +222,10 @@ namespace Jellyfin.Api.Controllers
                 MediaSourceId = mediaSourceId,
                 DeviceId = deviceId,
                 AudioCodec = audioCodec,
-                EnableAutoStreamCopy = enableAutoStreamCopy.HasValue ? enableAutoStreamCopy.Value : true,
-                AllowAudioStreamCopy = allowAudioStreamCopy.HasValue ? allowAudioStreamCopy.Value : true,
-                AllowVideoStreamCopy = allowVideoStreamCopy.HasValue ? allowVideoStreamCopy.Value : true,
-                BreakOnNonKeyFrames = breakOnNonKeyFrames.HasValue ? breakOnNonKeyFrames.Value : false,
+                EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
+                AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
+                AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
+                BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
                 AudioBitRate = audioBitRate,
@@ -235,7 +235,7 @@ namespace Jellyfin.Api.Controllers
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps.HasValue ? copyTimestamps.Value : true,
+                CopyTimestamps = copyTimestamps ?? true,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
@@ -244,13 +244,13 @@ namespace Jellyfin.Api.Controllers
                 SubtitleMethod = subtitleMethod,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc.HasValue ? requireAvc.Value : true,
-                DeInterlace = deInterlace.HasValue ? deInterlace.Value : true,
-                RequireNonAnamorphic = requireNonAnamorphic.HasValue ? requireNonAnamorphic.Value : true,
+                RequireAvc = requireAvc ?? true,
+                DeInterlace = deInterlace ?? true,
+                RequireNonAnamorphic = requireNonAnamorphic ?? true,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode.HasValue ? enableMpegtsM2TsMode.Value : true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
                 TranscodeReasons = transcodingReasons,
