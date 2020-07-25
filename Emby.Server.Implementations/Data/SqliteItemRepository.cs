@@ -1110,7 +1110,8 @@ namespace Emby.Server.Implementations.Data
                     continue;
                 }
 
-                str.Append(ToValueString(i) + "|");
+                str.Append(ToValueString(i))
+                    .Append('|');
             }
 
             str.Length -= 1; // Remove last |
@@ -2471,7 +2472,7 @@ namespace Emby.Server.Implementations.Data
                 var item = query.SimilarTo;
 
                 var builder = new StringBuilder();
-                builder.Append("(");
+                builder.Append('(');
 
                 if (string.IsNullOrEmpty(item.OfficialRating))
                 {
@@ -2509,7 +2510,7 @@ namespace Emby.Server.Implementations.Data
             if (!string.IsNullOrEmpty(query.SearchTerm))
             {
                 var builder = new StringBuilder();
-                builder.Append("(");
+                builder.Append('(');
 
                 builder.Append("((CleanName like @SearchTermStartsWith or (OriginalTitle not null and OriginalTitle like @SearchTermStartsWith)) * 10)");
 
@@ -5238,7 +5239,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 if (i > 0)
                 {
-                    insertText.Append(",");
+                    insertText.Append(',');
                 }
 
                 insertText.AppendFormat("(@ItemId, @AncestorId{0}, @AncestorIdText{0})", i.ToString(CultureInfo.InvariantCulture));
@@ -6331,7 +6332,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                     foreach (var column in _mediaAttachmentSaveColumns.Skip(1))
                     {
-                        insertText.Append("@" + column + index + ",");
+                        insertText.Append('@')
+                            .Append(column)
+                            .Append(index)
+                            .Append(',');
                     }
 
                     insertText.Length -= 1;

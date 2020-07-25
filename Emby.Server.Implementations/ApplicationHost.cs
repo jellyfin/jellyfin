@@ -198,7 +198,7 @@ namespace Emby.Server.Implementations
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected ServerApplicationPaths ApplicationPaths { get; set; }
+        protected IServerApplicationPaths ApplicationPaths { get; set; }
 
         /// <summary>
         /// Gets or sets all concrete types.
@@ -242,7 +242,7 @@ namespace Emby.Server.Implementations
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         public ApplicationHost(
-            ServerApplicationPaths applicationPaths,
+            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem)
@@ -796,7 +796,6 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-            Resolve<IUserManager>().AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }

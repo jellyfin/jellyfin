@@ -337,6 +337,21 @@ namespace Jellyfin.Server
                             }
                         }
                     }
+
+                    // Bind to unix socket (only on OSX and Linux)
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        // TODO: allow configuration of socket path
+                        var socketPath = $"{appPaths.DataPath}/socket.sock";
+                        // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
+                        if (File.Exists(socketPath))
+                        {
+                            File.Delete(socketPath);
+                        }
+
+                        options.ListenUnixSocket(socketPath);
+                        _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
+                    }
                 })
                 .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))
                 .UseSerilog()

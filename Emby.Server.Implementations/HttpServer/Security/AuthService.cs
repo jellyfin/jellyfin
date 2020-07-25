@@ -14,26 +14,22 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
     public class AuthService : IAuthService
     {
-        private readonly ILogger<AuthService> _logger;
         private readonly IAuthorizationContext _authorizationContext;
         private readonly ISessionManager _sessionManager;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
 
         public AuthService(
-            ILogger<AuthService> logger,
             IAuthorizationContext authorizationContext,
             IServerConfigurationManager config,
             ISessionManager sessionManager,
             INetworkManager networkManager)
         {
-            _logger = logger;
             _authorizationContext = authorizationContext;
             _config = config;
             _sessionManager = sessionManager;

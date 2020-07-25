@@ -387,7 +387,7 @@ namespace Emby.Dlna
 
             foreach (var name in _assembly.GetManifestResourceNames())
             {
-                if (!name.StartsWith(namespaceName))
+                if (!name.StartsWith(namespaceName, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -406,7 +406,7 @@ namespace Emby.Dlna
 
                         using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                         {
-                            await stream.CopyToAsync(fileStream);
+                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }
                     }
                 }
@@ -509,7 +509,7 @@ namespace Emby.Dlna
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
         }
 
-        class InternalProfileInfo
+        private class InternalProfileInfo
         {
             internal DeviceProfileInfo Info { get; set; }
 

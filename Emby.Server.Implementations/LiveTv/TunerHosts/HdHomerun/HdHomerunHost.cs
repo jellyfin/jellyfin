@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 while (!sr.EndOfStream)
                 {
                     string line = StripXML(sr.ReadLine());
-                    if (line.Contains("Channel"))
+                    if (line.Contains("Channel", StringComparison.Ordinal))
                     {
                         LiveTvTunerStatus status;
                         var index = line.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
@@ -227,6 +227,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private static string StripXML(string source)
         {
+            if (string.IsNullOrEmpty(source))
+            {
+                return string.Empty;
+            }
+
             char[] buffer = new char[source.Length];
             int bufferIndex = 0;
             bool inside = false;
@@ -271,7 +276,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
-                    var name = string.Format("Tuner {0}", i + 1);
+                    var name = string.Format(CultureInfo.InvariantCulture, "Tuner {0}", i + 1);
                     var currentChannel = "none"; // @todo Get current channel and map back to Station Id
                     var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
                     var status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
