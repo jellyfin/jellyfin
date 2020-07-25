@@ -18,7 +18,17 @@ namespace Emby.Server.Implementations.Library
         {
             "**/small.jpg",
             "**/albumart.jpg",
-            "**/*sample*",
+
+            // What is this reg ex you speak of?
+            "**/*.sample.?",
+            "**/*.sample.??",
+            "**/*.sample.????",
+            "**/*.sample.?????",
+            "**/sample.?",
+            "**/sample.??",
+            "**/sample.????",
+            "**/sample.?????",
+            "**/sample/*",
 
             // Directories
             "**/metadata/**",
@@ -64,9 +74,12 @@ namespace Emby.Server.Implementations.Library
             "**/.grab/**",
             "**/.grab",
 
-            // Unix hidden files and directories
-            "**/.*/**",
+            // Unix hidden files
             "**/.*",
+
+            // Mac - if you ever remove the above.
+            // "**/._*",
+            // "**/.DS_Store",
 
             // thumbs.db
             "**/thumbs.db",
