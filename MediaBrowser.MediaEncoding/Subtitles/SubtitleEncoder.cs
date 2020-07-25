@@ -175,9 +175,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             var protocol = mediaSource.Protocol;
-            if (subtitleStream.IsExternal) {
+            if (subtitleStream.IsExternal)
+            {
                 protocol = _mediaSourceManager.GetPathProtocol(subtitleStream.Path);
             }
+
             var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, protocol, subtitleStream, cancellationToken).ConfigureAwait(false);
 
             var stream = await GetSubtitleStream(fileInfo.Path, fileInfo.Protocol, fileInfo.IsExternal, cancellationToken).ConfigureAwait(false);
