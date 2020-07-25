@@ -41,7 +41,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
-        /// <param name="httpClient">Instance of the <see cref="HttpClient"/>.</param>
+        /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
         public AudioController(
             IDlnaManager dlnaManager,
             IUserManager userManger,
@@ -76,7 +76,7 @@ namespace Jellyfin.Api.Controllers
             IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
-            HttpClient httpClient)
+            IHttpClientFactory httpClientFactory)
         {
             _dlnaManager = dlnaManager;
             _authContext = authorizationContext;
@@ -91,7 +91,7 @@ namespace Jellyfin.Api.Controllers
             _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
         }
 
         /// <summary>
@@ -295,7 +295,8 @@ namespace Jellyfin.Api.Controllers
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, _httpClient).ConfigureAwait(false);
+                using var httpClient = _httpClientFactory.CreateClient();
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, httpClient).ConfigureAwait(false);
             }
 
             if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
