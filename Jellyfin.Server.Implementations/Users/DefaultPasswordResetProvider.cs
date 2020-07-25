@@ -113,7 +113,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             await using (FileStream fileStream = File.OpenWrite(filePath))
             {
-                fileStream.Write(JsonSerializer.SerializeToUtf8Bytes(spr));
+                await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
                 await fileStream.FlushAsync().ConfigureAwait(false);
             }
 
