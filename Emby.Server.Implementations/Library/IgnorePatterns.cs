@@ -22,10 +22,12 @@ namespace Emby.Server.Implementations.Library
             // What is this reg ex you speak of?
             "**/*.sample.?",
             "**/*.sample.??",
+            "**/*.sample.???",
             "**/*.sample.????",
             "**/*.sample.?????",
             "**/sample.?",
             "**/sample.??",
+            "**/sample.???",
             "**/sample.????",
             "**/sample.?????",
             "**/sample/*",
