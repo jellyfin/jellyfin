@@ -149,15 +149,16 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <inheritdoc/>
         public string GenerateCode()
         {
+            Span<byte> raw = stackalloc byte[4];
+
             int min = (int)Math.Pow(10, CodeLength - 1);
             int max = (int)Math.Pow(10, CodeLength);
 
             uint scale = uint.MaxValue;
             while (scale == uint.MaxValue)
             {
-                byte[] raw = new byte[4];
                 _rng.GetBytes(raw);
-                scale = BitConverter.ToUInt32(raw, 0);
+                scale = BitConverter.ToUInt32(raw);
             }
 
             int code = (int)(min + ((max - min) * (scale / (double)uint.MaxValue)));
@@ -247,7 +248,7 @@ namespace Emby.Server.Implementations.QuickConnect
 
         private string GenerateSecureRandom(int length = 32)
         {
-            var bytes = new byte[length];
+            Span<byte> bytes = stackalloc byte[length];
             _rng.GetBytes(bytes);
 
             return Hex.Encode(bytes);
@@ -265,7 +266,7 @@ namespace Emby.Server.Implementations.QuickConnect
             }
 
             // Expire stale connection requests
-            var delete = new List<string>();
+            var code = string.Empty;
             var values = _currentRequests.Values.ToList();
 
             for (int i = 0; i < values.Count; i++)
@@ -273,17 +274,13 @@ namespace Emby.Server.Implementations.QuickConnect
                 var added = values[i].DateAdded ?? DateTime.UnixEpoch;
                 if (DateTime.Now > added.AddMinutes(Timeout) || expireAll)
                 {
-                    delete.Add(values[i].Code);
-                }
-            }
+                    code = values[i].Code;
+                    _logger.LogDebug("Removing expired request {code}", code);
 
-            foreach (var code in delete)
-            {
-                _logger.LogDebug("Removing expired request {code}", code);
-
-                if (!_currentRequests.TryRemove(code, out _))
-                {
-                    _logger.LogWarning("Request {code} already expired", code);
+                    if (!_currentRequests.TryRemove(code, out _))
+                    {
+                        _logger.LogWarning("Request {code} already expired", code);
+                    }
                 }
             }
         }

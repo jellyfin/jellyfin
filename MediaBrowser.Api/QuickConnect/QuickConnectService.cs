@@ -110,7 +110,7 @@ namespace MediaBrowser.Api.QuickConnect
 
         public object Post(Activate request)
         {
-            if(_quickConnect.State == QuickConnectState.Unavailable)
+            if (_quickConnect.State == QuickConnectState.Unavailable)
             {
                 return false;
             }
