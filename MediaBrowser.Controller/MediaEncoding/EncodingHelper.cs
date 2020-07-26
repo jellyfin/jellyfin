@@ -516,7 +516,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.IsVideoRequest
                     && string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
                 {
-                    var codec = state.VideoStream.Codec.ToLowerInvariant();
                     var isColorDepth10 = IsColorDepth10(state);
 
                     if (isNvencHevcDecoder && isColorDepth10
