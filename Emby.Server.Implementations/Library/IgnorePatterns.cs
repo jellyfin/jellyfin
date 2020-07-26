@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.Library
             "**/small.jpg",
             "**/albumart.jpg",
 
-            // What is this reg ex you speak of?
+            // https://github.com/dazinator/DotNet.Glob#patterns
             "**/*.sample.?",
             "**/*.sample.??",
             "**/*.sample.???",
