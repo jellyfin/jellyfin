@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.LibraryStructureDto;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -16,6 +17,7 @@ using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -64,7 +66,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="name">The name of the virtual folder.</param>
         /// <param name="collectionType">The type of the collection.</param>
         /// <param name="paths">The paths of the virtual folder.</param>
-        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="libraryOptionsDto">The library options.</param>
         /// <param name="refreshLibrary">Whether to refresh the library.</param>
         /// <response code="204">Folder added.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
@@ -74,10 +76,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? name,
             [FromQuery] string? collectionType,
             [FromQuery] string[] paths,
-            [FromQuery] LibraryOptions? libraryOptions,
+            [FromBody] LibraryOptionsDto? libraryOptionsDto,
             [FromQuery] bool refreshLibrary = false)
         {
-            libraryOptions ??= new LibraryOptions();
+            var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
 
             if (paths != null && paths.Length > 0)
             {
@@ -194,9 +196,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Add a media path to a library.
         /// </summary>
-        /// <param name="name">The name of the library.</param>
-        /// <param name="path">The path to add.</param>
-        /// <param name="pathInfo">The path info.</param>
+        /// <param name="mediaPathDto">The media path dto.</param>
         /// <param name="refreshLibrary">Whether to refresh the library.</param>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         /// <response code="204">Media path added.</response>
@@ -204,23 +204,16 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Paths")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddMediaPath(
-            [FromQuery] string? name,
-            [FromQuery] string? path,
-            [FromQuery] MediaPathInfo? pathInfo,
+            [FromBody, BindRequired] MediaPathDto mediaPathDto,
             [FromQuery] bool refreshLibrary = false)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
             _libraryMonitor.Stop();
 
             try
             {
-                var mediaPath = pathInfo ?? new MediaPathInfo { Path = path };
+                var mediaPath = mediaPathDto.PathInfo ?? new MediaPathInfo { Path = mediaPathDto.Path };
 
-                _libraryManager.AddMediaPath(name, mediaPath);
+                _libraryManager.AddMediaPath(mediaPathDto.Name, mediaPath);
             }
             finally
             {
