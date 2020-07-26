@@ -457,7 +457,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             var isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-            
             if (!IsCopyCodec(outputVideoCodec))
             {
                 if (state.IsVideoRequest
