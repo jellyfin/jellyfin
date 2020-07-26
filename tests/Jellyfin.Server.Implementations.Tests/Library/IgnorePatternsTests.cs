@@ -28,6 +28,10 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("/directory/@Recycle/file.mp3", true)]
         [InlineData("/media/movies/.@__thumb", true)]
         [InlineData("/media/movies/.@__thumb/foo-bar-thumbnail.png", true)]
+        [InlineData("/media/music/Foo B.A.R./epic.flac", false)]
+        [InlineData("/media/music/Foo B.A.R", false)]
+        // This test is pending an upstream fix: https://github.com/dazinator/DotNet.Glob/issues/78
+        // [InlineData("/media/music/Foo B.A.R.", false)]
         public void PathIgnored(string path, bool expected)
         {
             Assert.Equal(expected, IgnorePatterns.ShouldIgnore(path));

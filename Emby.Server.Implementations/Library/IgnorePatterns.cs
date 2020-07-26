@@ -19,6 +19,7 @@ namespace Emby.Server.Implementations.Library
             "**/small.jpg",
             "**/albumart.jpg",
 
+            // We have neither non-greedy matching or character group repetitions, working around that here.
             // https://github.com/dazinator/DotNet.Glob#patterns
             "**/*.sample.?",
             "**/*.sample.??",
