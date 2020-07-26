@@ -10,7 +10,7 @@ namespace Jellyfin.Drawing.Skia
         /// <summary>
         /// Initializes a new instance of the <see cref="SkiaException"/> class.
         /// </summary>
-        public SkiaException() : base()
+        public SkiaException()
         {
         }
 
