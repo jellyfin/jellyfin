@@ -56,7 +56,10 @@ namespace MediaBrowser.Api.System
                 DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
 
             var filterFunc = new Func<IQueryable<ActivityLog>, IQueryable<ActivityLog>>(
-                entries => entries.Where(entry => entry.DateCreated >= minDate));
+                entries => entries.Where(entry => entry.DateCreated >= minDate
+                                                  && (!request.HasUserId.HasValue || (request.HasUserId.Value
+                                                      ? entry.UserId != Guid.Empty
+                                                      : entry.UserId == Guid.Empty))));
 
             var result = _activityManager.GetPagedResult(filterFunc, request.StartIndex, request.Limit);
 

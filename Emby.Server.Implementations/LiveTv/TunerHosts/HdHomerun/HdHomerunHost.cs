@@ -195,13 +195,20 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 while (!sr.EndOfStream)
                 {
                     string line = StripXML(sr.ReadLine());
-                    if (line.Contains("Channel"))
+                    if (line.Contains("Channel", StringComparison.Ordinal))
                     {
                         LiveTvTunerStatus status;
                         var index = line.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
                         var name = line.Substring(0, index - 1);
                         var currentChannel = line.Substring(index + 7);
-                        if (currentChannel != "none") { status = LiveTvTunerStatus.LiveTv; } else { status = LiveTvTunerStatus.Available; }
+                        if (currentChannel != "none")
+                        {
+                            status = LiveTvTunerStatus.LiveTv;
+                        }
+                        else
+                        {
+                            status = LiveTvTunerStatus.Available;
+                        }
 
                         tuners.Add(new LiveTvTunerInfo
                         {
@@ -219,6 +226,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private static string StripXML(string source)
         {
+            if (string.IsNullOrEmpty(source))
+            {
+                return string.Empty;
+            }
+
             char[] buffer = new char[source.Length];
             int bufferIndex = 0;
             bool inside = false;
@@ -263,7 +275,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
-                    var name = string.Format("Tuner {0}", i + 1);
+                    var name = string.Format(CultureInfo.InvariantCulture, "Tuner {0}", i + 1);
                     var currentChannel = "none"; // @todo Get current channel and map back to Station Id
                     var isAvailable = await manager.CheckTunerAvailability(ipInfo, i, cancellationToken).ConfigureAwait(false);
                     var status = isAvailable ? LiveTvTunerStatus.Available : LiveTvTunerStatus.LiveTv;
@@ -691,7 +703,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     var model = ModelNumber ?? string.Empty;
 
-                    if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                    if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         return true;
                     }

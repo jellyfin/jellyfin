@@ -19,7 +19,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 
             // Only process items that are in a collection folder containing books
             if (!string.Equals(collectionType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
+            {
                 return null;
+            }
 
             if (args.IsDirectory)
             {
@@ -55,7 +57,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 
             // Don't return a Book if there is more (or less) than one document in the directory
             if (bookFiles.Count != 1)
+            {
                 return null;
+            }
 
             return new Book
             {

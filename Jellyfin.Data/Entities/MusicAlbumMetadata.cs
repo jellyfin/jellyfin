@@ -30,18 +30,30 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_musicalbum0"></param>
         public MusicAlbumMetadata(string title, string language, DateTime dateadded, DateTime datemodified, MusicAlbum _musicalbum0)
         {
-            if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
+            if (string.IsNullOrEmpty(title))
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             this.Title = title;
 
-            if (string.IsNullOrEmpty(language)) throw new ArgumentNullException(nameof(language));
+            if (string.IsNullOrEmpty(language))
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
             this.Language = language;
 
-            if (_musicalbum0 == null) throw new ArgumentNullException(nameof(_musicalbum0));
+            if (_musicalbum0 == null)
+            {
+                throw new ArgumentNullException(nameof(_musicalbum0));
+            }
+
             _musicalbum0.MusicAlbumMetadata.Add(this);
 
             this.Labels = new HashSet<Company>();
@@ -52,8 +64,8 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="title">The title or name of the object</param>
-        /// <param name="language">ISO-639-3 3-character language codes</param>
+        /// <param name="title">The title or name of the object.</param>
+        /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="_musicalbum0"></param>
         public static MusicAlbumMetadata Create(string title, string language, DateTime dateadded, DateTime datemodified, MusicAlbum _musicalbum0)
         {
@@ -88,7 +100,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Barcode;
                 GetBarcode(ref value);
-                return (_Barcode = value);
+                return _Barcode = value;
             }
 
             set
@@ -126,7 +138,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _LabelNumber;
                 GetLabelNumber(ref value);
-                return (_LabelNumber = value);
+                return _LabelNumber = value;
             }
 
             set
@@ -164,7 +176,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Country;
                 GetCountry(ref value);
-                return (_Country = value);
+                return _Country = value;
             }
 
             set

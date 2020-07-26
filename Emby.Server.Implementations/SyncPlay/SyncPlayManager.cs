@@ -170,10 +170,11 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 _logger.LogWarning("NewGroup: {0} does not have permission to create groups.", session.Id);
 
-                var error = new GroupUpdate<string>()
+                var error = new GroupUpdate<string>
                 {
                     Type = GroupUpdateType.CreateGroupDenied
                 };
+
                 _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
                 return;
             }
@@ -188,7 +189,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 var group = new SyncPlayController(_sessionManager, this);
                 _groups[group.GetGroupId()] = group;
 
-                group.InitGroup(session, cancellationToken);
+                group.CreateGroup(session, cancellationToken);
             }
         }
 
@@ -205,6 +206,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 {
                     Type = GroupUpdateType.JoinGroupDenied
                 };
+
                 _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
                 return;
             }
@@ -300,9 +302,9 @@ namespace Emby.Server.Implementations.SyncPlay
                     group => group.GetPlayingItemId().Equals(filterItemId) && HasAccessToItem(user, group.GetPlayingItemId())).Select(
                     group => group.GetInfo()).ToList();
             }
-            // Otherwise show all available groups
             else
             {
+                // Otherwise show all available groups
                 return _groups.Values.Where(
                     group => HasAccessToItem(user, group.GetPlayingItemId())).Select(
                     group => group.GetInfo()).ToList();
@@ -322,6 +324,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 {
                     Type = GroupUpdateType.JoinGroupDenied
                 };
+
                 _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
                 return;
             }
@@ -366,7 +369,6 @@ namespace Emby.Server.Implementations.SyncPlay
             }
 
             _sessionToGroupMap.Remove(session.Id, out var tempGroup);
-
             if (!tempGroup.GetGroupId().Equals(group.GetGroupId()))
             {
                 throw new InvalidOperationException("Session was in wrong group!");

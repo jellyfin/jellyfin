@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Linq;
 using Jellyfin.Data;
 using Jellyfin.Data.Entities;
@@ -131,6 +132,18 @@ namespace Jellyfin.Server.Implementations
             }
 
             return base.SaveChanges();
+        }
+
+        /// <inheritdoc/>
+        public override void Dispose()
+        {
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                entry.State = EntityState.Detached;
+            }
+
+            GC.SuppressFinalize(this);
+            base.Dispose();
         }
 
         /// <inheritdoc />

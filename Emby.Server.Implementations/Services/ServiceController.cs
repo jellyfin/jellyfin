@@ -144,7 +144,10 @@ namespace Emby.Server.Implementations.Services
             var yieldedWildcardMatches = RestPath.GetFirstMatchWildCardHashKeys(matchUsingPathParts);
             foreach (var potentialHashMatch in yieldedWildcardMatches)
             {
-                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
+                if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches))
+                {
+                    continue;
+                }
 
                 var bestScore = -1;
                 RestPath bestMatch = null;
@@ -186,5 +189,4 @@ namespace Emby.Server.Implementations.Services
             return ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetMethodName());
         }
     }
-
 }

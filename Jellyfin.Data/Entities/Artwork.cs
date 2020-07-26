@@ -32,17 +32,28 @@ namespace Jellyfin.Data.Entities
         /// <param name="_personrole1"></param>
         public Artwork(string path, Enums.ArtKind kind, Metadata _metadata0, PersonRole _personrole1)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             this.Path = path;
 
             this.Kind = kind;
 
-            if (_metadata0 == null) throw new ArgumentNullException(nameof(_metadata0));
+            if (_metadata0 == null)
+            {
+                throw new ArgumentNullException(nameof(_metadata0));
+            }
+
             _metadata0.Artwork.Add(this);
 
-            if (_personrole1 == null) throw new ArgumentNullException(nameof(_personrole1));
-            _personrole1.Artwork = this;
+            if (_personrole1 == null)
+            {
+                throw new ArgumentNullException(nameof(_personrole1));
+            }
 
+            _personrole1.Artwork = this;
 
             Init();
         }
@@ -87,7 +98,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -126,7 +137,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Path;
                 GetPath(ref value);
-                return (_Path = value);
+                return _Path = value;
             }
 
             set
@@ -163,7 +174,7 @@ namespace Jellyfin.Data.Entities
             {
                 Enums.ArtKind value = _Kind;
                 GetKind(ref value);
-                return (_Kind = value);
+                return _Kind = value;
             }
 
             set

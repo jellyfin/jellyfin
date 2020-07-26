@@ -2,7 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -84,8 +86,6 @@ namespace MediaBrowser.Model.Configuration
         public bool AutoRunWebApp { get; set; }
 
         public bool EnableRemoteAccess { get; set; }
-
-        public bool CollectionsUpgraded { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable case sensitive item ids].
@@ -234,6 +234,8 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] CodecsUsed { get; set; }
 
+        public List<RepositoryInfo> PluginRepositories { get; set; }
+
         public bool IgnoreVirtualInterfaces { get; set; }
 
         public bool EnableExternalContentInSuggestions { get; set; }
@@ -270,6 +272,9 @@ namespace MediaBrowser.Model.Configuration
             PathSubstitutions = Array.Empty<PathSubstitution>();
             IgnoreVirtualInterfaces = false;
             EnableSimpleArtistDetection = false;
+            SkipDeserializationForBasicTypes = true;
+
+            PluginRepositories = new List<RepositoryInfo>();
 
             DisplaySpecialsWithinSeasons = true;
             EnableExternalContentInSuggestions = true;
@@ -283,6 +288,9 @@ namespace MediaBrowser.Model.Configuration
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
+            EnableNormalizedItemByNameIds = true;
+            DisableLiveTvChannelUserDataName = true;
+            EnableNewOmdbSupport = true;
 
             AutoRunWebApp = true;
             EnableRemoteAccess = true;

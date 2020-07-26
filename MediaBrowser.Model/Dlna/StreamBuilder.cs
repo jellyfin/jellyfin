@@ -384,7 +384,10 @@ namespace MediaBrowser.Model.Dlna
                         audioCodecProfiles.Add(i);
                     }
 
-                    if (audioCodecProfiles.Count >= 1) break;
+                    if (audioCodecProfiles.Count >= 1)
+                    {
+                        break;
+                    }
                 }
 
                 var audioTranscodingConditions = new List<ProfileCondition>();

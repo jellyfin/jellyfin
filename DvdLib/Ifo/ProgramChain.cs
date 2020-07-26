@@ -75,8 +75,15 @@ namespace DvdLib.Ifo
 
             StillTime = br.ReadByte();
             byte pbMode = br.ReadByte();
-            if (pbMode == 0) PlaybackMode = ProgramPlaybackMode.Sequential;
-            else PlaybackMode = ((pbMode & 0x80) == 0) ? ProgramPlaybackMode.Random : ProgramPlaybackMode.Shuffle;
+            if (pbMode == 0)
+            {
+                PlaybackMode = ProgramPlaybackMode.Sequential;
+            }
+            else
+            {
+                PlaybackMode = ((pbMode & 0x80) == 0) ? ProgramPlaybackMode.Random : ProgramPlaybackMode.Shuffle;
+            }
+
             ProgramCount = (uint)(pbMode & 0x7F);
 
             Palette = br.ReadBytes(64);

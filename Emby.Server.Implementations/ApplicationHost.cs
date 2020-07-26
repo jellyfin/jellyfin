@@ -43,9 +43,9 @@ using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Services;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
-using Emby.Server.Implementations.SyncPlay;
 using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
@@ -79,8 +79,8 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.Controller.TV;
 using MediaBrowser.Controller.SyncPlay;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Configuration;
@@ -194,7 +194,7 @@ namespace Emby.Server.Implementations
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected ServerApplicationPaths ApplicationPaths { get; set; }
+        protected IServerApplicationPaths ApplicationPaths { get; set; }
 
         /// <summary>
         /// Gets or sets all concrete types.
@@ -238,7 +238,7 @@ namespace Emby.Server.Implementations
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
         public ApplicationHost(
-            ServerApplicationPaths applicationPaths,
+            IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
             IFileSystem fileSystem,
@@ -486,12 +486,10 @@ namespace Emby.Server.Implementations
 
                 foreach (var plugin in Plugins)
                 {
-                    pluginBuilder.AppendLine(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{0} {1}",
-                            plugin.Name,
-                            plugin.Version));
+                    pluginBuilder.Append(plugin.Name)
+                        .Append(' ')
+                        .Append(plugin.Version)
+                        .AppendLine();
                 }
 
                 Logger.LogInformation("Plugins: {Plugins}", pluginBuilder.ToString());
@@ -568,10 +566,8 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            // TODO: Add StartupOptions.FFmpegPath to IConfiguration and remove this custom activation
             serviceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
-            serviceCollection.AddSingleton<IMediaEncoder>(provider =>
-                ActivatorUtilities.CreateInstance<MediaBrowser.MediaEncoding.Encoder.MediaEncoder>(provider, _startupOptions.FFmpegPath ?? string.Empty));
+            serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -802,7 +798,6 @@ namespace Emby.Server.Implementations
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
 
             Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
-            Resolve<IUserManager>().AddParts(GetExports<IAuthenticationProvider>(), GetExports<IPasswordResetProvider>());
 
             Resolve<IIsoManager>().AddParts(GetExports<IIsoMounter>());
         }
@@ -874,6 +869,11 @@ namespace Emby.Server.Implementations
                 catch (FileNotFoundException ex)
                 {
                     Logger.LogError(ex, "Error getting exported types from {Assembly}", ass.FullName);
+                    continue;
+                }
+                catch (TypeLoadException ex)
+                {
+                    Logger.LogError(ex, "Error loading types from {Assembly}.", ass.FullName);
                     continue;
                 }
 
@@ -1158,7 +1158,7 @@ namespace Emby.Server.Implementations
                     return null;
                 }
 
-                return GetLocalApiUrl(addresses.First());
+                return GetLocalApiUrl(addresses[0]);
             }
             catch (Exception ex)
             {
@@ -1231,13 +1231,13 @@ namespace Emby.Server.Implementations
             var addresses = ServerConfigurationManager
                 .Configuration
                 .LocalNetworkAddresses
-                .Select(NormalizeConfiguredLocalAddress)
+                .Select(x => NormalizeConfiguredLocalAddress(x))
                 .Where(i => i != null)
                 .ToList();
 
             if (addresses.Count == 0)
             {
-                addresses.AddRange(_networkManager.GetLocalIpAddresses(ServerConfigurationManager.Configuration.IgnoreVirtualInterfaces));
+                addresses.AddRange(_networkManager.GetLocalIpAddresses());
             }
 
             var resultList = new List<IPAddress>();
@@ -1252,8 +1252,7 @@ namespace Emby.Server.Implementations
                     }
                 }
 
-                var valid = await IsLocalIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false);
-                if (valid)
+                if (await IsLocalIpAddressValidAsync(address, cancellationToken).ConfigureAwait(false))
                 {
                     resultList.Add(address);
 
@@ -1267,13 +1266,12 @@ namespace Emby.Server.Implementations
             return resultList;
         }
 
-        public IPAddress NormalizeConfiguredLocalAddress(string address)
+        public IPAddress NormalizeConfiguredLocalAddress(ReadOnlySpan<char> address)
         {
             var index = address.Trim('/').IndexOf('/');
-
             if (index != -1)
             {
-                address = address.Substring(index + 1);
+                address = address.Slice(index + 1);
             }
 
             if (IPAddress.TryParse(address.Trim('/'), out IPAddress result))

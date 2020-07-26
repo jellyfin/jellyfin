@@ -152,11 +152,15 @@ namespace Emby.Dlna.Eventing
             builder.Append("<e:propertyset xmlns:e=\"urn:schemas-upnp-org:event-1-0\">");
             foreach (var key in stateVariables.Keys)
             {
-                builder.Append("<e:property>");
-                builder.Append("<" + key + ">");
-                builder.Append(stateVariables[key]);
-                builder.Append("</" + key + ">");
-                builder.Append("</e:property>");
+                builder.Append("<e:property>")
+                    .Append('<')
+                    .Append(key)
+                    .Append('>')
+                    .Append(stateVariables[key])
+                    .Append("</")
+                    .Append(key)
+                    .Append('>')
+                    .Append("</e:property>");
             }
 
             builder.Append("</e:propertyset>");

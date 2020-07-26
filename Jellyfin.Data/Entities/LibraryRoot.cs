@@ -27,12 +27,15 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Public constructor with required data.
         /// </summary>
-        /// <param name="path">Absolute Path</param>
+        /// <param name="path">Absolute Path.</param>
         public LibraryRoot(string path)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
-            this.Path = path;
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
 
+            this.Path = path;
 
             Init();
         }
@@ -40,7 +43,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Static create function (for use in LINQ queries, etc.)
         /// </summary>
-        /// <param name="path">Absolute Path</param>
+        /// <param name="path">Absolute Path.</param>
         public static LibraryRoot Create(string path)
         {
             return new LibraryRoot(path);
@@ -75,7 +78,7 @@ namespace Jellyfin.Data.Entities
             {
                 int value = _Id;
                 GetId(ref value);
-                return (_Id = value);
+                return _Id = value;
             }
 
             protected set
@@ -115,7 +118,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _Path;
                 GetPath(ref value);
-                return (_Path = value);
+                return _Path = value;
             }
 
             set
@@ -154,7 +157,7 @@ namespace Jellyfin.Data.Entities
             {
                 string value = _NetworkPath;
                 GetNetworkPath(ref value);
-                return (_NetworkPath = value);
+                return _NetworkPath = value;
             }
 
             set

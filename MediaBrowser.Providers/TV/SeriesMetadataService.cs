@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +58,7 @@ namespace MediaBrowser.Providers.TV
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error in DummySeasonProvider");
+                Logger.LogError(ex, "Error in DummySeasonProvider for {ItemPath}", item.Path);
             }
         }
 

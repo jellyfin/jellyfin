@@ -13,26 +13,22 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
     public class AuthService : IAuthService
     {
-        private readonly ILogger<AuthService> _logger;
         private readonly IAuthorizationContext _authorizationContext;
         private readonly ISessionManager _sessionManager;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
 
         public AuthService(
-            ILogger<AuthService> logger,
             IAuthorizationContext authorizationContext,
             IServerConfigurationManager config,
             ISessionManager sessionManager,
             INetworkManager networkManager)
         {
-            _logger = logger;
             _authorizationContext = authorizationContext;
             _config = config;
             _sessionManager = sessionManager;
@@ -49,6 +45,22 @@ namespace Emby.Server.Implementations.HttpServer.Security
             var req = new WebSocketSharpRequest(request, null, request.Path);
             var user = ValidateUser(req, authAttributes);
             return user;
+        }
+
+        public AuthorizationInfo Authenticate(HttpRequest request)
+        {
+            var auth = _authorizationContext.GetAuthorizationInfo(request);
+            if (auth?.User == null)
+            {
+                return null;
+            }
+
+            if (auth.User.HasPermission(PermissionKind.IsDisabled))
+            {
+                throw new SecurityException("User account has been disabled.");
+            }
+
+            return auth;
         }
 
         private User ValidateUser(IRequest request, IAuthenticationAttributes authAttribtues)

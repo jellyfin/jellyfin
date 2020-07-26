@@ -274,10 +274,10 @@ namespace Jellyfin.Server
                     var addresses = appHost.ServerConfigurationManager
                         .Configuration
                         .LocalNetworkAddresses
-                        .Select(appHost.NormalizeConfiguredLocalAddress)
+                        .Select(x => appHost.NormalizeConfiguredLocalAddress(x))
                         .Where(i => i != null)
                         .ToHashSet();
-                    if (addresses.Any() && !addresses.Contains(IPAddress.Any))
+                    if (addresses.Count > 0 && !addresses.Contains(IPAddress.Any))
                     {
                         if (!addresses.Contains(IPAddress.Loopback))
                         {
@@ -342,6 +342,21 @@ namespace Jellyfin.Server
                                 _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
                             }
                         }
+                    }
+
+                    // Bind to unix socket (only on OSX and Linux)
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        // TODO: allow configuration of socket path
+                        var socketPath = $"{appPaths.DataPath}/socket.sock";
+                        // Workaround for https://github.com/aspnet/AspNetCore/issues/14134
+                        if (File.Exists(socketPath))
+                        {
+                            File.Delete(socketPath);
+                        }
+
+                        options.ListenUnixSocket(socketPath);
+                        _logger.LogInformation("Kestrel listening to unix socket {SocketPath}", socketPath);
                     }
                 })
                 .ConfigureAppConfiguration(config => config.ConfigureAppConfiguration(commandLineOpts, appPaths, startupConfig))

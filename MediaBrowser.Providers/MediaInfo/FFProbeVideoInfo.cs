@@ -24,7 +24,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
@@ -568,7 +567,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// Creates dummy chapters.
         /// </summary>
         /// <param name="video">The video.</param>
-        /// <return>An array of dummy chapters.</returns>
+        /// <returns>An array of dummy chapters.</returns>
         private ChapterInfo[] CreateDummyChapters(Video video)
         {
             var runtime = video.RunTimeTicks ?? 0;

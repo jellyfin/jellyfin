@@ -140,55 +140,73 @@ namespace Emby.Dlna
             if (!string.IsNullOrEmpty(profileInfo.DeviceDescription))
             {
                 if (deviceInfo.DeviceDescription == null || !IsRegexMatch(deviceInfo.DeviceDescription, profileInfo.DeviceDescription))
+                {
                     return false;
+                }
             }
 
             if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
             {
                 if (deviceInfo.FriendlyName == null || !IsRegexMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
+                {
                     return false;
+                }
             }
 
             if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
             {
                 if (deviceInfo.Manufacturer == null || !IsRegexMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
+                {
                     return false;
+                }
             }
 
             if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
             {
                 if (deviceInfo.ManufacturerUrl == null || !IsRegexMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
+                {
                     return false;
+                }
             }
 
             if (!string.IsNullOrEmpty(profileInfo.ModelDescription))
             {
                 if (deviceInfo.ModelDescription == null || !IsRegexMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
+                {
                     return false;
+                }
             }
 
             if (!string.IsNullOrEmpty(profileInfo.ModelName))
             {
                 if (deviceInfo.ModelName == null || !IsRegexMatch(deviceInfo.ModelName, profileInfo.ModelName))
+                {
                     return false;
+                }
             }
 
             if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
             {
                 if (deviceInfo.ModelNumber == null || !IsRegexMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
+                {
                     return false;
+                }
             }
 
             if (!string.IsNullOrEmpty(profileInfo.ModelUrl))
             {
                 if (deviceInfo.ModelUrl == null || !IsRegexMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
+                {
                     return false;
+                }
             }
 
             if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
             {
                 if (deviceInfo.SerialNumber == null || !IsRegexMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -369,7 +387,7 @@ namespace Emby.Dlna
 
             foreach (var name in _assembly.GetManifestResourceNames())
             {
-                if (!name.StartsWith(namespaceName))
+                if (!name.StartsWith(namespaceName, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -388,7 +406,7 @@ namespace Emby.Dlna
 
                         using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
                         {
-                            await stream.CopyToAsync(fileStream);
+                            await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }
                     }
                 }
@@ -491,7 +509,7 @@ namespace Emby.Dlna
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
         }
 
-        class InternalProfileInfo
+        private class InternalProfileInfo
         {
             internal DeviceProfileInfo Info { get; set; }
 

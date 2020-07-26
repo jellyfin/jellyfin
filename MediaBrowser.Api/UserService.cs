@@ -376,15 +376,8 @@ namespace MediaBrowser.Api
 
         public Task DeleteAsync(DeleteUser request)
         {
-            var user = _userManager.GetUserById(request.Id);
-
-            if (user == null)
-            {
-                throw new ResourceNotFoundException("User not found");
-            }
-
-            _sessionMananger.RevokeUserTokens(user.Id, null);
-            _userManager.DeleteUser(user);
+            _userManager.DeleteUser(request.Id);
+            _sessionMananger.RevokeUserTokens(request.Id, null);
             return Task.CompletedTask;
         }
 
@@ -566,7 +559,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Post(CreateUserByName request)
         {
-            var newUser = _userManager.CreateUser(request.Name);
+            var newUser = await _userManager.CreateUserAsync(request.Name).ConfigureAwait(false);
 
             // no need to authenticate password for new user
             if (request.Password != null)

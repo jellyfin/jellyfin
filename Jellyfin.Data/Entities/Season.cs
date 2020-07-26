@@ -42,7 +42,11 @@ namespace Jellyfin.Data.Entities
 
             this.UrlId = urlid;
 
-            if (_series0 == null) throw new ArgumentNullException(nameof(_series0));
+            if (_series0 == null)
+            {
+                throw new ArgumentNullException(nameof(_series0));
+            }
+
             _series0.Seasons.Add(this);
 
             this.SeasonMetadata = new HashSet<SeasonMetadata>();
@@ -84,7 +88,7 @@ namespace Jellyfin.Data.Entities
             {
                 int? value = _SeasonNumber;
                 GetSeasonNumber(ref value);
-                return (_SeasonNumber = value);
+                return _SeasonNumber = value;
             }
 
             set

@@ -81,7 +81,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 var id = info.Key + "Id";
                 if (!_validProviderIds.ContainsKey(id))
                 {
-                    _validProviderIds.Add(id, info.Key);
+                    _validProviderIds.Add(id, info.Key!);
                 }
             }
 

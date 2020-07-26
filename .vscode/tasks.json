@@ -21,5 +21,10 @@
             ],
             "problemMatcher": "$msCompile"
         }
-    ]
+    ],
+    "options": {
+        "env": {
+            "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+        }
+    }
 }

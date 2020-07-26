@@ -124,7 +124,10 @@ namespace Emby.Server.Implementations.Services
             var hasSeparators = new List<bool>();
             foreach (var component in this.restPath.Split(PathSeperatorChar))
             {
-                if (string.IsNullOrEmpty(component)) continue;
+                if (string.IsNullOrEmpty(component))
+                {
+                    continue;
+                }
 
                 if (component.IndexOf(VariablePrefix, StringComparison.OrdinalIgnoreCase) != -1
                     && component.IndexOf(ComponentSeperator) != -1)
@@ -153,7 +156,7 @@ namespace Emby.Server.Implementations.Services
             {
                 var component = components[i];
 
-                if (component.StartsWith(VariablePrefix))
+                if (component.StartsWith(VariablePrefix, StringComparison.Ordinal))
                 {
                     var variableName = component.Substring(1, component.Length - 2);
                     if (variableName[variableName.Length - 1] == WildCardChar)
@@ -302,9 +305,9 @@ namespace Emby.Server.Implementations.Services
             }
 
             // Routes with least wildcard matches get the highest score
-            var score = Math.Max((100 - wildcardMatchCount), 1) * 1000
+            var score = Math.Max(100 - wildcardMatchCount, 1) * 1000
                         // Routes with less variable (and more literal) matches
-                        + Math.Max((10 - VariableArgsCount), 1) * 100;
+                        + Math.Max(10 - VariableArgsCount, 1) * 100;
 
             // Exact verb match is better than ANY
             if (Verbs.Length == 1 && string.Equals(httpMethod, Verbs[0], StringComparison.OrdinalIgnoreCase))
@@ -442,12 +445,14 @@ namespace Emby.Server.Implementations.Services
                     && requestComponents.Length >= this.TotalComponentsCount - this.wildcardCount;
 
                 if (!isValidWildCardPath)
+                {
                     throw new ArgumentException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Path Mismatch: Request Path '{0}' has invalid number of components compared to: '{1}'",
                             pathInfo,
                             this.restPath));
+                }
             }
 
             var requestKeyValuesMap = new Dictionary<string, string>();
@@ -483,7 +488,8 @@ namespace Emby.Server.Implementations.Services
                         sb.Append(value);
                         for (var j = pathIx + 1; j < requestComponents.Length; j++)
                         {
-                            sb.Append(PathSeperatorChar + requestComponents[j]);
+                            sb.Append(PathSeperatorChar)
+                                .Append(requestComponents[j]);
                         }
 
                         value = sb.ToString();
@@ -500,7 +506,8 @@ namespace Emby.Server.Implementations.Services
                             pathIx++;
                             while (!string.Equals(requestComponents[pathIx], stopLiteral, StringComparison.OrdinalIgnoreCase))
                             {
-                                sb.Append(PathSeperatorChar + requestComponents[pathIx++]);
+                                sb.Append(PathSeperatorChar)
+                                    .Append(requestComponents[pathIx++]);
                             }
 
                             value = sb.ToString();

@@ -1110,7 +1110,8 @@ namespace Emby.Server.Implementations.Data
                     continue;
                 }
 
-                str.Append(ToValueString(i) + "|");
+                str.Append(ToValueString(i))
+                    .Append('|');
             }
 
             str.Length -= 1; // Remove last |
@@ -2471,7 +2472,7 @@ namespace Emby.Server.Implementations.Data
                 var item = query.SimilarTo;
 
                 var builder = new StringBuilder();
-                builder.Append("(");
+                builder.Append('(');
 
                 if (string.IsNullOrEmpty(item.OfficialRating))
                 {
@@ -2509,7 +2510,7 @@ namespace Emby.Server.Implementations.Data
             if (!string.IsNullOrEmpty(query.SearchTerm))
             {
                 var builder = new StringBuilder();
-                builder.Append("(");
+                builder.Append('(');
 
                 builder.Append("((CleanName like @SearchTermStartsWith or (OriginalTitle not null and OriginalTitle like @SearchTermStartsWith)) * 10)");
 
@@ -2775,22 +2776,85 @@ namespace Emby.Server.Implementations.Data
 
         private string FixUnicodeChars(string buffer)
         {
-            if (buffer.IndexOf('\u2013') > -1) buffer = buffer.Replace('\u2013', '-'); // en dash
-            if (buffer.IndexOf('\u2014') > -1) buffer = buffer.Replace('\u2014', '-'); // em dash
-            if (buffer.IndexOf('\u2015') > -1) buffer = buffer.Replace('\u2015', '-'); // horizontal bar
-            if (buffer.IndexOf('\u2017') > -1) buffer = buffer.Replace('\u2017', '_'); // double low line
-            if (buffer.IndexOf('\u2018') > -1) buffer = buffer.Replace('\u2018', '\''); // left single quotation mark
-            if (buffer.IndexOf('\u2019') > -1) buffer = buffer.Replace('\u2019', '\''); // right single quotation mark
-            if (buffer.IndexOf('\u201a') > -1) buffer = buffer.Replace('\u201a', ','); // single low-9 quotation mark
-            if (buffer.IndexOf('\u201b') > -1) buffer = buffer.Replace('\u201b', '\''); // single high-reversed-9 quotation mark
-            if (buffer.IndexOf('\u201c') > -1) buffer = buffer.Replace('\u201c', '\"'); // left double quotation mark
-            if (buffer.IndexOf('\u201d') > -1) buffer = buffer.Replace('\u201d', '\"'); // right double quotation mark
-            if (buffer.IndexOf('\u201e') > -1) buffer = buffer.Replace('\u201e', '\"'); // double low-9 quotation mark
-            if (buffer.IndexOf('\u2026') > -1) buffer = buffer.Replace("\u2026", "..."); // horizontal ellipsis
-            if (buffer.IndexOf('\u2032') > -1) buffer = buffer.Replace('\u2032', '\''); // prime
-            if (buffer.IndexOf('\u2033') > -1) buffer = buffer.Replace('\u2033', '\"'); // double prime
-            if (buffer.IndexOf('\u0060') > -1) buffer = buffer.Replace('\u0060', '\''); // grave accent
-            if (buffer.IndexOf('\u00B4') > -1) buffer = buffer.Replace('\u00B4', '\''); // acute accent
+            if (buffer.IndexOf('\u2013') > -1)
+            {
+                buffer = buffer.Replace('\u2013', '-'); // en dash
+            }
+
+            if (buffer.IndexOf('\u2014') > -1)
+            {
+                buffer = buffer.Replace('\u2014', '-'); // em dash
+            }
+
+            if (buffer.IndexOf('\u2015') > -1)
+            {
+                buffer = buffer.Replace('\u2015', '-'); // horizontal bar
+            }
+
+            if (buffer.IndexOf('\u2017') > -1)
+            {
+                buffer = buffer.Replace('\u2017', '_'); // double low line
+            }
+
+            if (buffer.IndexOf('\u2018') > -1)
+            {
+                buffer = buffer.Replace('\u2018', '\''); // left single quotation mark
+            }
+
+            if (buffer.IndexOf('\u2019') > -1)
+            {
+                buffer = buffer.Replace('\u2019', '\''); // right single quotation mark
+            }
+
+            if (buffer.IndexOf('\u201a') > -1)
+            {
+                buffer = buffer.Replace('\u201a', ','); // single low-9 quotation mark
+            }
+
+            if (buffer.IndexOf('\u201b') > -1)
+            {
+                buffer = buffer.Replace('\u201b', '\''); // single high-reversed-9 quotation mark
+            }
+
+            if (buffer.IndexOf('\u201c') > -1)
+            {
+                buffer = buffer.Replace('\u201c', '\"'); // left double quotation mark
+            }
+
+            if (buffer.IndexOf('\u201d') > -1)
+            {
+                buffer = buffer.Replace('\u201d', '\"'); // right double quotation mark
+            }
+
+            if (buffer.IndexOf('\u201e') > -1)
+            {
+                buffer = buffer.Replace('\u201e', '\"'); // double low-9 quotation mark
+            }
+
+            if (buffer.IndexOf('\u2026') > -1)
+            {
+                buffer = buffer.Replace("\u2026", "..."); // horizontal ellipsis
+            }
+
+            if (buffer.IndexOf('\u2032') > -1)
+            {
+                buffer = buffer.Replace('\u2032', '\''); // prime
+            }
+
+            if (buffer.IndexOf('\u2033') > -1)
+            {
+                buffer = buffer.Replace('\u2033', '\"'); // double prime
+            }
+
+            if (buffer.IndexOf('\u0060') > -1)
+            {
+                buffer = buffer.Replace('\u0060', '\''); // grave accent
+            }
+
+            if (buffer.IndexOf('\u00B4') > -1)
+            {
+                buffer = buffer.Replace('\u00B4', '\''); // acute accent
+            }
 
             return buffer;
         }
@@ -5175,7 +5239,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             {
                 if (i > 0)
                 {
-                    insertText.Append(",");
+                    insertText.Append(',');
                 }
 
                 insertText.AppendFormat("(@ItemId, @AncestorId{0}, @AncestorIdText{0})", i.ToString(CultureInfo.InvariantCulture));
@@ -6268,7 +6332,10 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
                     foreach (var column in _mediaAttachmentSaveColumns.Skip(1))
                     {
-                        insertText.Append("@" + column + index + ",");
+                        insertText.Append('@')
+                            .Append(column)
+                            .Append(index)
+                            .Append(',');
                     }
 
                     insertText.Length -= 1;
@@ -6308,7 +6375,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
         /// Gets the attachment.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <returns>MediaAttachment</returns>
+        /// <returns>MediaAttachment.</returns>
         private MediaAttachment GetMediaAttachment(IReadOnlyList<IResultSetValue> reader)
         {
             var item = new MediaAttachment
