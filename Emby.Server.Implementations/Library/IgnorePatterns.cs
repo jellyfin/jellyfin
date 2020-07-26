@@ -18,7 +18,21 @@ namespace Emby.Server.Implementations.Library
         {
             "**/small.jpg",
             "**/albumart.jpg",
-            "**/*sample*",
+
+            // We have neither non-greedy matching or character group repetitions, working around that here.
+            // https://github.com/dazinator/DotNet.Glob#patterns
+            // .*/sample\..{1,5}
+            "**/sample.?",
+            "**/sample.??",
+            "**/sample.???", // Matches sample.mkv
+            "**/sample.????", // Matches sample.webm
+            "**/sample.?????",
+            "**/*.sample.?",
+            "**/*.sample.??",
+            "**/*.sample.???",
+            "**/*.sample.????",
+            "**/*.sample.?????",
+            "**/sample/*",
 
             // Directories
             "**/metadata/**",
@@ -64,9 +78,12 @@ namespace Emby.Server.Implementations.Library
             "**/.grab/**",
             "**/.grab",
 
-            // Unix hidden files and directories
-            "**/.*/**",
+            // Unix hidden files
             "**/.*",
+
+            // Mac - if you ever remove the above.
+            // "**/._*",
+            // "**/.DS_Store",
 
             // thumbs.db
             "**/thumbs.db",
