@@ -21,16 +21,17 @@ namespace Emby.Server.Implementations.Library
 
             // We have neither non-greedy matching or character group repetitions, working around that here.
             // https://github.com/dazinator/DotNet.Glob#patterns
+            // .*/sample\..{1,5}
+            "**/sample.?",
+            "**/sample.??",
+            "**/sample.???", // Matches sample.mkv
+            "**/sample.????", // Matches sample.webm
+            "**/sample.?????",
             "**/*.sample.?",
             "**/*.sample.??",
             "**/*.sample.???",
             "**/*.sample.????",
             "**/*.sample.?????",
-            "**/sample.?",
-            "**/sample.??",
-            "**/sample.???",
-            "**/sample.????",
-            "**/sample.?????",
             "**/sample/*",
 
             // Directories
