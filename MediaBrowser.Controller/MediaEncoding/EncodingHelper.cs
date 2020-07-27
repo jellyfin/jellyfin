@@ -530,6 +530,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             .Append(' ')
                             .Append("-filter_hw_device ocl ");
                     }
+                }
 
                 if (state.IsVideoRequest
                     && string.Equals(encodingOptions.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
