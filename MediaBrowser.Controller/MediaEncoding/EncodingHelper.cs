@@ -457,6 +457,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isNvencHevcDecoder = videoDecoder.IndexOf("hevc_cuvid", StringComparison.OrdinalIgnoreCase) != -1;
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            var isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
             if (!IsCopyCodec(outputVideoCodec))
             {
@@ -529,6 +530,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                             .Append(' ')
                             .Append("-filter_hw_device ocl ");
                     }
+
+                if (state.IsVideoRequest
+                    && string.Equals(encodingOptions.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
+                {
+                    arg.Append("-hwaccel videotoolbox ");
                 }
             }
 
