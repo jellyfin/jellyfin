@@ -1,3 +1,9 @@
+jellyfin-server (10.6.1-1) unstable; urgency=medium
+
+  * New upstream version 10.6.1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.6.1
+
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Mon, 27 Jul 2020 18:59:03 -0400
+
 jellyfin-server (10.6.0-2) unstable; urgency=medium
 
   * Fix upgrade bug
