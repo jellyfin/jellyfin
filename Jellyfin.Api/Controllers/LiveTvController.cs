@@ -24,7 +24,6 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
@@ -45,9 +44,9 @@ namespace Jellyfin.Api.Controllers
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly ISessionContext _sessionContext;
-        private readonly IStreamHelper _streamHelper;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IConfigurationManager _configurationManager;
+        private readonly TranscodingJobHelper _transcodingJobHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LiveTvController"/> class.
@@ -58,9 +57,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="sessionContext">Instance of the <see cref="ISessionContext"/> interface.</param>
-        /// <param name="streamHelper">Instance of the <see cref="IStreamHelper"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
         public LiveTvController(
             ILiveTvManager liveTvManager,
             IUserManager userManager,
@@ -68,9 +67,9 @@ namespace Jellyfin.Api.Controllers
             ILibraryManager libraryManager,
             IDtoService dtoService,
             ISessionContext sessionContext,
-            IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
-            IConfigurationManager configurationManager)
+            IConfigurationManager configurationManager,
+            TranscodingJobHelper transcodingJobHelper)
         {
             _liveTvManager = liveTvManager;
             _userManager = userManager;
@@ -78,9 +77,9 @@ namespace Jellyfin.Api.Controllers
             _libraryManager = libraryManager;
             _dtoService = dtoService;
             _sessionContext = sessionContext;
-            _streamHelper = streamHelper;
             _mediaSourceManager = mediaSourceManager;
             _configurationManager = configurationManager;
+            _transcodingJobHelper = transcodingJobHelper;
         }
 
         /// <summary>
@@ -1187,7 +1186,9 @@ namespace Jellyfin.Api.Controllers
             }
 
             await using var memoryStream = new MemoryStream();
-            await new ProgressiveFileCopier(_streamHelper, path).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+            await new ProgressiveFileCopier(path, null, _transcodingJobHelper, CancellationToken.None)
+                .WriteToAsync(memoryStream, CancellationToken.None)
+                .ConfigureAwait(false);
             return File(memoryStream, MimeTypes.GetMimeType(path));
         }
 
@@ -1214,7 +1215,9 @@ namespace Jellyfin.Api.Controllers
             }
 
             await using var memoryStream = new MemoryStream();
-            await new ProgressiveFileCopier(_streamHelper, liveStreamInfo).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+            await new ProgressiveFileCopier(liveStreamInfo, null, _transcodingJobHelper, CancellationToken.None)
+                .WriteToAsync(memoryStream, CancellationToken.None)
+                .ConfigureAwait(false);
             return File(memoryStream, MimeTypes.GetMimeType("file." + container));
         }
 

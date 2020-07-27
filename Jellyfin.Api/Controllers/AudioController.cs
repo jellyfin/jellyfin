@@ -35,7 +35,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IStreamHelper _streamHelper;
         private readonly IFileSystem _fileSystem;
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfiguration _configuration;
@@ -55,7 +54,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="streamHelper">Instance of the <see cref="IStreamHelper"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
         /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
@@ -70,7 +68,6 @@ namespace Jellyfin.Api.Controllers
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
-            IStreamHelper streamHelper,
             IFileSystem fileSystem,
             ISubtitleEncoder subtitleEncoder,
             IConfiguration configuration,
@@ -85,7 +82,6 @@ namespace Jellyfin.Api.Controllers
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
-            _streamHelper = streamHelper;
             _fileSystem = fileSystem;
             _subtitleEncoder = subtitleEncoder;
             _configuration = configuration;
@@ -283,8 +279,11 @@ namespace Jellyfin.Api.Controllers
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
-                // TODO AllowEndOfFile = false
-                await new ProgressiveFileCopier(_streamHelper, state.DirectStreamProvider).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
+                await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
+                    {
+                        AllowEndOfFile = false
+                    }.WriteToAsync(Response.Body, CancellationToken.None)
+                    .ConfigureAwait(false);
 
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
                 return File(Response.Body, MimeTypes.GetMimeType("file.ts")!);
@@ -319,8 +318,11 @@ namespace Jellyfin.Api.Controllers
 
                 if (state.MediaSource.IsInfiniteStream)
                 {
-                    // TODO AllowEndOfFile = false
-                    await new ProgressiveFileCopier(_streamHelper, state.MediaPath).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
+                    await new ProgressiveFileCopier(state.MediaPath, null, _transcodingJobHelper, CancellationToken.None)
+                        {
+                            AllowEndOfFile = false
+                        }.WriteToAsync(Response.Body, CancellationToken.None)
+                        .ConfigureAwait(false);
 
                     return File(Response.Body, contentType);
                 }
@@ -339,7 +341,6 @@ namespace Jellyfin.Api.Controllers
             return await FileStreamResponseHelpers.GetTranscodedFile(
                 state,
                 isHeadRequest,
-                _streamHelper,
                 this,
                 _transcodingJobHelper,
                 ffmpegCommandLineArguments,

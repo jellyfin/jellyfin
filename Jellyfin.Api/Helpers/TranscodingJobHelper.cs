@@ -681,6 +681,20 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
+        /// Called when [transcode end].
+        /// </summary>
+        /// <param name="job">The transcode job.</param>
+        public void OnTranscodeEndRequest(TranscodingJobDto job)
+        {
+            job.ActiveRequestCount--;
+            _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={ActiveRequestCount}", job.ActiveRequestCount);
+            if (job.ActiveRequestCount <= 0)
+            {
+                PingTimer(job, false);
+            }
+        }
+
+        /// <summary>
         /// <summary>
         /// The progressive
         /// </summary>
