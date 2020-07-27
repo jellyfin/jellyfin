@@ -13,22 +13,22 @@ namespace MediaBrowser.Controller.QuickConnect
         /// <summary>
         /// Gets or sets the length of user facing codes.
         /// </summary>
-        public int CodeLength { get; set; }
+        int CodeLength { get; set; }
 
         /// <summary>
         /// Gets or sets the string to prefix internal access tokens with.
         /// </summary>
-        public string TokenNamePrefix { get; set; }
+        string TokenNamePrefix { get; set; }
 
         /// <summary>
         /// Gets the current state of quick connect.
         /// </summary>
-        public QuickConnectState State { get; }
+        QuickConnectState State { get; }
 
         /// <summary>
         /// Gets or sets the time (in minutes) before quick connect will automatically deactivate.
         /// </summary>
-        public int Timeout { get; set; }
+        int Timeout { get; set; }
 
         /// <summary>
         /// Assert that quick connect is currently active and throws an exception if it is not.
@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.QuickConnect
         /// Expire quick connect requests that are over the time limit. If <paramref name="expireAll"/> is true, all requests are unconditionally expired.
         /// </summary>
         /// <param name="expireAll">If true, all requests will be expired.</param>
-        public void ExpireRequests(bool expireAll = false);
+        void ExpireRequests(bool expireAll = false);
 
         /// <summary>
         /// Deletes all quick connect access tokens for the provided user.
