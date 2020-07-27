@@ -14,6 +14,7 @@ using MediaBrowser.Model.Services;
 using MediaBrowser.Common;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Authentication;
 
 namespace Emby.Server.Implementations.QuickConnect
 {
@@ -83,13 +84,13 @@ namespace Emby.Server.Implementations.QuickConnect
         public void Activate()
         {
             DateActivated = DateTime.Now;
-            SetEnabled(QuickConnectState.Active);
+            SetState(QuickConnectState.Active);
         }
 
         /// <inheritdoc/>
-        public void SetEnabled(QuickConnectState newState)
+        public void SetState(QuickConnectState newState)
         {
-            _logger.LogDebug("Changed quick connect state from {0} to {1}", State, newState);
+            _logger.LogDebug("Changed quick connect state from {State} to {newState}", State, newState);
 
             ExpireRequests(true);
 
@@ -107,12 +108,8 @@ namespace Emby.Server.Implementations.QuickConnect
 
             if (State != QuickConnectState.Active)
             {
-                _logger.LogDebug("Refusing quick connect initiation request, current state is {0}", State);
-
-                return new QuickConnectResult()
-                {
-                    Error = "Quick connect is not active on this server"
-                };
+                _logger.LogDebug("Refusing quick connect initiation request, current state is {State}", State);
+                throw new AuthenticationException("Quick connect is not active on this server");
             }
 
             _logger.LogDebug("Got new quick connect request from {friendlyName}", friendlyName);
@@ -200,7 +197,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 UserId = auth.UserId
             });
 
-            _logger.LogInformation("Allowing device {0} to login as user {1} with quick connect code {2}", result.FriendlyName, auth.User.Username, result.Code);
+            _logger.LogInformation("Allowing device {FriendlyName} to login as user {Username} with quick connect code {Code}", result.FriendlyName, auth.User.Username, result.Code);
 
             return true;
         }
@@ -216,13 +213,15 @@ namespace Emby.Server.Implementations.QuickConnect
 
             var tokens = raw.Items.Where(x => x.AppName.StartsWith(TokenNamePrefix, StringComparison.CurrentCulture));
 
+            var removed = 0;
             foreach (var token in tokens)
             {
                 _authenticationRepository.Delete(token);
-                _logger.LogDebug("Deleted token {0}", token.AccessToken);
+                _logger.LogDebug("Deleted token {AccessToken}", token.AccessToken);
+                removed++;
             }
 
-            return tokens.Count();
+            return removed;
         }
 
         /// <summary>
@@ -261,7 +260,7 @@ namespace Emby.Server.Implementations.QuickConnect
             if (State == QuickConnectState.Active && DateTime.Now > DateActivated.AddMinutes(Timeout) && !expireAll)
             {
                 _logger.LogDebug("Quick connect time expired, deactivating");
-                SetEnabled(QuickConnectState.Available);
+                SetState(QuickConnectState.Available);
                 expireAll = true;
             }
 

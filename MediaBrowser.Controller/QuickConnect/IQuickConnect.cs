@@ -41,16 +41,16 @@ namespace MediaBrowser.Controller.QuickConnect
         void Activate();
 
         /// <summary>
-        /// Changes the status of quick connect.
+        /// Changes the state of quick connect.
         /// </summary>
         /// <param name="newState">New state to change to.</param>
-        void SetEnabled(QuickConnectState newState);
+        void SetState(QuickConnectState newState);
 
         /// <summary>
         /// Initiates a new quick connect request.
         /// </summary>
         /// <param name="friendlyName">Friendly device name to display in the request UI.</param>
-        /// <returns>A quick connect result with tokens to proceed or a descriptive error message otherwise.</returns>
+        /// <returns>A quick connect result with tokens to proceed or throws an exception if not active.</returns>
         QuickConnectResult TryConnect(string friendlyName);
 
         /// <summary>

@@ -125,7 +125,7 @@ namespace MediaBrowser.Api.QuickConnect
 
         public object Post(Available request)
         {
-            _quickConnect.SetEnabled(request.Status);
+            _quickConnect.SetState(request.Status);
             return _quickConnect.State;
         }
     }
