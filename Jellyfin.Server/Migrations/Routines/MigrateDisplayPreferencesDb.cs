@@ -119,7 +119,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                         var libraryDisplayPreferences = new ItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client)
                         {
-                            SortBy = dto.SortBy,
+                            SortBy = dto.SortBy ?? "SortName",
                             SortOrder = dto.SortOrder,
                             RememberIndexing = dto.RememberIndexing,
                             RememberSorting = dto.RememberSorting,
