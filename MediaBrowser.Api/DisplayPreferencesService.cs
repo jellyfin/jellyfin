@@ -52,7 +52,7 @@ namespace MediaBrowser.Api
     public class DisplayPreferencesService : BaseApiService
     {
         /// <summary>
-        /// The user manager.
+        /// The display preferences manager.
         /// </summary>
         private readonly IDisplayPreferencesManager _displayPreferencesManager;
 
