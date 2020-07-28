@@ -144,6 +144,7 @@ namespace MediaBrowser.Api
                 : true;
             prefs.SkipBackwardLength = request.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength) ? int.Parse(skipBackLength) : 10000;
             prefs.SkipForwardLength = request.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength) ? int.Parse(skipForwardLength) : 30000;
+            prefs.DashboardTheme = request.CustomPrefs.TryGetValue("dashboardTheme", out var theme) ? theme : string.Empty;
             prefs.HomeSections.Clear();
 
             foreach (var key in request.CustomPrefs.Keys.Where(key => key.StartsWith("homesection")))

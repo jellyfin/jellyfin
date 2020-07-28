@@ -26,6 +26,7 @@ namespace Jellyfin.Data.Entities
             SkipBackwardLength = 10000;
             ScrollDirection = ScrollDirection.Horizontal;
             ChromecastVersion = ChromecastVersion.Stable;
+            DashboardTheme = string.Empty;
 
             HomeSections = new HashSet<HomeSection>();
         }
@@ -125,6 +126,13 @@ namespace Jellyfin.Data.Entities
         /// Required.
         /// </remarks>
         public bool EnableNextVideoInfoOverlay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the dashboard theme.
+        /// </summary>
+        [MaxLength(32)]
+        [StringLength(32)]
+        public string DashboardTheme { get; set; }
 
         /// <summary>
         /// Gets or sets the home sections.
