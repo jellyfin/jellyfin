@@ -27,6 +27,7 @@ namespace Jellyfin.Data.Entities
             ScrollDirection = ScrollDirection.Horizontal;
             ChromecastVersion = ChromecastVersion.Stable;
             DashboardTheme = string.Empty;
+            TvHome = string.Empty;
 
             HomeSections = new HashSet<HomeSection>();
         }
@@ -133,6 +134,13 @@ namespace Jellyfin.Data.Entities
         [MaxLength(32)]
         [StringLength(32)]
         public string DashboardTheme { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tv home screen.
+        /// </summary>
+        [MaxLength(32)]
+        [StringLength(32)]
+        public string TvHome { get; set; }
 
         /// <summary>
         /// Gets or sets the home sections.

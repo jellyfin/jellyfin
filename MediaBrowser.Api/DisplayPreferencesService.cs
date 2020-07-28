@@ -108,6 +108,7 @@ namespace MediaBrowser.Api
             dto.CustomPrefs["skipForwardLength"] = displayPreferences.SkipForwardLength.ToString();
             dto.CustomPrefs["skipBackLength"] = displayPreferences.SkipBackwardLength.ToString();
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString();
+            dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
 
             return ToOptimizedResult(dto);
         }
@@ -145,6 +146,7 @@ namespace MediaBrowser.Api
             prefs.SkipBackwardLength = request.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength) ? int.Parse(skipBackLength) : 10000;
             prefs.SkipForwardLength = request.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength) ? int.Parse(skipForwardLength) : 30000;
             prefs.DashboardTheme = request.CustomPrefs.TryGetValue("dashboardTheme", out var theme) ? theme : string.Empty;
+            prefs.TvHome = request.CustomPrefs.TryGetValue("tvhome", out var home) ? home : string.Empty;
             prefs.HomeSections.Clear();
 
             foreach (var key in request.CustomPrefs.Keys.Where(key => key.StartsWith("homesection")))

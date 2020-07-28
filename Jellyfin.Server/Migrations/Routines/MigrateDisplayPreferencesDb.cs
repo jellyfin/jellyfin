@@ -94,7 +94,9 @@ namespace Jellyfin.Server.Migrations.Routines
                             : 10000,
                         EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled)
                             ? bool.Parse(enabled)
-                            : true
+                            : true,
+                        DashboardTheme = dto.CustomPrefs.TryGetValue("dashboardtheme", out var theme) ? theme : string.Empty,
+                        TvHome = dto.CustomPrefs.TryGetValue("tvhome", out var home) ? home : string.Empty
                     };
 
                     for (int i = 0; i < 7; i++)
