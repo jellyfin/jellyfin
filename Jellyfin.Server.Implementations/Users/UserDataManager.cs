@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Configuration;
@@ -51,6 +52,9 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 userData = new UserItemData { UserId = userId, ItemId = itemId };
                 dbContext.Add(userData);
+
+                // TODO: Remove once we implement scoped services
+                dbContext.SaveChanges();
             }
 
             return userData;
@@ -61,10 +65,9 @@ namespace Jellyfin.Server.Implementations.Users
         {
             var dbContext = _provider.CreateContext();
 
-            // Because we can't reuse DbContexts within requests, we have to manually reattach the object and determine
-            // if it was added or modified.
+            // Because we can't reuse DbContexts within requests, we have to manually reattach the object and mark it as modified.
             // TODO: clean up when we have scoping
-            dbContext.Update(itemData).State = itemData.Id == 0 ? EntityState.Added : EntityState.Modified;
+            dbContext.Update(itemData).State = EntityState.Modified;
             dbContext.SaveChanges();
 
             UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
