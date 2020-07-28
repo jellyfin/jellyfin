@@ -18,6 +18,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Subtitles;
 using Microsoft.Extensions.Logging;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
@@ -123,10 +124,18 @@ namespace MediaBrowser.Api.Subtitles
         public int SegmentLength { get; set; }
     }
 
+    [Route("/FallbackFont/FontList", "GET", Summary = "Gets the fallback font list")]
+    [Authenticated]
+    public class GetFallbackFontList
+    {
+    }
+
     [Route("/FallbackFont/Font", "GET", Summary = "Gets the fallback font file")]
     [Authenticated]
     public class GetFallbackFont
     {
+        [ApiMember(Name = "Name", Description = "The font file name.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Name { get; set; }
     }
 
     public class SubtitleService : BaseApiService
@@ -308,19 +317,74 @@ namespace MediaBrowser.Api.Subtitles
             });
         }
 
-        public async Task<object> Get(GetFallbackFont request)
+        public object Get(GetFallbackFontList request)
         {
-            var fallbackFontPath = EncodingConfigurationExtensions.GetEncodingOptions(_serverConfigurationManager).FallbackFontPath;
+            IEnumerable<FileSystemMetadata> fontFiles = Enumerable.Empty<FileSystemMetadata>();
+
+            var encodingOptions = EncodingConfigurationExtensions.GetEncodingOptions(_serverConfigurationManager);
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
 
             if (!string.IsNullOrEmpty(fallbackFontPath))
             {
-                var directoryService = new DirectoryService(_fileSystem);
-
                 try
                 {
-                    // 10 Megabytes
+                    fontFiles = _fileSystem.GetFiles(fallbackFontPath, new[] { ".woff", ".woff2", ".ttf", ".otf" }, false, false);
+
+                    var result = fontFiles.Select(i => new FontFile
+                    {
+                        Name = i.Name,
+                        Size = i.Length,
+                        DateCreated = _fileSystem.GetCreationTimeUtc(i),
+                        DateModified = _fileSystem.GetLastWriteTimeUtc(i)
+                    }).OrderBy(i => i.Size)
+                        .ThenBy(i => i.Name)
+                        .ThenByDescending(i => i.DateModified)
+                        .ThenByDescending(i => i.DateCreated)
+                        .ToArray();
+
+                    // max total size 20M
+                    var maxSize = 20971520;
+                    var sizeCounter = 0L;
+                    for (int i = 0; i < result.Length; i++)
+                    {
+                        sizeCounter += result[i].Size;
+                        if (sizeCounter >= maxSize)
+                        {
+                            Logger.LogWarning("Some fonts will not be sent due to size limitations");
+                            Array.Resize(ref result, i);
+                            break;
+                        }
+                    }
+
+                    return ToOptimizedResult(result);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error getting fallback font list");
+                }
+            }
+            else
+            {
+                Logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
+            }
+
+            return ResultFactory.GetResult(Request, "[]", "application/json");
+        }
+
+        public async Task<object> Get(GetFallbackFont request)
+        {
+            var encodingOptions = EncodingConfigurationExtensions.GetEncodingOptions(_serverConfigurationManager);
+            var fallbackFontPath = encodingOptions.FallbackFontPath;
+
+            if (!string.IsNullOrEmpty(fallbackFontPath))
+            {
+                try
+                {
+                    // max single font size 10M
                     var maxSize = 10485760;
-                    var fontFile = directoryService.GetFile(fallbackFontPath);
+                    var fontFile = _fileSystem.GetFiles(fallbackFontPath)
+                        .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
                     var fileSize = fontFile?.Length;
 
                     if (fileSize != null && fileSize > 0)
@@ -341,15 +405,16 @@ namespace MediaBrowser.Api.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error reading fallback font file");
+                    Logger.LogError(ex, "Error reading fallback font");
                 }
             }
             else
             {
-                Logger.LogWarning("The path of fallback font has not been set");
+                Logger.LogWarning("The path of fallback font folder has not been set");
+                encodingOptions.EnableFallbackFont = false;
             }
 
-            return string.Empty;
+            return ResultFactory.GetResult(Request, string.Empty, "text/plain");
         }
     }
 }
