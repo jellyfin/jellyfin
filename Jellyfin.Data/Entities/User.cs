@@ -48,7 +48,7 @@ namespace Jellyfin.Data.Entities
             PasswordResetProviderId = passwordResetProviderId;
 
             AccessSchedules = new HashSet<AccessSchedule>();
-            LibraryDisplayPreferences = new HashSet<LibraryDisplayPreferences>();
+            ItemDisplayPreferences = new HashSet<ItemDisplayPreferences>();
             // Groups = new HashSet<Group>();
             Permissions = new HashSet<Permission>();
             Preferences = new HashSet<Preference>();
@@ -362,7 +362,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets the list of item display preferences.
         /// </summary>
-        public virtual ICollection<LibraryDisplayPreferences> LibraryDisplayPreferences { get; protected set; }
+        public virtual ICollection<ItemDisplayPreferences> ItemDisplayPreferences { get; protected set; }
 
         /*
         /// <summary>

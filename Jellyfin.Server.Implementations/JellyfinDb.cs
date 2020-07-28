@@ -32,6 +32,8 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<ImageInfo> ImageInfos { get; set; }
 
+        public virtual DbSet<ItemDisplayPreferences> ItemDisplayPreferences { get; set; }
+
         public virtual DbSet<Permission> Permissions { get; set; }
 
         public virtual DbSet<Preference> Preferences { get; set; }

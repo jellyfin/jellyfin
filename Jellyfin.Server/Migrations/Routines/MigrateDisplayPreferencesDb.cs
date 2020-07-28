@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
@@ -78,16 +79,11 @@ namespace Jellyfin.Server.Migrations.Routines
                             : ChromecastVersion.Stable
                         : ChromecastVersion.Stable;
 
-                    var displayPreferences = new DisplayPreferences(result[2].ToString(), new Guid(result[1].ToBlob()))
+                    var displayPreferences = new DisplayPreferences(new Guid(result[1].ToBlob()), result[2].ToString())
                     {
-                        ViewType = Enum.TryParse<ViewType>(dto.ViewType, true, out var viewType) ? viewType : (ViewType?)null,
                         IndexBy = Enum.TryParse<IndexingKind>(dto.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null,
                         ShowBackdrop = dto.ShowBackdrop,
                         ShowSidebar = dto.ShowSidebar,
-                        SortBy = dto.SortBy,
-                        SortOrder = dto.SortOrder,
-                        RememberIndexing = dto.RememberIndexing,
-                        RememberSorting = dto.RememberSorting,
                         ScrollDirection = dto.ScrollDirection,
                         ChromecastVersion = chromecastVersion,
                         SkipForwardLength = dto.CustomPrefs.TryGetValue("skipForwardLength", out var length)
@@ -95,7 +91,7 @@ namespace Jellyfin.Server.Migrations.Routines
                             : 30000,
                         SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length)
                             ? int.Parse(length, CultureInfo.InvariantCulture)
-                            : 30000,
+                            : 10000,
                         EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled)
                             ? bool.Parse(enabled)
                             : true
@@ -110,6 +106,29 @@ namespace Jellyfin.Server.Migrations.Routines
                             Order = i,
                             Type = Enum.TryParse<HomeSectionType>(homeSection, true, out var type) ? type : defaults[i]
                         });
+                    }
+
+                    foreach (var key in dto.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.Ordinal)))
+                    {
+                        if (!Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var itemId))
+                        {
+                            continue;
+                        }
+
+                        var libraryDisplayPreferences = new ItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client)
+                        {
+                            SortBy = dto.SortBy,
+                            SortOrder = dto.SortOrder,
+                            RememberIndexing = dto.RememberIndexing,
+                            RememberSorting = dto.RememberSorting,
+                        };
+
+                        if (Enum.TryParse<ViewType>(dto.ViewType, true, out var viewType))
+                        {
+                            libraryDisplayPreferences.ViewType = viewType;
+                        }
+
+                        dbContext.ItemDisplayPreferences.Add(libraryDisplayPreferences);
                     }
 
                     dbContext.Add(displayPreferences);

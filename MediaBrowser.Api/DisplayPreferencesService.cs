@@ -76,37 +76,38 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            var result = _displayPreferencesManager.GetDisplayPreferences(Guid.Parse(request.UserId), request.Client);
-
-            if (result == null)
-            {
-                return null;
-            }
+            var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(Guid.Parse(request.UserId), request.Client);
+            var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client);
 
             var dto = new DisplayPreferencesDto
             {
-                Client = result.Client,
-                Id = result.UserId.ToString(),
-                ViewType = result.ViewType?.ToString(),
-                SortBy = result.SortBy,
-                SortOrder = result.SortOrder,
-                IndexBy = result.IndexBy?.ToString(),
-                RememberIndexing = result.RememberIndexing,
-                RememberSorting = result.RememberSorting,
-                ScrollDirection = result.ScrollDirection,
-                ShowBackdrop = result.ShowBackdrop,
-                ShowSidebar = result.ShowSidebar
+                Client = displayPreferences.Client,
+                Id = displayPreferences.UserId.ToString(),
+                ViewType = itemPreferences.ViewType.ToString(),
+                SortBy = itemPreferences.SortBy,
+                SortOrder = itemPreferences.SortOrder,
+                IndexBy = displayPreferences.IndexBy?.ToString(),
+                RememberIndexing = itemPreferences.RememberIndexing,
+                RememberSorting = itemPreferences.RememberSorting,
+                ScrollDirection = displayPreferences.ScrollDirection,
+                ShowBackdrop = displayPreferences.ShowBackdrop,
+                ShowSidebar = displayPreferences.ShowSidebar
             };
 
-            foreach (var homeSection in result.HomeSections)
+            foreach (var homeSection in displayPreferences.HomeSections)
             {
                 dto.CustomPrefs["homesection" + homeSection.Order] = homeSection.Type.ToString().ToLowerInvariant();
             }
 
-            dto.CustomPrefs["chromecastVersion"] = result.ChromecastVersion.ToString().ToLowerInvariant();
-            dto.CustomPrefs["skipForwardLength"] = result.SkipForwardLength.ToString();
-            dto.CustomPrefs["skipBackLength"] = result.SkipBackwardLength.ToString();
-            dto.CustomPrefs["enableNextVideoInfoOverlay"] = result.EnableNextVideoInfoOverlay.ToString();
+            foreach (var itemDisplayPreferences in _displayPreferencesManager.ListItemDisplayPreferences(displayPreferences.UserId, displayPreferences.Client))
+            {
+                dto.CustomPrefs["landing-" + itemDisplayPreferences.ItemId] = itemDisplayPreferences.ViewType.ToString().ToLowerInvariant();
+            }
+
+            dto.CustomPrefs["chromecastVersion"] = displayPreferences.ChromecastVersion.ToString().ToLowerInvariant();
+            dto.CustomPrefs["skipForwardLength"] = displayPreferences.SkipForwardLength.ToString();
+            dto.CustomPrefs["skipBackLength"] = displayPreferences.SkipBackwardLength.ToString();
+            dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString();
 
             return ToOptimizedResult(dto);
         }
@@ -130,14 +131,10 @@ namespace MediaBrowser.Api
 
             var prefs = _displayPreferencesManager.GetDisplayPreferences(Guid.Parse(request.UserId), request.Client);
 
-            prefs.ViewType = Enum.TryParse<ViewType>(request.ViewType, true, out var viewType) ? viewType : (ViewType?)null;
             prefs.IndexBy = Enum.TryParse<IndexingKind>(request.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null;
             prefs.ShowBackdrop = request.ShowBackdrop;
             prefs.ShowSidebar = request.ShowSidebar;
-            prefs.SortBy = request.SortBy;
-            prefs.SortOrder = request.SortOrder;
-            prefs.RememberIndexing = request.RememberIndexing;
-            prefs.RememberSorting = request.RememberSorting;
+
             prefs.ScrollDirection = request.ScrollDirection;
             prefs.ChromecastVersion = request.CustomPrefs.TryGetValue("chromecastVersion", out var chromecastVersion)
                 ? Enum.Parse<ChromecastVersion>(chromecastVersion, true)
@@ -164,7 +161,26 @@ namespace MediaBrowser.Api
                 });
             }
 
+            foreach (var key in request.CustomPrefs.Keys.Where(key => key.StartsWith("landing-")))
+            {
+                var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(prefs.UserId, Guid.Parse(key.Substring("landing-".Length)), prefs.Client);
+                itemPreferences.ViewType = Enum.Parse<ViewType>(request.ViewType);
+                _displayPreferencesManager.SaveChanges(itemPreferences);
+            }
+
+            var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(prefs.UserId, Guid.Empty, prefs.Client);
+            itemPrefs.SortBy = request.SortBy;
+            itemPrefs.SortOrder = request.SortOrder;
+            itemPrefs.RememberIndexing = request.RememberIndexing;
+            itemPrefs.RememberSorting = request.RememberSorting;
+
+            if (Enum.TryParse<ViewType>(request.ViewType, true, out var viewType))
+            {
+                itemPrefs.ViewType = viewType;
+            }
+
             _displayPreferencesManager.SaveChanges(prefs);
+            _displayPreferencesManager.SaveChanges(itemPrefs);
         }
     }
 }

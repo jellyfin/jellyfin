@@ -5,15 +5,15 @@ using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
 {
-    public class LibraryDisplayPreferences
+    public class ItemDisplayPreferences
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryDisplayPreferences"/> class.
+        /// Initializes a new instance of the <see cref="ItemDisplayPreferences"/> class.
         /// </summary>
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="client">The client.</param>
-        public LibraryDisplayPreferences(Guid userId, Guid itemId, string client)
+        public ItemDisplayPreferences(Guid userId, Guid itemId, string client)
         {
             UserId = userId;
             ItemId = itemId;
@@ -27,9 +27,9 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryDisplayPreferences"/> class.
+        /// Initializes a new instance of the <see cref="ItemDisplayPreferences"/> class.
         /// </summary>
-        protected LibraryDisplayPreferences()
+        protected ItemDisplayPreferences()
         {
         }
 
