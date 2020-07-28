@@ -110,6 +110,16 @@ namespace Jellyfin.Server.Migrations.Routines
                         });
                     }
 
+                    var defaultLibraryPrefs = new ItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client)
+                    {
+                        SortBy = dto.SortBy ?? "SortName",
+                        SortOrder = dto.SortOrder,
+                        RememberIndexing = dto.RememberIndexing,
+                        RememberSorting = dto.RememberSorting,
+                    };
+
+                    dbContext.Add(defaultLibraryPrefs);
+
                     foreach (var key in dto.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.Ordinal)))
                     {
                         if (!Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var itemId))
