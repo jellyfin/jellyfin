@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Jellyfin.Server.Implementations.Migrations
 {
-    public partial class AddUserData : Migration
+    public partial class AddUserItemData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
