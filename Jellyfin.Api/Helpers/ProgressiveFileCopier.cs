@@ -93,23 +93,15 @@ namespace Jellyfin.Api.Helpers
                 await using var inputStream = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, fileOptions);
 
                 var eofCount = 0;
-                const int emptyReadLimit = 20;
+                const int EmptyReadLimit = 20;
                 if (StartPosition > 0)
                 {
                     inputStream.Position = StartPosition;
                 }
 
-                while (eofCount < emptyReadLimit || !AllowEndOfFile)
+                while (eofCount < EmptyReadLimit || !AllowEndOfFile)
                 {
-                    int bytesRead;
-                    if (allowAsyncFileRead)
-                    {
-                        bytesRead = await CopyToInternalAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        bytesRead = await CopyToInternalAsyncWithSyncRead(inputStream, outputStream, cancellationToken).ConfigureAwait(false);
-                    }
+                    var bytesRead = await CopyToInternalAsync(inputStream, outputStream, allowAsyncFileRead, cancellationToken).ConfigureAwait(false);
 
                     if (bytesRead == 0)
                     {
@@ -135,13 +127,22 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private async Task<int> CopyToInternalAsyncWithSyncRead(Stream source, Stream destination, CancellationToken cancellationToken)
+        private async Task<int> CopyToInternalAsync(Stream source, Stream destination, bool readAsync, CancellationToken cancellationToken)
         {
-            var array = new byte[IODefaults.CopyToBufferSize];
+            var array = ArrayPool<byte>.Shared.Rent(IODefaults.CopyToBufferSize);
             int bytesRead;
             int totalBytesRead = 0;
 
-            while ((bytesRead = source.Read(array, 0, array.Length)) != 0)
+            if (readAsync)
+            {
+                bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                bytesRead = source.Read(array, 0, array.Length);
+            }
+
+            while (bytesRead != 0)
             {
                 var bytesToWrite = bytesRead;
 
@@ -157,32 +158,14 @@ namespace Jellyfin.Api.Helpers
                         _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
                     }
                 }
-            }
 
-            return totalBytesRead;
-        }
-
-        private async Task<int> CopyToInternalAsync(Stream source, Stream destination, CancellationToken cancellationToken)
-        {
-            var array = new byte[IODefaults.CopyToBufferSize];
-            int bytesRead;
-            int totalBytesRead = 0;
-
-            while ((bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
-            {
-                var bytesToWrite = bytesRead;
-
-                if (bytesToWrite > 0)
+                if (readAsync)
                 {
-                    await destination.WriteAsync(array, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
-
-                    _bytesWritten += bytesRead;
-                    totalBytesRead += bytesRead;
-
-                    if (_job != null)
-                    {
-                        _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
-                    }
+                    bytesRead = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    bytesRead = source.Read(array, 0, array.Length);
                 }
             }
 
