@@ -188,7 +188,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
             for (var i = 0; i < episode.GuestStars.Length; ++i)
             {
                 var currentActor = episode.GuestStars[i];
-                var roleStartIndex = currentActor.IndexOf('(');
+                var roleStartIndex = currentActor.IndexOf('(', StringComparison.Ordinal);
 
                 if (roleStartIndex == -1)
                 {
@@ -207,7 +207,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 for (var j = i + 1; j < episode.GuestStars.Length; ++j)
                 {
                     var currentRole = episode.GuestStars[j];
-                    var roleEndIndex = currentRole.IndexOf(')');
+                    var roleEndIndex = currentRole.IndexOf(')', StringComparison.Ordinal);
 
                     if (roleEndIndex == -1)
                     {
