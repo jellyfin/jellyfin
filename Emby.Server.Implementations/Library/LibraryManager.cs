@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -46,6 +45,7 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Genre = MediaBrowser.Controller.Entities.Genre;
@@ -63,6 +63,7 @@ namespace Emby.Server.Implementations.Library
         private const string ShortcutFileExtension = ".mblink";
 
         private readonly ILogger<LibraryManager> _logger;
+        private readonly IMemoryCache _memoryCache;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -74,7 +75,6 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
-        private readonly ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
         private readonly IImageProcessor _imageProcessor;
 
         /// <summary>
@@ -112,6 +112,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="mediaEncoder">The media encoder.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="memoryCache">The memory cache.</param>
         public LibraryManager(
             IServerApplicationHost appHost,
             ILogger<LibraryManager> logger,
@@ -125,7 +126,8 @@ namespace Emby.Server.Implementations.Library
             Lazy<IUserViewManager> userviewManagerFactory,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepository,
-            IImageProcessor imageProcessor)
+            IImageProcessor imageProcessor,
+            IMemoryCache memoryCache)
         {
             _appHost = appHost;
             _logger = logger;
@@ -140,8 +142,7 @@ namespace Emby.Server.Implementations.Library
             _mediaEncoder = mediaEncoder;
             _itemRepository = itemRepository;
             _imageProcessor = imageProcessor;
-
-            _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
+            _memoryCache = memoryCache;
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
@@ -299,7 +300,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _libraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
+            _memoryCache.CreateEntry(item.Id).SetValue(item);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
@@ -447,7 +448,7 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.DeleteItem(child.Id);
             }
 
-            _libraryItemsCache.TryRemove(item.Id, out BaseItem removed);
+            _memoryCache.Remove(item.Id);
 
             ReportItemRemoved(item, parent);
         }
@@ -1248,7 +1249,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            if (_libraryItemsCache.TryGetValue(id, out BaseItem item))
+            if (_memoryCache.TryGetValue(id, out BaseItem item))
             {
                 return item;
             }
