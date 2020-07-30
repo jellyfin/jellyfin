@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="BlurHashSharp" Version="1.1.0" />
     <PackageReference Include="BlurHashSharp.SkiaSharp" Version="1.1.0" />
-    <PackageReference Include="SkiaSharp" Version="1.68.3" />
+    <PackageReference Include="SkiaSharp" Version="2.80.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="1.68.3" />
     <PackageReference Include="Jellyfin.SkiaSharp.NativeAssets.LinuxArm" Version="1.68.1" />
   </ItemGroup>
