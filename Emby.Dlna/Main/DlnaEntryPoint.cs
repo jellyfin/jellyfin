@@ -49,6 +49,10 @@ namespace Emby.Dlna.Main
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new object();
+        private readonly IUserViewManager _userViewManager;
+        private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly ILocalizationManager _localizationManager;
+        private readonly ILoggerFactory _loggerFactory;
 
         private PlayToManager _manager;
         private SsdpDevicePublisher _publisher;
@@ -59,6 +63,8 @@ namespace Emby.Dlna.Main
         internal IConnectionManager ConnectionManager { get; private set; }
 
         internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
+
+        public bool DLNAEnabled => _config.GetDlnaConfiguration().EnableServer;
 
         public static DlnaEntryPoint Current;
 
@@ -98,32 +104,11 @@ namespace Emby.Dlna.Main
             _socketFactory = socketFactory;
             _networkManager = networkManager;
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
+            _loggerFactory = loggerFactory;
+            _localizationManager = localizationManager;
+            _userViewManager = userViewManager;
+            _tvSeriesManager = tvSeriesManager;
 
-            ContentDirectory = new ContentDirectory.ContentDirectory(
-                dlnaManager,
-                userDataManager,
-                imageProcessor,
-                libraryManager,
-                config,
-                userManager,
-                loggerFactory.CreateLogger<ContentDirectory.ContentDirectory>(),
-                httpClient,
-                localizationManager,
-                mediaSourceManager,
-                userViewManager,
-                mediaEncoder,
-                tvSeriesManager);
-
-            ConnectionManager = new ConnectionManager.ConnectionManager(
-                dlnaManager,
-                config,
-                loggerFactory.CreateLogger<ConnectionManager.ConnectionManager>(),
-                httpClient);
-
-            MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
-                loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
-                httpClient,
-                config);
             Current = this;
         }
 
@@ -148,19 +133,57 @@ namespace Emby.Dlna.Main
         {
             var options = _config.GetDlnaConfiguration();
 
-            StartSsdpHandler();
-
             if (options.EnableServer)
             {
+                if (ContentDirectory != null)
+                {
+                    ContentDirectory = new ContentDirectory.ContentDirectory(
+                        _dlnaManager,
+                        _userDataManager,
+                        _imageProcessor,
+                        _libraryManager,
+                        _config,
+                        _userManager,
+                        _loggerFactory.CreateLogger<ContentDirectory.ContentDirectory>(),
+                        _httpClient,
+                        _localizationManager,
+                        _mediaSourceManager,
+                        _userViewManager,
+                        _mediaEncoder,
+                        _tvSeriesManager);
+                }
+
+                if (ConnectionManager != null)
+                {
+                    ConnectionManager = new ConnectionManager.ConnectionManager(
+                        _dlnaManager,
+                        _config,
+                        _loggerFactory.CreateLogger<ConnectionManager.ConnectionManager>(),
+                        _httpClient);
+                }
+
+                if (MediaReceiverRegistrar != null)
+                {
+                    MediaReceiverRegistrar = new MediaReceiverRegistrar.MediaReceiverRegistrar(
+                        _loggerFactory.CreateLogger<MediaReceiverRegistrar.MediaReceiverRegistrar>(),
+                        _httpClient,
+                        _config);
+                }
+
+                StartSsdpHandler();
                 await StartDevicePublisher(options).ConfigureAwait(false);
             }
             else
             {
                 DisposeDevicePublisher();
+                MediaReceiverRegistrar = null;
+                ContentDirectory = null;
+                ConnectionManager = null;
             }
 
             if (options.EnablePlayTo)
             {
+                StartSsdpHandler();
                 StartPlayToManager();
             }
             else
