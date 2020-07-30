@@ -157,7 +157,7 @@ namespace Emby.Dlna.Api
             var cacheKey = Request.RawUrl.GetMD5();
             var bytes = Encoding.UTF8.GetBytes(xml);
 
-            return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, XMLContentType, () => Task.FromResult<Stream>(new MemoryStream(bytes)));            
+            return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, XMLContentType, () => Task.FromResult<Stream>(new MemoryStream(bytes)));
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
