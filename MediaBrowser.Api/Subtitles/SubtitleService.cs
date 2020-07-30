@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -124,13 +125,13 @@ namespace MediaBrowser.Api.Subtitles
         public int SegmentLength { get; set; }
     }
 
-    [Route("/FallbackFont/FontList", "GET", Summary = "Gets the fallback font list")]
+    [Route("/FallbackFont/Fonts", "GET", Summary = "Gets the fallback font list")]
     [Authenticated]
     public class GetFallbackFontList
     {
     }
 
-    [Route("/FallbackFont/Font", "GET", Summary = "Gets the fallback font file")]
+    [Route("/FallbackFont/Fonts/{Name}", "GET", Summary = "Gets the fallback font file")]
     [Authenticated]
     public class GetFallbackFont
     {
@@ -369,7 +370,7 @@ namespace MediaBrowser.Api.Subtitles
                 encodingOptions.EnableFallbackFont = false;
             }
 
-            return ResultFactory.GetResult(Request, "[]", "application/json");
+            return ResultFactory.GetResult(Request, "[]", MediaTypeNames.Application.Json);
         }
 
         public async Task<object> Get(GetFallbackFont request)
@@ -414,7 +415,7 @@ namespace MediaBrowser.Api.Subtitles
                 encodingOptions.EnableFallbackFont = false;
             }
 
-            return ResultFactory.GetResult(Request, string.Empty, "text/plain");
+            return ResultFactory.GetResult(Request, string.Empty, MediaTypeNames.Text.Plain);
         }
     }
 }
