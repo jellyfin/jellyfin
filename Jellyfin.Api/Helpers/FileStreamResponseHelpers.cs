@@ -71,8 +71,7 @@ namespace Jellyfin.Api.Helpers
                 return controller.NoContent();
             }
 
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
-            return controller.File(stream, contentType);
+            return controller.PhysicalFile(path, contentType);
         }
 
         /// <summary>

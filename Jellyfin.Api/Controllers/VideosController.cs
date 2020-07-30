@@ -373,7 +373,7 @@ namespace Jellyfin.Api.Controllers
         {
             var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
-            var streamingRequest = new StreamingRequestDto
+            var streamingRequest = new VideoRequestDto
             {
                 Id = itemId,
                 Container = container,
