@@ -382,8 +382,6 @@ namespace MediaBrowser.Api.Subtitles
             {
                 try
                 {
-                    // max single font size 10M
-                    var maxSize = 10485760;
                     var fontFile = _fileSystem.GetFiles(fallbackFontPath)
                         .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
                     var fileSize = fontFile?.Length;
@@ -391,13 +389,7 @@ namespace MediaBrowser.Api.Subtitles
                     if (fileSize != null && fileSize > 0)
                     {
                         Logger.LogDebug("Fallback font size is {0} Bytes", fileSize);
-
-                        if (fileSize <= maxSize)
-                        {
-                            return await ResultFactory.GetStaticFileResult(Request, fontFile.FullName);
-                        }
-
-                        Logger.LogWarning("The selected font is too large. Maximum allowed size is 10 Megabytes");
+                        return await ResultFactory.GetStaticFileResult(Request, fontFile.FullName);
                     }
                     else
                     {
