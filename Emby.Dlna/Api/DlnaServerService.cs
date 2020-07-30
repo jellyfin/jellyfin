@@ -144,95 +144,95 @@ namespace Emby.Dlna.Api
 
         public object Get(GetDescriptionXml request)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled)
+            if (!DlnaEntryPoint.Current.DLNAEnabled)
             {
-                var url = Request.AbsoluteUri;
-                var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-                var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, serverAddress);
-
-                var cacheLength = TimeSpan.FromDays(1);
-                var cacheKey = Request.RawUrl.GetMD5();
-                var bytes = Encoding.UTF8.GetBytes(xml);
-
-                return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, XMLContentType, () => Task.FromResult<Stream>(new MemoryStream(bytes)));
+                return null;
             }
 
-            return null;
+            var url = Request.AbsoluteUri;
+            var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
+            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, serverAddress);
+
+            var cacheLength = TimeSpan.FromDays(1);
+            var cacheKey = Request.RawUrl.GetMD5();
+            var bytes = Encoding.UTF8.GetBytes(xml);
+
+            return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, XMLContentType, () => Task.FromResult<Stream>(new MemoryStream(bytes)));            
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetContentDirectory request)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled && ContentDirectory != null)
+            if (!DlnaEntryPoint.Current.DLNAEnabled || ContentDirectory == null)
             {
-                var xml = ContentDirectory.GetServiceXml();
-
-                return _resultFactory.GetResult(Request, xml, XMLContentType);
+                return null;
             }
+        
+            var xml = ContentDirectory.GetServiceXml();
 
-            return null;
+            return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetMediaReceiverRegistrar request)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled && MediaReceiverRegistrar != null)
+            if (!DlnaEntryPoint.Current.DLNAEnabled || MediaReceiverRegistrar == null)
             {
-                var xml = MediaReceiverRegistrar.GetServiceXml();
-
-                return _resultFactory.GetResult(Request, xml, XMLContentType);
+                return null;
             }
+            
+            var xml = MediaReceiverRegistrar.GetServiceXml();
 
-            return null;
+            return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetConnnectionManager request)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled && ConnectionManager != null)
+            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
             {
-                var xml = ConnectionManager.GetServiceXml();
-
-                return _resultFactory.GetResult(Request, xml, XMLContentType);
+                return null;
             }
+            
+            var xml = ConnectionManager.GetServiceXml();
 
-            return null;
+            return _resultFactory.GetResult(Request, xml, XMLContentType);
         }
 
         public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled && MediaReceiverRegistrar != null)
+            if (!DlnaEntryPoint.Current.DLNAEnabled || MediaReceiverRegistrar == null)
             {
-                var response = await PostAsync(request.RequestStream, MediaReceiverRegistrar).ConfigureAwait(false);
-
-                return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
+                return null;
             }
+            
+            var response = await PostAsync(request.RequestStream, MediaReceiverRegistrar).ConfigureAwait(false);
 
-            return null;
+            return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
         public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled && ConnectionManager != null)
+            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
             {
-                var response = await PostAsync(request.RequestStream, ContentDirectory).ConfigureAwait(false);
-
-                return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
+                return null;
             }
+            
+            var response = await PostAsync(request.RequestStream, ContentDirectory).ConfigureAwait(false);
 
-            return null;
+            return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
         public async Task<object> Post(ProcessConnectionManagerControlRequest request)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled && ConnectionManager != null)
+            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
             {
-                var response = await PostAsync(request.RequestStream, ConnectionManager).ConfigureAwait(false);
-
-                return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
+                return null;
             }
+            
+            var response = await PostAsync(request.RequestStream, ConnectionManager).ConfigureAwait(false);
 
-            return null;
+            return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
         }
 
         private Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
@@ -345,19 +345,19 @@ namespace Emby.Dlna.Api
 
         public object Get(GetIcon request)
         {
-            if (DlnaEntryPoint.Current.DLNAEnabled)
+            if (!DlnaEntryPoint.Current.DLNAEnabled)
             {
-                var contentType = "image/" + Path.GetExtension(request.Filename)
-                                            .TrimStart('.')
-                                            .ToLowerInvariant();
-
-                var cacheLength = TimeSpan.FromDays(365);
-                var cacheKey = Request.RawUrl.GetMD5();
-
-                return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, contentType, () => Task.FromResult(_dlnaManager.GetIcon(request.Filename).Stream));
+                return false;
             }
+            
+            var contentType = "image/" + Path.GetExtension(request.Filename)
+                                        .TrimStart('.')
+                                        .ToLowerInvariant();
 
-            return null;
+            var cacheLength = TimeSpan.FromDays(365);
+            var cacheKey = Request.RawUrl.GetMD5();
+
+            return _resultFactory.GetStaticResult(Request, cacheKey, null, cacheLength, contentType, () => Task.FromResult(_dlnaManager.GetIcon(request.Filename).Stream));
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
