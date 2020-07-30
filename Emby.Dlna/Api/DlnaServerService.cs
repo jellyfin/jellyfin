@@ -351,8 +351,8 @@ namespace Emby.Dlna.Api
             }
             
             var contentType = "image/" + Path.GetExtension(request.Filename)
-                                        .TrimStart('.')
-                                        .ToLowerInvariant();
+                                            .TrimStart('.')
+                                            .ToLowerInvariant();
 
             var cacheLength = TimeSpan.FromDays(365);
             var cacheKey = Request.RawUrl.GetMD5();
