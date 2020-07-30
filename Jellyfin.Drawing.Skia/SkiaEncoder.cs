@@ -199,7 +199,8 @@ namespace Jellyfin.Drawing.Skia
                 throw new ArgumentNullException(nameof(path));
             }
 
-            return BlurHashEncoder.Encode(xComp, yComp, path);
+            // Any larger than 128x128 is too slow and there's no visually discernible difference
+            return BlurHashEncoder.Encode(xComp, yComp, path, 128, 128);
         }
 
         private static bool HasDiacritics(string text)
