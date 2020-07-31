@@ -395,6 +395,42 @@ namespace Jellyfin.Drawing.Skia
             return rotated;
         }
 
+        /// <summary>
+        /// Resizes an image on the CPU, by utilizing a surface and canvas.
+        /// </summary>
+        /// <param name="source">The source bitmap.</param>
+        /// <param name="targetInfo">This specifies the target size and other information required to create the surface.</param>
+        /// <param name="isAntialias">This enables anti-aliasing on the SKPaint instance.</param>
+        /// <param name="isDither">This enables dithering on the SKPaint instance.</param>
+        /// <returns>The resized image.</returns>
+        internal static SKImage ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
+        {
+            using var surface = SKSurface.Create(targetInfo);
+            using var canvas = surface.Canvas;
+            using var paint = new SKPaint();
+
+            paint.FilterQuality = SKFilterQuality.High;
+            paint.IsAntialias = isAntialias;
+            paint.IsDither = isDither;
+
+            var kernel = new float[9]
+            {
+                        0,    -.1f,    0,
+                        -.1f, 1.4f, -.1f,
+                        0,    -.1f,    0,
+            };
+
+            var kernelSize = new SKSizeI(3, 3);
+            var kernelOffset = new SKPointI(1, 1);
+
+            paint.ImageFilter = SKImageFilter.CreateMatrixConvolution(
+                kernelSize, kernel, 1f, 0f, kernelOffset, SKShaderTileMode.Clamp, false);
+
+            canvas.DrawBitmap(source, SKRect.Create(0, 0, source.Width, source.Height), SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height), paint);
+
+            return surface.Snapshot();
+        }
+
         /// <inheritdoc/>
         public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
@@ -436,9 +472,8 @@ namespace Jellyfin.Drawing.Skia
             var width = newImageSize.Width;
             var height = newImageSize.Height;
 
-            using var resizedBitmap = new SKBitmap(width, height, bitmap.ColorType, bitmap.AlphaType);
-            // scale image
-            bitmap.ScalePixels(resizedBitmap, SKFilterQuality.High);
+            // scale image (the FromImage creates a copy)
+            using var resizedBitmap = SKBitmap.FromImage(ResizeImage(bitmap, new SKImageInfo(width, height, bitmap.ColorType, bitmap.AlphaType, bitmap.ColorSpace)));
 
             // If all we're doing is resizing then we can stop now
             if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)
@@ -446,7 +481,7 @@ namespace Jellyfin.Drawing.Skia
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
                 using var outputStream = new SKFileWStream(outputPath);
                 using var pixmap = new SKPixmap(new SKImageInfo(width, height), resizedBitmap.GetPixels());
-                pixmap.Encode(outputStream, skiaOutputFormat, quality);
+                resizedBitmap.Encode(outputStream, skiaOutputFormat, quality);
                 return outputPath;
             }
 
