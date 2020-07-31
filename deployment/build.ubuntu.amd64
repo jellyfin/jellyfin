@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#= Ubuntu 18.04+ amd64 .deb
+
+set -o errexit
+set -o xtrace
+
+# Move to source directory
+pushd ${SOURCE_DIR}
+
+if [[ ${IS_DOCKER} == YES ]]; then
+    # Remove build-dep for dotnet-sdk-3.1, since it's installed manually
+    cp -a debian/control /tmp/control.orig
+    sed -i '/dotnet-sdk-3.1,/d' debian/control
+fi
+
+# Modify changelog to unstable configuration if IS_UNSTABLE
+if [[ ${IS_UNSTABLE} == 'yes' ]]; then
+    pushd debian
+    PR_ID=$( git log --grep 'Merge pull request' --oneline --single-worktree --first-parent | head -1 | grep --color=none -Eo '#[0-9]+' | tr -d '#' )
+
+    cat <<EOF >changelog
+jellyfin-server (${BUILD_ID}-unstable) unstable; urgency=medium
+
+  * Jellyfin Server unstable build ${BUILD_ID} for merged PR #${PR_ID}
+
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  $( date --rfc-2822 )
+EOF
+    popd
+fi
+
+# Build DEB
+dpkg-buildpackage -us -uc --pre-clean --post-clean
+
+mkdir -p ${ARTIFACT_DIR}/
+mv ../jellyfin*.{deb,dsc,tar.gz,buildinfo,changes} ${ARTIFACT_DIR}/
+
+if [[ ${IS_DOCKER} == YES ]]; then
+    cp -a /tmp/control.orig debian/control
+    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+fi
+
+popd

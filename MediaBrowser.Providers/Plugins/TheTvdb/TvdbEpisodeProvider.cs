@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -14,14 +16,13 @@ using TvDbSharper.Dto;
 
 namespace MediaBrowser.Providers.Plugins.TheTvdb
 {
-
     /// <summary>
-    /// Class RemoteEpisodeProvider
+    /// Class RemoteEpisodeProvider.
     /// </summary>
     public class TvdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbEpisodeProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
         public TvdbEpisodeProvider(IHttpClient httpClient, ILogger<TvdbEpisodeProvider> logger, TvdbClientManager tvdbClientManager)
@@ -95,7 +96,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 QueriedById = true
             };
 
-            string seriesTvdbId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
+            string seriesTvdbId = searchInfo.GetProviderId(MetadataProvider.Tvdb);
             string episodeTvdbId = null;
             try
             {
@@ -139,14 +140,13 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                     Name = episode.EpisodeName,
                     Overview = episode.Overview,
                     CommunityRating = (float?)episode.SiteRating,
-
                 }
             };
             result.ResetPeople();
 
             var item = result.Item;
-            item.SetProviderId(MetadataProviders.Tvdb, episode.Id.ToString());
-            item.SetProviderId(MetadataProviders.Imdb, episode.ImdbId);
+            item.SetProviderId(MetadataProvider.Tvdb, episode.Id.ToString());
+            item.SetProviderId(MetadataProvider.Imdb, episode.ImdbId);
 
             if (string.Equals(id.SeriesDisplayOrder, "dvd", StringComparison.OrdinalIgnoreCase))
             {

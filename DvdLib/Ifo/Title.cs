@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.IO;
 
@@ -6,8 +8,11 @@ namespace DvdLib.Ifo
     public class Title
     {
         public uint TitleNumber { get; private set; }
+
         public uint AngleCount { get; private set; }
+
         public ushort ChapterCount { get; private set; }
+
         public byte VideoTitleSetNumber { get; private set; }
 
         private ushort _parentalManagementMask;
@@ -15,6 +20,7 @@ namespace DvdLib.Ifo
         private uint _vtsStartSector; // relative to start of entire disk
 
         public ProgramChain EntryProgramChain { get; private set; }
+
         public readonly List<ProgramChain> ProgramChains;
 
         public readonly List<Chapter> Chapters;
@@ -53,7 +59,10 @@ namespace DvdLib.Ifo
             var pgc = new ProgramChain(pgcNum);
             pgc.ParseHeader(br);
             ProgramChains.Add(pgc);
-            if (entryPgc) EntryProgramChain = pgc;
+            if (entryPgc)
+            {
+                EntryProgramChain = pgc;
+            }
 
             br.BaseStream.Seek(curPos, SeekOrigin.Begin);
         }

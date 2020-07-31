@@ -14,56 +14,12 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
-    /// <summary>
-    /// Class GetVideoStream
-    /// </summary>
-    [Route("/Videos/{Id}/stream.mpegts", "GET")]
-    [Route("/Videos/{Id}/stream.ts", "GET")]
-    [Route("/Videos/{Id}/stream.webm", "GET")]
-    [Route("/Videos/{Id}/stream.asf", "GET")]
-    [Route("/Videos/{Id}/stream.wmv", "GET")]
-    [Route("/Videos/{Id}/stream.ogv", "GET")]
-    [Route("/Videos/{Id}/stream.mp4", "GET")]
-    [Route("/Videos/{Id}/stream.m4v", "GET")]
-    [Route("/Videos/{Id}/stream.mkv", "GET")]
-    [Route("/Videos/{Id}/stream.mpeg", "GET")]
-    [Route("/Videos/{Id}/stream.mpg", "GET")]
-    [Route("/Videos/{Id}/stream.avi", "GET")]
-    [Route("/Videos/{Id}/stream.m2ts", "GET")]
-    [Route("/Videos/{Id}/stream.3gp", "GET")]
-    [Route("/Videos/{Id}/stream.wmv", "GET")]
-    [Route("/Videos/{Id}/stream.wtv", "GET")]
-    [Route("/Videos/{Id}/stream.mov", "GET")]
-    [Route("/Videos/{Id}/stream.iso", "GET")]
-    [Route("/Videos/{Id}/stream.flv", "GET")]
-    [Route("/Videos/{Id}/stream.rm", "GET")]
-    [Route("/Videos/{Id}/stream", "GET")]
-    [Route("/Videos/{Id}/stream.ts", "HEAD")]
-    [Route("/Videos/{Id}/stream.webm", "HEAD")]
-    [Route("/Videos/{Id}/stream.asf", "HEAD")]
-    [Route("/Videos/{Id}/stream.wmv", "HEAD")]
-    [Route("/Videos/{Id}/stream.ogv", "HEAD")]
-    [Route("/Videos/{Id}/stream.mp4", "HEAD")]
-    [Route("/Videos/{Id}/stream.m4v", "HEAD")]
-    [Route("/Videos/{Id}/stream.mkv", "HEAD")]
-    [Route("/Videos/{Id}/stream.mpeg", "HEAD")]
-    [Route("/Videos/{Id}/stream.mpg", "HEAD")]
-    [Route("/Videos/{Id}/stream.avi", "HEAD")]
-    [Route("/Videos/{Id}/stream.3gp", "HEAD")]
-    [Route("/Videos/{Id}/stream.wmv", "HEAD")]
-    [Route("/Videos/{Id}/stream.wtv", "HEAD")]
-    [Route("/Videos/{Id}/stream.m2ts", "HEAD")]
-    [Route("/Videos/{Id}/stream.mov", "HEAD")]
-    [Route("/Videos/{Id}/stream.iso", "HEAD")]
-    [Route("/Videos/{Id}/stream.flv", "HEAD")]
-    [Route("/Videos/{Id}/stream", "HEAD")]
     public class GetVideoStream : VideoStreamRequest
     {
-
     }
 
     /// <summary>
-    /// Class VideoService
+    /// Class VideoService.
     /// </summary>
     // TODO: In order to autheneticate this in the future, Dlna playback will require updating
     //[Authenticated]

@@ -9,9 +9,11 @@ namespace MediaBrowser.Controller.MediaEncoding
     public class EncodingJobOptions : BaseEncodingJobOptions
     {
         public string OutputDirectory { get; set; }
+
         public string ItemId { get; set; }
 
         public string TempDirectory { get; set; }
+
         public bool ReadInputAtNativeFramerate { get; set; }
 
         /// <summary>
@@ -47,6 +49,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 SubtitleStreamIndex = info.SubtitleStreamIndex;
             }
+
             StreamOptions = info.StreamOptions;
         }
     }
@@ -81,7 +84,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool EnableAutoStreamCopy { get; set; }
 
         public bool AllowVideoStreamCopy { get; set; }
+
         public bool AllowAudioStreamCopy { get; set; }
+
         public bool BreakOnNonKeyFrames { get; set; }
 
         /// <summary>
@@ -197,10 +202,15 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         [ApiMember(Name = "MaxVideoBitDepth", Description = "Optional.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? MaxVideoBitDepth { get; set; }
+
         public bool RequireAvc { get; set; }
+
         public bool DeInterlace { get; set; }
+
         public bool RequireNonAnamorphic { get; set; }
+
         public int? TranscodingMaxAudioChannels { get; set; }
+
         public int? CpuCoreLimit { get; set; }
 
         public string LiveStreamId { get; set; }

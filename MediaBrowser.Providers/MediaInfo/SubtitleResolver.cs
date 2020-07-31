@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -60,7 +62,6 @@ namespace MediaBrowser.Providers.MediaInfo
             }
             catch (IOException)
             {
-
             }
 
             return streams;
@@ -189,9 +190,9 @@ namespace MediaBrowser.Providers.MediaInfo
             filename = filename.Replace(" ", string.Empty);
 
             // can't normalize this due to languages such as pt-br
-            //filename = filename.Replace("-", string.Empty);
+            // filename = filename.Replace("-", string.Empty);
 
-            //filename = filename.Replace(".", string.Empty);
+            // filename = filename.Replace(".", string.Empty);
 
             return filename;
         }

@@ -31,7 +31,7 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The logger.
         /// </summary>
-        private ILogger _logger;
+        private ILogger<ApiEntryPoint> _logger;
 
         /// <summary>
         /// The configuration manager.
@@ -43,7 +43,7 @@ namespace MediaBrowser.Api
         private readonly IMediaSourceManager _mediaSourceManager;
 
         /// <summary>
-        /// The active transcoding jobs
+        /// The active transcoding jobs.
         /// </summary>
         private readonly List<TranscodingJob> _activeTranscodingJobs = new List<TranscodingJob>();
 
@@ -284,8 +284,8 @@ namespace MediaBrowser.Api
                     Width = state.OutputWidth,
                     Height = state.OutputHeight,
                     AudioChannels = state.OutputAudioChannels,
-                    IsAudioDirect = string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase),
-                    IsVideoDirect = string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase),
+                    IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
+                    IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
                     TranscodeReasons = state.TranscodeReasons
                 });
             }
@@ -293,7 +293,7 @@ namespace MediaBrowser.Api
 
         /// <summary>
         /// <summary>
-        /// The progressive
+        /// The progressive.
         /// </summary>
         /// Called when [transcode failed to start].
         /// </summary>

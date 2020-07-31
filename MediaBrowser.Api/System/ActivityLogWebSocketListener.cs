@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Activity;
@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Api.System
 {
     /// <summary>
-    /// Class SessionInfoWebSocketListener
+    /// Class SessionInfoWebSocketListener.
     /// </summary>
-    public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<List<ActivityLogEntry>, WebSocketListenerState>
+    public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>
     {
         /// <summary>
         /// Gets the name.
@@ -19,17 +19,17 @@ namespace MediaBrowser.Api.System
         protected override string Name => "ActivityLogEntry";
 
         /// <summary>
-        /// The _kernel
+        /// The _kernel.
         /// </summary>
         private readonly IActivityManager _activityManager;
 
         public ActivityLogWebSocketListener(ILogger<ActivityLogWebSocketListener> logger, IActivityManager activityManager) : base(logger)
         {
             _activityManager = activityManager;
-            _activityManager.EntryCreated += _activityManager_EntryCreated;
+            _activityManager.EntryCreated += OnEntryCreated;
         }
 
-        void _activityManager_EntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
+        private void OnEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
         {
             SendData(true);
         }
@@ -38,15 +38,15 @@ namespace MediaBrowser.Api.System
         /// Gets the data to send.
         /// </summary>
         /// <returns>Task{SystemInfo}.</returns>
-        protected override Task<List<ActivityLogEntry>> GetDataToSend()
+        protected override Task<ActivityLogEntry[]> GetDataToSend()
         {
-            return Task.FromResult(new List<ActivityLogEntry>());
+            return Task.FromResult(Array.Empty<ActivityLogEntry>());
         }
 
-
+        /// <inheritdoc />
         protected override void Dispose(bool dispose)
         {
-            _activityManager.EntryCreated -= _activityManager_EntryCreated;
+            _activityManager.EntryCreated -= OnEntryCreated;
 
             base.Dispose(dispose);
         }

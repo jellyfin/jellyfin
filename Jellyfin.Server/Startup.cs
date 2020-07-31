@@ -1,10 +1,14 @@
+using System.Net.Http;
 using Jellyfin.Server.Extensions;
+using Jellyfin.Server.Middleware;
+using Jellyfin.Server.Models;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Prometheus;
 
 namespace Jellyfin.Server
 {
@@ -40,6 +44,7 @@ namespace Jellyfin.Server
             services.AddCustomAuthentication();
 
             services.AddJellyfinApiAuthorization();
+            services.AddHttpClient();
         }
 
         /// <summary>
@@ -58,20 +63,34 @@ namespace Jellyfin.Server
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseMiddleware<ExceptionMiddleware>();
+
+            app.UseMiddleware<ResponseTimeMiddleware>();
+
             app.UseWebSockets();
 
             app.UseResponseCompression();
 
             // TODO app.UseMiddleware<WebSocketMiddleware>();
-            app.Use(serverApplicationHost.ExecuteWebsocketHandlerAsync);
 
-            // TODO use when old API is removed: app.UseAuthentication();
-            app.UseJellyfinApiSwagger();
+            app.UseAuthentication();
+            app.UseJellyfinApiSwagger(_serverConfigurationManager);
             app.UseRouting();
+            app.UseCors(ServerCorsPolicy.DefaultPolicyName);
             app.UseAuthorization();
+            if (_serverConfigurationManager.Configuration.EnableMetrics)
+            {
+                // Must be registered after any middleware that could chagne HTTP response codes or the data will be bad
+                app.UseHttpMetrics();
+            }
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                if (_serverConfigurationManager.Configuration.EnableMetrics)
+                {
+                    endpoints.MapMetrics(_serverConfigurationManager.Configuration.BaseUrl.TrimStart('/') + "/metrics");
+                }
             });
 
             app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);

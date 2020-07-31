@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using MediaBrowser.Model.Events;
 
@@ -56,7 +57,7 @@ namespace MediaBrowser.Model.Tasks
         double? CurrentProgress { get; }
 
         /// <summary>
-        /// Gets the triggers that define when the task will run
+        /// Gets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
         /// <exception cref="ArgumentNullException">value</exception>

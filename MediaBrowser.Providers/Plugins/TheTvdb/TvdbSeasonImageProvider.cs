@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +21,7 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
     public class TvdbSeasonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly ILogger<TvdbSeasonImageProvider> _logger;
         private readonly TvdbClientManager _tvdbClientManager;
 
         public TvdbSeasonImageProvider(IHttpClient httpClient, ILogger<TvdbSeasonImageProvider> logger, TvdbClientManager tvdbClientManager)
@@ -55,16 +57,16 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
 
             if (series == null || !season.IndexNumber.HasValue || !TvdbSeriesProvider.IsValidSeries(series.ProviderIds))
             {
-                return new RemoteImageInfo[] { };
+                return Array.Empty<RemoteImageInfo>();
             }
 
-            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProviders.Tvdb));
+            var tvdbId = Convert.ToInt32(series.GetProviderId(MetadataProvider.Tvdb));
             var seasonNumber = season.IndexNumber.Value;
             var language = item.GetPreferredMetadataLanguage();
             var remoteImages = new List<RemoteImageInfo>();
 
-            var keyTypes = new[] { KeyType.Season, KeyType.Seasonwide, KeyType.Fanart };
-            foreach (var keyType in keyTypes)
+            var keyTypes = _tvdbClientManager.GetImageKeyTypesForSeasonAsync(tvdbId, language, cancellationToken).ConfigureAwait(false);
+            await foreach (var keyType in keyTypes)
             {
                 var imageQuery = new ImagesQuery
                 {
@@ -89,7 +91,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
         private IEnumerable<RemoteImageInfo> GetImages(Image[] images, string preferredLanguage)
         {
             var list = new List<RemoteImageInfo>();
-            var languages = _tvdbClientManager.GetLanguagesAsync(CancellationToken.None).Result.Data;
+            // any languages with null ids are ignored
+            var languages = _tvdbClientManager.GetLanguagesAsync(CancellationToken.None).Result.Data.Where(x => x.Id.HasValue);
             foreach (Image image in images)
             {
                 var imageInfo = new RemoteImageInfo
@@ -113,8 +116,8 @@ namespace MediaBrowser.Providers.Plugins.TheTvdb
                 imageInfo.Type = TvdbUtils.GetImageTypeFromKeyType(image.KeyType);
                 list.Add(imageInfo);
             }
-            var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
 
+            var isLanguageEn = string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase);
             return list.OrderByDescending(i =>
                 {
                     if (string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase))

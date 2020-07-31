@@ -6,7 +6,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class RandomComparer
+    /// Class RandomComparer.
     /// </summary>
     public class RandomComparer : IBaseItemComparer
     {

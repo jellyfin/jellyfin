@@ -4,17 +4,18 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
+using Photo = MediaBrowser.Controller.Entities.Photo;
 
 namespace Emby.Drawing
 {
@@ -29,12 +30,11 @@ namespace Emby.Drawing
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
 
-        private readonly ILogger _logger;
+        private readonly ILogger<ImageProcessor> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IImageEncoder _imageEncoder;
-        private readonly Func<ILibraryManager> _libraryManager;
-        private readonly Func<IMediaEncoder> _mediaEncoder;
+        private readonly IMediaEncoder _mediaEncoder;
 
         private bool _disposed = false;
 
@@ -45,20 +45,17 @@ namespace Emby.Drawing
         /// <param name="appPaths">The server application paths.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="imageEncoder">The image encoder.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <param name="mediaEncoder">The media encoder.</param>
         public ImageProcessor(
             ILogger<ImageProcessor> logger,
             IServerApplicationPaths appPaths,
             IFileSystem fileSystem,
             IImageEncoder imageEncoder,
-            Func<ILibraryManager> libraryManager,
-            Func<IMediaEncoder> mediaEncoder)
+            IMediaEncoder mediaEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _imageEncoder = imageEncoder;
-            _libraryManager = libraryManager;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
         }
@@ -119,27 +116,10 @@ namespace Emby.Drawing
             => _transparentImageTypes.Contains(Path.GetExtension(path));
 
         /// <inheritdoc />
-        public async Task<(string path, string mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
+        public async Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            var libraryManager = _libraryManager();
-
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
-
-            if (!originalImage.IsLocalFile)
-            {
-                if (item == null)
-                {
-                    item = libraryManager.GetItemById(options.ItemId);
-                }
-
-                originalImage = await libraryManager.ConvertImageToLocal(item, originalImage, options.ImageIndex).ConfigureAwait(false);
-            }
 
             string originalImagePath = originalImage.Path;
             DateTime dateModified = originalImage.DateModified;
@@ -252,7 +232,7 @@ namespace Emby.Drawing
             return ImageFormat.Jpg;
         }
 
-        private string GetMimeType(ImageFormat format, string path)
+        private string? GetMimeType(ImageFormat format, string path)
             => format switch
             {
                 ImageFormat.Bmp => MimeTypes.GetMimeType("i.bmp"),
@@ -312,10 +292,6 @@ namespace Emby.Drawing
 
         /// <inheritdoc />
         public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info)
-            => GetImageDimensions(item, info, true);
-
-        /// <inheritdoc />
-        public ImageDimensions GetImageDimensions(BaseItem item, ItemImageInfo info, bool updateItem)
         {
             int width = info.Width;
             int height = info.Height;
@@ -326,16 +302,11 @@ namespace Emby.Drawing
             }
 
             string path = info.Path;
-            _logger.LogInformation("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
+            _logger.LogDebug("Getting image size for item {ItemType} {Path}", item.GetType().Name, path);
 
             ImageDimensions size = GetImageDimensions(path);
             info.Width = size.Width;
             info.Height = size.Height;
-
-            if (updateItem)
-            {
-                _libraryManager().UpdateImages(item);
-            }
 
             return size;
         }
@@ -345,25 +316,46 @@ namespace Emby.Drawing
             => _imageEncoder.GetImageSize(path);
 
         /// <inheritdoc />
+        public string GetImageBlurHash(string path)
+        {
+            var size = GetImageDimensions(path);
+            if (size.Width <= 0 || size.Height <= 0)
+            {
+                return string.Empty;
+            }
+
+            // We want tiles to be as close to square as possible, and to *mostly* keep under 16 tiles for performance.
+            // One tile is (width / xComp) x (height / yComp) pixels, which means that ideally yComp = xComp * height / width.
+            // See more at https://github.com/woltapp/blurhash/#how-do-i-pick-the-number-of-x-and-y-components
+            float xCompF = MathF.Sqrt(16.0f * size.Width / size.Height);
+            float yCompF = xCompF * size.Height / size.Width;
+
+            int xComp = Math.Min((int)xCompF + 1, 9);
+            int yComp = Math.Min((int)yCompF + 1, 9);
+
+            return _imageEncoder.GetImageBlurHash(xComp, yComp, path);
+        }
+
+        /// <inheritdoc />
         public string GetImageCacheTag(BaseItem item, ItemImageInfo image)
             => (item.Path + image.DateModified.Ticks).GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
         /// <inheritdoc />
         public string GetImageCacheTag(BaseItem item, ChapterInfo chapter)
         {
-            try
+            return GetImageCacheTag(item, new ItemImageInfo
             {
-                return GetImageCacheTag(item, new ItemImageInfo
-                {
-                    Path = chapter.ImagePath,
-                    Type = ImageType.Chapter,
-                    DateModified = chapter.ImageDateModified
-                });
-            }
-            catch
-            {
-                return null;
-            }
+                Path = chapter.ImagePath,
+                Type = ImageType.Chapter,
+                DateModified = chapter.ImageDateModified
+            });
+        }
+
+        /// <inheritdoc />
+        public string GetImageCacheTag(User user)
+        {
+            return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
+                .ToString("N", CultureInfo.InvariantCulture);
         }
 
         private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
@@ -384,13 +376,13 @@ namespace Emby.Drawing
                 {
                     string filename = (originalImagePath + dateModified.Ticks.ToString(CultureInfo.InvariantCulture)).GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
-                    string cacheExtension = _mediaEncoder().SupportsEncoder("libwebp") ? ".webp" : ".png";
+                    string cacheExtension = _mediaEncoder.SupportsEncoder("libwebp") ? ".webp" : ".png";
                     var outputPath = Path.Combine(_appPaths.ImageCachePath, "converted-images", filename + cacheExtension);
 
                     var file = _fileSystem.GetFileInfo(outputPath);
                     if (!file.Exists)
                     {
-                        await _mediaEncoder().ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
+                        await _mediaEncoder.ConvertImage(originalImagePath, outputPath).ConfigureAwait(false);
                         dateModified = _fileSystem.GetLastWriteTimeUtc(outputPath);
                     }
                     else

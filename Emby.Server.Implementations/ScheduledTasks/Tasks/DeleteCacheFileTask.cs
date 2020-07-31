@@ -13,7 +13,7 @@ using MediaBrowser.Model.Globalization;
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
-    /// Deletes old cache files
+    /// Deletes old cache files.
     /// </summary>
     public class DeleteCacheFileTask : IScheduledTask, IConfigurableScheduledTask
     {
@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <value>The application paths.</value>
         private IApplicationPaths ApplicationPaths { get; set; }
 
-        private readonly ILogger _logger;
+        private readonly ILogger<DeleteCacheFileTask> _logger;
 
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
@@ -44,7 +44,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         }
 
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
@@ -57,7 +57,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -93,7 +93,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
 
         /// <summary>
-        /// Deletes the cache files from directory with a last write time less than a given date
+        /// Deletes the cache files from directory with a last write time less than a given date.
         /// </summary>
         /// <param name="cancellationToken">The task cancellation token.</param>
         /// <param name="directory">The directory.</param>
@@ -165,18 +165,25 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
         }
 
+        /// <inheritdoc />
         public string Name => _localization.GetLocalizedString("TaskCleanCache");
 
+        /// <inheritdoc />
         public string Description => _localization.GetLocalizedString("TaskCleanCacheDescription");
 
+        /// <inheritdoc />
         public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
 
+        /// <inheritdoc />
         public string Key => "DeleteCacheFiles";
 
+        /// <inheritdoc />
         public bool IsHidden => false;
 
+        /// <inheritdoc />
         public bool IsEnabled => true;
 
+        /// <inheritdoc />
         public bool IsLogged => true;
     }
 }
