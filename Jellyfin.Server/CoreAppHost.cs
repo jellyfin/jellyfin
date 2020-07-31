@@ -63,11 +63,12 @@ namespace Jellyfin.Server
                 Logger.LogWarning($"Skia not available. Will fallback to {nameof(NullImageEncoder)}.");
             }
 
-            // TODO: Set up scoping and use AddDbContextPool
-            serviceCollection.AddDbContext<JellyfinDb>(
-                options => options
-                    .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
-                ServiceLifetime.Transient);
+            // TODO: Set up scoping and use AddDbContextPool,
+            // can't register as Transient since tracking transient in GC is funky
+            // serviceCollection.AddDbContext<JellyfinDb>(
+            //     options => options
+            //         .UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"),
+            //     ServiceLifetime.Transient);
 
             serviceCollection.AddSingleton<JellyfinDbProvider>();
 
