@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
+using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -12,22 +15,28 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
     /// <summary>
-    /// The audio controller.
+    /// The video hls controller.
     /// </summary>
-    // TODO: In order to autheneticate this in the future, Dlna playback will require updating
-    public class AudioController : BaseJellyfinApiController
+    [Authorize(Policy = Policies.DefaultAuthorization)]
+    public class VideoHlsController : BaseJellyfinApiController
     {
+        private const string DefaultEncoderPreset = "superfast";
+        private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
+
+        private readonly EncodingHelper _encodingHelper;
         private readonly IDlnaManager _dlnaManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IUserManager _userManager;
@@ -35,49 +44,47 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IStreamHelper _streamHelper;
         private readonly IFileSystem _fileSystem;
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
-        private readonly HttpClient _httpClient;
-
-        private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
+        private readonly ILogger _logger;
+        private readonly EncodingOptions _encodingOptions;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AudioController"/> class.
+        /// Initializes a new instance of the <see cref="VideoHlsController"/> class.
         /// </summary>
+        /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
+        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
         /// <param name="userManger">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="streamHelper">Instance of the <see cref="IStreamHelper"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
-        /// <param name="httpClient">Instance of the <see cref="HttpClient"/>.</param>
-        public AudioController(
+        /// <param name="logger">Instance of the <see cref="ILogger{VideoHlsController}"/>.</param>
+        public VideoHlsController(
+            IMediaEncoder mediaEncoder,
+            IFileSystem fileSystem,
+            ISubtitleEncoder subtitleEncoder,
+            IConfiguration configuration,
             IDlnaManager dlnaManager,
             IUserManager userManger,
             IAuthorizationContext authorizationContext,
             ILibraryManager libraryManager,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
-            IMediaEncoder mediaEncoder,
-            IStreamHelper streamHelper,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
-            HttpClient httpClient)
+            ILogger<VideoHlsController> logger)
         {
+            _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
+
             _dlnaManager = dlnaManager;
             _authContext = authorizationContext;
             _userManager = userManger;
@@ -85,17 +92,17 @@ namespace Jellyfin.Api.Controllers
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
-            _streamHelper = streamHelper;
             _fileSystem = fileSystem;
             _subtitleEncoder = subtitleEncoder;
             _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
-            _httpClient = httpClient;
+            _logger = logger;
+            _encodingOptions = serverConfigurationManager.GetEncodingOptions();
         }
 
         /// <summary>
-        /// Gets an audio stream.
+        /// Gets a hls live stream.
         /// </summary>
         /// <param name="itemId">The item id.</param>
         /// <param name="container">The audio container.</param>
@@ -146,16 +153,16 @@ namespace Jellyfin.Api.Controllers
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
-        /// <response code="200">Audio file returned.</response>
-        /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("{itemId}/{stream=stream}.{container?}")]
-        [HttpGet("{itemId}/stream")]
-        [HttpHead("{itemId}/{stream=stream}.{container?}")]
-        [HttpHead("{itemId}/stream")]
+        /// <param name="maxWidth">Optional. The max width.</param>
+        /// <param name="maxHeight">Optional. The max height.</param>
+        /// <param name="enableSubtitlesInManifest">Optional. Whether to enable subtitles in the manifest.</param>
+        /// <response code="200">Hls live stream retreaved.</response>
+        /// <returns>A <see cref="FileResult"/> containing the hls file.</returns>
+        [HttpGet("/Videos/{itemId}/live.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetAudioStream(
+        public async Task<ActionResult> GetLiveHlsStream(
             [FromRoute] Guid itemId,
-            [FromRoute] string? container,
+            [FromQuery] string? container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -202,17 +209,16 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext context,
-            [FromQuery] Dictionary<string, string> streamOptions)
+            [FromQuery] Dictionary<string, string> streamOptions,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] bool? enableSubtitlesInManifest)
         {
-            bool isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
-
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            StreamingRequestDto streamingRequest = new StreamingRequestDto
+            VideoRequestDto streamingRequest = new VideoRequestDto
             {
                 Id = itemId,
                 Container = container,
-                Static = @static.HasValue ? @static.Value : true,
+                Static = @static ?? true,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -223,10 +229,10 @@ namespace Jellyfin.Api.Controllers
                 MediaSourceId = mediaSourceId,
                 DeviceId = deviceId,
                 AudioCodec = audioCodec,
-                EnableAutoStreamCopy = enableAutoStreamCopy.HasValue ? enableAutoStreamCopy.Value : true,
-                AllowAudioStreamCopy = allowAudioStreamCopy.HasValue ? allowAudioStreamCopy.Value : true,
-                AllowVideoStreamCopy = allowVideoStreamCopy.HasValue ? allowVideoStreamCopy.Value : true,
-                BreakOnNonKeyFrames = breakOnNonKeyFrames.HasValue ? breakOnNonKeyFrames.Value : false,
+                EnableAutoStreamCopy = enableAutoStreamCopy ?? true,
+                AllowAudioStreamCopy = allowAudioStreamCopy ?? true,
+                AllowVideoStreamCopy = allowVideoStreamCopy ?? true,
+                BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
                 AudioBitRate = audioBitRate,
@@ -236,7 +242,7 @@ namespace Jellyfin.Api.Controllers
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps.HasValue ? copyTimestamps.Value : true,
+                CopyTimestamps = copyTimestamps ?? true,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
@@ -245,23 +251,27 @@ namespace Jellyfin.Api.Controllers
                 SubtitleMethod = subtitleMethod,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc.HasValue ? requireAvc.Value : true,
-                DeInterlace = deInterlace.HasValue ? deInterlace.Value : true,
-                RequireNonAnamorphic = requireNonAnamorphic.HasValue ? requireNonAnamorphic.Value : true,
+                RequireAvc = requireAvc ?? true,
+                DeInterlace = deInterlace ?? true,
+                RequireNonAnamorphic = requireNonAnamorphic ?? true,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode.HasValue ? enableMpegtsM2TsMode.Value : true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
                 TranscodeReasons = transcodingReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context,
-                StreamOptions = streamOptions
+                StreamOptions = streamOptions,
+                MaxHeight = maxHeight,
+                MaxWidth = maxWidth,
+                EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true
             };
 
-            using var state = await StreamingHelpers.GetStreamingState(
+            var cancellationTokenSource = new CancellationTokenSource();
+            var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
                     _authContext,
@@ -276,76 +286,217 @@ namespace Jellyfin.Api.Controllers
                     _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
-                    _transcodingJobType,
+                    TranscodingJobType,
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
-            if (@static.HasValue && @static.Value && state.DirectStreamProvider != null)
+            TranscodingJobDto? job = null;
+            var playlist = state.OutputFilePath;
+
+            if (!System.IO.File.Exists(playlist))
             {
-                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
-
-                // TODO AllowEndOfFile = false
-                await new ProgressiveFileCopier(_streamHelper, state.DirectStreamProvider).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
-
-                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return File(Response.Body, MimeTypes.GetMimeType("file.ts")!);
-            }
-
-            // Static remote stream
-            if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
-            {
-                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
-
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, this, _httpClient).ConfigureAwait(false);
-            }
-
-            if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
-            {
-                return BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
-            }
-
-            var outputPath = state.OutputFilePath;
-            var outputPathExists = System.IO.File.Exists(outputPath);
-
-            var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
-            var isTranscodeCached = outputPathExists && transcodingJob != null;
-
-            StreamingHelpers.AddDlnaHeaders(state, Response.Headers, (@static.HasValue && @static.Value) || isTranscodeCached, startTimeTicks, Request, _dlnaManager);
-
-            // Static stream
-            if (@static.HasValue && @static.Value)
-            {
-                var contentType = state.GetMimeType("." + state.OutputContainer, false) ?? state.GetMimeType(state.MediaPath);
-
-                if (state.MediaSource.IsInfiniteStream)
+                var transcodingLock = _transcodingJobHelper.GetTranscodingLock(playlist);
+                await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                try
                 {
-                    // TODO AllowEndOfFile = false
-                    await new ProgressiveFileCopier(_streamHelper, state.MediaPath).WriteToAsync(Response.Body, CancellationToken.None).ConfigureAwait(false);
+                    if (!System.IO.File.Exists(playlist))
+                    {
+                        // If the playlist doesn't already exist, startup ffmpeg
+                        try
+                        {
+                            job = await _transcodingJobHelper.StartFfMpeg(
+                                    state,
+                                    playlist,
+                                    GetCommandLineArguments(playlist, state),
+                                    Request,
+                                    TranscodingJobType,
+                                    cancellationTokenSource)
+                                .ConfigureAwait(false);
+                            job.IsLiveOutput = true;
+                        }
+                        catch
+                        {
+                            state.Dispose();
+                            throw;
+                        }
 
-                    return File(Response.Body, contentType);
+                        minSegments = state.MinSegments;
+                        if (minSegments > 0)
+                        {
+                            await HlsHelpers.WaitForMinimumSegmentCount(playlist, minSegments, _logger, cancellationTokenSource.Token).ConfigureAwait(false);
+                        }
+                    }
+                }
+                finally
+                {
+                    transcodingLock.Release();
+                }
+            }
+
+            job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlist, TranscodingJobType);
+
+            if (job != null)
+            {
+                _transcodingJobHelper.OnTranscodeEndRequest(job);
+            }
+
+            var playlistText = HlsHelpers.GetLivePlaylistText(playlist, state.SegmentLength);
+
+            return Content(playlistText, MimeTypes.GetMimeType("playlist.m3u8"));
+        }
+
+        /// <summary>
+        /// Gets the command line arguments for ffmpeg.
+        /// </summary>
+        /// <param name="outputPath">The output path of the file.</param>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
+        /// <returns>The command line arguments as a string.</returns>
+        private string GetCommandLineArguments(string outputPath, StreamState state)
+        {
+            var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+            var threads = _encodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
+            var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions);
+            var format = !string.IsNullOrWhiteSpace(state.Request.SegmentContainer) ? "." + state.Request.SegmentContainer : ".ts";
+            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + format;
+
+            var segmentFormat = format.TrimStart('.');
+            if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
+            {
+                segmentFormat = "mpegts";
+            }
+
+            var baseUrlParam = string.Format(
+                CultureInfo.InvariantCulture,
+                "\"hls{0}\"",
+                Path.GetFileNameWithoutExtension(outputPath));
+
+            return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -f segment -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -segment_time {6} {7} -individual_header_trailer 0 -segment_format {8} -segment_list_entry_prefix {9} -segment_list_type m3u8 -segment_start_number 0 -segment_list \"{10}\" -y \"{11}\"",
+                    inputModifier,
+                    _encodingHelper.GetInputArgument(state, _encodingOptions),
+                    threads,
+                    _encodingHelper.GetMapArgs(state),
+                    GetVideoArguments(state),
+                    GetAudioArguments(state),
+                    state.SegmentLength.ToString(CultureInfo.InvariantCulture),
+                    string.Empty,
+                    segmentFormat,
+                    baseUrlParam,
+                    outputPath,
+                    outputTsArg)
+                .Trim();
+        }
+
+        /// <summary>
+        /// Gets the audio arguments for transcoding.
+        /// </summary>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
+        /// <returns>The command line arguments for audio transcoding.</returns>
+        private string GetAudioArguments(StreamState state)
+        {
+            var codec = _encodingHelper.GetAudioEncoder(state);
+
+            if (EncodingHelper.IsCopyCodec(codec))
+            {
+                return "-codec:a:0 copy";
+            }
+
+            var args = "-codec:a:0 " + codec;
+
+            var channels = state.OutputAudioChannels;
+
+            if (channels.HasValue)
+            {
+                args += " -ac " + channels.Value;
+            }
+
+            var bitrate = state.OutputAudioBitrate;
+
+            if (bitrate.HasValue)
+            {
+                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (state.OutputAudioSampleRate.HasValue)
+            {
+                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            args += " " + _encodingHelper.GetAudioFilterParam(state, _encodingOptions, true);
+
+            return args;
+        }
+
+        /// <summary>
+        /// Gets the video arguments for transcoding.
+        /// </summary>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
+        /// <returns>The command line arguments for video transcoding.</returns>
+        private string GetVideoArguments(StreamState state)
+        {
+            if (!state.IsOutputVideo)
+            {
+                return string.Empty;
+            }
+
+            var codec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+
+            var args = "-codec:v:0 " + codec;
+
+            // if (state.EnableMpegtsM2TsMode)
+            // {
+            //     args += " -mpegts_m2ts_mode 1";
+            // }
+
+            // See if we can save come cpu cycles by avoiding encoding
+            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            {
+                // if h264_mp4toannexb is ever added, do not use it for live tv
+                if (state.VideoStream != null &&
+                    !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
+                {
+                    string bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.VideoStream);
+                    if (!string.IsNullOrEmpty(bitStreamArgs))
+                    {
+                        args += " " + bitStreamArgs;
+                    }
+                }
+            }
+            else
+            {
+                var keyFrameArg = string.Format(
+                    CultureInfo.InvariantCulture,
+                    " -force_key_frames \"expr:gte(t,n_forced*{0})\"",
+                    state.SegmentLength.ToString(CultureInfo.InvariantCulture));
+
+                var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
+
+                args += " " + _encodingHelper.GetVideoQualityParam(state, codec, _encodingOptions, DefaultEncoderPreset) + keyFrameArg;
+
+                // Add resolution params, if specified
+                if (!hasGraphicalSubs)
+                {
+                    args += _encodingHelper.GetOutputSizeParam(state, _encodingOptions, codec);
                 }
 
-                return FileStreamResponseHelpers.GetStaticFileResult(
-                    state.MediaPath,
-                    contentType,
-                    isHeadRequest,
-                    this);
+                // This is for internal graphical subs
+                if (hasGraphicalSubs)
+                {
+                    args += _encodingHelper.GetGraphicalSubtitleParam(state, _encodingOptions, codec);
+                }
             }
 
-            // Need to start ffmpeg (because media can't be returned directly)
-            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-            var encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
-            var ffmpegCommandLineArguments = encodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
-            return await FileStreamResponseHelpers.GetTranscodedFile(
-                state,
-                isHeadRequest,
-                _streamHelper,
-                this,
-                _transcodingJobHelper,
-                ffmpegCommandLineArguments,
-                Request,
-                _transcodingJobType,
-                cancellationTokenSource).ConfigureAwait(false);
+            args += " -flags -global_header";
+
+            if (!string.IsNullOrEmpty(state.OutputVideoSync))
+            {
+                args += " -vsync " + state.OutputVideoSync;
+            }
+
+            args += _encodingHelper.GetOutputFFlags(state);
+
+            return args;
         }
     }
 }
