@@ -1,6 +1,5 @@
-#nullable enable
-
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Emby.Dlna;
@@ -9,8 +8,6 @@ using Jellyfin.Api.Attributes;
 using MediaBrowser.Controller.Dlna;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-#pragma warning disable CA1801
 
 namespace Jellyfin.Api.Controllers
 {
@@ -42,37 +39,33 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Get Description Xml.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
-        /// <returns>Description Xml.</returns>
-        [HttpGet("{Uuid}/description.xml")]
-        [HttpGet("{Uuid}/description")]
+        /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Description xml returned.</response>
+        /// <returns>An <see cref="OkResult"/> containing the description xml.</returns>
+        [HttpGet("{serverId}/description.xml")]
+        [HttpGet("{serverId}/description")]
         [Produces(XMLContentType)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult GetDescriptionXml([FromRoute] string uuid)
+        public ActionResult GetDescriptionXml([FromRoute] string serverId)
         {
             var url = GetAbsoluteUri();
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, uuid, serverAddress);
-
-            // TODO GetStaticResult doesn't do anything special?
-            /*
-            var cacheLength = TimeSpan.FromDays(1);
-            var cacheKey = Request.Path.Value.GetMD5();
-            var bytes = Encoding.UTF8.GetBytes(xml);
-            */
+            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, serverId, serverAddress);
             return Ok(xml);
         }
 
         /// <summary>
         /// Gets Dlna content directory xml.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
-        /// <returns>Dlna content directory xml.</returns>
-        [HttpGet("{Uuid}/ContentDirectory/ContentDirectory.xml")]
-        [HttpGet("{Uuid}/ContentDirectory/ContentDirectory")]
+        /// <param name="serverId">Server UUID.</param>
+        /// <response code="200">Dlna content directory returned.</response>
+        /// <returns>An <see cref="OkResult"/> containing the dlna content directory xml.</returns>
+        [HttpGet("{serverId}/ContentDirectory/ContentDirectory.xml")]
+        [HttpGet("{serverId}/ContentDirectory/ContentDirectory")]
         [Produces(XMLContentType)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult GetContentDirectory([FromRoute] string uuid)
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        public ActionResult GetContentDirectory([FromRoute] string serverId)
         {
             return Ok(_contentDirectory.GetServiceXml());
         }
@@ -80,13 +73,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets Dlna media receiver registrar xml.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <returns>Dlna media receiver registrar xml.</returns>
-        [HttpGet("{Uuid}/MediaReceiverRegistrar/MediaReceiverRegistrar.xml")]
-        [HttpGet("{Uuid}/MediaReceiverRegistrar/MediaReceiverRegistrar")]
+        [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar.xml")]
+        [HttpGet("{serverId}/MediaReceiverRegistrar/MediaReceiverRegistrar")]
         [Produces(XMLContentType)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult GetMediaReceiverRegistrar([FromRoute] string uuid)
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        public ActionResult GetMediaReceiverRegistrar([FromRoute] string serverId)
         {
             return Ok(_mediaReceiverRegistrar.GetServiceXml());
         }
@@ -94,13 +88,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets Dlna media receiver registrar xml.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <returns>Dlna media receiver registrar xml.</returns>
-        [HttpGet("{Uuid}/ConnectionManager/ConnectionManager.xml")]
-        [HttpGet("{Uuid}/ConnectionManager/ConnectionManager")]
+        [HttpGet("{serverId}/ConnectionManager/ConnectionManager.xml")]
+        [HttpGet("{serverId}/ConnectionManager/ConnectionManager")]
         [Produces(XMLContentType)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult GetConnectionManager([FromRoute] string uuid)
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        public ActionResult GetConnectionManager([FromRoute] string serverId)
         {
             return Ok(_connectionManager.GetServiceXml());
         }
@@ -108,100 +103,103 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Process a content directory control request.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <returns>Control response.</returns>
-        [HttpPost("{Uuid}/ContentDirectory/Control")]
-        public async Task<ActionResult<ControlResponse>> ProcessContentDirectoryControlRequest([FromRoute] string uuid)
+        [HttpPost("{serverId}/ContentDirectory/Control")]
+        public async Task<ActionResult<ControlResponse>> ProcessContentDirectoryControlRequest([FromRoute] string serverId)
         {
-            var response = await PostAsync(uuid, Request.Body, _contentDirectory).ConfigureAwait(false);
-            return Ok(response);
+            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _contentDirectory).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Process a connection manager control request.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <returns>Control response.</returns>
-        [HttpPost("{Uuid}/ConnectionManager/Control")]
-        public async Task<ActionResult<ControlResponse>> ProcessConnectionManagerControlRequest([FromRoute] string uuid)
+        [HttpPost("{serverId}/ConnectionManager/Control")]
+        public async Task<ActionResult<ControlResponse>> ProcessConnectionManagerControlRequest([FromRoute] string serverId)
         {
-            var response = await PostAsync(uuid, Request.Body, _connectionManager).ConfigureAwait(false);
-            return Ok(response);
+            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _connectionManager).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Process a media receiver registrar control request.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <returns>Control response.</returns>
-        [HttpPost("{Uuid}/MediaReceiverRegistrar/Control")]
-        public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute] string uuid)
+        [HttpPost("{serverId}/MediaReceiverRegistrar/Control")]
+        public async Task<ActionResult<ControlResponse>> ProcessMediaReceiverRegistrarControlRequest([FromRoute] string serverId)
         {
-            var response = await PostAsync(uuid, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
-            return Ok(response);
+            return await ProcessControlRequestInternalAsync(serverId, Request.Body, _mediaReceiverRegistrar).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Processes an event subscription request.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <returns>Event subscription response.</returns>
-        [HttpSubscribe("{Uuid}/MediaReceiverRegistrar/Events")]
-        [HttpUnsubscribe("{Uuid}/MediaReceiverRegistrar/Events")]
-        public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string uuid)
+        [HttpSubscribe("{serverId}/MediaReceiverRegistrar/Events")]
+        [HttpUnsubscribe("{serverId}/MediaReceiverRegistrar/Events")]
+        [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        public ActionResult<EventSubscriptionResponse> ProcessMediaReceiverRegistrarEventRequest(string serverId)
         {
-            return Ok(ProcessEventRequest(_mediaReceiverRegistrar));
+            return ProcessEventRequest(_mediaReceiverRegistrar);
         }
 
         /// <summary>
         /// Processes an event subscription request.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <returns>Event subscription response.</returns>
-        [HttpSubscribe("{Uuid}/ContentDirectory/Events")]
-        [HttpUnsubscribe("{Uuid}/ContentDirectory/Events")]
-        public ActionResult<EventSubscriptionResponse> ProcessContentDirectoryEventRequest(string uuid)
+        [HttpSubscribe("{serverId}/ContentDirectory/Events")]
+        [HttpUnsubscribe("{serverId}/ContentDirectory/Events")]
+        [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        public ActionResult<EventSubscriptionResponse> ProcessContentDirectoryEventRequest(string serverId)
         {
-            return Ok(ProcessEventRequest(_contentDirectory));
+            return ProcessEventRequest(_contentDirectory);
         }
 
         /// <summary>
         /// Processes an event subscription request.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <returns>Event subscription response.</returns>
-        [HttpSubscribe("{Uuid}/ConnectionManager/Events")]
-        [HttpUnsubscribe("{Uuid}/ConnectionManager/Events")]
-        public ActionResult<EventSubscriptionResponse> ProcessConnectionManagerEventRequest(string uuid)
+        [HttpSubscribe("{serverId}/ConnectionManager/Events")]
+        [HttpUnsubscribe("{serverId}/ConnectionManager/Events")]
+        [ApiExplorerSettings(IgnoreApi = true)] // Ignore in openapi docs
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        public ActionResult<EventSubscriptionResponse> ProcessConnectionManagerEventRequest(string serverId)
         {
-            return Ok(ProcessEventRequest(_connectionManager));
+            return ProcessEventRequest(_connectionManager);
         }
 
         /// <summary>
         /// Gets a server icon.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
+        /// <param name="serverId">Server UUID.</param>
         /// <param name="fileName">The icon filename.</param>
         /// <returns>Icon stream.</returns>
-        [HttpGet("{Uuid}/icons/{Filename}")]
-        public ActionResult<FileStreamResult> GetIconId([FromRoute] string uuid, [FromRoute] string fileName)
+        [HttpGet("{serverId}/icons/{filename}")]
+        [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "serverId", Justification = "Required for DLNA")]
+        public ActionResult GetIconId([FromRoute] string serverId, [FromRoute] string fileName)
         {
-            return GetIcon(fileName);
+            return GetIconInternal(fileName);
         }
 
         /// <summary>
         /// Gets a server icon.
         /// </summary>
-        /// <param name="uuid">Server UUID.</param>
         /// <param name="fileName">The icon filename.</param>
         /// <returns>Icon stream.</returns>
-        [HttpGet("icons/{Filename}")]
-        public ActionResult<FileStreamResult> GetIcon([FromQuery] string uuid, [FromRoute] string fileName)
+        [HttpGet("icons/{filename}")]
+        public ActionResult GetIcon([FromRoute] string fileName)
         {
-            return GetIcon(fileName);
+            return GetIconInternal(fileName);
         }
 
-        private ActionResult<FileStreamResult> GetIcon(string fileName)
+        private ActionResult GetIconInternal(string fileName)
         {
             var icon = _dlnaManager.GetIcon(fileName);
             if (icon == null)
@@ -213,7 +211,7 @@ namespace Jellyfin.Api.Controllers
                 .TrimStart('.')
                 .ToLowerInvariant();
 
-            return new FileStreamResult(icon.Stream, contentType);
+            return File(icon.Stream, contentType);
         }
 
         private string GetAbsoluteUri()
@@ -221,7 +219,7 @@ namespace Jellyfin.Api.Controllers
             return $"{Request.Scheme}://{Request.Host}{Request.Path}";
         }
 
-        private Task<ControlResponse> PostAsync(string id, Stream requestStream, IUpnpService service)
+        private Task<ControlResponse> ProcessControlRequestInternalAsync(string id, Stream requestStream, IUpnpService service)
         {
             return service.ProcessControlRequestAsync(new ControlRequest
             {
