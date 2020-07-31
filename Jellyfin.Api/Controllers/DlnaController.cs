@@ -52,16 +52,16 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets a single profile.
         /// </summary>
-        /// <param name="id">Profile Id.</param>
+        /// <param name="profileId">Profile Id.</param>
         /// <response code="200">Device profile returned.</response>
         /// <response code="404">Device profile not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the profile on success, or a <see cref="NotFoundResult"/> if device profile not found.</returns>
-        [HttpGet("Profiles/{Id}")]
+        [HttpGet("Profiles/{profileId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceProfile> GetProfile([FromRoute] string id)
+        public ActionResult<DeviceProfile> GetProfile([FromRoute] string profileId)
         {
-            var profile = _dlnaManager.GetProfile(id);
+            var profile = _dlnaManager.GetProfile(profileId);
             if (profile == null)
             {
                 return NotFound();
@@ -73,22 +73,22 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Deletes a profile.
         /// </summary>
-        /// <param name="id">Profile id.</param>
+        /// <param name="profileId">Profile id.</param>
         /// <response code="204">Device profile deleted.</response>
         /// <response code="404">Device profile not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if profile not found.</returns>
-        [HttpDelete("Profiles/{Id}")]
+        [HttpDelete("Profiles/{profileId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteProfile([FromRoute] string id)
+        public ActionResult DeleteProfile([FromRoute] string profileId)
         {
-            var existingDeviceProfile = _dlnaManager.GetProfile(id);
+            var existingDeviceProfile = _dlnaManager.GetProfile(profileId);
             if (existingDeviceProfile == null)
             {
                 return NotFound();
             }
 
-            _dlnaManager.DeleteProfile(id);
+            _dlnaManager.DeleteProfile(profileId);
             return NoContent();
         }
 
@@ -109,17 +109,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a profile.
         /// </summary>
-        /// <param name="id">Profile id.</param>
+        /// <param name="profileId">Profile id.</param>
         /// <param name="deviceProfile">Device profile.</param>
         /// <response code="204">Device profile updated.</response>
         /// <response code="404">Device profile not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if profile not found.</returns>
-        [HttpPost("Profiles/{Id}")]
+        [HttpPost("Profiles/{profileId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateProfile([FromRoute] string id, [FromBody] DeviceProfile deviceProfile)
+        public ActionResult UpdateProfile([FromRoute] string profileId, [FromBody] DeviceProfile deviceProfile)
         {
-            var existingDeviceProfile = _dlnaManager.GetProfile(id);
+            var existingDeviceProfile = _dlnaManager.GetProfile(profileId);
             if (existingDeviceProfile == null)
             {
                 return NotFound();
