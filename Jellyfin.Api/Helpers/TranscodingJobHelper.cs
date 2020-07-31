@@ -727,6 +727,20 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
+        /// Transcoding video finished. Decrement the active request counter.
+        /// </summary>
+        /// <param name="job">The <see cref="TranscodingJobDto"/> which ended.</param>
+        public void OnTranscodeEndRequest(TranscodingJobDto job)
+        {
+            job.ActiveRequestCount--;
+            _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
+            if (job.ActiveRequestCount <= 0)
+            {
+                PingTimer(job, false);
+            }
+        }
+
+        /// <summary>
         /// Processes the exited.
         /// </summary>
         /// <param name="process">The process.</param>
