@@ -415,9 +415,9 @@ namespace Jellyfin.Drawing.Skia
 
             var kernel = new float[9]
             {
-                        0,    -.1f,    0,
-                        -.1f, 1.4f, -.1f,
-                        0,    -.1f,    0,
+                0,    -.1f,    0,
+                -.1f, 1.4f, -.1f,
+                0,    -.1f,    0,
             };
 
             var kernelSize = new SKSizeI(3, 3);
