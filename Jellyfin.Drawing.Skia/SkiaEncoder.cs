@@ -410,11 +410,12 @@ namespace Jellyfin.Drawing.Skia
         {
             using var surface = SKSurface.Create(targetInfo);
             using var canvas = surface.Canvas;
-            using var paint = new SKPaint();
-
-            paint.FilterQuality = SKFilterQuality.High;
-            paint.IsAntialias = isAntialias;
-            paint.IsDither = isDither;
+            using var paint = new SKPaint
+            {
+                FilterQuality = SKFilterQuality.High,
+                IsAntialias = isAntialias,
+                IsDither = isDither
+            };
 
             var kernel = new float[9]
             {
@@ -427,9 +428,19 @@ namespace Jellyfin.Drawing.Skia
             var kernelOffset = new SKPointI(1, 1);
 
             paint.ImageFilter = SKImageFilter.CreateMatrixConvolution(
-                kernelSize, kernel, 1f, 0f, kernelOffset, SKShaderTileMode.Clamp, false);
+                kernelSize,
+                kernel,
+                1f,
+                0f,
+                kernelOffset,
+                SKShaderTileMode.Clamp,
+                false);
 
-            canvas.DrawBitmap(source, SKRect.Create(0, 0, source.Width, source.Height), SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height), paint);
+            canvas.DrawBitmap(
+                source,
+                SKRect.Create(0, 0, source.Width, source.Height),
+                SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
+                paint);
 
             return surface.Snapshot();
         }
