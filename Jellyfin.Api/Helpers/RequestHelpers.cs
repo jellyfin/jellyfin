@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
@@ -171,6 +172,11 @@ namespace Jellyfin.Api.Helpers
                 }).Where(i => i.HasValue)
                 .Select(i => i!.Value)
                 .ToArray();
+        }
+
+        internal static IPAddress NormalizeIp(IPAddress ip)
+        {
+            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
         }
     }
 }
