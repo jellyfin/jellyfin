@@ -397,6 +397,9 @@ namespace Jellyfin.Drawing.Skia
 
         /// <summary>
         /// Resizes an image on the CPU, by utilizing a surface and canvas.
+        ///
+        /// The convolutional matrix kernel used in this resize function gives a (light) sharpening effect.
+        /// This technique is similar to effect that can be created using for example the [Convolution matrix filter in GIMP](https://docs.gimp.org/2.10/en/gimp-filter-convolution-matrix.html).
         /// </summary>
         /// <param name="source">The source bitmap.</param>
         /// <param name="targetInfo">This specifies the target size and other information required to create the surface.</param>
