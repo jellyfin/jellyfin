@@ -731,19 +731,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
 
-                var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
+                ReadOnlySpan<char> filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Substring(0, 1);
+                var prefix = filename.Slice(0, 1);
 
-                return Path.Combine(SubtitleCachePath, prefix, filename);
+                return Path.Join(SubtitleCachePath, prefix, filename);
             }
             else
             {
-                var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
+                ReadOnlySpan<char> filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Substring(0, 1);
+                var prefix = filename.Slice(0, 1);
 
-                return Path.Combine(SubtitleCachePath, prefix, filename);
+                return Path.Join(SubtitleCachePath, prefix, filename);
             }
         }
 

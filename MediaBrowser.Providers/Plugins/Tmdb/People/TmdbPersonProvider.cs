@@ -251,9 +251,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
         private static string GetPersonDataPath(IApplicationPaths appPaths, string tmdbId)
         {
-            var letter = tmdbId.GetMD5().ToString().Substring(0, 1);
+            var letter = tmdbId.GetMD5().ToString().AsSpan().Slice(0, 1);
 
-            return Path.Combine(GetPersonsDataPath(appPaths), letter, tmdbId);
+            return Path.Join(GetPersonsDataPath(appPaths), letter, tmdbId);
         }
 
         internal static string GetPersonDataFilePath(IApplicationPaths appPaths, string tmdbId)

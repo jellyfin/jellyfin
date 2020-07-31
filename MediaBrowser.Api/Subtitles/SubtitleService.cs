@@ -175,11 +175,12 @@ namespace MediaBrowser.Api.Subtitles
                 throw new ArgumentException("segmentLength was not given, or it was given incorrectly. (It should be bigger than 0)");
             }
 
-            builder.AppendLine("#EXTM3U");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + request.SegmentLength.ToString(CultureInfo.InvariantCulture));
-            builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
-            builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
+            builder.AppendLine("#EXTM3U")
+                .Append("#EXT-X-TARGETDURATION:")
+                .AppendLine(request.SegmentLength.ToString(CultureInfo.InvariantCulture))
+                .AppendLine("#EXT-X-VERSION:3")
+                .AppendLine("#EXT-X-MEDIA-SEQUENCE:0")
+                .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
 
             long positionTicks = 0;
 
@@ -190,7 +191,9 @@ namespace MediaBrowser.Api.Subtitles
                 var remaining = runtime - positionTicks;
                 var lengthTicks = Math.Min(remaining, segmentLengthTicks);
 
-                builder.AppendLine("#EXTINF:" + TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture) + ",");
+                builder.Append("#EXTINF:")
+                    .Append(TimeSpan.FromTicks(lengthTicks).TotalSeconds.ToString(CultureInfo.InvariantCulture))
+                    .AppendLine(",");
 
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
