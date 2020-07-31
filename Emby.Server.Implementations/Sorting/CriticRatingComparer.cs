@@ -5,7 +5,7 @@ using MediaBrowser.Model.Querying;
 namespace Emby.Server.Implementations.Sorting
 {
     /// <summary>
-    /// Class CriticRatingComparer
+    /// Class CriticRatingComparer.
     /// </summary>
     public class CriticRatingComparer : IBaseItemComparer
     {

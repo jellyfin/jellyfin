@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Querying;
@@ -13,16 +15,18 @@ namespace MediaBrowser.Controller.Channels
     {
         public override bool IsVisible(User user)
         {
-            if (user.Policy.BlockedChannels != null)
+            if (user.GetPreference(PreferenceKind.BlockedChannels) != null)
             {
-                if (user.Policy.BlockedChannels.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                if (user.GetPreference(PreferenceKind.BlockedChannels).Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
             }
             else
             {
-                if (!user.Policy.EnableAllChannels && !user.Policy.EnabledChannels.Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                if (!user.HasPermission(PermissionKind.EnableAllChannels)
+                    && !user.GetPreference(PreferenceKind.EnabledChannels)
+                        .Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }

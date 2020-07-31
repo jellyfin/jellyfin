@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Udp
@@ -17,10 +18,16 @@ namespace Emby.Server.Implementations.Udp
     public sealed class UdpServer : IDisposable
     {
         /// <summary>
-        /// The _logger
+        /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
+        private readonly IConfiguration _config;
+
+        /// <summary>
+        /// Address Override Configuration Key.
+        /// </summary>
+        public const string AddressOverrideConfigKey = "PublishedServerUrl";
 
         private Socket _udpSocket;
         private IPEndPoint _endpoint;
@@ -31,15 +38,18 @@ namespace Emby.Server.Implementations.Udp
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
         /// </summary>
-        public UdpServer(ILogger logger, IServerApplicationHost appHost)
+        public UdpServer(ILogger logger, IServerApplicationHost appHost, IConfiguration configuration)
         {
             _logger = logger;
             _appHost = appHost;
+            _config = configuration;
         }
 
         private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
         {
-            var localUrl = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
+            string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
+                ? _config[AddressOverrideConfigKey]
+                : await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(localUrl))
             {
@@ -91,11 +101,18 @@ namespace Emby.Server.Implementations.Udp
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                var infiniteTask = Task.Delay(-1, cancellationToken);
                 try
                 {
-                    var result = await _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint).ConfigureAwait(false);
+                    var task = _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint);
+                    await Task.WhenAny(task, infiniteTask).ConfigureAwait(false);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (!task.IsCompleted)
+                    {
+                        return;
+                    }
+
+                    var result = task.Result;
 
                     var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
@@ -105,7 +122,7 @@ namespace Emby.Server.Implementations.Udp
                 }
                 catch (SocketException ex)
                 {
-                    _logger.LogError(ex, "Failed to receive data drom socket");
+                    _logger.LogError(ex, "Failed to receive data from socket");
                 }
                 catch (OperationCanceledException)
                 {

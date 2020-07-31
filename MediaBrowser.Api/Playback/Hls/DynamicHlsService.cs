@@ -94,7 +94,7 @@ namespace MediaBrowser.Api.Playback.Hls
     public class DynamicHlsService : BaseHlsService
     {
         public DynamicHlsService(
-            ILogger logger,
+            ILogger<DynamicHlsService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
             IUserManager userManager,
@@ -234,6 +234,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         Logger.LogDebug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", requestedIndex - currentTranscodingIndex.Value, segmentGapRequiringTranscodingChange, requestedIndex);
                         startTranscoding = true;
                     }
+
                     if (startTranscoding)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
@@ -257,7 +258,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        //await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                        // await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                     else
                     {
@@ -277,8 +278,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
             }
 
-            //Logger.LogInformation("waiting for {0}", segmentPath);
-            //while (!File.Exists(segmentPath))
+            // Logger.LogInformation("waiting for {0}", segmentPath);
+            // while (!File.Exists(segmentPath))
             //{
             //    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             //}
@@ -518,6 +519,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     Logger.LogDebug("serving {0} as it's on disk and transcoding stopped", segmentPath);
                 }
+
                 cancellationToken.ThrowIfCancellationRequested();
             }
             else
@@ -700,12 +702,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
-            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
                 return false;
             }
 
-            if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(state.OutputAudioCodec))
             {
                 return false;
             }
@@ -717,25 +719,204 @@ namespace MediaBrowser.Api.Playback.Hls
 
             // Having problems in android
             return false;
-            //return state.VideoRequest.VideoBitRate.HasValue;
+            // return state.VideoRequest.VideoBitRate.HasValue;
+        }
+
+        /// <summary>
+        /// Get the H.26X level of the output video stream.
+        /// </summary>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>H.26X level of the output video stream.</returns>
+        private int? GetOutputVideoCodecLevel(StreamState state)
+        {
+            string levelString;
+            if (EncodingHelper.IsCopyCodec(state.OutputVideoCodec)
+                && state.VideoStream.Level.HasValue)
+            {
+                levelString = state.VideoStream?.Level.ToString();
+            }
+            else
+            {
+                levelString = state.GetRequestedLevel(state.ActualOutputVideoCodec);
+            }
+
+            if (int.TryParse(levelString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLevel))
+            {
+                return parsedLevel;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a formatted string of the output audio codec, for use in the CODECS field.
+        /// </summary>
+        /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
+        /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>Formatted audio codec string.</returns>
+        private string GetPlaylistAudioCodecs(StreamState state)
+        {
+
+            if (string.Equals(state.ActualOutputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("aac").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetAACString(profile);
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetMP3String();
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "ac3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetAC3String();
+            }
+            else if (string.Equals(state.ActualOutputAudioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
+            {
+                return HlsCodecStringFactory.GetEAC3String();
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets a formatted string of the output video codec, for use in the CODECS field.
+        /// </summary>
+        /// <seealso cref="AppendPlaylistCodecsField(StringBuilder, StreamState)"/>
+        /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
+        /// <param name="state">StreamState of the current stream.</param>
+        /// <returns>Formatted video codec string.</returns>
+        private string GetPlaylistVideoCodecs(StreamState state, string codec, int level)
+        {
+            if (level == 0)
+            {
+                // This is 0 when there's no requested H.26X level in the device profile
+                // and the source is not encoded in H.26X
+                Logger.LogError("Got invalid H.26X level when building CODECS field for HLS master playlist");
+                return string.Empty;
+            }
+
+            if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("h264").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetH264String(profile, level);
+            }
+            else if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+            {
+                string profile = state.GetRequestedProfiles("h265").FirstOrDefault();
+
+                return HlsCodecStringFactory.GetH265String(profile, level);
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Appends a CODECS field containing formatted strings of
+        /// the active streams output video and audio codecs.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <seealso cref="GetPlaylistVideoCodecs(StreamState, string, int)"/>
+        /// <seealso cref="GetPlaylistAudioCodecs(StreamState)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistCodecsField(StringBuilder builder, StreamState state)
+        {
+            // Video
+            string videoCodecs = string.Empty;
+            int? videoCodecLevel = GetOutputVideoCodecLevel(state);
+            if (!string.IsNullOrEmpty(state.ActualOutputVideoCodec) && videoCodecLevel.HasValue)
+            {
+                videoCodecs = GetPlaylistVideoCodecs(state, state.ActualOutputVideoCodec, videoCodecLevel.Value);
+            }
+
+            // Audio
+            string audioCodecs = string.Empty;
+            if (!string.IsNullOrEmpty(state.ActualOutputAudioCodec))
+            {
+                audioCodecs = GetPlaylistAudioCodecs(state);
+            }
+
+            StringBuilder codecs = new StringBuilder();
+
+            codecs.Append(videoCodecs)
+                .Append(',')
+                .Append(audioCodecs);
+
+            if (codecs.Length > 1)
+            {
+                builder.Append(",CODECS=\"")
+                    .Append(codecs)
+                    .Append('"');
+            }
+        }
+
+        /// <summary>
+        /// Appends a FRAME-RATE field containing the framerate of the output stream.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistFramerateField(StringBuilder builder, StreamState state)
+        {
+            double? framerate = null;
+            if (state.TargetFramerate.HasValue)
+            {
+                framerate = Math.Round(state.TargetFramerate.GetValueOrDefault(), 3);
+            }
+            else if (state.VideoStream?.RealFrameRate != null)
+            {
+                framerate = Math.Round(state.VideoStream.RealFrameRate.GetValueOrDefault(), 3);
+            }
+
+            if (framerate.HasValue)
+            {
+                builder.Append(",FRAME-RATE=")
+                    .Append(framerate.Value);
+            }
+        }
+
+        /// <summary>
+        /// Appends a RESOLUTION field containing the resolution of the output stream.
+        /// </summary>
+        /// <seealso cref="AppendPlaylist(StringBuilder, StreamState, string, int, string)"/>
+        /// <param name="builder">StringBuilder to append the field to.</param>
+        /// <param name="state">StreamState of the current stream.</param>
+        private void AppendPlaylistResolutionField(StringBuilder builder, StreamState state)
+        {
+            if (state.OutputWidth.HasValue && state.OutputHeight.HasValue)
+            {
+                builder.Append(",RESOLUTION=")
+                    .Append(state.OutputWidth.GetValueOrDefault())
+                    .Append('x')
+                    .Append(state.OutputHeight.GetValueOrDefault());
+            }
         }
 
         private void AppendPlaylist(StringBuilder builder, StreamState state, string url, int bitrate, string subtitleGroup)
         {
-            var header = "#EXT-X-STREAM-INF:BANDWIDTH=" + bitrate.ToString(CultureInfo.InvariantCulture) + ",AVERAGE-BANDWIDTH=" + bitrate.ToString(CultureInfo.InvariantCulture);
+            builder.Append("#EXT-X-STREAM-INF:BANDWIDTH=")
+                .Append(bitrate.ToString(CultureInfo.InvariantCulture))
+                .Append(",AVERAGE-BANDWIDTH=")
+                .Append(bitrate.ToString(CultureInfo.InvariantCulture));
 
-            // tvos wants resolution, codecs, framerate
-            //if (state.TargetFramerate.HasValue)
-            //{
-            //    header += string.Format(",FRAME-RATE=\"{0}\"", state.TargetFramerate.Value.ToString(CultureInfo.InvariantCulture));
-            //}
+            AppendPlaylistCodecsField(builder, state);
+
+            AppendPlaylistResolutionField(builder, state);
+
+            AppendPlaylistFramerateField(builder, state);
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
-                header += string.Format(",SUBTITLES=\"{0}\"", subtitleGroup);
+                builder.Append(",SUBTITLES=\"")
+                    .Append(subtitleGroup)
+                    .Append('"');
             }
 
-            builder.AppendLine(header);
+            builder.Append(Environment.NewLine);
             builder.AppendLine(url);
         }
 
@@ -793,7 +974,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
-            //if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
+            // if ((Request.UserAgent ?? string.Empty).IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1)
             //{
             //    queryString = string.Empty;
             //}
@@ -827,7 +1008,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!state.IsOutputVideo)
             {
-                if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
                     return "-acodec copy";
                 }
@@ -855,11 +1036,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Join(" ", audioTranscodeParams.ToArray());
             }
 
-            if (string.Equals(audioCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(audioCodec))
             {
                 var videoCodec = EncodingHelper.GetVideoEncoder(state, encodingOptions);
 
-                if (string.Equals(videoCodec, "copy", StringComparison.OrdinalIgnoreCase) && state.EnableBreakOnNonKeyFrames(videoCodec))
+                if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
                     return "-codec:a:0 copy -copypriorss:a:0 0";
                 }
@@ -910,7 +1091,7 @@ namespace MediaBrowser.Api.Playback.Hls
             // }
 
             // See if we can save come cpu cycles by avoiding encoding
-            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (EncodingHelper.IsCopyCodec(codec))
             {
                 if (state.VideoStream != null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
@@ -921,7 +1102,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                 }
 
-                //args += " -flags -global_header";
+                // args += " -flags -global_header";
             }
             else
             {
@@ -963,7 +1144,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " " + keyFrameArg + gopArg;
                 }
 
-                //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
+                // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
@@ -985,7 +1166,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += " -start_at_zero";
                 }
 
-                //args += " -flags -global_header";
+                // args += " -flags -global_header";
             }
 
             if (!string.IsNullOrEmpty(state.OutputVideoSync))

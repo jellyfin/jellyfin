@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 
 namespace DvdLib.Ifo
@@ -13,8 +15,14 @@ namespace DvdLib.Ifo
             Second = GetBCDValue(data[2]);
             Frames = GetBCDValue((byte)(data[3] & 0x3F));
 
-            if ((data[3] & 0x80) != 0) FrameRate = 30;
-            else if ((data[3] & 0x40) != 0) FrameRate = 25;
+            if ((data[3] & 0x80) != 0)
+            {
+                FrameRate = 30;
+            }
+            else if ((data[3] & 0x40) != 0)
+            {
+                FrameRate = 25;
+            }
         }
 
         private static byte GetBCDValue(byte data)

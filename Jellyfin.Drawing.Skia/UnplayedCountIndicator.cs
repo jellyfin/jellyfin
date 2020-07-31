@@ -32,7 +32,7 @@ namespace Jellyfin.Drawing.Skia
             {
                 paint.Color = SKColor.Parse("#CC00A4DC");
                 paint.Style = SKPaintStyle.Fill;
-                canvas.DrawCircle((float)x, OffsetFromTopRightCorner, 20, paint);
+                canvas.DrawCircle(x, OffsetFromTopRightCorner, 20, paint);
             }
 
             using (var paint = new SKPaint())
@@ -61,7 +61,7 @@ namespace Jellyfin.Drawing.Skia
                     paint.TextSize = 18;
                 }
 
-                canvas.DrawText(text, (float)x, y, paint);
+                canvas.DrawText(text, x, y, paint);
             }
         }
     }

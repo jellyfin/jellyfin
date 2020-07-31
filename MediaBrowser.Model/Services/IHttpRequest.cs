@@ -5,12 +5,12 @@ namespace MediaBrowser.Model.Services
     public interface IHttpRequest : IRequest
     {
         /// <summary>
-        /// The HTTP Verb
+        /// Gets the HTTP Verb.
         /// </summary>
         string HttpMethod { get; }
 
         /// <summary>
-        /// The value of the Accept HTTP Request Header
+        /// Gets the value of the Accept HTTP Request Header.
         /// </summary>
         string Accept { get; }
     }

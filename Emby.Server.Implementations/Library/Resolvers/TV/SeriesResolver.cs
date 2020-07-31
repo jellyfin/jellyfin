@@ -20,7 +20,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     public class SeriesResolver : FolderResolver<Series>
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
+        private readonly ILogger<SeriesResolver> _logger;
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
-                    //if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
+                    // if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
                     //{
                     //    return new Series
                     //    {
@@ -119,7 +119,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             IEnumerable<FileSystemMetadata> fileSystemChildren,
             IDirectoryService directoryService,
             IFileSystem fileSystem,
-            ILogger logger,
+            ILogger<SeriesResolver> logger,
             ILibraryManager libraryManager,
             bool isTvContentType)
         {
@@ -217,7 +217,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
             if (!string.IsNullOrEmpty(id))
             {
-                item.SetProviderId(MetadataProviders.Tvdb, id);
+                item.SetProviderId(MetadataProvider.Tvdb, id);
             }
         }
     }

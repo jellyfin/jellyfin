@@ -27,7 +27,7 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool SupportsPeople => false;
 
-        //public override double? GetDefaultPrimaryImageAspectRatio()
+        // public override double? GetDefaultPrimaryImageAspectRatio()
         //{
         //    double value = 16;
         //    value /= 9;

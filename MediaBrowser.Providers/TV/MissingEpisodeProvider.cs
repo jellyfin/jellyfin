@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -46,7 +48,7 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
         {
-            var tvdbId = series.GetProviderId(MetadataProviders.Tvdb);
+            var tvdbId = series.GetProviderId(MetadataProvider.Tvdb);
             if (string.IsNullOrEmpty(tvdbId))
             {
                 return false;
@@ -108,7 +110,7 @@ namespace MediaBrowser.Providers.TV
 
         /// <summary>
         /// Returns true if a series has any seasons or episodes without season or episode numbers
-        /// If this data is missing no virtual items will be added in order to prevent possible duplicates
+        /// If this data is missing no virtual items will be added in order to prevent possible duplicates.
         /// </summary>
         private bool HasInvalidContent(IList<BaseItem> allItems)
         {
@@ -171,7 +173,7 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <summary>
-        /// Removes the virtual entry after a corresponding physical version has been added
+        /// Removes the virtual entry after a corresponding physical version has been added.
         /// </summary>
         private bool RemoveObsoleteOrMissingEpisodes(
             IEnumerable<BaseItem> allRecursiveChildren,

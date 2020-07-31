@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Library
     public class ItemResolveArgs : EventArgs
     {
         /// <summary>
-        /// The _app paths
+        /// The _app paths.
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Library
 
         public LibraryOptions GetLibraryOptions()
         {
-            return LibraryOptions ?? (LibraryOptions = (Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent)));
+            return LibraryOptions ?? (LibraryOptions = Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent));
         }
 
         /// <summary>
@@ -89,7 +89,6 @@ namespace MediaBrowser.Controller.Library
 
                 return parentDir.Length > _appPaths.RootFolderPath.Length
                        && parentDir.StartsWith(_appPaths.RootFolderPath, StringComparison.OrdinalIgnoreCase);
-
             }
         }
 
@@ -129,8 +128,8 @@ namespace MediaBrowser.Controller.Library
                 }
 
                 return item != null;
-
             }
+
             return false;
         }
 
@@ -225,8 +224,6 @@ namespace MediaBrowser.Controller.Library
 
         public string CollectionType { get; set; }
 
-        #region Equality Overrides
-
         /// <summary>
         /// Determines whether the specified <see cref="object" /> is equal to this instance.
         /// </summary>
@@ -255,13 +252,15 @@ namespace MediaBrowser.Controller.Library
         {
             if (args != null)
             {
-                if (args.Path == null && Path == null) return true;
+                if (args.Path == null && Path == null)
+                {
+                    return true;
+                }
+
                 return args.Path != null && BaseItem.FileSystem.AreEqual(args.Path, Path);
             }
+
             return false;
         }
-
-        #endregion
     }
-
 }

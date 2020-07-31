@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -38,13 +40,14 @@ namespace Emby.Server.Implementations.Services
             if (httpResult != null)
             {
                 if (httpResult.RequestContext == null)
+                {
                     httpResult.RequestContext = request;
+                }
 
                 response.StatusCode = httpResult.Status;
             }
 
-            var responseOptions = result as IHasHeaders;
-            if (responseOptions != null)
+            if (result is IHasHeaders responseOptions)
             {
                 foreach (var responseHeaders in responseOptions.Headers)
                 {
@@ -58,8 +61,8 @@ namespace Emby.Server.Implementations.Services
                 }
             }
 
-            //ContentType='text/html' is the default for a HttpResponse
-            //Do not override if another has been set
+            // ContentType='text/html' is the default for a HttpResponse
+            // Do not override if another has been set
             if (response.ContentType == null || response.ContentType == "text/html")
             {
                 response.ContentType = defaultContentType;

@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Entities
@@ -103,7 +104,7 @@ namespace MediaBrowser.Model.Entities
         public bool ShowSidebar { get; set; }
 
         /// <summary>
-        /// Gets or sets the client
+        /// Gets or sets the client.
         /// </summary>
         public string Client { get; set; }
     }

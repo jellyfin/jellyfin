@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -53,7 +54,7 @@ namespace MediaBrowser.Model.LiveTv
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// The maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
@@ -63,16 +64,17 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if [add current program]; otherwise, <c>false</c>.</value>
         public bool AddCurrentProgram { get; set; }
+
         public bool EnableUserData { get; set; }
 
         /// <summary>
-        /// Used to specific whether to return news or not
+        /// Used to specific whether to return news or not.
         /// </summary>
         /// <remarks>If set to null, all programs will be returned</remarks>
         public bool? IsNews { get; set; }
 
         /// <summary>
-        /// Used to specific whether to return movies or not
+        /// Used to specific whether to return movies or not.
         /// </summary>
         /// <remarks>If set to null, all programs will be returned</remarks>
         public bool? IsMovie { get; set; }
@@ -87,12 +89,13 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>null</c> if [is sports] contains no value, <c>true</c> if [is sports]; otherwise, <c>false</c>.</value>
         public bool? IsSports { get; set; }
+
         public bool? IsSeries { get; set; }
 
         public string[] SortBy { get; set; }
 
         /// <summary>
-        /// The sort order to return results with
+        /// The sort order to return results with.
         /// </summary>
         /// <value>The sort order.</value>
         public SortOrder? SortOrder { get; set; }

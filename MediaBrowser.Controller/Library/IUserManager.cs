@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Events;
@@ -12,10 +11,35 @@ using MediaBrowser.Model.Users;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface IUserManager
+    /// Interface IUserManager.
     /// </summary>
     public interface IUserManager
     {
+        /// <summary>
+        /// Occurs when a user is updated.
+        /// </summary>
+        event EventHandler<GenericEventArgs<User>> OnUserUpdated;
+
+        /// <summary>
+        /// Occurs when a user is created.
+        /// </summary>
+        event EventHandler<GenericEventArgs<User>> OnUserCreated;
+
+        /// <summary>
+        /// Occurs when a user is deleted.
+        /// </summary>
+        event EventHandler<GenericEventArgs<User>> OnUserDeleted;
+
+        /// <summary>
+        /// Occurs when a user's password is changed.
+        /// </summary>
+        event EventHandler<GenericEventArgs<User>> OnUserPasswordChanged;
+
+        /// <summary>
+        /// Occurs when a user is locked out.
+        /// </summary>
+        event EventHandler<GenericEventArgs<User>> OnUserLockedOut;
+
         /// <summary>
         /// Gets the users.
         /// </summary>
@@ -29,24 +53,9 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<Guid> UsersIds { get; }
 
         /// <summary>
-        /// Occurs when [user updated].
+        /// Initializes the user manager and ensures that a user exists.
         /// </summary>
-        event EventHandler<GenericEventArgs<User>> UserUpdated;
-
-        /// <summary>
-        /// Occurs when [user deleted].
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> UserDeleted;
-
-        event EventHandler<GenericEventArgs<User>> UserCreated;
-
-        event EventHandler<GenericEventArgs<User>> UserPolicyUpdated;
-
-        event EventHandler<GenericEventArgs<User>> UserConfigurationUpdated;
-
-        event EventHandler<GenericEventArgs<User>> UserPasswordChanged;
-
-        event EventHandler<GenericEventArgs<User>> UserLockedOut;
+        void Initialize();
 
         /// <summary>
         /// Gets a user by Id.
@@ -62,13 +71,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <returns>User.</returns>
         User GetUserByName(string name);
-
-        /// <summary>
-        /// Refreshes metadata for each user
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task RefreshUsersMetadata(CancellationToken cancellationToken);
 
         /// <summary>
         /// Renames the user.
@@ -89,20 +91,28 @@ namespace MediaBrowser.Controller.Library
         void UpdateUser(User user);
 
         /// <summary>
-        /// Creates the user.
+        /// Updates the user.
         /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>User.</returns>
+        /// <param name="user">The user.</param>
+        /// <exception cref="ArgumentNullException">If user is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If the provided user doesn't exist.</exception>
+        /// <returns>A task representing the update of the user.</returns>
+        Task UpdateUserAsync(User user);
+
+        /// <summary>
+        /// Creates a user with the specified name.
+        /// </summary>
+        /// <param name="name">The name of the new user.</param>
+        /// <returns>The created user.</returns>
         /// <exception cref="ArgumentNullException">name</exception>
         /// <exception cref="ArgumentException"></exception>
         User CreateUser(string name);
 
         /// <summary>
-        /// Deletes the user.
+        /// Deletes the specified user.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
-        void DeleteUser(User user);
+        /// <param name="userId">The id of the user to be deleted.</param>
+        void DeleteUser(Guid userId);
 
         /// <summary>
         /// Resets the password.
@@ -110,13 +120,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
         Task ResetPassword(User user);
-
-        /// <summary>
-        /// Gets the offline user dto.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>UserDto.</returns>
-        UserDto GetOfflineUserDto(User user);
 
         /// <summary>
         /// Resets the easy password.
@@ -163,47 +166,34 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         Task<PinRedeemResult> RedeemPasswordResetPin(string pin);
 
-        /// <summary>
-        /// Gets the user policy.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>UserPolicy.</returns>
-        UserPolicy GetUserPolicy(User user);
-
-        /// <summary>
-        /// Gets the user configuration.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <returns>UserConfiguration.</returns>
-        UserConfiguration GetUserConfiguration(User user);
-
-        /// <summary>
-        /// Updates the configuration.
-        /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="newConfiguration">The new configuration.</param>
-        /// <returns>Task.</returns>
-        void UpdateConfiguration(Guid userId, UserConfiguration newConfiguration);
-
-        void UpdateConfiguration(User user, UserConfiguration newConfiguration);
-
-        /// <summary>
-        /// Updates the user policy.
-        /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="userPolicy">The user policy.</param>
-        void UpdateUserPolicy(Guid userId, UserPolicy userPolicy);
-
-        /// <summary>
-        /// Makes the valid username.
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <returns>System.String.</returns>
-        string MakeValidUsername(string username);
-
         void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders, IEnumerable<IPasswordResetProvider> passwordResetProviders);
 
         NameIdPair[] GetAuthenticationProviders();
+
         NameIdPair[] GetPasswordResetProviders();
+
+        /// <summary>
+        /// This method updates the user's configuration.
+        /// This is only included as a stopgap until the new API, using this internally is not recommended.
+        /// Instead, modify the user object directly, then call <see cref="UpdateUser"/>.
+        /// </summary>
+        /// <param name="userId">The user's Id.</param>
+        /// <param name="config">The request containing the new user configuration.</param>
+        void UpdateConfiguration(Guid userId, UserConfiguration config);
+
+        /// <summary>
+        /// This method updates the user's policy.
+        /// This is only included as a stopgap until the new API, using this internally is not recommended.
+        /// Instead, modify the user object directly, then call <see cref="UpdateUser"/>.
+        /// </summary>
+        /// <param name="userId">The user's Id.</param>
+        /// <param name="policy">The request containing the new user policy.</param>
+        void UpdatePolicy(Guid userId, UserPolicy policy);
+
+        /// <summary>
+        /// Clears the user's profile image.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        void ClearProfileImage(User user);
     }
 }

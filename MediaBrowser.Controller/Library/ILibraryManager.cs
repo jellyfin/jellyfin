@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
@@ -14,11 +14,14 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface ILibraryManager
+    /// Interface ILibraryManager.
     /// </summary>
     public interface ILibraryManager
     {
@@ -28,13 +31,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
         /// <returns>BaseItem.</returns>
-        BaseItem ResolvePath(FileSystemMetadata fileInfo,
+        BaseItem ResolvePath(
+            FileSystemMetadata fileInfo,
             Folder parent = null);
 
         /// <summary>
-        /// Resolves a set of files into a list of BaseItem
+        /// Resolves a set of files into a list of BaseItem.
         /// </summary>
-        IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files,
+        IEnumerable<BaseItem> ResolvePaths(
+            IEnumerable<FileSystemMetadata> files,
             IDirectoryService directoryService,
             Folder parent,
             LibraryOptions libraryOptions,
@@ -47,7 +52,7 @@ namespace MediaBrowser.Controller.Library
         AggregateFolder RootFolder { get; }
 
         /// <summary>
-        /// Gets a Person
+        /// Gets a Person.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Person}.</returns>
@@ -68,14 +73,14 @@ namespace MediaBrowser.Controller.Library
         MusicArtist GetArtist(string name);
         MusicArtist GetArtist(string name, DtoOptions options);
         /// <summary>
-        /// Gets a Studio
+        /// Gets a Studio.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Studio}.</returns>
         Studio GetStudio(string name);
 
         /// <summary>
-        /// Gets a Genre
+        /// Gets a Genre.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>Task{Genre}.</returns>
@@ -89,7 +94,7 @@ namespace MediaBrowser.Controller.Library
         MusicGenre GetMusicGenre(string name);
 
         /// <summary>
-        /// Gets a Year
+        /// Gets a Year.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
@@ -106,7 +111,7 @@ namespace MediaBrowser.Controller.Library
         Task ValidatePeople(CancellationToken cancellationToken, IProgress<double> progress);
 
         /// <summary>
-        /// Reloads the root media folder
+        /// Reloads the root media folder.
         /// </summary>
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -118,7 +123,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         void QueueLibraryScan();
 
-        void UpdateImages(BaseItem item);
+        void UpdateImages(BaseItem item, bool forceUpdate = false);
 
         /// <summary>
         /// Gets the default view.
@@ -195,6 +200,7 @@ namespace MediaBrowser.Controller.Library
         /// Updates the item.
         /// </summary>
         void UpdateItems(IEnumerable<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
+
         void UpdateItem(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
@@ -284,7 +290,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parentId">The parent identifier.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetNamedView(User user,
+        UserView GetNamedView(
+            User user,
             string name,
             Guid parentId,
             string viewType,
@@ -297,7 +304,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
-        UserView GetNamedView(User user,
+        UserView GetNamedView(
+            User user,
             string name,
             string viewType,
             string sortName);

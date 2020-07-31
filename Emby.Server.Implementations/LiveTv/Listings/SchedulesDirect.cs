@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 {
     public class SchedulesDirect : IListingsProvider
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<SchedulesDirect> _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     var programsInfo = new List<ProgramInfo>();
                     foreach (ScheduleDirect.Program schedule in dailySchedules.SelectMany(d => d.programs))
                     {
-                        //_logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
+                        // _logger.LogDebug("Proccesing Schedule for statio ID " + stationID +
                         //              " which corresponds to channel " + channelNumber + " and program id " +
                         //              schedule.programID + " which says it has images? " +
                         //              programDict[schedule.programID].hasImageArtwork);
@@ -178,7 +178,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                                 programEntry.backdropImage = GetProgramImage(ApiUrl, imagesWithoutText, true, WideAspect);
 
-                                //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
+                                // programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-LO", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-LOT", false);
@@ -212,6 +212,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 channelNumber = map.channel;
             }
+
             if (string.IsNullOrWhiteSpace(channelNumber))
             {
                 channelNumber = map.atscMajor + "." + map.atscMinor;
@@ -276,7 +277,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 CommunityRating = null,
                 EpisodeTitle = episodeTitle,
                 Audio = audioType,
-                //IsNew = programInfo.@new ?? false,
+                // IsNew = programInfo.@new ?? false,
                 IsRepeat = programInfo.@new == null,
                 IsSeries = string.Equals(details.entityType, "episode", StringComparison.OrdinalIgnoreCase),
                 ImageUrl = details.primaryImage,
@@ -342,7 +343,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 info.SeriesId = programId.Substring(0, 10);
 
-                info.SeriesProviderIds[MetadataProviders.Zap2It.ToString()] = info.SeriesId;
+                info.SeriesProviderIds[MetadataProvider.Zap2It.ToString()] = info.SeriesId;
 
                 if (details.metadata != null)
                 {
@@ -400,6 +401,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
             }
+
             return date;
         }
 
@@ -622,6 +624,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                         _lastErrorResponse = DateTime.UtcNow;
                     }
                 }
+
                 throw;
             }
             finally
@@ -701,7 +704,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 CancellationToken = cancellationToken,
                 LogErrorResponseBody = true
             };
-            //_logger.LogInformation("Obtaining token from Schedules Direct from addres: " + httpOptions.Url + " with body " +
+            // _logger.LogInformation("Obtaining token from Schedules Direct from addres: " + httpOptions.Url + " with body " +
             // httpOptions.RequestContent);
 
             using (var response = await Post(httpOptions, false, null).ConfigureAwait(false))
@@ -805,11 +808,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     throw new ArgumentException("Username is required");
                 }
+
                 if (string.IsNullOrEmpty(info.Password))
                 {
                     throw new ArgumentException("Password is required");
                 }
             }
+
             if (validateListings)
             {
                 if (string.IsNullOrEmpty(info.ListingsId))
@@ -932,24 +937,35 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             public class Token
             {
                 public int code { get; set; }
+
                 public string message { get; set; }
+
                 public string serverID { get; set; }
+
                 public string token { get; set; }
             }
+
             public class Lineup
             {
                 public string lineup { get; set; }
+
                 public string name { get; set; }
+
                 public string transport { get; set; }
+
                 public string location { get; set; }
+
                 public string uri { get; set; }
             }
 
             public class Lineups
             {
                 public int code { get; set; }
+
                 public string serverID { get; set; }
+
                 public string datetime { get; set; }
+
                 public List<Lineup> lineups { get; set; }
             }
 
@@ -957,8 +973,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             public class Headends
             {
                 public string headend { get; set; }
+
                 public string transport { get; set; }
+
                 public string location { get; set; }
+
                 public List<Lineup> lineups { get; set; }
             }
 
@@ -967,59 +986,83 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             public class Map
             {
                 public string stationID { get; set; }
+
                 public string channel { get; set; }
+
                 public string logicalChannelNumber { get; set; }
+
                 public int uhfVhf { get; set; }
+
                 public int atscMajor { get; set; }
+
                 public int atscMinor { get; set; }
             }
 
             public class Broadcaster
             {
                 public string city { get; set; }
+
                 public string state { get; set; }
+
                 public string postalcode { get; set; }
+
                 public string country { get; set; }
             }
 
             public class Logo
             {
                 public string URL { get; set; }
+
                 public int height { get; set; }
+
                 public int width { get; set; }
+
                 public string md5 { get; set; }
             }
 
             public class Station
             {
                 public string stationID { get; set; }
+
                 public string name { get; set; }
+
                 public string callsign { get; set; }
+
                 public List<string> broadcastLanguage { get; set; }
+
                 public List<string> descriptionLanguage { get; set; }
+
                 public Broadcaster broadcaster { get; set; }
+
                 public string affiliate { get; set; }
+
                 public Logo logo { get; set; }
+
                 public bool? isCommercialFree { get; set; }
             }
 
             public class Metadata
             {
                 public string lineup { get; set; }
+
                 public string modified { get; set; }
+
                 public string transport { get; set; }
             }
 
             public class Channel
             {
                 public List<Map> map { get; set; }
+
                 public List<Station> stations { get; set; }
+
                 public Metadata metadata { get; set; }
             }
 
             public class RequestScheduleForChannel
             {
                 public string stationID { get; set; }
+
                 public List<string> date { get; set; }
             }
 
@@ -1029,29 +1072,43 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             public class Rating
             {
                 public string body { get; set; }
+
                 public string code { get; set; }
             }
 
             public class Multipart
             {
                 public int partNumber { get; set; }
+
                 public int totalParts { get; set; }
             }
 
             public class Program
             {
                 public string programID { get; set; }
+
                 public string airDateTime { get; set; }
+
                 public int duration { get; set; }
+
                 public string md5 { get; set; }
+
                 public List<string> audioProperties { get; set; }
+
                 public List<string> videoProperties { get; set; }
+
                 public List<Rating> ratings { get; set; }
+
                 public bool? @new { get; set; }
+
                 public Multipart multipart { get; set; }
+
                 public string liveTapeDelay { get; set; }
+
                 public bool premiere { get; set; }
+
                 public bool repeat { get; set; }
+
                 public string isPremiereOrFinale { get; set; }
             }
 
@@ -1060,16 +1117,22 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             public class MetadataSchedule
             {
                 public string modified { get; set; }
+
                 public string md5 { get; set; }
+
                 public string startDate { get; set; }
+
                 public string endDate { get; set; }
+
                 public int days { get; set; }
             }
 
             public class Day
             {
                 public string stationID { get; set; }
+
                 public List<Program> programs { get; set; }
+
                 public MetadataSchedule metadata { get; set; }
 
                 public Day()
@@ -1092,24 +1155,28 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             public class Description100
             {
                 public string descriptionLanguage { get; set; }
+
                 public string description { get; set; }
             }
 
             public class Description1000
             {
                 public string descriptionLanguage { get; set; }
+
                 public string description { get; set; }
             }
 
             public class DescriptionsProgram
             {
                 public List<Description100> description100 { get; set; }
+
                 public List<Description1000> description1000 { get; set; }
             }
 
             public class Gracenote
             {
                 public int season { get; set; }
+
                 public int episode { get; set; }
             }
 
@@ -1121,104 +1188,154 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             public class ContentRating
             {
                 public string body { get; set; }
+
                 public string code { get; set; }
             }
 
             public class Cast
             {
                 public string billingOrder { get; set; }
+
                 public string role { get; set; }
+
                 public string nameId { get; set; }
+
                 public string personId { get; set; }
+
                 public string name { get; set; }
+
                 public string characterName { get; set; }
             }
 
             public class Crew
             {
                 public string billingOrder { get; set; }
+
                 public string role { get; set; }
+
                 public string nameId { get; set; }
+
                 public string personId { get; set; }
+
                 public string name { get; set; }
             }
 
             public class QualityRating
             {
                 public string ratingsBody { get; set; }
+
                 public string rating { get; set; }
+
                 public string minRating { get; set; }
+
                 public string maxRating { get; set; }
+
                 public string increment { get; set; }
             }
 
             public class Movie
             {
                 public string year { get; set; }
+
                 public int duration { get; set; }
+
                 public List<QualityRating> qualityRating { get; set; }
             }
 
             public class Recommendation
             {
                 public string programID { get; set; }
+
                 public string title120 { get; set; }
             }
 
             public class ProgramDetails
             {
                 public string audience { get; set; }
+
                 public string programID { get; set; }
+
                 public List<Title> titles { get; set; }
+
                 public EventDetails eventDetails { get; set; }
+
                 public DescriptionsProgram descriptions { get; set; }
+
                 public string originalAirDate { get; set; }
+
                 public List<string> genres { get; set; }
+
                 public string episodeTitle150 { get; set; }
+
                 public List<MetadataPrograms> metadata { get; set; }
+
                 public List<ContentRating> contentRating { get; set; }
+
                 public List<Cast> cast { get; set; }
+
                 public List<Crew> crew { get; set; }
+
                 public string entityType { get; set; }
+
                 public string showType { get; set; }
+
                 public bool hasImageArtwork { get; set; }
+
                 public string primaryImage { get; set; }
+
                 public string thumbImage { get; set; }
+
                 public string backdropImage { get; set; }
+
                 public string bannerImage { get; set; }
+
                 public string imageID { get; set; }
+
                 public string md5 { get; set; }
+
                 public List<string> contentAdvisory { get; set; }
+
                 public Movie movie { get; set; }
+
                 public List<Recommendation> recommendations { get; set; }
             }
 
             public class Caption
             {
                 public string content { get; set; }
+
                 public string lang { get; set; }
             }
 
             public class ImageData
             {
                 public string width { get; set; }
+
                 public string height { get; set; }
+
                 public string uri { get; set; }
+
                 public string size { get; set; }
+
                 public string aspect { get; set; }
+
                 public string category { get; set; }
+
                 public string text { get; set; }
+
                 public string primary { get; set; }
+
                 public string tier { get; set; }
+
                 public Caption caption { get; set; }
             }
 
             public class ShowImages
             {
                 public string programID { get; set; }
+
                 public List<ImageData> data { get; set; }
             }
-
         }
     }
 }

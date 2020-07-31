@@ -44,10 +44,12 @@ namespace Emby.Dlna.PlayTo
                 {
                     return MediaBrowser.Model.Entities.MediaType.Audio;
                 }
+
                 if (classType.IndexOf(MediaBrowser.Model.Entities.MediaType.Video, StringComparison.Ordinal) != -1)
                 {
                     return MediaBrowser.Model.Entities.MediaType.Video;
                 }
+
                 if (classType.IndexOf("image", StringComparison.Ordinal) != -1)
                 {
                     return MediaBrowser.Model.Entities.MediaType.Photo;
