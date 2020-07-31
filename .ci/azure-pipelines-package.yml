@@ -132,11 +132,9 @@ jobs:
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
       sshEndpoint: repository
-      runOptions: 'inline'
-      inline: |
-        sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable
-        rm $0
-        exit
+      runOptions: 'commands'
+      commands: bash /srv/repository/collect-server.azure.sh
+      args: /srv/repository/incoming/azure $(Build.BuildNumber) unstable
 
   - task: SSH@0
     displayName: 'Update Stable Repository'
@@ -154,7 +152,7 @@ jobs:
   dependsOn:
   - BuildPackage
   condition: and(succeeded('BuildPackage'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-  
+
   pool:
     vmImage: 'ubuntu-latest'
 
