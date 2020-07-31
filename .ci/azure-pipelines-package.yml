@@ -133,7 +133,7 @@ jobs:
     inputs:
       sshEndpoint: repository
       runOptions: 'commands'
-      commands: bash /srv/repository/collect-server.azure.sh
+      commands: sudo -n /srv/repository/collect-server.azure.sh
       args: /srv/repository/incoming/azure $(Build.BuildNumber) unstable
 
   - task: SSH@0
@@ -141,11 +141,9 @@ jobs:
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
     inputs:
       sshEndpoint: repository
-      runOptions: 'inline'
-      inline: |
-        sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)
-        rm $0
-        exit
+      runOptions: 'commands'
+      commands: sudo -n /srv/repository/collect-server.azure.sh
+      args: /srv/repository/incoming/azure $(Build.BuildNumber)
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
