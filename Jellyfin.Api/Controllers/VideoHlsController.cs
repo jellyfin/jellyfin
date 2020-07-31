@@ -156,7 +156,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxWidth">Optional. The max width.</param>
         /// <param name="maxHeight">Optional. The max height.</param>
         /// <param name="enableSubtitlesInManifest">Optional. Whether to enable subtitles in the manifest.</param>
-        /// <response code="200">Hls live stream retreaved.</response>
+        /// <response code="200">Hls live stream retrieved.</response>
         /// <returns>A <see cref="FileResult"/> containing the hls file.</returns>
         [HttpGet("/Videos/{itemId}/live.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
