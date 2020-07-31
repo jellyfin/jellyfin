@@ -116,6 +116,7 @@ jobs:
         $(JellyfinVersion)-$(BuildConfiguration)
 
 - job: CollectArtifacts
+  timeoutInMinutes: 10
   displayName: 'Collect Artifacts'
   dependsOn:
   - BuildPackage
