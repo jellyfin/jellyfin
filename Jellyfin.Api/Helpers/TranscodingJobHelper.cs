@@ -681,6 +681,20 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
+        /// Called when [transcode end].
+        /// </summary>
+        /// <param name="job">The transcode job.</param>
+        public void OnTranscodeEndRequest(TranscodingJobDto job)
+        {
+            job.ActiveRequestCount--;
+            _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={ActiveRequestCount}", job.ActiveRequestCount);
+            if (job.ActiveRequestCount <= 0)
+            {
+                PingTimer(job, false);
+            }
+        }
+
+        /// <summary>
         /// <summary>
         /// The progressive
         /// </summary>
@@ -709,20 +723,6 @@ namespace Jellyfin.Api.Helpers
             if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
             {
                 _sessionManager.ClearTranscodingInfo(state.Request.DeviceId);
-            }
-        }
-
-        /// <summary>
-        /// Transcoding video finished. Decrement the active request counter.
-        /// </summary>
-        /// <param name="job">The <see cref="TranscodingJobDto"/> which ended.</param>
-        public void OnTranscodeEndRequest(TranscodingJobDto job)
-        {
-            job.ActiveRequestCount--;
-            _logger.LogDebug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
-            if (job.ActiveRequestCount <= 0)
-            {
-                PingTimer(job, false);
             }
         }
 

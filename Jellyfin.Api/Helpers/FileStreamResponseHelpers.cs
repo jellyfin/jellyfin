@@ -3,9 +3,9 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -71,8 +71,7 @@ namespace Jellyfin.Api.Helpers
                 return controller.NoContent();
             }
 
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
-            return controller.File(stream, contentType);
+            return controller.PhysicalFile(path, contentType);
         }
 
         /// <summary>
@@ -80,7 +79,6 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="state">The current <see cref="StreamState"/>.</param>
         /// <param name="isHeadRequest">Whether the current request is a HTTP HEAD request so only the headers get returned.</param>
-        /// <param name="streamHelper">Instance of the <see cref="IStreamHelper"/> interface.</param>
         /// <param name="controller">The <see cref="ControllerBase"/> managing the response.</param>
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
         /// <param name="ffmpegCommandLineArguments">The command line arguments to start ffmpeg.</param>
@@ -91,7 +89,6 @@ namespace Jellyfin.Api.Helpers
         public static async Task<ActionResult> GetTranscodedFile(
             StreamState state,
             bool isHeadRequest,
-            IStreamHelper streamHelper,
             ControllerBase controller,
             TranscodingJobHelper transcodingJobHelper,
             string ffmpegCommandLineArguments,
@@ -116,18 +113,20 @@ namespace Jellyfin.Api.Helpers
             await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
             try
             {
+                TranscodingJobDto? job;
                 if (!File.Exists(outputPath))
                 {
-                    await transcodingJobHelper.StartFfMpeg(state, outputPath, ffmpegCommandLineArguments, request, transcodingJobType, cancellationTokenSource).ConfigureAwait(false);
+                    job = await transcodingJobHelper.StartFfMpeg(state, outputPath, ffmpegCommandLineArguments, request, transcodingJobType, cancellationTokenSource).ConfigureAwait(false);
                 }
                 else
                 {
-                    transcodingJobHelper.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
+                    job = transcodingJobHelper.OnTranscodeBeginRequest(outputPath, TranscodingJobType.Progressive);
                     state.Dispose();
                 }
 
-                await using var memoryStream = new MemoryStream();
-                await new ProgressiveFileCopier(streamHelper, outputPath).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+                var memoryStream = new MemoryStream();
+                await new ProgressiveFileCopier(outputPath, job, transcodingJobHelper, CancellationToken.None).WriteToAsync(memoryStream, CancellationToken.None).ConfigureAwait(false);
+                memoryStream.Position = 0;
                 return controller.File(memoryStream, contentType);
             }
             finally

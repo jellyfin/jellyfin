@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
@@ -43,6 +44,7 @@ namespace Jellyfin.Server
             services.AddCustomAuthentication();
 
             services.AddJellyfinApiAuthorization();
+            services.AddHttpClient();
         }
 
         /// <summary>

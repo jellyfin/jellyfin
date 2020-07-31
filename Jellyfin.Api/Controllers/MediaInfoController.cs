@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.VideoDtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
@@ -126,7 +127,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? maxAudioChannels,
             [FromQuery] string? mediaSourceId,
             [FromQuery] string? liveStreamId,
-            [FromQuery] DeviceProfile? deviceProfile,
+            [FromBody] DeviceProfileDto? deviceProfile,
             [FromQuery] bool autoOpenLiveStream = false,
             [FromQuery] bool enableDirectPlay = true,
             [FromQuery] bool enableDirectStream = true,
@@ -136,7 +137,7 @@ namespace Jellyfin.Api.Controllers
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
-            var profile = deviceProfile;
+            var profile = deviceProfile?.DeviceProfile;
 
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
@@ -190,7 +191,7 @@ namespace Jellyfin.Api.Controllers
                     var openStreamResult = await OpenMediaSource(new LiveStreamRequest
                     {
                         AudioStreamIndex = audioStreamIndex,
-                        DeviceProfile = deviceProfile,
+                        DeviceProfile = deviceProfile?.DeviceProfile,
                         EnableDirectPlay = enableDirectPlay,
                         EnableDirectStream = enableDirectStream,
                         ItemId = itemId,
