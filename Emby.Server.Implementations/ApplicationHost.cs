@@ -649,7 +649,7 @@ namespace Emby.Server.Implementations
 
             SetStaticProperties();
 
-            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(Resolve<IUserManager>());
+            ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize();
 
             FindParts();
         }
