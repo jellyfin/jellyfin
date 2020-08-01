@@ -1145,7 +1145,7 @@ namespace Jellyfin.Api.Controllers
             Response.Headers.Add(HeaderNames.Expires, "0");
             if (isHeadRequest)
             {
-                return new FileContentResult(Encoding.UTF8.GetBytes(string.Empty), MimeTypes.GetMimeType("playlist.m3u8"));
+                return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
             }
 
             var totalBitrate = state.OutputAudioBitrate ?? 0 + state.OutputVideoBitrate ?? 0;
@@ -1413,11 +1413,10 @@ namespace Jellyfin.Api.Controllers
         private void AddSubtitles(StreamState state, IEnumerable<MediaStream> subtitles, StringBuilder builder)
         {
             var selectedIndex = state.SubtitleStream == null || state.SubtitleDeliveryMethod != SubtitleDeliveryMethod.Hls ? (int?)null : state.SubtitleStream.Index;
+            const string Format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},AUTOSELECT=YES,URI=\"{3}\",LANGUAGE=\"{4}\"";
 
             foreach (var stream in subtitles)
             {
-                const string format = "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"{0}\",DEFAULT={1},FORCED={2},AUTOSELECT=YES,URI=\"{3}\",LANGUAGE=\"{4}\"";
-
                 var name = stream.DisplayTitle;
 
                 var isDefault = selectedIndex.HasValue && selectedIndex.Value == stream.Index;
@@ -1433,7 +1432,7 @@ namespace Jellyfin.Api.Controllers
 
                 var line = string.Format(
                     CultureInfo.InvariantCulture,
-                    format,
+                    Format,
                     name,
                     isDefault ? "YES" : "NO",
                     isForced ? "YES" : "NO",
