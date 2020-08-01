@@ -67,7 +67,7 @@ namespace Jellyfin.Server.Migrations.Routines
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
-                var dbContext = _provider.CreateContext();
+                using var dbContext = _provider.CreateContext();
 
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
                 foreach (var result in results)
