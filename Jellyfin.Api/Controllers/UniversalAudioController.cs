@@ -209,12 +209,12 @@ namespace Jellyfin.Api.Controllers
                         transcodingProfile.AudioCodec,
                         null,
                         null,
+                        null,
                         transcodingProfile.BreakOnNonKeyFrames,
                         maxAudioSampleRate,
                         maxAudioBitDepth,
                         null,
                         isStatic ? (int?)null : Convert.ToInt32(Math.Min(maxStreamingBitrate ?? 192000, int.MaxValue)),
-                        null,
                         maxAudioChannels,
                         null,
                         null,
@@ -226,6 +226,7 @@ namespace Jellyfin.Api.Controllers
                         null,
                         null,
                         null,
+                        SubtitleDeliveryMethod.Hls,
                         null,
                         null,
                         null,
@@ -240,10 +241,8 @@ namespace Jellyfin.Api.Controllers
                         mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
                         null,
                         null,
-                        null,
-                        null,
-                        null,
-                        null)
+                        EncodingContext.Static,
+                        new Dictionary<string, string>())
                         .ConfigureAwait(false);
                 }
 
@@ -264,12 +263,12 @@ namespace Jellyfin.Api.Controllers
                     transcodingProfile.AudioCodec,
                     null,
                     null,
+                    null,
                     transcodingProfile.BreakOnNonKeyFrames,
                     maxAudioSampleRate,
                     maxAudioBitDepth,
                     null,
                     isStatic ? (int?)null : Convert.ToInt32(Math.Min(maxStreamingBitrate ?? 192000, int.MaxValue)),
-                    null,
                     maxAudioChannels,
                     null,
                     null,
@@ -281,6 +280,7 @@ namespace Jellyfin.Api.Controllers
                     null,
                     null,
                     null,
+                    SubtitleDeliveryMethod.Hls,
                     null,
                     null,
                     null,
@@ -295,10 +295,8 @@ namespace Jellyfin.Api.Controllers
                     mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
                     null,
                     null,
-                    null,
-                    null,
-                    null,
-                    null)
+                    EncodingContext.Static,
+                    new Dictionary<string, string>())
                     .ConfigureAwait(false);
             }
             else
