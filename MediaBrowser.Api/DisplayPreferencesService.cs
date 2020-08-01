@@ -1,9 +1,11 @@
-using System.Threading;
+using System;
+using System.Linq;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +15,7 @@ namespace MediaBrowser.Api
     /// Class UpdateDisplayPreferences.
     /// </summary>
     [Route("/DisplayPreferences/{DisplayPreferencesId}", "POST", Summary = "Updates a user's display preferences for an item")]
-    public class UpdateDisplayPreferences : DisplayPreferences, IReturnVoid
+    public class UpdateDisplayPreferences : DisplayPreferencesDto, IReturnVoid
     {
         /// <summary>
         /// Gets or sets the id.
@@ -27,7 +29,7 @@ namespace MediaBrowser.Api
     }
 
     [Route("/DisplayPreferences/{Id}", "GET", Summary = "Gets a user's display preferences for an item")]
-    public class GetDisplayPreferences : IReturn<DisplayPreferences>
+    public class GetDisplayPreferences : IReturn<DisplayPreferencesDto>
     {
         /// <summary>
         /// Gets or sets the id.
@@ -50,28 +52,21 @@ namespace MediaBrowser.Api
     public class DisplayPreferencesService : BaseApiService
     {
         /// <summary>
-        /// The _display preferences manager.
+        /// The display preferences manager.
         /// </summary>
-        private readonly IDisplayPreferencesRepository _displayPreferencesManager;
-        /// <summary>
-        /// The _json serializer.
-        /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IDisplayPreferencesManager _displayPreferencesManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesService" /> class.
         /// </summary>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="displayPreferencesManager">The display preferences manager.</param>
         public DisplayPreferencesService(
             ILogger<DisplayPreferencesService> logger,
             IServerConfigurationManager serverConfigurationManager,
             IHttpResultFactory httpResultFactory,
-            IJsonSerializer jsonSerializer,
-            IDisplayPreferencesRepository displayPreferencesManager)
+            IDisplayPreferencesManager displayPreferencesManager)
             : base(logger, serverConfigurationManager, httpResultFactory)
         {
-            _jsonSerializer = jsonSerializer;
             _displayPreferencesManager = displayPreferencesManager;
         }
 
@@ -81,9 +76,41 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public object Get(GetDisplayPreferences request)
         {
-            var result = _displayPreferencesManager.GetDisplayPreferences(request.Id, request.UserId, request.Client);
+            var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(Guid.Parse(request.UserId), request.Client);
+            var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client);
 
-            return ToOptimizedResult(result);
+            var dto = new DisplayPreferencesDto
+            {
+                Client = displayPreferences.Client,
+                Id = displayPreferences.UserId.ToString(),
+                ViewType = itemPreferences.ViewType.ToString(),
+                SortBy = itemPreferences.SortBy,
+                SortOrder = itemPreferences.SortOrder,
+                IndexBy = displayPreferences.IndexBy?.ToString(),
+                RememberIndexing = itemPreferences.RememberIndexing,
+                RememberSorting = itemPreferences.RememberSorting,
+                ScrollDirection = displayPreferences.ScrollDirection,
+                ShowBackdrop = displayPreferences.ShowBackdrop,
+                ShowSidebar = displayPreferences.ShowSidebar
+            };
+
+            foreach (var homeSection in displayPreferences.HomeSections)
+            {
+                dto.CustomPrefs["homesection" + homeSection.Order] = homeSection.Type.ToString().ToLowerInvariant();
+            }
+
+            foreach (var itemDisplayPreferences in _displayPreferencesManager.ListItemDisplayPreferences(displayPreferences.UserId, displayPreferences.Client))
+            {
+                dto.CustomPrefs["landing-" + itemDisplayPreferences.ItemId] = itemDisplayPreferences.ViewType.ToString().ToLowerInvariant();
+            }
+
+            dto.CustomPrefs["chromecastVersion"] = displayPreferences.ChromecastVersion.ToString().ToLowerInvariant();
+            dto.CustomPrefs["skipForwardLength"] = displayPreferences.SkipForwardLength.ToString();
+            dto.CustomPrefs["skipBackLength"] = displayPreferences.SkipBackwardLength.ToString();
+            dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString();
+            dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
+
+            return ToOptimizedResult(dto);
         }
 
         /// <summary>
@@ -92,10 +119,71 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Post(UpdateDisplayPreferences request)
         {
-            // Serialize to json and then back so that the core doesn't see the request dto type
-            var displayPreferences = _jsonSerializer.DeserializeFromString<DisplayPreferences>(_jsonSerializer.SerializeToString(request));
+            HomeSectionType[] defaults =
+            {
+                HomeSectionType.SmallLibraryTiles,
+                HomeSectionType.Resume,
+                HomeSectionType.ResumeAudio,
+                HomeSectionType.LiveTv,
+                HomeSectionType.NextUp,
+                HomeSectionType.LatestMedia,
+                HomeSectionType.None,
+            };
 
-            _displayPreferencesManager.SaveDisplayPreferences(displayPreferences, request.UserId, request.Client, CancellationToken.None);
+            var prefs = _displayPreferencesManager.GetDisplayPreferences(Guid.Parse(request.UserId), request.Client);
+
+            prefs.IndexBy = Enum.TryParse<IndexingKind>(request.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null;
+            prefs.ShowBackdrop = request.ShowBackdrop;
+            prefs.ShowSidebar = request.ShowSidebar;
+
+            prefs.ScrollDirection = request.ScrollDirection;
+            prefs.ChromecastVersion = request.CustomPrefs.TryGetValue("chromecastVersion", out var chromecastVersion)
+                ? Enum.Parse<ChromecastVersion>(chromecastVersion, true)
+                : ChromecastVersion.Stable;
+            prefs.EnableNextVideoInfoOverlay = request.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay)
+                ? bool.Parse(enableNextVideoInfoOverlay)
+                : true;
+            prefs.SkipBackwardLength = request.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength) ? int.Parse(skipBackLength) : 10000;
+            prefs.SkipForwardLength = request.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength) ? int.Parse(skipForwardLength) : 30000;
+            prefs.DashboardTheme = request.CustomPrefs.TryGetValue("dashboardTheme", out var theme) ? theme : string.Empty;
+            prefs.TvHome = request.CustomPrefs.TryGetValue("tvhome", out var home) ? home : string.Empty;
+            prefs.HomeSections.Clear();
+
+            foreach (var key in request.CustomPrefs.Keys.Where(key => key.StartsWith("homesection")))
+            {
+                var order = int.Parse(key.AsSpan().Slice("homesection".Length));
+                if (!Enum.TryParse<HomeSectionType>(request.CustomPrefs[key], true, out var type))
+                {
+                    type = order < 7 ? defaults[order] : HomeSectionType.None;
+                }
+
+                prefs.HomeSections.Add(new HomeSection
+                {
+                    Order = order,
+                    Type = type
+                });
+            }
+
+            foreach (var key in request.CustomPrefs.Keys.Where(key => key.StartsWith("landing-")))
+            {
+                var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(prefs.UserId, Guid.Parse(key.Substring("landing-".Length)), prefs.Client);
+                itemPreferences.ViewType = Enum.Parse<ViewType>(request.ViewType);
+                _displayPreferencesManager.SaveChanges(itemPreferences);
+            }
+
+            var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(prefs.UserId, Guid.Empty, prefs.Client);
+            itemPrefs.SortBy = request.SortBy;
+            itemPrefs.SortOrder = request.SortOrder;
+            itemPrefs.RememberIndexing = request.RememberIndexing;
+            itemPrefs.RememberSorting = request.RememberSorting;
+
+            if (Enum.TryParse<ViewType>(request.ViewType, true, out var viewType))
+            {
+                itemPrefs.ViewType = viewType;
+            }
+
+            _displayPreferencesManager.SaveChanges(prefs);
+            _displayPreferencesManager.SaveChanges(itemPrefs);
         }
     }
 }
