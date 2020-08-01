@@ -1,4 +1,4 @@
-using System.Net.Http;
+using Jellyfin.Api.WebSockets;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Middleware;
 using Jellyfin.Server.Models;
@@ -45,6 +45,7 @@ namespace Jellyfin.Server
 
             services.AddJellyfinApiAuthorization();
             services.AddHttpClient();
+            services.AddWebSocketManager();
         }
 
         /// <summary>
@@ -52,12 +53,13 @@ namespace Jellyfin.Server
         /// </summary>
         /// <param name="app">The application builder.</param>
         /// <param name="env">The webhost environment.</param>
-        /// <param name="serverApplicationHost">The server application host.</param>
         public void Configure(
             IApplicationBuilder app,
-            IWebHostEnvironment env,
-            IServerApplicationHost serverApplicationHost)
+            IWebHostEnvironment env)
         {
+            var serviceScopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
+            var serviceProvider = serviceScopeFactory.CreateScope().ServiceProvider;
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -67,11 +69,11 @@ namespace Jellyfin.Server
 
             app.UseMiddleware<ResponseTimeMiddleware>();
 
-            app.UseWebSockets();
-
             app.UseResponseCompression();
 
-            // TODO app.UseMiddleware<WebSocketMiddleware>();
+            app.UseWebSockets();
+            var handler = serviceProvider.GetService<LegacyWebSocketHandler>();
+            app.MapWebSocketManager("/socket", handler);
 
             app.UseAuthentication();
             app.UseJellyfinApiSwagger(_serverConfigurationManager);
@@ -93,7 +95,7 @@ namespace Jellyfin.Server
                 }
             });
 
-            app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);
+            // app.Use(serverApplicationHost.ExecuteHttpHandlerAsync);
         }
     }
 }

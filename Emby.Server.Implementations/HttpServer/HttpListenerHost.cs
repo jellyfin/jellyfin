@@ -390,10 +390,10 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public Task RequestHandler(HttpContext context)
         {
-            if (context.WebSockets.IsWebSocketRequest)
+            /*if (context.WebSockets.IsWebSocketRequest)
             {
                 return WebSocketRequestHandler(context);
-            }
+            }*/
 
             var request = context.Request;
             var response = context.Response;
