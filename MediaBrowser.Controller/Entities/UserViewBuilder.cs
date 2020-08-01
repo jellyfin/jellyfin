@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
@@ -522,10 +521,9 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            var userData = userDataManager.GetUserItemData(user.Id, item.Id);
             if (query.IsLiked.HasValue)
             {
-                var userData = userDataManager.GetUserItemData(user.Id, item.Id);
-
                 if (!userData.Likes.HasValue || userData.Likes != query.IsLiked.Value)
                 {
                     return false;
@@ -534,7 +532,6 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsFavoriteOrLiked.HasValue)
             {
-                var userData = userDataManager.GetUserItemData(user.Id, item.Id);
                 var isFavoriteOrLiked = userData.IsFavorite || (userData.Likes ?? false);
 
                 if (isFavoriteOrLiked != query.IsFavoriteOrLiked.Value)
@@ -543,19 +540,13 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            if (query.IsFavorite.HasValue)
+            if (query.IsFavorite.HasValue && userData.IsFavorite != query.IsFavorite.Value)
             {
-                var userData = userDataManager.GetUserItemData(user.Id, item.Id);
-
-                if (userData.IsFavorite != query.IsFavorite.Value)
-                {
-                    return false;
-                }
+                return false;
             }
 
             if (query.IsResumable.HasValue)
             {
-                var userData = userDataManager.GetUserItemData(user.Id, item.Id);
                 var isResumable = userData.PlaybackPositionTicks > 0;
 
                 if (isResumable != query.IsResumable.Value)
