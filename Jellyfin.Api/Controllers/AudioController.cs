@@ -197,8 +197,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodingReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
-            [FromQuery] Dictionary<string, string> streamOptions)
+            [FromQuery] EncodingContext? context,
+            [FromQuery] Dictionary<string, string>? streamOptions)
         {
             bool isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
 
@@ -253,7 +253,7 @@ namespace Jellyfin.Api.Controllers
                 TranscodeReasons = transcodingReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Static,
                 StreamOptions = streamOptions
             };
 
