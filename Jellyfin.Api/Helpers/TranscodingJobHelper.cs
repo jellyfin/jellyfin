@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Helpers
     /// <summary>
     /// Transcoding job helpers.
     /// </summary>
-    public class TranscodingJobHelper
+    public class TranscodingJobHelper : IDisposable
     {
         /// <summary>
         /// The active transcoding jobs.
@@ -46,14 +46,12 @@ namespace Jellyfin.Api.Helpers
         private readonly EncodingHelper _encodingHelper;
         private readonly IFileSystem _fileSystem;
         private readonly IIsoManager _isoManager;
-
         private readonly ILogger<TranscodingJobHelper> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly ISessionManager _sessionManager;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TranscodingJobHelper"/> class.
@@ -859,6 +857,29 @@ namespace Jellyfin.Api.Helpers
             foreach (var file in _fileSystem.GetFilePaths(path, true))
             {
                 _fileSystem.DeleteFile(file);
+            }
+        }
+
+        /// <summary>
+        /// Dispose transcoding job helper.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose throttler.
+        /// </summary>
+        /// <param name="disposing">Disposing.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _loggerFactory.Dispose();
+                _sessionManager!.PlaybackProgress -= OnPlaybackProgress;
+                _sessionManager!.PlaybackStart -= OnPlaybackProgress;
             }
         }
     }
