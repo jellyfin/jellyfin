@@ -1156,7 +1156,7 @@ namespace Jellyfin.Api.Controllers
 
             var isLiveStream = state.IsSegmentedLiveStream;
 
-            var queryString = Request.Query.ToString();
+            var queryString = Request.QueryString.ToString();
 
             // from universal audio service
             if (queryString.IndexOf("SegmentContainer", StringComparison.OrdinalIgnoreCase) == -1 && !string.IsNullOrWhiteSpace(state.Request.SegmentContainer))
