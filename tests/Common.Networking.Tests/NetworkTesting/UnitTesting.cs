@@ -228,8 +228,8 @@ namespace NetworkTesting
         {
             var conf = new ServerConfiguration()
             {
-                InternalBindInterface = "192.168.1.207",
-                ExternalBindInterface = "eth11",
+                //InternalBindInterface = "192.168.1.207",
+                //ExternalBindInterface = "eth11",
                 LocalNetworkAddresses = bindAddresses.Split(','),
                 EnableIPV6 = ipv6enabled
             };
@@ -240,7 +240,7 @@ namespace NetworkTesting
 
             _ = nm.TryParseInterface(result, out IPNetAddress resultObj);
 
-            Assert.True(nm.GetBindInterface(source).Equals(resultObj));
+            Assert.True(nm.GetBindInterface(source).Equals(resultObj.Address));
             
         }
     }

@@ -317,7 +317,7 @@ namespace Emby.Server.Implementations.Networking
             }
 
             bool haveSource = !sourceAddr.Address.Equals(IPAddress.None);
-            bool externalSubnet = haveSource && IsPrivateAddressRange(sourceAddr);
+            bool externalSubnet = haveSource && !IsPrivateAddressRange(sourceAddr);
 
             // Has the user specified an interface preference for this network?
             string bindPreference = externalSubnet ?
@@ -327,7 +327,7 @@ namespace Emby.Server.Implementations.Networking
             if (!string.IsNullOrEmpty(bindPreference) && TryParseInterface(bindPreference, out IPNetAddress bindAddr))
             {
                 // Never trust the user: Check that bindPreference is an actual interface address.
-                if (_interfaceAddresses.Exists(bindAddr))
+                if (_interfaceAddresses.Contains(bindAddr))
                 {
                     _logger.LogInformation("Using BindAddress {0}", bindPreference);
                     return bindAddr.Address;
@@ -361,6 +361,15 @@ namespace Emby.Server.Implementations.Networking
                                 return intf.Address;
                             }
                         }
+                    }
+
+                    // Check to see if any of the bind interfaces are in the same subnet.
+                    var ncRes = nc.Where(p => !IsPrivateAddressRange(p) && !p.IsLoopback())
+                        .OrderBy(p => p.Tag);
+
+                    if (ncRes.Any())
+                    {
+                        return ncRes.First().Address;
                     }
 
                     return nc[0].Address;
@@ -403,13 +412,16 @@ namespace Emby.Server.Implementations.Networking
 
                 if (result.Any())
                 {
-                    // Does the request originate in one of the interface subnets?
-                    // (For systems with multiple internal network cards, and multiple subnets)
-                    foreach (var intf in result)
+                    if (haveSource)
                     {
-                        if (IsPrivateAddressRange(intf) && intf.Contains(sourceAddr))
+                        // Does the request originate in one of the interface subnets?
+                        // (For systems with multiple internal network cards, and multiple subnets)
+                        foreach (var intf in result)
                         {
-                            return intf.Address;
+                            if (IsPrivateAddressRange(intf) && intf.Contains(sourceAddr))
+                            {
+                                return intf.Address;
+                            }
                         }
                     }
 

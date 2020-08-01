@@ -1131,7 +1131,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(object source)
         {
-            return !string.IsNullOrEmpty(_startupOptions.PublishedServerUrl.ToString())
+            return (_startupOptions.PublishedServerUrl != null)
                 ? _startupOptions.PublishedServerUrl.ToString()
                 : GetLocalApiUrl(_networkManager.GetBindInterface(source));
         }
