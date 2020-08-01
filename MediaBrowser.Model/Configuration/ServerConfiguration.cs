@@ -40,7 +40,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIPV6 { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as internal.
+        /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
         /// </summary>
         public bool TrustIP6Interfaces { get; set; }
 
@@ -239,6 +239,16 @@ namespace MediaBrowser.Model.Configuration
         public string[] LocalNetworkSubnets { get; set; }
 
         public string[] LocalNetworkAddresses { get; set; }
+
+        /// <summary>
+        /// Gets or sets interface to advertise for external requests.
+        /// </summary>
+        public string InternalBindInterface { get; set; }
+
+        /// <summary>
+        /// Gets or sets interface to advertise for internal requests.
+        /// </summary>
+        public string ExternalBindInterface { get; set; }
 
         public string[] CodecsUsed { get; set; }
 

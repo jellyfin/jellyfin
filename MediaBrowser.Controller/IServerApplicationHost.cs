@@ -21,9 +21,9 @@ namespace MediaBrowser.Controller
         /// Gets the system info.
         /// </summary>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(CancellationToken cancellationToken);
+        SystemInfo GetSystemInfo(string source);
 
-        PublicSystemInfo GetPublicSystemInfo(CancellationToken cancellationToken);
+        PublicSystemInfo GetPublicSystemInfo(string source);
 
         bool CanLaunchWebBrowser { get; }
 
@@ -60,9 +60,9 @@ namespace MediaBrowser.Controller
         /// Gets a local (LAN) URL that can be used to access the API. The hostname used is the first valid configured
         /// HTTPS will be preferred when available.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the task.</param>
+        /// <param name="source">The source of the request.</param>
         /// <returns>The server URL.</returns>
-        string GetLocalApiUrl(CancellationToken cancellationToken);
+        string GetSmartApiUrl(object source);
 
         /// <summary>
         /// Gets a localhost URL that can be used to access the API using the loop-back IP address (127.0.0.1)

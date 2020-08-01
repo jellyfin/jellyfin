@@ -85,7 +85,7 @@ namespace MediaBrowser.Common.Networking
         /// <param name="addr">String to parse.</param>
         /// <param name="result">IPObject to return.</param>
         /// <returns>True if the value parsed successfully.</returns>
-        public static bool TryParse(string addr, out IPObject? result)
+        public static bool TryParse(string addr, out IPObject result)
         {
             if (!string.IsNullOrEmpty(addr))
             {
@@ -103,7 +103,7 @@ namespace MediaBrowser.Common.Networking
                 }
             }
 
-            result = null;
+            result = IPNetAddress.None;
             return false;
         }
 
@@ -251,6 +251,30 @@ namespace MediaBrowser.Common.Networking
         /// <param name="item">The item to look for.</param>
         /// <returns>True if the collection contains the item.</returns>
         public bool Contains(IPObject item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            foreach (var i in Items)
+            {
+                if (i.AddressFamily == item.AddressFamily && i.Contains(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the collection contains an item with the ip address,
+        /// or the ip address falls within any of the collection's network ranges.
+        /// </summary>
+        /// <param name="item">The item to look for.</param>
+        /// <returns>True if the collection contains the item.</returns>
+        public bool Contains(IPAddress item)
         {
             if (item == null)
             {

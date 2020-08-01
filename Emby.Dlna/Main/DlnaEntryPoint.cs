@@ -274,7 +274,7 @@ namespace Emby.Dlna.Main
         {
             var udn = CreateUuid(_appHost.SystemId);
 
-            foreach (IPNetAddress addr in _networkManager.GetInternalInterfaceAddresses())
+            foreach (IPNetAddress addr in _networkManager.GetInternalBindAddresses())
             {
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 

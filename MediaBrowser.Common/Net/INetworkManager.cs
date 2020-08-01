@@ -41,17 +41,45 @@ namespace MediaBrowser.Common.Net
         NetCollection RemoteAddressFilter { get; }
 
         /// <summary>
-        /// Returns all the valid interfaces in config LocalNetworkAddresses.
+        /// Calculates the list of interfaces to use for Kestrel.
         /// </summary>
         /// <returns>A NetCollection object containing all the interfaces to bind.
-        /// If all the interfaces are specified, and none are excluded, it returns zero items.</returns>
-        NetCollection GetBindInterfaces();
+        /// If all the interfaces are specified, and none are excluded, it returns zero items
+        /// to represent any address.</returns>
+        NetCollection GetAllBindInterfaces();
 
         /// <summary>
-        /// Returns all the excluded interfaces in config LocalNetworkAddresses.
+        /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
+        /// If no bind addresses are specified, an internal interface address is selected.
+        /// The priority of selection is as follows:-
+        /// User interface preference (private/public), depending upon the source subnet(if known).
+        /// If the user specified bind interfaces to use:-
+        ///  The bind interface that contains the source subnet.
+        ///  The first bind interface specified by the user
+        /// If the source is from a public subnet address range and the user hasn't specified any bind addresses:-
+        ///  The first public interface that isn't a loopback and contains the source subnet.
+        ///  The first public interface that isn't a loopback. Priority is given to interfaces with gateways.
+        ///  An internal interface if there are no public ip addresses.
+        ///
+        /// If the source is from a private subnet address range and the user hasn't specified any bind addresses:-
+        ///  The first private interface that contains the source subnet.
+        ///  The first private interface that isn't a loopback. Priority is given to interfaces with gateways.
+        ///
+        /// If no interfaces meet any of these criteria, the IPv4 loopback address is returned.
+        ///
+        /// Interface that have been specifically excluded from binding are not used in any of the calculations.
+        /// IPv6 addresses follow the system wide setting.
         /// </summary>
-        /// <returns>A NetCollection object containing all the excluded interfaces.</returns>
-        NetCollection GetBindExclusions();
+        /// <param name="source">Source of the request.</param>
+        /// <returns>IP Address to use, or loopback address if all else fails.</returns>
+        IPAddress GetBindInterface(object source);
+
+        /// <summary>
+        /// Checks to see if the ip address is specifically excluded in LocalNetworkAddresses.
+        /// </summary>
+        /// <param name="address">IP address to check.</param>
+        /// <returns>True if it is.</returns>
+        bool IsExcludedInterface(IPAddress address);
 
         /// <summary>
         /// Gets a random port number that is currently available.
@@ -103,18 +131,10 @@ namespace MediaBrowser.Common.Net
         NetCollection CreateIPCollection(string[] values, bool bracketed = false);
 
         /// <summary>
-        /// Interface callback function that returns the IP address of the first callback that succeeds.
-        /// </summary>
-        /// <param name="callback">Delegate function to call for each ip.</param>
-        /// <param name="cancellationToken">Cancellation Token.</param>
-        /// <returns>NetCollection object.</returns>
-        NetCollection OnFilteredBindAddressesCallback(Func<IPObject, CancellationToken, Task<bool>> callback, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Returns all the filtered LAN interfaces addresses.
+        /// Returns all the internal Bind interface addresses.
         /// </summary>
         /// <returns>An internal list of interfaces addresses.</returns>
-        NetCollection GetInternalInterfaceAddresses();
+        NetCollection GetInternalBindAddresses();
 
         /// <summary>
         /// Checks to see if an IP address is still a valid interface address.
@@ -135,7 +155,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
-        NetCollection GetFilteredLANAddresses(NetCollection? filter = null);
+        NetCollection GetFilteredLANSubnets(NetCollection? filter = null);
 
         /// <summary>
         /// Returns true if the IP address in address2 is within the network address1/subnetMask.

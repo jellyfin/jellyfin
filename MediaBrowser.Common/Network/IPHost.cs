@@ -16,6 +16,11 @@ namespace MediaBrowser.Common.Networking
     public class IPHost : IPObject
     {
         /// <summary>
+        /// Represents an IPHost that has no value.
+        /// </summary>
+        public static readonly IPHost None = new IPHost(string.Empty, IPAddress.None);
+
+        /// <summary>
         /// Time when last resolved. Timeout is 30 minutes.
         /// </summary>
         private long _lastResolved;
@@ -172,7 +177,7 @@ namespace MediaBrowser.Common.Networking
                 }
             }
 
-            hostObj = new IPHost(string.Empty, IPAddress.None);
+            hostObj = IPHost.None;
             return false;
         }
 

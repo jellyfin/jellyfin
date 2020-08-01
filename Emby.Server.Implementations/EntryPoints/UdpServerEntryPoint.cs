@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Emby.Server.Implementations.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -24,7 +23,6 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         private readonly ILogger<UdpServerEntryPoint> _logger;
         private readonly IServerApplicationHost _appHost;
-        private readonly IConfiguration _config;
 
         /// <summary>
         /// The UDP server.
@@ -38,12 +36,10 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         public UdpServerEntryPoint(
             ILogger<UdpServerEntryPoint> logger,
-            IServerApplicationHost appHost,
-            IConfiguration configuration)
+            IServerApplicationHost appHost)
         {
             _logger = logger;
             _appHost = appHost;
-            _config = configuration;
         }
 
         /// <inheritdoc />
@@ -51,7 +47,7 @@ namespace Emby.Server.Implementations.EntryPoints
         {
             try
             {
-                _udpServer = new UdpServer(_logger, _appHost, _config);
+                _udpServer = new UdpServer(_logger, _appHost);
                 _udpServer.Start(PortNumber, _cancellationTokenSource.Token);
             }
             catch (SocketException ex)

@@ -416,10 +416,10 @@ namespace Rssdp.Infrastructure
         private List<ISocket> CreateSocketAndListenForResponsesAsync()
         {
             var sockets = new List<ISocket>();
-          
+
             if (_enableMultiSocketBinding)
             {
-                foreach (IPNetAddress ip in _networkManager.GetInternalInterfaceAddresses())
+                foreach (IPNetAddress ip in _networkManager.GetInternalBindAddresses())
                 {
                     try
                     {

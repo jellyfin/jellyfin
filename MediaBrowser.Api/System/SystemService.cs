@@ -175,14 +175,14 @@ namespace MediaBrowser.Api.System
         /// <returns>System.Object.</returns>
         public object Get(GetSystemInfo request)
         {
-            var result = _appHost.GetSystemInfo(CancellationToken.None);
+            var result = _appHost.GetSystemInfo(Request.RemoteIp);
 
             return ToOptimizedResult(result);
         }
 
         public object Get(GetPublicSystemInfo request)
         {
-            var result = _appHost.GetPublicSystemInfo(CancellationToken.None);
+            var result = _appHost.GetPublicSystemInfo(Request.RemoteIp);
 
             return ToOptimizedResult(result);
         }

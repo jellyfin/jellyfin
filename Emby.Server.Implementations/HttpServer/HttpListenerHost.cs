@@ -297,7 +297,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns>Returns true if host is a private address and is part of the defined LAN network.</returns>
         private bool ValidateHost(string host)
         {
-            NetCollection nc = _networkManager.GetFilteredLANAddresses();
+            NetCollection nc = _networkManager.GetFilteredLANSubnets();
             if (nc.Count == 0)
             {
                 return true; // All Local LAN addresses are valid.
@@ -571,7 +571,7 @@ namespace Emby.Server.Implementations.HttpServer
 
             try
             {
-                if (_networkManager.GetBindExclusions().Exists(context.Connection.RemoteIpAddress))
+                if (_networkManager.IsExcludedInterface(context.Connection.RemoteIpAddress))
                 {
                     _logger.LogInformation("Filtering WS {IP} request. Arrived on an excluded interface.", context.Connection.RemoteIpAddress);
                     context.Response.StatusCode = 401;

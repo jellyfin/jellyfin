@@ -12,6 +12,11 @@ namespace MediaBrowser.Common.Networking
     public class IPNetAddress : IPObject
     {
         /// <summary>
+        /// Represents an IPNetAddress that has no value.
+        /// </summary>
+        public static readonly IPNetAddress None = new IPNetAddress(IPAddress.None);
+
+        /// <summary>
         /// Object's IP address.
         /// </summary>
         private IPAddress _address;
@@ -120,7 +125,7 @@ namespace MediaBrowser.Common.Networking
                 }
             }
 
-            ip = new IPNetAddress(IPAddress.None);
+            ip = IPNetAddress.None;
             return false;
         }
 

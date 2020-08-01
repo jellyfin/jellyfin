@@ -23,11 +23,6 @@ namespace Emby.Server.Implementations.Udp
         private readonly IConfiguration _config;
 
         /// <summary>
-        /// Address Override Configuration Key.
-        /// </summary>
-        public const string AddressOverrideConfigKey = "PublishedServerUrl";
-
-        /// <summary>
         /// UDP socket being used.
         /// </summary>
         private Socket _udpSocket;
@@ -50,11 +45,10 @@ namespace Emby.Server.Implementations.Udp
         /// <param name="appHost">IServerApplicationHost instance.</param>
         /// <param name="logger"> ILogger instance.</param>
         /// <param name="configuration">IConfiguration instance.</param>
-        public UdpServer(ILogger logger, IServerApplicationHost appHost, IConfiguration configuration)
+        public UdpServer(ILogger logger, IServerApplicationHost appHost)
         {
             _logger = logger;
             _appHost = appHost;
-            _config = configuration;
         }
 
         /// <summary>
@@ -64,11 +58,9 @@ namespace Emby.Server.Implementations.Udp
         /// <param name="endpoint">Received from.</param>
         /// <param name="cancellationToken">Cancellation Token.</param>
         /// <returns>Task.</returns>
-        private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
+        private async Task RespondToV2Message(string messageText, EndPoint endpoint)
         {
-            string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
-                ? _config[AddressOverrideConfigKey]
-                : _appHost.GetLocalApiUrl(cancellationToken);
+            string localUrl = _appHost.GetSmartApiUrl(((IPEndPoint)endpoint).Address);
 
             if (!string.IsNullOrEmpty(localUrl))
             {
@@ -166,7 +158,7 @@ namespace Emby.Server.Implementations.Udp
                         var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
                         if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                         {
-                            await RespondToV2Message(text, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                            await RespondToV2Message(text, result.RemoteEndPoint).ConfigureAwait(false);
                         }
                     }
                     else

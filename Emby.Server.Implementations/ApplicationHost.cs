@@ -1,14 +1,11 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -126,7 +123,6 @@ namespace Emby.Server.Implementations
         private ISessionManager _sessionManager;
         private IHttpServer _httpServer;
         private IHttpClient _httpClient;
-        private string _cachedLocalApiUrl = string.Empty;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -270,8 +266,6 @@ namespace Emby.Server.Implementations
 
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            _networkManager.NetworkChanged += OnNetworkChanged;
-
             CertificateInfo = new CertificateInfo
             {
                 Path = ServerConfigurationManager.Configuration.CertificatePath,
@@ -294,11 +288,6 @@ namespace Emby.Server.Implementations
 
             return path.Replace(appPaths.DataPath, appPaths.VirtualDataPath, StringComparison.OrdinalIgnoreCase)
                 .Replace(appPaths.InternalMetadataPath, appPaths.VirtualInternalMetadataPath, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private void OnNetworkChanged(object sender, EventArgs e)
-        {
-            _cachedLocalApiUrl = string.Empty;
         }
 
         /// <inheritdoc />
@@ -1087,11 +1076,8 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(CancellationToken cancellationToken)
+        public SystemInfo GetSystemInfo(string source)
         {
-            var localAddress = GetLocalApiUrl(cancellationToken);
-            var transcodingTempPath = ConfigurationManager.GetTranscodePath();
-
             return new SystemInfo
             {
                 HasPendingRestart = HasPendingRestart,
@@ -1111,9 +1097,9 @@ namespace Emby.Server.Implementations
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 HasUpdateAvailable = HasUpdateAvailable,
-                TranscodingTempPath = transcodingTempPath,
+                TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
-                LocalAddress = localAddress,
+                LocalAddress = GetSmartApiUrl(source),
                 SupportsLibraryMonitor = true,
                 EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
@@ -1126,10 +1112,8 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(CancellationToken cancellationToken)
+        public PublicSystemInfo GetPublicSystemInfo(string source)
         {
-            var localAddress = GetLocalApiUrl(cancellationToken);
-
             return new PublicSystemInfo
             {
                 Version = ApplicationVersionString,
@@ -1137,7 +1121,7 @@ namespace Emby.Server.Implementations
                 Id = SystemId,
                 OperatingSystem = OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
-                LocalAddress = localAddress
+                LocalAddress = GetSmartApiUrl(source)
             };
         }
 
@@ -1145,30 +1129,11 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.Configuration.EnableHttps;
 
         /// <inheritdoc/>
-        public string GetLocalApiUrl(CancellationToken cancellationToken)
+        public string GetSmartApiUrl(object source)
         {
-            if (string.IsNullOrEmpty(_cachedLocalApiUrl))
-            {
-                try
-                {
-                    NetCollection addresses = _networkManager.OnFilteredBindAddressesCallback(IsLocalIpAddressValidAsync, cancellationToken);
-
-                    if (addresses.Count > 0)
-                    {
-                        _cachedLocalApiUrl = GetLocalApiUrl(addresses[0].Address);
-                    }
-                    else
-                    {
-                        Logger.LogError("No response from any of the bind addresses: {0}", _networkManager.GetBindInterfaces());
-                    }
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Logger.LogError(ex, "Error in  OnFilteredBindAddressCallback: Params. {0}.", _networkManager.GetBindInterfaces());
-                }
-            }
-
-            return _cachedLocalApiUrl;
+            return !string.IsNullOrEmpty(_startupOptions.PublishedServerUrl.ToString())
+                ? _startupOptions.PublishedServerUrl.ToString()
+                : GetLocalApiUrl(_networkManager.GetBindInterface(source));
         }
 
         /// <summary>
@@ -1222,50 +1187,6 @@ namespace Emby.Server.Implementations
                 Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
                 Path = ServerConfigurationManager.Configuration.BaseUrl
             }.ToString().TrimEnd('/');
-        }
-
-        /// <summary>
-        /// Performs a http ping to the address given in the parameters.
-        /// </summary>
-        /// <param name="item">Item to ping.</param>
-        /// <param name="cancellationToken">CancellationToken object.</param>
-        /// <returns>Boolean result of the operation.</returns>
-        private async Task<bool> IsLocalIpAddressValidAsync(IPObject item, CancellationToken cancellationToken)
-        {
-            var apiUrl = GetLocalApiUrl(item.Address);
-            apiUrl += "/system/ping";
-
-            try
-            {
-                using (var response = await _httpClient.SendAsync(
-                    new HttpRequestOptions
-                    {
-                        Url = apiUrl,
-                        LogErrorResponseBody = false,
-                        BufferContent = false,
-                        CancellationToken = cancellationToken
-                    }, HttpMethod.Post).ConfigureAwait(false))
-                {
-                    using (var reader = new StreamReader(response.Content))
-                    {
-                        var result = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        var valid = string.Equals(Name, result, StringComparison.OrdinalIgnoreCase);
-
-                        Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, valid);
-                        return valid;
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.LogDebug("Ping test result to {0}. Success: {1}", apiUrl, "Cancelled");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug(ex, "Ping test result to {0}. Success: {1}", apiUrl, false);
-                return false;
-            }
         }
 
         public string FriendlyName =>

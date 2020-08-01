@@ -183,7 +183,7 @@ namespace Emby.Dlna.PlayTo
                 string serverAddress;
                 if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IPAddress.Any) || info.LocalIpAddress.Equals(IPAddress.IPv6Any))
                 {
-                    serverAddress = _appHost.GetLocalApiUrl(cancellationToken);
+                    serverAddress = _appHost.GetLocalApiUrl(IPAddress.None);
                 }
                 else
                 {
