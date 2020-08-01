@@ -364,7 +364,8 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("bitrate", totalBitrate.Value.ToString(_usCulture));
             }
 
-            var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
+            var mediaProfile = _profile.GetVideoMediaProfile(
+                streamInfo.Container,
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 streamInfo.TargetVideoCodec.FirstOrDefault(),
                 streamInfo.TargetAudioBitrate,

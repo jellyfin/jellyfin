@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -64,19 +65,24 @@ namespace Jellyfin.Server.Migrations.Routines
                 HomeSectionType.None,
             };
 
+            var chromecastDict = new Dictionary<string, ChromecastVersion>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "stable", ChromecastVersion.Stable },
+                { "nightly", ChromecastVersion.Unstable },
+                { "unstable", ChromecastVersion.Unstable }
+            };
+
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
-                var dbContext = _provider.CreateContext();
+                using var dbContext = _provider.CreateContext();
 
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
                 foreach (var result in results)
                 {
                     var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToString(), _jsonOptions);
                     var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
-                        ? Enum.TryParse<ChromecastVersion>(version, true, out var parsed)
-                            ? parsed
-                            : ChromecastVersion.Stable
+                        ? chromecastDict[version]
                         : ChromecastVersion.Stable;
 
                     var displayPreferences = new DisplayPreferences(new Guid(result[1].ToBlob()), result[2].ToString())

@@ -19,6 +19,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public override string Description => "Get metadata for movies and other video content from OMDb.";
 
+        // TODO remove when plugin removed from server.
+        public override string ConfigurationFileName => "Jellyfin.Plugin.Omdb.xml";
+
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
         {

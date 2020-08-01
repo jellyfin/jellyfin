@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Mime;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,7 +46,7 @@ namespace Emby.Server.Implementations.Services
             var pos = pathInfo.LastIndexOf('.');
             if (pos != -1)
             {
-                var format = pathInfo.Substring(pos + 1);
+                var format = pathInfo.AsSpan().Slice(pos + 1);
                 contentType = GetFormatContentType(format);
                 if (contentType != null)
                 {
@@ -56,18 +57,21 @@ namespace Emby.Server.Implementations.Services
             return pathInfo;
         }
 
-        private static string GetFormatContentType(string format)
+        private static string GetFormatContentType(ReadOnlySpan<char> format)
         {
-            // built-in formats
-            switch (format)
+            if (format.Equals("json", StringComparison.Ordinal))
             {
-                case "json": return "application/json";
-                case "xml": return "application/xml";
-                default: return null;
+                return MediaTypeNames.Application.Json;
             }
+            else if (format.Equals("xml", StringComparison.Ordinal))
+            {
+                return MediaTypeNames.Application.Xml;
+            }
+
+            return null;
         }
 
-        public async Task ProcessRequestAsync(HttpListenerHost httpHost, IRequest httpReq, HttpResponse httpRes, ILogger logger, CancellationToken cancellationToken)
+        public async Task ProcessRequestAsync(HttpListenerHost httpHost, IRequest httpReq, HttpResponse httpRes, CancellationToken cancellationToken)
         {
             httpReq.Items["__route"] = _restPath;
 
@@ -76,10 +80,10 @@ namespace Emby.Server.Implementations.Services
                 httpReq.ResponseContentType = _responseContentType;
             }
 
-            var request = await CreateRequest(httpHost, httpReq, _restPath, logger).ConfigureAwait(false);
+            var request = await CreateRequest(httpHost, httpReq, _restPath).ConfigureAwait(false);
 
             httpHost.ApplyRequestFilters(httpReq, httpRes, request);
-            
+
             httpRes.HttpContext.SetServiceStackRequest(httpReq);
             var response = await httpHost.ServiceController.Execute(httpHost, request, httpReq).ConfigureAwait(false);
 
@@ -92,7 +96,7 @@ namespace Emby.Server.Implementations.Services
             await ResponseHelper.WriteToResponse(httpRes, httpReq, response, cancellationToken).ConfigureAwait(false);
         }
 
-        public static async Task<object> CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath, ILogger logger)
+        public static async Task<object> CreateRequest(HttpListenerHost host, IRequest httpReq, RestPath restPath)
         {
             var requestType = restPath.RequestType;
 

@@ -456,6 +456,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isQsvEncoder = outputVideoCodec.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
             var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            var isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
             if (!IsCopyCodec(outputVideoCodec))
             {
@@ -510,6 +511,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                             arg.Append("-init_hw_device qsv=hw -filter_hw_device hw ");
                         }
                     }
+                }
+
+                if (state.IsVideoRequest
+                    && string.Equals(encodingOptions.HardwareAccelerationType, "videotoolbox", StringComparison.OrdinalIgnoreCase))
+                {
+                    arg.Append("-hwaccel videotoolbox ");
                 }
             }
 
@@ -1588,7 +1595,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             outputVideoCodec ??= string.Empty;
 
-            var outputSizeParam = string.Empty;
+            var outputSizeParam = ReadOnlySpan<char>.Empty;
             var request = state.BaseRequest;
 
             // Add resolution params, if specified
@@ -1602,42 +1609,42 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var index = outputSizeParam.IndexOf("hwdownload", StringComparison.OrdinalIgnoreCase);
                 if (index != -1)
                 {
-                    outputSizeParam = outputSizeParam.Substring(index);
+                    outputSizeParam = outputSizeParam.Slice(index);
                 }
                 else
                 {
                     index = outputSizeParam.IndexOf("hwupload=extra_hw_frames", StringComparison.OrdinalIgnoreCase);
                     if (index != -1)
                     {
-                        outputSizeParam = outputSizeParam.Substring(index);
+                        outputSizeParam = outputSizeParam.Slice(index);
                     }
                     else
                     {
                         index = outputSizeParam.IndexOf("format", StringComparison.OrdinalIgnoreCase);
                         if (index != -1)
                         {
-                            outputSizeParam = outputSizeParam.Substring(index);
+                            outputSizeParam = outputSizeParam.Slice(index);
                         }
                         else
                         {
                             index = outputSizeParam.IndexOf("yadif", StringComparison.OrdinalIgnoreCase);
                             if (index != -1)
                             {
-                                outputSizeParam = outputSizeParam.Substring(index);
+                                outputSizeParam = outputSizeParam.Slice(index);
                             }
                             else
                             {
                                 index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
                                 if (index != -1)
                                 {
-                                    outputSizeParam = outputSizeParam.Substring(index);
+                                    outputSizeParam = outputSizeParam.Slice(index);
                                 }
                                 else
                                 {
                                     index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
                                     if (index != -1)
                                     {
-                                        outputSizeParam = outputSizeParam.Substring(index);
+                                        outputSizeParam = outputSizeParam.Slice(index);
                                     }
                                 }
                             }
@@ -1685,9 +1692,9 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // Setup default filtergraph utilizing FFMpeg overlay() and FFMpeg scale() (see the return of this function for index reference)
             // Always put the scaler before the overlay for better performance
-            var retStr = !string.IsNullOrEmpty(outputSizeParam) ?
-                " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay\"" :
-                " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay\"";
+            var retStr = !outputSizeParam.IsEmpty
+                ? " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay\""
+                : " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay\"";
 
             // When the input may or may not be hardware VAAPI decodable
             if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
@@ -1721,7 +1728,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 */
                 if (isLinux)
                 {
-                    retStr = !string.IsNullOrEmpty(outputSizeParam) ?
+                    retStr = !outputSizeParam.IsEmpty ?
                         " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay_qsv\"" :
                         " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay_qsv\"";
                 }
@@ -1733,7 +1740,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 mapPrefix,
                 subtitleStreamIndex,
                 state.VideoStream.Index,
-                outputSizeParam,
+                outputSizeParam.ToString(),
                 videoSizeParam);
         }
 
@@ -2120,7 +2127,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 || state.DeInterlace("h265", true)
                 || state.DeInterlace("hevc", true))
             {
-                var deintParam = string.Empty;
+                string deintParam;
                 var inputFramerate = videoStream?.RealFrameRate;
 
                 // If it is already 60fps then it will create an output framerate that is much too high for roku and others to handle
@@ -2182,7 +2189,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return output;
         }
-
 
         /// <summary>
         /// Gets the number of threads.

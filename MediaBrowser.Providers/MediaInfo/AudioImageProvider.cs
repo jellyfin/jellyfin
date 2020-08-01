@@ -93,7 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private string GetAudioImagePath(Audio item)
         {
-            string filename = null;
+            string filename;
 
             if (item.GetType() == typeof(Audio))
             {
@@ -116,9 +116,9 @@ namespace MediaBrowser.Providers.MediaInfo
                 filename = item.Id.ToString("N", CultureInfo.InvariantCulture) + ".jpg";
             }
 
-            var prefix = filename.Substring(0, 1);
+            var prefix = filename.AsSpan().Slice(0, 1);
 
-            return Path.Combine(AudioImagesPath, prefix, filename);
+            return Path.Join(AudioImagesPath, prefix, filename);
         }
 
         public string AudioImagesPath => Path.Combine(_config.ApplicationPaths.CachePath, "extracted-audio-images");

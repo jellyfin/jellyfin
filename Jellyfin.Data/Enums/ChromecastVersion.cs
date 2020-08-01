@@ -11,8 +11,8 @@
         Stable = 0,
 
         /// <summary>
-        /// Nightly Chromecast version.
+        /// Unstable Chromecast version.
         /// </summary>
-        Nightly = 1
+        Unstable = 1
     }
 }
