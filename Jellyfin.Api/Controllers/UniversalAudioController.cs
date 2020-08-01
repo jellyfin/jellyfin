@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.Models.VideoDtos;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -151,7 +152,18 @@ namespace Jellyfin.Api.Controllers
             _authorizationContext.GetAuthorizationInfo(Request).DeviceId = deviceId;
 
             var mediaInfoController = new MediaInfoController(_mediaSourceManager, _deviceManager, _libraryManager, _networkManager, _mediaEncoder, _userManager, _authorizationContext, _loggerFactory.CreateLogger<MediaInfoController>(), _serverConfigurationManager);
-            var playbackInfoResult = await mediaInfoController.GetPlaybackInfo(itemId, userId).ConfigureAwait(false);
+            var playbackInfoResult = await mediaInfoController.GetPostedPlaybackInfo(
+                itemId,
+                userId,
+                maxStreamingBitrate,
+                startTimeTicks,
+                null,
+                null,
+                maxAudioChannels,
+                mediaSourceId,
+                null,
+                new DeviceProfileDto { DeviceProfile = deviceProfile })
+                .ConfigureAwait(false);
             var mediaSource = playbackInfoResult.Value.MediaSources[0];
 
             if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == MediaProtocol.Http)
