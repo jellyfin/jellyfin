@@ -741,16 +741,18 @@ namespace Emby.Server.Implementations.Networking
                                         Tag = ipProperties.GetIPv4Properties().Index
                                     };
 
+                                    int tag = nw.Tag;
                                     if (ipProperties.GatewayAddresses.Count > 0)
                                     {
+                                        // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
                                     }
 
                                     _interfaceAddresses.Add(nw);
 
                                     // Store interface name so we can use the name in Collections.
-                                    _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = nw.Tag;
-                                    _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = nw.Tag;
+                                    _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
+                                    _interfaceNames["eth" + tag.ToString(CultureInfo.InvariantCulture)] = tag;
                                 }
                                 else if (ip6 && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
@@ -760,16 +762,18 @@ namespace Emby.Server.Implementations.Networking
                                         Tag = ipProperties.GetIPv6Properties().Index
                                     };
 
+                                    int tag = nw.Tag;
                                     if (ipProperties.GatewayAddresses.Count > 0)
                                     {
+                                        // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
                                     }
 
                                     _interfaceAddresses.Add(nw);
 
                                     // Store interface name so we can use the name in Collections.
-                                    _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = nw.Tag;
-                                    _interfaceNames["eth" + nw.Tag.ToString(CultureInfo.InvariantCulture)] = nw.Tag;
+                                    _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
+                                    _interfaceNames["eth" + tag.ToString(CultureInfo.InvariantCulture)] = tag;
                                 }
                             }
                         }
