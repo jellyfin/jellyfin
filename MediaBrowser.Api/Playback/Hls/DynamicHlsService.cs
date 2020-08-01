@@ -27,8 +27,6 @@ namespace MediaBrowser.Api.Playback.Hls
     /// <summary>
     /// Options is needed for chromecast. Threw Head in there since it's related
     /// </summary>
-    [Route("/Videos/{Id}/master.m3u8", "GET", Summary = "Gets a video stream using HTTP live streaming.")]
-    [Route("/Videos/{Id}/master.m3u8", "HEAD", Summary = "Gets a video stream using HTTP live streaming.")]
     public class GetMasterHlsVideoPlaylist : VideoStreamRequest, IMasterHlsRequest
     {
         public bool EnableAdaptiveBitrateStreaming { get; set; }
@@ -39,8 +37,6 @@ namespace MediaBrowser.Api.Playback.Hls
         }
     }
 
-    [Route("/Audio/{Id}/master.m3u8", "GET", Summary = "Gets an audio stream using HTTP live streaming.")]
-    [Route("/Audio/{Id}/master.m3u8", "HEAD", Summary = "Gets an audio stream using HTTP live streaming.")]
     public class GetMasterHlsAudioPlaylist : StreamRequest, IMasterHlsRequest
     {
         public bool EnableAdaptiveBitrateStreaming { get; set; }
@@ -56,17 +52,14 @@ namespace MediaBrowser.Api.Playback.Hls
         bool EnableAdaptiveBitrateStreaming { get; set; }
     }
 
-    [Route("/Videos/{Id}/main.m3u8", "GET", Summary = "Gets a video stream using HTTP live streaming.")]
     public class GetVariantHlsVideoPlaylist : VideoStreamRequest
     {
     }
 
-    [Route("/Audio/{Id}/main.m3u8", "GET", Summary = "Gets an audio stream using HTTP live streaming.")]
     public class GetVariantHlsAudioPlaylist : StreamRequest
     {
     }
 
-    [Route("/Videos/{Id}/hls1/{PlaylistId}/{SegmentId}.{SegmentContainer}", "GET")]
     public class GetHlsVideoSegment : VideoStreamRequest
     {
         public string PlaylistId { get; set; }
@@ -78,7 +71,6 @@ namespace MediaBrowser.Api.Playback.Hls
         public string SegmentId { get; set; }
     }
 
-    [Route("/Audio/{Id}/hls1/{PlaylistId}/{SegmentId}.{SegmentContainer}", "GET")]
     public class GetHlsAudioSegment : StreamRequest
     {
         public string PlaylistId { get; set; }

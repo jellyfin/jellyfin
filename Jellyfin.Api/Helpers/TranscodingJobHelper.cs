@@ -219,7 +219,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="playSessionId">The play session identifier.</param>
         /// <param name="deleteFiles">The delete files.</param>
         /// <returns>Task.</returns>
-        public Task KillTranscodingJobs(string deviceId, string playSessionId, Func<string, bool> deleteFiles)
+        public Task KillTranscodingJobs(string deviceId, string? playSessionId, Func<string, bool> deleteFiles)
         {
             return KillTranscodingJobs(
                 j => string.IsNullOrWhiteSpace(playSessionId)
@@ -503,9 +503,9 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
-            var process = new Process()
+            var process = new Process
             {
-                StartInfo = new ProcessStartInfo()
+                StartInfo = new ProcessStartInfo
                 {
                     WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true,

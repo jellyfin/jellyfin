@@ -70,7 +70,7 @@ namespace Jellyfin.Api.Auth
                 return false;
             }
 
-            var ip = NormalizeIp(_httpContextAccessor.HttpContext.Connection.RemoteIpAddress).ToString();
+            var ip = RequestHelpers.NormalizeIp(_httpContextAccessor.HttpContext.Connection.RemoteIpAddress).ToString();
             var isInLocalNetwork = _networkManager.IsInLocalNetwork(ip);
             // User cannot access remotely and user is remote
             if (!user.HasPermission(PermissionKind.EnableRemoteAccess) && !isInLocalNetwork)
@@ -99,11 +99,6 @@ namespace Jellyfin.Api.Auth
             }
 
             return true;
-        }
-
-        private static IPAddress NormalizeIp(IPAddress ip)
-        {
-            return ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip;
         }
     }
 }
