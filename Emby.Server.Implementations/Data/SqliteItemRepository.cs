@@ -558,7 +558,7 @@ namespace Emby.Server.Implementations.Data
         {
             var statements = PrepareAll(db, new string[]
             {
-                GetSaveItemCommandText,
+                SaveItemCommandText,
                 "delete from AncestorIds where ItemId=@ItemId"
             }).ToList();
 
