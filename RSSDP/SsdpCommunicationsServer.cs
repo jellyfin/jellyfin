@@ -176,15 +176,10 @@ namespace Rssdp.Infrastructure
             if (!_enableMultiSocketBinding)
             {
                 // Only need to do these checks if we're using one socket for everything as socket.count will be zero later if not.
-                if (_networkManager.IsInLocalNetwork(fromLocalIpAddress))
+                if (!_networkManager.IsInLocalNetwork(destination.Address) ||
+                    (!fromIPAddress.Equals(IPAddress.Any) && !_networkManager.IsInLocalNetwork(fromLocalIpAddress)))
                 {
                     _logger.LogInformation("Filtering traffic from [{0}] to {1}.", fromLocalIpAddress, destination.Address);
-                    return;
-                }
-
-                if (_networkManager.IsInLocalNetwork(destination.Address))
-                {
-                    _logger.LogInformation("Filtering traffic from {0} to [{1}].", fromLocalIpAddress, destination.Address);
                     return;
                 }
             }
@@ -503,15 +498,11 @@ namespace Rssdp.Infrastructure
 
         private void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress)
         {
-            if (_networkManager.IsInLocalNetwork(receivedOnLocalIpAddress))
+            if (!_networkManager.IsInLocalNetwork(endPoint.Address) ||
+                (!receivedOnLocalIpAddress.Equals(IPAddress.Any) &&
+                !_networkManager.IsInLocalNetwork(receivedOnLocalIpAddress)))                 
             {
                 _logger.LogInformation("Filtering traffic from {0} to [{1}].", endPoint.Address, receivedOnLocalIpAddress);
-                return;
-            }
-
-            if (_networkManager.IsInLocalNetwork(endPoint.Address))
-            {
-                _logger.LogInformation("Filtering traffic from [{0}] to {1}.", endPoint.Address, receivedOnLocalIpAddress);
                 return;
             }
 
