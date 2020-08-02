@@ -270,17 +270,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
 
-            // Check for channel number with the format from SatIp
+            // Remove channel number with the format from SatIp but skip it when the tv-chno attribute is present
             // #EXTINF:0,84. VOX Schweiz
             // #EXTINF:0,84.0 - VOX Schweiz
-            if (!string.IsNullOrWhiteSpace(nameInExtInf))
+            // #EXTINF:0 tvg-chno="6" tvg-name"3+", 3+ HD
+            if (!string.IsNullOrWhiteSpace(nameInExtInf) && !attributes.ContainsKey("tvg-chno"))
             {
                 var numberIndex = nameInExtInf.IndexOf(' ');
                 if (numberIndex > 0)
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
+                    if (double.TryParse(numberPart, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
                     {
                         // channel.Number = number.ToString();
                         nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
