@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller.Configuration;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Networking
@@ -21,10 +20,6 @@ namespace Emby.Server.Implementations.Networking
     /// </summary>
     public class NetworkManager : INetworkManager
     {
-#pragma warning disable CS8618 // Non-nullable field is uninitialized : Singleton implementation. Will get instantiated at creation time.
-        private static NetworkManager _instance;
-#pragma warning restore CS8618 // Non-nullable field is uninitialized.
-
         /// <summary>
         /// Contains the description of the interface along with its index.
         /// </summary>
@@ -115,7 +110,7 @@ namespace Emby.Server.Implementations.Networking
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
-            _instance = this;
+            Instance = this;
         }
 #pragma warning restore CS8618 // Non-nullable field is uninitialized.
 
@@ -127,7 +122,9 @@ namespace Emby.Server.Implementations.Networking
         /// <summary>
         /// Gets the singleton of this object.
         /// </summary>
-        public static NetworkManager Instance { get => _instance; }
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable. Reason: Singleton Instance
+        public static NetworkManager Instance { get; internal set; }
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 
         /// <inheritdoc/>
         public IPNetAddress IP4Loopback { get; } = IPNetAddress.Parse("127.0.0.1/32");
@@ -140,6 +137,11 @@ namespace Emby.Server.Implementations.Networking
 
         /// <inheritdoc/>
         public bool IsIP6Enabled { get; private set; } = false;
+
+        /// <summary>
+        /// Gets a value indicating whether is multi-socket binding available.
+        /// </summary>
+        public bool EnableMultiSocketBinding => _configurationManager.Configuration.EnableMultiSocketBinding;
 
         /// <inheritdoc/>
         public bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address)
@@ -579,6 +581,12 @@ namespace Emby.Server.Implementations.Networking
         /// <inheritdoc/>
         public bool TryParseInterface(string token, out IPNetAddress result)
         {
+            if (string.IsNullOrEmpty(token))
+            {
+                result = IPNetAddress.None;
+                return false;
+            }
+
             if (_interfaceNames != null && _interfaceNames.TryGetValue(token.ToLower(CultureInfo.InvariantCulture), out int index))
             {
                 _logger.LogInformation("Interface {0} used in settings. Using its interface addresses.", token);
@@ -708,6 +716,15 @@ namespace Emby.Server.Implementations.Networking
             {
                 string[] ba = _configurationManager.Configuration.LocalNetworkAddresses;
 
+                // TODO: remove when bug fixed: https://github.com/jellyfin/jellyfin-web/issues/1334
+
+                if (ba.Length == 1 && ba[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    ba = ba[0].Split(',');
+                }
+
+                // TODO: end fix.
+
                 // Read and parse bind addresses and exclusions, removing ones that don't exist.
                 _bindAddresses = CreateIPCollection(ba).Union(_interfaceAddresses);
                 _bindExclusions = CreateIPCollection(ba, true).Union(_interfaceAddresses);
@@ -726,6 +743,7 @@ namespace Emby.Server.Implementations.Networking
                 // If no LAN addresses are specified - all interface subnets are deemed to be the LAN
                 _usingInterfaces = _lanSubnets.Count == 0;
 
+                // NOTE: The order of the commands in this statement matters.
                 if (_usingInterfaces)
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
@@ -745,6 +763,8 @@ namespace Emby.Server.Implementations.Networking
 
                     _lanSubnets.Add(IP4Loopback);
 
+                    // Filtered LAN subnets are subnets of the LAN Addresses.
+                    _filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
                 }
                 else
                 {

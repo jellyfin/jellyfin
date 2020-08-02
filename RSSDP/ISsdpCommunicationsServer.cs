@@ -34,13 +34,13 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to a particular address (uni or multicast) and port.
         /// </summary>
-        Task SendMessage(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress, CancellationToken cancellationToken);
+        Task SendMessage(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress);
 
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        Task SendMulticastMessage(string message, IPAddress fromLocalIpAddress, CancellationToken cancellationToken);
-        Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress, CancellationToken cancellationToken);
+        Task SendMulticastMessage(string message, IPAddress fromLocalIpAddress);
+        Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress);
 
         /// <summary>
         /// Gets or sets a boolean value indicating whether or not this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.

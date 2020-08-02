@@ -32,7 +32,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>1701;1702;1303</NoWarn>
+    <NoWarn>1701;1702;1303;CA1303</NoWarn>
   </PropertyGroup>
 
 </Project>

@@ -32,6 +32,11 @@ namespace MediaBrowser.Common.Networking
         public abstract IPAddress Address { get; set; }
 
         /// <summary>
+        /// Gets the object's IP address.
+        /// </summary>
+        public abstract IPAddress Mask { get; }
+
+        /// <summary>
         /// Gets the AddressFamily of this object.
         /// </summary>
         public AddressFamily AddressFamily

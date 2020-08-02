@@ -79,7 +79,7 @@ namespace MediaBrowser.Common.Networking
         /// <summary>
         /// Gets the subnet mask of this object.
         /// </summary>
-        public IPAddress Mask { get; }
+        public override IPAddress Mask { get; }
 
         /// <summary>
         /// Try to parse the address and subnet strings into an IPNetAddress object.

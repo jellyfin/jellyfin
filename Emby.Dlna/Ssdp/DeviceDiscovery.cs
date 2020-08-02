@@ -16,13 +16,21 @@ namespace Emby.Dlna.Ssdp
     public sealed class DeviceDiscovery : IDeviceDiscovery, IDisposable
     {
         private readonly object _syncLock = new object();
-
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
+        private readonly ILogger _logger;
 
         private int _listenerCount;
         private bool _disposed;
-        private ILogger _logger;
+        private SsdpDeviceLocator _deviceLocator;
+        private ISsdpCommunicationsServer _commsServer;
+
+        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager)
+        {
+            _config = config;
+            _logger = loggerFactory.CreateLogger<DeviceDiscovery>();
+            _networkManager = networkManager;
+        }
 
         private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
 
@@ -53,17 +61,6 @@ namespace Emby.Dlna.Ssdp
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
 
-        private SsdpDeviceLocator _deviceLocator;
-
-        private ISsdpCommunicationsServer _commsServer;
-
-        public DeviceDiscovery(IServerConfigurationManager config,  ILoggerFactory loggerFactory, INetworkManager networkManager)
-        {
-            _config = config;
-            _logger = loggerFactory.CreateLogger<DeviceDiscovery>();
-            _networkManager = networkManager;
-        }
-
         // Call this method from somewhere in your code to start the search.
         public void Start(ISsdpCommunicationsServer communicationsServer)
         {
@@ -78,7 +75,7 @@ namespace Emby.Dlna.Ssdp
             {
                 if (_listenerCount > 0 && _deviceLocator == null)
                 {
-                    _deviceLocator = new SsdpDeviceLocator(_commsServer, _logger, _networkManager, _config.Configuration.EnableIPV6);
+                    _deviceLocator = new SsdpDeviceLocator(_commsServer, _logger, _networkManager);
 
                     // (Optional) Set the filter so we only see notifications for devices we care about
                     // (can be any search target value i.e device type, uuid value etc - any value that appears in the

@@ -40,6 +40,11 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIPV6 { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether is multi-socket binding available.
+        /// </summary>
+        public bool EnableMultiSocketBinding { get; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
         /// </summary>
         public bool TrustIP6Interfaces { get; set; }
@@ -282,45 +287,40 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public ServerConfiguration()
         {
-            UninstalledPlugins = Array.Empty<string>();
-            RemoteIPFilter = Array.Empty<string>();
-            LocalNetworkSubnets = Array.Empty<string>();
-            LocalNetworkAddresses = Array.Empty<string>();
-            CodecsUsed = Array.Empty<string>();
-            PathSubstitutions = Array.Empty<PathSubstitution>();
-            IgnoreVirtualInterfaces = false; // Unused.
-            EnableSimpleArtistDetection = false;
-            SkipDeserializationForBasicTypes = true;
-
+            // Network settings
             EnableIPV6 = false;
             TrustIP6Interfaces = false;
-
-            PluginRepositories = new List<RepositoryInfo>();
-
-            DisplaySpecialsWithinSeasons = true;
-            EnableExternalContentInSuggestions = true;
-
-            ImageSavingConvention = ImageSavingConvention.Compatible;
+            EnableMultiSocketBinding = true;
+            LocalNetworkSubnets = Array.Empty<string>();
+            LocalNetworkAddresses = Array.Empty<string>();
+            EnableUPnP = false;
             PublicPort = DefaultHttpPort;
             PublicHttpsPort = DefaultHttpsPort;
             HttpServerPortNumber = DefaultHttpPort;
             HttpsPortNumber = DefaultHttpsPort;
-            EnableMetrics = false;
             EnableHttps = false;
+            EnableRemoteAccess = true;
+
+            UninstalledPlugins = Array.Empty<string>();
+            RemoteIPFilter = Array.Empty<string>();
+            CodecsUsed = Array.Empty<string>();
+            PathSubstitutions = Array.Empty<PathSubstitution>();
+            EnableSimpleArtistDetection = false;
+            SkipDeserializationForBasicTypes = true;
+            PluginRepositories = new List<RepositoryInfo>();
+            DisplaySpecialsWithinSeasons = true;
+            EnableExternalContentInSuggestions = true;
+            ImageSavingConvention = ImageSavingConvention.Compatible;
+            EnableMetrics = false;
             EnableDashboardResponseCaching = true;
             EnableCaseSensitiveItemIds = true;
             AutoRunWebApp = true;
-            EnableRemoteAccess = true;
-
-            EnableUPnP = false;
             MinResumePct = 5;
             MaxResumePct = 90;
 
             // 5 minutes
             MinResumeDurationSeconds = 300;
-
             LibraryMonitorDelay = 60;
-
             ContentTypes = Array.Empty<NameValuePair>();
 
             PreferredMetadataLanguage = "en";
@@ -381,6 +381,9 @@ namespace MediaBrowser.Model.Configuration
                     DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
+
+            // Obsolete setting
+            IgnoreVirtualInterfaces = false;
         }
     }
 

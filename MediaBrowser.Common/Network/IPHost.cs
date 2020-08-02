@@ -54,7 +54,7 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
-        /// Gets or sets the object's IP address.
+        /// Gets or sets the object's first IP address.
         /// </summary>
         public override IPAddress Address
         {
@@ -70,7 +70,24 @@ namespace MediaBrowser.Common.Networking
 
             set
             {
-                // Do nothing - as this object cannot set the address of this object this way.
+                // Do nothing - as this object cannot set the address this way.
+            }
+        }
+
+        /// <summary>
+        /// Gets the object's first IP's mask.
+        /// The setter does nothing.
+        /// </summary>
+        public override IPAddress Mask
+        {
+            get
+            {
+                if (_addresses.Length == 0)
+                {
+                    ResolveHost();
+                }
+
+                return _addresses.Length > 0 ? IPAddress.Broadcast : IPAddress.None;
             }
         }
 

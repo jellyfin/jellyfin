@@ -53,14 +53,7 @@ namespace Emby.Dlna.Main
         private PlayToManager _manager;
         private SsdpDevicePublisher _publisher;
         private ISsdpCommunicationsServer _communicationsServer;
-
-        internal IContentDirectory ContentDirectory { get; private set; }
-
-        internal IConnectionManager ConnectionManager { get; private set; }
-
-        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
-
-        public static DlnaEntryPoint Current;
+        private bool _isDisposed;
 
         public DlnaEntryPoint(
             IServerConfigurationManager config,
@@ -96,7 +89,7 @@ namespace Emby.Dlna.Main
             _deviceDiscovery = deviceDiscovery;
             _mediaEncoder = mediaEncoder;
             _socketFactory = socketFactory;
-            _networkManager = networkManager;
+            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
 
             ContentDirectory = new ContentDirectory.ContentDirectory(
@@ -129,6 +122,14 @@ namespace Emby.Dlna.Main
 
             Current = this;
         }
+
+        internal IContentDirectory ContentDirectory { get; private set; }
+
+        internal IConnectionManager ConnectionManager { get; private set; }
+
+        internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
+
+        public static DlnaEntryPoint Current { get; internal set; }
 
         public async Task RunAsync()
         {
@@ -180,10 +181,7 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
-                                                   OperatingSystem.Id == OperatingSystemId.Linux;
-
-                    _communicationsServer = new SsdpCommunicationsServer(_config, _socketFactory, _networkManager, _logger, enableMultiSocketBinding)
+                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger)
                     {
                         IsShared = true
                     };
@@ -274,7 +272,7 @@ namespace Emby.Dlna.Main
         {
             var udn = CreateUuid(_appHost.SystemId);
 
-            foreach (IPNetAddress addr in _networkManager.GetInternalBindAddresses())
+            foreach (IPObject addr in _networkManager.GetInternalBindAddresses())
             {
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
@@ -298,7 +296,7 @@ namespace Emby.Dlna.Main
 
                 SetProperies(device, fullService);
 
-                _publisher.AddDevice(device);
+                _ = _publisher.AddDevice(device);
 
                 var embeddedDevices = new[]
                 {
@@ -406,21 +404,37 @@ namespace Emby.Dlna.Main
 
         public void Dispose()
         {
-            DisposeDevicePublisher();
-            DisposePlayToManager();
-            DisposeDeviceDiscovery();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (_communicationsServer != null)
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_isDisposed)
             {
-                _logger.LogInformation("Disposing SsdpCommunicationsServer");
-                _communicationsServer.Dispose();
-                _communicationsServer = null;
+                return;
             }
 
-            ContentDirectory = null;
-            ConnectionManager = null;
-            MediaReceiverRegistrar = null;
-            Current = null;
+            if (disposing)
+            {
+                DisposeDevicePublisher();
+                DisposePlayToManager();
+                DisposeDeviceDiscovery();
+
+                if (_communicationsServer != null)
+                {
+                    _logger.LogInformation("Disposing SsdpCommunicationsServer");
+                    _communicationsServer.Dispose();
+                    _communicationsServer = null;
+                }
+
+                ContentDirectory = null;
+                ConnectionManager = null;
+                MediaReceiverRegistrar = null;
+                Current = null;
+            }
+
+            _isDisposed = true;
         }
 
         public void DisposeDevicePublisher()

@@ -1,5 +1,8 @@
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,32 +18,25 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public class SsdpDeviceLocator : DisposableManagedObjectBase
     {
-        private List<DiscoveredSsdpDevice> _Devices;
-        private ISsdpCommunicationsServer _CommunicationsServer;
-        private Timer _BroadcastTimer;
-        private object _timerLock = new object();
-        private ILogger _logger;
-        private bool _ipV6Enabled;
+        private readonly List<DiscoveredSsdpDevice> _devices;
+        private ISsdpCommunicationsServer _communicationsServer;
+        private Timer _broadcastTimer;
+        private readonly object _timerLock = new object();
+        private readonly ILogger _logger;
         private readonly INetworkManager _networkManager;
-        private readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
-        private readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan _defaultSearchWaitTime = TimeSpan.FromSeconds(4);
+        private readonly TimeSpan _oneSecond = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ILogger Logger, INetworkManager networkManager, bool IPv6Enabled)
+        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ILogger logger, INetworkManager networkManager)
         {
-            if (communicationsServer == null)
-            {
-                throw new ArgumentNullException(nameof(communicationsServer));
-            }
-
-            _CommunicationsServer = communicationsServer;
-            _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
+            _communicationsServer = communicationsServer ?? throw new ArgumentNullException(nameof(communicationsServer));
+            _communicationsServer.ResponseReceived += CommsServer_ResponseReceived;
             _networkManager = networkManager;
-            _Devices = new List<DiscoveredSsdpDevice>();
-            _logger = Logger;
-            _ipV6Enabled = IPv6Enabled;
+            _devices = new List<DiscoveredSsdpDevice>();
+            _logger = logger;
         }
 
         /// <summary>
@@ -77,13 +73,13 @@ namespace Rssdp.Infrastructure
         {
             lock (_timerLock)
             {
-                if (_BroadcastTimer == null)
+                if (_broadcastTimer == null)
                 {
-                    _BroadcastTimer = new Timer(OnBroadcastTimerCallback, null, dueTime, period);
+                    _broadcastTimer = new Timer(OnBroadcastTimerCallback, null, dueTime, period);
                 }
                 else
                 {
-                    _BroadcastTimer.Change(dueTime, period);
+                    _broadcastTimer.Change(dueTime, period);
                 }
             }
         }
@@ -92,10 +88,10 @@ namespace Rssdp.Infrastructure
         {
             lock (_timerLock)
             {
-                if (_BroadcastTimer != null)
+                if (_broadcastTimer != null)
                 {
-                    _BroadcastTimer.Dispose();
-                    _BroadcastTimer = null;
+                    _broadcastTimer.Dispose();
+                    _broadcastTimer = null;
                 }
             }
         }
@@ -107,57 +103,24 @@ namespace Rssdp.Infrastructure
 
             try
             {
-                await SearchAsync(CancellationToken.None).ConfigureAwait(false);
+                await SearchAsync().ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "SearchAsync failed.");
             }
         }
 
         /// <summary>
         /// Performs a search for all devices using the default search timeout.
         /// </summary>
-        private Task SearchAsync(CancellationToken cancellationToken)
+        private Task SearchAsync()
         {
-            return SearchAsync(SsdpConstants.SsdpDiscoverAllSTHeader, DefaultSearchWaitTime, cancellationToken);
+            return SearchAsync(_defaultSearchWaitTime);
         }
-
-        /// <summary>
-        /// Performs a search for the specified search target (criteria) and default search timeout.
-        /// </summary>
-        /// <param name="searchTarget">The criteria for the search. Value can be;
-        /// <list type="table">
-        /// <item><term>Root devices</term><description>upnp:rootdevice</description></item>
-        /// <item><term>Specific device by UUID</term><description>uuid:&lt;device uuid&gt;</description></item>
-        /// <item><term>Device type</term><description>Fully qualified device type starting with urn: i.e urn:schemas-upnp-org:Basic:1</description></item>
-        /// </list>
-        /// </param>
-        private Task SearchAsync(string searchTarget)
-        {
-            return SearchAsync(searchTarget, DefaultSearchWaitTime, CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Performs a search for all devices using the specified search timeout.
-        /// </summary>
-        /// <param name="searchWaitTime">The amount of time to wait for network responses to the search request. Longer values will likely return more devices, but increase search time. A value between 1 and 5 seconds is recommended by the UPnP 1.1 specification, this method requires the value be greater 1 second if it is not zero. Specify TimeSpan.Zero to return only devices already in the cache.</param>
+        
         private Task SearchAsync(TimeSpan searchWaitTime)
         {
-            return SearchAsync(SsdpConstants.SsdpDiscoverAllSTHeader, searchWaitTime, CancellationToken.None);
-        }
-
-        private Task SearchAsync(string searchTarget, TimeSpan searchWaitTime, CancellationToken cancellationToken)
-        {
-            if (searchTarget == null)
-            {
-                throw new ArgumentNullException(nameof(searchTarget));
-            }
-
-            if (searchTarget.Length == 0)
-            {
-                throw new ArgumentException("searchTarget cannot be an empty string.", nameof(searchTarget));
-            }
-
             if (searchWaitTime.TotalSeconds < 0)
             {
                 throw new ArgumentException("searchWaitTime must be a positive time.");
@@ -170,7 +133,7 @@ namespace Rssdp.Infrastructure
 
             ThrowIfDisposed();
 
-            return BroadcastDiscoverMessage(searchTarget, SearchTimeToMXValue(searchWaitTime), cancellationToken);
+            return BroadcastDiscoverMessage(SearchTimeToMXValue(searchWaitTime));
         }
 
         /// <summary>
@@ -187,9 +150,9 @@ namespace Rssdp.Infrastructure
         {
             ThrowIfDisposed();
 
-            _CommunicationsServer.RequestReceived -= CommsServer_RequestReceived;
-            _CommunicationsServer.RequestReceived += CommsServer_RequestReceived;
-            _CommunicationsServer.BeginListeningForBroadcasts();
+            _communicationsServer.RequestReceived -= CommsServer_RequestReceived;
+            _communicationsServer.RequestReceived += CommsServer_RequestReceived;
+            _communicationsServer.BeginListeningForBroadcasts();
         }
 
         /// <summary>
@@ -206,7 +169,7 @@ namespace Rssdp.Infrastructure
         {
             ThrowIfDisposed();
 
-            _CommunicationsServer.RequestReceived -= CommsServer_RequestReceived;
+            _communicationsServer.RequestReceived -= CommsServer_RequestReceived;
         }
 
         /// <summary>
@@ -220,14 +183,10 @@ namespace Rssdp.Infrastructure
                 return;
             }
 
-            var handlers = this.DeviceAvailable;
-            if (handlers != null)
+            this.DeviceAvailable?.Invoke(this, new DeviceAvailableEventArgs(device, isNewDevice)
             {
-                handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
-                {
-                    LocalIpAddress = localIpAddress
-                });
-            }
+                LocalIpAddress = localIpAddress
+            });
         }
 
         /// <summary>
@@ -243,11 +202,7 @@ namespace Rssdp.Infrastructure
                 return;
             }
 
-            var handlers = this.DeviceUnavailable;
-            if (handlers != null)
-            {
-                handlers(this, new DeviceUnavailableEventArgs(device, expired));
-            }
+            this.DeviceUnavailable?.Invoke(this, new DeviceUnavailableEventArgs(device, expired));
         }
 
         /// <summary>
@@ -281,8 +236,8 @@ namespace Rssdp.Infrastructure
             {
                 DisposeBroadcastTimer();
 
-                var commsServer = _CommunicationsServer;
-                _CommunicationsServer = null;
+                var commsServer = _communicationsServer;
+                _communicationsServer = null;
                 if (commsServer != null)
                 {
                     commsServer.ResponseReceived -= this.CommsServer_ResponseReceived;
@@ -293,18 +248,18 @@ namespace Rssdp.Infrastructure
         private bool AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress localIpAddress)
         {
             bool isNewDevice = false;
-            lock (_Devices)
+            lock (_devices)
             {
-                var existingDevice = FindExistingDeviceNotification(_Devices, device.NotificationType, device.Usn);
+                var existingDevice = FindExistingDeviceNotification(_devices, device.NotificationType, device.Usn);
                 if (existingDevice == null)
                 {
-                    _Devices.Add(device);
+                    _devices.Add(device);
                     isNewDevice = true;
                 }
                 else
                 {
-                    _Devices.Remove(existingDevice);
-                    _Devices.Add(device);
+                    _devices.Remove(existingDevice);
+                    _devices.Add(device);
                 }
             }
 
@@ -329,28 +284,29 @@ namespace Rssdp.Infrastructure
                 || device.NotificationType == this.NotificationFilter;
         }
 
-        private Task BroadcastDiscoverMessage(string serviceType, TimeSpan mxValue, CancellationToken cancellationToken)
+        private Task BroadcastDiscoverMessage(TimeSpan mxValue)
         {
-            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}";
-            values["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
-            //values["X-EMBY-SERVERID"] = _appHost.SystemId;
-            values["MAN"] = $"\"{SsdpConstants.SsdpDiscoverMessage}\"";
-            // Search target
-            values["ST"] = SsdpConstants.SsdpDiscoverAllSTHeader;
-            // Seconds to delay response
-            values["MX"] = mxValue.Seconds.ToString();
+            var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}",
+                ["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2",
+                //values["X-EMBY-SERVERID"] = _appHost.SystemId;
+                ["MAN"] = $"\"{SsdpConstants.SsdpDiscoverMessage}\"",
+                // Search target
+                ["ST"] = SsdpConstants.SsdpDiscoverAllSTHeader,
+                // Seconds to delay response
+                ["MX"] = mxValue.Seconds.ToString(CultureInfo.CurrentCulture)
+            };
 
             var header = "M-SEARCH * HTTP/1.1";
             var message = BuildMessage(header, values);
 
-            if (!_ipV6Enabled)
+            if (!_networkManager.IsIP6Enabled)
             {
                 //_logger.LogInformation("Sending IPv4 broadcast on LAN interfaces.");
 
                 IEnumerable<Task> tasks = from intf in _networkManager.GetInternalBindAddresses()
-                                          select _CommunicationsServer.SendMulticastMessage(message, intf.Address, cancellationToken);
+                                          select _communicationsServer.SendMulticastMessage(message, intf.Address);
                 return Task.WhenAll(tasks);
             }
 
@@ -360,11 +316,11 @@ namespace Rssdp.Infrastructure
             //_logger.LogInformation("Sending IPv6 multicast and IPv4 broadcast.");
             IEnumerable<Task> ip4Tasks = from intf in _networkManager.GetInternalBindAddresses()
                                       where (intf.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                                      select _CommunicationsServer.SendMulticastMessage(message, intf.Address, cancellationToken);
+                                      select _communicationsServer.SendMulticastMessage(message, intf.Address);
 
             IEnumerable<Task> ip6Tasks = from intf in _networkManager.GetInternalBindAddresses()
                                       where (intf.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-                                      select _CommunicationsServer.SendMulticastMessage(message2, intf.Address, cancellationToken);
+                                      select _communicationsServer.SendMulticastMessage(message2, intf.Address);
 
 
             return Task.WhenAll(ip4Tasks.Union(ip6Tasks));                            
@@ -464,7 +420,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private string GetFirstHeaderStringValue(string headerName, HttpResponseMessage message)
+        private static string GetFirstHeaderStringValue(string headerName, HttpResponseMessage message)
         {
             string retVal = null;
             if (message.Headers.Contains(headerName))
@@ -479,7 +435,7 @@ namespace Rssdp.Infrastructure
             return retVal;
         }
 
-        private string GetFirstHeaderStringValue(string headerName, HttpRequestMessage message)
+        private static string GetFirstHeaderStringValue(string headerName, HttpRequestMessage message)
         {
             string retVal = null;
             if (message.Headers.Contains(headerName))
@@ -494,7 +450,7 @@ namespace Rssdp.Infrastructure
             return retVal;
         }
 
-        private Uri GetFirstHeaderUriValue(string headerName, HttpRequestMessage request)
+        private static Uri GetFirstHeaderUriValue(string headerName, HttpRequestMessage request)
         {
             string value = null;
             if (request.Headers.Contains(headerName))
@@ -510,7 +466,7 @@ namespace Rssdp.Infrastructure
             return retVal;
         }
 
-        private Uri GetFirstHeaderUriValue(string headerName, HttpResponseMessage response)
+        private static Uri GetFirstHeaderUriValue(string headerName, HttpResponseMessage response)
         {
             string value = null;
             if (response.Headers.Contains(headerName))
@@ -526,7 +482,7 @@ namespace Rssdp.Infrastructure
             return retVal;
         }
 
-        private TimeSpan CacheAgeFromHeader(System.Net.Http.Headers.CacheControlHeaderValue headerValue)
+        private static TimeSpan CacheAgeFromHeader(System.Net.Http.Headers.CacheControlHeaderValue headerValue)
         {
             if (headerValue == null)
             {
@@ -544,9 +500,9 @@ namespace Rssdp.Infrastructure
             }
 
             DiscoveredSsdpDevice[] expiredDevices = null;
-            lock (_Devices)
+            lock (_devices)
             {
-                expiredDevices = (from device in _Devices where device.IsExpired() select device).ToArray();
+                expiredDevices = (from device in _devices where device.IsExpired() select device).ToArray();
 
                 foreach (var device in expiredDevices)
                 {
@@ -555,7 +511,7 @@ namespace Rssdp.Infrastructure
                         return;
                     }
 
-                    _Devices.Remove(device);
+                    _devices.Remove(device);
                 }
             }
 
@@ -576,9 +532,9 @@ namespace Rssdp.Infrastructure
         private bool DeviceDied(string deviceUsn, bool expired)
         {
             List<DiscoveredSsdpDevice> existingDevices = null;
-            lock (_Devices)
+            lock (_devices)
             {
-                existingDevices = FindExistingDeviceNotifications(_Devices, deviceUsn);
+                existingDevices = FindExistingDeviceNotifications(_devices, deviceUsn);
                 foreach (var existingDevice in existingDevices)
                 {
                     if (this.IsDisposed)
@@ -586,7 +542,7 @@ namespace Rssdp.Infrastructure
                         return true;
                     }
 
-                    _Devices.Remove(existingDevice);
+                    _devices.Remove(existingDevice);
                 }
             }
 
@@ -610,15 +566,15 @@ namespace Rssdp.Infrastructure
         {
             if (searchWaitTime.TotalSeconds < 2 || searchWaitTime == TimeSpan.Zero)
             {
-                return OneSecond;
+                return _oneSecond;
             }
             else
             {
-                return searchWaitTime.Subtract(OneSecond);
+                return searchWaitTime.Subtract(_oneSecond);
             }
         }
 
-        private DiscoveredSsdpDevice FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
+        private static DiscoveredSsdpDevice FindExistingDeviceNotification(IEnumerable<DiscoveredSsdpDevice> devices, string notificationType, string usn)
         {
             foreach (var d in devices)
             {
@@ -631,7 +587,7 @@ namespace Rssdp.Infrastructure
             return null;
         }
 
-        private List<DiscoveredSsdpDevice> FindExistingDeviceNotifications(IList<DiscoveredSsdpDevice> devices, string usn)
+        private static List<DiscoveredSsdpDevice> FindExistingDeviceNotifications(IList<DiscoveredSsdpDevice> devices, string usn)
         {
             var list = new List<DiscoveredSsdpDevice>();
 

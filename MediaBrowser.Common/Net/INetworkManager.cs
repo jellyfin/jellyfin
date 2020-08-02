@@ -26,6 +26,11 @@ namespace MediaBrowser.Common.Net
         bool IsIP6Enabled { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the system supports multi-socket binding.
+        /// </summary>
+        bool EnableMultiSocketBinding { get; }
+
+        /// <summary>
         /// Gets the IP4Loopback address host.
         /// </summary>
         IPNetAddress IP4Loopback { get; }
