@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.Networking
         public static NetworkManager Instance { get => _instance; }
 
         /// <inheritdoc/>
-        public IPNetAddress IP4Loopback { get; } = IPNetAddress.Parse("127.0.0.1/8");
+        public IPNetAddress IP4Loopback { get; } = IPNetAddress.Parse("127.0.0.1/32");
 
         /// <inheritdoc/>
         public IPNetAddress IP6Loopback { get; } = IPNetAddress.Parse("::1");
@@ -200,6 +200,20 @@ namespace Emby.Server.Implementations.Networking
 
         /// <inheritdoc/>
         public bool IsInLocalNetwork(IPNetAddress endpoint)
+        {
+            if (endpoint == null)
+            {
+                throw new ArgumentNullException(nameof(endpoint));
+            }
+
+            lock (_intLock)
+            {
+                return _filteredLANSubnets.Contains(endpoint);
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool IsInLocalNetwork(IPAddress endpoint)
         {
             if (endpoint == null)
             {
@@ -317,7 +331,14 @@ namespace Emby.Server.Implementations.Networking
             }
 
             bool haveSource = !sourceAddr.Address.Equals(IPAddress.None);
-            bool externalSubnet = haveSource && !IsPrivateAddressRange(sourceAddr);
+
+            if (haveSource && IsIP6Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                _logger.LogWarning("IPv6 disabled in jellyfin, but enabled in OS. This may affect how the interface is selected.");
+            }
+
+            bool externalSubnet = haveSource && !IsLANAddressRange(sourceAddr);
+            _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, externalSubnet);
 
             // Has the user specified an interface preference for this network?
             string bindPreference = externalSubnet ?
@@ -329,13 +350,14 @@ namespace Emby.Server.Implementations.Networking
                 // Never trust the user: Check that bindPreference is an actual interface address.
                 if (_interfaceAddresses.Contains(bindAddr))
                 {
-                    _logger.LogInformation("Using BindAddress {0}", bindPreference);
+                    _logger.LogInformation("Using BindAddress {0}", bindAddr.Address);
                     return bindAddr.Address;
                 }
 
                 _logger.LogError("Invalid interface in BindAddress {0}", bindAddr);
             }
 
+            IPAddress ipresult;
             // No preference given, so auto select the best.
             lock (_intLock)
             {
@@ -358,29 +380,35 @@ namespace Emby.Server.Implementations.Networking
                         {
                             if (intf.Contains(sourceAddr))
                             {
-                                return intf.Address;
+                                ipresult = intf.Address;
+                                _logger.LogDebug("GetBindInterface: Has source, matched user defined interface on range. {0}", ipresult);
+                                return ipresult;
                             }
                         }
                     }
 
                     // Check to see if any of the bind interfaces are in the same subnet.
-                    var ncRes = nc.Where(p => !IsPrivateAddressRange(p) && !p.IsLoopback())
+                    var ncRes = nc.Where(p => !IsLANAddressRange(p) && !p.IsLoopback())
                         .OrderBy(p => p.Tag);
 
                     if (ncRes.Any())
                     {
-                        return ncRes.First().Address;
+                        ipresult = ncRes.First().Address;
+                        _logger.LogDebug("GetBindInterface: Has source, select best user defined interface. {0}", ipresult);
+                        return ipresult;
                     }
 
-                    return nc[0].Address;
+                    ipresult = nc[0].Address;
+                    _logger.LogDebug("GetBindInterface: Selected first user defined interface.", ipresult);
+                    return ipresult;
                 }
 
                 if (externalSubnet)
                 {
-                    // Get the first private interface address that isn't a loopback.
+                    // Get the first LAN interface address that isn't a loopback.
                     var extResult = _interfaceAddresses
                         .Exclude(_bindExclusions)
-                        .Where(p => !IsPrivateAddressRange(p) && !p.IsLoopback())
+                        .Where(p => !IsLANAddressRange(p) && !p.IsLoopback())
                         .OrderBy(p => p.Tag);
 
                     if (extResult.Any())
@@ -391,23 +419,27 @@ namespace Emby.Server.Implementations.Networking
                             // (For systems with multiple internal network cards, and multiple subnets)
                             foreach (var intf in extResult)
                             {
-                                if (!IsPrivateAddressRange(intf) && intf.Contains(sourceAddr))
+                                if (!IsLANAddressRange(intf) && intf.Contains(sourceAddr))
                                 {
-                                    return intf.Address;
+                                    ipresult = intf.Address;
+                                    _logger.LogDebug("GetBindInterface: Selected best external on interface on range. {0}", ipresult);
+                                    return ipresult;
                                 }
                             }
                         }
 
-                        return extResult.First().Address;
+                        ipresult = extResult.First().Address;
+                        _logger.LogDebug("GetBindInterface: Selected first external interface. {0}", ipresult);
+                        return ipresult;
                     }
 
                     // Have to return something, so return an internal address
                 }
 
-                // Get the first private interface address that isn't a loopback.
+                // Get the first LAN interface address that isn't a loopback.
                 var result = _interfaceAddresses
                     .Exclude(_bindExclusions)
-                    .Where(p => IsPrivateAddressRange(p) && !p.IsLoopback())
+                    .Where(p => IsLANAddressRange(p) && !p.IsLoopback())
                     .OrderBy(p => p.Tag);
 
                 if (result.Any())
@@ -418,18 +450,24 @@ namespace Emby.Server.Implementations.Networking
                         // (For systems with multiple internal network cards, and multiple subnets)
                         foreach (var intf in result)
                         {
-                            if (IsPrivateAddressRange(intf) && intf.Contains(sourceAddr))
+                            if (IsLANAddressRange(intf) && intf.Contains(sourceAddr))
                             {
-                                return intf.Address;
+                                ipresult = intf.Address;
+                                _logger.LogDebug("GetBindInterface: Has source, matched best internal interface on range. {0}", ipresult);
+                                return ipresult;
                             }
                         }
                     }
 
-                    return result.First().Address;
+                    ipresult = result.First().Address;
+                    _logger.LogDebug("GetBindInterface: Matched first internal interface. {0}", ipresult);
+                    return ipresult;
                 }
 
                 // There isn't any others, so we'll use the loopback.
-                return IP4Loopback.Address;
+                ipresult = IP4Loopback.Address;
+                _logger.LogDebug("GetBindInterface: Default return. {0}", ipresult);
+                return ipresult;
             }
         }
 
@@ -459,6 +497,26 @@ namespace Emby.Server.Implementations.Networking
                 }
 
                 return _bindAddresses;
+            }
+        }
+
+        /// <inheritdoc/>
+        public bool IsLANAddressRange(IPObject address)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
+            if (_configurationManager.Configuration.TrustIP6Interfaces && address.IsIP6())
+            {
+                return true;
+            }
+            else
+            {
+                // As private addresses can be redefined by Configuration.LocalNetworkAddresses
+                return _filteredLANSubnets.Contains(address); //  address.IsPrivateAddressRange();
             }
         }
 
@@ -670,7 +728,7 @@ namespace Emby.Server.Implementations.Networking
 
                 if (_usingInterfaces)
                 {
-                    _logger.LogDebug("Using private interface addresses as user provided no LAN details.");
+                    _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
                     // Internal interfaces must be private and not excluded.
                     _internalInterfaces = new NetCollection(
                         _interfaceAddresses
@@ -678,30 +736,41 @@ namespace Emby.Server.Implementations.Networking
 
                     // Subnets are the same as the calculated internal interface.
                     _lanSubnets = NetCollection.AsNetworks(_internalInterfaces);
+
+                    // We must listen on loopback for LiveTV to function regardless of the settings.
+                    if (IsIP6Enabled)
+                    {
+                        _lanSubnets.Add(IP6Loopback);
+                    }
+
+                    _lanSubnets.Add(IP4Loopback);
+
                 }
                 else
                 {
+                    // We must listen on loopback for LiveTV to function regardless of the settings.
+                    if (IsIP6Enabled)
+                    {
+                        _lanSubnets.Add(IP6Loopback);
+                    }
+
+                    _lanSubnets.Add(IP4Loopback);
+
+                    // Filtered LAN subnets are subnets of the LAN Addresses.
+                    _filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
+
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
                     _internalInterfaces = new NetCollection(_interfaceAddresses
-                        .Where(i => IsPrivateAddressRange(i) &&
+                        .Where(i => IsLANAddressRange(i) &&
                             !_excludedSubnets.Contains(i) &&
                             _lanSubnets.Contains(i)));
                 }
 
-                // We must listen on loopback for LiveTV to function regardless of the settings.
-                if (IsIP6Enabled)
-                {
-                    _lanSubnets.Add(IP6Loopback);
-                }
-
-                _lanSubnets.Add(IP4Loopback);
-
-                // Filtered LAN subnets are subnets of the LAN Addresses.
-                _filteredLANSubnets = NetCollection.AsNetworks(_lanSubnets.Exclude(_excludedSubnets));
-
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets);
                 _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets);
                 _logger.LogInformation("Using LAN addresses: {0}", _filteredLANSubnets);
+                _logger.LogInformation("Using bind addresses: {0}", _bindAddresses);
+                _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);
             }
         }
 

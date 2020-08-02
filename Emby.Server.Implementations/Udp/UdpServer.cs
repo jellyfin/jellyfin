@@ -152,7 +152,7 @@ namespace Emby.Server.Implementations.Udp
 
                     var result = task.Result;
 
-                    // If this from an excluded address don't both responding to it.
+                    // If this from an excluded address don't both responding to it - but we will respond no matter where the request comes from.
                     if (!NetworkManager.Instance.IsExcluded(((IPEndPoint)result.RemoteEndPoint).Address))
                     {
                         var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);

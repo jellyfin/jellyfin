@@ -539,8 +539,8 @@ namespace Rssdp.Infrastructure
             {
                 // If needed later for non-server devices, these headers will need to be dynamic
                 ["HOST"] = device.ToRootDevice().Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ?
-                $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}" :
-                $"{SsdpConstants.MulticastLocalAdminAddressV6}:{SsdpConstants.MulticastPort}",
+                    $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}" :
+                    $"{SsdpConstants.MulticastLocalAdminAddressV6}:{SsdpConstants.MulticastPort}",
                 ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture),
                 ["SERVER"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion),
                 ["NTS"] = SsdpConstants.SsdpByeByeNotification,

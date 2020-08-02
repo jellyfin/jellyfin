@@ -28,12 +28,12 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets the IP4Loopback address host.
         /// </summary>
-        public IPNetAddress IP4Loopback { get; }
+        IPNetAddress IP4Loopback { get; }
 
         /// <summary>
         /// Gets the IP6Loopback address host.
         /// </summary>
-        public IPNetAddress IP6Loopback { get; }
+        IPNetAddress IP6Loopback { get; }
 
         /// <summary>
         /// Gets returns the remote address filter.
@@ -104,9 +104,17 @@ namespace MediaBrowser.Common.Net
         /// Returns true if the address is a private address.
         /// The config option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
-        /// <param name="addr">Address to check.</param>
+        /// <param name="address">Address to check.</param>
         /// <returns>True or False.</returns>
-        public bool IsPrivateAddressRange(IPObject addr);
+        bool IsPrivateAddressRange(IPObject address);
+
+        /// <summary>
+        /// Returns true if the address is part of the user defined LAN.
+        /// The config option TrustIP6Interfaces overrides this functions behaviour.
+        /// </summary>
+        /// <param name="address">Address to check.</param>
+        /// <returns>True or False.</returns>
+        bool IsLANAddressRange(IPObject address);
 
         /// <summary>
         /// Calculates if the endpoint given falls within the LAN networks specified in config.
@@ -121,6 +129,22 @@ namespace MediaBrowser.Common.Net
         /// <param name="endpoint">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
         bool IsInLocalNetwork(IPNetAddress endpoint);
+
+        /// <summary>
+        /// Calculates if the endpoint given falls within the LAN networks specified in config.
+        /// </summary>
+        /// <param name="endpoint">IP to check.</param>
+        /// <returns>True if endpoint is within the LAN range.</returns>
+        bool IsInLocalNetwork(IPAddress endpoint);
+
+        /// <summary>
+        /// Attempts to convert the token to an IP address, permitting for interface descriptions and indexes.
+        /// eg. "eth1", or "TP-LINK Wireless USB Adapter".
+        /// </summary>
+        /// <param name="token">Token to parse.</param>
+        /// <param name="result">Resultant object if successful.</param>
+        /// <returns>Success of the operation.</returns>
+        bool TryParseInterface(string token, out IPNetAddress result);
 
         /// <summary>
         /// Parses an array of strings into a NetCollection.

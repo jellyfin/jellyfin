@@ -157,7 +157,7 @@ namespace MediaBrowser.Common.Networking
         /// <param name="ip">Item to add.</param>
         public void Add(IPAddress ip)
         {
-            if (!Exists(ip))
+            if (!Contains(ip))
             {
                 Items.Add(new IPNetAddress(ip, 32));
             }
@@ -169,7 +169,7 @@ namespace MediaBrowser.Common.Networking
         /// <param name="item">Item to add.</param>
         public void Add(IPObject item)
         {
-            if (!Exists(item))
+            if (!Contains(item))
             {
                 Items.Add(item);
             }
@@ -190,7 +190,7 @@ namespace MediaBrowser.Common.Networking
         /// <returns>A new collection, with the items excluded.</returns>
         public NetCollection Exclude(NetCollection excludeList)
         {
-            if (excludeList == null)
+            if (Count == 0 || excludeList == null)
             {
                 return new NetCollection(this);
             }
@@ -227,6 +227,11 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if the item was removed.</returns>
         public bool Remove(IPObject item)
         {
+            if (Count == 0)
+            {
+                return false;
+            }
+
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
@@ -252,6 +257,11 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if the collection contains the item.</returns>
         public bool Contains(IPObject item)
         {
+            if (Count == 0)
+            {
+                return false;
+            }
+
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
@@ -276,6 +286,11 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if the collection contains the item.</returns>
         public bool Contains(IPAddress item)
         {
+            if (Count == 0)
+            {
+                return false;
+            }
+
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
@@ -299,6 +314,11 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if the item exists in the collection.</returns>
         public bool Equals(IPObject search)
         {
+            if (Count == 0)
+            {
+                return false;
+            }
+
             if (search != null)
             {
                 foreach (var item in Items)
@@ -320,6 +340,11 @@ namespace MediaBrowser.Common.Networking
         /// <returns>A collection containing all the matches.</returns>
         public NetCollection Union(NetCollection target)
         {
+            if (Count == 0)
+            {
+                return new NetCollection();
+            }
+
             if (target == null)
             {
                 throw new ArgumentNullException(nameof(target));
@@ -327,9 +352,9 @@ namespace MediaBrowser.Common.Networking
 
             NetCollection nc = new NetCollection();
 
-            foreach (IPObject i in target.Items)
+            foreach (IPObject i in Items)
             {
-                if (Contains(i))
+                if (target.Contains(i))
                 {
                     nc.Add(i);
                 }
@@ -345,6 +370,11 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if the item exists in the collection.</returns>
         public bool Exists(IPObject networkItem)
         {
+            if (Count == 0)
+            {
+                return false;
+            }
+
             if (networkItem == null)
             {
                 throw new ArgumentNullException(nameof(networkItem));
@@ -368,6 +398,11 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if the item exists in the collection.</returns>
         public bool Exists(string networkItem)
         {
+            if (Count == 0)
+            {
+                return false;
+            }
+
             if (!string.IsNullOrEmpty(networkItem))
             {
                 foreach (IPObject i in Items)
@@ -389,6 +424,11 @@ namespace MediaBrowser.Common.Networking
         /// <returns>True if the item exists in the collection.</returns>
         public bool Exists(IPAddress networkItem)
         {
+            if (Count == 0)
+            {
+                return false;
+            }
+
             if (networkItem == null)
             {
                 throw new ArgumentNullException(nameof(networkItem));

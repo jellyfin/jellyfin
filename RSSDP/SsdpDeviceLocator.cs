@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Rssdp.Infrastructure
@@ -20,14 +21,14 @@ namespace Rssdp.Infrastructure
         private object _timerLock = new object();
         private ILogger _logger;
         private bool _ipV6Enabled;
-
+        private readonly INetworkManager _networkManager;
         private readonly TimeSpan DefaultSearchWaitTime = TimeSpan.FromSeconds(4);
         private readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ILogger Logger, bool IPv6Enabled)
+        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ILogger Logger, INetworkManager networkManager, bool IPv6Enabled)
         {
             if (communicationsServer == null)
             {
@@ -36,7 +37,7 @@ namespace Rssdp.Infrastructure
 
             _CommunicationsServer = communicationsServer;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
-
+            _networkManager = networkManager;
             _Devices = new List<DiscoveredSsdpDevice>();
             _logger = Logger;
             _ipV6Enabled = IPv6Enabled;
@@ -346,17 +347,27 @@ namespace Rssdp.Infrastructure
 
             if (!_ipV6Enabled)
             {
-                // _logger.LogInformation("Sending IPv4 broadcast.");
-                return _CommunicationsServer.SendMulticastMessage(message, IPAddress.Any, cancellationToken);
+                //_logger.LogInformation("Sending IPv4 broadcast on LAN interfaces.");
+
+                IEnumerable<Task> tasks = from intf in _networkManager.GetInternalBindAddresses()
+                                          select _CommunicationsServer.SendMulticastMessage(message, intf.Address, cancellationToken);
+                return Task.WhenAll(tasks);
             }
 
             values["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddressV6}:{SsdpConstants.MulticastPort}";
             var message2 = BuildMessage(header, values);
-            
-            // _logger.LogInformation("Sending IPv6 multicast and IPv4 broadcast.");
 
-            return Task.WhenAll(_CommunicationsServer.SendMulticastMessage(message, IPAddress.Any, cancellationToken),
-                _CommunicationsServer.SendMulticastMessage(message2, IPAddress.IPv6Any, cancellationToken));                            
+            //_logger.LogInformation("Sending IPv6 multicast and IPv4 broadcast.");
+            IEnumerable<Task> ip4Tasks = from intf in _networkManager.GetInternalBindAddresses()
+                                      where (intf.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                                      select _CommunicationsServer.SendMulticastMessage(message, intf.Address, cancellationToken);
+
+            IEnumerable<Task> ip6Tasks = from intf in _networkManager.GetInternalBindAddresses()
+                                      where (intf.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+                                      select _CommunicationsServer.SendMulticastMessage(message2, intf.Address, cancellationToken);
+
+
+            return Task.WhenAll(ip4Tasks.Union(ip6Tasks));                            
         }
 
         private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress localIpAddress)

@@ -172,17 +172,21 @@ namespace Rssdp.Infrastructure
         public async Task SendMessage(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress, CancellationToken cancellationToken)
         {
             if (messageData == null) throw new ArgumentNullException(nameof(messageData));
-
-            if (_networkManager.IsExcluded(fromLocalIpAddress))
+            
+            if (!_enableMultiSocketBinding)
             {
-                _logger.LogInformation("Filtering traffic from [{0}] to {1}.", fromLocalIpAddress, destination.Address);
-                return;
-            }
+                // Only need to do these checks if we're using one socket for everything as socket.count will be zero later if not.
+                if (_networkManager.IsInLocalNetwork(fromLocalIpAddress))
+                {
+                    _logger.LogInformation("Filtering traffic from [{0}] to {1}.", fromLocalIpAddress, destination.Address);
+                    return;
+                }
 
-            if (_networkManager.IsExcluded(destination.Address))
-            {
-                _logger.LogInformation("Filtering traffic from {0} to [{1}].", fromLocalIpAddress, destination.Address);
-                return;
+                if (_networkManager.IsInLocalNetwork(destination.Address))
+                {
+                    _logger.LogInformation("Filtering traffic from {0} to [{1}].", fromLocalIpAddress, destination.Address);
+                    return;
+                }
             }
 
             ThrowIfDisposed();
@@ -423,7 +427,7 @@ namespace Rssdp.Infrastructure
                 {
                     try
                     {
-                        _logger.LogInformation("Adding socket {0}.", ip.Address);
+                        _logger.LogInformation("Listening on {0}.", ip.Address);
                         sockets.Add(_SocketFactory.CreateSsdpUdpSocket(ip.Address, _LocalPort));
                     }
                     catch (SocketException ex)
@@ -499,13 +503,13 @@ namespace Rssdp.Infrastructure
 
         private void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress)
         {
-            if (_networkManager.IsExcluded(receivedOnLocalIpAddress))
+            if (_networkManager.IsInLocalNetwork(receivedOnLocalIpAddress))
             {
                 _logger.LogInformation("Filtering traffic from {0} to [{1}].", endPoint.Address, receivedOnLocalIpAddress);
                 return;
             }
 
-            if (_networkManager.IsExcluded(endPoint.Address))
+            if (_networkManager.IsInLocalNetwork(endPoint.Address))
             {
                 _logger.LogInformation("Filtering traffic from [{0}] to {1}.", endPoint.Address, receivedOnLocalIpAddress);
                 return;

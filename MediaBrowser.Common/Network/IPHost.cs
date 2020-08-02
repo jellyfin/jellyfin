@@ -21,7 +21,7 @@ namespace MediaBrowser.Common.Networking
         public static readonly IPHost None = new IPHost(string.Empty, IPAddress.None);
 
         /// <summary>
-        /// Time when last resolved. Timeout is 30 minutes.
+        /// Time when last resolved.
         /// </summary>
         private long _lastResolved;
 
@@ -75,6 +75,11 @@ namespace MediaBrowser.Common.Networking
         }
 
         /// <summary>
+        /// Gets or sets timeout value before resolve required, in minutes.
+        /// </summary>
+        public byte Timeout { get; set; } = 30;
+
+        /// <summary>
         /// Gets a value indicating whether the address has a value.
         /// </summary>
         public bool HasAddress
@@ -122,6 +127,12 @@ namespace MediaBrowser.Common.Networking
         {
             if (!string.IsNullOrEmpty(host))
             {
+                if (IPAddress.TryParse(host, out IPAddress hostIP))
+                {
+                    hostObj = new IPHost(host, hostIP);
+                    return true;
+                }
+
                 // See if it's an IPv6 with port address e.g. [::1]:120.
                 int i = host.IndexOf("]:", StringComparison.OrdinalIgnoreCase);
                 if (i != -1)
@@ -130,7 +141,7 @@ namespace MediaBrowser.Common.Networking
                 }
                 else
                 {
-                    // See if it's an IPv6 with no port.
+                    // See if it's an IPv6 in [] with no port.
                     i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
                     if (i != -1)
                     {
@@ -361,7 +372,7 @@ namespace MediaBrowser.Common.Networking
             }
 
             // If we haven't resolved before, or out timer has run out...
-            if ((_addresses.Length == 0 && !Resolved) || (TimeSpan.FromTicks(DateTime.Now.Ticks - _lastResolved).TotalMinutes > 30))
+            if ((_addresses.Length == 0 && !Resolved) || (TimeSpan.FromTicks(DateTime.Now.Ticks - _lastResolved).TotalMinutes > Timeout))
             {
                 _lastResolved = DateTime.Now.Ticks;
                 ResolveHostInternal().GetAwaiter().GetResult();
