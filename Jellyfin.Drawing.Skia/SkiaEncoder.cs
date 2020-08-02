@@ -487,7 +487,8 @@ namespace Jellyfin.Drawing.Skia
             var height = newImageSize.Height;
 
             // scale image (the FromImage creates a copy)
-            using var resizedBitmap = SKBitmap.FromImage(ResizeImage(bitmap, new SKImageInfo(width, height, bitmap.ColorType, bitmap.AlphaType, bitmap.ColorSpace)));
+            var imageInfo = new SKImageInfo(width, height, bitmap.ColorType, bitmap.AlphaType, bitmap.ColorSpace);
+            using var resizedBitmap = SKBitmap.FromImage(ResizeImage(bitmap, imageInfo));
 
             // If all we're doing is resizing then we can stop now
             if (!hasBackgroundColor && !hasForegroundColor && blur == 0 && !hasIndicator)

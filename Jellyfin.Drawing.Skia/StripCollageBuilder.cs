@@ -176,7 +176,8 @@ namespace Jellyfin.Drawing.Skia
                     }
 
                     // Scale image. The FromBitmap creates a copy
-                    using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(bitmap, new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace)));
+                    var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
+                    using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(bitmap, imageInfo));
 
                     // draw this image into the strip at the next position
                     var xPos = x * cellWidth;
