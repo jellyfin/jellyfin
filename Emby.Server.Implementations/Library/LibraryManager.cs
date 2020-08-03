@@ -314,9 +314,8 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var parent = item.GetOwner() ?? item.GetParent();
-
-            DeleteItem(item, options, parent, notifyParentItem);
+            // To avoid making too many changes parent is just null but will be fetched if "notifyParentItem"
+            DeleteItem(item, options, null, notifyParentItem);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem)
@@ -324,6 +323,11 @@ namespace Emby.Server.Implementations.Library
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
+            }
+
+            if (parent == null && notifyParentItem)
+            {
+                parent = item.GetOwner() ?? item.GetParent();
             }
 
             if (item.SourceType == SourceType.Channel)
@@ -449,7 +453,10 @@ namespace Emby.Server.Implementations.Library
 
             _memoryCache.Remove(item.Id);
 
-            ReportItemRemoved(item, parent);
+            if (notifyParentItem)
+            {
+                ReportItemRemoved(item, parent);
+            }
         }
 
         private static IEnumerable<string> GetMetadataPaths(BaseItem item, IEnumerable<BaseItem> children)
