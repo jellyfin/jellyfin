@@ -85,8 +85,8 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Information retrieved.</response>
         /// <returns>The server name.</returns>
-        [HttpGet("Ping")]
-        [HttpPost("Ping")]
+        [HttpGet("Ping", Name = "GetPingSystem")]
+        [HttpPost("Ping", Name = "PostPingSystem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<string> PingSystem()
         {

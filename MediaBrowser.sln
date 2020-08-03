@@ -6,8 +6,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server", "Jellyfin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Controller", "MediaBrowser.Controller\MediaBrowser.Controller.csproj", "{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Api", "MediaBrowser.Api\MediaBrowser.Api.csproj", "{4FD51AC5-2C16-4308-A993-C3A84F3B4582}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Common", "MediaBrowser.Common\MediaBrowser.Common.csproj", "{9142EEFA-7570-41E1-BFCC-468BB571AF2F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Model", "MediaBrowser.Model\MediaBrowser.Model.csproj", "{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}"
@@ -80,10 +78,6 @@ Global
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4FD51AC5-2C16-4308-A993-C3A84F3B4582}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9142EEFA-7570-41E1-BFCC-468BB571AF2F}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -7,21 +7,12 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.VideoDtos;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -30,72 +21,28 @@ namespace Jellyfin.Api.Controllers
     /// </summary>
     public class UniversalAudioController : BaseJellyfinApiController
     {
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IDeviceManager _deviceManager;
-        private readonly IDlnaManager _dlnaManager;
-        private readonly IMediaEncoder _mediaEncoder;
-        private readonly IFileSystem _fileSystem;
-        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IAuthorizationContext _authorizationContext;
-        private readonly INetworkManager _networkManager;
-        private readonly IServerConfigurationManager _serverConfigurationManager;
-        private readonly TranscodingJobHelper _transcodingJobHelper;
-        private readonly IConfiguration _configuration;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly MediaInfoController _mediaInfoController;
+        private readonly DynamicHlsController _dynamicHlsController;
+        private readonly AudioController _audioController;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UniversalAudioController"/> class.
         /// </summary>
-        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
-        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
-        /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
-        /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-        /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
-        /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
+        /// <param name="mediaInfoController">Instance of the <see cref="MediaInfoController"/>.</param>
+        /// <param name="dynamicHlsController">Instance of the <see cref="DynamicHlsController"/>.</param>
+        /// <param name="audioController">Instance of the <see cref="AudioController"/>.</param>
         public UniversalAudioController(
-            ILoggerFactory loggerFactory,
-            IServerConfigurationManager serverConfigurationManager,
-            IUserManager userManager,
-            ILibraryManager libraryManager,
-            IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            IDlnaManager dlnaManager,
-            IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager,
             IAuthorizationContext authorizationContext,
-            INetworkManager networkManager,
-            TranscodingJobHelper transcodingJobHelper,
-            IConfiguration configuration,
-            ISubtitleEncoder subtitleEncoder,
-            IHttpClientFactory httpClientFactory)
+            MediaInfoController mediaInfoController,
+            DynamicHlsController dynamicHlsController,
+            AudioController audioController)
         {
-            _userManager = userManager;
-            _libraryManager = libraryManager;
-            _mediaEncoder = mediaEncoder;
-            _fileSystem = fileSystem;
-            _dlnaManager = dlnaManager;
-            _deviceManager = deviceManager;
-            _mediaSourceManager = mediaSourceManager;
             _authorizationContext = authorizationContext;
-            _networkManager = networkManager;
-            _loggerFactory = loggerFactory;
-            _serverConfigurationManager = serverConfigurationManager;
-            _transcodingJobHelper = transcodingJobHelper;
-            _configuration = configuration;
-            _subtitleEncoder = subtitleEncoder;
-            _httpClientFactory = httpClientFactory;
+            _mediaInfoController = mediaInfoController;
+            _dynamicHlsController = dynamicHlsController;
+            _audioController = audioController;
         }
 
         /// <summary>
@@ -122,9 +69,9 @@ namespace Jellyfin.Api.Controllers
         /// <response code="302">Redirected to remote audio stream.</response>
         /// <returns>A <see cref="Task"/> containing the audio file.</returns>
         [HttpGet("/Audio/{itemId}/universal")]
-        [HttpGet("/Audio/{itemId}/{universal=universal}.{container?}")]
-        [HttpHead("/Audio/{itemId}/universal")]
-        [HttpHead("/Audio/{itemId}/{universal=universal}.{container?}")]
+        [HttpGet("/Audio/{itemId}/{universal=universal}.{container?}", Name = "GetUniversalAudioStream_2")]
+        [HttpHead("/Audio/{itemId}/universal", Name = "HeadUniversalAudioStream")]
+        [HttpHead("/Audio/{itemId}/{universal=universal}.{container?}", Name = "HeadUniversalAudioStream_2")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
@@ -151,8 +98,7 @@ namespace Jellyfin.Api.Controllers
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
             _authorizationContext.GetAuthorizationInfo(Request).DeviceId = deviceId;
 
-            var mediaInfoController = new MediaInfoController(_mediaSourceManager, _deviceManager, _libraryManager, _networkManager, _mediaEncoder, _userManager, _authorizationContext, _loggerFactory.CreateLogger<MediaInfoController>(), _serverConfigurationManager);
-            var playbackInfoResult = await mediaInfoController.GetPostedPlaybackInfo(
+            var playbackInfoResult = await _mediaInfoController.GetPostedPlaybackInfo(
                 itemId,
                 userId,
                 maxStreamingBitrate,
@@ -180,21 +126,6 @@ namespace Jellyfin.Api.Controllers
             var isStatic = mediaSource.SupportsDirectStream;
             if (!isStatic && string.Equals(mediaSource.TranscodingSubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
-                var dynamicHlsController = new DynamicHlsController(
-                    _libraryManager,
-                    _userManager,
-                    _dlnaManager,
-                    _authorizationContext,
-                    _mediaSourceManager,
-                    _serverConfigurationManager,
-                    _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
-                    _deviceManager,
-                    _transcodingJobHelper,
-                    _networkManager,
-                    _loggerFactory.CreateLogger<DynamicHlsController>());
                 var transcodingProfile = deviceProfile.TranscodingProfiles[0];
 
                 // hls segment container can only be mpegts or fmp4 per ffmpeg documentation
@@ -203,10 +134,10 @@ namespace Jellyfin.Api.Controllers
 
                 if (isHeadRequest)
                 {
-                    dynamicHlsController.Request.Method = HttpMethod.Head.Method;
+                    _dynamicHlsController.Request.Method = HttpMethod.Head.Method;
                 }
 
-                return await dynamicHlsController.GetMasterHlsAudioPlaylist(
+                return await _dynamicHlsController.GetMasterHlsAudioPlaylist(
                     itemId,
                     ".m3u8",
                     isStatic,
@@ -261,27 +192,12 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                var audioController = new AudioController(
-                    _dlnaManager,
-                    _userManager,
-                    _authorizationContext,
-                    _libraryManager,
-                    _mediaSourceManager,
-                    _serverConfigurationManager,
-                    _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
-                    _deviceManager,
-                    _transcodingJobHelper,
-                    _httpClientFactory);
-
                 if (isHeadRequest)
                 {
-                    audioController.Request.Method = HttpMethod.Head.Method;
+                    _audioController.Request.Method = HttpMethod.Head.Method;
                 }
 
-                return await audioController.GetAudioStream(
+                return await _audioController.GetAudioStream(
                     itemId,
                     isStatic ? null : ("." + mediaSource.TranscodingContainer),
                     isStatic,

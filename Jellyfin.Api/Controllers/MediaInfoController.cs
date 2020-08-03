@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.MediaInfoDtos;
 using Jellyfin.Api.Models.VideoDtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -43,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
-        private readonly ILogger _logger;
+        private readonly ILogger<MediaInfoController> _logger;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
@@ -91,7 +92,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute] Guid itemId, [FromQuery] Guid? userId)
         {
-            return await GetPlaybackInfoInternal(itemId, userId, null, null).ConfigureAwait(false);
+            return await GetPlaybackInfoInternal(itemId, userId).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -231,8 +232,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="subtitleStreamIndex">The subtitle stream index.</param>
         /// <param name="maxAudioChannels">The maximum number of audio channels.</param>
         /// <param name="itemId">The item id.</param>
-        /// <param name="deviceProfile">The device profile.</param>
-        /// <param name="directPlayProtocols">The direct play protocols. Default: <see cref="MediaProtocol.Http"/>.</param>
+        /// <param name="openLiveStreamDto">The open live stream dto.</param>
         /// <param name="enableDirectPlay">Whether to enable direct play. Default: true.</param>
         /// <param name="enableDirectStream">Whether to enable direct stream. Default: true.</param>
         /// <response code="200">Media source opened.</response>
@@ -249,8 +249,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? maxAudioChannels,
             [FromQuery] Guid? itemId,
-            [FromQuery] DeviceProfile? deviceProfile,
-            [FromQuery] MediaProtocol[] directPlayProtocols,
+            [FromBody] OpenLiveStreamDto openLiveStreamDto,
             [FromQuery] bool enableDirectPlay = true,
             [FromQuery] bool enableDirectStream = true)
         {
@@ -265,10 +264,10 @@ namespace Jellyfin.Api.Controllers
                 SubtitleStreamIndex = subtitleStreamIndex,
                 MaxAudioChannels = maxAudioChannels,
                 ItemId = itemId ?? Guid.Empty,
-                DeviceProfile = deviceProfile,
+                DeviceProfile = openLiveStreamDto?.DeviceProfile,
                 EnableDirectPlay = enableDirectPlay,
                 EnableDirectStream = enableDirectStream,
-                DirectPlayProtocols = directPlayProtocols ?? new[] { MediaProtocol.Http }
+                DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http }
             };
             return await OpenMediaSource(request).ConfigureAwait(false);
         }

@@ -46,7 +46,6 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
-using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -1031,9 +1030,6 @@ namespace Emby.Server.Implementations
                     yield return plugAss;
                 }
             }
-
-            // Include composable parts in the Api assembly
-            yield return typeof(ApiEntryPoint).Assembly;
 
             // Include composable parts in the Model assembly
             yield return typeof(SystemInfo).Assembly;

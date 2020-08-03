@@ -44,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NoContentResult"/> if the css is not configured.
         /// </returns>
         [HttpGet("Css")]
-        [HttpGet("Css.css")]
+        [HttpGet("Css.css", Name = "GetBrandingCss_2")]
         [Produces("text/css")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

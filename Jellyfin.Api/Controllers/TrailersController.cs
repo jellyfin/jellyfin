@@ -1,14 +1,10 @@
 ﻿using System;
 using Jellyfin.Api.Constants;
-using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -18,32 +14,15 @@ namespace Jellyfin.Api.Controllers
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class TrailersController : BaseJellyfinApiController
     {
-        private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
-        private readonly ILogger<ItemsController> _logger;
-        private readonly IDtoService _dtoService;
-        private readonly ILocalizationManager _localizationManager;
+        private readonly ItemsController _itemsController;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TrailersController"/> class.
         /// </summary>
-        /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-        /// <param name="localizationManager">Instance of the <see cref="ILocalizationManager"/> interface.</param>
-        public TrailersController(
-            ILoggerFactory loggerFactory,
-            IUserManager userManager,
-            ILibraryManager libraryManager,
-            IDtoService dtoService,
-            ILocalizationManager localizationManager)
+        /// <param name="itemsController">Instance of <see cref="ItemsController"/>.</param>
+        public TrailersController(ItemsController itemsController)
         {
-            _userManager = userManager;
-            _libraryManager = libraryManager;
-            _dtoService = dtoService;
-            _localizationManager = localizationManager;
-            _logger = loggerFactory.CreateLogger<ItemsController>();
+            _itemsController = itemsController;
         }
 
         /// <summary>
@@ -214,12 +193,7 @@ namespace Jellyfin.Api.Controllers
         {
             var includeItemTypes = "Trailer";
 
-            return new ItemsController(
-                _userManager,
-                _libraryManager,
-                _localizationManager,
-                _dtoService,
-                _logger)
+            return _itemsController
                 .GetItems(
                     userId,
                     userId,
