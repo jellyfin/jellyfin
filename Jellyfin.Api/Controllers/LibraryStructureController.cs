@@ -249,7 +249,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateMediaPath(
             [FromQuery] string? name,
-            [FromQuery] MediaPathInfo? pathInfo)
+            [FromBody] MediaPathInfo? pathInfo)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -320,7 +320,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateLibraryOptions(
             [FromQuery] string? id,
-            [FromQuery] LibraryOptions? libraryOptions)
+            [FromBody] LibraryOptions? libraryOptions)
         {
             var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(id);
 
