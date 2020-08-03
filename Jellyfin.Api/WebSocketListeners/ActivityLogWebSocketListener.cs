@@ -5,7 +5,7 @@ using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Api.System
+namespace Jellyfin.Api.WebSocketListeners
 {
     /// <summary>
     /// Class SessionInfoWebSocketListener.
@@ -13,26 +13,27 @@ namespace MediaBrowser.Api.System
     public class ActivityLogWebSocketListener : BasePeriodicWebSocketListener<ActivityLogEntry[], WebSocketListenerState>
     {
         /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        protected override string Name => "ActivityLogEntry";
-
-        /// <summary>
         /// The _kernel.
         /// </summary>
         private readonly IActivityManager _activityManager;
 
-        public ActivityLogWebSocketListener(ILogger<ActivityLogWebSocketListener> logger, IActivityManager activityManager) : base(logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ActivityLogWebSocketListener"/> class.
+        /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger{ActivityLogWebSocketListener}"/> interface.</param>
+        /// <param name="activityManager">Instance of the <see cref="IActivityManager"/> interface.</param>
+        public ActivityLogWebSocketListener(ILogger<ActivityLogWebSocketListener> logger, IActivityManager activityManager)
+            : base(logger)
         {
             _activityManager = activityManager;
             _activityManager.EntryCreated += OnEntryCreated;
         }
 
-        private void OnEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
-        {
-            SendData(true);
-        }
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        protected override string Name => "ActivityLogEntry";
 
         /// <summary>
         /// Gets the data to send.
@@ -49,6 +50,11 @@ namespace MediaBrowser.Api.System
             _activityManager.EntryCreated -= OnEntryCreated;
 
             base.Dispose(dispose);
+        }
+
+        private void OnEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
+        {
+            SendData(true);
         }
     }
 }

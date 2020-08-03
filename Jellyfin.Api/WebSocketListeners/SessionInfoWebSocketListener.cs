@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Api.Sessions
+namespace Jellyfin.Api.WebSocketListeners
 {
     /// <summary>
     /// Class SessionInfoWebSocketListener.
