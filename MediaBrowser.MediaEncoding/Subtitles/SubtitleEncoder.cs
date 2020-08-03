@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -172,7 +174,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 inputFiles = new[] { mediaSource.Path };
             }
 
-            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, subtitleStream, cancellationToken).ConfigureAwait(false);
+            var protocol = mediaSource.Protocol;
+            if (subtitleStream.IsExternal)
+            {
+                protocol = _mediaSourceManager.GetPathProtocol(subtitleStream.Path);
+            }
+
+            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, protocol, subtitleStream, cancellationToken).ConfigureAwait(false);
 
             var stream = await GetSubtitleStream(fileInfo.Path, fileInfo.Protocol, fileInfo.IsExternal, cancellationToken).ConfigureAwait(false);
 
@@ -365,7 +373,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <returns>System.Object.</returns>
         private SemaphoreSlim GetLock(string filename)
         {
-            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+            return _semaphoreLocks.GetOrAdd(filename, _ => new SemaphoreSlim(1, 1));
         }
 
         /// <summary>
@@ -426,7 +434,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             // FFmpeg automatically convert character encoding when it is UTF-16
             // If we specify character encoding, it rejects with "do not specify a character encoding" and "Unable to recode subtitle event"
-            if ((inputPath.EndsWith(".smi") || inputPath.EndsWith(".sami")) && (encodingParam == "UTF-16BE" || encodingParam == "UTF-16LE"))
+            if ((inputPath.EndsWith(".smi") || inputPath.EndsWith(".sami")) &&
+                (encodingParam.Equals("UTF-16BE", StringComparison.OrdinalIgnoreCase) ||
+                 encodingParam.Equals("UTF-16LE", StringComparison.OrdinalIgnoreCase)))
             {
                 encodingParam = "";
             }
@@ -721,19 +731,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
 
-                var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
+                ReadOnlySpan<char> filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Substring(0, 1);
+                var prefix = filename.Slice(0, 1);
 
-                return Path.Combine(SubtitleCachePath, prefix, filename);
+                return Path.Join(SubtitleCachePath, prefix, filename);
             }
             else
             {
-                var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
+                ReadOnlySpan<char> filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Substring(0, 1);
+                var prefix = filename.Slice(0, 1);
 
-                return Path.Combine(SubtitleCachePath, prefix, filename);
+                return Path.Join(SubtitleCachePath, prefix, filename);
             }
         }
 

@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("jellyfin")
-                .HasAnnotation("ProductVersion", "3.1.4");
+                .HasAnnotation("ProductVersion", "3.1.6");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -88,6 +88,82 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("ActivityLogs");
                 });
 
+            modelBuilder.Entity("Jellyfin.Data.Entities.DisplayPreferences", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ChromecastVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Client")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(32);
+
+                    b.Property<string>("DashboardTheme")
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(32);
+
+                    b.Property<bool>("EnableNextVideoInfoOverlay")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("IndexBy")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ScrollDirection")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ShowBackdrop")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ShowSidebar")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SkipBackwardLength")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SkipForwardLength")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TvHome")
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(32);
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("DisplayPreferences");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.HomeSection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DisplayPreferencesId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DisplayPreferencesId");
+
+                    b.ToTable("HomeSection");
+                });
+
             modelBuilder.Entity("Jellyfin.Data.Entities.ImageInfo", b =>
                 {
                     b.Property<int>("Id")
@@ -111,6 +187,50 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsUnique();
 
                     b.ToTable("ImageInfos");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.ItemDisplayPreferences", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Client")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(32);
+
+                    b.Property<int?>("IndexBy")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("RememberIndexing")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("RememberSorting")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SortBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasMaxLength(64);
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ViewType")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ItemDisplayPreferences");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>
@@ -282,11 +402,38 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Jellyfin.Data.Entities.DisplayPreferences", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.User", null)
+                        .WithOne("DisplayPreferences")
+                        .HasForeignKey("Jellyfin.Data.Entities.DisplayPreferences", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.HomeSection", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.DisplayPreferences", null)
+                        .WithMany("HomeSections")
+                        .HasForeignKey("DisplayPreferencesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Jellyfin.Data.Entities.ImageInfo", b =>
                 {
                     b.HasOne("Jellyfin.Data.Entities.User", null)
                         .WithOne("ProfileImage")
                         .HasForeignKey("Jellyfin.Data.Entities.ImageInfo", "UserId");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.ItemDisplayPreferences", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.User", null)
+                        .WithMany("ItemDisplayPreferences")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>

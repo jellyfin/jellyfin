@@ -39,12 +39,11 @@ namespace Jellyfin.Server.Implementations.Users
         private readonly IApplicationHost _appHost;
         private readonly IImageProcessor _imageProcessor;
         private readonly ILogger<UserManager> _logger;
-
-        private IAuthenticationProvider[] _authenticationProviders = null!;
-        private DefaultAuthenticationProvider _defaultAuthenticationProvider = null!;
-        private InvalidAuthProvider _invalidAuthProvider = null!;
-        private IPasswordResetProvider[] _passwordResetProviders = null!;
-        private DefaultPasswordResetProvider _defaultPasswordResetProvider = null!;
+        private readonly IReadOnlyCollection<IPasswordResetProvider> _passwordResetProviders;
+        private readonly IReadOnlyCollection<IAuthenticationProvider> _authenticationProviders;
+        private readonly InvalidAuthProvider _invalidAuthProvider;
+        private readonly DefaultAuthenticationProvider _defaultAuthenticationProvider;
+        private readonly DefaultPasswordResetProvider _defaultPasswordResetProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserManager"/> class.
@@ -69,6 +68,13 @@ namespace Jellyfin.Server.Implementations.Users
             _appHost = appHost;
             _imageProcessor = imageProcessor;
             _logger = logger;
+
+            _passwordResetProviders = appHost.GetExports<IPasswordResetProvider>();
+            _authenticationProviders = appHost.GetExports<IAuthenticationProvider>();
+
+            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
+            _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
+            _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
         }
 
         /// <inheritdoc/>
@@ -102,7 +108,16 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public IEnumerable<Guid> UsersIds => _dbProvider.CreateContext().Users.Select(u => u.Id);
+        public IEnumerable<Guid> UsersIds
+        {
+            get
+            {
+                using var dbContext = _dbProvider.CreateContext();
+                return dbContext.Users
+                    .Select(user => user.Id)
+                    .ToList();
+            }
+        }
 
         /// <inheritdoc/>
         public User? GetUserById(Guid id)
@@ -188,8 +203,24 @@ namespace Jellyfin.Server.Implementations.Users
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
+        internal async Task<User> CreateUserInternalAsync(string name, JellyfinDb dbContext)
+        {
+            // TODO: Remove after user item data is migrated.
+            var max = await dbContext.Users.AnyAsync().ConfigureAwait(false)
+                ? await dbContext.Users.Select(u => u.InternalId).MaxAsync().ConfigureAwait(false)
+                : 0;
+
+            return new User(
+                name,
+                _defaultAuthenticationProvider.GetType().FullName,
+                _defaultPasswordResetProvider.GetType().FullName)
+            {
+                InternalId = max + 1
+            };
+        }
+
         /// <inheritdoc/>
-        public User CreateUser(string name)
+        public async Task<User> CreateUserAsync(string name)
         {
             if (!IsValidUsername(name))
             {
@@ -198,18 +229,10 @@ namespace Jellyfin.Server.Implementations.Users
 
             using var dbContext = _dbProvider.CreateContext();
 
-            // TODO: Remove after user item data is migrated.
-            var max = dbContext.Users.Any() ? dbContext.Users.Select(u => u.InternalId).Max() : 0;
+            var newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
 
-            var newUser = new User(
-                name,
-                _defaultAuthenticationProvider.GetType().FullName,
-                _defaultPasswordResetProvider.GetType().FullName)
-            {
-                InternalId = max + 1
-            };
             dbContext.Users.Add(newUser);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             OnUserCreated?.Invoke(this, new GenericEventArgs<User>(newUser));
 
@@ -512,7 +535,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
             else
             {
-                IncrementInvalidLoginAttemptCount(user);
+                await IncrementInvalidLoginAttemptCount(user).ConfigureAwait(false);
                 _logger.LogInformation(
                     "Authentication request for {UserName} has been denied (IP: {IP}).",
                     user.Username,
@@ -530,7 +553,12 @@ namespace Jellyfin.Server.Implementations.Users
             if (user != null && isInNetwork)
             {
                 var passwordResetProvider = GetPasswordResetProvider(user);
-                return await passwordResetProvider.StartForgotPasswordProcess(user, isInNetwork).ConfigureAwait(false);
+                var result = await passwordResetProvider
+                    .StartForgotPasswordProcess(user, isInNetwork)
+                    .ConfigureAwait(false);
+
+                await UpdateUserAsync(user).ConfigureAwait(false);
+                return result;
             }
 
             return new ForgotPasswordResult
@@ -560,48 +588,32 @@ namespace Jellyfin.Server.Implementations.Users
             };
         }
 
-        /// <inheritdoc/>
-        public void AddParts(IEnumerable<IAuthenticationProvider> authenticationProviders, IEnumerable<IPasswordResetProvider> passwordResetProviders)
-        {
-            _authenticationProviders = authenticationProviders.ToArray();
-            _passwordResetProviders = passwordResetProviders.ToArray();
-
-            _invalidAuthProvider = _authenticationProviders.OfType<InvalidAuthProvider>().First();
-            _defaultAuthenticationProvider = _authenticationProviders.OfType<DefaultAuthenticationProvider>().First();
-            _defaultPasswordResetProvider = _passwordResetProviders.OfType<DefaultPasswordResetProvider>().First();
-        }
-
         /// <inheritdoc />
-        public void Initialize()
+        public async Task InitializeAsync()
         {
             // TODO: Refactor the startup wizard so that it doesn't require a user to already exist.
             using var dbContext = _dbProvider.CreateContext();
 
-            if (dbContext.Users.Any())
+            if (await dbContext.Users.AnyAsync().ConfigureAwait(false))
             {
                 return;
             }
 
             var defaultName = Environment.UserName;
-            if (string.IsNullOrWhiteSpace(defaultName))
+            if (string.IsNullOrWhiteSpace(defaultName) || !IsValidUsername(defaultName))
             {
                 defaultName = "MyJellyfinUser";
             }
 
             _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
 
-            if (!IsValidUsername(defaultName))
-            {
-                throw new ArgumentException("Provided username is not valid!", defaultName);
-            }
-
-            var newUser = CreateUser(defaultName);
+            var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
             newUser.SetPermission(PermissionKind.IsAdministrator, true);
             newUser.SetPermission(PermissionKind.EnableContentDeletion, true);
             newUser.SetPermission(PermissionKind.EnableRemoteControlOfOtherUsers, true);
 
-            dbContext.Users.Update(newUser);
-            dbContext.SaveChanges();
+            dbContext.Users.Add(newUser);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -637,7 +649,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void UpdateConfiguration(Guid userId, UserConfiguration config)
         {
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -670,7 +682,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void UpdatePolicy(Guid userId, UserPolicy policy)
         {
-            var dbContext = _dbProvider.CreateContext();
+            using var dbContext = _dbProvider.CreateContext();
             var user = dbContext.Users
                            .Include(u => u.Permissions)
                            .Include(u => u.Preferences)
@@ -749,8 +761,8 @@ namespace Jellyfin.Server.Implementations.Users
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
-            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), and periods (.)
-            return Regex.IsMatch(name, @"^[\w\-'._@]*$");
+            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
+            return Regex.IsMatch(name, @"^[\w\ \-'._@]*$");
         }
 
         private IAuthenticationProvider GetAuthenticationProvider(User user)
@@ -882,7 +894,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
         }
 
-        private void IncrementInvalidLoginAttemptCount(User user)
+        private async Task IncrementInvalidLoginAttemptCount(User user)
         {
             user.InvalidLoginAttemptCount++;
             int? maxInvalidLogins = user.LoginAttemptsBeforeLockout;
@@ -896,7 +908,7 @@ namespace Jellyfin.Server.Implementations.Users
                     user.InvalidLoginAttemptCount);
             }
 
-            UpdateUser(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
         }
     }
 }

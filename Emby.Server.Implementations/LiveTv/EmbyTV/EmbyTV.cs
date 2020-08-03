@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Emby.Server.Implementations.Library;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;

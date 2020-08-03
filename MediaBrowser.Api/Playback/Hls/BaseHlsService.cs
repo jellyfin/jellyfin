@@ -194,7 +194,8 @@ namespace MediaBrowser.Api.Playback.Hls
             var paddedBitrate = Convert.ToInt32(bitrate * 1.15);
 
             // Main stream
-            builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(CultureInfo.InvariantCulture));
+            builder.Append("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=")
+                .AppendLine(paddedBitrate.ToString(CultureInfo.InvariantCulture));
             var playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "/stream.m3u8");
             builder.AppendLine(playlistUrl);
 
