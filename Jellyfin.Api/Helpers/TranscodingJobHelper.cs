@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Helpers
     /// <summary>
     /// Transcoding job helpers.
     /// </summary>
-    public class TranscodingJobHelper
+    public class TranscodingJobHelper : IDisposable
     {
         /// <summary>
         /// The active transcoding jobs.
@@ -46,7 +46,6 @@ namespace Jellyfin.Api.Helpers
         private readonly EncodingHelper _encodingHelper;
         private readonly IFileSystem _fileSystem;
         private readonly IIsoManager _isoManager;
-
         private readonly ILogger<TranscodingJobHelper> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IMediaSourceManager _mediaSourceManager;
@@ -90,10 +89,12 @@ namespace Jellyfin.Api.Helpers
             _authorizationContext = authorizationContext;
             _isoManager = isoManager;
             _loggerFactory = loggerFactory;
-
             _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
 
             DeleteEncodedMediaCache();
+
+            sessionManager!.PlaybackProgress += OnPlaybackProgress;
+            sessionManager!.PlaybackStart += OnPlaybackProgress;
         }
 
         /// <summary>
@@ -834,6 +835,14 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
+        private void OnPlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
+            {
+                PingTranscodingJob(e.PlaySessionId, e.IsPaused);
+            }
+        }
+
         /// <summary>
         /// Deletes the encoded media cache.
         /// </summary>
@@ -848,6 +857,29 @@ namespace Jellyfin.Api.Helpers
             foreach (var file in _fileSystem.GetFilePaths(path, true))
             {
                 _fileSystem.DeleteFile(file);
+            }
+        }
+
+        /// <summary>
+        /// Dispose transcoding job helper.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose throttler.
+        /// </summary>
+        /// <param name="disposing">Disposing.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _loggerFactory.Dispose();
+                _sessionManager!.PlaybackProgress -= OnPlaybackProgress;
+                _sessionManager!.PlaybackStart -= OnPlaybackProgress;
             }
         }
     }
