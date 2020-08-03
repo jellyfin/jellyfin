@@ -521,7 +521,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="tvdbId">The tvdbId.</param>
         /// <response code="204">Report success.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Library/Series/Added")]
+        [HttpPost("/Library/Series/Added", Name = "PostAddedSeries")]
         [HttpPost("/Library/Series/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -551,7 +551,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imdbId">The imdbId.</param>
         /// <response code="204">Report success.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Library/Movies/Added")]
+        [HttpPost("/Library/Movies/Added", Name = "PostAddedMovies")]
         [HttpPost("/Library/Movies/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -679,12 +679,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
         /// <response code="200">Similar items returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>
-        [HttpGet("/Artists/{itemId}/Similar")]
+        [HttpGet("/Artists/{itemId}/Similar", Name = "GetSimilarArtists2")]
         [HttpGet("/Items/{itemId}/Similar")]
-        [HttpGet("/Albums/{itemId}/Similar")]
-        [HttpGet("/Shows/{itemId}/Similar")]
-        [HttpGet("/Movies/{itemId}/Similar")]
-        [HttpGet("/Trailers/{itemId}/Similar")]
+        [HttpGet("/Albums/{itemId}/Similar", Name = "GetSimilarAlbums2")]
+        [HttpGet("/Shows/{itemId}/Similar", Name = "GetSimilarShows2")]
+        [HttpGet("/Movies/{itemId}/Similar", Name = "GetSimilarMovies2")]
+        [HttpGet("/Trailers/{itemId}/Similar", Name = "GetSimilarTrailers2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
             [FromRoute] Guid itemId,

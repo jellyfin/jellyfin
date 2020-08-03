@@ -82,7 +82,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="403">User does not have permission to delete the image.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("/Users/{userId}/Images/{imageType}")]
-        [HttpPost("/Users/{userId}/Images/{imageType}/{index?}")]
+        [HttpPost("/Users/{userId}/Images/{imageType}/{index?}", Name = "PostUserImage_2")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
@@ -128,7 +128,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="403">User does not have permission to delete the image.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpDelete("/Users/{userId}/Images/{itemType}")]
-        [HttpDelete("/Users/{userId}/Images/{itemType}/{index?}")]
+        [HttpDelete("/Users/{userId}/Images/{itemType}/{index?}", Name = "DeleteUserImage_2")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -167,7 +167,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpDelete("/Items/{itemId}/Images/{imageType}")]
-        [HttpDelete("/Items/{itemId}/Images/{imageType}/{imageIndex?}")]
+        [HttpDelete("/Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "DeleteItemImage_2")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpPost("/Items/{itemId}/Images/{imageType}")]
-        [HttpPost("/Items/{itemId}/Images/{imageType}/{imageIndex?}")]
+        [HttpPost("/Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "SetItemImage_2")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -342,9 +342,9 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
         [HttpGet("/Items/{itemId}/Images/{imageType}")]
-        [HttpHead("/Items/{itemId}/Images/{imageType}")]
-        [HttpGet("/Items/{itemId}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("/Items/{itemId}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("/Items/{itemId}/Images/{imageType}", Name = "HeadItemImage")]
+        [HttpGet("/Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "GetItemImage_2")]
+        [HttpHead("/Items/{itemId}/Images/{imageType}/{imageIndex?}", Name = "HeadItemImage_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetItemImage(
@@ -422,7 +422,7 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
         [HttpGet("/Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}")]
-        [HttpHead("/Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}")]
+        [HttpHead("/Items/{itemId}/Images/{imageType}/{imageIndex}/{tag}/{format}/{maxWidth}/{maxHeight}/{percentPlayed}/{unplayedCount}", Name = "HeadItemImage2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetItemImage2(
@@ -500,7 +500,7 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
         [HttpGet("/Artists/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("/Artists/{name}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("/Artists/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadArtistImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetArtistImage(
@@ -578,7 +578,7 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
         [HttpGet("/Genres/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("/Genres/{name}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("/Genres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetGenreImage(
@@ -656,7 +656,7 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
         [HttpGet("/MusicGenres/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("/MusicGenres/{name}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("/MusicGenres/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadMusicGenreImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetMusicGenreImage(
@@ -734,7 +734,7 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
         [HttpGet("/Persons/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("/Persons/{name}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("/Persons/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadPersonImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetPersonImage(
@@ -812,7 +812,7 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
         [HttpGet("/Studios/{name}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("/Studios/{name}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("/Studios/{name}/Images/{imageType}/{imageIndex?}", Name = "HeadStudioImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetStudioImage(
@@ -890,7 +890,7 @@ namespace Jellyfin.Api.Controllers
         /// or a <see cref="NotFoundResult"/> if item not found.
         /// </returns>
         [HttpGet("/Users/{userId}/Images/{imageType}/{imageIndex?}")]
-        [HttpHead("/Users/{userId}/Images/{imageType}/{imageIndex?}")]
+        [HttpHead("/Users/{userId}/Images/{imageType}/{imageIndex?}", Name = "HeadUserImage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> GetUserImage(

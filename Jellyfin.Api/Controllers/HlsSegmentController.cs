@@ -50,8 +50,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileStreamResult"/> containing the audio stream.</returns>
         // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
         // [Authenticated]
-        [HttpGet("/Audio/{itemId}/hls/{segmentId}/stream.mp3")]
-        [HttpGet("/Audio/{itemId}/hls/{segmentId}/stream.aac")]
+        [HttpGet("/Audio/{itemId}/hls/{segmentId}/stream.mp3", Name = "GetHlsAudioSegmentLegacyMp3")]
+        [HttpGet("/Audio/{itemId}/hls/{segmentId}/stream.aac", Name = "GetHlsAudioSegmentLegacyAac")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsAudioSegmentLegacy([FromRoute] string itemId, [FromRoute] string segmentId)

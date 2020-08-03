@@ -198,8 +198,15 @@ namespace Jellyfin.Server.Extensions
                     $"{description.ActionDescriptor.RouteValues["controller"]}_{description.RelativePath}");
 
                 // Use method name as operationId
-                c.CustomOperationIds(description =>
-                    description.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null);
+                c.CustomOperationIds(
+                    description =>
+                    {
+                        description.TryGetMethodInfo(out MethodInfo methodInfo);
+                        // Attribute name, method name, none.
+                        return description?.ActionDescriptor?.AttributeRouteInfo?.Name
+                               ?? methodInfo?.Name
+                               ?? null;
+                    });
 
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();

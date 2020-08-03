@@ -106,7 +106,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Initial user retrieved.</response>
         /// <returns>The first user.</returns>
         [HttpGet("User")]
-        [HttpGet("FirstUser")]
+        [HttpGet("FirstUser", Name = "GetFirstUser_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<StartupUserDto> GetFirstUser()
         {
@@ -131,7 +131,7 @@ namespace Jellyfin.Api.Controllers
         /// </returns>
         [HttpPost("User")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> UpdateUser([FromForm] StartupUserDto startupUserDto)
+        public async Task<ActionResult> UpdateStartupUser([FromForm] StartupUserDto startupUserDto)
         {
             var user = _userManager.Users.First();
 

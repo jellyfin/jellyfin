@@ -165,7 +165,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
         [HttpGet("/Videos/{itemId}/master.m3u8")]
-        [HttpHead("/Videos/{itemId}/master.m3u8")]
+        [HttpHead("/Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsVideoPlaylist(
             [FromRoute] Guid itemId,
@@ -335,7 +335,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
         [HttpGet("/Audio/{itemId}/master.m3u8")]
-        [HttpHead("/Audio/{itemId}/master.m3u8")]
+        [HttpHead("/Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
             [FromRoute] Guid itemId,

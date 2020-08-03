@@ -241,7 +241,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="command">The command to send.</param>
         /// <response code="204">General command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/{sessionId}/Command/{Command}")]
+        [HttpPost("/Sessions/{sessionId}/Command/{command}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendGeneralCommand(
             [FromRoute] string? sessionId,

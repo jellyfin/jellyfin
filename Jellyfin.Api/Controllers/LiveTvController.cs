@@ -127,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Channels")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
-        public ActionResult<QueryResult<BaseItemDto>> GetChannels(
+        public ActionResult<QueryResult<BaseItemDto>> GetLiveTvChannels(
             [FromQuery] ChannelType? type,
             [FromQuery] Guid? userId,
             [FromQuery] int? startIndex,
@@ -535,7 +535,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Programs")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize(Policy = Policies.DefaultAuthorization)]
-        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetPrograms(
+        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetLiveTvPrograms(
             [FromQuery] string? channelIds,
             [FromQuery] Guid? userId,
             [FromQuery] DateTime? minStartDate,
@@ -933,7 +933,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Obsolete("This endpoint is obsolete.")]
-        public ActionResult<BaseItemDto> GetRecordingGroup([FromQuery] Guid? groupId)
+        public ActionResult<BaseItemDto> GetRecordingGroup([FromRoute] Guid? groupId)
         {
             return NotFound();
         }

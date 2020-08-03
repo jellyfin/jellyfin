@@ -47,7 +47,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("New")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult CreateNewGroup()
+        public ActionResult SyncPlayCreateGroup()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             _syncPlayManager.NewGroup(currentSession, CancellationToken.None);
@@ -62,7 +62,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Join")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult JoinGroup([FromQuery, Required] Guid groupId)
+        public ActionResult SyncPlayJoinGroup([FromQuery, Required] Guid groupId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
 
@@ -82,7 +82,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Leave")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult LeaveGroup()
+        public ActionResult SyncPlayLeaveGroup()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             _syncPlayManager.LeaveGroup(currentSession, CancellationToken.None);
@@ -97,7 +97,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="IEnumerable{GrouüInfoView}"/> containing the available SyncPlay groups.</returns>
         [HttpGet("List")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<GroupInfoView>> GetSyncPlayGroups([FromQuery] Guid? filterItemId)
+        public ActionResult<IEnumerable<GroupInfoView>> SyncPlayGetGroups([FromQuery] Guid? filterItemId)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             return Ok(_syncPlayManager.ListGroups(currentSession, filterItemId.HasValue ? filterItemId.Value : Guid.Empty));
@@ -110,7 +110,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Play")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult Play()
+        public ActionResult SyncPlayPlay()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlaybackRequest()
@@ -128,7 +128,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Pause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult Pause()
+        public ActionResult SyncPlayPause()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlaybackRequest()
@@ -147,7 +147,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Seek")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult Seek([FromQuery] long positionTicks)
+        public ActionResult SyncPlaySeek([FromQuery] long positionTicks)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlaybackRequest()
@@ -169,7 +169,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Buffering")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult Buffering([FromQuery] DateTime when, [FromQuery] long positionTicks, [FromQuery] bool bufferingDone)
+        public ActionResult SyncPlayBuffering([FromQuery] DateTime when, [FromQuery] long positionTicks, [FromQuery] bool bufferingDone)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlaybackRequest()
@@ -190,7 +190,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Ping")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult Ping([FromQuery] double ping)
+        public ActionResult SyncPlayPing([FromQuery] double ping)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
             var syncPlayRequest = new PlaybackRequest()
