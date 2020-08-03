@@ -48,6 +48,7 @@ namespace Jellyfin.Data.Entities
             PasswordResetProviderId = passwordResetProviderId;
 
             AccessSchedules = new HashSet<AccessSchedule>();
+            ItemDisplayPreferences = new HashSet<ItemDisplayPreferences>();
             // Groups = new HashSet<Group>();
             Permissions = new HashSet<Permission>();
             Preferences = new HashSet<Preference>();
@@ -327,6 +328,15 @@ namespace Jellyfin.Data.Entities
         // [ForeignKey("UserId")]
         public virtual ImageInfo ProfileImage { get; set; }
 
+        /// <summary>
+        /// Gets or sets the user's display preferences.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        [Required]
+        public virtual DisplayPreferences DisplayPreferences { get; set; }
+
         [Required]
         public SyncPlayAccess SyncPlayAccess { get; set; }
 
@@ -348,6 +358,11 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the list of access schedules this user has.
         /// </summary>
         public virtual ICollection<AccessSchedule> AccessSchedules { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the list of item display preferences.
+        /// </summary>
+        public virtual ICollection<ItemDisplayPreferences> ItemDisplayPreferences { get; protected set; }
 
         /*
         /// <summary>

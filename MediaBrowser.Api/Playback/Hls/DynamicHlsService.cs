@@ -361,7 +361,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistFilename = Path.GetFileNameWithoutExtension(playlist);
 
-            var indexString = Path.GetFileNameWithoutExtension(file.Name).Substring(playlistFilename.Length);
+            var indexString = Path.GetFileNameWithoutExtension(file.Name).AsSpan().Slice(playlistFilename.Length);
 
             return int.Parse(indexString, NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
@@ -960,7 +960,8 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXTM3U");
             builder.AppendLine("#EXT-X-PLAYLIST-TYPE:VOD");
             builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength).ToString(CultureInfo.InvariantCulture));
+            builder.Append("#EXT-X-TARGETDURATION:")
+                .AppendLine(Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength).ToString(CultureInfo.InvariantCulture));
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
@@ -975,14 +976,17 @@ namespace MediaBrowser.Api.Playback.Hls
 
             foreach (var length in segmentLengths)
             {
-                builder.AppendLine("#EXTINF:" + length.ToString("0.0000", CultureInfo.InvariantCulture) + ", nodesc");
+                builder.Append("#EXTINF:")
+                    .Append(length.ToString("0.0000", CultureInfo.InvariantCulture))
+                    .AppendLine(", nodesc");
 
-                builder.AppendLine(string.Format("hls1/{0}/{1}{2}{3}",
-
+                builder.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    "hls1/{0}/{1}{2}{3}",
                     name,
                     index.ToString(CultureInfo.InvariantCulture),
                     GetSegmentFileExtension(request),
-                    queryString));
+                    queryString).AppendLine();
 
                 index++;
             }

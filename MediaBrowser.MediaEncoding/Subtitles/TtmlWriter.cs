@@ -6,8 +6,12 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
+    /// <summary>
+    /// TTML subtitle writer.
+    /// </summary>
     public class TtmlWriter : ISubtitleWriter
     {
+        /// <inheritdoc />
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
         {
             // Example: https://github.com/zmalltalker/ttml2vtt/blob/master/data/sample.xml
@@ -36,9 +40,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     text = Regex.Replace(text, @"\\n", "<br/>", RegexOptions.IgnoreCase);
 
-                    writer.WriteLine("<p begin=\"{0}\" dur=\"{1}\">{2}</p>",
+                    writer.WriteLine(
+                        "<p begin=\"{0}\" dur=\"{1}\">{2}</p>",
                         trackEvent.StartPositionTicks,
-                        (trackEvent.EndPositionTicks - trackEvent.StartPositionTicks),
+                        trackEvent.EndPositionTicks - trackEvent.StartPositionTicks,
                         text);
                 }
 

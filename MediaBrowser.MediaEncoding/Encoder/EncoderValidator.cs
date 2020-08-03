@@ -198,7 +198,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         internal static Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
-            var match = Regex.Match(output, @"^ffmpeg version n?((?:\d+\.?)+)");
+            var match = Regex.Match(output, @"^ffmpeg version n?((?:[0-9]+\.?)+)");
 
             if (match.Success)
             {
@@ -225,7 +225,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var rc = new StringBuilder(144);
             foreach (Match m in Regex.Matches(
                 output,
-                @"((?<name>lib\w+)\s+(?<major>\d+)\.\s*(?<minor>\d+))",
+                @"((?<name>lib\w+)\s+(?<major>[0-9]+)\.\s*(?<minor>[0-9]+))",
                 RegexOptions.Multiline))
             {
                 rc.Append(m.Groups["name"])

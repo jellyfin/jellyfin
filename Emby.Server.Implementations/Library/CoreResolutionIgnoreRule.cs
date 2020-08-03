@@ -77,7 +77,7 @@ namespace Emby.Server.Implementations.Library
                 if (parent != null)
                 {
                     // Don't resolve these into audio files
-                    if (string.Equals(Path.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename)
+                    if (string.Equals(Path.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename, StringComparison.Ordinal)
                         && _libraryManager.IsAudioFile(filename))
                     {
                         return true;
