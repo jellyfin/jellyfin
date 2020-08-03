@@ -455,7 +455,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<UserDto>> CreateUserByName([FromBody] CreateUserByName request)
         {
-            var newUser = _userManager.CreateUser(request.Name);
+            var newUser = await _userManager.CreateUserAsync(request.Name).ConfigureAwait(false);
 
             // no need to authenticate password for new user
             if (request.Password != null)
