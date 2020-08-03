@@ -43,7 +43,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
         private readonly IAuthorizationContext _authContext;
-        private readonly ILogger _logger;
+        private readonly ILogger<MediaInfoController> _logger;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>

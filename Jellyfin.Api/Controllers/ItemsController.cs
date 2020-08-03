@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Controllers
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
         private readonly IDtoService _dtoService;
-        private readonly ILogger _logger;
+        private readonly ILogger<ItemsController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsController"/> class.

@@ -49,7 +49,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
-        private readonly ILogger _logger;
+        private readonly ILogger<VideoHlsController> _logger;
         private readonly EncodingOptions _encodingOptions;
 
         /// <summary>
