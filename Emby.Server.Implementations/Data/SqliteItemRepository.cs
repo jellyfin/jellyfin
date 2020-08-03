@@ -1072,21 +1072,21 @@ namespace Emby.Server.Implementations.Data
 
         public void AppendItemImageInfo(StringBuilder bldr, ItemImageInfo image)
         {
-            const char Delimeter = '*';
+            const char Delimiter = '*';
 
             var path = image.Path ?? string.Empty;
             var hash = image.BlurHash ?? string.Empty;
 
             bldr.Append(GetPathToSave(path))
-                .Append(Delimeter)
+                .Append(Delimiter)
                 .Append(image.DateModified.Ticks)
-                .Append(Delimeter)
+                .Append(Delimiter)
                 .Append(image.Type)
-                .Append(Delimeter)
+                .Append(Delimiter)
                 .Append(image.Width)
-                .Append(Delimeter)
+                .Append(Delimiter)
                 .Append(image.Height)
-                .Append(Delimeter)
+                .Append(Delimiter)
                 // Replace delimiters with other characters.
                 // This can be removed when we migrate to a proper DB.
                 .Append(hash.Replace('*', '/').Replace('|', '\\'));
