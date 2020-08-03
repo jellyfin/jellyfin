@@ -600,17 +600,12 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var defaultName = Environment.UserName;
-            if (string.IsNullOrWhiteSpace(defaultName))
+            if (string.IsNullOrWhiteSpace(defaultName) || !IsValidUsername(defaultName))
             {
                 defaultName = "MyJellyfinUser";
             }
 
             _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
-
-            if (!IsValidUsername(defaultName))
-            {
-                throw new ArgumentException("Provided username is not valid!", defaultName);
-            }
 
             var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
             newUser.SetPermission(PermissionKind.IsAdministrator, true);

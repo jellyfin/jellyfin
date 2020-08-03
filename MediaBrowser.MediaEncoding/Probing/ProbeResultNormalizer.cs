@@ -1377,7 +1377,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             // OR -> COMMENT. SUBTITLE: DESCRIPTION
             // e.g. -> 4/13. The Doctor's Wife: Science fiction drama. When he follows a Time Lord distress signal, the Doctor puts Amy, Rory and his beloved TARDIS in grave danger. Also in HD. [AD,S]
             // e.g. -> CBeebies Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abney and Teal's favourite objects are missing. [S]
-            if (string.IsNullOrWhiteSpace(subTitle) && !string.IsNullOrWhiteSpace(description) && description.Substring(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).Contains(":")) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
+            if (string.IsNullOrWhiteSpace(subTitle)
+                && !string.IsNullOrWhiteSpace(description)
+                && description.AsSpan().Slice(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).IndexOf(':') != -1) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
             {
                 string[] parts = description.Split(':');
                 if (parts.Length > 0)
@@ -1385,7 +1387,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     string subtitle = parts[0];
                     try
                     {
-                        if (subtitle.Contains("/")) // It contains a episode number and season number
+                        if (subtitle.Contains('/', StringComparison.Ordinal)) // It contains a episode number and season number
                         {
                             string[] numbers = subtitle.Split(' ');
                             video.IndexNumber = int.Parse(numbers[0].Replace(".", "").Split('/')[0]);
@@ -1400,8 +1402,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                     }
                     catch // Default parsing
                     {
-                        if (subtitle.Contains(".")) // skip the comment, keep the subtitle
+                        if (subtitle.Contains('.', StringComparison.Ordinal))
+                        {
+                            // skip the comment, keep the subtitle
                             description = string.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                        }
                         else
                         {
                             description = subtitle.Trim(); // Clean up whitespaces and save it

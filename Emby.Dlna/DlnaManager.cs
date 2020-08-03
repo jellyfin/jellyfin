@@ -122,15 +122,15 @@ namespace Emby.Dlna
             var builder = new StringBuilder();
 
             builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.AppendLine(string.Format("DeviceDescription:{0}", profile.DeviceDescription ?? string.Empty));
-            builder.AppendLine(string.Format("FriendlyName:{0}", profile.FriendlyName ?? string.Empty));
-            builder.AppendLine(string.Format("Manufacturer:{0}", profile.Manufacturer ?? string.Empty));
-            builder.AppendLine(string.Format("ManufacturerUrl:{0}", profile.ManufacturerUrl ?? string.Empty));
-            builder.AppendLine(string.Format("ModelDescription:{0}", profile.ModelDescription ?? string.Empty));
-            builder.AppendLine(string.Format("ModelName:{0}", profile.ModelName ?? string.Empty));
-            builder.AppendLine(string.Format("ModelNumber:{0}", profile.ModelNumber ?? string.Empty));
-            builder.AppendLine(string.Format("ModelUrl:{0}", profile.ModelUrl ?? string.Empty));
-            builder.AppendLine(string.Format("SerialNumber:{0}", profile.SerialNumber ?? string.Empty));
+            builder.AppendFormat(CultureInfo.InvariantCulture, "DeviceDescription:{0}", profile.DeviceDescription ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "FriendlyName:{0}", profile.FriendlyName ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "Manufacturer:{0}", profile.Manufacturer ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "ManufacturerUrl:{0}", profile.ManufacturerUrl ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelDescription:{0}", profile.ModelDescription ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelName:{0}", profile.ModelName ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelNumber:{0}", profile.ModelNumber ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "ModelUrl:{0}", profile.ModelUrl ?? string.Empty).AppendLine();
+            builder.AppendFormat(CultureInfo.InvariantCulture, "SerialNumber:{0}", profile.SerialNumber ?? string.Empty).AppendLine();
 
             _logger.LogInformation(builder.ToString());
         }

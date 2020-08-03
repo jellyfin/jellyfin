@@ -1,22 +1,18 @@
 #nullable disable
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
     /// Defines the display preferences for any item that supports them (usually Folders).
     /// </summary>
-    public class DisplayPreferences
+    public class DisplayPreferencesDto
     {
         /// <summary>
-        /// The image scale.
+        /// Initializes a new instance of the <see cref="DisplayPreferencesDto" /> class.
         /// </summary>
-        private const double ImageScale = .9;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DisplayPreferences" /> class.
-        /// </summary>
-        public DisplayPreferences()
+        public DisplayPreferencesDto()
         {
             RememberIndexing = false;
             PrimaryImageHeight = 250;

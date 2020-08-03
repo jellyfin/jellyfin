@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Models.Movies
 
         public BelongsToCollection Belongs_To_Collection { get; set; }
 
-        public int Budget { get; set; }
+        public long Budget { get; set; }
 
         public List<Genre> Genres { get; set; }
 
@@ -39,7 +39,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Models.Movies
 
         public string Release_Date { get; set; }
 
-        public int Revenue { get; set; }
+        public long Revenue { get; set; }
 
         public int Runtime { get; set; }
 

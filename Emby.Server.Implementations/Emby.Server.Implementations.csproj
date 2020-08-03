@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="IPNetwork2" Version="2.5.211" />
-    <PackageReference Include="Jellyfin.XmlTv" Version="10.6.0-pre1" />
+    <PackageReference Include="Jellyfin.XmlTv" Version="10.6.2" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
@@ -54,7 +54,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'" >true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

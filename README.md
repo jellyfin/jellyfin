@@ -162,6 +162,7 @@ The following sections describe some more advanced scenarios for running the ser
 
 It is not necessary to host the frontend web client as part of the backend server. Hosting these two components separately may be useful for frontend developers who would prefer to host the client in a separate webpack development server for a tighter development loop. See the [jellyfin-web](https://github.com/jellyfin/jellyfin-web#getting-started) repo for instructions on how to do this.
 
-To instruct the server not to host the web content, there is a `nowebcontent` configuration flag that must be set. This can specified using the command line switch `--nowebcontent` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
+To instruct the server not to host the web content, there is a `nowebclient` configuration flag that must be set. This can specified using the command line
+switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
