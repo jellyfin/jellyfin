@@ -1647,57 +1647,26 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 outputSizeParam = GetOutputSizeParam(state, options, outputVideoCodec).TrimEnd('"');
 
-                var index = outputSizeParam.IndexOf("hwupload,tonemap_opencl", StringComparison.OrdinalIgnoreCase);
-                if (index != -1)
+                // All possible beginning of video filters
+                // Don't break the order
+                string[] beginOfParam = new[]
                 {
-                    outputSizeParam = outputSizeParam.Slice(index);
-                }
-                else
+                    "hwupload,tonemap_opencl",
+                    "hwupload=extra_hw_frames",
+                    "vpp",
+                    "hwdownload",
+                    "format",
+                    "yadif",
+                    "scale"
+                };
+
+                for (int i = 0, index = -1; i < beginOfParam.Length; i++)
                 {
-                    index = outputSizeParam.IndexOf("hwdownload", StringComparison.OrdinalIgnoreCase);
+                    index = outputSizeParam.IndexOf(beginOfParam[i], StringComparison.OrdinalIgnoreCase);
                     if (index != -1)
                     {
                         outputSizeParam = outputSizeParam.Slice(index);
-                    }
-                    else
-                    {
-                        index = outputSizeParam.IndexOf("hwupload=extra_hw_frames", StringComparison.OrdinalIgnoreCase);
-                        if (index != -1)
-                        {
-                            outputSizeParam = outputSizeParam.Slice(index);
-                        }
-                        else
-                        {
-                            index = outputSizeParam.IndexOf("format", StringComparison.OrdinalIgnoreCase);
-                            if (index != -1)
-                            {
-                                outputSizeParam = outputSizeParam.Slice(index);
-                            }
-                            else
-                            {
-                                index = outputSizeParam.IndexOf("yadif", StringComparison.OrdinalIgnoreCase);
-                                if (index != -1)
-                                {
-                                    outputSizeParam = outputSizeParam.Slice(index);
-                                }
-                                else
-                                {
-                                    index = outputSizeParam.IndexOf("scale", StringComparison.OrdinalIgnoreCase);
-                                    if (index != -1)
-                                    {
-                                        outputSizeParam = outputSizeParam.Slice(index);
-                                    }
-                                    else
-                                    {
-                                        index = outputSizeParam.IndexOf("vpp", StringComparison.OrdinalIgnoreCase);
-                                        if (index != -1)
-                                        {
-                                            outputSizeParam = outputSizeParam.Slice(index);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        break;
                     }
                 }
             }
