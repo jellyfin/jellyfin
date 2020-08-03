@@ -48,6 +48,28 @@ namespace MediaBrowser.Providers.TV
 
         public async Task<bool> Run(Series series, bool addNewItems, CancellationToken cancellationToken)
         {
+            var allRecursiveChildren = series.GetRecursiveChildren();
+
+            // If this is disabled, then nuke all virtual crap from orbit and skip fetching the data like a big boi
+            if (!_libraryManager.GetLibraryOptions(series).ImportMissingEpisodes)
+            {
+                var deleteOption = new DeleteOptions
+                {
+                    DeleteFileLocation = true
+                };
+
+                foreach (var child in allRecursiveChildren)
+                {
+                    if ((child is Season || child is Episode) && child.IsVirtualItem)
+                    {
+                        _libraryManager.DeleteItem(child, deleteOption, false);
+                    }
+                }
+
+                // TODO The return value isn't actually used, so why should I keep track?
+                return true;
+            }
+
             var tvdbId = series.GetProviderId(MetadataProvider.Tvdb);
             if (string.IsNullOrEmpty(tvdbId))
             {
@@ -68,8 +90,6 @@ namespace MediaBrowser.Providers.TV
                 .OrderBy(i => i.seasonNumber)
                 .ThenBy(i => i.episodeNumber)
                 .ToList();
-
-            var allRecursiveChildren = series.GetRecursiveChildren();
 
             var hasBadData = HasInvalidContent(allRecursiveChildren);
 
