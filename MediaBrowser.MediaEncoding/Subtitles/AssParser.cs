@@ -25,7 +25,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 string line;
                 while (reader.ReadLine() != "[Events]")
-                { }
+                {
+                }
 
                 var headers = ParseFieldHeaders(reader.ReadLine());
 
@@ -75,17 +76,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             var fields = line.Substring(8).Split(',').Select(x => x.Trim()).ToList();
 
-            var result = new Dictionary<string, int> {
-                                                         {"Start", fields.IndexOf("Start")},
-                                                         {"End", fields.IndexOf("End")},
-                                                         {"Text", fields.IndexOf("Text")}
-                                                     };
-            return result;
+            return new Dictionary<string, int>
+            {
+                { "Start", fields.IndexOf("Start") },
+                { "End", fields.IndexOf("End") },
+                { "Text", fields.IndexOf("Text") }
+            };
         }
 
-        /// <summary>
-        /// Credit: https://github.com/SubtitleEdit/subtitleedit/blob/master/src/Logic/SubtitleFormats/AdvancedSubStationAlpha.cs
-        /// </summary>
         private void RemoteNativeFormatting(SubtitleTrackEvent p)
         {
             int indexOfBegin = p.Text.IndexOf('{');
