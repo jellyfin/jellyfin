@@ -27,7 +27,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// User controller.
     /// </summary>
-    [Route("/Users")]
+    [Route("Users")]
     public class UserController : BaseJellyfinApiController
     {
         private readonly IUserManager _userManager;
@@ -450,7 +450,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="request">The create user by name request body.</param>
         /// <response code="200">User created.</response>
         /// <returns>An <see cref="UserDto"/> of the new user.</returns>
-        [HttpPost("/Users/New")]
+        [HttpPost("New")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<UserDto>> CreateUserByName([FromBody] CreateUserByName request)

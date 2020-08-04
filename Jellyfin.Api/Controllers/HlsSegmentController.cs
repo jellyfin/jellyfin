@@ -19,6 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The hls segment controller.
     /// </summary>
+    [Route("")]
     public class HlsSegmentController : BaseJellyfinApiController
     {
         private readonly IFileSystem _fileSystem;
@@ -50,8 +51,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileStreamResult"/> containing the audio stream.</returns>
         // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
         // [Authenticated]
-        [HttpGet("/Audio/{itemId}/hls/{segmentId}/stream.mp3", Name = "GetHlsAudioSegmentLegacyMp3")]
-        [HttpGet("/Audio/{itemId}/hls/{segmentId}/stream.aac", Name = "GetHlsAudioSegmentLegacyAac")]
+        [HttpGet("Audio/{itemId}/hls/{segmentId}/stream.mp3", Name = "GetHlsAudioSegmentLegacyMp3")]
+        [HttpGet("Audio/{itemId}/hls/{segmentId}/stream.aac", Name = "GetHlsAudioSegmentLegacyAac")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsAudioSegmentLegacy([FromRoute] string itemId, [FromRoute] string segmentId)
@@ -70,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playlistId">The playlist id.</param>
         /// <response code="200">Hls video playlist returned.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the playlist.</returns>
-        [HttpGet("/Videos/{itemId}/hls/{playlistId}/stream.m3u8")]
+        [HttpGet("Videos/{itemId}/hls/{playlistId}/stream.m3u8")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
@@ -89,7 +90,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playSessionId">The play session id.</param>
         /// <response code="204">Encoding stopped successfully.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpDelete("/Videos/ActiveEncodings")]
+        [HttpDelete("Videos/ActiveEncodings")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult StopEncodingProcess([FromQuery] string deviceId, [FromQuery] string playSessionId)
@@ -109,7 +110,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileStreamResult"/> containing the video segment.</returns>
         // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
         // [Authenticated]
-        [HttpGet("/Videos/{itemId}/hls/{playlistId}/{segmentId}.{segmentContainer}")]
+        [HttpGet("Videos/{itemId}/hls/{playlistId}/{segmentId}.{segmentContainer}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsVideoSegmentLegacy(

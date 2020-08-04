@@ -13,7 +13,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Activity log controller.
     /// </summary>
-    [Route("/System/ActivityLog")]
+    [Route("System/ActivityLog")]
     [Authorize(Policy = Policies.RequiresElevation)]
     public class ActivityLogController : BaseJellyfinApiController
     {

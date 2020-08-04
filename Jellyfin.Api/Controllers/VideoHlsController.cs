@@ -30,6 +30,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The video hls controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class VideoHlsController : BaseJellyfinApiController
     {
@@ -158,7 +159,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableSubtitlesInManifest">Optional. Whether to enable subtitles in the manifest.</param>
         /// <response code="200">Hls live stream retrieved.</response>
         /// <returns>A <see cref="FileResult"/> containing the hls file.</returns>
-        [HttpGet("/Videos/{itemId}/live.m3u8")]
+        [HttpGet("Videos/{itemId}/live.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetLiveHlsStream(
             [FromRoute] Guid itemId,
@@ -271,7 +272,7 @@ namespace Jellyfin.Api.Controllers
             };
 
             var cancellationTokenSource = new CancellationTokenSource();
-            var state = await StreamingHelpers.GetStreamingState(
+            using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
                     _authContext,

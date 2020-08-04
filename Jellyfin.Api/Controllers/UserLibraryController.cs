@@ -25,6 +25,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// User library controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class UserLibraryController : BaseJellyfinApiController
     {
@@ -67,7 +68,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Item returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the d item.</returns>
-        [HttpGet("/Users/{userId}/Items/{itemId}")]
+        [HttpGet("Users/{userId}/Items/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<BaseItemDto>> GetItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {
@@ -90,7 +91,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">User id.</param>
         /// <response code="200">Root folder returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the user's root folder.</returns>
-        [HttpGet("/Users/{userId}/Items/Root")]
+        [HttpGet("Users/{userId}/Items/Root")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<BaseItemDto> GetRootFolder([FromRoute] Guid userId)
         {
@@ -107,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Intros returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the intros to play.</returns>
-        [HttpGet("/Users/{userId}/Items/{itemId}/Intros")]
+        [HttpGet("Users/{userId}/Items/{itemId}/Intros")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<QueryResult<BaseItemDto>>> GetIntros([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {
@@ -135,7 +136,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Item marked as favorite.</response>
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-        [HttpPost("/Users/{userId}/FavoriteItems/{itemId}")]
+        [HttpPost("Users/{userId}/FavoriteItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> MarkFavoriteItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {
@@ -149,7 +150,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Item unmarked as favorite.</response>
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-        [HttpDelete("/Users/{userId}/FavoriteItems/{itemId}")]
+        [HttpDelete("Users/{userId}/FavoriteItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> UnmarkFavoriteItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {
@@ -163,7 +164,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Personal rating removed.</response>
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-        [HttpDelete("/Users/{userId}/Items/{itemId}/Rating")]
+        [HttpDelete("Users/{userId}/Items/{itemId}/Rating")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> DeleteUserItemRating([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {
@@ -178,7 +179,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="likes">Whether this <see cref="UpdateUserItemRating" /> is likes.</param>
         /// <response code="200">Item rating updated.</response>
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-        [HttpPost("/Users/{userId}/Items/{itemId}/Rating")]
+        [HttpPost("Users/{userId}/Items/{itemId}/Rating")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> UpdateUserItemRating([FromRoute] Guid userId, [FromRoute] Guid itemId, [FromQuery] bool? likes)
         {
@@ -192,7 +193,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">An <see cref="OkResult"/> containing the item's local trailers.</response>
         /// <returns>The items local trailers.</returns>
-        [HttpGet("/Users/{userId}/Items/{itemId}/LocalTrailers")]
+        [HttpGet("Users/{userId}/Items/{itemId}/LocalTrailers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<BaseItemDto>> GetLocalTrailers([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {
@@ -227,7 +228,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Special features returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the special features.</returns>
-        [HttpGet("/Users/{userId}/Items/{itemId}/SpecialFeatures")]
+        [HttpGet("Users/{userId}/Items/{itemId}/SpecialFeatures")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<BaseItemDto>> GetSpecialFeatures([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {
@@ -260,7 +261,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="groupItems">Whether or not to group items into a parent container.</param>
         /// <response code="200">Latest media returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the latest media.</returns>
-        [HttpGet("/Users/{userId}/Items/Latest")]
+        [HttpGet("Users/{userId}/Items/Latest")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<BaseItemDto>> GetLatestMedia(
             [FromRoute] Guid userId,

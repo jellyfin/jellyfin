@@ -23,6 +23,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The items controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ItemsController : BaseJellyfinApiController
     {
@@ -139,8 +140,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
         /// <param name="enableImages">Optional, include image information in output.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items.</returns>
-        [HttpGet("/Items")]
-        [HttpGet("/Users/{uId}/Items", Name = "GetItems_2")]
+        [HttpGet("Items")]
+        [HttpGet("Users/{uId}/Items", Name = "GetItems_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
             [FromRoute] Guid? uId,
@@ -523,7 +524,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImages">Optional. Include image information in output.</param>
         /// <response code="200">Items returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items that are resumable.</returns>
-        [HttpGet("/Users/{userId}/Items/Resume")]
+        [HttpGet("Users/{userId}/Items/Resume")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetResumeItems(
             [FromRoute] Guid userId,

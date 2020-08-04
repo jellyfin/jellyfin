@@ -20,6 +20,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The dashboard controller.
     /// </summary>
+    [Route("")]
     public class DashboardController : BaseJellyfinApiController
     {
         private readonly ILogger<DashboardController> _logger;
@@ -64,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">ConfigurationPages returned.</response>
         /// <response code="404">Server still loading.</response>
         /// <returns>An <see cref="IEnumerable{ConfigurationPageInfo}"/> with infos about the plugins.</returns>
-        [HttpGet("/web/ConfigurationPages")]
+        [HttpGet("web/ConfigurationPages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ConfigurationPageInfo?>> GetConfigurationPages(
@@ -118,7 +119,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">ConfigurationPage returned.</response>
         /// <response code="404">Plugin configuration page not found.</response>
         /// <returns>The configuration page.</returns>
-        [HttpGet("/web/ConfigurationPage")]
+        [HttpGet("web/ConfigurationPage")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult GetDashboardConfigurationPage([FromQuery] string? name)
@@ -172,7 +173,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Robots.txt returned.</response>
         /// <returns>The robots.txt.</returns>
-        [HttpGet("/robots.txt")]
+        [HttpGet("robots.txt")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult GetRobotsTxt()
@@ -187,7 +188,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Web client returned.</response>
         /// <response code="404">Server does not host a web client.</response>
         /// <returns>The resource.</returns>
-        [HttpGet("/web/{*resourceName}")]
+        [HttpGet("web/{*resourceName}")]
         [ApiExplorerSettings(IgnoreApi = true)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -218,7 +219,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Favicon.ico returned.</response>
         /// <returns>The favicon.</returns>
-        [HttpGet("/favicon.ico")]
+        [HttpGet("favicon.ico")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ApiExplorerSettings(IgnoreApi = true)]
         public ActionResult GetFavIcon()

@@ -24,7 +24,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The library structure controller.
     /// </summary>
-    [Route("/Library/VirtualFolders")]
+    [Route("Library/VirtualFolders")]
     [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
     public class LibraryStructureController : BaseJellyfinApiController
     {

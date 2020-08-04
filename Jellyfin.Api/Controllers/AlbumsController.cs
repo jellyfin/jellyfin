@@ -17,6 +17,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The albums controller.
     /// </summary>
+    [Route("")]
     public class AlbumsController : BaseJellyfinApiController
     {
         private readonly IUserManager _userManager;
@@ -48,7 +49,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <response code="200">Similar albums returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with similar albums.</returns>
-        [HttpGet("/Albums/{albumId}/Similar")]
+        [HttpGet("Albums/{albumId}/Similar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarAlbums(
             [FromRoute] string albumId,
@@ -80,7 +81,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <response code="200">Similar artists returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with similar artists.</returns>
-        [HttpGet("/Artists/{artistId}/Similar")]
+        [HttpGet("Artists/{artistId}/Similar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarArtists(
             [FromRoute] string artistId,

@@ -13,8 +13,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Item Refresh Controller.
     /// </summary>
-    /// [Authenticated]
-    [Route("/Items")]
+    [Route("Items")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ItemRefreshController : BaseJellyfinApiController
     {

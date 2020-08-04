@@ -24,6 +24,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Item update controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.RequiresElevation)]
     public class ItemUpdateController : BaseJellyfinApiController
     {
@@ -63,7 +64,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Item updated.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
-        [HttpPost("/Items/{itemId}")]
+        [HttpPost("Items/{itemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateItem([FromRoute] Guid itemId, [FromBody, BindRequired] BaseItemDto request)
@@ -136,7 +137,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Item metadata editor returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>An <see cref="OkResult"/> on success containing the metadata editor, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
-        [HttpGet("/Items/{itemId}/MetadataEditor")]
+        [HttpGet("Items/{itemId}/MetadataEditor")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<MetadataEditorInfo> GetMetadataEditorInfo([FromRoute] Guid itemId)
@@ -190,7 +191,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Item content type updated.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>An <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the item could not be found.</returns>
-        [HttpPost("/Items/{itemId}/ContentType")]
+        [HttpPost("Items/{itemId}/ContentType")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateItemContentType([FromRoute] Guid itemId, [FromQuery, BindRequired] string? contentType)

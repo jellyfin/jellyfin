@@ -18,6 +18,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Filters controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class FilterController : BaseJellyfinApiController
     {
@@ -44,7 +45,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="mediaTypes">Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
         /// <response code="200">Legacy filters retrieved.</response>
         /// <returns>Legacy query filters.</returns>
-        [HttpGet("/Items/Filters")]
+        [HttpGet("Items/Filters")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryFiltersLegacy> GetQueryFiltersLegacy(
             [FromQuery] Guid? userId,
@@ -133,7 +134,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="recursive">Optional. Search recursive.</param>
         /// <response code="200">Filters retrieved.</response>
         /// <returns>Query filters.</returns>
-        [HttpGet("/Items/Filters2")]
+        [HttpGet("Items/Filters2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryFilters> GetQueryFilters(
             [FromQuery] Guid? userId,

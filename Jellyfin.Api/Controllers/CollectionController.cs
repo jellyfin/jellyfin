@@ -15,8 +15,8 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The collection controller.
     /// </summary>
+    [Route("Collections")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
-    [Route("/Collections")]
     public class CollectionController : BaseJellyfinApiController
     {
         private readonly ICollectionManager _collectionManager;

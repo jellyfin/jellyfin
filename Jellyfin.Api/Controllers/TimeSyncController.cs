@@ -9,7 +9,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The time sync controller.
     /// </summary>
-    [Route("/GetUtcTime")]
+    [Route("GetUtcTime")]
     public class TimeSyncController : BaseJellyfinApiController
     {
         /// <summary>

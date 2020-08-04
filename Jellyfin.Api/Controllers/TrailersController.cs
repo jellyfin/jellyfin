@@ -108,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
         /// <param name="enableImages">Optional, include image information in output.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the trailers.</returns>
-        [HttpGet("/Trailers")]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetTrailers(
             [FromQuery] Guid? userId,
