@@ -242,7 +242,10 @@ namespace NetworkTesting
 
             _ = nm.TryParseInterface(result, out IPNetAddress resultObj);
 
-            Assert.True(nm.GetBindInterface(source).Equals(resultObj.Address));
+            result = resultObj.Address.ToString();
+            var intf = nm.GetBindInterface(source);
+            
+            Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
             
         }
 
