@@ -279,6 +279,9 @@ namespace NetworkTesting
         // User assumed to be internal, no binding - so result is the 1st internal.
         [InlineData("", "", false, "0.0.0.0=http://helloworld.com", "eth16")]
 
+        // User is internal, no binding - so result is the 1st internal, which is then overridden.
+        [InlineData("192.168.1.1", "", false, "eth16=http://helloworld.com", "http://helloworld.com")]
+
         public void TestBindInterfaceOverrides(string source, string bindAddresses, bool ipv6enabled, string publishedServers, string result)
         {
             var conf = new ServerConfiguration()

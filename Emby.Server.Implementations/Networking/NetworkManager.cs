@@ -621,15 +621,13 @@ namespace Emby.Server.Implementations.Networking
             }
 
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
-            if (_configurationManager.Configuration.TrustIP6Interfaces && address.IsIP6())
+            if (_configurationManager.Configuration.TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 return true;
             }
-            else
-            {
-                // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-                return _filteredLANSubnets.Contains(address); //  address.IsPrivateAddressRange();
-            }
+
+            // As private addresses can be redefined by Configuration.LocalNetworkAddresses
+            return _filteredLANSubnets.Contains(address);
         }
 
         /// <inheritdoc/>
@@ -641,7 +639,7 @@ namespace Emby.Server.Implementations.Networking
             }
 
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
-            if (_configurationManager.Configuration.TrustIP6Interfaces && address.IsIP6())
+            if (_configurationManager.Configuration.TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 return true;
             }
@@ -850,7 +848,7 @@ namespace Emby.Server.Implementations.Networking
                     }
                     else
                     {
-                        if (IPNetAddress.TryParse(entry.Substring(0, i), out IPNetAddress address))
+                        if (TryParseInterface(entry.Substring(0, i), out IPNetAddress address))
                         {
                             _overrideAddresses[address] = entry.Substring(i + 1).Trim();
                         }

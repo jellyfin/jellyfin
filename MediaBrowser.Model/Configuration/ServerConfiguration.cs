@@ -47,7 +47,7 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether all IPv6 interfaces should be treated as on the internal network.
         /// </summary>
-        public bool TrustIP6Interfaces { get; set; }
+        public bool TrustAllIP6Interfaces { get; set; }
 
         /// <summary>
         /// Gets or sets the public HTTPS port.
@@ -284,10 +284,11 @@ namespace MediaBrowser.Model.Configuration
         {
             // Network settings
             EnableIPV6 = false;
-            TrustIP6Interfaces = false;
+            TrustAllIP6Interfaces = false;
             EnableMultiSocketBinding = true;
             LocalNetworkSubnets = Array.Empty<string>();
             LocalNetworkAddresses = Array.Empty<string>();
+            PublishedServerUriBySubnet = Array.Empty<string>();
             EnableUPnP = false;
             PublicPort = DefaultHttpPort;
             PublicHttpsPort = DefaultHttpsPort;
