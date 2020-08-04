@@ -16,7 +16,7 @@ namespace Jellyfin.Server.Migrations.Routines
     {
         private const string DbFilename = "library.db";
 
-        private readonly JellyfinDb _dbContext;
+        private readonly JellyfinDbProvider _dbProvider;
         private readonly IServerApplicationPaths _paths;
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Jellyfin.Server.Migrations.Routines
         /// <param name="paths">The server application paths.</param>
         public MigrateUserItemData(JellyfinDbProvider provider, IServerApplicationPaths paths)
         {
-            _dbContext = provider.CreateContext();
+            _dbProvider = provider;
             _paths = paths;
         }
 
@@ -44,8 +44,9 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null);
+            using var dbContext = _dbProvider.CreateContext();
 
-            var idDict = _dbContext.Users.ToDictionary(user => user.InternalId, user => user.Id);
+            var idDict = dbContext.Users.ToDictionary(user => user.InternalId, user => user.Id);
 
             var result = connection.Query("SELECT * FROM UserDatas");
             foreach (var row in result)
@@ -71,10 +72,10 @@ namespace Jellyfin.Server.Migrations.Routines
                     SubtitleStreamIndex = row[9].SQLiteType == SQLiteType.Null ? (int?)null : row[9].ToInt()
                 };
 
-                _dbContext.UserItemData.Add(userItemData);
+                dbContext.UserItemData.Add(userItemData);
             }
 
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
     }
 }

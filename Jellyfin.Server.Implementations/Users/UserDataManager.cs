@@ -43,7 +43,7 @@ namespace Jellyfin.Server.Implementations.Users
                 return null;
             }
 
-            var dbContext = _provider.CreateContext();
+            using var dbContext = _provider.CreateContext();
             var userData = dbContext.UserItemData
                 .FirstOrDefault(entry => entry.UserId == userId && entry.ItemId == itemId);
 
@@ -62,7 +62,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public void SaveUserItemData(UserItemData itemData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
-            var dbContext = _provider.CreateContext();
+            using var dbContext = _provider.CreateContext();
 
             // Because we can't reuse DbContexts within requests, we have to manually reattach the object and mark it as modified.
             // TODO: clean up when we have scoping
