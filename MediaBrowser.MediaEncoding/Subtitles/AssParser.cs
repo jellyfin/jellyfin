@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +15,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
+        /// <inheritdoc />
         public SubtitleTrackInfo Parse(Stream stream, CancellationToken cancellationToken)
         {
             var trackInfo = new SubtitleTrackInfo();

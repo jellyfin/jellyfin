@@ -380,6 +380,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// Converts the text subtitle to SRT.
         /// </summary>
         /// <param name="inputPath">The input path.</param>
+        /// <param name="language">The language.</param>
         /// <param name="inputProtocol">The input protocol.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -407,14 +408,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// Converts the text subtitle to SRT internal.
         /// </summary>
         /// <param name="inputPath">The input path.</param>
+        /// <param name="language">The language.</param>
         /// <param name="inputProtocol">The input protocol.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">
-        /// inputPath
-        /// or
-        /// outputPath
+        /// The <c>inputPath</c> or <c>outputPath</c> is <c>null</c>
         /// </exception>
         private async Task ConvertTextSubtitleToSrtInternal(string inputPath, string language, MediaProtocol inputProtocol, string outputPath, CancellationToken cancellationToken)
         {
