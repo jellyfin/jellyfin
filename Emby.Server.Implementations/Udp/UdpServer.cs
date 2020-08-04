@@ -43,7 +43,6 @@ namespace Emby.Server.Implementations.Udp
         /// </summary>
         /// <param name="appHost">IServerApplicationHost instance.</param>
         /// <param name="logger"> ILogger instance.</param>
-        /// <param name="configuration">IConfiguration instance.</param>
         public UdpServer(ILogger logger, IServerApplicationHost appHost)
         {
             _logger = logger;
@@ -55,7 +54,6 @@ namespace Emby.Server.Implementations.Udp
         /// </summary>
         /// <param name="messageText">Message text received.</param>
         /// <param name="endpoint">Received from.</param>
-        /// <param name="cancellationToken">Cancellation Token.</param>
         /// <returns>Task.</returns>
         private async Task RespondToV2Message(string messageText, EndPoint endpoint)
         {
