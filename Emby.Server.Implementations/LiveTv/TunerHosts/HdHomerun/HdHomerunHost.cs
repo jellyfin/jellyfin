@@ -746,7 +746,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var response = await udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
                         var deviceIp = response.RemoteEndPoint.Address.ToString();
 
-                        if (!_networkManager.IsInLocalNetwork(response.RemoteEndPoint.Address))
+                        // Ignore excluded devices/ranges.
+                        if (!_networkManager.IsExcluded(response.RemoteEndPoint.Address))
                         {
                             continue;
                         }
