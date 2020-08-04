@@ -100,7 +100,7 @@ Note that it is also possible to [host the web client separately](#hosting-the-w
 
 There are three options to get the files for the web client.
 
-1. Download one of the finished builds from the [Azure DevOps pipeline](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=11). You can download the build for a specific release by looking at the [branches tab](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=11&_a=summary&repositoryFilter=6&view=branches) of the pipelines page.
+1. Download one of the finished builds from the [Azure DevOps pipeline](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27). You can download the build for a specific release by looking at the [branches tab](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27&_a=summary&repositoryFilter=6&view=branches) of the pipelines page.
 2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
 
@@ -162,6 +162,7 @@ The following sections describe some more advanced scenarios for running the ser
 
 It is not necessary to host the frontend web client as part of the backend server. Hosting these two components separately may be useful for frontend developers who would prefer to host the client in a separate webpack development server for a tighter development loop. See the [jellyfin-web](https://github.com/jellyfin/jellyfin-web#getting-started) repo for instructions on how to do this.
 
-To instruct the server not to host the web content, there is a `nowebcontent` configuration flag that must be set. This can specified using the command line switch `--nowebcontent` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
+To instruct the server not to host the web content, there is a `nowebclient` configuration flag that must be set. This can specified using the command line
+switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.

@@ -1,3 +1,9 @@
+jellyfin-server (10.7.0-1) unstable; urgency=medium
+
+  * Forthcoming stable release
+
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Mon, 27 Jul 2020 19:09:45 -0400
+
 jellyfin-server (10.6.0-2) unstable; urgency=medium
 
   * Fix upgrade bug

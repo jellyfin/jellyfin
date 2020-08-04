@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,14 +28,17 @@ namespace Emby.Server.Implementations.SyncPlay
             /// All sessions will receive the message.
             /// </summary>
             AllGroup = 0,
+
             /// <summary>
             /// Only the specified session will receive the message.
             /// </summary>
             CurrentSession = 1,
+
             /// <summary>
             /// All sessions, except the current one, will receive the message.
             /// </summary>
             AllExceptCurrentSession = 2,
+
             /// <summary>
             /// Only sessions that are not buffering will receive the message.
             /// </summary>
@@ -56,15 +60,6 @@ namespace Emby.Server.Implementations.SyncPlay
         /// </summary>
         private readonly GroupInfo _group = new GroupInfo();
 
-        /// <inheritdoc />
-        public Guid GetGroupId() => _group.GroupId;
-
-        /// <inheritdoc />
-        public Guid GetPlayingItemId() => _group.PlayingItem.Id;
-
-        /// <inheritdoc />
-        public bool IsGroupEmpty() => _group.IsEmpty();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncPlayController" /> class.
         /// </summary>
@@ -78,6 +73,15 @@ namespace Emby.Server.Implementations.SyncPlay
             _syncPlayManager = syncPlayManager;
         }
 
+        /// <inheritdoc />
+        public Guid GetGroupId() => _group.GroupId;
+
+        /// <inheritdoc />
+        public Guid GetPlayingItemId() => _group.PlayingItem.Id;
+
+        /// <inheritdoc />
+        public bool IsGroupEmpty() => _group.IsEmpty();
+
         /// <summary>
         /// Converts DateTime to UTC string.
         /// </summary>
@@ -85,7 +89,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <value>The UTC string.</value>
         private string DateToUTCString(DateTime date)
         {
-            return date.ToUniversalTime().ToString("o");
+            return date.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -94,23 +98,23 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <param name="from">The current session.</param>
         /// <param name="type">The filtering type.</param>
         /// <value>The array of sessions matching the filter.</value>
-        private SessionInfo[] FilterSessions(SessionInfo from, BroadcastType type)
+        private IEnumerable<SessionInfo> FilterSessions(SessionInfo from, BroadcastType type)
         {
             switch (type)
             {
                 case BroadcastType.CurrentSession:
                     return new SessionInfo[] { from };
                 case BroadcastType.AllGroup:
-                    return _group.Participants.Values.Select(
-                        session => session.Session).ToArray();
+                    return _group.Participants.Values
+                        .Select(session => session.Session);
                 case BroadcastType.AllExceptCurrentSession:
-                    return _group.Participants.Values.Select(
-                        session => session.Session).Where(
-                        session => !session.Id.Equals(from.Id)).ToArray();
+                    return _group.Participants.Values
+                        .Select(session => session.Session)
+                        .Where(session => !session.Id.Equals(from.Id, StringComparison.Ordinal));
                 case BroadcastType.AllReady:
-                    return _group.Participants.Values.Where(
-                        session => !session.IsBuffering).Select(
-                        session => session.Session).ToArray();
+                    return _group.Participants.Values
+                        .Where(session => !session.IsBuffering)
+                        .Select(session => session.Session);
                 default:
                     return Array.Empty<SessionInfo>();
             }
@@ -128,10 +132,9 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             IEnumerable<Task> GetTasks()
             {
-                SessionInfo[] sessions = FilterSessions(from, type);
-                foreach (var session in sessions)
+                foreach (var session in FilterSessions(from, type))
                 {
-                    yield return _sessionManager.SendSyncPlayGroupUpdate(session.Id.ToString(), message, cancellationToken);
+                    yield return _sessionManager.SendSyncPlayGroupUpdate(session.Id, message, cancellationToken);
                 }
             }
 
@@ -150,10 +153,9 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             IEnumerable<Task> GetTasks()
             {
-                SessionInfo[] sessions = FilterSessions(from, type);
-                foreach (var session in sessions)
+                foreach (var session in FilterSessions(from, type))
                 {
-                    yield return _sessionManager.SendSyncPlayCommand(session.Id.ToString(), message, cancellationToken);
+                    yield return _sessionManager.SendSyncPlayCommand(session.Id, message, cancellationToken);
                 }
             }
 
@@ -236,9 +238,11 @@ namespace Emby.Server.Implementations.SyncPlay
             }
             else
             {
-                var playRequest = new PlayRequest();
-                playRequest.ItemIds = new Guid[] { _group.PlayingItem.Id };
-                playRequest.StartPositionTicks = _group.PositionTicks;
+                var playRequest = new PlayRequest
+                {
+                    ItemIds = new Guid[] { _group.PlayingItem.Id },
+                    StartPositionTicks = _group.PositionTicks
+                };
                 var update = NewSyncPlayGroupUpdate(GroupUpdateType.PrepareSession, playRequest);
                 SendGroupUpdate(session, BroadcastType.CurrentSession, update, cancellationToken);
             }

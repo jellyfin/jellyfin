@@ -600,17 +600,12 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var defaultName = Environment.UserName;
-            if (string.IsNullOrWhiteSpace(defaultName))
+            if (string.IsNullOrWhiteSpace(defaultName) || !IsValidUsername(defaultName))
             {
                 defaultName = "MyJellyfinUser";
             }
 
             _logger.LogWarning("No users, creating one with username {UserName}", defaultName);
-
-            if (!IsValidUsername(defaultName))
-            {
-                throw new ArgumentException("Provided username is not valid!", defaultName);
-            }
 
             var newUser = await CreateUserInternalAsync(defaultName, dbContext).ConfigureAwait(false);
             newUser.SetPermission(PermissionKind.IsAdministrator, true);
@@ -766,8 +761,8 @@ namespace Jellyfin.Server.Implementations.Users
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
-            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), and periods (.)
-            return Regex.IsMatch(name, @"^[\w\-'._@]*$");
+            // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
+            return Regex.IsMatch(name, @"^[\w\ \-'._@]*$");
         }
 
         private IAuthenticationProvider GetAuthenticationProvider(User user)

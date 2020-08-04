@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common;
@@ -11,7 +12,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 
 namespace Jellyfin.Server.Implementations.Users
@@ -23,7 +23,6 @@ namespace Jellyfin.Server.Implementations.Users
     {
         private const string BaseResetFileName = "passwordreset";
 
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IApplicationHost _appHost;
 
         private readonly string _passwordResetFileBase;
@@ -33,16 +32,11 @@ namespace Jellyfin.Server.Implementations.Users
         /// Initializes a new instance of the <see cref="DefaultPasswordResetProvider"/> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="jsonSerializer">The JSON serializer.</param>
         /// <param name="appHost">The application host.</param>
-        public DefaultPasswordResetProvider(
-            IServerConfigurationManager configurationManager,
-            IJsonSerializer jsonSerializer,
-            IApplicationHost appHost)
+        public DefaultPasswordResetProvider(IServerConfigurationManager configurationManager, IApplicationHost appHost)
         {
             _passwordResetFileBaseDir = configurationManager.ApplicationPaths.ProgramDataPath;
             _passwordResetFileBase = Path.Combine(_passwordResetFileBaseDir, BaseResetFileName);
-            _jsonSerializer = jsonSerializer;
             _appHost = appHost;
             // TODO: Remove the circular dependency on UserManager
         }
@@ -63,7 +57,7 @@ namespace Jellyfin.Server.Implementations.Users
                 SerializablePasswordReset spr;
                 await using (var str = File.OpenRead(resetFile))
                 {
-                    spr = await _jsonSerializer.DeserializeFromStreamAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
+                    spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
                 }
 
                 if (spr.ExpirationDate < DateTime.UtcNow)
@@ -119,7 +113,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             await using (FileStream fileStream = File.OpenWrite(filePath))
             {
-                _jsonSerializer.SerializeToStream(spr, fileStream);
+                await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
                 await fileStream.FlushAsync().ConfigureAwait(false);
             }
 
