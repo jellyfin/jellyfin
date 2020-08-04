@@ -30,6 +30,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Item lookup controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ItemLookupController : BaseJellyfinApiController
     {
@@ -68,7 +69,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">External id info retrieved.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>List of external id info.</returns>
-        [HttpGet("/Items/{itemId}/ExternalIdInfos")]
+        [HttpGet("Items/{itemId}/ExternalIdInfos")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -92,7 +93,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/Movie")]
+        [HttpPost("Items/RemoteSearch/Movie")]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMovieRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<MovieInfo> query)
         {
             var results = await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(query, CancellationToken.None)
@@ -109,7 +110,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/Trailer")]
+        [HttpPost("Items/RemoteSearch/Trailer")]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetTrailerRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<TrailerInfo> query)
         {
             var results = await _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(query, CancellationToken.None)
@@ -126,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/MusicVideo")]
+        [HttpPost("Items/RemoteSearch/MusicVideo")]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicVideoRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<MusicVideoInfo> query)
         {
             var results = await _providerManager.GetRemoteSearchResults<MusicVideo, MusicVideoInfo>(query, CancellationToken.None)
@@ -143,7 +144,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/Series")]
+        [HttpPost("Items/RemoteSearch/Series")]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetSeriesRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<SeriesInfo> query)
         {
             var results = await _providerManager.GetRemoteSearchResults<Series, SeriesInfo>(query, CancellationToken.None)
@@ -160,7 +161,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/BoxSet")]
+        [HttpPost("Items/RemoteSearch/BoxSet")]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetBoxSetRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<BoxSetInfo> query)
         {
             var results = await _providerManager.GetRemoteSearchResults<BoxSet, BoxSetInfo>(query, CancellationToken.None)
@@ -177,7 +178,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/MusicArtist")]
+        [HttpPost("Items/RemoteSearch/MusicArtist")]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicArtistRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<ArtistInfo> query)
         {
             var results = await _providerManager.GetRemoteSearchResults<MusicArtist, ArtistInfo>(query, CancellationToken.None)
@@ -194,7 +195,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/MusicAlbum")]
+        [HttpPost("Items/RemoteSearch/MusicAlbum")]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetMusicAlbumRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<AlbumInfo> query)
         {
             var results = await _providerManager.GetRemoteSearchResults<MusicAlbum, AlbumInfo>(query, CancellationToken.None)
@@ -211,7 +212,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/Person")]
+        [HttpPost("Items/RemoteSearch/Person")]
         [Authorize(Policy = Policies.RequiresElevation)]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetPersonRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<PersonLookupInfo> query)
         {
@@ -229,7 +230,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="OkResult"/> containing the list of remote search results.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/Book")]
+        [HttpPost("Items/RemoteSearch/Book")]
         public async Task<ActionResult<IEnumerable<RemoteSearchResult>>> GetBookRemoteSearchResults([FromBody, BindRequired] RemoteSearchQuery<BookInfo> query)
         {
             var results = await _providerManager.GetRemoteSearchResults<Book, BookInfo>(query, CancellationToken.None)
@@ -247,7 +248,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="FileStreamResult"/> containing the images file stream.
         /// </returns>
-        [HttpGet("/Items/RemoteSearch/Image")]
+        [HttpGet("Items/RemoteSearch/Image")]
         public async Task<ActionResult> GetRemoteSearchImage(
             [FromQuery, Required] string imageUrl,
             [FromQuery, Required] string providerName)
@@ -291,7 +292,7 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="NoContentResult"/>.
         /// </returns>
-        [HttpPost("/Items/RemoteSearch/Apply/{id}")]
+        [HttpPost("Items/RemoteSearch/Apply/{id}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         public async Task<ActionResult> ApplySearchCriteria(
             [FromRoute] Guid itemId,

@@ -16,7 +16,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Package Controller.
     /// </summary>
-    [Route("Packages")]
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class PackageController : BaseJellyfinApiController
     {
@@ -41,7 +41,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="assemblyGuid">The GUID of the associated assembly.</param>
         /// <response code="200">Package retrieved.</response>
         /// <returns>A <see cref="PackageInfo"/> containing package information.</returns>
-        [HttpGet("/{name}")]
+        [HttpGet("Packages/{name}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PackageInfo>> GetPackageInfo(
             [FromRoute] [Required] string? name,
@@ -61,7 +61,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Available packages returned.</response>
         /// <returns>An <see cref="PackageInfo"/> containing available packages information.</returns>
-        [HttpGet]
+        [HttpGet("Packages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IEnumerable<PackageInfo>> GetPackages()
         {
@@ -79,7 +79,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Package found.</response>
         /// <response code="404">Package not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the package could not be found.</returns>
-        [HttpPost("/Installed/{name}")]
+        [HttpPost("Packages/Installed/{name}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = Policies.RequiresElevation)]
@@ -111,7 +111,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="packageId">Installation Id.</param>
         /// <response code="204">Installation cancelled.</response>
         /// <returns>A <see cref="NoContentResult"/> on successfully cancelling a package installation.</returns>
-        [HttpDelete("/Installing/{packageId}")]
+        [HttpDelete("Packages/Installing/{packageId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CancelPackageInstallation(
@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Package repositories returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of package repositories.</returns>
-        [HttpGet("/Repositories")]
+        [HttpGet("Repositories")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
@@ -140,7 +140,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="repositoryInfos">The list of package repositories.</param>
         /// <response code="204">Package repositories saved.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpOptions("/Repositories")]
+        [HttpOptions("Repositories")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SetRepositories([FromBody] List<RepositoryInfo> repositoryInfos)

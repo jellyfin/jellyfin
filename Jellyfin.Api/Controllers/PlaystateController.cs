@@ -19,6 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Playstate controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class PlaystateController : BaseJellyfinApiController
     {
@@ -67,7 +68,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="datePlayed">Optional. The date the item was played.</param>
         /// <response code="200">Item marked as played.</response>
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-        [HttpPost("/Users/{userId}/PlayedItems/{itemId}")]
+        [HttpPost("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> MarkPlayedItem(
             [FromRoute] Guid userId,
@@ -93,7 +94,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="itemId">Item id.</param>
         /// <response code="200">Item marked as unplayed.</response>
         /// <returns>A <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
-        [HttpDelete("/Users/{userId}/PlayedItem/{itemId}")]
+        [HttpDelete("Users/{userId}/PlayedItem/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> MarkUnplayedItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
         {
@@ -115,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playbackStartInfo">The playback start info.</param>
         /// <response code="204">Playback start recorded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/Playing")]
+        [HttpPost("Sessions/Playing")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ReportPlaybackStart([FromBody] PlaybackStartInfo playbackStartInfo)
         {
@@ -131,7 +132,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playbackProgressInfo">The playback progress info.</param>
         /// <response code="204">Playback progress recorded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/Playing/Progress")]
+        [HttpPost("Sessions/Playing/Progress")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ReportPlaybackProgress([FromBody] PlaybackProgressInfo playbackProgressInfo)
         {
@@ -147,7 +148,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playSessionId">Playback session id.</param>
         /// <response code="204">Playback session pinged.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/Playing/Ping")]
+        [HttpPost("Sessions/Playing/Ping")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PingPlaybackSession([FromQuery] string playSessionId)
         {
@@ -161,7 +162,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playbackStopInfo">The playback stop info.</param>
         /// <response code="204">Playback stop recorded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Sessions/Playing/Stopped")]
+        [HttpPost("Sessions/Playing/Stopped")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ReportPlaybackStopped([FromBody] PlaybackStopInfo playbackStopInfo)
         {
@@ -190,7 +191,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="canSeek">Indicates if the client can seek.</param>
         /// <response code="204">Play start recorded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Users/{userId}/PlayingItems/{itemId}")]
+        [HttpPost("Users/{userId}/PlayingItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackStart(
@@ -240,7 +241,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isMuted">Indicates if the player is muted.</param>
         /// <response code="204">Play progress recorded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Users/{userId}/PlayingItems/{itemId}/Progress")]
+        [HttpPost("Users/{userId}/PlayingItems/{itemId}/Progress")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackProgress(
@@ -292,7 +293,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playSessionId">The play session id.</param>
         /// <response code="204">Playback stop recorded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpDelete("/Users/{userId}/PlayingItems/{itemId}")]
+        [HttpDelete("Users/{userId}/PlayingItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackStopped(

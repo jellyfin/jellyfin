@@ -21,6 +21,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// User views controller.
     /// </summary>
+    [Route("")]
     public class UserViewsController : BaseJellyfinApiController
     {
         private readonly IUserManager _userManager;
@@ -60,7 +61,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="includeHidden">Whether or not to include hidden content.</param>
         /// <response code="200">User views returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the user views.</returns>
-        [HttpGet("/Users/{userId}/Views")]
+        [HttpGet("Users/{userId}/Views")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetUserViews(
             [FromRoute] Guid userId,
@@ -122,7 +123,7 @@ namespace Jellyfin.Api.Controllers
         /// An <see cref="OkResult"/> containing the user view grouping options
         /// or a <see cref="NotFoundResult"/> if user not found.
         /// </returns>
-        [HttpGet("/Users/{userId}/GroupingOptions")]
+        [HttpGet("Users/{userId}/GroupingOptions")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<SpecialViewOptionDto>> GetGroupingOptions([FromRoute] Guid userId)

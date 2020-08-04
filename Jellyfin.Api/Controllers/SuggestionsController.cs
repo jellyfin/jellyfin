@@ -16,6 +16,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The suggestions controller.
     /// </summary>
+    [Route("")]
     public class SuggestionsController : BaseJellyfinApiController
     {
         private readonly IDtoService _dtoService;
@@ -49,7 +50,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableTotalRecordCount">Whether to enable the total record count.</param>
         /// <response code="200">Suggestions returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the suggestions.</returns>
-        [HttpGet("/Users/{userId}/Suggestions")]
+        [HttpGet("Users/{userId}/Suggestions")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
             [FromRoute] Guid userId,

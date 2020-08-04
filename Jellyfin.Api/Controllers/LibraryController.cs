@@ -43,6 +43,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Library Controller.
     /// </summary>
+    [Route("")]
     public class LibraryController : BaseJellyfinApiController
     {
         private readonly IProviderManager _providerManager;
@@ -100,7 +101,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">File stream returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> with the original file.</returns>
-        [HttpGet("/Items/{itemId}/File")]
+        [HttpGet("Items/{itemId}/File")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -121,7 +122,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Critic reviews returned.</response>
         /// <returns>The list of critic reviews.</returns>
-        [HttpGet("/Items/{itemId}/CriticReviews")]
+        [HttpGet("Items/{itemId}/CriticReviews")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [Obsolete("This endpoint is obsolete.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -139,7 +140,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Theme songs returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>The item theme songs.</returns>
-        [HttpGet("/Items/{itemId}/ThemeSongs")]
+        [HttpGet("Items/{itemId}/ThemeSongs")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -205,7 +206,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Theme videos returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>The item theme videos.</returns>
-        [HttpGet("/Items/{itemId}/ThemeVideos")]
+        [HttpGet("Items/{itemId}/ThemeVideos")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -271,7 +272,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Theme songs and videos returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>The item theme videos.</returns>
-        [HttpGet("/Items/{itemId}/ThemeMedia")]
+        [HttpGet("Items/{itemId}/ThemeMedia")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<AllThemeMediaResult> GetThemeMedia(
@@ -302,7 +303,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="204">Library scan started.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpGet("/Library/Refresh")]
+        [HttpGet("Library/Refresh")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> RefreshLibrary()
@@ -326,7 +327,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Item deleted.</response>
         /// <response code="401">Unauthorized access.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpDelete("/Items/{itemId}")]
+        [HttpDelete("Items/{itemId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -356,7 +357,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Items deleted.</response>
         /// <response code="401">Unauthorized access.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpDelete("/Items")]
+        [HttpDelete("Items")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -400,7 +401,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isFavorite">Optional. Get counts of favorite items.</param>
         /// <response code="200">Item counts returned.</response>
         /// <returns>Item counts.</returns>
-        [HttpGet("/Items/Counts")]
+        [HttpGet("Items/Counts")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<ItemCounts> GetItemCounts(
@@ -434,7 +435,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Item parents returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>Item parents.</returns>
-        [HttpGet("/Items/{itemId}/Ancestors")]
+        [HttpGet("Items/{itemId}/Ancestors")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -476,7 +477,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Physical paths returned.</response>
         /// <returns>List of physical paths.</returns>
-        [HttpGet("/Library/PhysicalPaths")]
+        [HttpGet("Library/PhysicalPaths")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<string>> GetPhysicalPaths()
@@ -491,7 +492,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isHidden">Optional. Filter by folders that are marked hidden, or not.</param>
         /// <response code="200">Media folders returned.</response>
         /// <returns>List of user media folders.</returns>
-        [HttpGet("/Library/MediaFolders")]
+        [HttpGet("Library/MediaFolders")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetMediaFolders([FromQuery] bool? isHidden)
@@ -521,8 +522,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="tvdbId">The tvdbId.</param>
         /// <response code="204">Report success.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Library/Series/Added", Name = "PostAddedSeries")]
-        [HttpPost("/Library/Series/Updated")]
+        [HttpPost("Library/Series/Added", Name = "PostAddedSeries")]
+        [HttpPost("Library/Series/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostUpdatedSeries([FromQuery] string? tvdbId)
@@ -551,8 +552,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imdbId">The imdbId.</param>
         /// <response code="204">Report success.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Library/Movies/Added", Name = "PostAddedMovies")]
-        [HttpPost("/Library/Movies/Updated")]
+        [HttpPost("Library/Movies/Added", Name = "PostAddedMovies")]
+        [HttpPost("Library/Movies/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostUpdatedMovies([FromRoute] string? tmdbId, [FromRoute] string? imdbId)
@@ -593,7 +594,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="updates">A list of updated media paths.</param>
         /// <response code="204">Report success.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Library/Media/Updated")]
+        [HttpPost("Library/Media/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostUpdatedMedia([FromBody, BindRequired] MediaUpdateInfoDto[] updates)
@@ -614,7 +615,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="FileResult"/> containing the media stream.</returns>
         /// <exception cref="ArgumentException">User can't download or item can't be downloaded.</exception>
-        [HttpGet("/Items/{itemId}/Download")]
+        [HttpGet("Items/{itemId}/Download")]
         [Authorize(Policy = Policies.Download)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -679,12 +680,12 @@ namespace Jellyfin.Api.Controllers
         /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines, TrailerUrls.</param>
         /// <response code="200">Similar items returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> containing the similar items.</returns>
-        [HttpGet("/Artists/{itemId}/Similar", Name = "GetSimilarArtists2")]
-        [HttpGet("/Items/{itemId}/Similar")]
-        [HttpGet("/Albums/{itemId}/Similar", Name = "GetSimilarAlbums2")]
-        [HttpGet("/Shows/{itemId}/Similar", Name = "GetSimilarShows2")]
-        [HttpGet("/Movies/{itemId}/Similar", Name = "GetSimilarMovies2")]
-        [HttpGet("/Trailers/{itemId}/Similar", Name = "GetSimilarTrailers2")]
+        [HttpGet("Artists/{itemId}/Similar", Name = "GetSimilarArtists2")]
+        [HttpGet("Items/{itemId}/Similar")]
+        [HttpGet("Albums/{itemId}/Similar", Name = "GetSimilarAlbums2")]
+        [HttpGet("Shows/{itemId}/Similar", Name = "GetSimilarShows2")]
+        [HttpGet("Movies/{itemId}/Similar", Name = "GetSimilarMovies2")]
+        [HttpGet("Trailers/{itemId}/Similar", Name = "GetSimilarTrailers2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
             [FromRoute] Guid itemId,
@@ -735,7 +736,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isNewLibrary">Whether this is a new library.</param>
         /// <response code="200">Library options info returned.</response>
         /// <returns>Library options info.</returns>
-        [HttpGet("/Libraries/AvailableOptions")]
+        [HttpGet("Libraries/AvailableOptions")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo(

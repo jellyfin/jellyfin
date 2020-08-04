@@ -34,6 +34,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The media info controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class MediaInfoController : BaseJellyfinApiController
     {
@@ -88,7 +89,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="userId">The user id.</param>
         /// <response code="200">Playback info returned.</response>
         /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback information.</returns>
-        [HttpGet("/Items/{itemId}/PlaybackInfo")]
+        [HttpGet("Items/{itemId}/PlaybackInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute] Guid itemId, [FromQuery] Guid? userId)
         {
@@ -116,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="allowAudioStreamCopy">Whether to allow to copy the audio stream. Default: true.</param>
         /// <response code="200">Playback info returned.</response>
         /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback info.</returns>
-        [HttpPost("/Items/{itemId}/PlaybackInfo")]
+        [HttpPost("Items/{itemId}/PlaybackInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaybackInfoResponse>> GetPostedPlaybackInfo(
             [FromRoute] Guid itemId,
@@ -237,7 +238,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableDirectStream">Whether to enable direct stream. Default: true.</param>
         /// <response code="200">Media source opened.</response>
         /// <returns>A <see cref="Task"/> containing a <see cref="LiveStreamResponse"/>.</returns>
-        [HttpPost("/LiveStreams/Open")]
+        [HttpPost("LiveStreams/Open")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<LiveStreamResponse>> OpenLiveStream(
             [FromQuery] string? openToken,
@@ -278,7 +279,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="liveStreamId">The livestream id.</param>
         /// <response code="204">Livestream closed.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        [HttpPost("/LiveStreams/Close")]
+        [HttpPost("LiveStreams/Close")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CloseLiveStream([FromQuery] string? liveStreamId)
         {
@@ -293,7 +294,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Test buffer returned.</response>
         /// <response code="400">Size has to be a numer between 0 and 10,000,000.</response>
         /// <returns>A <see cref="FileResult"/> with specified bitrate.</returns>
-        [HttpGet("/Playback/BitrateTest")]
+        [HttpGet("Playback/BitrateTest")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [Produces(MediaTypeNames.Application.Octet)]

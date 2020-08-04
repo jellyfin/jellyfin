@@ -188,7 +188,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Not Implemented.</returns>
         /// <exception cref="NotImplementedException">This endpoint is not implemented.</exception>
         [Obsolete("Paid plugins are not supported")]
-        [HttpGet("/Registrations/{name}")]
+        [HttpGet("Registrations/{name}")]
         [ProducesResponseType(StatusCodes.Status501NotImplemented)]
         public ActionResult GetRegistration([FromRoute] string? name)
         {

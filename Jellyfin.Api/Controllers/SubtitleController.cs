@@ -30,6 +30,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Subtitle controller.
     /// </summary>
+    [Route("")]
     public class SubtitleController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;
@@ -80,7 +81,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Subtitle deleted.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpDelete("/Videos/{itemId}/Subtitles/{index}")]
+        [HttpDelete("Videos/{itemId}/Subtitles/{index}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -107,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="isPerfectMatch">Optional. Only show subtitles which are a perfect match.</param>
         /// <response code="200">Subtitles retrieved.</response>
         /// <returns>An array of <see cref="RemoteSubtitleInfo"/>.</returns>
-        [HttpGet("/Items/{itemId}/RemoteSearch/Subtitles/{language}")]
+        [HttpGet("Items/{itemId}/RemoteSearch/Subtitles/{language}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
@@ -127,7 +128,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="subtitleId">The subtitle id.</param>
         /// <response code="204">Subtitle downloaded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpPost("/Items/{itemId}/RemoteSearch/Subtitles/{subtitleId}")]
+        [HttpPost("Items/{itemId}/RemoteSearch/Subtitles/{subtitleId}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DownloadRemoteSubtitles(
@@ -157,7 +158,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">The item id.</param>
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileStreamResult"/> with the subtitle file.</returns>
-        [HttpGet("/Providers/Subtitles/Subtitles/{id}")]
+        [HttpGet("Providers/Subtitles/Subtitles/{id}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Application.Octet)]
@@ -181,8 +182,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startPositionTicks">Optional. The start position of the subtitle in ticks.</param>
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
-        [HttpGet("/Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
-        [HttpGet("/Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks?}/Stream.{format}", Name = "GetSubtitle_2")]
+        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
+        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks?}/Stream.{format}", Name = "GetSubtitle_2")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetSubtitle(
             [FromRoute, Required] Guid itemId,
@@ -247,7 +248,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="segmentLength">The subtitle segment length.</param>
         /// <response code="200">Subtitle playlist retrieved.</response>
         /// <returns>A <see cref="FileContentResult"/> with the HLS subtitle playlist.</returns>
-        [HttpGet("/Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
+        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/subtitles.m3u8")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]

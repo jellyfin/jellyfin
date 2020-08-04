@@ -19,6 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The instant mix controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class InstantMixController : BaseJellyfinApiController
     {
@@ -59,7 +60,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("/Songs/{id}/InstantMix")]
+        [HttpGet("Songs/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromSong(
             [FromRoute] Guid id,
@@ -96,7 +97,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("/Albums/{id}/InstantMix")]
+        [HttpGet("Albums/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromAlbum(
             [FromRoute] Guid id,
@@ -133,7 +134,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("/Playlists/{id}/InstantMix")]
+        [HttpGet("Playlists/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromPlaylist(
             [FromRoute] Guid id,
@@ -170,7 +171,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("/MusicGenres/{name}/InstantMix")]
+        [HttpGet("MusicGenres/{name}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenre(
             [FromRoute] string? name,
@@ -206,7 +207,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("/Artists/InstantMix")]
+        [HttpGet("Artists/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromArtists(
             [FromRoute] Guid id,
@@ -243,7 +244,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("/MusicGenres/InstantMix")]
+        [HttpGet("MusicGenres/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenres(
             [FromRoute] Guid id,
@@ -280,7 +281,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <response code="200">Instant playlist returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("/Items/{id}/InstantMix")]
+        [HttpGet("Items/{id}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromItem(
             [FromRoute] Guid id,

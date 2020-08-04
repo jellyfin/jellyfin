@@ -37,6 +37,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Dynamic hls controller.
     /// </summary>
+    [Route("")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class DynamicHlsController : BaseJellyfinApiController
     {
@@ -164,8 +165,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
-        [HttpGet("/Videos/{itemId}/master.m3u8")]
-        [HttpHead("/Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
+        [HttpGet("Videos/{itemId}/master.m3u8")]
+        [HttpHead("Videos/{itemId}/master.m3u8", Name = "HeadMasterHlsVideoPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsVideoPlaylist(
             [FromRoute] Guid itemId,
@@ -334,8 +335,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the playlist file.</returns>
-        [HttpGet("/Audio/{itemId}/master.m3u8")]
-        [HttpHead("/Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
+        [HttpGet("Audio/{itemId}/master.m3u8")]
+        [HttpHead("Audio/{itemId}/master.m3u8", Name = "HeadMasterHlsAudioPlaylist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetMasterHlsAudioPlaylist(
             [FromRoute] Guid itemId,
@@ -503,7 +504,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("/Videos/{itemId}/main.m3u8")]
+        [HttpGet("Videos/{itemId}/main.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetVariantHlsVideoPlaylist(
             [FromRoute] Guid itemId,
@@ -668,7 +669,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("/Audio/{itemId}/main.m3u8")]
+        [HttpGet("Audio/{itemId}/main.m3u8")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> GetVariantHlsAudioPlaylist(
             [FromRoute] Guid itemId,
@@ -835,7 +836,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("/Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
+        [HttpGet("Videos/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetHlsVideoSegment(
@@ -1004,7 +1005,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("/Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
+        [HttpGet("Audio/{itemId}/hls1/{playlistId}/{segmentId}.{container}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "playlistId", Justification = "Imported from ServiceStack")]
         public async Task<ActionResult> GetHlsAudioSegment(

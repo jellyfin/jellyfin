@@ -19,6 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The universal audio controller.
     /// </summary>
+    [Route("")]
     public class UniversalAudioController : BaseJellyfinApiController
     {
         private readonly IAuthorizationContext _authorizationContext;
@@ -68,10 +69,10 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Audio stream returned.</response>
         /// <response code="302">Redirected to remote audio stream.</response>
         /// <returns>A <see cref="Task"/> containing the audio file.</returns>
-        [HttpGet("/Audio/{itemId}/universal")]
-        [HttpGet("/Audio/{itemId}/{universal=universal}.{container?}", Name = "GetUniversalAudioStream_2")]
-        [HttpHead("/Audio/{itemId}/universal", Name = "HeadUniversalAudioStream")]
-        [HttpHead("/Audio/{itemId}/{universal=universal}.{container?}", Name = "HeadUniversalAudioStream_2")]
+        [HttpGet("Audio/{itemId}/universal")]
+        [HttpGet("Audio/{itemId}/{universal=universal}.{container?}", Name = "GetUniversalAudioStream_2")]
+        [HttpHead("Audio/{itemId}/universal", Name = "HeadUniversalAudioStream")]
+        [HttpHead("Audio/{itemId}/{universal=universal}.{container?}", Name = "HeadUniversalAudioStream_2")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status302Found)]
