@@ -254,6 +254,39 @@ namespace MediaBrowser.Common.Networking
         /// or the ip address falls within any of the collection's network ranges.
         /// </summary>
         /// <param name="item">The item to look for.</param>
+        /// <param name="match">The item that contains the item specified.</param>
+        /// <returns>True if the collection contains the item.</returns>
+        public bool Contains(IPObject item, out IPObject? match)
+        {
+            if (Count == 0)
+            {
+                match = null;
+                return false;
+            }
+
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            foreach (var i in Items)
+            {
+                if (i.AddressFamily == item.AddressFamily && i.Contains(item))
+                {
+                    match = i;
+                    return true;
+                }
+            }
+
+            match = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if the collection contains an item with the ip address,
+        /// or the ip address falls within any of the collection's network ranges.
+        /// </summary>
+        /// <param name="item">The item to look for.</param>
         /// <returns>True if the collection contains the item.</returns>
         public bool Contains(IPObject item)
         {
@@ -354,9 +387,16 @@ namespace MediaBrowser.Common.Networking
 
             foreach (IPObject i in Items)
             {
-                if (target.Contains(i))
+                if (target.Contains(i, out IPObject? match))
                 {
-                    nc.Add(i);
+                    if (match != null) // && IPObject.MaskToCidr(match.Mask) < IPObject.MaskToCidr(i.Mask))
+                    {
+                        nc.Add(match);
+                    }
+                    else
+                    {
+                        nc.Add(i);
+                    }
                 }
             }
 
@@ -415,6 +455,29 @@ namespace MediaBrowser.Common.Networking
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Compares two NetCollection objects. Order is ignored.
+        /// </summary>
+        /// <param name="dest">Item to compare to.</param>
+        /// <returns>True if both are equal.</returns>
+        public bool Equals(NetCollection dest)
+        {
+            if (dest == null || Count != dest.Count)
+            {
+                return false;
+            }
+
+            foreach (var item in Items)
+            {
+                if (!dest.Exists(item))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

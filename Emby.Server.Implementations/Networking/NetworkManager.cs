@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
@@ -43,6 +44,8 @@ namespace Emby.Server.Implementations.Networking
         private readonly ILogger _logger;
 
         private readonly IServerConfigurationManager _configurationManager;
+
+        private readonly Dictionary<IPNetAddress, string> _overrideAddresses;
 
         /// <summary>
         /// Used to stop "event-racing conditions".
@@ -101,6 +104,7 @@ namespace Emby.Server.Implementations.Networking
             _interfaceAddresses = new NetCollection();
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new SortedList<string, int>();
+            _overrideAddresses = new Dictionary<IPNetAddress, string>();
 
             IsIP6Enabled = _configurationManager.Configuration.EnableIPV6;
 
@@ -143,6 +147,59 @@ namespace Emby.Server.Implementations.Networking
         /// </summary>
         public bool EnableMultiSocketBinding => _configurationManager.Configuration.EnableMultiSocketBinding;
 
+        /// <summary>
+        /// Parses a string and returns a range value if possible.
+        /// </summary>
+        /// <param name="rangeStr">String to parse.</param>
+        /// <param name="range">Range value contained in rangeStr.</param>
+        /// <returns>Result of the operation.</returns>
+        public static bool TryParseRange(string rangeStr, out (int min, int max) range)
+        {
+            if (string.IsNullOrEmpty(rangeStr))
+            {
+                range.min = range.max = 0; // Random Port.
+                return false;
+            }
+
+            // Remove all white space.
+            rangeStr = Regex.Replace(rangeStr, @"\s+", string.Empty);
+
+            var i = rangeStr.IndexOf('-', StringComparison.OrdinalIgnoreCase);
+            if (i != -1)
+            {
+                int minVal = int.TryParse(rangeStr.Substring(0, i), out int min) ? min : 1;
+                int maxVal = int.TryParse(rangeStr.Substring(i + 1), out int max) ? max : 65535;
+                if (minVal < 1)
+                {
+                    minVal = 1;
+                }
+
+                if (maxVal > 65535)
+                {
+                    maxVal = 65535;
+                }
+
+                range.max = Math.Max(minVal, maxVal);
+                range.min = Math.Min(minVal, maxVal);
+                return true;
+            }
+
+            if (int.TryParse(rangeStr, out int start))
+            {
+                if (start < 1 || start > 65535)
+                {
+                    start = 0; // Random Port.
+                }
+
+                range.min = range.max = start;
+                return true;
+            }
+
+            // Random Port.
+            range.min = range.max = 0;
+            return false;
+        }
+
         /// <inheritdoc/>
         public bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address)
         {
@@ -160,14 +217,56 @@ namespace Emby.Server.Implementations.Networking
             }
 
             InitialiseLAN();
+            InitialiseOverrides();
+        }
+
+        /// <inheritdoc/>
+        public int GetUdpPortFromRange((int min, int max) range)
+        {
+            var properties = IPGlobalProperties.GetIPGlobalProperties();
+
+            // Get active udp listeners.
+            var udpListenerPorts = properties.GetActiveUdpListeners()
+                        .Where(n => n.Port >= range.min && n.Port <= range.max)
+                        .Select(n => n.Port);
+
+            return Enumerable.Range(range.min, range.max)
+                .Where(i => !udpListenerPorts.Contains(i))
+                .FirstOrDefault();
         }
 
         /// <inheritdoc/>
         public int GetRandomUnusedUdpPort()
         {
-            var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            using var udpClient = new UdpClient(localEndPoint);
-            return ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+            // Get a port from the dynamic range.
+            return GetUdpPortFromRange((49152, 65535));
+
+            // var localEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            // using var udpClient = new UdpClient(localEndPoint);
+            // return ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+        }
+
+        /// <inheritdoc/>
+        public int GetPort(string portStr)
+        {
+            int port = 0;
+            if (TryParseRange(portStr, out (int min, int max) range))
+            {
+                port = GetUdpPortFromRange(range);
+            }
+
+            if (port < 0 || port > 65535)
+            {
+                _logger.LogError("UDP port in the range {0} cannot be allocated. Assigning random.", portStr);
+                port = 0;
+            }
+
+            if (port == 0)
+            {
+                port = GetRandomUnusedUdpPort();
+            }
+
+            return port;
         }
 
         /// <inheritdoc/>
@@ -306,7 +405,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public IPAddress GetBindInterface(object source)
+        public string GetBindInterface(object source)
         {
             // Parse the source to see if we need to respond with an internal or external bind interface.
             IPObject sourceAddr;
@@ -339,27 +438,37 @@ namespace Emby.Server.Implementations.Networking
                 _logger.LogWarning("IPv6 disabled in jellyfin, but enabled in OS. This may affect how the interface is selected.");
             }
 
-            bool externalSubnet = haveSource && !IsLANAddressRange(sourceAddr);
-            _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, externalSubnet);
+            bool isExternal = haveSource && !IsLANAddressRange(sourceAddr);
 
-            // Has the user specified an interface preference for this network?
-            string bindPreference = externalSubnet ?
-                _configurationManager.Configuration.ExternalBindInterface :
-                _configurationManager.Configuration.InternalBindInterface;
-
-            if (!string.IsNullOrEmpty(bindPreference) && TryParseInterface(bindPreference, out IPNetAddress bindAddr))
+            string bindPreference = string.Empty;
+            if (haveSource)
             {
-                // Never trust the user: Check that bindPreference is an actual interface address.
-                if (_interfaceAddresses.Contains(bindAddr))
+                // Check for user override.
+                foreach (var addr in _overrideAddresses)
                 {
-                    _logger.LogInformation("Using BindAddress {0}", bindAddr.Address);
-                    return bindAddr.Address;
-                }
+                    if (addr.Key.Equals(IPAddress.Any) && isExternal)
+                    {
+                        bindPreference = addr.Value;
+                        break;
+                    }
 
-                _logger.LogError("Invalid interface in BindAddress {0}", bindAddr);
+                    if (addr.Key.Contains(sourceAddr))
+                    {
+                        bindPreference = addr.Value;
+                        break;
+                    }
+                }
             }
 
-            IPAddress ipresult;
+            _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
+
+            if (!string.IsNullOrEmpty(bindPreference))
+            {
+                _logger.LogInformation("Using BindAddress {0}", bindPreference);
+                return bindPreference;
+            }
+
+            string ipresult;
             // No preference given, so auto select the best.
             lock (_intLock)
             {
@@ -382,7 +491,7 @@ namespace Emby.Server.Implementations.Networking
                         {
                             if (intf.Contains(sourceAddr))
                             {
-                                ipresult = intf.Address;
+                                ipresult = intf.Address.ToString();
                                 _logger.LogDebug("GetBindInterface: Has source, matched user defined interface on range. {0}", ipresult);
                                 return ipresult;
                             }
@@ -395,17 +504,17 @@ namespace Emby.Server.Implementations.Networking
 
                     if (ncRes.Any())
                     {
-                        ipresult = ncRes.First().Address;
+                        ipresult = ncRes.First().Address.ToString();
                         _logger.LogDebug("GetBindInterface: Has source, select best user defined interface. {0}", ipresult);
                         return ipresult;
                     }
 
-                    ipresult = nc[0].Address;
+                    ipresult = nc[0].Address.ToString();
                     _logger.LogDebug("GetBindInterface: Selected first user defined interface.", ipresult);
                     return ipresult;
                 }
 
-                if (externalSubnet)
+                if (isExternal)
                 {
                     // Get the first LAN interface address that isn't a loopback.
                     var extResult = _interfaceAddresses
@@ -423,14 +532,14 @@ namespace Emby.Server.Implementations.Networking
                             {
                                 if (!IsLANAddressRange(intf) && intf.Contains(sourceAddr))
                                 {
-                                    ipresult = intf.Address;
+                                    ipresult = intf.Address.ToString();
                                     _logger.LogDebug("GetBindInterface: Selected best external on interface on range. {0}", ipresult);
                                     return ipresult;
                                 }
                             }
                         }
 
-                        ipresult = extResult.First().Address;
+                        ipresult = extResult.First().Address.ToString();
                         _logger.LogDebug("GetBindInterface: Selected first external interface. {0}", ipresult);
                         return ipresult;
                     }
@@ -454,20 +563,20 @@ namespace Emby.Server.Implementations.Networking
                         {
                             if (IsLANAddressRange(intf) && intf.Contains(sourceAddr))
                             {
-                                ipresult = intf.Address;
+                                ipresult = intf.Address.ToString();
                                 _logger.LogDebug("GetBindInterface: Has source, matched best internal interface on range. {0}", ipresult);
                                 return ipresult;
                             }
                         }
                     }
 
-                    ipresult = result.First().Address;
+                    ipresult = result.First().Address.ToString();
                     _logger.LogDebug("GetBindInterface: Matched first internal interface. {0}", ipresult);
                     return ipresult;
                 }
 
                 // There isn't any others, so we'll use the loopback.
-                ipresult = IP4Loopback.Address;
+                ipresult = "127.0.0.1";
                 _logger.LogDebug("GetBindInterface: Default return. {0}", ipresult);
                 return ipresult;
             }
@@ -704,6 +813,52 @@ namespace Emby.Server.Implementations.Networking
                 // As network events tend to fire one after the other only fire once every second.
                 _eventfire = true;
                 _ = OnNetworkChangeAsync();
+            }
+        }
+
+        /// <summary>
+        /// Parses the user defined overrides into the dictionary object.
+        /// Overrides are the equivalent of localised publishedServerUrl, enabling
+        /// different addresses to be advertised over different subnets.
+        /// format is subnet=ipaddress|host|uri
+        /// when subnet = 0.0.0.0, any external address matches.
+        /// </summary>
+        private void InitialiseOverrides()
+        {
+            string[] overrides = _configurationManager.Configuration.PublishedServerUriBySubnet;
+            if (overrides == null)
+            {
+                lock (_intLock)
+                {
+                    _overrideAddresses.Clear();
+                }
+
+                return;
+            }
+
+            lock (_intLock)
+            {
+                _overrideAddresses.Clear();
+
+                foreach (var entry in overrides)
+                {
+                    var param = entry.Split('=');
+                    if (entry.Length != 2)
+                    {
+                        _logger.LogError("Unable to parse bind override. {0}", entry);
+                    }
+                    else
+                    {
+                        if (IPNetAddress.TryParse(param[0], out IPNetAddress address))
+                        {
+                            _overrideAddresses[address] = param[1];
+                        }
+                        else
+                        {
+                            _logger.LogError("Unable to parse bind ip address. {0}", entry);
+                        }
+                    }
+                }
             }
         }
 

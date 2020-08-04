@@ -1131,9 +1131,20 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(object source)
         {
-            return (_startupOptions.PublishedServerUrl != null)
-                ? _startupOptions.PublishedServerUrl.ToString()
-                : GetLocalApiUrl(_networkManager.GetBindInterface(source));
+            if (_startupOptions.PublishedServerUrl != null)
+            {
+                return _startupOptions.PublishedServerUrl.ToString();
+            }
+
+            string smart = _networkManager.GetBindInterface(source);
+
+            // If the smartAPI doesn't start with http then treat it as a host or ip.
+            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return smart;
+            }
+
+            return GetLocalApiUrl(smart);
         }
 
         /// <summary>

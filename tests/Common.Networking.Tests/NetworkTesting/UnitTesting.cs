@@ -93,6 +93,8 @@ namespace NetworkTesting
             Assert.True(string.Equals(nc?.ToString(), result3, System.StringComparison.OrdinalIgnoreCase));
 
             conf.EnableIPV6 = false;
+            nm.ConfigurationUpdated(nm, new System.EventArgs());
+
             // Test included, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.True(string.Equals(nc.ToString(), result2, System.StringComparison.OrdinalIgnoreCase));
@@ -102,6 +104,8 @@ namespace NetworkTesting
             Assert.True(string.Equals(nc.ToString(), result4, System.StringComparison.OrdinalIgnoreCase));
 
             conf.EnableIPV6 = true;
+            nm.ConfigurationUpdated(nm, new System.EventArgs());
+
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             nc = NetCollection.AsNetworks(nc);
@@ -133,11 +137,11 @@ namespace NetworkTesting
         }
 
         [Theory]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24", "[172.168.1.2/24]")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24, 10.10.10.1", "[172.168.1.2/24,10.10.10.1/32]")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/255.255.255.0, 10.10.10.1", "[192.168.1.2/24,10.10.10.1/32]")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/24, 100.10.10.1", "[192.168.1.2/24]")]
-        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "194.168.1.2/24, 100.10.10.1", "[]")]
+        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24", "172.168.1.2/24")]
+        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "172.168.1.2/24, 10.10.10.1", "172.168.1.2/24,10.10.10.1/32")]
+        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/255.255.255.0, 10.10.10.1", "192.168.1.2/24,10.10.10.1/32")]
+        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "192.168.1.2/24, 100.10.10.1", "192.168.1.2/24")]
+        [InlineData("192.168.1.2/24,10.10.10.1/24,172.168.1.2/24", "194.168.1.2/24, 100.10.10.1", "")]
 
         public void TestMatches(string source, string dest, string result)
         {
@@ -153,9 +157,9 @@ namespace NetworkTesting
             // Test included, IP6.
             NetCollection ncSource = nm.CreateIPCollection(source.Split(","));
             NetCollection ncDest = nm.CreateIPCollection(dest.Split(","));
-            string ncResult = ncSource.Union(ncDest).ToString();
-
-            Assert.True(string.Equals(ncResult, result, System.StringComparison.OrdinalIgnoreCase));
+            NetCollection ncResult = ncSource.Union(ncDest);
+            NetCollection resultCollection = nm.CreateIPCollection(result.Split(","));
+            Assert.True(ncResult.Equals(resultCollection));
         }
 
 
@@ -228,8 +232,6 @@ namespace NetworkTesting
         {
             var conf = new ServerConfiguration()
             {
-                //InternalBindInterface = "192.168.1.207",
-                //ExternalBindInterface = "eth11",
                 LocalNetworkAddresses = bindAddresses.Split(','),
                 EnableIPV6 = ipv6enabled
             };
@@ -242,6 +244,32 @@ namespace NetworkTesting
 
             Assert.True(nm.GetBindInterface(source).Equals(resultObj.Address));
             
+        }
+
+        [Theory]
+        // range specified.
+        [InlineData("10-12", 10, 12)]
+        // range specified.
+        [InlineData("12 - 14", 12, 14)]
+        // range specified but in the wrong order.
+        [InlineData("12 - 1", 1, 12)]
+        // No starting value, so 1 assumed.
+        [InlineData(" - 1", 1, 1)]
+        // No starting value, so 1 assumed.
+        [InlineData("-1", 1, 1)]
+        // Range not defined = random port.
+        [InlineData("", 0, 0)]
+        // Range invalid, but two numbers specified.
+        [InlineData("-14-12", 1, 65535)]
+
+        [InlineData("12      -", 12, 65535)]
+        [InlineData("0      - 1202020", 1, 65535)]
+        public void TestRange(string rangeStr, int min, int max)
+        {
+            _ = NetworkManager.TryParseRange(rangeStr, out (int min, int max) range);
+
+            Assert.True((range.min == min) && (range.max == max));
+
         }
     }
 }

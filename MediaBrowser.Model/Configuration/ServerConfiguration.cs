@@ -246,14 +246,9 @@ namespace MediaBrowser.Model.Configuration
         public string[] LocalNetworkAddresses { get; set; }
 
         /// <summary>
-        /// Gets or sets interface to advertise for external requests.
+        /// Gets or sets PublishedServerUri to advertise for specific subnets.
         /// </summary>
-        public string InternalBindInterface { get; set; }
-
-        /// <summary>
-        /// Gets or sets interface to advertise for internal requests.
-        /// </summary>
-        public string ExternalBindInterface { get; set; }
+        public string[] PublishedServerUriBySubnet { get; set; }
 
         public string[] CodecsUsed { get; set; }
 

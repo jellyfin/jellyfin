@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Common.Networking;
 
 namespace MediaBrowser.Common.Net
@@ -77,7 +75,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <returns>IP Address to use, or loopback address if all else fails.</returns>
-        IPAddress GetBindInterface(object source);
+        string GetBindInterface(object source);
 
         /// <summary>
         /// Checks to see if the ip address is specifically excluded in LocalNetworkAddresses.
@@ -91,6 +89,20 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>System.Int32.</returns>
         int GetRandomUnusedUdpPort();
+
+        /// <summary>
+        /// Returns a udp port based upon Configuration.UDPPort.
+        /// </summary>
+        /// <param name="portStr">Port Range, or empty/zero for a random port.</param>
+        /// <returns>System.Int32.</returns>
+        int GetPort(string portStr);
+
+        /// <summary>
+        /// Returns an unused UDP port number in the range specified.
+        /// </summary>
+        /// <param name="range">Upper and Lower boundary of ports to select.</param>
+        /// <returns>System.Int32.</returns>
+        int GetUdpPortFromRange((int min, int max) range);
 
         /// <summary>
         /// Event triggered when configuration is changed.
