@@ -875,6 +875,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (dispose)
             {
                 StopProcesses();
+                _thumbnailResourcePool.Dispose();
             }
         }
 

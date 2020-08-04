@@ -272,7 +272,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <summary>
         /// Gets or sets the field_order.
         /// </summary>
-        /// <value>The loro_surmixlev.</value>
+        /// <value>The field_order.</value>
         [JsonPropertyName("field_order")]
         public string FieldOrder { get; set; }
 
