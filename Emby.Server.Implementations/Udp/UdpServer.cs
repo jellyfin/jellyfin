@@ -20,7 +20,6 @@ namespace Emby.Server.Implementations.Udp
     {
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
-        private readonly IConfiguration _config;
 
         /// <summary>
         /// UDP socket being used.
