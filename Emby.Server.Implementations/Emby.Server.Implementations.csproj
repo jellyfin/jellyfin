@@ -15,7 +15,6 @@
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
     <ProjectReference Include="..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
