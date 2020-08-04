@@ -174,7 +174,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 inputFiles = new[] { mediaSource.Path };
             }
 
-            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, _mediaSourceManager.GetPathProtocol(subtitleStream.Path), subtitleStream, cancellationToken).ConfigureAwait(false);
+            var protocol = mediaSource.Protocol;
+            if (subtitleStream.IsExternal)
+            {
+                protocol = _mediaSourceManager.GetPathProtocol(subtitleStream.Path);
+            }
+
+            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, protocol, subtitleStream, cancellationToken).ConfigureAwait(false);
 
             var stream = await GetSubtitleStream(fileInfo.Path, fileInfo.Protocol, fileInfo.IsExternal, cancellationToken).ConfigureAwait(false);
 
@@ -725,19 +731,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
 
-                var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
+                ReadOnlySpan<char> filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Substring(0, 1);
+                var prefix = filename.Slice(0, 1);
 
-                return Path.Combine(SubtitleCachePath, prefix, filename);
+                return Path.Join(SubtitleCachePath, prefix, filename);
             }
             else
             {
-                var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
+                ReadOnlySpan<char> filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Substring(0, 1);
+                var prefix = filename.Slice(0, 1);
 
-                return Path.Combine(SubtitleCachePath, prefix, filename);
+                return Path.Join(SubtitleCachePath, prefix, filename);
             }
         }
 

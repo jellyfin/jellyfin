@@ -494,7 +494,7 @@ namespace Emby.Server.Implementations.HttpServer
                 var handler = GetServiceHandler(httpReq);
                 if (handler != null)
                 {
-                    await handler.ProcessRequestAsync(this, httpReq, httpRes, _logger, cancellationToken).ConfigureAwait(false);
+                    await handler.ProcessRequestAsync(this, httpReq, httpRes, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {

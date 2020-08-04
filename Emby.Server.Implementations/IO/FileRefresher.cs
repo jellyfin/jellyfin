@@ -21,6 +21,7 @@ namespace Emby.Server.Implementations.IO
         private readonly List<string> _affectedPaths = new List<string>();
         private readonly object _timerLock = new object();
         private Timer _timer;
+        private bool _disposed;
 
         public FileRefresher(string path, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger logger)
         {
@@ -213,11 +214,11 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        private bool _disposed;
         public void Dispose()
         {
             _disposed = true;
             DisposeTimer();
+            GC.SuppressFinalize(this);
         }
     }
 }

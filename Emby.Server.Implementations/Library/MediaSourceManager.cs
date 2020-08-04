@@ -46,8 +46,6 @@ namespace Emby.Server.Implementations.Library
         private readonly Dictionary<string, ILiveStream> _openStreams = new Dictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
-        private readonly object _disposeLock = new object();
-
         private IMediaSourceProvider[] _providers;
 
         public MediaSourceManager(
@@ -623,12 +621,14 @@ namespace Emby.Server.Implementations.Library
 
             if (liveStreamInfo is IDirectStreamProvider)
             {
-                var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-                {
-                    MediaSource = mediaSource,
-                    ExtractChapters = false,
-                    MediaType = DlnaProfileType.Video
-                }, cancellationToken).ConfigureAwait(false);
+                var info = await _mediaEncoder.GetMediaInfo(
+                    new MediaInfoRequest
+                    {
+                        MediaSource = mediaSource,
+                        ExtractChapters = false,
+                        MediaType = DlnaProfileType.Video
+                    },
+                    cancellationToken).ConfigureAwait(false);
 
                 mediaSource.MediaStreams = info.MediaStreams;
                 mediaSource.Container = info.Container;
@@ -859,11 +859,11 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private Tuple<IMediaSourceProvider, string> GetProvider(string key)
+        private (IMediaSourceProvider, string) GetProvider(string key)
         {
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentException("key");
+                throw new ArgumentException("Key can't be empty.", nameof(key));
             }
 
             var keys = key.Split(new[] { LiveStreamIdDelimeter }, 2);
@@ -873,7 +873,7 @@ namespace Emby.Server.Implementations.Library
             var splitIndex = key.IndexOf(LiveStreamIdDelimeter, StringComparison.Ordinal);
             var keyId = key.Substring(splitIndex + 1);
 
-            return new Tuple<IMediaSourceProvider, string>(provider, keyId);
+            return (provider, keyId);
         }
 
         /// <summary>
@@ -893,15 +893,12 @@ namespace Emby.Server.Implementations.Library
         {
             if (dispose)
             {
-                lock (_disposeLock)
+                foreach (var key in _openStreams.Keys.ToList())
                 {
-                    foreach (var key in _openStreams.Keys.ToList())
-                    {
-                        var task = CloseLiveStream(key);
-
-                        Task.WaitAll(task);
-                    }
+                    CloseLiveStream(key).GetAwaiter().GetResult();
                 }
+
+                _liveStreamSemaphore.Dispose();
             }
         }
     }

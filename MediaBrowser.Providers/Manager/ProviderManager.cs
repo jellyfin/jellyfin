@@ -966,7 +966,7 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void OnRefreshStart(BaseItem item)
         {
-            _logger.LogInformation("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _logger.LogDebug("OnRefreshStart {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
             _activeRefreshes[item.Id] = 0;
             RefreshStarted?.Invoke(this, new GenericEventArgs<BaseItem>(item));
         }
@@ -974,7 +974,7 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void OnRefreshComplete(BaseItem item)
         {
-            _logger.LogInformation("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
+            _logger.LogDebug("OnRefreshComplete {0}", item.Id.ToString("N", CultureInfo.InvariantCulture));
 
             _activeRefreshes.Remove(item.Id, out _);
 
