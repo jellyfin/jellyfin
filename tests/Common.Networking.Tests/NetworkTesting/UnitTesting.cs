@@ -213,10 +213,12 @@ namespace NetworkTesting
 
         // Testing bind interfaces. These are set for my system so won't work elsewhere.
         // On my system eth16 is internal, eth11 external (Windows defines the indexes).
+        //
+        // This test is to replicate how DNLA requests work throughout the system.
 
         // User on internal network, we're bound internal and external - so result is internal.
         [InlineData("192.168.1.1", "eth16,eth11", false, "eth16")]
-        // User on internal network, we're bound internal and external - so result is external.
+        // User on external network, we're bound internal and external - so result is external.
         [InlineData("8.8.8.8", "eth16,eth11", false, "eth11")]
         // User on internal network, we're bound internal only - so result is internal.
         [InlineData("10.10.10.10", "eth16", false, "eth16")]
@@ -247,6 +249,58 @@ namespace NetworkTesting
             
             Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
             
+        }
+
+        [Theory]
+
+        // Testing bind interfaces. These are set for my system so won't work elsewhere.
+        // On my system eth16 is internal, eth11 external (Windows defines the indexes).
+        //
+        // This test is to replicate how subnet bound ServerPublisherUri work throughout the system.
+        
+        // User on internal network, we're bound internal and external - so result is internal override.
+        [InlineData("192.168.1.1", "eth16,eth11", false, "192.168.1.0/24=internal.jellyfin", "internal.jellyfin")]
+
+        // User on external network, we're bound internal and external - so result is override.
+        [InlineData("8.8.8.8", "eth16,eth11", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
+
+        // User on internal network, we're bound internal only, but the address isn't in the LAN - so return the override.
+        [InlineData("10.10.10.10", "eth16", false, "0.0.0.0=http://internalButNotDefinedAsLan.com", "http://internalButNotDefinedAsLan.com")]
+
+        // User on internal network, no binding specified - so result is the 1st internal.
+        [InlineData("192.168.1.1", "", false, "0.0.0.0=http://helloworld.com", "eth16")]
+
+        // User on external network, internal binding only - so asumption is a proxy forward, return external override.
+        [InlineData("jellyfin.org", "eth16", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
+
+        // User on external network, no binding - so result is the 1st external which is overriden.
+        [InlineData("jellyfin.org", "", false, "0.0.0.0 = http://helloworld.com", "http://helloworld.com")]
+
+        // User assumed to be internal, no binding - so result is the 1st internal.
+        [InlineData("", "", false, "0.0.0.0=http://helloworld.com", "eth16")]
+
+        public void TestBindInterfaceOverrides(string source, string bindAddresses, bool ipv6enabled, string publishedServers, string result)
+        {
+            var conf = new ServerConfiguration()
+            {
+                LocalNetworkAddresses = bindAddresses.Split(','),
+                EnableIPV6 = ipv6enabled,
+                PublishedServerUriBySubnet = new string[] { publishedServers }
+            };
+
+            var confManagerMock = Mock.Of<IServerConfigurationManager>(x => x.Configuration == conf);
+
+            var nm = new NetworkManager(confManagerMock, new NullLogger<NetworkManager>());
+
+            if (nm.TryParseInterface(result, out IPNetAddress resultObj))
+            {
+                // Parse out IPAddresses so we can do a string comparison. (Ignore subnet masks).
+                result = resultObj.Address.ToString();
+            }
+
+            var intf = nm.GetBindInterface(source);
+
+            Assert.True(string.Equals(intf, result, System.StringComparison.OrdinalIgnoreCase));
         }
 
         [Theory]

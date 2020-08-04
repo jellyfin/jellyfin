@@ -110,6 +110,7 @@ namespace Emby.Server.Implementations.Networking
 
             InitialiseInterfaces();
             InitialiseLAN();
+            InitialiseOverrides();
 
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
@@ -842,16 +843,16 @@ namespace Emby.Server.Implementations.Networking
 
                 foreach (var entry in overrides)
                 {
-                    var param = entry.Split('=');
-                    if (entry.Length != 2)
+                    int i = entry.IndexOf("=", StringComparison.OrdinalIgnoreCase);
+                    if (i == -1)
                     {
                         _logger.LogError("Unable to parse bind override. {0}", entry);
                     }
                     else
                     {
-                        if (IPNetAddress.TryParse(param[0], out IPNetAddress address))
+                        if (IPNetAddress.TryParse(entry.Substring(0, i), out IPNetAddress address))
                         {
-                            _overrideAddresses[address] = param[1];
+                            _overrideAddresses[address] = entry.Substring(i + 1).Trim();
                         }
                         else
                         {
