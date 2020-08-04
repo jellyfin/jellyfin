@@ -19,7 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// The artists controller.
     /// </summary>
     [Authorize(Policy = Policies.DefaultAuthorization)]
-    [Route("/Artists")]
+    [Route("Artists")]
     public class ArtistsController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;

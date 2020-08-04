@@ -23,7 +23,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Search controller.
     /// </summary>
-    [Route("/Search/Hints")]
+    [Route("Search/Hints")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class SearchController : BaseJellyfinApiController
     {

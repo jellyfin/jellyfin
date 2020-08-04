@@ -27,7 +27,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// User controller.
     /// </summary>
-    [Route("/Users")]
+    [Route("Users")]
     public class UserController : BaseJellyfinApiController
     {
         private readonly IUserManager _userManager;

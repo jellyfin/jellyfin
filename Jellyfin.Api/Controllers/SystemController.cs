@@ -23,7 +23,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The system controller.
     /// </summary>
-    [Route("/System")]
+    [Route("System")]
     public class SystemController : BaseJellyfinApiController
     {
         private readonly IServerApplicationHost _appHost;

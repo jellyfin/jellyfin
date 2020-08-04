@@ -15,7 +15,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Authentication controller.
     /// </summary>
-    [Route("/Auth")]
+    [Route("Auth")]
     public class ApiKeyController : BaseJellyfinApiController
     {
         private readonly ISessionManager _sessionManager;

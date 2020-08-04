@@ -22,7 +22,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The tv shows controller.
     /// </summary>
-    [Route("/Shows")]
+    [Route("Shows")]
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class TvShowsController : BaseJellyfinApiController
     {
