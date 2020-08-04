@@ -279,7 +279,7 @@ namespace Emby.Dlna.Main
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, addr.Address);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(addr.Address) + descriptorUri);
+                var uri = new Uri(_appHost.GetSmartApiUrl(addr.Address) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {

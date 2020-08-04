@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -183,11 +184,11 @@ namespace Emby.Dlna.PlayTo
                 string serverAddress;
                 if (info.LocalIpAddress == null || info.LocalIpAddress.Equals(IPAddress.Any) || info.LocalIpAddress.Equals(IPAddress.IPv6Any))
                 {
-                    serverAddress = _appHost.GetLocalApiUrl(IPAddress.None);
+                    serverAddress = _appHost.GetSmartApiUrl(string.Empty);
                 }
                 else
                 {
-                    serverAddress = _appHost.GetLocalApiUrl(info.LocalIpAddress);
+                    serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
                 }
 
                 controller = new PlayToController(

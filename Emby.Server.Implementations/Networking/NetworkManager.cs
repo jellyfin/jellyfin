@@ -410,7 +410,7 @@ namespace Emby.Server.Implementations.Networking
         {
             // Parse the source to see if we need to respond with an internal or external bind interface.
             IPObject sourceAddr;
-            if (source is string sourceStr)
+            if (source is string sourceStr && !string.IsNullOrEmpty(sourceStr))
             {
                 if (IPHost.TryParse(sourceStr, out IPHost host))
                 {

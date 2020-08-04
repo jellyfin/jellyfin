@@ -263,7 +263,12 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            DeviceFound(device, isNewDevice, localIpAddress);
+            // Only fire event if we haven't seen this device before.
+            if (isNewDevice)
+            {
+                DeviceFound(device, isNewDevice, localIpAddress);
+            }
+
             return isNewDevice;
         }
 

@@ -254,8 +254,6 @@ namespace MediaBrowser.Model.Configuration
 
         public List<RepositoryInfo> PluginRepositories { get; set; }
 
-        public bool IgnoreVirtualInterfaces { get; set; }
-
         public bool EnableExternalContentInSuggestions { get; set; }
 
         /// <summary>
@@ -377,9 +375,6 @@ namespace MediaBrowser.Model.Configuration
                     DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
-
-            // Obsolete setting
-            IgnoreVirtualInterfaces = false;
         }
     }
 

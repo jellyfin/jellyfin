@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             var list = sources.ToList();
-            var serverUrl = _appHost.GetLocalApiUrl(IPAddress.None);
+            var serverUrl = _appHost.GetSmartApiUrl(string.Empty);
 
             foreach (var source in list)
             {
