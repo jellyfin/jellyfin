@@ -1,5 +1,8 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -19,9 +22,8 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.System;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -35,6 +37,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         internal const int DefaultImageExtractionTimeout = 5000;
 
+        /// <summary>
+        /// The us culture.
+        /// </summary>
+        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+
         private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
@@ -46,6 +53,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly object _runningProcessesLock = new object();
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
+
+        private List<string> _encoders = new List<string>();
+        private List<string> _decoders = new List<string>();
+        private List<string> _hwaccels = new List<string>();
 
         private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
@@ -77,7 +88,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
         /// Sets global variables FFmpegPath.
-        /// Precedence is: Config > CLI > $PATH
+        /// Precedence is: Config > CLI > $PATH.
         /// </summary>
         public void SetFFmpegPath()
         {
@@ -122,8 +133,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Triggered from the Settings > Transcoding UI page when users submits Custom FFmpeg path to use.
         /// Only write the new path to xml if it exists.  Do not perform validation checks on ffmpeg here.
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="pathType"></param>
+        /// <param name="path">The path.</param>
+        /// <param name="pathType">The path type.</param>
         public void UpdateEncoderPath(string path, string pathType)
         {
             string newPath;
@@ -168,8 +179,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// If checks pass, global variable FFmpegPath and EncoderLocation are updated.
         /// </summary>
         /// <param name="path">FQPN to test.</param>
-        /// <param name="location">Location (External, Custom, System) of tool</param>
-        /// <returns></returns>
+        /// <param name="location">Location (External, Custom, System) of tool.</param>
+        /// <returns><c>true</c> if the version validation succeeded; otherwise, <c>false</c>.</returns>
         private bool ValidatePath(string path, FFmpegLocation location)
         {
             bool rc = false;
@@ -221,8 +232,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Search the system $PATH environment variable looking for given filename.
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
+        /// <param name="fileName">The filename.</param>
+        /// <returns>The full path to the file.</returns>
         private string ExistsOnSystemPath(string fileName)
         {
             var inJellyfinPath = GetEncoderPathFromDirectory(AppContext.BaseDirectory, fileName, recursive: true);
@@ -246,25 +257,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return null;
         }
 
-        private List<string> _encoders = new List<string>();
         public void SetAvailableEncoders(IEnumerable<string> list)
         {
             _encoders = list.ToList();
-            // _logger.Info("Supported encoders: {0}", string.Join(",", list.ToArray()));
         }
 
-        private List<string> _decoders = new List<string>();
         public void SetAvailableDecoders(IEnumerable<string> list)
         {
             _decoders = list.ToList();
-            // _logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
         }
 
-        private List<string> _hwaccels = new List<string>();
         public void SetAvailableHwaccels(IEnumerable<string> list)
         {
             _hwaccels = list.ToList();
-            //_logger.Info("Supported hwaccels: {0}", string.Join(",", list.ToArray()));
         }
 
         public bool SupportsEncoder(string encoder)
@@ -332,8 +337,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var forceEnableLogging = request.MediaSource.Protocol != MediaProtocol.File;
 
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, request.MediaSource.Protocol), request.MediaSource.Path, request.MediaSource.Protocol, extractChapters,
-                probeSize, request.MediaType == DlnaProfileType.Audio, request.MediaSource.VideoType, forceEnableLogging, cancellationToken);
+            return GetMediaInfoInternal(
+                GetInputArgument(inputFiles, request.MediaSource.Protocol),
+                request.MediaSource.Path,
+                request.MediaSource.Protocol,
+                extractChapters,
+                probeSize,
+                request.MediaType == DlnaProfileType.Audio,
+                request.MediaSource.VideoType,
+                forceEnableLogging,
+                cancellationToken);
         }
 
         /// <summary>
@@ -342,7 +355,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="inputFiles">The input files.</param>
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentException">Unrecognized InputType</exception>
+        /// <exception cref="ArgumentException">Unrecognized InputType.</exception>
         public string GetInputArgument(IReadOnlyList<string> inputFiles, MediaProtocol protocol)
             => EncodingUtils.GetInputArgument(inputFiles, protocol);
 
@@ -350,7 +363,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Gets the media info internal.
         /// </summary>
         /// <returns>Task{MediaInfoResult}.</returns>
-        private async Task<MediaInfo> GetMediaInfoInternal(string inputPath,
+        private async Task<MediaInfo> GetMediaInfoInternal(
+            string inputPath,
             string primaryPath,
             MediaProtocol protocol,
             bool extractChapters,
@@ -377,7 +391,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     FileName = _ffprobePath,
                     Arguments = args,
-
 
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
@@ -439,11 +452,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        /// <summary>
-        /// The us culture.
-        /// </summary>
-        protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         public Task<string> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken)
         {
             return ExtractImage(new[] { path }, null, null, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
@@ -459,8 +467,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ExtractImage(inputFiles, container, imageStream, imageStreamIndex, protocol, false, null, null, cancellationToken);
         }
 
-        private async Task<string> ExtractImage(string[] inputFiles, string container, MediaStream videoStream, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
-            Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
+        private async Task<string> ExtractImage(
+            string[] inputFiles,
+            string container,
+            MediaStream videoStream,
+            int? imageStreamIndex,
+            MediaProtocol protocol,
+            bool isAudio,
+            Video3DFormat? threedFormat,
+            TimeSpan? offset,
+            CancellationToken cancellationToken)
         {
             var inputArgument = GetInputArgument(inputFiles, protocol);
 
@@ -645,7 +661,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string GetTimeParameter(TimeSpan time)
         {
-            return time.ToString(@"hh\:mm\:ss\.fff", UsCulture);
+            return time.ToString(@"hh\:mm\:ss\.fff", _usCulture);
         }
 
         public async Task ExtractVideoImagesOnInterval(
@@ -662,11 +678,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputArgument(inputFiles, protocol);
 
-            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(UsCulture);
+            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(_usCulture);
 
             if (maxWidth.HasValue)
             {
-                var maxWidthParam = maxWidth.Value.ToString(UsCulture);
+                var maxWidthParam = maxWidth.Value.ToString(_usCulture);
 
                 vf += string.Format(",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }
@@ -859,6 +875,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (dispose)
             {
                 StopProcesses();
+                _thumbnailResourcePool.Dispose();
             }
         }
 
