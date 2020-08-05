@@ -221,8 +221,7 @@ namespace Rssdp.Infrastructure
 
             if (_networkManager.IsValidInterfaceAddress(remoteEndPoint.Address))
             {
-                // Don't process our own traffic.
-                return;
+                _logger.LogWarning("Received a SSDP request from ourselves.");
             }
 
             // Wait on random interval up to MX, as per SSDP spec.
@@ -525,7 +524,7 @@ namespace Rssdp.Infrastructure
 
             await _commsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null).ConfigureAwait(false);
 
-            _logger.LogInformation("Sent alive notification : {0} - {1}", device.FriendlyName, device.DeviceClass);
+            _logger.LogInformation("Sent alive notification : {0} - {1}", device.FriendlyName, device);
         }
 
         private Task SendByeByeNotifications(SsdpDevice device, bool isRoot)

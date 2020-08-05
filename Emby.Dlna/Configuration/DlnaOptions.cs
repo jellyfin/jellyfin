@@ -8,7 +8,7 @@ namespace Emby.Dlna.Configuration
         {
             EnablePlayTo = true;
             EnableServer = true;
-            BlastAliveMessages = true;
+            BlastAliveMessages = true; // Setting to false disables all DLNA advertising.
             SendOnlyMatchedHost = true;
             ClientDiscoveryIntervalSeconds = 60;
             BlastAliveMessageIntervalSeconds = 1800;

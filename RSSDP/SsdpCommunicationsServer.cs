@@ -202,8 +202,7 @@ namespace Rssdp.Infrastructure
             for (var i = 0; i < SsdpConstants.UdpResendCount; i++)
             {
                 var tasks = sockets.Select(s => SendFromSocket(s, messageData, destination)).ToArray();
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-                _ = Task.Delay(100);
+                await Task.WhenAll(tasks).ContinueWith(delegate { Task.Delay(100); }, TaskScheduler.Default).ConfigureAwait(false);                
             }
         }
 

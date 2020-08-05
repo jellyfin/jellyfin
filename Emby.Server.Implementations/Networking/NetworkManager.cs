@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.Networking
         /// <inheritdoc/>
         public bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address)
         {
-            return IPObject.NetworkAddress(subnetIP, subnetMask) == IPObject.NetworkAddress(address, subnetMask);
+            return IPObject.NetworkAddress(subnetIP, subnetMask).Equals(IPObject.NetworkAddress(address, subnetMask));
         }
 
         /// <inheritdoc/>
@@ -672,7 +672,7 @@ namespace Emby.Server.Implementations.Networking
         {
             lock (_intLock)
             {
-                return _interfaceAddresses.Exists(address);
+                return _interfaceAddresses.Contains(address);
             }
         }
 

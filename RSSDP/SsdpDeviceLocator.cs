@@ -14,7 +14,8 @@ using Microsoft.Extensions.Logging;
 namespace Rssdp.Infrastructure
 {
     /// <summary>
-    /// Allows you to search the network for a particular device, device types, or UPnP service types. Also listenings for broadcast notifications of device availability and raises events to indicate changes in status.
+    /// Uses DeviceDiscovery to allow you to search the network for a particular device, device types, or UPnP service types.
+    /// Listenings for broadcast notifications of device availability and raises events to indicate changes in status.
     /// </summary>
     public class SsdpDeviceLocator : DisposableManagedObjectBase
     {
@@ -263,11 +264,7 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            // Only fire event if we haven't seen this device before.
-            if (isNewDevice)
-            {
-                DeviceFound(device, isNewDevice, localIpAddress);
-            }
+            DeviceFound(device, isNewDevice, localIpAddress);
 
             return isNewDevice;
         }
@@ -353,7 +350,7 @@ namespace Rssdp.Infrastructure
 
                 if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
                 {
-                    _logger.LogDebug("Search Response: {0} {1}", localIpAddress, device);
+                    _logger.LogDebug("Found DLNA Device : {0} {1}", device.DescriptionLocation, localIpAddress);
                 }
             }
         }
@@ -393,7 +390,7 @@ namespace Rssdp.Infrastructure
 
                 if (AddOrUpdateDiscoveredDevice(device, localIpAddress))
                 {
-                    _logger.LogDebug("Alive notification: {0} ", device.DescriptionLocation);
+                    _logger.LogDebug("Alive notification received: {0} ", device.DescriptionLocation);
                 }
             }
         }

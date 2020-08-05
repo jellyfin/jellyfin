@@ -209,24 +209,19 @@ namespace Emby.Dlna.Main
                         IsShared = true
                     };
 
-                    StartDeviceDiscovery(_communicationsServer);
+                    try
+                    {
+                        ((DeviceDiscovery)_deviceDiscovery).Start(_communicationsServer);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error starting device discovery");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error starting ssdp handlers");
-            }
-        }
-
-        private void StartDeviceDiscovery(ISsdpCommunicationsServer communicationsServer)
-        {
-            try
-            {
-                ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting device discovery");
             }
         }
 
@@ -245,10 +240,11 @@ namespace Emby.Dlna.Main
 
         public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
-            if (!options.BlastAliveMessages)
-            {
-                return;
-            }
+            //  See comment at https://github.com/jellyfin/jellyfin/pull/3257 - this stops jellyfin from being a DNLA compliant server.
+            //  if (!options.BlastAliveMessages)
+            //  {
+            //     return;
+            //  }
 
             // This is true on startup and at network change.
             if (_publisher != null)
@@ -299,6 +295,12 @@ namespace Emby.Dlna.Main
 
             foreach (IPObject addr in _networkManager.GetInternalBindAddresses())
             {
+                if (addr.IsLoopback())
+                {
+                    // Don't advertise loopbacks
+                    continue;
+                }
+
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, addr.Address);
