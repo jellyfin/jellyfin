@@ -1828,7 +1828,7 @@ namespace Jellyfin.Api.Controllers
                 }
 
                 audioTranscodeParams.Add("-vn");
-                return string.Join(" ", audioTranscodeParams.ToArray());
+                return string.Join(' ', audioTranscodeParams);
             }
 
             if (EncodingHelper.IsCopyCodec(audioCodec))

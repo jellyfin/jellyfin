@@ -8,7 +8,7 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
     /// <summary>
-    /// Credit to https://github.com/SubtitleEdit/subtitleedit/blob/a299dc4407a31796364cc6ad83f0d3786194ba22/src/Logic/SubtitleFormats/SubStationAlpha.cs
+    /// <see href="https://github.com/SubtitleEdit/subtitleedit/blob/a299dc4407a31796364cc6ad83f0d3786194ba22/src/Logic/SubtitleFormats/SubStationAlpha.cs">Credit</see>.
     /// </summary>
     public class SsaParser : ISubtitleParser
     {
@@ -179,10 +179,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             // h:mm:ss.cc
             string[] timeCode = time.Split(':', '.');
-            return new TimeSpan(0, int.Parse(timeCode[0]),
-                                int.Parse(timeCode[1]),
-                                int.Parse(timeCode[2]),
-                                int.Parse(timeCode[3]) * 10).Ticks;
+            return new TimeSpan(
+                0,
+                int.Parse(timeCode[0]),
+                int.Parse(timeCode[1]),
+                int.Parse(timeCode[2]),
+                int.Parse(timeCode[3]) * 10).Ticks;
         }
 
         private static string GetFormattedText(string text)
@@ -282,6 +284,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
                         }
+
                         int indexOfEndTag = text.IndexOf("{\\c}", start);
                         if (indexOfEndTag > 0)
                         {
@@ -320,6 +323,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         {
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
                         }
+
                         text += "</font>";
                     }
                 }
