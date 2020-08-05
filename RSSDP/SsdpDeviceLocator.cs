@@ -27,17 +27,19 @@ namespace Rssdp.Infrastructure
         private readonly INetworkManager _networkManager;
         private readonly TimeSpan _defaultSearchWaitTime = TimeSpan.FromSeconds(4);
         private readonly TimeSpan _oneSecond = TimeSpan.FromSeconds(1);
+        private readonly string _systemId;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ILogger logger, INetworkManager networkManager)
+        public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer, ILogger logger, INetworkManager networkManager, string systemId)
         {
             _communicationsServer = communicationsServer ?? throw new ArgumentNullException(nameof(communicationsServer));
             _communicationsServer.ResponseReceived += CommsServer_ResponseReceived;
             _networkManager = networkManager;
             _devices = new List<DiscoveredSsdpDevice>();
             _logger = logger;
+            _systemId = systemId;
         }
 
         /// <summary>
@@ -291,8 +293,7 @@ namespace Rssdp.Infrastructure
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["HOST"] = $"{SsdpConstants.MulticastLocalAdminAddress}:{SsdpConstants.MulticastPort}",
-                ["USER-AGENT"] = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2",
-                //values["X-EMBY-SERVERID"] = _appHost.SystemId;
+                ["USER-AGENT"] = SsdpConstants.SsdpUserAgent + "\\" + _systemId,
                 ["MAN"] = $"\"{SsdpConstants.SsdpDiscoverMessage}\"",
                 // Search target
                 ["ST"] = SsdpConstants.SsdpDiscoverAllSTHeader,

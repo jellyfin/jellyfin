@@ -193,20 +193,20 @@ namespace Emby.Dlna.PlayTo
 
                 controller = new PlayToController(
                     sessionInfo,
-                   _sessionManager,
-                   _libraryManager,
-                   _logger,
-                   _dlnaManager,
-                   _userManager,
-                   _imageProcessor,
-                   serverAddress,
-                   null,
-                   _deviceDiscovery,
-                   _userDataManager,
-                   _localization,
-                   _mediaSourceManager,
-                   _config,
-                   _mediaEncoder);
+                    _sessionManager,
+                    _libraryManager,
+                    _logger,
+                    _dlnaManager,
+                    _userManager,
+                    _imageProcessor,
+                    serverAddress,
+                    null,
+                    _deviceDiscovery,
+                    _userDataManager,
+                    _localization,
+                    _mediaSourceManager,
+                    _config,
+                    _mediaEncoder);
 
                 sessionInfo.AddController(controller);
 

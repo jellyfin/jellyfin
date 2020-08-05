@@ -178,13 +178,17 @@ namespace Rssdp.Infrastructure
                 throw new ArgumentNullException(nameof(fromLocalIpAddress));
             }
 
-            if (!_networkManager.EnableMultiSocketBinding)
+            if (!_networkManager.IsInLocalNetwork(destination.Address))
             {
-                // Only need to do these checks if we're using one socket for everything as socket.count will be zero later if not.
-                if (!_networkManager.IsInLocalNetwork(destination.Address) ||
-                    (!fromLocalIpAddress.Equals(IPAddress.Any) && !_networkManager.IsInLocalNetwork(fromLocalIpAddress)))
+                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", destination.Address);
+                return;
+            }
+
+            if (!fromLocalIpAddress.Equals(IPAddress.Any) && !fromLocalIpAddress.Equals(IPAddress.IPv6Any))
+            {
+                if (!_networkManager.IsInLocalNetwork(fromLocalIpAddress))
                 {
-                    // _logger.LogInformation("Filtering outbound SSDP from {0} to {1}.", fromLocalIpAddress, destination.Address);
+                    _logger.LogDebug("SSDP filtered due to attempt to send from a non LAN interface {0}.", fromLocalIpAddress);
                     return;
                 }
             }
@@ -195,7 +199,27 @@ namespace Rssdp.Infrastructure
 
             if (sockets.Count == 0)
             {
-                return;
+                // See if we can add the socket.
+                lock (_sendSocketSynchroniser)
+                { 
+                    try
+                    {
+                        var socket = _socketFactory.CreateSsdpUdpSocket(fromLocalIpAddress, _localPort);
+                        _sendSockets.Add(socket);
+                        _ = ListenToSocketInternal(socket);
+                    }
+                    catch (SocketException ex)
+                    {
+                        _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: {0}", fromLocalIpAddress);
+                    }
+                }
+
+                sockets = GetSendSockets(fromLocalIpAddress, destination);
+                if (sockets.Count == 0)
+                {
+                    _logger.LogError("Unable to locate or create socket for {0}:{1}", fromLocalIpAddress, destination);
+                    return;
+                }
             }
 
             // SSDP spec recommends sending messages multiple times (not more than 3) to account for possible packet loss over UDP.
@@ -257,25 +281,28 @@ namespace Rssdp.Infrastructure
             {
                 var sockets = _sendSockets.Where(i => i.LocalIPAddress.AddressFamily == fromLocalIpAddress.AddressFamily);
 
-                // Send from the Any socket and the socket with the matching address
-                if (fromLocalIpAddress.AddressFamily == AddressFamily.InterNetwork)
+                if (sockets.Any())
                 {
-                    sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
-
-                    // If sending to the loopback address, filter the socket list as well
-                    if (destination.Address.Equals(IPAddress.Loopback))
+                    // Send from the Any socket and the socket with the matching address
+                    if (fromLocalIpAddress.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.Any) || i.LocalIPAddress.Equals(IPAddress.Loopback));
+                        sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
+
+                        // If sending to the loopback address, filter the socket list as well
+                        if (destination.Address.Equals(IPAddress.Loopback))
+                        {
+                            sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.Any) || i.LocalIPAddress.Equals(IPAddress.Loopback));
+                        }
                     }
-                }
-                else if (fromLocalIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
-                {
-                    sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.IPv6Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
-
-                    // If sending to the loopback address, filter the socket list as well
-                    if (destination.Address.Equals(IPAddress.IPv6Loopback))
+                    else if (fromLocalIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
                     {
-                        sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.IPv6Any) || i.LocalIPAddress.Equals(IPAddress.IPv6Loopback));
+                        sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.IPv6Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
+
+                        // If sending to the loopback address, filter the socket list as well
+                        if (destination.Address.Equals(IPAddress.IPv6Loopback))
+                        {
+                            sockets = sockets.Where(i => i.LocalIPAddress.Equals(IPAddress.IPv6Any) || i.LocalIPAddress.Equals(IPAddress.IPv6Loopback));
+                        }
                     }
                 }
 
@@ -434,17 +461,15 @@ namespace Rssdp.Infrastructure
                     }
                 }
             }
-            else
+
+            // Add an IPAny Socket
+            try
             {
-                // Only create a socket for all interfaces if multisocket binding isn't enabled.
-                try
-                {
-                    sockets.Add(_socketFactory.CreateSsdpUdpSocket(_networkManager.IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any, _localPort));
-                }
-                catch (SocketException ex)
-                {
-                    _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: Any");
-                }
+                sockets.Add(_socketFactory.CreateSsdpUdpSocket(_networkManager.IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any, _localPort));
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: Any");
             }
 
             foreach (var socket in sockets)
@@ -468,9 +493,23 @@ namespace Rssdp.Infrastructure
 
                     if (result.ReceivedBytes > 0)
                     {
+                        if (!_networkManager.IsInLocalNetwork(result.RemoteEndPoint.Address))
+                        {
+                            _logger.LogDebug("SSDP filtered from non-LAN address {0}.", result.RemoteEndPoint.Address);
+                            return;
+                        }
+
+                        if (!result.LocalIPAddress.Equals(IPAddress.Any) && !result.LocalIPAddress.Equals(IPAddress.IPv6Any))
+                        {
+                            if (!_networkManager.IsInLocalNetwork(result.LocalIPAddress))
+                            {
+                                _logger.LogDebug("SSDP filtered due to arrive on a non LAN interface {0}.", result.LocalIPAddress);
+                                return;
+                            }
+                        }
+
                         // Strange cannot convert compiler error here if I don't explicitly
-                        // assign or cast to Action first. Assignment is easier to read,
-                        // so went with that.
+                        // assign or cast to Action first. Assignment is easier to read, so went with that.
                         ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
                     }
                 }
@@ -501,15 +540,6 @@ namespace Rssdp.Infrastructure
 
         private void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress)
         {
-            if (!_networkManager.IsInLocalNetwork(endPoint.Address)
-                || (!receivedOnLocalIpAddress.Equals(IPAddress.Any)
-                && !receivedOnLocalIpAddress.Equals(IPAddress.IPv6Any)
-                && !_networkManager.IsInLocalNetwork(receivedOnLocalIpAddress)))                 
-            {
-                // _logger.LogDebug("SSDP filtered from {0} to interface {1}.", endPoint.Address, receivedOnLocalIpAddress);
-                return;
-            }
-
             // Responses start with the HTTP version, prefixed with HTTP/ while
             // requests start with a method which can vary and might be one we haven't
             // seen/don't know. We'll check if this message is a request or a response

@@ -208,6 +208,22 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
+        public bool OnSameMachine(IPAddress addr1, IPAddress addr2)
+        {
+            if (addr1 == null || addr2 == null)
+            {
+                return false;
+            }
+
+            if (_configurationManager.Configuration.TrustAllIP6Interfaces && addr2.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                return addr1.Equals(IP4Loopback) || addr1.Equals(IP6Loopback);
+            }
+
+            return (addr1.Equals(IP4Loopback) || addr1.Equals(IP6Loopback)) && IsInLocalNetwork(addr2);
+        }
+
+        /// <inheritdoc/>
         public void ConfigurationUpdated(object sender, EventArgs e)
         {
             // IP6 settings changed.

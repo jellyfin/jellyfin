@@ -126,6 +126,14 @@ namespace MediaBrowser.Common.Net
         bool IsPrivateAddressRange(IPObject address);
 
         /// <summary>
+        /// Returns true if the two addresses are on the same machine.
+        /// </summary>
+        /// <param name="addr1">Address 1.</param>
+        /// <param name="addr2">Address 2.</param>
+        /// <returns>True if both are on this machine.</returns>
+        public bool OnSameMachine(IPAddress addr1, IPAddress addr2);
+
+        /// <summary>
         /// Returns true if the address is part of the user defined LAN.
         /// The config option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>

@@ -240,11 +240,11 @@ namespace Emby.Dlna.Main
 
         public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
-            //  See comment at https://github.com/jellyfin/jellyfin/pull/3257 - this stops jellyfin from being a DNLA compliant server.
-            //  if (!options.BlastAliveMessages)
-            //  {
-            //     return;
-            //  }
+            // See comment at https://github.com/jellyfin/jellyfin/pull/3257 - this stops jellyfin from being a DNLA compliant server.
+            // if (!options.BlastAliveMessages)
+            // {
+            //    return;
+            // }
 
             // This is true on startup and at network change.
             if (_publisher != null)
@@ -270,6 +270,7 @@ namespace Emby.Dlna.Main
                     _communicationsServer,
                     OperatingSystem.Name,
                     Environment.OSVersion.VersionString,
+                    _appHost.SystemId,
                     _logger,
                     _networkManager,
                     _config.GetDlnaConfiguration().SendOnlyMatchedHost)

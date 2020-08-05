@@ -12,6 +12,7 @@ namespace Rssdp.Infrastructure
         internal const string SsdpKeepAliveNotification = "ssdp:alive";
         internal const string SsdpByeByeNotification = "ssdp:byebye";
         internal const int UdpResendCount = 3;
+        internal const string SsdpUserAgent = "UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2";
 
         /// <summary>
         /// Multicast IP Address used for SSDP multicast messages. Values is 239.255.255.250.

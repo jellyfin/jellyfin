@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
@@ -19,17 +20,19 @@ namespace Emby.Dlna.Ssdp
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
+        private readonly IServerApplicationHost _appHost;
 
         private int _listenerCount;
         private bool _disposed;
         private SsdpDeviceLocator _deviceLocator;
         private ISsdpCommunicationsServer _commsServer;
 
-        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager)
+        public DeviceDiscovery(IServerConfigurationManager config, ILoggerFactory loggerFactory, INetworkManager networkManager, IServerApplicationHost apphost)
         {
             _config = config;
             _logger = loggerFactory.CreateLogger<DeviceDiscovery>();
             _networkManager = networkManager;
+            _appHost = apphost;
         }
 
         private event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscoveredInternal;
@@ -75,7 +78,7 @@ namespace Emby.Dlna.Ssdp
             {
                 if (_listenerCount > 0 && _deviceLocator == null)
                 {
-                    _deviceLocator = new SsdpDeviceLocator(_commsServer, _logger, _networkManager);
+                    _deviceLocator = new SsdpDeviceLocator(_commsServer, _logger, _networkManager, _appHost.SystemId);
 
                     // (Optional) Set the filter so we only see notifications for devices we care about
                     // (can be any search target value i.e device type, uuid value etc - any value that appears in the
