@@ -65,7 +65,7 @@ namespace MediaBrowser.Controller
         string GetSmartApiUrl(object source);
 
         /// <summary>
-        /// Gets a localhost URL that can be used to access the API using the loop-back IP address (127.0.0.1)
+        /// Gets a localhost URL that can be used to access the API using the loop-back IP address.
         /// over HTTP (not HTTPS).
         /// </summary>
         /// <returns>The API URL.</returns>

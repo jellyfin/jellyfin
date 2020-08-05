@@ -382,26 +382,18 @@ namespace Emby.Server.Implementations.Networking
                     }
 
                     // No bind address and no exclusions, so listen on all interfaces.
-                    return new NetCollection();
-                }
+                    NetCollection result = new NetCollection();
+                    result.Add(IPAddress.Any);
+                    if (IsIP6Enabled)
+                    {
+                        result.Add(IPAddress.IPv6Any);
+                    }
 
-                if (count == 1 && _bindAddresses[0].Equals(IPAddress.Any))
-                {
-                    // If bind address is 0.0.0.0 listen on all interfaces.
-                    return new NetCollection();
+                    return result;
                 }
 
                 // Remove any excluded bind interfaces.
-                NetCollection nc = _bindAddresses.Exclude(_bindExclusions);
-
-                // Return only interface addresses that are valid.
-                if (nc.Equals(_interfaceAddresses))
-                {
-                    // If bindAddress == interfaceAddresses then listen on all interfaces.
-                    return new NetCollection();
-                }
-
-                return nc;
+                return _bindAddresses.Exclude(_bindExclusions);
             }
         }
 
@@ -434,7 +426,7 @@ namespace Emby.Server.Implementations.Networking
 
             bool haveSource = !sourceAddr.Address.Equals(IPAddress.None);
 
-            if (haveSource && IsIP6Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetworkV6)
+            if (haveSource && !IsIP6Enabled && sourceAddr.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 _logger.LogWarning("IPv6 disabled in jellyfin, but enabled in OS. This may affect how the interface is selected.");
             }
@@ -447,13 +439,17 @@ namespace Emby.Server.Implementations.Networking
                 // Check for user override.
                 foreach (var addr in _overrideAddresses)
                 {
-                    if (addr.Key.Equals(IPAddress.Any) && isExternal)
+                    if (addr.Key.Equals(IPAddress.Broadcast))
                     {
                         bindPreference = addr.Value;
                         break;
                     }
-
-                    if (addr.Key.Contains(sourceAddr))
+                    else if ((addr.Key.Equals(IPAddress.Any) || addr.Key.Equals(IPAddress.IPv6Any)) && isExternal)
+                    {
+                        bindPreference = addr.Value;
+                        break;
+                    }
+                    else if (addr.Key.Contains(sourceAddr))
                     {
                         bindPreference = addr.Value;
                         break;
@@ -476,7 +472,7 @@ namespace Emby.Server.Implementations.Networking
                 NetCollection nc = _bindAddresses.Exclude(_bindExclusions);
 
                 int count = nc.Count;
-                if (count == 1 && _bindAddresses[0].Equals(IPAddress.Any))
+                if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses.Equals(IPAddress.IPv6Any)))
                 {
                     // Ignore IPAny addresses.
                     count = 0;
@@ -598,12 +594,6 @@ namespace Emby.Server.Implementations.Networking
                         return new NetCollection(_internalInterfaces.Where(p => !_bindExclusions.Contains(p)));
                     }
 
-                    // No bind address, so return all internal interfaces.
-                    return _internalInterfaces;
-                }
-
-                if (count == 1 && _bindAddresses[0].Equals(IPAddress.Any))
-                {
                     // No bind address, so return all internal interfaces.
                     return _internalInterfaces;
                 }

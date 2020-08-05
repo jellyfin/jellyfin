@@ -274,8 +274,38 @@ namespace MediaBrowser.Common.Networking
         /// <inheritdoc/>
         public override string ToString()
         {
+            return ToString(false);
+        }
+
+        /// <summary>
+        /// Returns a textual representation of this object.
+        /// </summary>
+        /// <param name="shortVersion">Set to true, if the subnet is to be included as part of the address.</param>
+        /// <returns>String representation of this object.</returns>
+        public string ToString(bool shortVersion)
+        {
             if (!Address.Equals(IPAddress.None))
             {
+                if (Address.Equals(IPAddress.Any))
+                {
+                    return "Any IP4 Address";
+                }
+
+                if (Address.Equals(IPAddress.IPv6Any))
+                {
+                    return "Any IP6 Address";
+                }
+
+                if (Address.Equals(IPAddress.Broadcast))
+                {
+                    return "All Addreses";
+                }
+
+                if (shortVersion)
+                {
+                    return Address.ToString();
+                }
+
                 if (!Mask.Equals(IPAddress.Any))
                 {
                     return $"{Address}/" + IPObject.MaskToCidr(Mask);

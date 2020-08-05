@@ -148,6 +148,9 @@ namespace Emby.Dlna.Main
             }
         }
 
+        /// <summary>
+        /// (Re)initialises the DLNA settings.
+        /// </summary>
         private void ReloadComponents()
         {
             _logger.LogDebug("Reloading DLNA components.");
@@ -227,12 +230,14 @@ namespace Emby.Dlna.Main
                 return;
             }
 
+            // This is true on startup and at network change.
             if (_publisher != null)
             {
-                // See if there are any more endpoints.
+                // See if there are any more endpoints we need to add due to network change event.
                 try
                 {
                     RegisterServerEndpoints();
+                    // Restart the timer.
                     _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
                 }
                 catch (Exception ex)

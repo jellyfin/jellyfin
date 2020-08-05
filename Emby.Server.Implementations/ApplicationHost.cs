@@ -1128,9 +1128,11 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(object source)
         {
+            // Published server ends with a /
             if (_startupOptions.PublishedServerUrl != null)
             {
-                return _startupOptions.PublishedServerUrl.ToString();
+                // Published server ends with a '/', so we need to remove it.
+                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
             }
 
             string smart = _networkManager.GetBindInterface(source);
@@ -1180,6 +1182,11 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLoopbackHttpApiUrl()
         {
+            if (_networkManager.IsIP6Enabled)
+            {
+                return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
+            }
+
             return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
         }
 

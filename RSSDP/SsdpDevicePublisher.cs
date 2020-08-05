@@ -79,9 +79,9 @@ namespace Rssdp.Infrastructure
             }
             else
             {
-                _rebroadcastAliveNotificationsTimer = new Timer(async delegate
+                _rebroadcastAliveNotificationsTimer = new Timer(delegate
                 {
-                    await SendAllAliveNotificationsAsync().ConfigureAwait(false);
+                    SendAllAliveNotificationsAsync();
                 },
                 null,
                 TimeSpan.FromSeconds(5),
@@ -442,7 +442,10 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private async Task SendAllAliveNotificationsAsync()
+        /// <summary>
+        /// Async timer callback that sends alive notifications - (hence the use of async void).
+        /// </summary>
+        private async void SendAllAliveNotificationsAsync()
         {
             try
             {

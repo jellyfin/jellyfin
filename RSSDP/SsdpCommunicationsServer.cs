@@ -502,9 +502,10 @@ namespace Rssdp.Infrastructure
 
         private void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress)
         {
-            if (!_networkManager.IsInLocalNetwork(endPoint.Address) ||
-                (!receivedOnLocalIpAddress.Equals(IPAddress.Any) &&
-                !_networkManager.IsInLocalNetwork(receivedOnLocalIpAddress)))                 
+            if (!_networkManager.IsInLocalNetwork(endPoint.Address)
+                || (!receivedOnLocalIpAddress.Equals(IPAddress.Any)
+                && !receivedOnLocalIpAddress.Equals(IPAddress.IPv6Any)
+                && !_networkManager.IsInLocalNetwork(receivedOnLocalIpAddress)))                 
             {
                 // _logger.LogDebug("SSDP filtered from {0} to interface {1}.", endPoint.Address, receivedOnLocalIpAddress);
                 return;
