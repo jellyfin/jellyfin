@@ -144,6 +144,11 @@ namespace Emby.Dlna.Api
 
         public object Get(GetDescriptionXml request)
         {
+            if (!DlnaEntryPoint.Current.DLNAEnabled)
+            {
+                return null;
+            }
+
             var url = Request.AbsoluteUri;
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
             var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers, request.UuId, serverAddress);
@@ -158,6 +163,11 @@ namespace Emby.Dlna.Api
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetContentDirectory request)
         {
+            if (!DlnaEntryPoint.Current.DLNAEnabled || ContentDirectory == null)
+            {
+                return null;
+            }
+
             var xml = ContentDirectory.GetServiceXml();
 
             return _resultFactory.GetResult(Request, xml, XMLContentType);
@@ -166,6 +176,11 @@ namespace Emby.Dlna.Api
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetMediaReceiverRegistrar request)
         {
+            if (!DlnaEntryPoint.Current.DLNAEnabled || MediaReceiverRegistrar == null)
+            {
+                return null;
+            }
+
             var xml = MediaReceiverRegistrar.GetServiceXml();
 
             return _resultFactory.GetResult(Request, xml, XMLContentType);
@@ -174,6 +189,11 @@ namespace Emby.Dlna.Api
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "request", Justification = "Required for ServiceStack")]
         public object Get(GetConnnectionManager request)
         {
+            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
+            {
+                return null;
+            }
+
             var xml = ConnectionManager.GetServiceXml();
 
             return _resultFactory.GetResult(Request, xml, XMLContentType);
@@ -181,6 +201,11 @@ namespace Emby.Dlna.Api
 
         public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
+            if (!DlnaEntryPoint.Current.DLNAEnabled || MediaReceiverRegistrar == null)
+            {
+                return null;
+            }
+
             var response = await PostAsync(request.RequestStream, MediaReceiverRegistrar).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
@@ -188,6 +213,11 @@ namespace Emby.Dlna.Api
 
         public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
+            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
+            {
+                return null;
+            }
+
             var response = await PostAsync(request.RequestStream, ContentDirectory).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
@@ -195,6 +225,11 @@ namespace Emby.Dlna.Api
 
         public async Task<object> Post(ProcessConnectionManagerControlRequest request)
         {
+            if (!DlnaEntryPoint.Current.DLNAEnabled || ConnectionManager == null)
+            {
+                return null;
+            }
+
             var response = await PostAsync(request.RequestStream, ConnectionManager).ConfigureAwait(false);
 
             return _resultFactory.GetResult(Request, response.Xml, XMLContentType);
@@ -310,6 +345,11 @@ namespace Emby.Dlna.Api
 
         public object Get(GetIcon request)
         {
+            if (!DlnaEntryPoint.Current.DLNAEnabled)
+            {
+                return false;
+            }
+
             var contentType = "image/" + Path.GetExtension(request.Filename)
                                             .TrimStart('.')
                                             .ToLowerInvariant();
@@ -358,6 +398,11 @@ namespace Emby.Dlna.Api
 
         private object ProcessEventRequest(IEventManager eventManager)
         {
+            if (eventManager == null || !DlnaEntryPoint.Current.DLNAEnabled)
+            {
+                return null;
+            }
+
             var subscriptionId = GetHeader("SID");
 
             if (string.Equals(Request.Verb, "SUBSCRIBE", StringComparison.OrdinalIgnoreCase))
@@ -380,7 +425,12 @@ namespace Emby.Dlna.Api
 
         private object GetSubscriptionResponse(EventSubscriptionResponse response)
         {
-            return _resultFactory.GetResult(Request, response.Content, response.ContentType, response.Headers);
+            if (DlnaEntryPoint.Current.DLNAEnabled)
+            {
+                return _resultFactory.GetResult(Request, response.Content, response.ContentType, response.Headers);
+            }
+
+            return null;
         }
     }
 }
