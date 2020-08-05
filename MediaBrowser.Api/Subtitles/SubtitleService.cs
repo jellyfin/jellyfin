@@ -160,8 +160,6 @@ namespace MediaBrowser.Api.Subtitles
 
             var mediaSource = await _mediaSourceManager.GetMediaSource(item, request.MediaSourceId, null, false, CancellationToken.None).ConfigureAwait(false);
 
-            var builder = new StringBuilder();
-
             var runtime = mediaSource.RunTimeTicks ?? -1;
 
             if (runtime <= 0)
@@ -175,6 +173,7 @@ namespace MediaBrowser.Api.Subtitles
                 throw new ArgumentException("segmentLength was not given, or it was given incorrectly. (It should be bigger than 0)");
             }
 
+            var builder = new StringBuilder();
             builder.AppendLine("#EXTM3U")
                 .Append("#EXT-X-TARGETDURATION:")
                 .AppendLine(request.SegmentLength.ToString(CultureInfo.InvariantCulture))

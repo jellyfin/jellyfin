@@ -195,8 +195,9 @@ namespace MediaBrowser.Api.Playback.Hls
 
             // Main stream
             builder.Append("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=")
-                .AppendLine(paddedBitrate.ToString(CultureInfo.InvariantCulture));
-            var playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "/stream.m3u8");
+                .AppendLine(paddedBitrate.ToString(CultureInfo.InvariantCulture))
+                .Append("hls/");
+            var playlistUrl = Path.GetFileName(firstPlaylist).Replace(".m3u8", "/stream.m3u8");
             builder.AppendLine(playlistUrl);
 
             return builder.ToString();
