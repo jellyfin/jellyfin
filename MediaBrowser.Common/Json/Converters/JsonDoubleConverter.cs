@@ -50,7 +50,7 @@ namespace MediaBrowser.Common.Json.Converters
         /// <param name="options">Options.</param>
         public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.ToString(NumberFormatInfo.InvariantInfo));
+            writer.WriteNumberValue(value);
         }
     }
 }

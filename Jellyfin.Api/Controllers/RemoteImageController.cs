@@ -25,8 +25,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Remote Images Controller.
     /// </summary>
-    [Route("Images")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Route("")]
     public class RemoteImageController : BaseJellyfinApiController
     {
         private readonly IProviderManager _providerManager;
@@ -65,7 +64,8 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Remote Images returned.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>Remote Image Result.</returns>
-        [HttpGet("{itemId}/RemoteImages")]
+        [HttpGet("Items/{itemId}/RemoteImages")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<RemoteImageResult>> GetRemoteImages(
@@ -73,7 +73,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] ImageType? type,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string providerName,
+            [FromQuery] string? providerName,
             [FromQuery] bool includeAllLanguages = false)
         {
             var item = _libraryManager.GetItemById(itemId);
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
 
             var images = await _providerManager.GetAvailableRemoteImages(
                     item,
-                    new RemoteImageQuery(providerName)
+                    new RemoteImageQuery(providerName ?? string.Empty)
                     {
                         IncludeAllLanguages = includeAllLanguages,
                         IncludeDisabledProviders = true,
@@ -128,7 +128,8 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Returned remote image providers.</response>
         /// <response code="404">Item not found.</response>
         /// <returns>List of remote image providers.</returns>
-        [HttpGet("{itemId}/RemoteImages/Providers")]
+        [HttpGet("Items/{itemId}/RemoteImages/Providers")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ImageProviderInfo>> GetRemoteImageProviders([FromRoute] Guid itemId)
@@ -149,11 +150,11 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Remote image returned.</response>
         /// <response code="404">Remote image not found.</response>
         /// <returns>Image Stream.</returns>
-        [HttpGet("Remote")]
+        [HttpGet("Images/Remote")]
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<FileStreamResult>> GetRemoteImage([FromQuery, BindRequired] string imageUrl)
+        public async Task<ActionResult> GetRemoteImage([FromQuery, BindRequired] string imageUrl)
         {
             var urlHash = imageUrl.GetMD5();
             var pointerCachePath = GetFullCachePath(urlHash.ToString());
@@ -202,7 +203,8 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Remote image downloaded.</response>
         /// <response code="404">Remote image not found.</response>
         /// <returns>Download status.</returns>
-        [HttpPost("{itemId}/RemoteImages/Download")]
+        [HttpPost("Items/{itemId}/RemoteImages/Download")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DownloadRemoteImage(
