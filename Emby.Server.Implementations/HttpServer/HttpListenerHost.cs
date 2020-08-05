@@ -582,7 +582,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
 
-                var connection = new WebSocketConnection(
+                using var connection = new WebSocketConnection(
                     _loggerFactory.CreateLogger<WebSocketConnection>(),
                     webSocket,
                     context.Connection.RemoteIpAddress,

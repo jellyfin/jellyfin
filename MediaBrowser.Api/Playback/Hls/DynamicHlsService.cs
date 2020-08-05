@@ -1036,7 +1036,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
 
                 audioTranscodeParams.Add("-vn");
-                return string.Join(" ", audioTranscodeParams.ToArray());
+                return string.Join(" ", audioTranscodeParams);
             }
 
             if (EncodingHelper.IsCopyCodec(audioCodec))

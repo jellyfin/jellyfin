@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Manager
 
             // If there are more than one output paths, the stream will need to be seekable
             var memoryStream = new MemoryStream();
-            using (source)
+            await using (source.ConfigureAwait(false))
             {
                 await source.CopyToAsync(memoryStream).ConfigureAwait(false);
             }
@@ -138,7 +138,7 @@ namespace MediaBrowser.Providers.Manager
 
             var savedPaths = new List<string>();
 
-            await using (source)
+            await using (source.ConfigureAwait(false))
             {
                 var currentPathIndex = 0;
 
