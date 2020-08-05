@@ -666,8 +666,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // TODO determine non-ASCII validity.
-            using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
-            return File(fileStream, MimeTypes.GetMimeType(path), filename);
+            return PhysicalFile(path, MimeTypes.GetMimeType(path));
         }
 
         /// <summary>
