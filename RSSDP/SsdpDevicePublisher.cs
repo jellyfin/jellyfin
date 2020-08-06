@@ -61,7 +61,7 @@ namespace Rssdp.Infrastructure
             {
                 throw new ArgumentException("osVersion cannot be an empty string.", nameof(osName));
             }
-
+            
             SupportPnpRootDevice = true;
             _devices = new List<SsdpRootDevice>();
             _readOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_devices);
@@ -72,7 +72,7 @@ namespace Rssdp.Infrastructure
             _commsServer.RequestReceived += CommsServer_RequestReceived;
             _sendOnlyMatchedHost = sendOnlyMatchedHost;
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
-            _commsServer.BeginListeningForBroadcasts();
+            _commsServer.BeginListeningForMulticasts();
             _server = $"{osName}/{osVersion} UPnP/1.0 RSSDP/1.0";
             _systemId = systemId;
         }
@@ -321,7 +321,7 @@ namespace Rssdp.Infrastructure
         private async Task SendDeviceSearchResponsesAsync(
             SsdpDevice device,
             IPEndPoint endPoint,
-            IPAddress receivedOnlocalIpAddress)
+            IPAddress localIP)
         {
             bool isRootDevice = (device as SsdpRootDevice) != null;
             if (isRootDevice)
@@ -331,7 +331,7 @@ namespace Rssdp.Infrastructure
                     device,
                     GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice),
                     endPoint,
-                    receivedOnlocalIpAddress).ConfigureAwait(false);
+                    localIP).ConfigureAwait(false);
 
                 if (this.SupportPnpRootDevice)
                 {
@@ -340,7 +340,7 @@ namespace Rssdp.Infrastructure
                         device,
                         GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice),
                         endPoint,
-                        receivedOnlocalIpAddress).ConfigureAwait(false); ;
+                        localIP).ConfigureAwait(false); ;
                 }
             }
 
@@ -349,27 +349,22 @@ namespace Rssdp.Infrastructure
                 device,
                 device.Udn,
                 endPoint,
-                receivedOnlocalIpAddress).ConfigureAwait(false);
+                localIP).ConfigureAwait(false);
 
             await SendSearchResponseAsync(
                 device.FullDeviceType,
                 device,
                 GetUsn(device.Udn, device.FullDeviceType),
                 endPoint,
-                receivedOnlocalIpAddress).ConfigureAwait(false);
+                localIP).ConfigureAwait(false);
         }
 
         private static string GetUsn(string udn, string fullDeviceType)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}::{1}", udn, fullDeviceType);
+            return $"{udn}::{fullDeviceType}";
         }
 
-        private async Task SendSearchResponseAsync(
-            string searchTarget,
-            SsdpDevice device,
-            string uniqueServiceName,
-            IPEndPoint endPoint,
-            IPAddress receivedOnlocalIpAddress)
+        private async Task SendSearchResponseAsync(string searchTarget, SsdpDevice device, string uniqueServiceName, IPEndPoint endPoint, IPAddress localIP)
         {
             var rootDevice = device.ToRootDevice();
 
@@ -386,15 +381,8 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage("HTTP/1.1 200 OK", values);
 
-            try
-            {
-                await _commsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint, receivedOnlocalIpAddress).ConfigureAwait(false);
-                _logger.LogInformation("Sent search response to {0} : {1}", endPoint, device);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "SendMessage failed.");
-            }
+            await _commsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint, localIP).ConfigureAwait(false);
+            _logger.LogInformation("Sent search response to {0} : {1}", endPoint, device);
         }
 
         private bool IsDuplicateSearchRequest(string searchTarget, IPEndPoint endPoint)

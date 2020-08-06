@@ -39,7 +39,7 @@ namespace Rssdp.Infrastructure
             private set;
         }
 
-        public string BuildMessage(string header, Dictionary<string, string> values)
+        public static string BuildMessage(string header, Dictionary<string, string> values)
         {
             var builder = new StringBuilder();
 

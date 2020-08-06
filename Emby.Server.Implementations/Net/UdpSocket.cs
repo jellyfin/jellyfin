@@ -14,13 +14,6 @@ namespace Emby.Server.Implementations.Net
 
     public sealed class UdpSocket : ISocket, IDisposable
     {
-        private Socket _socket;
-        private readonly int _localPort;
-        private bool _disposed = false;
-        private IPEndPoint _endpoint;
-
-        public Socket Socket => _socket;
-
         private readonly SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
         {
             SocketFlags = SocketFlags.None
@@ -31,17 +24,18 @@ namespace Emby.Server.Implementations.Net
             SocketFlags = SocketFlags.None
         };
 
+        private readonly int _localPort;
+
+        private Socket _socket;
+        private bool _disposed = false;
+        private IPEndPoint _endpoint;
+
         private TaskCompletionSource<SocketReceiveResult> _currentReceiveTaskCompletionSource;
         private TaskCompletionSource<int> _currentSendTaskCompletionSource;
 
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
-
-            _socket = socket;
+            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _localPort = localPort;
             LocalIPAddress = ip;
             _endpoint = new IPEndPoint(ip, _localPort);
@@ -52,16 +46,19 @@ namespace Emby.Server.Implementations.Net
 
         public UdpSocket(Socket socket, IPEndPoint endPoint)
         {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
-
-            _socket = socket;
+            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _socket.Connect(endPoint);
 
             InitReceiveSocketAsyncEventArgs();
         }
+
+        public Socket Socket => _socket;
+
+        /// <inheritdoc/>
+        public bool SendOnly { get; set; }
+
+        /// <inheritdoc/>
+        public bool StopListening { get; set; }
 
         public IPAddress LocalIPAddress { get; }
 

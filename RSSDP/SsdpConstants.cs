@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace Rssdp.Infrastructure
 {
     /// <summary>
@@ -17,12 +19,12 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Multicast IP Address used for SSDP multicast messages. Values is 239.255.255.250.
         /// </summary>
-        public const string MulticastLocalAdminAddress = "239.255.255.250";
+        public static IPAddress MulticastLocalAdminAddress = IPAddress.Parse("239.255.255.250");
 
         /// <summary>
         /// Multicast IP6 Address used for SSDP multicast messages. 
         /// </summary>
-        public const string MulticastLocalAdminAddressV6 = "ff01::1"; // Site-local
+        public static IPAddress MulticastLocalAdminAddressV6 = IPAddress.Parse("ff01::1"); // Site-local
 
         /// <summary>
         /// The UDP port used for SSDP multicast messages. Values is 1900.

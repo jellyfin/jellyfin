@@ -12,6 +12,16 @@ namespace MediaBrowser.Model.Net
     /// </summary>
     public interface ISocket : IDisposable
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets whether this should be a send only socket.
+        /// </summary>
+        bool SendOnly { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether gets or sets whether anything listening on this socket should stop.
+        /// </summary>
+        bool StopListening { get; set; }
+
         IPAddress LocalIPAddress { get; }
 
         Task<SocketReceiveResult> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken);

@@ -35,6 +35,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Server.Implementations
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSDP", "RSSDP\RSSDP.csproj", "{21002819-C39A-4D3E-BE83-2A276A77FB1F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B8CB2077-7981-4CEA-A127-DFA1B217DE9E} = {B8CB2077-7981-4CEA-A127-DFA1B217DE9E}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Dlna", "Emby.Dlna\Emby.Dlna.csproj", "{805844AB-E92F-45E6-9D99-4F6D48D129A5}"
 EndProject

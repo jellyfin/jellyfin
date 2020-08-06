@@ -28,10 +28,9 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Creates a new multicast socket using the specified multicast IP address, multicast time to live and local port.
         /// </summary>
-        /// <param name="ipAddress">The multicast IP address to bind to.</param>
+        /// <param name="isIPv6Enabled">True if IPv6 enabled.</param>
         /// <param name="multicastTimeToLive">The multicast time to live value. Actually a maximum number of network hops for UDP packets.</param>
-        /// <param name="localPort">The local port to bind to.</param>
         /// <returns>Socket interface object.</returns>
-        ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort);
+        ISocket CreateUdpMulticastSocket(bool isIPv6Enabled, int multicastTimeToLive);
     }
 }

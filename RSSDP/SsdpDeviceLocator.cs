@@ -155,7 +155,7 @@ namespace Rssdp.Infrastructure
 
             _communicationsServer.RequestReceived -= CommsServer_RequestReceived;
             _communicationsServer.RequestReceived += CommsServer_RequestReceived;
-            _communicationsServer.BeginListeningForBroadcasts();
+            _communicationsServer.BeginListeningForMulticasts();
         }
 
         /// <summary>

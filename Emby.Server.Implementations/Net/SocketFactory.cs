@@ -17,10 +17,15 @@ namespace Emby.Server.Implementations.Net
         /// Creates an UDP Socket.
         /// </summary>
         /// <param name="localPort">UDP port to bind.</param>
-        /// <param name="addr">Address to use</param>
+        /// <param name="addr">Address to use.</param>
         /// <returns>Socket interface object.</returns>
         public ISocket CreateUdpBroadcastSocket(int localPort, IPAddress addr)
         {
+            if (addr == null)
+            {
+                throw new ArgumentNullException(nameof(addr));
+            }
+
             if (localPort < 0)
             {
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
@@ -41,7 +46,7 @@ namespace Emby.Server.Implementations.Net
                     retVal.SetSocketOption(
                         SocketOptionLevel.IPv6,
                         SocketOptionName.AddMembership,
-                        new IPv6MulticastOption(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddressV6)));
+                        new IPv6MulticastOption(SsdpConstants.MulticastLocalAdminAddressV6));
                 }
             }
             else
@@ -79,11 +84,16 @@ namespace Emby.Server.Implementations.Net
         /// <summary>
         /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
         /// </summary>
-        /// <param name="localIpAddress">IP Address to bind.</param>
+        /// <param name="localIP">IP Address to bind.</param>
         /// <param name="localPort">UDP port to bind.</param>
         /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
-        public ISocket CreateSsdpUdpSocket(IPAddress localIpAddress, int localPort)
+        public ISocket CreateSsdpUdpSocket(IPAddress localIP, int localPort)
         {
+            if (localIP == null)
+            {
+                throw new ArgumentNullException(nameof(localIP));
+            }
+
             if (localPort < 0)
             {
                 throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
@@ -91,17 +101,17 @@ namespace Emby.Server.Implementations.Net
 
             Socket retVal;
 
-            if (localIpAddress.Equals(IPAddress.IPv6Any))
+            if (localIP.Equals(IPAddress.IPv6Any))
             {
                 // IPv6 is enabled so create a dual IP4/IP6 socket
                 retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
                 retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
                 retVal.DualMode = true;
-                localIpAddress = IPAddress.Any;
+                localIP = IPAddress.Any;
             }
             else
             {
-                retVal = new Socket(localIpAddress.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                retVal = new Socket(localIP.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
             }
 
             try
@@ -119,13 +129,13 @@ namespace Emby.Server.Implementations.Net
             {
                 // Without this an access denied occurs on some systems.
                 retVal.EnableBroadcast = true;
-                if (localIpAddress.AddressFamily == AddressFamily.InterNetwork)
+                if (localIP.AddressFamily == AddressFamily.InterNetwork)
                 {
                     retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, SsdpConstants.SsdpDefaultMulticastTimeToLive);
                     retVal.SetSocketOption(
                         SocketOptionLevel.IP,
                         SocketOptionName.AddMembership,
-                        new MulticastOption(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddress), localIpAddress));
+                        new MulticastOption(SsdpConstants.MulticastLocalAdminAddress, localIP));
                 }
                 else
                 {
@@ -133,10 +143,10 @@ namespace Emby.Server.Implementations.Net
                     retVal.SetSocketOption(
                         SocketOptionLevel.IPv6,
                         SocketOptionName.AddMembership,
-                        new IPv6MulticastOption(IPAddress.Parse(SsdpConstants.MulticastLocalAdminAddressV6)));
+                        new IPv6MulticastOption(SsdpConstants.MulticastLocalAdminAddressV6));
                 }
 
-                return new UdpSocket(retVal, localPort, localIpAddress);
+                return new UdpSocket(retVal, localPort, localIP);
             }
             catch
             {
@@ -149,36 +159,14 @@ namespace Emby.Server.Implementations.Net
         /// <summary>
         /// Creates a new UDP acceptSocket that is a member of the specified multicast IP address, and binds it to the specified local port.
         /// </summary>
-        /// <param name="ipAddress">The multicast IP address to make the acceptSocket a member of.</param>
+        /// <param name="isIP6Enabled">True if IP6 is enabled.</param>
         /// <param name="multicastTimeToLive">The multicast time to live value for the acceptSocket.</param>
-        /// <param name="localPort">The number of the local port to bind to.</param>
         /// <returns>Socket interface object.</returns>
-        public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
+        public ISocket CreateUdpMulticastSocket(bool isIP6Enabled, int multicastTimeToLive)
         {
-            if (ipAddress == null)
-            {
-                throw new ArgumentNullException(nameof(ipAddress));
-            }
-
-            if (ipAddress.Length == 0)
-            {
-                throw new ArgumentException("ipAddress cannot be an empty string.", nameof(ipAddress));
-            }
-
-            if (multicastTimeToLive <= 0)
-            {
-                throw new ArgumentException("multicastTimeToLive cannot be zero or less.", nameof(multicastTimeToLive));
-            }
-
-            if (localPort < 0)
-            {
-                throw new ArgumentException("localPort cannot be less than zero.", nameof(localPort));
-            }
-
-            IPAddress addr = IPAddress.Parse(ipAddress);
             Socket retVal;
 
-            if (addr.AddressFamily == AddressFamily.InterNetworkV6)
+            if (isIP6Enabled)
             {
                 // IPv6 is enabled so create a dual IP4/IP6 socket
                 retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
@@ -187,7 +175,7 @@ namespace Emby.Server.Implementations.Net
             }
             else
             {
-                retVal = new Socket(addr.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             }
 
             try
@@ -197,41 +185,40 @@ namespace Emby.Server.Implementations.Net
             }
             catch (SocketException)
             {
-
+                // Ignore.
             }
 
             try
             {
-                // seeing occasional exceptions thrown on qnap
-                // System.Net.Sockets.SocketException (0x80004005): Protocol not available
+                // Seeing occasional exceptions thrown on qnap : System.Net.Sockets.SocketException (0x80004005): Protocol not available
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             }
             catch (SocketException)
             {
-
+                // Ignore.
             }
 
             try
             {
                 // Without this an access denied occurs on some systems.
                 retVal.EnableBroadcast = true;
+                retVal.MulticastLoopback = true;
 
                 IPAddress localIp;
-                if (addr.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    localIp = IPAddress.Any;
-                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
-                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(addr, localIp));
-                }
-                else
+                if (isIP6Enabled)
                 {
                     localIp = IPAddress.IPv6Any;
                     retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
-                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(addr));
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(SsdpConstants.MulticastLocalAdminAddressV6));
+                }
+                else
+                {
+                    localIp = IPAddress.Any;
+                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
+                    retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(SsdpConstants.MulticastLocalAdminAddress, 1900));
                 }
 
-                retVal.MulticastLoopback = true;
-                return new UdpSocket(retVal, localPort, localIp);
+                return new UdpSocket(retVal, 1900, localIp);
             }
             catch
             {

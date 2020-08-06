@@ -1,21 +1,17 @@
 #nullable enable
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.Main;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
-using Rssdp.Infrastructure;
 using NATLogger = Mono.Nat.Logging.ILogger;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -66,6 +62,41 @@ namespace Emby.Server.Implementations.EntryPoints
             Mono.Nat.Logging.Logger.Factory = GetLogger;
         }
 
+        /// <inheritdoc />
+        public Task RunAsync()
+        {
+            Start();
+
+            _config.ConfigurationUpdated += OnConfigurationUpdated;
+
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _config.ConfigurationUpdated -= OnConfigurationUpdated;
+
+            Stop();
+
+            _disposed = true;
+        }
+
         /// <summary>
         /// Creates a logging instance for Mono.NAT.
         /// </summary>
@@ -113,15 +144,9 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        /// <inheritdoc />
-        public Task RunAsync()
-        {
-            Start();
-
-            _config.ConfigurationUpdated += OnConfigurationUpdated;
-
-            return Task.CompletedTask;
-        }
+        /// <summary>
+        /// Class to provide an interface between ILogger and NATLogger.
+        /// </summary>
 
         /// <summary>
         /// Starts the discovery.
@@ -139,9 +164,6 @@ namespace Emby.Server.Implementations.EntryPoints
                 {
                     if (_stopped)
                     {
-                        // Device Discovery and Mono.NAT intercept each other's calls, do temporarily disable DeviceDiscovery
-                        DlnaEntryPoint.Current?.CommunicationsServer?.StopListeningForBroadcasts();
-
                         _logger.LogInformation("Starting NAT discovery.");
 
                         NatUtility.DeviceFound += KnownDeviceFound;
@@ -194,31 +216,23 @@ namespace Emby.Server.Implementations.EntryPoints
                 {
                     if (!_stopped)
                     {
-                        try
+                        _logger.LogInformation("Stopping NAT discovery.");
+
+                        NatUtility.StopDiscovery();
+                        NatUtility.DeviceFound -= KnownDeviceFound;
+                        NatUtility.DeviceUnknown -= UnknownDeviceFound;
+
+                        _gatewayMonitor.ResetGateways();
+                        _gatewayMonitor.OnGatewayFailure -= OnNetworkChange;
+
+                        _networkManager.NetworkChanged -= OnNetworkChange;
+
+                        foreach (INatDevice device in _devices)
                         {
-                            _logger.LogInformation("Stopping NAT discovery.");
-
-                            NatUtility.StopDiscovery();
-                            NatUtility.DeviceFound -= KnownDeviceFound;
-                            NatUtility.DeviceUnknown -= UnknownDeviceFound;
-
-                            _gatewayMonitor.ResetGateways();
-                            _gatewayMonitor.OnGatewayFailure -= OnNetworkChange;
-
-                            _networkManager.NetworkChanged -= OnNetworkChange;
-
-                            foreach (INatDevice device in _devices)
-                            {
-                                RemoveRules(device);
-                            }
-
-                            _devices.Clear();
-                        }
-                        finally
-                        {
-                            DlnaEntryPoint.Current?.CommunicationsServer?.StopListeningForBroadcasts();
+                            RemoveRules(device);
                         }
 
+                        _devices.Clear();
                         _stopped = true;
                     }
                 }
@@ -390,40 +404,12 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _config.ConfigurationUpdated -= OnConfigurationUpdated;
-
-            Stop();
-
-            _disposed = true;
-        }
-
-        /// <summary>
-        /// Interface between NATLogger and ours.
-        /// </summary>
         private class LoggingInterface : NATLogger
         {
             private readonly ILogger _logger;
 
             /// <summary>
-            /// Class to provide an interface between ILogger and NATLogger.
+            /// Initializes a new instance of the <see cref="LoggingInterface"/> class.
             /// </summary>
             /// <param name="logger">ILogger instance to use.</param>
             public LoggingInterface(ILogger logger)

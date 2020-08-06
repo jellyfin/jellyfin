@@ -226,9 +226,9 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        private void ConfigurationUpdated(object sender, EventArgs e)
+        public void ConfigurationUpdated(object sender, EventArgs e)
         {
-            // IP6 settings changed.
+            // IP6 settings changed. - Needs to be public for testing.
             if (IsIP6Enabled != _configurationManager.Configuration.EnableIPV6)
             {
                 InitialiseInterfaces();
