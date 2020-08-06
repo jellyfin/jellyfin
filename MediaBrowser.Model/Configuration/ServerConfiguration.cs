@@ -40,6 +40,11 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableIPV6 { get; set; }
 
         /// <summary>
+        /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
+        /// </summary>
+        public int GatewayMonitorPeriod { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether is multi-socket binding available.
         /// </summary>
         public bool EnableMultiSocketBinding { get; }
@@ -282,6 +287,7 @@ namespace MediaBrowser.Model.Configuration
         {
             // Network settings
             EnableIPV6 = false;
+            GatewayMonitorPeriod = 60;
             TrustAllIP6Interfaces = false;
             EnableMultiSocketBinding = true;
             LocalNetworkSubnets = Array.Empty<string>();

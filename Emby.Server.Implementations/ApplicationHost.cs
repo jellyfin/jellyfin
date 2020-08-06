@@ -526,6 +526,8 @@ namespace Emby.Server.Implementations
 
             serviceCollection.AddSingleton<ISocketFactory, SocketFactory>();
 
+            serviceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
+
             serviceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
             serviceCollection.AddSingleton<IZipClient, ZipClient>();

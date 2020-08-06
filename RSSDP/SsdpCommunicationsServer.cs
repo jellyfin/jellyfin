@@ -51,6 +51,7 @@ namespace Rssdp.Infrastructure
 
         private readonly int _localPort;
         private readonly int _multicastTtl;
+        private readonly IServerConfigurationManager _config;
 
         /// <summary>
         /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
@@ -72,9 +73,11 @@ namespace Rssdp.Infrastructure
         public SsdpCommunicationsServer(
             ISocketFactory socketFactory,
             INetworkManager networkManager,
+            IServerConfigurationManager config,
             ILogger logger)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger)
         {
+            _config = config;
         }
 
         /// <summary>
@@ -113,6 +116,12 @@ namespace Rssdp.Infrastructure
         public void BeginListeningForBroadcasts()
         {
             ThrowIfDisposed();
+
+            if (!_config.Configuration.EnableUPnP || !_config.Configuration.EnableRemoteAccess)
+            {
+                // Mono.Nat is doing the listening for us.
+                return;
+            }
 
             if (_broadcastListenSocket == null)
             {
@@ -499,15 +508,6 @@ namespace Rssdp.Infrastructure
                             return;
                         }
 
-                        if (!result.LocalIPAddress.Equals(IPAddress.Any) && !result.LocalIPAddress.Equals(IPAddress.IPv6Any))
-                        {
-                            if (!_networkManager.IsInLocalNetwork(result.LocalIPAddress))
-                            {
-                                _logger.LogDebug("SSDP filtered due to arrive on a non LAN interface {0}.", result.LocalIPAddress);
-                                return;
-                            }
-                        }
-
                         // Strange cannot convert compiler error here if I don't explicitly
                         // assign or cast to Action first. Assignment is easier to read, so went with that.
                         ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
@@ -538,8 +538,24 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress)
+        /// <inheritdoc/>
+        public void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress)
         {
+            if (!_networkManager.IsInLocalNetwork(endPoint.Address))
+            {
+                _logger.LogDebug("SSDP filtered from sending to non-LAN address {0}.", endPoint.Address);
+                return;
+            }
+
+            if (!receivedOnLocalIpAddress.Equals(IPAddress.Any) && !receivedOnLocalIpAddress.Equals(IPAddress.IPv6Any))
+            {
+                if (!_networkManager.IsInLocalNetwork(receivedOnLocalIpAddress))
+                {
+                    _logger.LogDebug("SSDP filtered due to arrive on a non LAN interface {0}.", receivedOnLocalIpAddress);
+                    return;
+                }
+            }
+
             // Responses start with the HTTP version, prefixed with HTTP/ while
             // requests start with a method which can vary and might be one we haven't
             // seen/don't know. We'll check if this message is a request or a response

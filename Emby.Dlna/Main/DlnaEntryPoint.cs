@@ -112,6 +112,8 @@ namespace Emby.Dlna.Main
 
         public bool DLNAEnabled => _config.GetDlnaConfiguration().EnableServer;
 
+        public ISsdpCommunicationsServer CommunicationsServer => _communicationsServer;
+
         public static DlnaEntryPoint Current { get; internal set; }
 
         public async Task RunAsync()
@@ -204,7 +206,7 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger)
+                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _config, _logger)
                     {
                         IsShared = true
                     };

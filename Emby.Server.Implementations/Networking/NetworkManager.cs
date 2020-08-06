@@ -1003,7 +1003,8 @@ namespace Emby.Server.Implementations.Networking
                                     };
 
                                     int tag = nw.Tag;
-                                    if (ipProperties.GatewayAddresses.Count > 0)
+                                    /* Mono on OSX doesn't give any gateway addresses, so check DNS entries */
+                                    if (ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0)
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
@@ -1024,7 +1025,8 @@ namespace Emby.Server.Implementations.Networking
                                     };
 
                                     int tag = nw.Tag;
-                                    if (ipProperties.GatewayAddresses.Count > 0)
+                                    /* Mono on OSX doesn't give any gateway addresses, so check DNS entries */
+                                    if (ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0)
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;

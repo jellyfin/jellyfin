@@ -49,5 +49,13 @@ namespace Rssdp.Infrastructure
         /// <para>If true, disposing an instance of a <see cref="SsdpDeviceLocatorBase"/>or a <see cref="ISsdpDevicePublisher"/> will not dispose this comms server instance. The calling code is responsible for managing the lifetime of the server.</para>
         /// </remarks>
         bool IsShared { get; set; }
+
+        /// <summary>
+        /// Processes an SSDP message.
+        /// </summary>
+        /// <param name="data">The data to process.</param>
+        /// <param name="endPoint">The remote endpoint.</param>
+        /// <param name="receivedOnLocalIpAddress">The interface ip upon which it was receieved.</param>
+        public void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress);
     }
 }

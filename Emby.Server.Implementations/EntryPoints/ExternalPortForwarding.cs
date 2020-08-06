@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#nullable enable
 
 using System;
 using System.Collections.Concurrent;
@@ -7,13 +7,16 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Dlna.Main;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
+using Rssdp.Infrastructure;
+using NATLogger = Mono.Nat.Logging.ILogger;
 
 namespace Emby.Server.Implementations.EntryPoints
 {
@@ -25,14 +28,14 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger<ExternalPortForwarding> _logger;
         private readonly IServerConfigurationManager _config;
-        private readonly IDeviceDiscovery _deviceDiscovery;
-
-        private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
-
-        private Timer _timer;
-        private string _configIdentifier;
-
+        private readonly INetworkManager _networkManager;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly IGatewayMonitor _gatewayMonitor;
+        private readonly object _lock;
+        private readonly List<INatDevice> _devices;
         private bool _disposed = false;
+        private bool _stopped = true;
+        private string _configIdentifier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExternalPortForwarding"/> class.
@@ -40,19 +43,43 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="config">The configuration manager.</param>
-        /// <param name="deviceDiscovery">The device discovery.</param>
+        /// <param name="networkManager">The network manager.</param>
+        /// <param name="loggerFactory">Logger Factory.</param>
+        /// <param name="gwMonitor">Gateway Monitor.</param>
         public ExternalPortForwarding(
             ILogger<ExternalPortForwarding> logger,
             IServerApplicationHost appHost,
             IServerConfigurationManager config,
-            IDeviceDiscovery deviceDiscovery)
+            INetworkManager networkManager,
+            ILoggerFactory loggerFactory,
+            IGatewayMonitor gwMonitor)
         {
+            _lock = new object();
             _logger = logger;
             _appHost = appHost;
             _config = config;
-            _deviceDiscovery = deviceDiscovery;
+            _networkManager = networkManager;
+            _loggerFactory = loggerFactory;
+            _gatewayMonitor = gwMonitor;
+            _devices = new List<INatDevice>();
+            _configIdentifier = GetConfigIdentifier();
+            Mono.Nat.Logging.Logger.Factory = GetLogger;
         }
 
+        /// <summary>
+        /// Creates a logging instance for Mono.NAT.
+        /// </summary>
+        /// <param name="name">Name of instance.</param>
+        /// <returns>ILogger implementation.</returns>
+        private NATLogger GetLogger(string name)
+        {
+            return (NATLogger)new LoggingInterface(_loggerFactory.CreateLogger(name));
+        }
+
+        /// <summary>
+        /// Converts the uPNP settings to a string.
+        /// </summary>
+        /// <returns>String representation of the settings.</returns>
         private string GetConfigIdentifier()
         {
             const char Separator = '|';
@@ -69,6 +96,11 @@ namespace Emby.Server.Implementations.EntryPoints
                 .ToString();
         }
 
+        /// <summary>
+        /// Triggered when the configuration is updated.
+        /// </summary>
+        /// <param name="sender">Owner of the event.</param>
+        /// <param name="e">Event parameters.</param>
         private void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var oldConfigIdentifier = _configIdentifier;
@@ -91,6 +123,9 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Starts the discovery.
+        /// </summary>
         private void Start()
         {
             if (!_config.Configuration.EnableUPnP || !_config.Configuration.EnableRemoteAccess)
@@ -98,38 +133,127 @@ namespace Emby.Server.Implementations.EntryPoints
                 return;
             }
 
-            _logger.LogInformation("Starting NAT discovery");
+            if (_stopped)
+            {
+                lock (_lock)
+                {
+                    if (_stopped)
+                    {
+                        // Device Discovery and Mono.NAT intercept each other's calls, do temporarily disable DeviceDiscovery
+                        DlnaEntryPoint.Current?.CommunicationsServer?.StopListeningForBroadcasts();
 
-            NatUtility.DeviceFound += OnNatUtilityDeviceFound;
-            NatUtility.StartDiscovery();
+                        _logger.LogInformation("Starting NAT discovery.");
 
-            _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+                        NatUtility.DeviceFound += KnownDeviceFound;
+                        NatUtility.DeviceUnknown += UnknownDeviceFound;
+                        NatUtility.StartDiscovery();
 
-            _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
+                        _networkManager.NetworkChanged += OnNetworkChange;
+                        _gatewayMonitor.OnGatewayFailure += OnNetworkChange;
+
+                        _stopped = false;
+                    }
+                }
+            }
         }
 
+        /// <summary>
+        /// Triggered when there is a change in the network.
+        /// </summary>
+        /// <param name="sender">INetworkManager object.</param>
+        /// <param name="e">Event arguments.</param>
+        private void OnNetworkChange(object sender, EventArgs e)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (!_stopped)
+            {
+                lock (_lock)
+                {
+                    if (!_stopped)
+                    {
+                        NatUtility.StopDiscovery();
+                        _gatewayMonitor.ResetGateways();
+                        NatUtility.StartDiscovery();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Stops discovery, and releases resources.
+        /// </summary>
         private void Stop()
         {
-            _logger.LogInformation("Stopping NAT discovery");
+            if (!_stopped)
+            {
+                lock (_lock)
+                {
+                    if (!_stopped)
+                    {
+                        try
+                        {
+                            _logger.LogInformation("Stopping NAT discovery.");
 
-            NatUtility.StopDiscovery();
-            NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
+                            NatUtility.StopDiscovery();
+                            NatUtility.DeviceFound -= KnownDeviceFound;
+                            NatUtility.DeviceUnknown -= UnknownDeviceFound;
 
-            _timer?.Dispose();
+                            _gatewayMonitor.ResetGateways();
+                            _gatewayMonitor.OnGatewayFailure -= OnNetworkChange;
 
-            _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
+                            _networkManager.NetworkChanged -= OnNetworkChange;
+
+                            foreach (INatDevice device in _devices)
+                            {
+                                RemoveRules(device);
+                            }
+
+                            _devices.Clear();
+                        }
+                        finally
+                        {
+                            DlnaEntryPoint.Current?.CommunicationsServer?.StopListeningForBroadcasts();
+                        }
+
+                        _stopped = true;
+                    }
+                }
+            }
         }
 
-        private void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
+        /// <summary>
+        /// Enables sddp injection of devices found by Mono.Nat.
+        /// </summary>
+        /// <param name="sender">Mono.Nat instance.</param>
+        /// <param name="e">Information Mono received, but doesn't use.</param>
+        private void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
         {
-            NatUtility.Search(e.Argument.LocalIpAddress, NatProtocol.Upnp);
+            _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
+            DlnaEntryPoint.Current?.CommunicationsServer?.ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address);
         }
 
-        private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)
+        /// <summary>
+        /// Triggered when a device is found.
+        /// </summary>
+        /// <param name="sender">Objects triggering the event.</param>
+        /// <param name="e">Event arguments.</param>
+        private async void KnownDeviceFound(object sender, DeviceEventArgs e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             try
             {
+                _logger.LogDebug("Attempting to create rules.");
                 await CreateRules(e.Device).ConfigureAwait(false);
+
+                _devices.Add(e.Device);
             }
             catch (Exception ex)
             {
@@ -137,6 +261,11 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        /// <summary>
+        /// Creates rules on a device.
+        /// </summary>
+        /// <param name="device">Destination device.</param>
+        /// <returns>Task.</returns>
         private Task CreateRules(INatDevice device)
         {
             if (_disposed)
@@ -146,14 +275,19 @@ namespace Emby.Server.Implementations.EntryPoints
 
             // On some systems the device discovered event seems to fire repeatedly
             // This check will help ensure we're not trying to port map the same device over and over
-            if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
-            {
-                return Task.CompletedTask;
-            }
+            // if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
+            // {
+            //     return Task.CompletedTask;
+            // }
 
             return Task.WhenAll(CreatePortMaps(device));
         }
 
+        /// <summary>
+        /// Attempts to create port mappings on a device.
+        /// </summary>
+        /// <param name="device">Destination device.</param>
+        /// <returns>IEnumerable.</returns>
         private IEnumerable<Task> CreatePortMaps(INatDevice device)
         {
             yield return CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
@@ -164,6 +298,13 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        /// <summary>
+        /// Attempts to add a port mapping.
+        /// </summary>
+        /// <param name="device">Destination device.</param>
+        /// <param name="privatePort">Private port number.</param>
+        /// <param name="publicPort">Public port number.</param>
+        /// <returns>Task.</returns>
         private async Task CreatePortMap(INatDevice device, int privatePort, int publicPort)
         {
             _logger.LogDebug(
@@ -182,6 +323,67 @@ namespace Emby.Server.Implementations.EntryPoints
                 _logger.LogError(
                     ex,
                     "Error creating port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}.",
+                    privatePort,
+                    publicPort,
+                    device.DeviceEndpoint);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to removes rules from a device.
+        /// </summary>
+        /// <param name="device">Destination device.</param>
+        /// <returns>Task.</returns>
+        private Task RemoveRules(INatDevice device)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+
+            return Task.WhenAll(RemovePortMaps(device));
+        }
+
+        /// <summary>
+        /// Attempts to remove port mappings from a device.
+        /// </summary>
+        /// <param name="device">Destination device.</param>
+        /// <returns>IEnumerable.</returns>
+        private IEnumerable<Task> RemovePortMaps(INatDevice device)
+        {
+            yield return RemovePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+
+            if (_appHost.ListenWithHttps)
+            {
+                yield return RemovePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to remove a port mapping.
+        /// </summary>
+        /// <param name="device">Destination device.</param>
+        /// <param name="privatePort">Private port number.</param>
+        /// <param name="publicPort">Public port number.</param>
+        /// <returns>Task.</returns>
+        private async Task RemovePortMap(INatDevice device, int privatePort, int publicPort)
+        {
+            _logger.LogInformation(
+                "Removing port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}",
+                privatePort,
+                publicPort,
+                device.DeviceEndpoint);
+
+            try
+            {
+                var mapping = new Mapping(Protocol.Tcp, privatePort, publicPort, 0, _appHost.Name);
+                await device.DeletePortMapAsync(mapping).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error removing port map on local port {LocalPort} to public port {PublicPort} with device {DeviceEndpoint}.",
                     privatePort,
                     publicPort,
                     device.DeviceEndpoint);
@@ -210,9 +412,39 @@ namespace Emby.Server.Implementations.EntryPoints
 
             Stop();
 
-            _timer = null;
-
             _disposed = true;
+        }
+
+        /// <summary>
+        /// Interface between NATLogger and ours.
+        /// </summary>
+        private class LoggingInterface : NATLogger
+        {
+            private readonly ILogger _logger;
+
+            /// <summary>
+            /// Class to provide an interface between ILogger and NATLogger.
+            /// </summary>
+            /// <param name="logger">ILogger instance to use.</param>
+            public LoggingInterface(ILogger logger)
+            {
+                _logger = logger;
+            }
+
+            public void Info(string message)
+            {
+                _logger.LogInformation(message);
+            }
+
+            public void Debug(string message)
+            {
+                _logger.LogDebug(message);
+            }
+
+            public void Error(string message)
+            {
+                _logger.LogError(message);
+            }
         }
     }
 }
