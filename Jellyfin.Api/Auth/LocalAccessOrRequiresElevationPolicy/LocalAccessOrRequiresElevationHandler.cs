@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy
 {
     /// <summary>
-    /// Local access handler.
+    /// Local access or require elevated privileges handler.
     /// </summary>
     public class LocalAccessOrRequiresElevationHandler : BaseAuthorizationHandler<LocalAccessOrRequiresElevationRequirement>
     {
@@ -30,7 +30,6 @@ namespace Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, LocalAccessOrRequiresElevationRequirement requirement)
         {
             var validated = ValidateClaims(context.User, localAccessOnly: true);
-
             if (validated || context.User.IsInRole(UserRoles.Administrator))
             {
                 context.Succeed(requirement);

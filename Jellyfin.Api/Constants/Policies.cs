@@ -48,6 +48,6 @@ namespace Jellyfin.Api.Constants
         /// <summary>
         /// Policy name for escaping schedule controls or requiring first time setup.
         /// </summary>
-        public const string IgnoreParentalControlOrFirstTimeSetup = "IgnoreParentalControlOrFirstTimeSetup";
+        public const string FirstTimeSetupOrIgnoreParentalControl = "FirstTimeSetupOrIgnoreParentalControl";
     }
 }

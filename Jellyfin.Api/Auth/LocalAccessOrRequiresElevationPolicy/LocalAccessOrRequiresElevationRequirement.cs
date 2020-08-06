@@ -3,7 +3,7 @@
 namespace Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy
 {
     /// <summary>
-    /// The local access authorization requirement.
+    /// The local access or elevated privileges authorization requirement.
     /// </summary>
     public class LocalAccessOrRequiresElevationRequirement : IAuthorizationRequirement
     {

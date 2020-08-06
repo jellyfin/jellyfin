@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy
 {
     /// <summary>
-    /// Authorization handler for requiring first time setup or elevated privileges.
+    /// Authorization handler for requiring first time setup or default privileges.
     /// </summary>
     public class FirstTimeSetupOrDefaultHandler : BaseAuthorizationHandler<FirstTimeSetupOrDefaultRequirement>
     {
@@ -32,18 +32,18 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy
         }
 
         /// <inheritdoc />
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FirstTimeSetupOrDefaultRequirement firstTimeSetupOrElevatedRequirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FirstTimeSetupOrDefaultRequirement firstTimeSetupOrDefaultRequirement)
         {
             if (!_configurationManager.CommonConfiguration.IsStartupWizardCompleted)
             {
-                context.Succeed(firstTimeSetupOrElevatedRequirement);
+                context.Succeed(firstTimeSetupOrDefaultRequirement);
                 return Task.CompletedTask;
             }
 
             var validated = ValidateClaims(context.User);
             if (validated)
             {
-                context.Succeed(firstTimeSetupOrElevatedRequirement);
+                context.Succeed(firstTimeSetupOrDefaultRequirement);
             }
             else
             {

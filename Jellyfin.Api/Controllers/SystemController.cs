@@ -59,7 +59,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Information retrieved.</response>
         /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
         [HttpGet("Info")]
-        [Authorize(Policy = Policies.IgnoreParentalControlOrFirstTimeSetup)]
+        [Authorize(Policy = Policies.FirstTimeSetupOrIgnoreParentalControl)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<SystemInfo>> GetSystemInfo()
         {

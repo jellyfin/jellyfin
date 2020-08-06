@@ -8,7 +8,7 @@ namespace Jellyfin.Api.Models.StartupDtos
         /// <summary>
         /// Gets or sets UI language culture.
         /// </summary>
-        public string UICulture { get; set; } = null!;
+        public string? UICulture { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata country code.

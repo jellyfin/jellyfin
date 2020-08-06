@@ -7,9 +7,9 @@ using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
+using Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
-using Jellyfin.Api.Auth.IgnoreParentalControlOrFirstTimeSetupPolicy;
 using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
@@ -47,7 +47,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrDefaultHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreParentalControlHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreParentalControlOrFirstTimeSetupHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeOrIgnoreParentalControlSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
@@ -89,11 +89,11 @@ namespace Jellyfin.Server.Extensions
                         policy.AddRequirements(new IgnoreParentalControlRequirement());
                     });
                 options.AddPolicy(
-                    Policies.IgnoreParentalControlOrFirstTimeSetup,
+                    Policies.FirstTimeSetupOrIgnoreParentalControl,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new IgnoreParentalControlOrFirstTimeSetupRequirement());
+                        policy.AddRequirements(new FirstTimeOrIgnoreParentalControlSetupRequirement());
                     });
                 options.AddPolicy(
                     Policies.LocalAccessOnly,

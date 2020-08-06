@@ -131,6 +131,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpDelete("Users/{userId}/Images/{itemType}")]
         [HttpDelete("Users/{userId}/Images/{itemType}/{index?}", Name = "DeleteUserImage_2")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
