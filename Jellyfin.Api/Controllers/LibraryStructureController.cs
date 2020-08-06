@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,6 @@ using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -204,7 +204,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Paths")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddMediaPath(
-            [FromBody, BindRequired] MediaPathDto mediaPathDto,
+            [FromBody, Required] MediaPathDto mediaPathDto,
             [FromQuery] bool refreshLibrary = false)
         {
             _libraryMonitor.Stop();

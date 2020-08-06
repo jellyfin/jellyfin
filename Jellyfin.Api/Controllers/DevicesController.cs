@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Security;
@@ -8,7 +9,6 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -48,7 +48,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
+        public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery, Required] Guid? userId)
         {
             var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
             return _deviceManager.GetDevices(deviceQuery);
@@ -65,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, BindRequired] string? id)
+        public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, Required] string? id)
         {
             var deviceInfo = _deviceManager.GetDevice(id);
             if (deviceInfo == null)
@@ -87,7 +87,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, BindRequired] string? id)
+        public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, Required] string? id)
         {
             var deviceInfo = _deviceManager.GetDeviceOptions(id);
             if (deviceInfo == null)
@@ -111,8 +111,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateDeviceOptions(
-            [FromQuery, BindRequired] string? id,
-            [FromBody, BindRequired] DeviceOptions deviceOptions)
+            [FromQuery, Required] string? id,
+            [FromBody, Required] DeviceOptions deviceOptions)
         {
             var existingDeviceOptions = _deviceManager.GetDeviceOptions(id);
             if (existingDeviceOptions == null)
@@ -134,7 +134,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteDevice([FromQuery, BindRequired] string? id)
+        public ActionResult DeleteDevice([FromQuery, Required] string? id)
         {
             var existingDevice = _deviceManager.GetDevice(id);
             if (existingDevice == null)

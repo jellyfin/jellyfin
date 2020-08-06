@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
@@ -18,7 +19,6 @@ using MediaBrowser.Model.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -154,7 +154,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetRemoteImage([FromQuery, BindRequired] string imageUrl)
+        public async Task<ActionResult> GetRemoteImage([FromQuery, Required] string imageUrl)
         {
             var urlHash = imageUrl.GetMD5();
             var pointerCachePath = GetFullCachePath(urlHash.ToString());
@@ -209,7 +209,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> DownloadRemoteImage(
             [FromRoute] Guid itemId,
-            [FromQuery, BindRequired] ImageType type,
+            [FromQuery, Required] ImageType type,
             [FromQuery] string? imageUrl)
         {
             var item = _libraryManager.GetItemById(itemId);

@@ -7,8 +7,11 @@ using Jellyfin.Api;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
+using Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy;
 using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
-using Jellyfin.Api.Auth.IgnoreSchedulePolicy;
+using Jellyfin.Api.Auth.IgnoreParentalControlOrFirstTimeSetupPolicy;
+using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
+using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Constants;
@@ -41,9 +44,12 @@ namespace Jellyfin.Server.Extensions
         {
             serviceCollection.AddSingleton<IAuthorizationHandler, DefaultAuthorizationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, DownloadHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrDefaultHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeSetupOrElevatedHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreScheduleHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreParentalControlHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreParentalControlOrFirstTimeSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             return serviceCollection.AddAuthorizationCore(options =>
             {
@@ -62,6 +68,13 @@ namespace Jellyfin.Server.Extensions
                         policy.AddRequirements(new DownloadRequirement());
                     });
                 options.AddPolicy(
+                    Policies.FirstTimeSetupOrDefault,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new FirstTimeSetupOrDefaultRequirement());
+                    });
+                options.AddPolicy(
                     Policies.FirstTimeSetupOrElevated,
                     policy =>
                     {
@@ -69,11 +82,18 @@ namespace Jellyfin.Server.Extensions
                         policy.AddRequirements(new FirstTimeSetupOrElevatedRequirement());
                     });
                 options.AddPolicy(
-                    Policies.IgnoreSchedule,
+                    Policies.IgnoreParentalControl,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new IgnoreScheduleRequirement());
+                        policy.AddRequirements(new IgnoreParentalControlRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.IgnoreParentalControlOrFirstTimeSetup,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new IgnoreParentalControlOrFirstTimeSetupRequirement());
                     });
                 options.AddPolicy(
                     Policies.LocalAccessOnly,
@@ -81,6 +101,13 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new LocalAccessRequirement());
+                    });
+                options.AddPolicy(
+                    Policies.LocalAccessOrRequiresElevation,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new LocalAccessOrRequiresElevationRequirement());
                     });
                 options.AddPolicy(
                     Policies.RequiresElevation,

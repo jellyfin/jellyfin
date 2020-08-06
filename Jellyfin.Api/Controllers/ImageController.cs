@@ -84,6 +84,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Users/{userId}/Images/{imageType}")]
         [HttpPost("Users/{userId}/Images/{imageType}/{index?}", Name = "PostUserImage_2")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
@@ -259,6 +260,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Item not found.</response>
         /// <returns>The list of image infos on success, or <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpGet("Items/{itemId}/Images")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ImageInfo>> GetItemImageInfos([FromRoute] Guid itemId)

@@ -94,7 +94,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="filterItemId">Optional. Filter by item id.</param>
         /// <response code="200">Groups returned.</response>
-        /// <returns>An <see cref="IEnumerable{GrouüInfoView}"/> containing the available SyncPlay groups.</returns>
+        /// <returns>An <see cref="IEnumerable{GroupInfoView}"/> containing the available SyncPlay groups.</returns>
         [HttpGet("List")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<GroupInfoView>> SyncPlayGetGroups([FromQuery] Guid? filterItemId)

@@ -113,7 +113,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RemoteSubtitleInfo>>> SearchRemoteSubtitles(
             [FromRoute] Guid itemId,
-            [FromRoute] string? language,
+            [FromRoute, Required] string? language,
             [FromQuery] bool? isPerfectMatch)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
@@ -133,7 +133,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DownloadRemoteSubtitles(
             [FromRoute] Guid itemId,
-            [FromRoute] string? subtitleId)
+            [FromRoute, Required] string? subtitleId)
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
@@ -162,7 +162,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [Produces(MediaTypeNames.Application.Octet)]
-        public async Task<ActionResult> GetRemoteSubtitles([FromRoute] string? id)
+        public async Task<ActionResult> GetRemoteSubtitles([FromRoute, Required] string? id)
         {
             var result = await _subtitleManager.GetRemoteSubtitles(id, CancellationToken.None).ConfigureAwait(false);
 

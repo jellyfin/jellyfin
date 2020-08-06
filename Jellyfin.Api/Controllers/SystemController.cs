@@ -23,7 +23,6 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The system controller.
     /// </summary>
-    [Route("System")]
     public class SystemController : BaseJellyfinApiController
     {
         private readonly IServerApplicationHost _appHost;
@@ -60,8 +59,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Information retrieved.</response>
         /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
         [HttpGet("Info")]
-        [Authorize(Policy = Policies.IgnoreSchedule)]
-        [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
+        [Authorize(Policy = Policies.IgnoreParentalControlOrFirstTimeSetup)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<SystemInfo>> GetSystemInfo()
         {
@@ -99,8 +97,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Server restarted.</response>
         /// <returns>No content. Server restarted.</returns>
         [HttpPost("Restart")]
-        [Authorize(Policy = Policies.LocalAccessOnly)]
-        [Authorize(Policy = Policies.RequiresElevation)]
+        [Authorize(Policy = Policies.LocalAccessOrRequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RestartApplication()
         {

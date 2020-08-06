@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -154,7 +154,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("SecurityInfo")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdatePluginSecurityInfo([FromBody, BindRequired] PluginSecurityInfo pluginSecurityInfo)
+        public ActionResult UpdatePluginSecurityInfo([FromBody, Required] PluginSecurityInfo pluginSecurityInfo)
         {
             return NoContent();
         }

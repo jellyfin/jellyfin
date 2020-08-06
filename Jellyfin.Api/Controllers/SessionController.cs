@@ -122,12 +122,13 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Viewing")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult DisplayContent(
-            [FromRoute] string? sessionId,
-            [FromQuery] string? itemType,
-            [FromQuery] string? itemId,
-            [FromQuery] string? itemName)
+            [FromRoute, Required] string? sessionId,
+            [FromQuery, Required] string? itemType,
+            [FromQuery, Required] string? itemId,
+            [FromQuery, Required] string? itemName)
         {
             var command = new BrowseRequest
             {
@@ -156,9 +157,10 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Playing")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult Play(
-            [FromRoute] string? sessionId,
+            [FromRoute, Required] string? sessionId,
             [FromQuery] Guid[] itemIds,
             [FromQuery] long? startPositionTicks,
             [FromQuery] PlayCommand playCommand,
@@ -190,9 +192,10 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Playstate command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Playing/{command}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendPlaystateCommand(
-            [FromRoute] string? sessionId,
+            [FromRoute, Required] string? sessionId,
             [FromBody] PlaystateRequest playstateRequest)
         {
             _sessionManager.SendPlaystateCommand(
@@ -212,10 +215,11 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">System command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/System/{command}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendSystemCommand(
-            [FromRoute] string? sessionId,
-            [FromRoute] string? command)
+            [FromRoute, Required] string? sessionId,
+            [FromRoute, Required] string? command)
         {
             var name = command;
             if (Enum.TryParse(name, true, out GeneralCommandType commandType))
@@ -243,10 +247,11 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">General command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Command/{command}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendGeneralCommand(
-            [FromRoute] string? sessionId,
-            [FromRoute] string? command)
+            [FromRoute, Required] string? sessionId,
+            [FromRoute, Required] string? command)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
 
@@ -269,9 +274,10 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Full general command sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Command")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendFullGeneralCommand(
-            [FromRoute] string? sessionId,
+            [FromRoute, Required] string? sessionId,
             [FromBody, Required] GeneralCommand command)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
@@ -302,11 +308,12 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Message sent.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Message")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendMessageCommand(
-            [FromRoute] string? sessionId,
-            [FromQuery] string? text,
-            [FromQuery] string? header,
+            [FromRoute, Required] string? sessionId,
+            [FromQuery, Required] string? text,
+            [FromQuery, Required] string? header,
             [FromQuery] long? timeoutMs)
         {
             var command = new MessageCommand
@@ -329,9 +336,10 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">User added to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/User/{userId}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult AddUserToSession(
-            [FromRoute] string? sessionId,
+            [FromRoute, Required] string? sessionId,
             [FromRoute] Guid userId)
         {
             _sessionManager.AddAdditionalUser(sessionId, userId);
@@ -346,6 +354,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">User removed from session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpDelete("Sessions/{sessionId}/User/{userId}")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult RemoveUserFromSession(
             [FromRoute] string? sessionId,
@@ -367,9 +376,10 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Capabilities posted.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/Capabilities")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostCapabilities(
-            [FromQuery] string? id,
+            [FromQuery, Required] string? id,
             [FromQuery] string? playableMediaTypes,
             [FromQuery] string? supportedCommands,
             [FromQuery] bool supportsMediaControl = false,
@@ -400,9 +410,10 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Capabilities updated.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/Capabilities/Full")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostFullCapabilities(
-            [FromQuery] string? id,
+            [FromQuery, Required] string? id,
             [FromBody, Required] ClientCapabilities capabilities)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -423,6 +434,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Session reported to server.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/Viewing")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult ReportViewing(
             [FromQuery] string? sessionId,
@@ -440,6 +452,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Session end reported to server.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/Logout")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult ReportSessionEnded()
         {
@@ -455,6 +468,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Auth providers retrieved.</response>
         /// <returns>An <see cref="IEnumerable{NameIdPair}"/> with the auth providers.</returns>
         [HttpGet("Auth/Providers")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<NameIdPair>> GetAuthProviders()
         {
@@ -468,6 +482,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="IEnumerable{NameIdPair}"/> with the password reset providers.</returns>
         [HttpGet("Auto/PasswordResetProviders")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(Policy = Policies.RequiresElevation)]
         public ActionResult<IEnumerable<NameIdPair>> GetPasswordResetProviders()
         {
             return _userManager.GetPasswordResetProviders();

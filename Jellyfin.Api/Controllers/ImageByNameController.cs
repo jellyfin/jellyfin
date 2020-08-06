@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
@@ -64,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<FileStreamResult> GetGeneralImage([FromRoute] string? name, [FromRoute] string? type)
+        public ActionResult<FileStreamResult> GetGeneralImage([FromRoute, Required] string? name, [FromRoute, Required] string? type)
         {
             var filename = string.Equals(type, "primary", StringComparison.OrdinalIgnoreCase)
                 ? "folder"
@@ -110,8 +111,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<FileStreamResult> GetRatingImage(
-            [FromRoute] string? theme,
-            [FromRoute] string? name)
+            [FromRoute, Required] string? theme,
+            [FromRoute, Required] string? name)
         {
             return GetImageFile(_applicationPaths.RatingsPath, theme, name);
         }
@@ -143,8 +144,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<FileStreamResult> GetMediaInfoImage(
-            [FromRoute] string? theme,
-            [FromRoute] string? name)
+            [FromRoute, Required] string? theme,
+            [FromRoute, Required] string? name)
         {
             return GetImageFile(_applicationPaths.MediaInfoImagesPath, theme, name);
         }

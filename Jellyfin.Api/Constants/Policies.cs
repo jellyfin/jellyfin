@@ -13,7 +13,7 @@ namespace Jellyfin.Api.Constants
         /// <summary>
         /// Policy name for requiring first time setup or elevated privileges.
         /// </summary>
-        public const string FirstTimeSetupOrElevated = "FirstTimeOrElevated";
+        public const string FirstTimeSetupOrElevated = "FirstTimeSetupOrElevated";
 
         /// <summary>
         /// Policy name for requiring elevated privileges.
@@ -28,11 +28,26 @@ namespace Jellyfin.Api.Constants
         /// <summary>
         /// Policy name for escaping schedule controls.
         /// </summary>
-        public const string IgnoreSchedule = "IgnoreSchedule";
+        public const string IgnoreParentalControl = "IgnoreParentalControl";
 
         /// <summary>
         /// Policy name for requiring download permission.
         /// </summary>
         public const string Download = "Download";
+
+        /// <summary>
+        /// Policy name for requiring first time setup or default permissions.
+        /// </summary>
+        public const string FirstTimeSetupOrDefault = "FirstTimeSetupOrDefault";
+
+        /// <summary>
+        /// Policy name for requiring local access or elevated privileges.
+        /// </summary>
+        public const string LocalAccessOrRequiresElevation = "LocalAccessOrRequiresElevation";
+
+        /// <summary>
+        /// Policy name for escaping schedule controls or requiring first time setup.
+        /// </summary>
+        public const string IgnoreParentalControlOrFirstTimeSetup = "IgnoreParentalControlOrFirstTimeSetup";
     }
 }

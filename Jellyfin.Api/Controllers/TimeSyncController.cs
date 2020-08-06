@@ -9,7 +9,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The time sync controller.
     /// </summary>
-    [Route("GetUtcTime")]
+    [Route("")]
     public class TimeSyncController : BaseJellyfinApiController
     {
         /// <summary>
@@ -17,7 +17,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="200">Time returned.</response>
         /// <returns>An <see cref="UtcTimeResponse"/> to sync the client and server time.</returns>
-        [HttpGet]
+        [HttpGet("GetUtcTime")]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK)]
         public ActionResult<UtcTimeResponse> GetUtcTime()
         {

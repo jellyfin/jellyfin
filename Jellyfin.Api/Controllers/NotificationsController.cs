@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.NotificationDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Notifications;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The notification controller.
     /// </summary>
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class NotificationsController : BaseJellyfinApiController
     {
         private readonly INotificationManager _notificationManager;
@@ -83,19 +87,19 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Sends a notification to all admins.
         /// </summary>
-        /// <param name="name">The name of the notification.</param>
-        /// <param name="description">The description of the notification.</param>
         /// <param name="url">The URL of the notification.</param>
         /// <param name="level">The level of the notification.</param>
+        /// <param name="name">The name of the notification.</param>
+        /// <param name="description">The description of the notification.</param>
         /// <response code="204">Notification sent.</response>
         /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult CreateAdminNotification(
-            [FromQuery] string? name,
-            [FromQuery] string? description,
             [FromQuery] string? url,
-            [FromQuery] NotificationLevel? level)
+            [FromQuery] NotificationLevel? level,
+            [FromQuery, Required] string name = "",
+            [FromQuery, Required] string description = "")
         {
             var notification = new NotificationRequest
             {

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -9,7 +10,6 @@ using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -59,7 +59,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Configuration")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdateConfiguration([FromBody, BindRequired] ServerConfiguration configuration)
+        public ActionResult UpdateConfiguration([FromBody, Required] ServerConfiguration configuration)
         {
             _configurationManager.ReplaceConfiguration(configuration);
             return NoContent();
@@ -117,7 +117,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("MediaEncoder/Path")]
         [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdateMediaEncoderPath([FromForm, BindRequired] MediaEncoderPathDto mediaEncoderPath)
+        public ActionResult UpdateMediaEncoderPath([FromForm, Required] MediaEncoderPathDto mediaEncoderPath)
         {
             _mediaEncoder.UpdateEncoderPath(mediaEncoderPath.Path, mediaEncoderPath.PathType);
             return NoContent();

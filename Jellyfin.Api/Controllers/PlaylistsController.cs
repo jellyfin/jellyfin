@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
@@ -14,7 +15,6 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -59,7 +59,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaylistCreationResult>> CreatePlaylist(
-            [FromBody, BindRequired] CreatePlaylistDto createPlaylistRequest)
+            [FromBody, Required] CreatePlaylistDto createPlaylistRequest)
         {
             Guid[] idGuidArray = RequestHelpers.GetGuids(createPlaylistRequest.Ids);
             var result = await _playlistManager.CreatePlaylist(new PlaylistCreationRequest

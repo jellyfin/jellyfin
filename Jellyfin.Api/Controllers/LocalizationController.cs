@@ -11,7 +11,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Localization controller.
     /// </summary>
-    [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
+    [Authorize(Policy = Policies.FirstTimeSetupOrDefault)]
     public class LocalizationController : BaseJellyfinApiController
     {
         private readonly ILocalizationManager _localization;

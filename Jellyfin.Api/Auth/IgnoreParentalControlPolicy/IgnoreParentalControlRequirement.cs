@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace Jellyfin.Api.Auth.IgnoreSchedulePolicy
+namespace Jellyfin.Api.Auth.IgnoreParentalControlPolicy
 {
     /// <summary>
     /// Escape schedule controls requirement.
     /// </summary>
-    public class IgnoreScheduleRequirement : IAuthorizationRequirement
+    public class IgnoreParentalControlRequirement : IAuthorizationRequirement
     {
     }
 }

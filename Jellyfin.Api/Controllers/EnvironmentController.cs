@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using Jellyfin.Api.Constants;
@@ -8,7 +9,6 @@ using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
@@ -47,7 +47,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("DirectoryContents")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<FileSystemEntryInfo> GetDirectoryContents(
-            [FromQuery, BindRequired] string path,
+            [FromQuery, Required] string path,
             [FromQuery] bool includeFiles = false,
             [FromQuery] bool includeDirectories = false)
         {
@@ -75,7 +75,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("ValidatePath")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult ValidatePath([FromBody, BindRequired] ValidatePathDto validatePathDto)
+        public ActionResult ValidatePath([FromBody, Required] ValidatePathDto validatePathDto)
         {
             if (validatePathDto.IsFile.HasValue)
             {
@@ -154,7 +154,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Parent path.</returns>
         [HttpGet("ParentPath")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<string?> GetParentPath([FromQuery, BindRequired] string path)
+        public ActionResult<string?> GetParentPath([FromQuery, Required] string path)
         {
             string? parent = Path.GetDirectoryName(path);
             if (string.IsNullOrEmpty(parent))

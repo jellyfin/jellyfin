@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -32,7 +33,6 @@ using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Book = MediaBrowser.Controller.Entities.Book;
 using Movie = Jellyfin.Data.Entities.Movie;
@@ -597,7 +597,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Library/Media/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostUpdatedMedia([FromBody, BindRequired] MediaUpdateInfoDto[] updates)
+        public ActionResult PostUpdatedMedia([FromBody, Required] MediaUpdateInfoDto[] updates)
         {
             foreach (var item in updates)
             {
@@ -685,6 +685,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Shows/{itemId}/Similar", Name = "GetSimilarShows2")]
         [HttpGet("Movies/{itemId}/Similar", Name = "GetSimilarMovies2")]
         [HttpGet("Trailers/{itemId}/Similar", Name = "GetSimilarTrailers2")]
+        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetSimilarItems(
             [FromRoute] Guid itemId,
@@ -736,11 +737,11 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Library options info returned.</response>
         /// <returns>Library options info.</returns>
         [HttpGet("Libraries/AvailableOptions")]
-        [Authorize(Policy = Policies.FirstTimeSetupOrElevated)]
+        [Authorize(Policy = Policies.FirstTimeSetupOrDefault)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo(
             [FromQuery] string? libraryContentType,
-            [FromQuery] bool isNewLibrary = false)
+            [FromQuery] bool isNewLibrary)
         {
             var result = new LibraryOptionsResultDto();
 
