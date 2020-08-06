@@ -115,6 +115,8 @@ namespace Emby.Server.Implementations.Networking
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
+            _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+
             Instance = this;
         }
 #pragma warning restore CS8618 // Non-nullable field is uninitialized.
@@ -224,7 +226,7 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public void ConfigurationUpdated(object sender, EventArgs e)
+        private void ConfigurationUpdated(object sender, EventArgs e)
         {
             // IP6 settings changed.
             if (IsIP6Enabled != _configurationManager.Configuration.EnableIPV6)

@@ -41,7 +41,7 @@ namespace Rssdp.Infrastructure
 
         private readonly object _sendSocketSynchroniser = new object();
         private List<ISocket> _sendSockets;
-
+        private bool _uPnPEnabled;
         private readonly HttpRequestParser _requestParser;
         private readonly HttpResponseParser _responseParser;
         private readonly ILogger _logger;
@@ -75,9 +75,8 @@ namespace Rssdp.Infrastructure
             INetworkManager networkManager,
             IServerConfigurationManager config,
             ILogger logger)
-            : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger)
+            : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, config, logger)
         {
-            _config = config;
         }
 
         /// <summary>
@@ -91,7 +90,13 @@ namespace Rssdp.Infrastructure
         /// <param name="enableMultiSocketBinding">The enableMultiSocketBinding<see cref="bool"/>.</param>
         /// /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger)
+        public SsdpCommunicationsServer(
+            ISocketFactory socketFactory,
+            int localPort,
+            int multicastTimeToLive,
+            INetworkManager networkManager,
+            IServerConfigurationManager config,
+            ILogger logger)
         {
 
             if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
@@ -108,8 +113,25 @@ namespace Rssdp.Infrastructure
             _multicastTtl = multicastTimeToLive;
             _networkManager = networkManager;
             _logger = logger;
+
+            _config = config;
+            if (_config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
+            if (_networkManager == null)
+            {
+                throw new ArgumentNullException(nameof(networkManager));
+            }
+
+            _config.ConfigurationUpdated += ConfigurationUpdated;
+            _networkManager.NetworkChanged += ConfigurationUpdated;
+
+            _uPnPEnabled = _config.Configuration.EnableUPnP && _config.Configuration.EnableRemoteAccess;
         }
 
+        
         /// <summary>
         /// Causes the server to begin listening for multicast messages, being SSDP search requests and notifications.
         /// </summary>
@@ -117,11 +139,7 @@ namespace Rssdp.Infrastructure
         {
             ThrowIfDisposed();
 
-            if (!_config.Configuration.EnableUPnP || !_config.Configuration.EnableRemoteAccess)
-            {
-                // Mono.Nat is doing the listening for us.
-                return;
-            }
+            // See ifg Mono.Nat is doing the listening on the gateways.
 
             if (_broadcastListenSocket == null)
             {
@@ -144,6 +162,45 @@ namespace Rssdp.Infrastructure
                     }
                 }
             }
+        }
+
+        public void ConfigurationUpdated(object sender, EventArgs args)
+        {
+            // Check to see if uPNP has changed status.
+            bool newValue = (_config.Configuration.EnableUPnP && _config.Configuration.EnableRemoteAccess);
+
+            if (newValue != _uPnPEnabled)
+            {
+                // If it has create the missing sockets.
+                CreateSocketAndListenForResponses();
+            }
+        }
+
+        public void NetworkChanged(object sender, EventArgs args)
+        {
+            var nc = _networkManager.GetInternalBindAddresses();
+
+            // Remove the sockets that are no longer valid.
+            lock (_sendSocketSynchroniser)
+            {
+                if (_sendSockets != null)
+                {
+                    int index = _sendSockets.Count - 1;
+                    while (index >= 0)
+                    {
+                        if (!nc.Exists(_sendSockets[index].LocalIPAddress))
+                        {
+                            _logger.LogDebug("Disposing socket.");
+                            var socket = _sendSockets[index];
+                            _sendSockets.RemoveAt(index);
+                            socket.Dispose();
+                        }
+                    }
+                }
+            }
+
+            // Create any that are missing.
+            CreateSocketAndListenForResponses();
         }
 
         /// <summary>
@@ -254,25 +311,6 @@ namespace Rssdp.Infrastructure
             catch (SocketException)
             {
                 _logger.LogError("Socket error encountered sending message from {0} to {1}.", socket.LocalIPAddress, destination);
-
-                // Remove the erroring socket.
-                lock (_sendSocketSynchroniser)
-                {
-                    if (_sendSockets != null)
-                    {
-                        int index = _sendSockets.Count - 1;
-                        while (index >= 0)
-                        {
-                            if (_sendSockets[index].Equals(socket))
-                            {
-                                _logger.LogDebug("Disposing socket.");
-                                _sendSockets.RemoveAt(index);
-                                socket.Dispose();
-                                break;
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -399,6 +437,9 @@ namespace Rssdp.Infrastructure
         {
             if (disposing)
             {
+                _config.ConfigurationUpdated -= ConfigurationUpdated;
+                _networkManager.NetworkChanged -= ConfigurationUpdated;
+
                 StopListeningForBroadcasts();
 
                 StopListeningForResponses();
@@ -450,8 +491,8 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Creates sockets for all internal interfaces.
         /// </summary>
-        /// <returns>List of ISockets.</returns>
-        private List<ISocket> CreateSocketAndListenForResponsesAsync()
+        /// <returns>List of ISockets.</returns
+        private List<ISocket> CreateSocketAndListenForResponses()
         {
             var sockets = new List<ISocket>();
 
@@ -459,6 +500,19 @@ namespace Rssdp.Infrastructure
             {
                 foreach (IPObject ip in _networkManager.GetInternalBindAddresses())
                 {
+                    if (_uPnPEnabled && ip.Tag < 0)
+                    {
+                        // An interface with a -ve tag has a gateway address, so will be listened to by Mono.NAT.
+                        // Mono.NAT will send us this traffic.
+                        continue;
+                    }
+
+                    if (sockets.Where(s => s.LocalIPAddress.Equals(ip.Address)).Any())
+                    {
+                        // A socket for this address already exists, so skip it.
+                        continue;
+                    }
+
                     try
                     {
                         _logger.LogInformation("Listening on {0}.", ip.Address);
@@ -471,14 +525,20 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            // Add an IPAny Socket
-            try
+            if (!_uPnPEnabled)
             {
-                sockets.Add(_socketFactory.CreateSsdpUdpSocket(_networkManager.IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any, _localPort));
-            }
-            catch (SocketException ex)
-            {
-                _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: Any");
+                // Add an IPAny Socket if it doesn't already exist.
+                try
+                {
+                    if (!sockets.Where(s => s.LocalIPAddress.Equals(IPAddress.Any)).Any())
+                    {
+                        sockets.Add(_socketFactory.CreateSsdpUdpSocket(_networkManager.IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any, _localPort));
+                    }
+                }
+                catch (SocketException ex)
+                {
+                    _logger.LogError(ex, "Error in CreateSsdpUdpSocket. IPAddress: Any");
+                }
             }
 
             foreach (var socket in sockets)
@@ -532,7 +592,7 @@ namespace Rssdp.Infrastructure
                 {
                     if (_sendSockets == null)
                     {
-                        _sendSockets = CreateSocketAndListenForResponsesAsync();
+                        _sendSockets = CreateSocketAndListenForResponses();
                     }
                 }
             }

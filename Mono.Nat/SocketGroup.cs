@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -45,7 +45,7 @@ namespace Mono.Nat
 				await Task.Delay (10, token);
 			}
 
-			throw new Exception ("Should not be reached");
+            throw new TaskCanceledException();
 		}
 
 		public async Task SendAsync (byte [] buffer, IPAddress gatewayAddress, CancellationToken token)

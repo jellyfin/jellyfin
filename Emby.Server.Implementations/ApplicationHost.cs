@@ -252,7 +252,6 @@ namespace Emby.Server.Implementations
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
             _networkManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
-            ConfigurationManager.ConfigurationUpdated += _networkManager.ConfigurationUpdated;
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
