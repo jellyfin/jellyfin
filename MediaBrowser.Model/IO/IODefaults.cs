@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace MediaBrowser.Model.IO
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace MediaBrowser.Model.IO
         public const int FileStreamBufferSize = 4096;
 
         /// <summary>
-        /// The default <see cref="System.IO.StreamWriter" /> buffer size.
+        /// The default <see cref="StreamWriter" /> buffer size.
         /// </summary>
         public const int StreamWriterBufferSize = 1024;
     }
