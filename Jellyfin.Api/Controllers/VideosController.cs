@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -35,7 +36,6 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The videos controller.
     /// </summary>
-    [Route("Videos")]
     public class VideosController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;
@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult MergeVersions([FromQuery] string? itemIds)
+        public ActionResult MergeVersions([FromQuery, Required] string? itemIds)
         {
             var items = RequestHelpers.Split(itemIds, ',', true)
                 .Select(i => _libraryManager.GetItemById(i))

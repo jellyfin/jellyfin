@@ -11,7 +11,6 @@ using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -99,9 +98,9 @@ namespace Jellyfin.Api.Controllers
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "displayPreferencesId", Justification = "Imported from ServiceStack")]
         public ActionResult UpdateDisplayPreferences(
             [FromRoute] string? displayPreferencesId,
-            [FromQuery, BindRequired] Guid userId,
-            [FromQuery, BindRequired] string? client,
-            [FromBody, BindRequired] DisplayPreferencesDto displayPreferences)
+            [FromQuery, Required] Guid userId,
+            [FromQuery, Required] string? client,
+            [FromBody, Required] DisplayPreferencesDto displayPreferences)
         {
             HomeSectionType[] defaults =
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Net.Mime;
@@ -91,7 +92,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing a <see cref="PlaybackInfoResponse"/> with the playback information.</returns>
         [HttpGet("Items/{itemId}/PlaybackInfo")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute] Guid itemId, [FromQuery] Guid? userId)
+        public async Task<ActionResult<PlaybackInfoResponse>> GetPlaybackInfo([FromRoute] Guid itemId, [FromQuery, Required] Guid? userId)
         {
             return await GetPlaybackInfoInternal(itemId, userId).ConfigureAwait(false);
         }
@@ -281,7 +282,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("LiveStreams/Close")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult CloseLiveStream([FromQuery] string? liveStreamId)
+        public ActionResult CloseLiveStream([FromQuery, Required] string? liveStreamId)
         {
             _mediaSourceManager.CloseLiveStream(liveStreamId).GetAwaiter().GetResult();
             return NoContent();

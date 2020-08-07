@@ -127,7 +127,6 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Package repositories returned.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of package repositories.</returns>
         [HttpGet("Repositories")]
-        [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
         {

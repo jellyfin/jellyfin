@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
@@ -86,7 +87,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult AddToCollection([FromRoute] Guid collectionId, [FromQuery] string? itemIds)
+        public ActionResult AddToCollection([FromRoute] Guid collectionId, [FromQuery, Required] string? itemIds)
         {
             _collectionManager.AddToCollection(collectionId, RequestHelpers.Split(itemIds, ',', true));
             return NoContent();
@@ -101,7 +102,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpDelete("{collectionId}/Items")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery] string? itemIds)
+        public ActionResult RemoveFromCollection([FromRoute] Guid collectionId, [FromQuery, Required] string? itemIds)
         {
             _collectionManager.RemoveFromCollection(collectionId, RequestHelpers.Split(itemIds, ',', true));
             return NoContent();

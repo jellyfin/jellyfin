@@ -1,12 +1,11 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +15,6 @@ namespace Jellyfin.Api.Controllers
     /// Attachments controller.
     /// </summary>
     [Route("Videos")]
-    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class VideoAttachmentsController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;
@@ -49,9 +47,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<FileStreamResult>> GetAttachment(
-            [FromRoute] Guid videoId,
-            [FromRoute] string? mediaSourceId,
-            [FromRoute] int index)
+            [FromRoute, Required] Guid videoId,
+            [FromRoute, Required] string mediaSourceId,
+            [FromRoute, Required] int index)
         {
             try
             {

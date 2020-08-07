@@ -20,7 +20,6 @@ using MediaBrowser.Model.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -106,7 +105,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">User not found.</response>
         /// <returns>An <see cref="UserDto"/> with information about the user or a <see cref="NotFoundResult"/> if the user was not found.</returns>
         [HttpGet("{userId}")]
-        [Authorize(Policy = Policies.IgnoreSchedule)]
+        [Authorize(Policy = Policies.IgnoreParentalControl)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<UserDto> GetUserById([FromRoute] Guid userId)
@@ -157,8 +156,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AuthenticationResult>> AuthenticateUser(
             [FromRoute, Required] Guid userId,
-            [FromQuery, BindRequired] string? pw,
-            [FromQuery, BindRequired] string? password)
+            [FromQuery, Required] string? pw,
+            [FromQuery] string? password)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -190,7 +189,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
         [HttpPost("AuthenticateByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, BindRequired] AuthenticateUserByName request)
+        public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
         {
             var auth = _authContext.GetAuthorizationInfo(Request);
 
@@ -371,7 +370,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="403">User policy update forbidden.</response>
         /// <returns>A <see cref="NoContentResult"/> indicating success or a <see cref="BadRequestResult"/> or a <see cref="ForbidResult"/> on failure..</returns>
         [HttpPost("{userId}/Policy")]
-        [Authorize(Policy = Policies.DefaultAuthorization)]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

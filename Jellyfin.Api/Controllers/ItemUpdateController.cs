@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Constants;
@@ -17,7 +18,6 @@ using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -67,7 +67,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Items/{itemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateItem([FromRoute] Guid itemId, [FromBody, BindRequired] BaseItemDto request)
+        public ActionResult UpdateItem([FromRoute] Guid itemId, [FromBody, Required] BaseItemDto request)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -194,7 +194,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Items/{itemId}/ContentType")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateItemContentType([FromRoute] Guid itemId, [FromQuery, BindRequired] string? contentType)
+        public ActionResult UpdateItemContentType([FromRoute] Guid itemId, [FromQuery, Required] string? contentType)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)

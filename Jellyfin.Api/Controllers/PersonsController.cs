@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Entities;
@@ -9,6 +10,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Persons controller.
     /// </summary>
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class PersonsController : BaseJellyfinApiController
     {
         private readonly ILibraryManager _libraryManager;

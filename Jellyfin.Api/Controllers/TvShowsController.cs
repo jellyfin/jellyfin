@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
@@ -68,7 +69,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("NextUp")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetNextUp(
-            [FromQuery] Guid? userId,
+            [FromQuery, Required] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -126,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Upcoming")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetUpcomingEpisodes(
-            [FromQuery] Guid? userId,
+            [FromQuery, Required] Guid? userId,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
@@ -193,8 +194,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetEpisodes(
-            [FromRoute] string? seriesId,
-            [FromQuery] Guid? userId,
+            [FromRoute, Required] string? seriesId,
+            [FromQuery, Required] Guid? userId,
             [FromQuery] string? fields,
             [FromQuery] int? season,
             [FromQuery] string? seasonId,
@@ -316,8 +317,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<QueryResult<BaseItemDto>> GetSeasons(
-            [FromRoute] string? seriesId,
-            [FromQuery] Guid? userId,
+            [FromRoute, Required] string? seriesId,
+            [FromQuery, Required] Guid? userId,
             [FromQuery] string? fields,
             [FromQuery] bool? isSpecialSeason,
             [FromQuery] bool? isMissing,

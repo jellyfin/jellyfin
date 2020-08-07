@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
@@ -174,7 +175,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("MusicGenres/{name}/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenre(
-            [FromRoute] string? name,
+            [FromRoute, Required] string? name,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
             [FromQuery] string? fields,
