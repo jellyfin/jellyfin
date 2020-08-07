@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <returns>System.Object.</returns>
         public object DeserializeFromBytes(Type type, byte[] buffer)
         {
-            using (var stream = new MemoryStream(buffer))
+            using (var stream = new MemoryStream(buffer, 0, buffer.Length, false, true))
             {
                 return DeserializeFromStream(type, stream);
             }

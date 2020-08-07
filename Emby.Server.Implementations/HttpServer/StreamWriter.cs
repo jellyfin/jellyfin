@@ -95,13 +95,13 @@ namespace Emby.Server.Implementations.HttpServer
 
                 if (bytes != null)
                 {
-                    await responseStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                    await responseStream.WriteAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     using (var src = SourceStream)
                     {
-                        await src.CopyToAsync(responseStream).ConfigureAwait(false);
+                        await src.CopyToAsync(responseStream, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }

@@ -969,7 +969,7 @@ namespace Jellyfin.Api.Controllers
             var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
             var bytes = Convert.FromBase64String(text);
-            return new MemoryStream(bytes) { Position = 0 };
+            return new MemoryStream(bytes, 0, bytes.Length, false, true);
         }
 
         private ImageInfo? GetImageInfo(BaseItem item, ItemImageInfo info, int? imageIndex)
