@@ -98,8 +98,8 @@ namespace Jellyfin.Api.Controllers
         public ActionResult CreateAdminNotification(
             [FromQuery] string? url,
             [FromQuery] NotificationLevel? level,
-            [FromQuery, Required] string name = "",
-            [FromQuery, Required] string description = "")
+            [FromQuery] string name = "",
+            [FromQuery] string description = "")
         {
             var notification = new NotificationRequest
             {
