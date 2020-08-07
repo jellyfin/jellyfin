@@ -299,7 +299,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _memoryCache.CreateEntry(item.Id).SetValue(item);
+            _memoryCache.Set(item.Id, item);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
