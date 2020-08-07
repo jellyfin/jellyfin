@@ -182,12 +182,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var model = await GetModelInfo(info, false, cancellationToken).ConfigureAwait(false);
 
-            using (var response = await _httpClient.SendAsync(new HttpRequestOptions()
-            {
-                Url = string.Format("{0}/tuners.html", GetApiUrl(info)),
-                CancellationToken = cancellationToken,
-                BufferContent = false
-            }, HttpMethod.Get).ConfigureAwait(false))
+            using (var response = await _httpClient.SendAsync(
+                new HttpRequestOptions()
+                {
+                    Url = string.Format(CultureInfo.InvariantCulture, "{0}/tuners.html", GetApiUrl(info)),
+                    CancellationToken = cancellationToken,
+                    BufferContent = false
+                },
+                HttpMethod.Get).ConfigureAwait(false))
             using (var stream = response.Content)
             using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
             {
@@ -730,7 +732,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken);
+                    await udpClient.SendToAsync(discBytes, 0, discBytes.Length, new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65001), cancellationToken).ConfigureAwait(false);
                     var receiveBuffer = new byte[8192];
 
                     while (!cancellationToken.IsCancellationRequested)

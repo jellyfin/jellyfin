@@ -37,7 +37,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             ).* # Match rest of string",
             RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase);
 
-        private const string _searchURL = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
+        private const string SearchUrl = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}";
+        private const string SearchUrlWithYear = TmdbUtils.BaseTmdbApiUrl + @"3/search/{3}?api_key={1}&query={0}&language={2}&first_air_date_year={4}";
 
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
@@ -124,7 +125,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 name2 = name2.Trim();
 
                 // Search again if the new name is different
-                if (!string.Equals(name2, name) && !string.IsNullOrWhiteSpace(name2))
+                if (!string.Equals(name2, name, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(name2))
                 {
                     _logger.LogInformation("TmdbSearch: Finding id for item: {0} ({1})", name2, year);
                     results = await GetSearchResults(name2, searchType, year, language, tmdbImageUrl, cancellationToken).ConfigureAwait(false);
@@ -164,10 +165,30 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("name");
+                throw new ArgumentException("String can't be null or empty.", nameof(name));
             }
 
-            var url3 = string.Format(_searchURL, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, type);
+            string url3;
+            if (year != null && string.Equals(type, "movie", StringComparison.OrdinalIgnoreCase))
+            {
+                url3 = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SearchUrl,
+                    WebUtility.UrlEncode(name),
+                    TmdbUtils.ApiKey,
+                    language,
+                    type) + "&primary_release_year=" + year;
+            }
+            else
+            {
+                url3 = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SearchUrl,
+                    WebUtility.UrlEncode(name),
+                    TmdbUtils.ApiKey,
+                    language,
+                    type);
+            }
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
             foreach (var header in TmdbUtils.AcceptHeaders)
@@ -207,10 +228,31 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("name");
+                throw new ArgumentException("String can't be null or empty.", nameof(name));
             }
 
-            var url3 = string.Format(_searchURL, WebUtility.UrlEncode(name), TmdbUtils.ApiKey, language, "tv");
+            string url3;
+            if (year == null)
+            {
+                url3 = string.Format(
+                CultureInfo.InvariantCulture,
+                SearchUrl,
+                WebUtility.UrlEncode(name),
+                TmdbUtils.ApiKey,
+                language,
+                "tv");
+            }
+            else
+            {
+                url3 = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SearchUrlWithYear,
+                    WebUtility.UrlEncode(name),
+                    TmdbUtils.ApiKey,
+                    language,
+                    "tv",
+                    year);
+            }
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, url3);
             foreach (var header in TmdbUtils.AcceptHeaders)

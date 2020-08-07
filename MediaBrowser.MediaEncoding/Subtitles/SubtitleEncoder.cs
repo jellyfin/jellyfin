@@ -435,7 +435,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         CreateNoWindow = true,
                         UseShellExecute = false,
                         FileName = _mediaEncoder.EncoderPath,
-                        Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
+                        Arguments = string.Format(CultureInfo.InvariantCulture, "{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
                         WindowStyle = ProcessWindowStyle.Hidden,
                         ErrorDialog = false
                     },

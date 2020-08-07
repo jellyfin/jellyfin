@@ -113,7 +113,7 @@ namespace Jellyfin.Api.Controllers
             user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
 
             await _providerManager
-                .SaveImage(user, memoryStream, mimeType, user.ProfileImage.Path)
+                .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
                 .ConfigureAwait(false);
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 

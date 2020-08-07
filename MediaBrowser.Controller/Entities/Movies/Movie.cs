@@ -1,5 +1,7 @@
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -179,7 +181,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 list.Add(new ExternalUrl
                 {
                     Name = "Trakt",
-                    Url = string.Format("https://trakt.tv/movies/{0}", imdbId)
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/movies/{0}", imdbId)
                 });
             }
 

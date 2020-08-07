@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.LiveTv
 
                 if (double.TryParse(Number, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
                 {
-                    return string.Format("{0:00000.0}", number) + "-" + (Name ?? string.Empty);
+                    return string.Format(CultureInfo.InvariantCulture, "{0:00000.0}", number) + "-" + (Name ?? string.Empty);
                 }
             }
 

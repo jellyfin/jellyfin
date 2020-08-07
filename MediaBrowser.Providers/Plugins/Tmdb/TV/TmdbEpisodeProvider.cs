@@ -131,7 +131,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                         {
                             if (video.Site.Equals("youtube", System.StringComparison.OrdinalIgnoreCase))
                             {
-                                var videoUrl = string.Format("http://www.youtube.com/watch?v={0}", video.Key);
+                                var videoUrl = string.Format(CultureInfo.InvariantCulture, "http://www.youtube.com/watch?v={0}", video.Key);
                                 item.AddTrailerUrl(videoUrl);
                             }
                         }
