@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.Serialization
@@ -53,10 +54,11 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="stream">The stream.</param>
         public void SerializeToStream(object obj, Stream stream)
         {
-            using (var writer = new XmlTextWriter(stream, null))
+            using (var writer = new StreamWriter(stream, null, IODefaults.StreamWriterBufferSize, true))
+            using (var textWriter = new XmlTextWriter(writer))
             {
-                writer.Formatting = Formatting.Indented;
-                SerializeToWriter(obj, writer);
+                textWriter.Formatting = Formatting.Indented;
+                SerializeToWriter(obj, textWriter);
             }
         }
 
