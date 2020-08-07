@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (!string.IsNullOrEmpty(key) && list.Count > 0)
             {
-                _memoryCache.CreateEntry(key).SetValue(list);
+                _memoryCache.Set(key, list);
             }
 
             return list;
