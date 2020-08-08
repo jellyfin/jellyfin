@@ -9,35 +9,34 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public sealed class ResponseReceivedEventArgs : EventArgs
     {
-        public IPAddress LocalIpAddress { get; set; }
-
-        private readonly HttpResponseMessage _Message;
-
-        private readonly IPEndPoint _ReceivedFrom;
+        private readonly HttpResponseMessage _message;
+        private readonly IPEndPoint _receivedFrom;
 
         /// <summary>
-        /// Full constructor.
+        /// Initializes a new instance of the <see cref="ResponseReceivedEventArgs"/> class.
         /// </summary>
         public ResponseReceivedEventArgs(HttpResponseMessage message, IPEndPoint receivedFrom)
         {
-            _Message = message;
-            _ReceivedFrom = receivedFrom;
+            _message = message;
+            _receivedFrom = receivedFrom;
         }
 
+        public IPAddress LocalIpAddress { get; set; }
+
         /// <summary>
-        /// The <see cref="HttpResponseMessage"/> that was received.
+        /// Gets the <see cref="HttpResponseMessage"/> that was received.
         /// </summary>
         public HttpResponseMessage Message
         {
-            get { return _Message; }
+            get { return _message; }
         }
 
         /// <summary>
-        /// The <see cref="UdpEndPoint"/> the response came from.
+        /// Gets the <see cref="UdpEndPoint"/> the response came from.
         /// </summary>
         public IPEndPoint ReceivedFrom
         {
-            get { return _ReceivedFrom; }
+            get { return _receivedFrom; }
         }
     }
 }

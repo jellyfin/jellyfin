@@ -25,18 +25,18 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Event raised when a device explicitly notifies of shutdown or a device expires from the cache.
         /// </summary>
-        /// <seeseealso cref="NotificationFilter"/>
+        /// <seealso cref="NotificationFilter"/>
         /// <seealso cref="DeviceAvailable"/>
         /// <seealso cref="StartListeningForNotifications"/>
         /// <seealso cref="StopListeningForNotifications"/>
         event EventHandler<DeviceUnavailableEventArgs> DeviceUnavailable;
 
         /// <summary>
-        /// Sets or returns a string containing the filter for notifications. Notifications not matching the filter will not raise the <see cref="DeviceAvailable"/> or <see cref="DeviceUnavailable"/> events.
+        /// Gets or sets a string containing the filter for notifications. Notifications not matching the filter will not raise the <see cref="DeviceAvailable"/> or <see cref="DeviceUnavailable"/> events.
         /// </summary>
         /// <remarks>
         /// <para>Device alive/byebye notifications whose NT header does not match this filter value will still be captured and cached internally, but will not raise events about device availability. Usually used with either a device type of uuid NT header value.</para>
-        /// <para>Example filters follow;</para>
+        /// <para>Example filters follow.</para>
         /// <example>upnp:rootdevice</example>
         /// <example>urn:schemas-upnp-org:device:WANDevice:1</example>
         /// <example>"uuid:9F15356CC-95FA-572E-0E99-85B456BD3012"</example>
@@ -60,7 +60,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Performs a search for the specified search target (criteria) and default search timeout.
         /// </summary>
-        /// <param name="searchTarget">The criteria for the search. Value can be;
+        /// <param name="searchTarget">The criteria for the search. Value can be.
         /// <list type="table">
         /// <item><term>Root devices</term><description>upnp:rootdevice</description></item>
         /// <item><term>Specific device by UUID</term><description>uuid:&lt;device uuid&gt;</description></item>
@@ -73,7 +73,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Performs a search for the specified search target (criteria) and search timeout.
         /// </summary>
-        /// <param name="searchTarget">The criteria for the search. Value can be;
+        /// <param name="searchTarget">The criteria for the search. Value can be.
         /// <list type="table">
         /// <item><term>Root devices</term><description>upnp:rootdevice</description></item>
         /// <item><term>Specific device by UUID</term><description>uuid:&lt;device uuid&gt;</description></item>

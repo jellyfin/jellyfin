@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Rssdp.Infrastructure
 {
@@ -9,10 +10,11 @@ namespace Rssdp.Infrastructure
     /// A base class for the <see cref="HttpResponseParser"/> and <see cref="HttpRequestParser"/> classes. Not intended for direct use.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class HttpParserBase<T> where T : new()
+    public abstract class HttpParserBase<T>
+        where T : new()
     {
-        private readonly string[] LineTerminators = new string[] { "\r\n", "\n" };
-        private readonly char[] SeparatorCharacters = new char[] { ',', ';' };
+        private readonly string[] _lineTerminators = new string[] { "\r\n", "\n" };
+        private readonly char[] _separatorCharacters = new char[] { ',', ';' };
 
         /// <summary>
         /// Parses the <paramref name="data"/> provided into either a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
@@ -25,11 +27,10 @@ namespace Rssdp.Infrastructure
         /// Parses a string containing either an HTTP request or response into a <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object.
         /// </summary>
         /// <param name="message">A <see cref="HttpRequestMessage"/> or <see cref="HttpResponseMessage"/> object representing the parsed message.</param>
-        /// <param name="headers">A reference to the <see cref="System.Net.Http.Headers.HttpHeaders"/> collection for the <paramref name="message"/> object.</param>
+        /// <param name="headers">A reference to the <see cref="HttpHeaders"/> collection for the <paramref name="message"/> object.</param>
         /// <param name="data">A string containing the data to be parsed.</param>
-        /// <returns>An <see cref="HttpContent"/> object containing the content of the parsed message.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Honestly, it's fine. MemoryStream doesn't mind.")]
-        protected virtual void Parse(T message, System.Net.Http.Headers.HttpHeaders headers, string data)
+        protected virtual void Parse(T message, HttpHeaders headers, string data)
         {
             if (data == null)
             {
@@ -41,14 +42,14 @@ namespace Rssdp.Infrastructure
                 throw new ArgumentException("data cannot be an empty string.", nameof(data));
             }
 
-            if (!LineTerminators.Any(data.Contains))
+            if (!_lineTerminators.Any(data.Contains))
             {
                 throw new ArgumentException("data is not a valid request, it does not contain any CRLF/LF terminators.", nameof(data));
             }
 
             using (var retVal = new ByteArrayContent(Array.Empty<byte>()))
             {
-                var lines = data.Split(LineTerminators, StringSplitOptions.None);
+                var lines = data.Split(_lineTerminators, StringSplitOptions.None);
 
                 // First line is the 'request' line containing http protocol details like method, uri, http version etc.
                 ParseStatusLine(lines[0], message);
@@ -82,7 +83,7 @@ namespace Rssdp.Infrastructure
                 throw new ArgumentNullException(nameof(versionData));
             }
 
-            var versionSeparatorIndex = versionData.IndexOf('/');
+            var versionSeparatorIndex = versionData.IndexOf('/', StringComparison.InvariantCulture);
             if (versionSeparatorIndex <= 0 || versionSeparatorIndex == versionData.Length)
             {
                 throw new ArgumentException("request header line is invalid. Http Version not supplied or incorrect format.", nameof(versionData));
@@ -95,9 +96,9 @@ namespace Rssdp.Infrastructure
         /// Parses a line from an HTTP request or response message containing a header name and value pair.
         /// </summary>
         /// <param name="line">A string containing the data to be parsed.</param>
-        /// <param name="headers">A reference to a <see cref="System.Net.Http.Headers.HttpHeaders"/> collection to which the parsed header will be added.</param>
-        /// <param name="contentHeaders">A reference to a <see cref="System.Net.Http.Headers.HttpHeaders"/> collection for the message content, to which the parsed header will be added.</param>
-        private void ParseHeader(string line, System.Net.Http.Headers.HttpHeaders headers, System.Net.Http.Headers.HttpHeaders contentHeaders)
+        /// <param name="headers">A reference to a <see cref="HttpHeaders"/> collection to which the parsed header will be added.</param>
+        /// <param name="contentHeaders">A reference to a <see cref="HttpHeaders"/> collection for the message content, to which the parsed header will be added.</param>
+        private void ParseHeader(string line, HttpHeaders headers, HttpHeaders contentHeaders)
         {
             // Header format is
             // name: value
@@ -123,18 +124,18 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private int ParseHeaders(System.Net.Http.Headers.HttpHeaders headers, System.Net.Http.Headers.HttpHeaders contentHeaders, string[] lines)
+        private void ParseHeaders(HttpHeaders headers, HttpHeaders contentHeaders, string[] lines)
         {
             // Blank line separates headers from content, so read headers until we find blank line.
             int lineIndex = 1;
-            string line = null, nextLine = null;
-            while (lineIndex + 1 < lines.Length && !String.IsNullOrEmpty((line = lines[lineIndex++])))
+            string line, nextLine;
+            while (lineIndex + 1 < lines.Length && !string.IsNullOrEmpty(line = lines[lineIndex++]))
             {
                 // If the following line starts with space or tab (or any whitespace), it is really part of this header but split for human readability.
                 // Combine these lines into a single comma separated style header for easier parsing.
-                while (lineIndex < lines.Length && !String.IsNullOrEmpty((nextLine = lines[lineIndex])))
+                while (lineIndex < lines.Length && !string.IsNullOrEmpty(nextLine = lines[lineIndex]))
                 {
-                    if (nextLine.Length > 0 && Char.IsWhiteSpace(nextLine[0]))
+                    if (nextLine.Length > 0 && char.IsWhiteSpace(nextLine[0]))
                     {
                         line += "," + nextLine.TrimStart();
                         lineIndex++;
@@ -147,8 +148,6 @@ namespace Rssdp.Infrastructure
 
                 ParseHeader(line, headers, contentHeaders);
             }
-
-            return lineIndex;
         }
 
         private IList<string> ParseValues(string headerValue)
@@ -160,19 +159,19 @@ namespace Rssdp.Infrastructure
 
             if (headerValue == "\"\"")
             {
-                values.Add(String.Empty);
+                values.Add(string.Empty);
                 return values;
             }
 
-            var indexOfSeparator = headerValue.IndexOfAny(SeparatorCharacters);
+            var indexOfSeparator = headerValue.IndexOfAny(_separatorCharacters);
             if (indexOfSeparator <= 0)
             {
                 values.Add(headerValue);
             }
             else
             {
-                var segments = headerValue.Split(SeparatorCharacters);
-                if (headerValue.Contains("\""))
+                var segments = headerValue.Split(_separatorCharacters);
+                if (headerValue.Contains("\"", StringComparison.InvariantCulture))
                 {
                     for (int segmentIndex = 0; segmentIndex < segments.Length; segmentIndex++)
                     {

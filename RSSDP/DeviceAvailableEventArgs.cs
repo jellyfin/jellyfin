@@ -4,18 +4,15 @@ using System.Net;
 namespace Rssdp
 {
     /// <summary>
-    /// Event arguments for the <see cref="Infrastructure.SsdpDeviceLocatorBase.DeviceAvailable"/> event.
+    /// Event arguments for the <see cref="Infrastructure.ISsdpDeviceLocator.DeviceAvailable"/> event.
     /// </summary>
     public sealed class DeviceAvailableEventArgs : EventArgs
     {
-        public IPAddress LocalIpAddress { get; set; }
-
-        private readonly DiscoveredSsdpDevice _DiscoveredDevice;
-
-        private readonly bool _IsNewlyDiscovered;
+        private readonly DiscoveredSsdpDevice _discoveredDevice;
+        private readonly bool _isNewlyDiscovered;
 
         /// <summary>
-        /// Full constructor.
+        /// Initializes a new instance of the <see cref="DeviceAvailableEventArgs"/> class.
         /// </summary>
         /// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the available device.</param>
         /// <param name="isNewlyDiscovered">A boolean value indicating whether or not this device came from the cache. See <see cref="IsNewlyDiscovered"/> for more detail.</param>
@@ -27,24 +24,27 @@ namespace Rssdp
                 throw new ArgumentNullException(nameof(discoveredDevice));
             }
 
-            _DiscoveredDevice = discoveredDevice;
-            _IsNewlyDiscovered = isNewlyDiscovered;
+            _discoveredDevice = discoveredDevice;
+            _isNewlyDiscovered = isNewlyDiscovered;
         }
 
+        public IPAddress LocalIpAddress { get; set; }
+
         /// <summary>
+        /// Gets a value indicating whether the device was newly discovered.
         /// Returns true if the device was discovered due to an alive notification, or a search and was not already in the cache. Returns false if the item came from the cache but matched the current search request.
         /// </summary>
         public bool IsNewlyDiscovered
         {
-            get { return _IsNewlyDiscovered; }
+            get { return _isNewlyDiscovered; }
         }
 
         /// <summary>
-        /// A reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
+        /// Gets a reference to a <see cref="DiscoveredSsdpDevice"/> instance containing the discovered details and allowing access to the full device description.
         /// </summary>
         public DiscoveredSsdpDevice DiscoveredDevice
         {
-            get { return _DiscoveredDevice; }
+            get { return _discoveredDevice; }
         }
     }
 }

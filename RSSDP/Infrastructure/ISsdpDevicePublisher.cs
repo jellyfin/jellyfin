@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Rssdp.Infrastructure
@@ -13,10 +14,15 @@ namespace Rssdp.Infrastructure
     public interface ISsdpDevicePublisher
     {
         /// <summary>
+        /// Gets a read only list of devices being published by this instance.
+        /// </summary>
+        /// <seealso cref="SsdpDevice"/>
+        IEnumerable<SsdpRootDevice> Devices { get; }
+
+        /// <summary>
         /// Adds a device (and it's children) to the list of devices being published by this server, making them discoverable to SSDP clients.
         /// </summary>
         /// <param name="device">The <see cref="SsdpRootDevice"/> instance to add.</param>
-        /// <returns>An awaitable <see cref="Task"/>.</returns>
         void AddDevice(SsdpRootDevice device);
 
         /// <summary>
@@ -25,11 +31,5 @@ namespace Rssdp.Infrastructure
         /// <param name="device">The <see cref="SsdpRootDevice"/> instance to add.</param>
         /// <returns>An awaitable <see cref="Task"/>.</returns>
         Task RemoveDevice(SsdpRootDevice device);
-
-        /// <summary>
-        /// Returns a read only list of devices being published by this instance.
-        /// </summary>
-        /// <seealso cref="SsdpDevice"/>
-        System.Collections.Generic.IEnumerable<SsdpRootDevice> Devices { get; }
     }
 }

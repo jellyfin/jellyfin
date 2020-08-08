@@ -21,6 +21,14 @@ namespace Rssdp.Infrastructure
         event EventHandler<ResponseReceivedEventArgs> ResponseReceived;
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not this instance is shared amongst multiple <see cref="ISsdpDeviceLocator"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
+        /// </summary>
+        /// <remarks>
+        /// <para>If true, disposing an instance of a <see cref="ISsdpDeviceLocator"/>or a <see cref="ISsdpDevicePublisher"/> will not dispose this comms server instance. The calling code is responsible for managing the lifetime of the server.</para>
+        /// </remarks>
+        bool IsShared { get; set; }
+
+        /// <summary>
         /// Causes the server to begin listening for multicast messages, being SSDP search requests and notifications.
         /// </summary>
         void BeginListeningForBroadcasts();
@@ -39,14 +47,7 @@ namespace Rssdp.Infrastructure
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
         Task SendMulticastMessage(string message, IPAddress fromLocalIpAddress, CancellationToken cancellationToken);
-        Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Gets or sets a boolean value indicating whether or not this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
-        /// </summary>
-        /// <remarks>
-        /// <para>If true, disposing an instance of a <see cref="SsdpDeviceLocatorBase"/>or a <see cref="ISsdpDevicePublisher"/> will not dispose this comms server instance. The calling code is responsible for managing the lifetime of the server.</para>
-        /// </remarks>
-        bool IsShared { get; set; }
+        Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress, CancellationToken cancellationToken);
     }
 }

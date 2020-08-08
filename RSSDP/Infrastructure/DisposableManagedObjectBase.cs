@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace Rssdp.Infrastructure
@@ -10,7 +11,17 @@ namespace Rssdp.Infrastructure
     public abstract class DisposableManagedObjectBase : IDisposable
     {
         /// <summary>
-        /// Override this method and dispose any objects you own the lifetime of if disposing is true;
+        /// Gets a value indicating whether or not this instance has been disposed.
+        /// </summary>
+        /// <seealso cref="Dispose()"/>
+        public bool IsDisposed
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Override this method and dispose any objects you own the lifetime of if disposing is true.
         /// </summary>
         /// <param name="disposing">True if managed objects should be disposed, if false, only unmanaged resources should be released.</param>
         protected abstract void Dispose(bool disposing);
@@ -29,27 +40,17 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        /// <summary>
-        /// Sets or returns a boolean indicating whether or not this instance has been disposed.
-        /// </summary>
-        /// <seealso cref="Dispose()"/>
-        public bool IsDisposed
-        {
-            get;
-            private set;
-        }
-
         public string BuildMessage(string header, Dictionary<string, string> values)
         {
             var builder = new StringBuilder();
 
             const string argFormat = "{0}: {1}\r\n";
 
-            builder.AppendFormat("{0}\r\n", header);
+            builder.AppendFormat(CultureInfo.InvariantCulture, "{0}\r\n", header);
 
             foreach (var pair in values)
             {
-                builder.AppendFormat(argFormat, pair.Key, pair.Value);
+                builder.AppendFormat(CultureInfo.InvariantCulture, argFormat, pair.Key, pair.Value);
             }
 
             builder.Append("\r\n");
@@ -68,8 +69,7 @@ namespace Rssdp.Infrastructure
         public void Dispose()
         {
             IsDisposed = true;
-
-            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

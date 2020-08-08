@@ -22,8 +22,7 @@ namespace Rssdp.Infrastructure
                 source.Concat(
                     source
                     .SelectMany(i => selector(i).EmptyIfNull())
-                    .SelectManyRecursive(selector)
-                );
+                    .SelectManyRecursive(selector));
         }
 
         public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T> source)

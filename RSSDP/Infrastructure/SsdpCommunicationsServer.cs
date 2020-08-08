@@ -32,46 +32,39 @@ namespace Rssdp.Infrastructure
          * port to use, we will default to 0 which allows the underlying system to auto-assign a free port.
          */
 
-        private object _BroadcastListenSocketSynchroniser = new object();
-        private ISocket _BroadcastListenSocket;
-
-        private object _SendSocketSynchroniser = new object();
-        private List<ISocket> _sendSockets;
-
-        private HttpRequestParser _RequestParser;
-        private HttpResponseParser _ResponseParser;
         private readonly ILogger _logger;
-        private ISocketFactory _SocketFactory;
-        private readonly INetworkManager _networkManager;        
-
-        private int _LocalPort;
-        private int _MulticastTtl;
-
-        private bool _IsShared;
+        private readonly INetworkManager _networkManager;
         private readonly bool _enableMultiSocketBinding;
 
-        /// <summary>
-        /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
-        /// </summary>
-        public event EventHandler<RequestReceivedEventArgs> RequestReceived;
+        private object _broadcastListenSocketSynchroniser;
+        private ISocket _broadcastListenSocket;
+        private object _sendSocketSynchroniser;
+        private List<ISocket> _sendSockets;
+        private HttpRequestParser _requestParser;
+        private HttpResponseParser _responseParser;
+        private ISocketFactory _socketFactory;
+        private int _localPort;
+        private int _multicastTtl;
+        private bool _isShared;
 
         /// <summary>
-        /// Raised when an HTTPU response message is received by a socket (unicast or multicast).
-        /// </summary>
-        public event EventHandler<ResponseReceivedEventArgs> ResponseReceived;
-
-        /// <summary>
+        /// Initializes a new instance of the <see cref="SsdpCommunicationsServer"/> class.
         /// Minimum constructor.
         /// </summary>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory,
-            INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
+        public SsdpCommunicationsServer(
+            ISocketFactory socketFactory,
+            INetworkManager networkManager,
+            ILogger logger,
+            bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
-            
+            _broadcastListenSocketSynchroniser = new object();
+            _sendSocketSynchroniser = new object();
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="SsdpCommunicationsServer"/> class.
         /// Full constructor.
         /// </summary>
         /// <exception cref="ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
@@ -88,19 +81,41 @@ namespace Rssdp.Infrastructure
                 throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
             }
 
-            _BroadcastListenSocketSynchroniser = new object();
-            _SendSocketSynchroniser = new object();
+            _broadcastListenSocketSynchroniser = new object();
+            _sendSocketSynchroniser = new object();
 
-            _LocalPort = localPort;
-            _SocketFactory = socketFactory;
+            _localPort = localPort;
+            _socketFactory = socketFactory;
 
-            _RequestParser = new HttpRequestParser();
-            _ResponseParser = new HttpResponseParser();
+            _requestParser = new HttpRequestParser();
+            _responseParser = new HttpResponseParser();
 
-            _MulticastTtl = multicastTimeToLive;
+            _multicastTtl = multicastTimeToLive;
             _networkManager = networkManager;
             _logger = logger;
             _enableMultiSocketBinding = enableMultiSocketBinding;
+        }
+
+        /// <summary>
+        /// Raised when a HTTPU request message is received by a socket (unicast or multicast).
+        /// </summary>
+        public event EventHandler<RequestReceivedEventArgs> RequestReceived;
+
+        /// <summary>
+        /// Raised when an HTTPU response message is received by a socket (unicast or multicast).
+        /// </summary>
+        public event EventHandler<ResponseReceivedEventArgs> ResponseReceived;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not this instance is shared amongst multiple <see cref="ISsdpDeviceLocator"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
+        /// </summary>
+        /// <remarks>
+        /// <para>If true, disposing an instance of a <see cref="ISsdpDeviceLocator"/>or a <see cref="ISsdpDevicePublisher"/> will not dispose this comms server instance. The calling code is responsible for managing the lifetime of the server.</para>
+        /// </remarks>
+        public bool IsShared
+        {
+            get { return _isShared; }
+            set { _isShared = value; }
         }
 
         /// <summary>
@@ -111,15 +126,15 @@ namespace Rssdp.Infrastructure
         {
             ThrowIfDisposed();
 
-            if (_BroadcastListenSocket == null)
+            if (_broadcastListenSocket == null)
             {
-                lock (_BroadcastListenSocketSynchroniser)
+                lock (_broadcastListenSocketSynchroniser)
                 {
-                    if (_BroadcastListenSocket == null)
+                    if (_broadcastListenSocket == null)
                     {
                         try
                         {
-                            _BroadcastListenSocket = ListenForBroadcastsAsync();
+                            _broadcastListenSocket = ListenForBroadcastsAsync();
                         }
                         catch (SocketException ex)
                         {
@@ -140,13 +155,13 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForBroadcasts()
         {
-            lock (_BroadcastListenSocketSynchroniser)
+            lock (_broadcastListenSocketSynchroniser)
             {
-                if (_BroadcastListenSocket != null)
+                if (_broadcastListenSocket != null)
                 {
                     _logger.LogInformation("{0} disposing _BroadcastListenSocket", GetType().Name);
-                    _BroadcastListenSocket.Dispose();
-                    _BroadcastListenSocket = null;
+                    _broadcastListenSocket.Dispose();
+                    _broadcastListenSocket = null;
                 }
             }
         }
@@ -202,7 +217,7 @@ namespace Rssdp.Infrastructure
         {
             EnsureSendSocketCreated();
 
-            lock (_SendSocketSynchroniser)
+            lock (_sendSocketSynchroniser)
             {
                 var sockets = _sendSockets.Where(i => i.LocalIPAddress.AddressFamily == fromLocalIpAddress.AddressFamily);
 
@@ -276,7 +291,7 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
         public void StopListeningForResponses()
         {
-            lock (_SendSocketSynchroniser)
+            lock (_sendSocketSynchroniser)
             {
                 if (_sendSockets != null)
                 {
@@ -292,19 +307,6 @@ namespace Rssdp.Infrastructure
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets or sets a boolean value indicating whether or not this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
-        /// </summary>
-        /// <remarks>
-        /// <para>If true, disposing an instance of a <see cref="SsdpDeviceLocatorBase"/>or a <see cref="ISsdpDevicePublisher"/> will not dispose this comms server instance. The calling code is responsible for managing the lifetime of the server.</para>
-        /// </remarks>
-        public bool IsShared
-        {
-            get { return _IsShared; }
-
-            set { _IsShared = value; }
         }
 
         /// <summary>
@@ -338,7 +340,7 @@ namespace Rssdp.Infrastructure
 
         private ISocket ListenForBroadcastsAsync()
         {
-            var socket = _SocketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _MulticastTtl, SsdpConstants.MulticastPort);
+            var socket = _socketFactory.CreateUdpMulticastSocket(SsdpConstants.MulticastLocalAdminAddress, _multicastTtl, SsdpConstants.MulticastPort);
             _ = ListenToSocketInternal(socket);
 
             return socket;
@@ -348,7 +350,7 @@ namespace Rssdp.Infrastructure
         {
             var sockets = new List<ISocket>();
 
-            sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IPAddress.Any, _LocalPort));
+            sockets.Add(_socketFactory.CreateSsdpUdpSocket(IPAddress.Any, _localPort));
 
             if (_enableMultiSocketBinding)
             {
@@ -358,11 +360,11 @@ namespace Rssdp.Infrastructure
                     {
                         // Not support IPv6 right now
                         continue;
-                    }                  
+                    }
 
                     try
                     {
-                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address, _LocalPort));
+                        sockets.Add(_socketFactory.CreateSsdpUdpSocket(address, _localPort));
                     }
                     catch (Exception ex)
                     {
@@ -395,7 +397,7 @@ namespace Rssdp.Infrastructure
                         // Strange cannot convert compiler error here if I don't explicitly
                         // assign or cast to Action first. Assignment is easier to read,
                         // so went with that.
-                        ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
+                        ProcessMessage(Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
                     }
                 }
                 catch (ObjectDisposedException)
@@ -413,7 +415,7 @@ namespace Rssdp.Infrastructure
         {
             if (_sendSockets == null)
             {
-                lock (_SendSocketSynchroniser)
+                lock (_sendSocketSynchroniser)
                 {
                     if (_sendSockets == null)
                     {
@@ -434,7 +436,7 @@ namespace Rssdp.Infrastructure
                 HttpResponseMessage responseMessage = null;
                 try
                 {
-                    responseMessage = _ResponseParser.Parse(data);
+                    responseMessage = _responseParser.Parse(data);
                 }
                 catch (ArgumentException)
                 {
@@ -451,7 +453,7 @@ namespace Rssdp.Infrastructure
                 HttpRequestMessage requestMessage = null;
                 try
                 {
-                    requestMessage = _RequestParser.Parse(data);
+                    requestMessage = _requestParser.Parse(data);
                 }
                 catch (ArgumentException)
                 {

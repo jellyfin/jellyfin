@@ -12,27 +12,17 @@ namespace Rssdp
     /// </remarks>
     public class SsdpRootDevice : SsdpDevice
     {
-        private Uri _UrlBase;
+        private Uri _urlBase;
 
         /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public SsdpRootDevice() : base()
-        {
-        }
-
-        /// <summary>
-        /// Specifies how long clients can cache this device's details for. Optional but defaults to <see cref="TimeSpan.Zero"/> which means no-caching. Recommended value is half an hour.
+        /// Gets or sets how long clients can cache this device's details for. Optional but defaults to <see cref="TimeSpan.Zero"/> which means no-caching. Recommended value is half an hour.
         /// </summary>
         /// <remarks>
         /// <para>Specifiy <see cref="TimeSpan.Zero"/> to indicate no caching allowed.</para>
         /// <para>Also used to specify how often to rebroadcast alive notifications.</para>
         /// <para>The UPnP/SSDP specifications indicate this should not be less than 1800 seconds (half an hour), but this is not enforced by this library.</para>
         /// </remarks>
-        public TimeSpan CacheLifetime
-        {
-            get; set;
-        }
+        public TimeSpan CacheLifetime { get; set; }
 
         /// <summary>
         /// Gets or sets the URL used to retrieve the description document for this device/tree. Required.
@@ -50,7 +40,7 @@ namespace Rssdp
         public IPAddress SubnetMask { get; set; }
 
         /// <summary>
-        /// The base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.
+        /// Gets or sets the base URL to use for all relative url's provided in other propertise (and those of child devices). Optional.
         /// </summary>
         /// <remarks>
         /// <para>Defines the base URL. Used to construct fully-qualified URLs. All relative URLs that appear elsewhere in the description are combined with this base URL. If URLBase is empty or not given, the base URL is the URL from which the device description was retrieved (which is the preferred implementation; use of URLBase is no longer recommended). Specified by UPnP vendor. Single URL.</para>
@@ -59,12 +49,12 @@ namespace Rssdp
         {
             get
             {
-                return _UrlBase ?? this.Location;
+                return _urlBase ?? this.Location;
             }
 
             set
             {
-                _UrlBase = value;
+                _urlBase = value;
             }
         }
     }

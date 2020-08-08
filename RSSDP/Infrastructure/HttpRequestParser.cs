@@ -9,7 +9,7 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public sealed class HttpRequestParser : HttpParserBase<HttpRequestMessage>
     {
-        private readonly string[] ContentHeaderNames = new string[]
+        private readonly string[] _contentHeaderNames = new string[]
         {
             "Allow", "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Location", "Content-MD5", "Content-Range", "Content-Type", "Expires", "Last-Modified"
         };
@@ -84,9 +84,10 @@ namespace Rssdp.Infrastructure
         /// Returns a boolean indicating whether the specified HTTP header name represents a content header (true), or a message header (false).
         /// </summary>
         /// <param name="headerName">A string containing the name of the header to return the type of.</param>
+        /// <returns>[true] if the HTTP header name represents a content header; [false] if the HTTP header name represents a message header.</returns>
         protected override bool IsContentHeader(string headerName)
         {
-            return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
+            return _contentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
         }
     }
 }
