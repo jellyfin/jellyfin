@@ -109,7 +109,11 @@ namespace MediaBrowser.Api
         public void Delete(DeleteAlternateSources request)
         {
             var video = (Video)_libraryManager.GetItemById(request.Id);
-
+            if (video.LinkedAlternateVersions.Length == 0)
+            {
+                video = (Video)_libraryManager.GetItemById(video.PrimaryVersionId);
+            }
+            
             foreach (var link in video.GetLinkedAlternateVersions())
             {
                 link.SetPrimaryVersionId(null);
