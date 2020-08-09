@@ -149,11 +149,9 @@ namespace Emby.Server.Implementations.Networking
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         private static async Task<bool> IsPingable(IPAddress gwAddress)
         {
-            using (var ping = new Ping())
-            {
-                var result = await ping.SendPingAsync(gwAddress, 2000).ConfigureAwait(false);
-                return result.Status == IPStatus.Success;
-            }
+            using var ping = new Ping();
+            var result = await ping.SendPingAsync(gwAddress, 2000).ConfigureAwait(false);
+            return result.Status == IPStatus.Success;
         }
 
         private void LoadConfiguration()

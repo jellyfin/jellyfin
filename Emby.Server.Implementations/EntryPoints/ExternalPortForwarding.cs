@@ -269,10 +269,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                _logger.LogDebug("Attempting to create rules.");
+                _logger.LogDebug("Found Internet device. Attempting to create rules.");
                 await CreateRules(e.Device).ConfigureAwait(false);
 
                 _devices.Add(e.Device);
+
+                _gatewayMonitor.AddGateway(e.Device.DeviceEndpoint.Address);
             }
             catch (ObjectDisposedException)
             {

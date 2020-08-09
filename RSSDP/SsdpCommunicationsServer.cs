@@ -351,7 +351,7 @@ namespace Rssdp.Infrastructure
         /// <param name="port">Port to listen to. (If port != 0 a multicast is created).</param>
         private void CreateUniqueSocket(bool listen, IPAddress ip, int port = 0)
         {
-            var sockets = _sockets.Where(s => ((IPEndPoint)s.Key.LocalEndPoint).Address.Equals(ip) && ((IPEndPoint)s.Key.LocalEndPoint).Port == port);
+            var sockets = _sockets.Where(s => ((IPEndPoint)s.Key.LocalEndPoint).Address.Equals(ip));
             if (!sockets.Any())
             {
                 try
@@ -359,7 +359,7 @@ namespace Rssdp.Infrastructure
                     Socket socket;
                     if (port == 0)
                     {
-                        _logger.LogDebug("Creating socket for {0} on {1}.", ip, port);
+                        _logger.LogDebug("Creating socket for {0}.", ip);
                         socket = _networkManager.CreateSsdpUdpSocket(ip, port);
                     }
                     else
@@ -377,18 +377,28 @@ namespace Rssdp.Infrastructure
             }
             else
             {
-                // Stop listening sockets and change them to sendonly.
+                // Stop listening to some sockets and "activation" sendonly them to sendonly.
                 bool dictionaryChanged = false;
                 do
                 {
                     dictionaryChanged = false;
 
                     // Update the listening capability status.
-                    foreach (KeyValuePair<Socket, SocketState> socket in sockets)
+                    foreach (KeyValuePair<Socket, SocketState> kvp in sockets)
                     {
-                        if ((socket.Value == SocketState.Listening && !listen) || (socket.Value == SocketState.SendOnly && listen))
+                        if (kvp.Value == SocketState.Listening && !listen)
                         {
-                            _sockets[socket.Key] = listen ? SocketState.Listener : SocketState.SendOnly;
+                            _logger.LogDebug("Closing listening socket on {0}", ((IPEndPoint)kvp.Key.LocalEndPoint).Address);
+
+                            _sockets.Remove(kvp.Key);
+                            kvp.Key.Close(); // Only way to break out of ReceiveFromAsync method.
+
+                            dictionaryChanged = true;
+                            break;
+                        }
+                        else if (kvp.Value == SocketState.SendOnly && listen)
+                        {
+                            _sockets[kvp.Key] = SocketState.Listener;
                             dictionaryChanged = true;
                             break;
                         }
@@ -407,8 +417,7 @@ namespace Rssdp.Infrastructure
 
             lock (_socketSynchroniser)
             {
-                int index = _sockets.Count;
-                if (_networkManager.EnableMultiSocketBinding && index > 0)
+                if (_networkManager.EnableMultiSocketBinding && _sockets.Count > 0)
                 {
                     // Rather than destroying all sockets and re-creating them,
                     // only destroy invalid ones and create new ones.
@@ -529,6 +538,8 @@ namespace Rssdp.Infrastructure
                                 cancelled = state != SocketState.Listening;
                             }
                         }
+
+                        _logger.LogInformation("Listening shutting down. {0}", ((IPEndPoint)socket.LocalEndPoint).Address);
                     }
                     catch (ObjectDisposedException)
                     {
@@ -542,7 +553,6 @@ namespace Rssdp.Infrastructure
             }
             finally
             {
-                _logger.LogInformation("Listening shutting down. {0}", ((IPEndPoint)socket.LocalEndPoint).Address);
                 ArrayPool<byte>.Shared.Return(receiveBuffer);
             }
         }

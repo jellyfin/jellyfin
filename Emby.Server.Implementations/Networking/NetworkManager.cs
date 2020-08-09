@@ -514,12 +514,18 @@ namespace Emby.Server.Implementations.Networking
 
                     try
                     {
-                        if (v.StartsWith("[", StringComparison.OrdinalIgnoreCase) &&
-                            v.EndsWith("]", StringComparison.OrdinalIgnoreCase))
+                        if (v.StartsWith("[", StringComparison.OrdinalIgnoreCase) && v.EndsWith("]", StringComparison.OrdinalIgnoreCase))
                         {
                             if (bracketed)
                             {
                                 AddToCollection(col, v.Remove(v.Length - 1).Substring(1));
+                            }
+                        }
+                        else if (v.StartsWith("!", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (bracketed)
+                            {
+                                AddToCollection(col, v.Substring(1));
                             }
                         }
                         else
