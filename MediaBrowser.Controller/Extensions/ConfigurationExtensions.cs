@@ -90,6 +90,6 @@ namespace MediaBrowser.Controller.Extensions
         /// <param name="configuration">The configuration to read the setting from.</param>
         /// <returns>The unix socket path.</returns>
         public static string GetUnixSocketPath(this IConfiguration configuration)
-            => configuration[FfmpegAnalyzeDurationKey];
+            => configuration[UnixSocketPathKey];
     }
 }
