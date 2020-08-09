@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
@@ -11,7 +10,7 @@ namespace Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy
     /// <summary>
     /// Ignore parental control schedule and allow before startup wizard has been completed.
     /// </summary>
-    public class FirstTimeOrIgnoreParentalControlSetupHandler : BaseAuthorizationHandler<IgnoreParentalControlRequirement>
+    public class FirstTimeOrIgnoreParentalControlSetupHandler : BaseAuthorizationHandler<FirstTimeOrIgnoreParentalControlSetupRequirement>
     {
         private readonly IConfigurationManager _configurationManager;
 
@@ -33,7 +32,7 @@ namespace Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy
         }
 
         /// <inheritdoc />
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IgnoreParentalControlRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FirstTimeOrIgnoreParentalControlSetupRequirement requirement)
         {
             if (!_configurationManager.CommonConfiguration.IsStartupWizardCompleted)
             {
