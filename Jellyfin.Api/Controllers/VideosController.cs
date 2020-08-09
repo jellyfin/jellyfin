@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -168,6 +168,11 @@ namespace Jellyfin.Api.Controllers
             if (video == null)
             {
                 return NotFound("The video either does not exist or the id does not belong to a video.");
+            }
+
+            if (video.LinkedAlternateVersions.Length == 0)
+            {
+                video = (Video)_libraryManager.GetItemById(video.PrimaryVersionId);
             }
 
             foreach (var link in video.GetLinkedAlternateVersions())
