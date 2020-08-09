@@ -357,14 +357,14 @@ namespace Jellyfin.Api.Controllers
             var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
 
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user, item);
+            var data = _userDataRepository.GetUserItemData(user.Id, item.Id);
 
             // Set favorite status
             data.IsFavorite = isFavorite;
 
-            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserItemData(data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return _userDataRepository.GetUserDataDto(user, item);
         }
 
         /// <summary>
@@ -380,13 +380,13 @@ namespace Jellyfin.Api.Controllers
             var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
 
             // Get the user data for this item
-            var data = _userDataRepository.GetUserData(user, item);
+            var data = _userDataRepository.GetUserItemData(userId, itemId);
 
             data.Likes = likes;
 
-            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
+            _userDataRepository.SaveUserItemData(data, UserDataSaveReason.UpdateUserRating, CancellationToken.None);
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return _userDataRepository.GetUserDataDto(user, item);
         }
     }
 }

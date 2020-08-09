@@ -24,7 +24,7 @@ namespace Jellyfin.Api.Controllers
     public class PlaystateController : BaseJellyfinApiController
     {
         private readonly IUserManager _userManager;
-        private readonly IUserDataManager _userDataRepository;
+        private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
         private readonly ISessionManager _sessionManager;
         private readonly IAuthorizationContext _authContext;
@@ -35,7 +35,7 @@ namespace Jellyfin.Api.Controllers
         /// Initializes a new instance of the <see cref="PlaystateController"/> class.
         /// </summary>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="userDataRepository">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
@@ -43,7 +43,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="transcodingJobHelper">Th <see cref="TranscodingJobHelper"/> singleton.</param>
         public PlaystateController(
             IUserManager userManager,
-            IUserDataManager userDataRepository,
+            IUserDataManager userDataManager,
             ILibraryManager libraryManager,
             ISessionManager sessionManager,
             IAuthorizationContext authContext,
@@ -51,7 +51,7 @@ namespace Jellyfin.Api.Controllers
             TranscodingJobHelper transcodingJobHelper)
         {
             _userManager = userManager;
-            _userDataRepository = userDataRepository;
+            _userDataManager = userDataManager;
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _authContext = authContext;
@@ -347,7 +347,7 @@ namespace Jellyfin.Api.Controllers
                 item.MarkUnplayed(user);
             }
 
-            return _userDataRepository.GetUserDataDto(item, user);
+            return _userDataManager.GetUserDataDto(user, item);
         }
 
         private PlayMethod ValidatePlayMethod(PlayMethod method, string playSessionId)
