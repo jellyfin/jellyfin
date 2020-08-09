@@ -152,7 +152,12 @@ namespace Emby.Server.Implementations.Networking
                 return true;
             }
 
-            byte[] octet = IPAddress.Parse(endpoint).GetAddressBytes();
+            if (!IPAddress.TryParse(endpoint, out var ipAddress))
+            {
+                return false;
+            }
+
+            byte[] octet = ipAddress.GetAddressBytes();
 
             if ((octet[0] == 10) ||
                 (octet[0] == 172 && (octet[1] >= 16 && octet[1] <= 31)) || // RFC1918
@@ -160,7 +165,7 @@ namespace Emby.Server.Implementations.Networking
                 (octet[0] == 127) || // RFC1122
                 (octet[0] == 169 && octet[1] == 254)) // RFC3927
             {
-                return false;
+                return true;
             }
 
             if (checkSubnets && IsInPrivateAddressSpaceAndLocalSubnet(endpoint))
@@ -267,6 +272,12 @@ namespace Emby.Server.Implementations.Networking
             string addressString = address.ToString();
             string excludeAddress = "[" + addressString + "]";
             var subnets = LocalSubnetsFn();
+
+            // Include any address if LAN subnets aren't specified
+            if (subnets.Length == 0)
+            {
+                return true;
+            }
 
             // Exclude any addresses if they appear in the LAN list in [ ]
             if (Array.IndexOf(subnets, excludeAddress) != -1)
@@ -379,7 +390,7 @@ namespace Emby.Server.Implementations.Networking
                         var host = uri.DnsSafeHost;
                         _logger.LogDebug("Resolving host {0}", host);
 
-                        address = GetIpAddresses(host).Result.FirstOrDefault();
+                        address = GetIpAddresses(host).GetAwaiter().GetResult().FirstOrDefault();
 
                         if (address != null)
                         {

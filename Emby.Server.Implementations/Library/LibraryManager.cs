@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -46,11 +45,11 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Genre = MediaBrowser.Controller.Entities.Genre;
 using Person = MediaBrowser.Controller.Entities.Person;
-using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
 
 namespace Emby.Server.Implementations.Library
@@ -60,7 +59,10 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class LibraryManager : ILibraryManager
     {
+        private const string ShortcutFileExtension = ".mblink";
+
         private readonly ILogger<LibraryManager> _logger;
+        private readonly IMemoryCache _memoryCache;
         private readonly ITaskManager _taskManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataRepository;
@@ -72,11 +74,117 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepository;
-        private readonly ConcurrentDictionary<Guid, BaseItem> _libraryItemsCache;
         private readonly IImageProcessor _imageProcessor;
+
+        /// <summary>
+        /// The _root folder sync lock.
+        /// </summary>
+        private readonly object _rootFolderSyncLock = new object();
+        private readonly object _userRootFolderSyncLock = new object();
+
+        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 
         private NamingOptions _namingOptions;
         private string[] _videoFileExtensions;
+
+        /// <summary>
+        /// The _root folder.
+        /// </summary>
+        private volatile AggregateFolder _rootFolder;
+        private volatile UserRootFolder _userRootFolder;
+
+        private bool _wizardCompleted;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LibraryManager" /> class.
+        /// </summary>
+        /// <param name="appHost">The application host.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="taskManager">The task manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="userDataRepository">The user data repository.</param>
+        /// <param name="libraryMonitorFactory">The library monitor.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="providerManagerFactory">The provider manager.</param>
+        /// <param name="userviewManagerFactory">The userview manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
+        /// <param name="itemRepository">The item repository.</param>
+        /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="memoryCache">The memory cache.</param>
+        public LibraryManager(
+            IServerApplicationHost appHost,
+            ILogger<LibraryManager> logger,
+            ITaskManager taskManager,
+            IUserManager userManager,
+            IServerConfigurationManager configurationManager,
+            IUserDataManager userDataRepository,
+            Lazy<ILibraryMonitor> libraryMonitorFactory,
+            IFileSystem fileSystem,
+            Lazy<IProviderManager> providerManagerFactory,
+            Lazy<IUserViewManager> userviewManagerFactory,
+            IMediaEncoder mediaEncoder,
+            IItemRepository itemRepository,
+            IImageProcessor imageProcessor,
+            IMemoryCache memoryCache)
+        {
+            _appHost = appHost;
+            _logger = logger;
+            _taskManager = taskManager;
+            _userManager = userManager;
+            _configurationManager = configurationManager;
+            _userDataRepository = userDataRepository;
+            _libraryMonitorFactory = libraryMonitorFactory;
+            _fileSystem = fileSystem;
+            _providerManagerFactory = providerManagerFactory;
+            _userviewManagerFactory = userviewManagerFactory;
+            _mediaEncoder = mediaEncoder;
+            _itemRepository = itemRepository;
+            _imageProcessor = imageProcessor;
+            _memoryCache = memoryCache;
+
+            _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+
+            RecordConfigurationValues(configurationManager.Configuration);
+        }
+
+        /// <summary>
+        /// Occurs when [item added].
+        /// </summary>
+        public event EventHandler<ItemChangeEventArgs> ItemAdded;
+
+        /// <summary>
+        /// Occurs when [item updated].
+        /// </summary>
+        public event EventHandler<ItemChangeEventArgs> ItemUpdated;
+
+        /// <summary>
+        /// Occurs when [item removed].
+        /// </summary>
+        public event EventHandler<ItemChangeEventArgs> ItemRemoved;
+
+        /// <summary>
+        /// Gets the root folder.
+        /// </summary>
+        /// <value>The root folder.</value>
+        public AggregateFolder RootFolder
+        {
+            get
+            {
+                if (_rootFolder == null)
+                {
+                    lock (_rootFolderSyncLock)
+                    {
+                        if (_rootFolder == null)
+                        {
+                            _rootFolder = CreateRootFolder();
+                        }
+                    }
+                }
+
+                return _rootFolder;
+            }
+        }
 
         private ILibraryMonitor LibraryMonitor => _libraryMonitorFactory.Value;
 
@@ -116,74 +224,7 @@ namespace Emby.Server.Implementations.Library
         /// <value>The comparers.</value>
         private IBaseItemComparer[] Comparers { get; set; }
 
-        /// <summary>
-        /// Occurs when [item added].
-        /// </summary>
-        public event EventHandler<ItemChangeEventArgs> ItemAdded;
-
-        /// <summary>
-        /// Occurs when [item updated].
-        /// </summary>
-        public event EventHandler<ItemChangeEventArgs> ItemUpdated;
-
-        /// <summary>
-        /// Occurs when [item removed].
-        /// </summary>
-        public event EventHandler<ItemChangeEventArgs> ItemRemoved;
-
         public bool IsScanRunning { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryManager" /> class.
-        /// </summary>
-        /// <param name="appHost">The application host.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="taskManager">The task manager.</param>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
-        /// <param name="libraryMonitorFactory">The library monitor.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="providerManagerFactory">The provider manager.</param>
-        /// <param name="userviewManagerFactory">The userview manager.</param>
-        /// <param name="mediaEncoder">The media encoder.</param>
-        /// <param name="itemRepository">The item repository.</param>
-        /// <param name="imageProcessor">The image processor.</param>
-        public LibraryManager(
-            IServerApplicationHost appHost,
-            ILogger<LibraryManager> logger,
-            ITaskManager taskManager,
-            IUserManager userManager,
-            IServerConfigurationManager configurationManager,
-            IUserDataManager userDataRepository,
-            Lazy<ILibraryMonitor> libraryMonitorFactory,
-            IFileSystem fileSystem,
-            Lazy<IProviderManager> providerManagerFactory,
-            Lazy<IUserViewManager> userviewManagerFactory,
-            IMediaEncoder mediaEncoder,
-            IItemRepository itemRepository,
-            IImageProcessor imageProcessor)
-        {
-            _appHost = appHost;
-            _logger = logger;
-            _taskManager = taskManager;
-            _userManager = userManager;
-            _configurationManager = configurationManager;
-            _userDataRepository = userDataRepository;
-            _libraryMonitorFactory = libraryMonitorFactory;
-            _fileSystem = fileSystem;
-            _providerManagerFactory = providerManagerFactory;
-            _userviewManagerFactory = userviewManagerFactory;
-            _mediaEncoder = mediaEncoder;
-            _itemRepository = itemRepository;
-            _imageProcessor = imageProcessor;
-
-            _libraryItemsCache = new ConcurrentDictionary<Guid, BaseItem>();
-
-            _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
-
-            RecordConfigurationValues(configurationManager.Configuration);
-        }
 
         /// <summary>
         /// Adds the parts.
@@ -207,41 +248,6 @@ namespace Emby.Server.Implementations.Library
             Comparers = itemComparers.ToArray();
             PostscanTasks = postscanTasks.ToArray();
         }
-
-        /// <summary>
-        /// The _root folder.
-        /// </summary>
-        private volatile AggregateFolder _rootFolder;
-
-        /// <summary>
-        /// The _root folder sync lock.
-        /// </summary>
-        private readonly object _rootFolderSyncLock = new object();
-
-        /// <summary>
-        /// Gets the root folder.
-        /// </summary>
-        /// <value>The root folder.</value>
-        public AggregateFolder RootFolder
-        {
-            get
-            {
-                if (_rootFolder == null)
-                {
-                    lock (_rootFolderSyncLock)
-                    {
-                        if (_rootFolder == null)
-                        {
-                            _rootFolder = CreateRootFolder();
-                        }
-                    }
-                }
-
-                return _rootFolder;
-            }
-        }
-
-        private bool _wizardCompleted;
 
         /// <summary>
         /// Records the configuration values.
@@ -293,7 +299,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            _libraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
+            _memoryCache.Set(item.Id, item);
         }
 
         public void DeleteItem(BaseItem item, DeleteOptions options)
@@ -341,7 +347,7 @@ namespace Emby.Server.Implementations.Library
             if (item is LiveTvProgram)
             {
                 _logger.LogDebug(
-                    "Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -350,7 +356,7 @@ namespace Emby.Server.Implementations.Library
             else
             {
                 _logger.LogInformation(
-                    "Deleting item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    "Removing item, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
                     item.GetType().Name,
                     item.Name ?? "Unknown name",
                     item.Path ?? string.Empty,
@@ -368,7 +374,12 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                _logger.LogDebug("Deleting path {MetadataPath}", metadataPath);
+                _logger.LogDebug(
+                    "Deleting metadata path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                    item.GetType().Name,
+                    item.Name ?? "Unknown name",
+                    metadataPath,
+                    item.Id);
 
                 try
                 {
@@ -392,7 +403,13 @@ namespace Emby.Server.Implementations.Library
                     {
                         try
                         {
-                            _logger.LogDebug("Deleting path {path}", fileSystemInfo.FullName);
+                            _logger.LogInformation(
+                                "Deleting item path, Type: {0}, Name: {1}, Path: {2}, Id: {3}",
+                                item.GetType().Name,
+                                item.Name ?? "Unknown name",
+                                fileSystemInfo.FullName,
+                                item.Id);
+
                             if (fileSystemInfo.IsDirectory)
                             {
                                 Directory.Delete(fileSystemInfo.FullName, true);
@@ -430,7 +447,7 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.DeleteItem(child.Id);
             }
 
-            _libraryItemsCache.TryRemove(item.Id, out BaseItem removed);
+            _memoryCache.Remove(item.Id);
 
             ReportItemRemoved(item, parent);
         }
@@ -500,8 +517,8 @@ namespace Emby.Server.Implementations.Library
             {
                 // Try to normalize paths located underneath program-data in an attempt to make them more portable
                 key = key.Substring(_configurationManager.ApplicationPaths.ProgramDataPath.Length)
-                    .TrimStart(new[] { '/', '\\' })
-                    .Replace("/", "\\");
+                    .TrimStart('/', '\\')
+                    .Replace('/', '\\');
             }
 
             if (forceCaseInsensitive || !_configurationManager.Configuration.EnableCaseSensitiveItemIds)
@@ -764,14 +781,11 @@ namespace Emby.Server.Implementations.Library
             return rootFolder;
         }
 
-        private volatile UserRootFolder _userRootFolder;
-        private readonly object _syncLock = new object();
-
         public Folder GetUserRootFolder()
         {
             if (_userRootFolder == null)
             {
-                lock (_syncLock)
+                lock (_userRootFolderSyncLock)
                 {
                     if (_userRootFolder == null)
                     {
@@ -1234,7 +1248,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("Guid can't be empty", nameof(id));
             }
 
-            if (_libraryItemsCache.TryGetValue(id, out BaseItem item))
+            if (_memoryCache.TryGetValue(id, out BaseItem item))
             {
                 return item;
             }
@@ -1321,7 +1335,7 @@ namespace Emby.Server.Implementations.Library
 
             return new QueryResult<BaseItem>
             {
-                Items = _itemRepository.GetItemList(query).ToArray()
+                Items = _itemRepository.GetItemList(query)
             };
         }
 
@@ -1452,11 +1466,9 @@ namespace Emby.Server.Implementations.Library
                 return _itemRepository.GetItems(query);
             }
 
-            var list = _itemRepository.GetItemList(query);
-
             return new QueryResult<BaseItem>
             {
-                Items = list
+                Items = _itemRepository.GetItemList(query)
             };
         }
 
@@ -1579,7 +1591,6 @@ namespace Emby.Server.Implementations.Library
         public async Task<IEnumerable<Video>> GetIntros(BaseItem item, User user)
         {
             var tasks = IntroProviders
-                .OrderBy(i => i.GetType().Name.Contains("Default", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
                 .Take(1)
                 .Select(i => GetIntros(i, item, user));
 
@@ -1865,7 +1876,8 @@ namespace Emby.Server.Implementations.Library
             }
 
             var outdated = forceUpdate ? item.ImageInfos.Where(i => i.Path != null).ToArray() : item.ImageInfos.Where(ImageNeedsRefresh).ToArray();
-            if (outdated.Length == 0)
+            // Skip image processing if current or live tv source
+            if (outdated.Length == 0 || item.SourceType != SourceType.Library)
             {
                 RegisterItem(item);
                 return;
@@ -1934,12 +1946,9 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Updates the item.
         /// </summary>
-        public void UpdateItems(IEnumerable<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
+        public void UpdateItems(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken)
         {
-            // Don't iterate multiple times
-            var itemsList = items.ToList();
-
-            foreach (var item in itemsList)
+            foreach (var item in items)
             {
                 if (item.IsFileProtocol)
                 {
@@ -1951,11 +1960,11 @@ namespace Emby.Server.Implementations.Library
                 UpdateImages(item, updateReason >= ItemUpdateType.ImageUpdate);
             }
 
-            _itemRepository.SaveItems(itemsList, cancellationToken);
+            _itemRepository.SaveItems(items, cancellationToken);
 
             if (ItemUpdated != null)
             {
-                foreach (var item in itemsList)
+                foreach (var item in items)
                 {
                     // With the live tv guide this just creates too much noise
                     if (item.SourceType != SourceType.Library)
@@ -2177,8 +2186,6 @@ namespace Emby.Server.Implementations.Library
                 .Select(i => i.CollectionType)
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
         }
-
-        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 
         public UserView GetNamedView(
             User user,
@@ -2477,14 +2484,9 @@ namespace Emby.Server.Implementations.Library
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
-            var episodeInfo = episode.IsFileProtocol ?
-                resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) :
-                new Naming.TV.EpisodeInfo();
-
-            if (episodeInfo == null)
-            {
-                episodeInfo = new Naming.TV.EpisodeInfo();
-            }
+            var episodeInfo = episode.IsFileProtocol
+                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo()
+                : new Naming.TV.EpisodeInfo();
 
             try
             {
@@ -2492,11 +2494,13 @@ namespace Emby.Server.Implementations.Library
                 if (libraryOptions.EnableEmbeddedEpisodeInfos && string.Equals(episodeInfo.Container, "mp4", StringComparison.OrdinalIgnoreCase))
                 {
                     // Read from metadata
-                    var mediaInfo = _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-                    {
-                        MediaSource = episode.GetMediaSources(false)[0],
-                        MediaType = DlnaProfileType.Video
-                    }, CancellationToken.None).GetAwaiter().GetResult();
+                    var mediaInfo = _mediaEncoder.GetMediaInfo(
+                        new MediaInfoRequest
+                        {
+                            MediaSource = episode.GetMediaSources(false)[0],
+                            MediaType = DlnaProfileType.Video
+                        },
+                        CancellationToken.None).GetAwaiter().GetResult();
                     if (mediaInfo.ParentIndexNumber > 0)
                     {
                         episodeInfo.SeasonNumber = mediaInfo.ParentIndexNumber;
@@ -2654,7 +2658,7 @@ namespace Emby.Server.Implementations.Library
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
+            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 
             if (currentVideo != null)
             {
@@ -2671,9 +2675,7 @@ namespace Emby.Server.Implementations.Library
                 .Select(video =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = GetItemById(video.Id) as Trailer;
-
-                    if (dbItem != null)
+                    if (GetItemById(video.Id) is Trailer dbItem)
                     {
                         video = dbItem;
                     }
@@ -3000,23 +3002,6 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        private static bool ValidateNetworkPath(string path)
-        {
-            // if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            //{
-            //    // We can't validate protocol-based paths, so just allow them
-            //    if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)
-            //    {
-            //        return Directory.Exists(path);
-            //    }
-            //}
-
-            // Without native support for unc, we cannot validate this when running under mono
-            return true;
-        }
-
-        private const string ShortcutFileExtension = ".mblink";
-
         public void AddMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
         {
             AddMediaPathInternal(virtualFolderName, pathInfo, true);
@@ -3039,11 +3024,6 @@ namespace Emby.Server.Implementations.Library
             if (!Directory.Exists(path))
             {
                 throw new FileNotFoundException("The path does not exist.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
-            {
-                throw new FileNotFoundException("The network path does not exist.");
             }
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
@@ -3082,11 +3062,6 @@ namespace Emby.Server.Implementations.Library
             if (pathInfo == null)
             {
                 throw new ArgumentNullException(nameof(pathInfo));
-            }
-
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
-            {
-                throw new FileNotFoundException("The network path does not exist.");
             }
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
@@ -3220,7 +3195,8 @@ namespace Emby.Server.Implementations.Library
 
             if (!Directory.Exists(virtualFolderPath))
             {
-                throw new FileNotFoundException(string.Format("The media collection {0} does not exist", virtualFolderName));
+                throw new FileNotFoundException(
+                    string.Format(CultureInfo.InvariantCulture, "The media collection {0} does not exist", virtualFolderName));
             }
 
             var shortcut = _fileSystem.GetFilePaths(virtualFolderPath, true)

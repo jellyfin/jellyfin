@@ -62,7 +62,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.Substring(0, 4), NumberStyles.Number, _usCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;

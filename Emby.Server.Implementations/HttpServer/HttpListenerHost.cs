@@ -449,7 +449,7 @@ namespace Emby.Server.Implementations.HttpServer
                 if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
                     httpRes.StatusCode = 200;
-                    foreach(var (key, value) in GetDefaultCorsHeaders(httpReq))
+                    foreach (var (key, value) in GetDefaultCorsHeaders(httpReq))
                     {
                         httpRes.Headers.Add(key, value);
                     }
@@ -486,7 +486,7 @@ namespace Emby.Server.Implementations.HttpServer
                 var handler = GetServiceHandler(httpReq);
                 if (handler != null)
                 {
-                    await handler.ProcessRequestAsync(this, httpReq, httpRes, _logger, cancellationToken).ConfigureAwait(false);
+                    await handler.ProcessRequestAsync(this, httpReq, httpRes, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -567,7 +567,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
 
-                var connection = new WebSocketConnection(
+                using var connection = new WebSocketConnection(
                     _loggerFactory.CreateLogger<WebSocketConnection>(),
                     webSocket,
                     context.Connection.RemoteIpAddress,

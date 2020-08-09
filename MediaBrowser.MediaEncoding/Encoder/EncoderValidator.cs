@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +14,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
     {
         private const string DefaultEncoderPath = "ffmpeg";
 
-        private static readonly string[] requiredDecoders = new[]
+        private static readonly string[] _requiredDecoders = new[]
         {
             "h264",
             "hevc",
@@ -55,7 +57,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "vc1_opencl"
         };
 
-        private static readonly string[] requiredEncoders = new[]
+        private static readonly string[] _requiredEncoders = new[]
         {
             "libx264",
             "libx265",
@@ -90,6 +92,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         // $ ffmpeg -version | perl -ne ' print "$1=$2.$3," if /^(lib\w+)\s+(\d+)\.\s*(\d+)/'
         private static readonly IReadOnlyDictionary<string, Version> _ffmpegVersionMap = new Dictionary<string, Version>
         {
+            { "libavutil=56.51,libavcodec=58.91,libavformat=58.45,libavdevice=58.10,libavfilter=7.85,libswscale=5.7,libswresample=3.7,libpostproc=55.7,", new Version(4, 3) },
             { "libavutil=56.31,libavcodec=58.54,libavformat=58.29,libavdevice=58.8,libavfilter=7.57,libswscale=5.5,libswresample=3.5,libpostproc=55.5,", new Version(4, 2) },
             { "libavutil=56.22,libavcodec=58.35,libavformat=58.20,libavdevice=58.5,libavfilter=7.40,libswscale=5.3,libswresample=3.3,libpostproc=55.3,", new Version(4, 1) },
             { "libavutil=56.14,libavcodec=58.18,libavformat=58.12,libavdevice=58.3,libavfilter=7.16,libswscale=5.1,libswresample=3.1,libpostproc=55.1,", new Version(4, 0) },
@@ -107,6 +110,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             _logger = logger;
             _encoderPath = encoderPath;
+        }
+
+        private enum Codec
+        {
+            Encoder,
+            Decoder
         }
 
         public static Version MinVersion { get; } = new Version(4, 0);
@@ -192,12 +201,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// If that fails then we use one of the main libraries to determine if it's new/older than the latest
         /// we have stored.
         /// </summary>
-        /// <param name="output"></param>
-        /// <returns></returns>
+        /// <param name="output">The output from "ffmpeg -version".</param>
+        /// <returns>The FFmpeg version.</returns>
         internal static Version GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
-            var match = Regex.Match(output, @"^ffmpeg version n?((?:\d+\.?)+)");
+            var match = Regex.Match(output, @"^ffmpeg version n?((?:[0-9]+\.?)+)");
 
             if (match.Success)
             {
@@ -215,16 +224,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <summary>
         /// Grabs the library names and major.minor version numbers from the 'ffmpeg -version' output
-        /// and condenses them on to one line.  Output format is "name1=major.minor,name2=major.minor,etc."
+        /// and condenses them on to one line.  Output format is "name1=major.minor,name2=major.minor,etc.".
         /// </summary>
-        /// <param name="output"></param>
-        /// <returns></returns>
+        /// <param name="output">The 'ffmpeg -version' output.</param>
+        /// <returns>The library names and major.minor version numbers.</returns>
         private static string GetLibrariesVersionString(string output)
         {
             var rc = new StringBuilder(144);
             foreach (Match m in Regex.Matches(
                 output,
-                @"((?<name>lib\w+)\s+(?<major>\d+)\.\s*(?<minor>\d+))",
+                @"((?<name>lib\w+)\s+(?<major>[0-9]+)\.\s*(?<minor>[0-9]+))",
                 RegexOptions.Multiline))
             {
                 rc.Append(m.Groups["name"])
@@ -236,12 +245,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return rc.Length == 0 ? null : rc.ToString();
-        }
-
-        private enum Codec
-        {
-            Encoder,
-            Decoder
         }
 
         private IEnumerable<string> GetHwaccelTypes()
@@ -261,7 +264,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var found = output.Split(new char[] {'\r','\n'}, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
+            var found = output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Skip(1).Distinct().ToList();
             _logger.LogInformation("Available hwaccel types: {Types}", found);
 
             return found;
@@ -285,7 +288,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return Enumerable.Empty<string>();
             }
 
-            var required = codec == Codec.Encoder ? requiredEncoders : requiredDecoders;
+            var required = codec == Codec.Encoder ? _requiredEncoders : _requiredDecoders;
 
             var found = Regex
                 .Matches(output, @"^\s\S{6}\s(?<codec>[\w|-]+)\s+.+$", RegexOptions.Multiline)

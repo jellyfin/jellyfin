@@ -245,6 +245,16 @@ namespace Emby.Server.Implementations.IO
                 if (info is FileInfo fileInfo)
                 {
                     result.Length = fileInfo.Length;
+
+                    // Issue #2354 get the size of files behind symbolic links
+                    if (fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                    {
+                        using (Stream thisFileStream = File.OpenRead(fileInfo.FullName))
+                        {
+                            result.Length = thisFileStream.Length;
+                        }
+                    }
+
                     result.DirectoryName = fileInfo.DirectoryName;
                 }
 

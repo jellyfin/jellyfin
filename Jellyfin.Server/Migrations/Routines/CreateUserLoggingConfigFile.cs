@@ -49,6 +49,9 @@ namespace Jellyfin.Server.Migrations.Routines
         public string Name => "CreateLoggingConfigHeirarchy";
 
         /// <inheritdoc/>
+        public bool PerformOnNewInstall => false;
+
+        /// <inheritdoc/>
         public void Perform()
         {
             var logDirectory = _appPaths.ConfigurationDirectoryPath;

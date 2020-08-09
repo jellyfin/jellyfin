@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (response.External_Ids.Tvdb_Id > 0)
                 {
-                    item.SetProviderId(MetadataProvider.Tvdb, response.External_Ids.Tvdb_Id.ToString(CultureInfo.InvariantCulture));
+                    item.SetProviderId(MetadataProvider.Tvdb, response.External_Ids.Tvdb_Id.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 item.PremiereDate = response.Air_Date;

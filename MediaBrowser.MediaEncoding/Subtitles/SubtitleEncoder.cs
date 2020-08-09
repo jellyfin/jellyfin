@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -31,6 +33,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IHttpClient _httpClient;
         private readonly IMediaSourceManager _mediaSourceManager;
+
+        /// <summary>
+        /// The _semaphoreLocks.
+        /// </summary>
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
+            new ConcurrentDictionary<string, SemaphoreSlim>();
 
         public SubtitleEncoder(
             ILibraryManager libraryManager,
@@ -172,7 +180,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 inputFiles = new[] { mediaSource.Path };
             }
 
-            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, mediaSource.Protocol, subtitleStream, cancellationToken).ConfigureAwait(false);
+            var protocol = mediaSource.Protocol;
+            if (subtitleStream.IsExternal)
+            {
+                protocol = _mediaSourceManager.GetPathProtocol(subtitleStream.Path);
+            }
+
+            var fileInfo = await GetReadableFile(mediaSource.Path, inputFiles, protocol, subtitleStream, cancellationToken).ConfigureAwait(false);
 
             var stream = await GetSubtitleStream(fileInfo.Path, fileInfo.Protocol, fileInfo.IsExternal, cancellationToken).ConfigureAwait(false);
 
@@ -261,25 +275,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return new SubtitleInfo(subtitleStream.Path, protocol, currentFormat, true);
         }
 
-        private struct SubtitleInfo
-        {
-            public SubtitleInfo(string path, MediaProtocol protocol, string format, bool isExternal)
-            {
-                Path = path;
-                Protocol = protocol;
-                Format = format;
-                IsExternal = isExternal;
-            }
-
-            public string Path { get; set; }
-
-            public MediaProtocol Protocol { get; set; }
-
-            public string Format { get; set; }
-
-            public bool IsExternal { get; set; }
-        }
-
         private ISubtitleParser GetReader(string format, bool throwIfMissing)
         {
             if (string.IsNullOrEmpty(format))
@@ -353,25 +348,20 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
 
         /// <summary>
-        /// The _semaphoreLocks.
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks =
-            new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        /// <summary>
         /// Gets the lock.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.Object.</returns>
         private SemaphoreSlim GetLock(string filename)
         {
-            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
+            return _semaphoreLocks.GetOrAdd(filename, _ => new SemaphoreSlim(1, 1));
         }
 
         /// <summary>
         /// Converts the text subtitle to SRT.
         /// </summary>
         /// <param name="inputPath">The input path.</param>
+        /// <param name="language">The language.</param>
         /// <param name="inputProtocol">The input protocol.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -399,14 +389,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// Converts the text subtitle to SRT internal.
         /// </summary>
         /// <param name="inputPath">The input path.</param>
+        /// <param name="language">The language.</param>
         /// <param name="inputProtocol">The input protocol.</param>
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         /// <exception cref="ArgumentNullException">
-        /// inputPath
-        /// or
-        /// outputPath
+        /// The <c>inputPath</c> or <c>outputPath</c> is <c>null</c>.
         /// </exception>
         private async Task ConvertTextSubtitleToSrtInternal(string inputPath, string language, MediaProtocol inputProtocol, string outputPath, CancellationToken cancellationToken)
         {
@@ -426,9 +415,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             // FFmpeg automatically convert character encoding when it is UTF-16
             // If we specify character encoding, it rejects with "do not specify a character encoding" and "Unable to recode subtitle event"
-            if ((inputPath.EndsWith(".smi") || inputPath.EndsWith(".sami")) && (encodingParam == "UTF-16BE" || encodingParam == "UTF-16LE"))
+            if ((inputPath.EndsWith(".smi") || inputPath.EndsWith(".sami")) &&
+                (encodingParam.Equals("UTF-16BE", StringComparison.OrdinalIgnoreCase) ||
+                 encodingParam.Equals("UTF-16LE", StringComparison.OrdinalIgnoreCase)))
             {
-                encodingParam = "";
+                encodingParam = string.Empty;
             }
             else if (!string.IsNullOrEmpty(encodingParam))
             {
@@ -530,7 +521,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <param name="outputPath">The output path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentException">Must use inputPath list overload</exception>
+        /// <exception cref="ArgumentException">Must use inputPath list overload.</exception>
         private async Task ExtractTextSubtitle(
             string[] inputFiles,
             MediaProtocol protocol,
@@ -721,19 +712,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var date = _fileSystem.GetLastWriteTimeUtc(mediaPath);
 
-                var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
+                ReadOnlySpan<char> filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture) + "_" + date.Ticks.ToString(CultureInfo.InvariantCulture) + ticksParam).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Substring(0, 1);
+                var prefix = filename.Slice(0, 1);
 
-                return Path.Combine(SubtitleCachePath, prefix, filename);
+                return Path.Join(SubtitleCachePath, prefix, filename);
             }
             else
             {
-                var filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
+                ReadOnlySpan<char> filename = (mediaPath + "_" + subtitleStreamIndex.ToString(CultureInfo.InvariantCulture)).GetMD5() + outputSubtitleExtension;
 
-                var prefix = filename.Substring(0, 1);
+                var prefix = filename.Slice(0, 1);
 
-                return Path.Combine(SubtitleCachePath, prefix, filename);
+                return Path.Join(SubtitleCachePath, prefix, filename);
             }
         }
 
@@ -749,7 +740,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     && (string.Equals(charset, "utf-16le", StringComparison.OrdinalIgnoreCase)
                         || string.Equals(charset, "utf-16be", StringComparison.OrdinalIgnoreCase)))
                 {
-                    charset = "";
+                    charset = string.Empty;
                 }
 
                 _logger.LogDebug("charset {0} detected for {Path}", charset ?? "null", path);
@@ -779,6 +770,25 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol));
             }
+        }
+
+        private struct SubtitleInfo
+        {
+            public SubtitleInfo(string path, MediaProtocol protocol, string format, bool isExternal)
+            {
+                Path = path;
+                Protocol = protocol;
+                Format = format;
+                IsExternal = isExternal;
+            }
+
+            public string Path { get; set; }
+
+            public MediaProtocol Protocol { get; set; }
+
+            public string Format { get; set; }
+
+            public bool IsExternal { get; set; }
         }
     }
 }

@@ -29,7 +29,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         private readonly IStreamHelper _streamHelper;
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
 
         /// <summary>
         /// The _options.
@@ -49,7 +48,6 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             _streamHelper = streamHelper;
-            _fileSystem = fileSystem;
 
             Path = path;
             _logger = logger;

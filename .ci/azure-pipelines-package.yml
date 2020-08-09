@@ -35,7 +35,6 @@ jobs:
   steps:
   - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) deployment'
     displayName: 'Build Dockerfile'
-    condition: or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
 
   - script: 'docker image ls -a && docker run -v $(pwd)/deployment/dist:/dist -v $(pwd):/jellyfin -e IS_UNSTABLE="yes" -e BUILD_ID=$(Build.BuildNumber) jellyfin-server-$(BuildConfiguration)'
     displayName: 'Run Dockerfile (unstable)'
@@ -47,14 +46,19 @@ jobs:
 
   - task: PublishPipelineArtifact@1
     displayName: 'Publish Release'
-    condition: or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       targetPath: '$(Build.SourcesDirectory)/deployment/dist'
       artifactName: 'jellyfin-server-$(BuildConfiguration)'
 
+  - task: SSH@0
+    displayName: 'Create target directory on repository server'
+    inputs:
+      sshEndpoint: repository
+      runOptions: 'inline'
+      inline: 'mkdir -p /srv/repository/incoming/azure/$(Build.BuildNumber)/$(BuildConfiguration)'
+
   - task: CopyFilesOverSSH@0
     displayName: 'Upload artifacts to repository server'
-    condition: or(startsWith(variables['Build.SourceBranch'], 'refs/tags'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master'))
     inputs:
       sshEndpoint: repository
       sourceFolder: '$(Build.SourcesDirectory)/deployment/dist'
@@ -76,7 +80,15 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
 
+  variables:
+  - name: JellyfinVersion
+    value: 0.0.0
+
   steps:
+  - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
+    displayName: Set release version (stable)
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
+
   - task: Docker@2
     displayName: 'Push Unstable Image'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
@@ -101,9 +113,10 @@ jobs:
       containerRegistry: Docker Hub
       tags: |
         stable-$(Build.BuildNumber)-$(BuildConfiguration)
-        stable-$(BuildConfiguration)
+        $(JellyfinVersion)-$(BuildConfiguration)
 
 - job: CollectArtifacts
+  timeoutInMinutes: 10
   displayName: 'Collect Artifacts'
   dependsOn:
   - BuildPackage
@@ -119,13 +132,35 @@ jobs:
     condition: startsWith(variables['Build.SourceBranch'], 'refs/heads/master')
     inputs:
       sshEndpoint: repository
-      runOptions: 'inline'
-      inline: 'sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable'
+      runOptions: 'commands'
+      commands: sudo -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber) unstable
 
   - task: SSH@0
     displayName: 'Update Stable Repository'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags')
     inputs:
       sshEndpoint: repository
-      runOptions: 'inline'
-      inline: 'sudo /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)'
+      runOptions: 'commands'
+      commands: sudo -n /srv/repository/collect-server.azure.sh /srv/repository/incoming/azure $(Build.BuildNumber)
+      
+- job: PublishNuget
+  displayName: 'Publish NuGet packages'
+  dependsOn:
+  - BuildPackage
+  condition: and(succeeded('BuildPackage'), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: NuGetCommand@2
+    inputs:
+      command: 'pack'
+      packagesToPack: Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj
+      packDestination: '$(Build.ArtifactStagingDirectory)'
+
+  - task: NuGetCommand@2
+    inputs:
+      command: 'push'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+      includeNugetOrg: 'true'
