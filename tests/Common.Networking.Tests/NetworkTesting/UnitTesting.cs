@@ -8,6 +8,7 @@ using MediaBrowser.Common.Networking;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using MediaBrowser.Model.Events;
 
 namespace NetworkTesting
 {
@@ -93,7 +94,7 @@ namespace NetworkTesting
             Assert.True(string.Equals(nc?.ToString(), result3, System.StringComparison.OrdinalIgnoreCase));
 
             conf.EnableIPV6 = false;
-            nm.ConfigurationUpdated(nm, new System.EventArgs());
+            nm.ConfigurationUpdating(nm, new GenericEventArgs<ServerConfiguration>(conf));
 
             // Test included, non IP6.
             nc = nm.CreateIPCollection(settings.Split(","), false);
@@ -104,7 +105,7 @@ namespace NetworkTesting
             Assert.True(string.Equals(nc.ToString(), result4, System.StringComparison.OrdinalIgnoreCase));
 
             conf.EnableIPV6 = true;
-            nm.ConfigurationUpdated(nm, new System.EventArgs());
+            nm.ConfigurationUpdating(nm, new GenericEventArgs<ServerConfiguration>(conf));
 
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(","), false);

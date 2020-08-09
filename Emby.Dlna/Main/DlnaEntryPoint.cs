@@ -46,7 +46,6 @@ namespace Emby.Dlna.Main
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IDeviceDiscovery _deviceDiscovery;
-        private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new object();
         private readonly IUserViewManager _userViewManager;
@@ -74,7 +73,6 @@ namespace Emby.Dlna.Main
             IMediaSourceManager mediaSourceManager,
             IDeviceDiscovery deviceDiscovery,
             IMediaEncoder mediaEncoder,
-            ISocketFactory socketFactory,
             INetworkManager networkManager,
             IUserViewManager userViewManager,
             ITVSeriesManager tvSeriesManager)
@@ -92,7 +90,6 @@ namespace Emby.Dlna.Main
             _mediaSourceManager = mediaSourceManager;
             _deviceDiscovery = deviceDiscovery;
             _mediaEncoder = mediaEncoder;
-            _socketFactory = socketFactory;
             _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
             _logger = loggerFactory.CreateLogger<DlnaEntryPoint>();
             _loggerFactory = loggerFactory;
@@ -104,15 +101,15 @@ namespace Emby.Dlna.Main
             Current = this;
         }
 
+        public bool DLNAEnabled => _config.GetDlnaConfiguration().EnableServer;
+
+        public ISsdpCommunicationsServer CommunicationsServer => _communicationsServer;
+
         internal IContentDirectory ContentDirectory { get; private set; }
 
         internal IConnectionManager ConnectionManager { get; private set; }
 
         internal IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
-
-        public bool DLNAEnabled => _config.GetDlnaConfiguration().EnableServer;
-
-        public ISsdpCommunicationsServer CommunicationsServer => _communicationsServer;
 
         public static DlnaEntryPoint Current { get; internal set; }
 
@@ -184,6 +181,7 @@ namespace Emby.Dlna.Main
             }
             else
             {
+                StopSsdpHandler();
                 DisposeDevicePublisher();
                 MediaReceiverRegistrar = null;
                 ContentDirectory = null;
@@ -206,10 +204,7 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _config, _logger)
-                    {
-                        IsShared = true
-                    };
+                    _communicationsServer = new SsdpCommunicationsServer(_networkManager, _config, _loggerFactory.CreateLogger<SsdpCommunicationsServer>());
 
                     try
                     {
@@ -224,6 +219,31 @@ namespace Emby.Dlna.Main
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error starting ssdp handlers");
+            }
+        }
+
+        private void StopSsdpHandler()
+        {
+            try
+            {
+                try
+                {
+                    ((DeviceDiscovery)_deviceDiscovery).Stop();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error starting device discovery");
+                }
+
+                if (_communicationsServer != null)
+                {
+                    _communicationsServer.Dispose();
+                    _communicationsServer = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error stopping ssdp handlers");
             }
         }
 
@@ -242,6 +262,11 @@ namespace Emby.Dlna.Main
 
         public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
+            if (options == null)
+            {
+                throw new NullReferenceException(nameof(options));
+            }
+
             // See comment at https://github.com/jellyfin/jellyfin/pull/3257 - this stops jellyfin from being a DNLA compliant server.
             // if (!options.BlastAliveMessages)
             // {
@@ -273,9 +298,9 @@ namespace Emby.Dlna.Main
                     OperatingSystem.Name,
                     Environment.OSVersion.VersionString,
                     _appHost.SystemId,
-                    _logger,
-                    _networkManager,
-                    _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                    _loggerFactory.CreateLogger<SsdpDevicePublisher>(),
+                    _networkManager)
+                    // _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
                     SupportPnpRootDevice = false
                 };
@@ -450,8 +475,7 @@ namespace Emby.Dlna.Main
                 DisposeDevicePublisher();
                 DisposePlayToManager();
                 DisposeDeviceDiscovery();
-
-                if (_communicationsServer != null)
+                if (_communicationsServer != null && _communicationsServer.IsShared-- <= 0)
                 {
                     _logger.LogInformation("Disposing SsdpCommunicationsServer");
                     _communicationsServer.Dispose();

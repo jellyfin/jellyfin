@@ -155,7 +155,6 @@ namespace Rssdp.Infrastructure
 
             _communicationsServer.RequestReceived -= CommsServer_RequestReceived;
             _communicationsServer.RequestReceived += CommsServer_RequestReceived;
-            _communicationsServer.BeginListeningForMulticasts();
         }
 
         /// <summary>
@@ -309,7 +308,7 @@ namespace Rssdp.Infrastructure
                 //_logger.LogInformation("Sending IPv4 broadcast on LAN interfaces.");
 
                 IEnumerable<Task> tasks = from intf in _networkManager.GetInternalBindAddresses()
-                                          select _communicationsServer.SendMulticastMessage(message, intf.Address);
+                                          select _communicationsServer.SendMulticastMessageAsync(message, intf.Address);
                 return Task.WhenAll(tasks);
             }
 
@@ -319,14 +318,14 @@ namespace Rssdp.Infrastructure
             //_logger.LogInformation("Sending IPv6 multicast and IPv4 broadcast.");
             IEnumerable<Task> ip4Tasks = from intf in _networkManager.GetInternalBindAddresses()
                                       where (intf.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                                      select _communicationsServer.SendMulticastMessage(message, intf.Address);
+                                      select _communicationsServer.SendMulticastMessageAsync(message, intf.Address);
 
             IEnumerable<Task> ip6Tasks = from intf in _networkManager.GetInternalBindAddresses()
                                       where (intf.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-                                      select _communicationsServer.SendMulticastMessage(message2, intf.Address);
+                                      select _communicationsServer.SendMulticastMessageAsync(message2, intf.Address);
 
 
-            return Task.WhenAll(ip4Tasks.Union(ip6Tasks));                            
+            return Task.WhenAll(ip4Tasks.Union(ip6Tasks));
         }
 
         private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress localIpAddress)

@@ -263,7 +263,7 @@ namespace MediaBrowser.Common.Networking
         /// <inheritdoc/>
         public override bool Exists(IPAddress address)
         {
-            if (address != null && Address.Equals(IPAddress.None))
+            if (address != null && !Address.Equals(IPAddress.None))
             {
                 return Address.Equals(address);
             }

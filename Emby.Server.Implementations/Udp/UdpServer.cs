@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -30,8 +31,6 @@ namespace Emby.Server.Implementations.Udp
         /// IPAddress.Any endpoint.
         /// </summary>
         private IPEndPoint _endpoint;
-
-        private readonly byte[] _receiveBuffer = new byte[8192];
 
         /// <summary>
         /// Not quite sure why this is here.
@@ -134,43 +133,52 @@ namespace Emby.Server.Implementations.Udp
         /// <returns>Task.</returns>
         private async Task BeginReceiveAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
+
+            try
             {
-                var infiniteTask = Task.Delay(-1, cancellationToken);
-                try
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    var task = _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint);
-                    await Task.WhenAny(task, infiniteTask).ConfigureAwait(false);
-
-                    if (!task.IsCompleted)
+                    var infiniteTask = Task.Delay(-1, cancellationToken);
+                    try
                     {
-                        return;
-                    }
+                        var task = _udpSocket.ReceiveFromAsync(receiveBuffer, SocketFlags.None, _endpoint);
+                        await Task.WhenAny(task, infiniteTask).ConfigureAwait(false);
 
-                    var result = task.Result;
-
-                    // If this from an excluded address don't both responding to it - but we will respond no matter where the request comes from.
-                    if (!NetworkManager.Instance.IsExcluded(((IPEndPoint)result.RemoteEndPoint).Address))
-                    {
-                        var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
-                        if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+                        if (!task.IsCompleted)
                         {
-                            await RespondToV2Message(text, result.RemoteEndPoint).ConfigureAwait(false);
+                            return;
+                        }
+
+                        var result = task.Result;
+
+                        // If this from an excluded address don't both responding to it - but we will respond no matter where the request comes from.
+                        if (!NetworkManager.Instance.IsExcluded(result.RemoteEndPoint))
+                        {
+                            var text = Encoding.UTF8.GetString(receiveBuffer, 0, result.ReceivedBytes);
+                            if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
+                            {
+                                await RespondToV2Message(text, result.RemoteEndPoint).ConfigureAwait(false);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Filtering traffic from [{0}] to {1}.", result.RemoteEndPoint, _endpoint);
                         }
                     }
-                    else
+                    catch (SocketException ex)
                     {
-                        _logger.LogInformation("Filtering traffic from [{0}] to {1}.", result.RemoteEndPoint, _endpoint);
+                        _logger.LogError(ex, "Failed to receive data from socket");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Don't throw
                     }
                 }
-                catch (SocketException ex)
-                {
-                    _logger.LogError(ex, "Failed to receive data from socket");
-                }
-                catch (OperationCanceledException)
-                {
-                    // Don't throw
-                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(receiveBuffer);
             }
         }
     }

@@ -1,12 +1,14 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -32,7 +34,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     {
         private readonly IHttpClient _httpClient;
         private readonly IServerApplicationHost _appHost;
-        private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
         private readonly IStreamHelper _streamHelper;
 
@@ -43,14 +44,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IFileSystem fileSystem,
             IHttpClient httpClient,
             IServerApplicationHost appHost,
-            ISocketFactory socketFactory,
             INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(config, logger, jsonSerializer, fileSystem)
         {
             _httpClient = httpClient;
             _appHost = appHost;
-            _socketFactory = socketFactory;
             _networkManager = networkManager;
             _streamHelper = streamHelper;
         }
@@ -115,6 +114,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         }
 
         private readonly Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
+
         private async Task<DiscoverResponse> GetModelInfo(TunerHostInfo info, bool throwAllExceptions, CancellationToken cancellationToken)
         {
             var cacheKey = info.Id;
@@ -132,12 +132,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             try
             {
-                using (var response = await _httpClient.SendAsync(new HttpRequestOptions()
-                {
-                    Url = string.Format("{0}/discover.json", GetApiUrl(info)),
-                    CancellationToken = cancellationToken,
-                    BufferContent = false
-                }, HttpMethod.Get).ConfigureAwait(false))
+                using (var response = await _httpClient.SendAsync(
+                    new HttpRequestOptions()
+                    {
+                        Url = string.Format(CultureInfo.InvariantCulture, "{0}/discover.json", GetApiUrl(info)),
+                        CancellationToken = cancellationToken,
+                        BufferContent = false
+                    }, HttpMethod.Get).ConfigureAwait(false))
                 using (var stream = response.Content)
                 {
                     var discoverResponse = await JsonSerializer.DeserializeFromStreamAsync<DiscoverResponse>(stream).ConfigureAwait(false);
@@ -720,53 +721,51 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 _modelCache.Clear();
             }
 
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(discoveryDurationMs).Token, cancellationToken).Token;
+            var timeLimitedCancellation = new CancellationTokenSource(discoveryDurationMs).Token;
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(timeLimitedCancellation, cancellationToken).Token;
+
             var list = new List<TunerHostInfo>();
 
-            // TODO: Enable IPv6.
-
-            // Create udp broadcast discovery message
             byte[] discBytes = { 0, 2, 0, 12, 1, 4, 255, 255, 255, 255, 2, 4, 255, 255, 255, 255, 115, 204, 125, 143 };
-
-            using (var udpClient = _socketFactory.CreateUdpBroadcastSocket(0, IPAddress.Any))
+            using (var udpClient = _networkManager.CreateUdpBroadcastSocket(0))
             {
-                // Need a way to set the Receive timeout on the socket otherwise this might never timeout?
                 try
                 {
-                    await udpClient.SendToAsync(discBytes,
-                        0,
-                        discBytes.Length,
-                        new IPEndPoint(IPAddress.Broadcast, 65001),
-                        cancellationToken).ConfigureAwait(false);
-                    var receiveBuffer = new byte[8192];
+                    await udpClient.SendToAsync(discBytes, SocketFlags.None, new IPEndPoint(IPAddress.Broadcast, 65001)).ConfigureAwait(false);
+                    var receiveBuffer = ArrayPool<byte>.Shared.Rent(8192);
 
-                    while (!cancellationToken.IsCancellationRequested)
+                    try
                     {
-                        var response = await udpClient.ReceiveAsync(receiveBuffer, 0, receiveBuffer.Length, cancellationToken).ConfigureAwait(false);
-                        var deviceIp = response.RemoteEndPoint.Address.ToString();
-
-                        // Ignore excluded devices/ranges.
-                        if (!_networkManager.IsExcluded(response.RemoteEndPoint.Address))
+                        while (!cancellationToken.IsCancellationRequested)
                         {
-                            continue;
-                        }
+                            var result = await udpClient.ReceiveFromAsync(receiveBuffer, SocketFlags.None, new IPEndPoint(IPAddress.Any, 0)).ConfigureAwait(false);
 
-                        // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
-                        if (response.ReceivedBytes > 13 && response.Buffer[1] == 3)
-                        {
-                            var deviceAddress = "http://" + deviceIp;
-
-                            var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
-
-                            if (info != null)
+                            // Ignore excluded devices/ranges.
+                            if (!_networkManager.IsExcluded(result.RemoteEndPoint))
                             {
-                                list.Add(info);
+                                continue;
+                            }
+
+                            // check to make sure we have enough bytes received to be a valid message and make sure the 2nd byte is the discover reply byte
+                            if (result.ReceivedBytes > 13 && receiveBuffer[1] == 3)
+                            {
+                                var deviceAddress = "http://" + ((IPEndPoint)result.RemoteEndPoint).Address.ToString();
+
+                                var info = await TryGetTunerHostInfo(deviceAddress, cancellationToken).ConfigureAwait(false);
+                                if (info != null)
+                                {
+                                    list.Add(info);
+                                }
                             }
                         }
                     }
-                }
-                catch (OperationCanceledException)
-                {
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(receiveBuffer);
+                    }
                 }
                 catch (Exception ex)
                 {

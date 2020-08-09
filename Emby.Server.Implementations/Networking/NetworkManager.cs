@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Networking;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Events;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Networking
@@ -21,6 +23,10 @@ namespace Emby.Server.Implementations.Networking
     /// </summary>
     public class NetworkManager : INetworkManager
     {
+        private const int DefaultMulticastTimeToLive = 4;
+        private static readonly IPAddress _multicastLocalAdminAddress = IPAddress.Parse("239.255.255.250");
+        private static readonly IPAddress _multicastLocalAdminAddressV6 = IPAddress.Parse("ff01::1"); // Site-local
+
         /// <summary>
         /// Contains the description of the interface along with its index.
         /// </summary>
@@ -106,16 +112,16 @@ namespace Emby.Server.Implementations.Networking
             _interfaceNames = new SortedList<string, int>();
             _overrideAddresses = new Dictionary<IPNetAddress, string>();
 
-            IsIP6Enabled = _configurationManager.Configuration.EnableIPV6;
-
             InitialiseInterfaces();
+            InitialiseBind();
             InitialiseLAN();
+            InitialiseRemote();
             InitialiseOverrides();
 
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
-            _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
+            ((IServerConfigurationManager)_configurationManager).ConfigurationUpdating += ConfigurationUpdating;
 
             Instance = this;
         }
@@ -143,12 +149,25 @@ namespace Emby.Server.Implementations.Networking
         public NetCollection RemoteAddressFilter { get; private set; }
 
         /// <inheritdoc/>
-        public bool IsIP6Enabled { get; private set; } = false;
+        public bool IsIP6Enabled
+        {
+            get
+            {
+                return _configurationManager.Configuration.EnableIPV6;
+            }
+
+            private set
+            {
+                _configurationManager.Configuration.EnableIPV6 = value;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether is multi-socket binding available.
         /// </summary>
         public bool EnableMultiSocketBinding => _configurationManager.Configuration.EnableMultiSocketBinding;
+
+        private bool TrustAllIP6Interfaces => _configurationManager.Configuration.TrustAllIP6Interfaces;
 
         /// <summary>
         /// Parses a string and returns a range value if possible.
@@ -226,17 +245,43 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
-        public void ConfigurationUpdated(object sender, EventArgs e)
+        public void ConfigurationUpdating(object sender, GenericEventArgs<ServerConfiguration> newConfig)
         {
-            // IP6 settings changed. - Needs to be public for testing.
-            if (IsIP6Enabled != _configurationManager.Configuration.EnableIPV6)
+            // Only process what has changed.
+
+            if (newConfig == null)
             {
-                InitialiseInterfaces();
-                IsIP6Enabled = !IsIP6Enabled;
+                throw new ArgumentNullException(nameof(newConfig));
             }
 
-            InitialiseLAN();
-            InitialiseOverrides();
+            bool lanRefresh = false;
+            // IP6 settings changed. - Needs to be public for testing.
+            if (IsIP6Enabled != newConfig.Argument.EnableIPV6)
+            {
+                InitialiseInterfaces();
+                lanRefresh = true;
+            }
+
+            if (lanRefresh || _configurationManager.Configuration.LocalNetworkSubnets.SequenceEqual(newConfig.Argument.LocalNetworkSubnets))
+            {
+                InitialiseLAN();
+                lanRefresh = true;
+            }
+
+            if (lanRefresh || _configurationManager.Configuration.LocalNetworkAddresses.SequenceEqual(newConfig.Argument.LocalNetworkAddresses))
+            {
+                InitialiseBind();
+            }
+
+            if (_configurationManager.Configuration.RemoteIPFilter.SequenceEqual(newConfig.Argument.RemoteIPFilter))
+            {
+                InitialiseRemote();
+            }
+
+            if (_configurationManager.Configuration.PublishedServerUriBySubnet.SequenceEqual(newConfig.Argument.PublishedServerUriBySubnet))
+            {
+                InitialiseOverrides();
+            }
         }
 
         /// <inheritdoc/>
@@ -289,6 +334,106 @@ namespace Emby.Server.Implementations.Networking
         }
 
         /// <inheritdoc/>
+        public Socket CreateUdpBroadcastSocket(int port)
+        {
+            if (port < 0 || port > 65536)
+            {
+                throw new ArgumentException("Port out of range", nameof(port));
+            }
+
+            Socket retVal = PrepareSocket(IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any);
+            try
+            {
+                retVal.Bind(new IPEndPoint(IPAddress.Any, port));
+            }
+            catch
+            {
+                retVal?.Dispose();
+                throw;
+            }
+
+            return retVal;
+        }
+
+        /// <inheritdoc/>
+        public Socket CreateSsdpUdpSocket(IPAddress address, int port)
+        {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            if (port < 0 || port > 65536)
+            {
+                throw new ArgumentException("Port out of range", nameof(port));
+            }
+
+            Socket retVal = PrepareSocket(address);
+            retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, DefaultMulticastTimeToLive);
+
+            if (address.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                // Simulate a broadcast on IP6.
+                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(_multicastLocalAdminAddressV6));
+                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastLoopback, true);
+            }
+
+            retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(_multicastLocalAdminAddress, address));
+            retVal.MulticastLoopback = true;
+
+            try
+            {
+                retVal.Bind(new IPEndPoint(address, port));
+            }
+            catch
+            {
+                retVal?.Dispose();
+                throw;
+            }
+
+            return retVal;
+        }
+
+        /// <inheritdoc/>
+        public Socket CreateUdpMulticastSocket(int multicastTimeToLive, int port)
+        {
+            if (port < 0 || port > 65536)
+            {
+                throw new ArgumentException("Port out of range", nameof(port));
+            }
+
+            if (multicastTimeToLive <= 0)
+            {
+                throw new ArgumentException("multicastTimeToLive cannot be zero or less.", nameof(multicastTimeToLive));
+            }
+
+            IPAddress address = IsIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+            Socket retVal = PrepareSocket(address);
+            retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
+
+            try
+            {
+                // Without this an access denied occurs on some systems.
+                if (IsIP6Enabled)
+                {
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastTimeToLive, multicastTimeToLive);
+                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(_multicastLocalAdminAddressV6));
+                }
+
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(_multicastLocalAdminAddress, IPAddress.Any));
+                retVal.MulticastLoopback = true;
+                retVal.Bind(new IPEndPoint(address, port));
+            }
+            catch
+            {
+                retVal?.Dispose();
+                throw;
+            }
+
+            return retVal;
+        }
+
+        /// <inheritdoc/>
         public List<PhysicalAddress> GetMacAddresses()
         {
             // Populated in construction - so always has values.
@@ -302,6 +447,17 @@ namespace Emby.Server.Implementations.Networking
         public bool IsExcluded(IPAddress ip)
         {
             return _excludedSubnets.Contains(ip);
+        }
+
+        /// <inheritdoc/>
+        public bool IsExcluded(EndPoint ip)
+        {
+            if (ip != null)
+            {
+                return _excludedSubnets.Contains(((IPEndPoint)ip).Address);
+            }
+
+            return false;
         }
 
         /// <inheritdoc/>
@@ -400,8 +556,10 @@ namespace Emby.Server.Implementations.Networking
                     }
 
                     // No bind address and no exclusions, so listen on all interfaces.
-                    NetCollection result = new NetCollection();
-                    result.Add(IPAddress.Any);
+                    NetCollection result = new NetCollection
+                    {
+                        IPAddress.Any
+                    };
                     if (IsIP6Enabled)
                     {
                         result.Add(IPAddress.IPv6Any);
@@ -475,7 +633,7 @@ namespace Emby.Server.Implementations.Networking
                 }
             }
 
-            _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
+            // _logger.LogDebug("GetBindInterface: Souce: {0}, External: {1}:", haveSource, isExternal);
 
             if (!string.IsNullOrEmpty(bindPreference))
             {
@@ -629,7 +787,7 @@ namespace Emby.Server.Implementations.Networking
             }
 
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
-            if (_configurationManager.Configuration.TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
+            if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 return true;
             }
@@ -647,7 +805,7 @@ namespace Emby.Server.Implementations.Networking
             }
 
             // See conversation at https://github.com/jellyfin/jellyfin/pull/3515.
-            if (_configurationManager.Configuration.TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
+            if (TrustAllIP6Interfaces && address.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 return true;
             }
@@ -720,6 +878,42 @@ namespace Emby.Server.Implementations.Networking
             }
 
             return IPNetAddress.TryParse(token, out result);
+        }
+
+        /// <summary>
+        /// Creates a socket for use.
+        /// </summary>
+        /// <param name="address">Address of socket.</param>
+        /// <returns>Socket instance.</returns>
+        private Socket PrepareSocket(IPAddress address)
+        {
+            Socket retVal;
+
+            if (address.AddressFamily == AddressFamily.InterNetwork)
+            {
+                retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            }
+            else
+            {
+                // IPv6 is enabled so create a dual IP4/IP6 socket
+                retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
+                retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+                retVal.DualMode = true;
+            }
+
+            try
+            {
+                retVal.ExclusiveAddressUse = false;
+                retVal.EnableBroadcast = true;
+                // Seeing occasional exceptions thrown on qnap : System.Net.Sockets.SocketException (0x80004005): Protocol not available
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
+            }
+            catch (SocketException)
+            {
+            }
+
+            return retVal;
         }
 
         /// <summary>
@@ -869,6 +1063,31 @@ namespace Emby.Server.Implementations.Networking
             }
         }
 
+        private void InitialiseBind()
+        {
+            string[] ba = _configurationManager.Configuration.LocalNetworkAddresses;
+
+            // TODO: remove when bug fixed: https://github.com/jellyfin/jellyfin-web/issues/1334
+
+            if (ba.Length == 1 && ba[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                ba = ba[0].Split(',');
+            }
+
+            // TODO: end fix.
+
+            // Read and parse bind addresses and exclusions, removing ones that don't exist.
+            _bindAddresses = CreateIPCollection(ba).Union(_interfaceAddresses);
+            _bindExclusions = CreateIPCollection(ba, true).Union(_interfaceAddresses);
+            _logger.LogInformation("Using bind addresses: {0}", _bindAddresses);
+            _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);
+        }
+
+        private void InitialiseRemote()
+        {
+            RemoteAddressFilter = CreateIPCollection(_configurationManager.Configuration.RemoteIPFilter);
+        }
+
         /// <summary>
         /// Initialises internal LAN cache settings.
         /// </summary>
@@ -876,22 +1095,6 @@ namespace Emby.Server.Implementations.Networking
         {
             lock (_intLock)
             {
-                string[] ba = _configurationManager.Configuration.LocalNetworkAddresses;
-
-                // TODO: remove when bug fixed: https://github.com/jellyfin/jellyfin-web/issues/1334
-
-                if (ba.Length == 1 && ba[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    ba = ba[0].Split(',');
-                }
-
-                // TODO: end fix.
-
-                // Read and parse bind addresses and exclusions, removing ones that don't exist.
-                _bindAddresses = CreateIPCollection(ba).Union(_interfaceAddresses);
-                _bindExclusions = CreateIPCollection(ba, true).Union(_interfaceAddresses);
-                RemoteAddressFilter = CreateIPCollection(_configurationManager.Configuration.RemoteIPFilter);
-
                 _logger.LogDebug("Refreshing LAN information.");
 
                 // Get config options.
@@ -951,8 +1154,6 @@ namespace Emby.Server.Implementations.Networking
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets);
                 _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets);
                 _logger.LogInformation("Using LAN addresses: {0}", _filteredLANSubnets);
-                _logger.LogInformation("Using bind addresses: {0}", _bindAddresses);
-                _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions);
             }
         }
 
@@ -974,8 +1175,6 @@ namespace Emby.Server.Implementations.Networking
 
                 try
                 {
-                    bool ip6 = _configurationManager.Configuration.EnableIPV6;
-
                     IEnumerable<NetworkInterface> nics = NetworkInterface.GetAllNetworkInterfaces()
                         .Where(x => x.OperationalStatus == OperationalStatus.Up
                             || x.OperationalStatus == OperationalStatus.Unknown);
@@ -1006,7 +1205,7 @@ namespace Emby.Server.Implementations.Networking
 
                                     int tag = nw.Tag;
                                     /* Mono on OSX doesn't give any gateway addresses, so check DNS entries */
-                                    if (ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0)
+                                    if ((ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0) && !nw.IsLoopback())
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;
@@ -1018,7 +1217,7 @@ namespace Emby.Server.Implementations.Networking
                                     _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
                                     _interfaceNames["eth" + tag.ToString(CultureInfo.InvariantCulture)] = tag;
                                 }
-                                else if (ip6 && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                                else if (IsIP6Enabled && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
                                     IPNetAddress nw = new IPNetAddress(info.Address)
                                     {
@@ -1028,7 +1227,7 @@ namespace Emby.Server.Implementations.Networking
 
                                     int tag = nw.Tag;
                                     /* Mono on OSX doesn't give any gateway addresses, so check DNS entries */
-                                    if (ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0)
+                                    if ((ipProperties.GatewayAddresses.Count > 0 || ipProperties.DnsAddresses.Count > 0) && !nw.IsLoopback())
                                     {
                                         // -ve Tags signify the interface has a gateway.
                                         nw.Tag *= -1;

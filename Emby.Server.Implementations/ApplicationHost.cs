@@ -33,7 +33,6 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
-using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Networking;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
@@ -522,8 +521,6 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
             serviceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
-
-            serviceCollection.AddSingleton<ISocketFactory, SocketFactory>();
 
             serviceCollection.AddSingleton<IGatewayMonitor, GatewayMonitor>();
 

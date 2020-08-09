@@ -22,25 +22,15 @@ namespace Rssdp.Infrastructure
         event EventHandler<ResponseReceivedEventArgs> ResponseReceived;
 
         /// <summary>
-        /// Causes the server to begin listening for multicast messages, being SSDP search requests and notifications.
-        /// </summary>
-        void BeginListeningForMulticasts();
-
-        /// <summary>
-        /// Causes the server to stop listening for multicast messages, being SSDP search requests and notifications.
-        /// </summary>
-        void StopListeningForMulticasts();
-
-        /// <summary>
         /// Sends a message to a particular address (uni or multicast) and port.
         /// </summary>
-        Task SendMessage(byte[] messageData, IPEndPoint destination, IPAddress fromLocalIpAddress);
+        Task SendMessageAsync(byte[] messageData, IPEndPoint destination, IPAddress from);
 
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        Task SendMulticastMessage(string message, IPAddress fromLocalIpAddress);
-        Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress);
+        Task SendMulticastMessageAsync(string message, IPAddress from);
+        Task SendMulticastMessageAsync(string message, int sendCount, IPAddress from);
 
         /// <summary>
         /// Gets or sets a boolean value indicating whether or not this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
@@ -48,14 +38,14 @@ namespace Rssdp.Infrastructure
         /// <remarks>
         /// <para>If true, disposing an instance of a <see cref="SsdpDeviceLocatorBase"/>or a <see cref="ISsdpDevicePublisher"/> will not dispose this comms server instance. The calling code is responsible for managing the lifetime of the server.</para>
         /// </remarks>
-        bool IsShared { get; set; }
+        int IsShared{ get; set; }
 
         /// <summary>
         /// Processes an SSDP message.
         /// </summary>
         /// <param name="data">The data to process.</param>
         /// <param name="endPoint">The remote endpoint.</param>
-        /// <param name="receivedOnLocalIpAddress">The interface ip upon which it was receieved.</param>
-        public void ProcessMessage(string data, IPEndPoint endPoint, IPAddress receivedOnLocalIpAddress);
+        /// <param name="localIp">The interface ip upon which it was receieved.</param>
+        public Task ProcessMessage(string data, IPEndPoint endPoint, IPAddress localIp);
     }
 }

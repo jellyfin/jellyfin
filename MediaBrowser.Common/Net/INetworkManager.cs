@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using MediaBrowser.Common.Networking;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Common.Net
 {
@@ -76,6 +79,13 @@ namespace MediaBrowser.Common.Net
         /// <param name="source">Source of the request.</param>
         /// <returns>IP Address to use, or loopback address if all else fails.</returns>
         string GetBindInterface(object source);
+
+        /// <summary>
+        /// Called when the configuration has changed.
+        /// </summary>
+        /// <param name="sender">Object who made the call.</param>
+        /// <param name="newConfig">New settings that are being applied.</param>
+        void ConfigurationUpdating(object sender, GenericEventArgs<ServerConfiguration> newConfig);
 
         /// <summary>
         /// Checks to see if the ip address is specifically excluded in LocalNetworkAddresses.
@@ -193,6 +203,13 @@ namespace MediaBrowser.Common.Net
         bool IsExcluded(IPAddress ip);
 
         /// <summary>
+        /// Returns true if the IP address is in the excluded list.
+        /// </summary>
+        /// <param name="ip">IP to check.</param>
+        /// <returns>True if excluded.</returns>
+        bool IsExcluded(EndPoint ip);
+
+        /// <summary>
         /// Gets the filtered LAN ip addresses.
         /// </summary>
         /// <param name="filter">Optional filter for the list.</param>
@@ -207,5 +224,28 @@ namespace MediaBrowser.Common.Net
         /// <param name="address">Address to check.</param>
         /// <returns>True if address is in the subnet.</returns>
         bool IsInSameSubnet(IPAddress subnetIP, IPAddress subnetMask, IPAddress address);
+
+        /// <summary>
+        /// Creates an UDP Socket.
+        /// </summary>
+        /// <param name="port">UDP port to bind.</param>
+        /// <returns>A Socket.</returns>
+        public Socket CreateUdpBroadcastSocket(int port);
+
+        /// <summary>
+        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+        /// </summary>
+        /// <param name="address">IP Address to bind.</param>
+        /// <param name="port">UDP port to bind.</param>
+        /// <returns>A Socket.</returns>
+        public Socket CreateSsdpUdpSocket(IPAddress address, int port);
+
+        /// <summary>
+        /// Creates a new UDP acceptSocket that is a member of the specified multicast IP address, and binds it to the specified local port.
+        /// </summary>
+        /// <param name="multicastTimeToLive">The multicast time to live value for the acceptSocket.</param>
+        /// <param name="port">UDP port to bind.</param>
+        /// <returns>Socket interface object.</returns>
+        public Socket CreateUdpMulticastSocket(int multicastTimeToLive, int port);
     }
 }
