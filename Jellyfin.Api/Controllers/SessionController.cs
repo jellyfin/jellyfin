@@ -413,7 +413,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostFullCapabilities(
-            [FromQuery, Required] string? id,
+            [FromQuery] string? id,
             [FromBody, Required] ClientCapabilities capabilities)
         {
             if (string.IsNullOrWhiteSpace(id))
