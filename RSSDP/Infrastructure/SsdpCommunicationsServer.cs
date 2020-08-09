@@ -36,9 +36,9 @@ namespace Rssdp.Infrastructure
         private readonly INetworkManager _networkManager;
         private readonly bool _enableMultiSocketBinding;
 
-        private object _broadcastListenSocketSynchroniser;
+        private object _broadcastListenSocketSynchroniser = new object();
         private ISocket _broadcastListenSocket;
-        private object _sendSocketSynchroniser;
+        private object _sendSocketSynchroniser = new object();
         private List<ISocket> _sendSockets;
         private HttpRequestParser _requestParser;
         private HttpResponseParser _responseParser;
@@ -59,8 +59,6 @@ namespace Rssdp.Infrastructure
             bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
-            _broadcastListenSocketSynchroniser = new object();
-            _sendSocketSynchroniser = new object();
         }
 
         /// <summary>
@@ -80,9 +78,6 @@ namespace Rssdp.Infrastructure
             {
                 throw new ArgumentOutOfRangeException(nameof(multicastTimeToLive), "multicastTimeToLive must be greater than zero.");
             }
-
-            _broadcastListenSocketSynchroniser = new object();
-            _sendSocketSynchroniser = new object();
 
             _localPort = localPort;
             _socketFactory = socketFactory;

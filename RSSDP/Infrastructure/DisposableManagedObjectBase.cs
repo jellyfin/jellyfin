@@ -69,6 +69,7 @@ namespace Rssdp.Infrastructure
         public void Dispose()
         {
             IsDisposed = true;
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
     }
