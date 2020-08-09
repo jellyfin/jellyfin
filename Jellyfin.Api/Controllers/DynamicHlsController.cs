@@ -1496,9 +1496,14 @@ namespace Jellyfin.Api.Controllers
 
             StringBuilder codecs = new StringBuilder();
 
-            codecs.Append(videoCodecs)
-                .Append(',')
-                .Append(audioCodecs);
+            codecs.Append(videoCodecs);
+
+            if (!string.IsNullOrEmpty(videoCodecs) && !string.IsNullOrEmpty(audioCodecs))
+            {
+                codecs.Append(',');
+            }
+
+            codecs.Append(audioCodecs);
 
             if (codecs.Length > 1)
             {
