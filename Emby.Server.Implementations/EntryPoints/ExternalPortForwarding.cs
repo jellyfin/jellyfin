@@ -274,7 +274,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 _devices.Add(e.Device);
 
-                _gatewayMonitor.AddGateway(e.Device.DeviceEndpoint.Address);
+                await _gatewayMonitor.AddGateway(e.Device.DeviceEndpoint.Address).ConfigureAwait(false);
             }
             catch (ObjectDisposedException)
             {
