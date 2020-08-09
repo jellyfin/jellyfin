@@ -244,10 +244,15 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">Mono.Nat instance.</param>
         /// <param name="e">Information Mono received, but doesn't use.</param>
-        private void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
+        private async void UnknownDeviceFound(object sender, DeviceEventUnknownArgs e)
         {
             _logger.LogDebug("Mono.NAT passing information to our SSDP processor.");
-            DlnaEntryPoint.Current?.CommunicationsServer?.ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address);
+
+            var cm = DlnaEntryPoint.Current?.CommunicationsServer;
+            if (cm != null)
+            {
+                await cm.ProcessMessage(e.Data, (IPEndPoint)e.EndPoint, e.Address).ConfigureAwait(false);
+            }
         }
 
         /// <summary>
@@ -269,7 +274,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 _devices.Add(e.Device);
             }
+            catch (ObjectDisposedException)
+            {
+            }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Error creating port forwarding rules");
             }
@@ -286,13 +296,6 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 throw new ObjectDisposedException(GetType().Name);
             }
-
-            // On some systems the device discovered event seems to fire repeatedly
-            // This check will help ensure we're not trying to port map the same device over and over
-            // if (!_createdRules.TryAdd(device.DeviceEndpoint, 0))
-            // {
-            //     return Task.CompletedTask;
-            // }
 
             return Task.WhenAll(CreatePortMaps(device));
         }
@@ -332,7 +335,9 @@ namespace Emby.Server.Implementations.EntryPoints
                 var mapping = new Mapping(Protocol.Tcp, privatePort, publicPort, 0, _appHost.Name);
                 await device.CreatePortMapAsync(mapping).ConfigureAwait(false);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(
                     ex,
@@ -393,7 +398,9 @@ namespace Emby.Server.Implementations.EntryPoints
                 var mapping = new Mapping(Protocol.Tcp, privatePort, publicPort, 0, _appHost.Name);
                 await device.DeletePortMapAsync(mapping).ConfigureAwait(false);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(
                     ex,
@@ -404,6 +411,9 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
+        /// <summary>
+        /// Interface class that transpose Mono.NAT logs into our logging system.
+        /// </summary>
         private class LoggingInterface : NATLogger
         {
             private readonly ILogger _logger;

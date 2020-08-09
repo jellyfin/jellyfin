@@ -19,7 +19,7 @@ namespace Rssdp.Infrastructure
         private readonly ILogger _logger;
         private readonly string _server;
         private readonly string _systemId;
-        private readonly bool _sendOnlyMatchedHost;
+        // private readonly bool _sendOnlyMatchedHost;
         private readonly IList<SsdpRootDevice> _devices;
         private readonly IReadOnlyList<SsdpRootDevice> _readOnlyDevices;
         private readonly INetworkManager _networkManager;
@@ -34,8 +34,8 @@ namespace Rssdp.Infrastructure
             string osVersion,
             string systemId,
             ILogger logger,
-            INetworkManager networkManager,
-            bool sendOnlyMatchedHost)
+            INetworkManager networkManager)
+            // bool sendOnlyMatchedHost)
         {
             if (communicationsServer == null)
             {
@@ -68,11 +68,13 @@ namespace Rssdp.Infrastructure
             _recentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _random = new Random();
             _logger = logger;
+            // _sendOnlyMatchedHost = sendOnlyMatchedHost;
+            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
+
             _commsServer = communicationsServer ?? throw new ArgumentNullException(nameof(communicationsServer));
             _commsServer.RequestReceived += CommsServer_RequestReceived;
-            _sendOnlyMatchedHost = sendOnlyMatchedHost;
-            _networkManager = networkManager ?? throw new ArgumentNullException(nameof(networkManager));
-            _commsServer.BeginListeningForMulticasts();
+            _commsServer.IsShared++;
+
             _server = $"{osName}/{osVersion} UPnP/1.0 RSSDP/1.0";
             _systemId = systemId;
         }
@@ -195,7 +197,7 @@ namespace Rssdp.Infrastructure
                 _commsServer = null;
                 if (commsServer != null)
                 {
-                    if (!commsServer.IsShared)
+                    if (commsServer.IsShared-- <= 0)
                     {
                         commsServer.Dispose();
                     }
@@ -293,15 +295,13 @@ namespace Rssdp.Infrastructure
                 foreach (var device in deviceList)
                 {
                     var rt = device.ToRootDevice();
-
-                    // TODO: Check to see when _sendOnlyMatchedHost would be of use!
-
+                    
                     // Response only two machines in the same subnet, or the are private address in the local machine.
                     // (eg when something else is running on this machine with 127.0.0.1 and interface address).
-                    if (!_sendOnlyMatchedHost ||
-                        _networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address) ||
-                        _networkManager.OnSameMachine(rt.Address, remoteEndPoint.Address))
-
+                    if (_networkManager.IsInSameSubnet(rt.Address, rt.SubnetMask, remoteEndPoint.Address) ||
+                        _networkManager.OnSameMachine(rt.Address, remoteEndPoint.Address)
+                        // || !_sendOnlyMatchedHost
+                        )
                     {
                         await SendDeviceSearchResponsesAsync(device, remoteEndPoint, receivedOnlocalIpAddress).ConfigureAwait(false);
                     }
@@ -344,19 +344,9 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            await SendSearchResponseAsync(
-                device.Udn,
-                device,
-                device.Udn,
-                endPoint,
-                localIP).ConfigureAwait(false);
+            await SendSearchResponseAsync(device.Udn, device, device.Udn, endPoint, localIP).ConfigureAwait(false);
 
-            await SendSearchResponseAsync(
-                device.FullDeviceType,
-                device,
-                GetUsn(device.Udn, device.FullDeviceType),
-                endPoint,
-                localIP).ConfigureAwait(false);
+            await SendSearchResponseAsync(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, localIP).ConfigureAwait(false);
         }
 
         private static string GetUsn(string udn, string fullDeviceType)
@@ -381,11 +371,11 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage("HTTP/1.1 200 OK", values);
 
-            await _commsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint, localIP).ConfigureAwait(false);
+            await _commsServer.SendMessageAsync(System.Text.Encoding.UTF8.GetBytes(message), endPoint, localIP).ConfigureAwait(false);
             _logger.LogInformation("Sent search response to {0} : {1}", endPoint, device);
         }
 
-        private bool IsDuplicateSearchRequest(string searchTarget, IPEndPoint endPoint)
+        private bool IsDuplicateSearchRequest(string searchTarget, EndPoint endPoint)
         {
             var isDuplicateRequest = false;
 
@@ -490,11 +480,9 @@ namespace Rssdp.Infrastructure
         private async Task SendAliveNotificationAsync(SsdpDevice device, string notificationType, string uniqueServiceName)
         {
             var rootDevice = device.ToRootDevice();
-
             
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-
                 // If needed later for non-server devices, these headers will need to be dynamic
                 ["HOST"] = "239.255.255.250:1900",
                 ["DATE"] = DateTime.UtcNow.ToString("r", CultureInfo.CurrentCulture),
@@ -508,8 +496,8 @@ namespace Rssdp.Infrastructure
 
             var message = BuildMessage("NOTIFY * HTTP / 1.1", values);
 
-            await _commsServer.SendMulticastMessage(message, _sendOnlyMatchedHost ? rootDevice.Address : null).ConfigureAwait(false);
-
+            // await _commsServer.SendMulticastMessageAsync(message, _sendOnlyMatchedHost ? rootDevice.Address : null).ConfigureAwait(false);
+            await _commsServer.SendMulticastMessageAsync(message, rootDevice.Address).ConfigureAwait(false);
             // _logger.LogInformation("Transmitted alive notification : {0} - {1}", device.FriendlyName, device);
         }
 
@@ -559,7 +547,8 @@ namespace Rssdp.Infrastructure
 
             var sendCount = IsDisposed ? 1 : 3;
             _logger.LogInformation("Sent byebye notification : {0}", device);
-            return _commsServer.SendMulticastMessage(message, sendCount, _sendOnlyMatchedHost ? device.ToRootDevice().Address : null);
+            // return _commsServer.SendMulticastMessageAsync(message, sendCount, _sendOnlyMatchedHost ? device.ToRootDevice().Address : null);
+            return _commsServer.SendMulticastMessageAsync(message, sendCount, device.ToRootDevice().Address);
         }
 
         private void DisposeRebroadcastTimer()
@@ -618,11 +607,7 @@ namespace Rssdp.Infrastructure
                     return;
                 }
 
-                _ = ProcessSearchRequest(
-                        GetFirstHeaderValue(e.Message.Headers, "MX"),
-                        GetFirstHeaderValue(e.Message.Headers, "ST"),
-                        e.ReceivedFrom,
-                        e.LocalIpAddress);
+                _ = ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress);
             }
         }
 
@@ -631,7 +616,7 @@ namespace Rssdp.Infrastructure
             /// <summary>
             /// Gets or sets the EndPoint.
             /// </summary>
-            public IPEndPoint EndPoint { get; set; }
+            public EndPoint EndPoint { get; set; }
 
             /// <summary>
             /// Gets or sets the Received.

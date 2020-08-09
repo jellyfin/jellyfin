@@ -121,7 +121,7 @@ namespace Emby.Server.Implementations.Networking
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
             NetworkChange.NetworkAvailabilityChanged += OnNetworkAvailabilityChanged;
 
-            ((IServerConfigurationManager)_configurationManager).ConfigurationUpdating += ConfigurationUpdating;
+            _configurationManager.ConfigurationUpdating += ConfigurationUpdating;
 
             Instance = this;
         }
@@ -262,23 +262,23 @@ namespace Emby.Server.Implementations.Networking
                 lanRefresh = true;
             }
 
-            if (lanRefresh || _configurationManager.Configuration.LocalNetworkSubnets.SequenceEqual(newConfig.Argument.LocalNetworkSubnets))
+            if (lanRefresh || !_configurationManager.Configuration.LocalNetworkSubnets.SequenceEqual(newConfig.Argument.LocalNetworkSubnets))
             {
                 InitialiseLAN();
                 lanRefresh = true;
             }
 
-            if (lanRefresh || _configurationManager.Configuration.LocalNetworkAddresses.SequenceEqual(newConfig.Argument.LocalNetworkAddresses))
+            if (lanRefresh || !_configurationManager.Configuration.LocalNetworkAddresses.SequenceEqual(newConfig.Argument.LocalNetworkAddresses))
             {
                 InitialiseBind();
             }
 
-            if (_configurationManager.Configuration.RemoteIPFilter.SequenceEqual(newConfig.Argument.RemoteIPFilter))
+            if (!_configurationManager.Configuration.RemoteIPFilter.SequenceEqual(newConfig.Argument.RemoteIPFilter))
             {
                 InitialiseRemote();
             }
 
-            if (_configurationManager.Configuration.PublishedServerUriBySubnet.SequenceEqual(newConfig.Argument.PublishedServerUriBySubnet))
+            if (!_configurationManager.Configuration.PublishedServerUriBySubnet.SequenceEqual(newConfig.Argument.PublishedServerUriBySubnet))
             {
                 InitialiseOverrides();
             }

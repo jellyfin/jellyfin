@@ -17,9 +17,9 @@ namespace Emby.Dlna.Ssdp
     public sealed class DeviceDiscovery : IDeviceDiscovery, IDisposable
     {
         private readonly object _syncLock = new object();
-        private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
+        private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
 
         private int _listenerCount;
@@ -64,12 +64,29 @@ namespace Emby.Dlna.Ssdp
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
 
-        // Call this method from somewhere in your code to start the search.
+        /// <summary>
+        /// Starts a device scan.
+        /// </summary>
+        /// <param name="communicationsServer">Communications server to use.</param>
         public void Start(ISsdpCommunicationsServer communicationsServer)
         {
             _commsServer = communicationsServer;
 
             StartInternal();
+        }
+
+        /// <summary>
+        /// Stops a device scan.
+        /// </summary>
+        public void Stop()
+        {
+            if (_deviceLocator != null)
+            {
+                _deviceLocator.Dispose();
+                _deviceLocator = null;
+            }
+
+            _commsServer = null;
         }
 
         private void StartInternal()

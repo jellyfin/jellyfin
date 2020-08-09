@@ -8,8 +8,8 @@ namespace Emby.Dlna.Configuration
         {
             EnablePlayTo = true;
             EnableServer = true;
-            BlastAliveMessages = true; // Setting to false disables all DLNA advertising.
-            SendOnlyMatchedHost = true;
+            // BlastAliveMessages = true; // Setting to false disables all DLNA advertising.
+            // SendOnlyMatchedHost = true;
             ClientDiscoveryIntervalSeconds = 60;
             BlastAliveMessageIntervalSeconds = 1800;
         }
@@ -20,9 +20,9 @@ namespace Emby.Dlna.Configuration
 
         public bool EnableDebugLog { get; set; }
 
-        public bool BlastAliveMessages { get; set; }
+        // public bool BlastAliveMessages { get; set; }
 
-        public bool SendOnlyMatchedHost { get; set; }
+        // public bool SendOnlyMatchedHost { get; set; }
 
         public int ClientDiscoveryIntervalSeconds { get; set; }
 
