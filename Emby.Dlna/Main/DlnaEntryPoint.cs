@@ -59,9 +59,7 @@ namespace Emby.Dlna.Main
         private string _basedir;
 
         public IContentDirectory ContentDirectory { get; private set; }
-        public IContentDirectory ContentDirectory { get; private set; }
-
-
+        
         public IConnectionManager ConnectionManager { get; private set; }
 
         public IMediaReceiverRegistrar MediaReceiverRegistrar { get; private set; }
