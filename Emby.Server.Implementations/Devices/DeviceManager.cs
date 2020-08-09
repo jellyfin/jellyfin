@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Devices
 
             lock (_capabilitiesSyncLock)
             {
-                _memoryCache.CreateEntry(deviceId).SetValue(capabilities);
+                _memoryCache.Set(deviceId, capabilities);
                 _json.SerializeToFile(capabilities, path);
             }
         }

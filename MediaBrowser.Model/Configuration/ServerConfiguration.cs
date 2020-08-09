@@ -255,6 +255,16 @@ namespace MediaBrowser.Model.Configuration
         public string[] UninstalledPlugins { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether slow server responses should be logged as a warning.
+        /// </summary>
+        public bool EnableSlowResponseWarning { get; set; }
+
+        /// <summary>
+        /// Gets or sets the threshold for the slow response time warning in ms.
+        /// </summary>
+        public long SlowResponseThresholdMs { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
         public ServerConfiguration()
@@ -359,6 +369,9 @@ namespace MediaBrowser.Model.Configuration
                     DisabledImageFetchers = new[] { "The Open Movie Database", "TheMovieDb" }
                 }
             };
+
+            EnableSlowResponseWarning = true;
+            SlowResponseThresholdMs = 500;
         }
     }
 

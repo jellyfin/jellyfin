@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (obj.External_Ids.Tvdb_Id > 0)
                 {
-                    remoteResult.SetProviderId(MetadataProvider.Tvdb, obj.External_Ids.Tvdb_Id.ToString(_usCulture));
+                    remoteResult.SetProviderId(MetadataProvider.Tvdb, obj.External_Ids.Tvdb_Id.Value.ToString(_usCulture));
                 }
 
                 return new[] { remoteResult };
@@ -268,12 +268,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
                 if (ids.Tvrage_Id > 0)
                 {
-                    series.SetProviderId(MetadataProvider.TvRage, ids.Tvrage_Id.ToString(_usCulture));
+                    series.SetProviderId(MetadataProvider.TvRage, ids.Tvrage_Id.Value.ToString(_usCulture));
                 }
 
                 if (ids.Tvdb_Id > 0)
                 {
-                    series.SetProviderId(MetadataProvider.Tvdb, ids.Tvdb_Id.ToString(_usCulture));
+                    series.SetProviderId(MetadataProvider.Tvdb, ids.Tvdb_Id.Value.ToString(_usCulture));
                 }
             }
 

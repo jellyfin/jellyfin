@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.6" />
     <PackageReference Include="OptimizedPriorityQueue" Version="4.2.0" />
-    <PackageReference Include="PlaylistsNET" Version="1.0.6" />
+    <PackageReference Include="PlaylistsNET" Version="1.1.2" />
     <PackageReference Include="TvDbSharper" Version="3.2.0" />
   </ItemGroup>
 
