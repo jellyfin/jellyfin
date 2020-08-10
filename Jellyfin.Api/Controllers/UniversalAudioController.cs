@@ -110,7 +110,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool breakOnNonKeyFrames,
             [FromQuery] bool enableRedirection = true)
         {
-            bool isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
             _authorizationContext.GetAuthorizationInfo(Request).DeviceId = deviceId;
 
@@ -222,7 +221,7 @@ namespace Jellyfin.Api.Controllers
                     EnableAdaptiveBitrateStreaming = true
                 };
 
-                return await _dynamicHlsHelper.GetMasterHlsPlaylist(this, TranscodingJobType.Hls, dynamicHlsRequestDto, true)
+                return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType.Hls, dynamicHlsRequestDto, true)
                     .ConfigureAwait(false);
             }
 
@@ -251,7 +250,7 @@ namespace Jellyfin.Api.Controllers
                 Context = EncodingContext.Static
             };
 
-            return await _audioHelper.GetAudioStream(this, TranscodingJobType.Progressive, audioStreamingDto).ConfigureAwait(false);
+            return await _audioHelper.GetAudioStream(TranscodingJobType.Progressive, audioStreamingDto).ConfigureAwait(false);
         }
 
         private DeviceProfile GetDeviceProfile(

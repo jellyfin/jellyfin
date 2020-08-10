@@ -19,6 +19,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -45,6 +46,7 @@ namespace Jellyfin.Api.Helpers
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly INetworkManager _networkManager;
         private readonly ILogger<DynamicHlsHelper> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicHlsHelper"/> class.
@@ -63,6 +65,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsHelper}"/> interface.</param>
+        /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
         public DynamicHlsHelper(
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -77,7 +80,8 @@ namespace Jellyfin.Api.Helpers
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             INetworkManager networkManager,
-            ILogger<DynamicHlsHelper> logger)
+            ILogger<DynamicHlsHelper> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -93,26 +97,24 @@ namespace Jellyfin.Api.Helpers
             _transcodingJobHelper = transcodingJobHelper;
             _networkManager = networkManager;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <summary>
         /// Get master hls playlist.
         /// </summary>
-        /// <param name="controller">Requesting controller.</param>
         /// <param name="transcodingJobType">Transcoding job type.</param>
         /// <param name="streamingRequest">Streaming request dto.</param>
         /// <param name="enableAdaptiveBitrateStreaming">Enable adaptive bitrate streaming.</param>
         /// <returns>A <see cref="Task"/> containing the resulting <see cref="ActionResult"/>.</returns>
         public async Task<ActionResult> GetMasterHlsPlaylist(
-            BaseJellyfinApiController controller,
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest,
             bool enableAdaptiveBitrateStreaming)
         {
-            var isHeadRequest = controller.Request.Method == WebRequestMethods.Http.Head;
+            var isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
             return await GetMasterPlaylistInternal(
-                controller,
                 streamingRequest,
                 isHeadRequest,
                 enableAdaptiveBitrateStreaming,
@@ -121,7 +123,6 @@ namespace Jellyfin.Api.Helpers
         }
 
         private async Task<ActionResult> GetMasterPlaylistInternal(
-            BaseJellyfinApiController controller,
             StreamingRequestDto streamingRequest,
             bool isHeadRequest,
             bool enableAdaptiveBitrateStreaming,
@@ -130,7 +131,7 @@ namespace Jellyfin.Api.Helpers
         {
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
-                    controller.Request,
+                    _httpContextAccessor.HttpContext.Request,
                     _authContext,
                     _mediaSourceManager,
                     _userManager,
@@ -147,7 +148,7 @@ namespace Jellyfin.Api.Helpers
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
-            controller.Response.Headers.Add(HeaderNames.Expires, "0");
+            _httpContextAccessor.HttpContext.Response.Headers.Add(HeaderNames.Expires, "0");
             if (isHeadRequest)
             {
                 return new FileContentResult(Array.Empty<byte>(), MimeTypes.GetMimeType("playlist.m3u8"));
@@ -161,7 +162,7 @@ namespace Jellyfin.Api.Helpers
 
             var isLiveStream = state.IsSegmentedLiveStream;
 
-            var queryString = controller.Request.QueryString.ToString();
+            var queryString = _httpContextAccessor.HttpContext.Request.QueryString.ToString();
 
             // from universal audio service
             if (queryString.IndexOf("SegmentContainer", StringComparison.OrdinalIgnoreCase) == -1 && !string.IsNullOrWhiteSpace(state.Request.SegmentContainer))
@@ -197,12 +198,12 @@ namespace Jellyfin.Api.Helpers
 
             if (!string.IsNullOrWhiteSpace(subtitleGroup))
             {
-                AddSubtitles(state, subtitleStreams, builder, controller.Request.HttpContext.User);
+                AddSubtitles(state, subtitleStreams, builder, _httpContextAccessor.HttpContext.Request.HttpContext.User);
             }
 
             AppendPlaylist(builder, state, playlistUrl, totalBitrate, subtitleGroup);
 
-            if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, controller.Request.HttpContext.Connection.RemoteIpAddress))
+            if (EnableAdaptiveBitrateStreaming(state, isLiveStream, enableAdaptiveBitrateStreaming, _httpContextAccessor.HttpContext.Request.HttpContext.Connection.RemoteIpAddress))
             {
                 var requestedVideoBitrate = state.VideoRequest == null ? 0 : state.VideoRequest.VideoBitRate ?? 0;
 

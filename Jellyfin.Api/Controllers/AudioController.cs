@@ -192,7 +192,7 @@ namespace Jellyfin.Api.Controllers
                 StreamOptions = streamOptions
             };
 
-            return await _audioHelper.GetAudioStream(this, _transcodingJobType, streamingRequest).ConfigureAwait(false);
+            return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);
         }
     }
 }

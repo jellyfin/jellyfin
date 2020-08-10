@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -35,6 +36,7 @@ namespace Jellyfin.Api.Helpers
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioHelper"/> class.
@@ -52,6 +54,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
         /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
+        /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
         public AudioHelper(
             IDlnaManager dlnaManager,
             IAuthorizationContext authContext,
@@ -65,7 +68,8 @@ namespace Jellyfin.Api.Helpers
             IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IHttpContextAccessor httpContextAccessor)
         {
             _dlnaManager = dlnaManager;
             _authContext = authContext;
@@ -80,26 +84,25 @@ namespace Jellyfin.Api.Helpers
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _httpClientFactory = httpClientFactory;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <summary>
         /// Get audio stream.
         /// </summary>
-        /// <param name="controller">Requesting controller.</param>
         /// <param name="transcodingJobType">Transcoding job type.</param>
         /// <param name="streamingRequest">Streaming controller.Request dto.</param>
         /// <returns>A <see cref="Task"/> containing the resulting <see cref="ActionResult"/>.</returns>
         public async Task<ActionResult> GetAudioStream(
-            BaseJellyfinApiController controller,
             TranscodingJobType transcodingJobType,
             StreamingRequestDto streamingRequest)
         {
-            bool isHeadRequest = controller.Request.Method == System.Net.WebRequestMethods.Http.Head;
+            bool isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == System.Net.WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
 
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
-                    controller.Request,
+                    _httpContextAccessor.HttpContext.Request,
                     _authContext,
                     _mediaSourceManager,
                     _userManager,
@@ -118,30 +121,30 @@ namespace Jellyfin.Api.Helpers
 
             if (streamingRequest.Static && state.DirectStreamProvider != null)
             {
-                StreamingHelpers.AddDlnaHeaders(state, controller.Response.Headers, true, streamingRequest.StartTimeTicks, controller.Request, _dlnaManager);
+                StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
                 await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
                     {
                         AllowEndOfFile = false
-                    }.WriteToAsync(controller.Response.Body, CancellationToken.None)
+                    }.WriteToAsync(_httpContextAccessor.HttpContext.Response.Body, CancellationToken.None)
                     .ConfigureAwait(false);
 
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return controller.File(controller.Response.Body, MimeTypes.GetMimeType("file.ts")!);
+                return new FileStreamResult(_httpContextAccessor.HttpContext.Response.Body, MimeTypes.GetMimeType("file.ts")!);
             }
 
             // Static remote stream
             if (streamingRequest.Static && state.InputProtocol == MediaProtocol.Http)
             {
-                StreamingHelpers.AddDlnaHeaders(state, controller.Response.Headers, true, streamingRequest.StartTimeTicks, controller.Request, _dlnaManager);
+                StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
                 using var httpClient = _httpClientFactory.CreateClient();
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, controller, httpClient).ConfigureAwait(false);
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, _httpContextAccessor.HttpContext).ConfigureAwait(false);
             }
 
             if (streamingRequest.Static && state.InputProtocol != MediaProtocol.File)
             {
-                return controller.BadRequest($"Input protocol {state.InputProtocol} cannot be streamed statically");
+                return new BadRequestObjectResult($"Input protocol {state.InputProtocol} cannot be streamed statically");
             }
 
             var outputPath = state.OutputFilePath;
@@ -150,7 +153,7 @@ namespace Jellyfin.Api.Helpers
             var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
             var isTranscodeCached = outputPathExists && transcodingJob != null;
 
-            StreamingHelpers.AddDlnaHeaders(state, controller.Response.Headers, streamingRequest.Static || isTranscodeCached, streamingRequest.StartTimeTicks, controller.Request, _dlnaManager);
+            StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, streamingRequest.Static || isTranscodeCached, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
             // Static stream
             if (streamingRequest.Static)
@@ -162,17 +165,17 @@ namespace Jellyfin.Api.Helpers
                     await new ProgressiveFileCopier(state.MediaPath, null, _transcodingJobHelper, CancellationToken.None)
                         {
                             AllowEndOfFile = false
-                        }.WriteToAsync(controller.Response.Body, CancellationToken.None)
+                        }.WriteToAsync(_httpContextAccessor.HttpContext.Response.Body, CancellationToken.None)
                         .ConfigureAwait(false);
 
-                    return controller.File(controller.Response.Body, contentType);
+                    return new FileStreamResult(_httpContextAccessor.HttpContext.Response.Body, contentType);
                 }
 
                 return FileStreamResponseHelpers.GetStaticFileResult(
                     state.MediaPath,
                     contentType,
                     isHeadRequest,
-                    controller);
+                    _httpContextAccessor.HttpContext);
             }
 
             // Need to start ffmpeg (because media can't be returned directly)
@@ -182,10 +185,9 @@ namespace Jellyfin.Api.Helpers
             return await FileStreamResponseHelpers.GetTranscodedFile(
                 state,
                 isHeadRequest,
-                controller,
+                _httpContextAccessor.HttpContext,
                 _transcodingJobHelper,
                 ffmpegCommandLineArguments,
-                controller.Request,
                 transcodingJobType,
                 cancellationTokenSource).ConfigureAwait(false);
         }

@@ -272,7 +272,7 @@ namespace Jellyfin.Api.Controllers
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(this, _transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(_transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -439,7 +439,7 @@ namespace Jellyfin.Api.Controllers
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(this, _transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(_transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1657,7 +1657,7 @@ namespace Jellyfin.Api.Controllers
                 return Task.CompletedTask;
             });
 
-            return FileStreamResponseHelpers.GetStaticFileResult(segmentPath, MimeTypes.GetMimeType(segmentPath)!, false, this);
+            return FileStreamResponseHelpers.GetStaticFileResult(segmentPath, MimeTypes.GetMimeType(segmentPath)!, false, HttpContext);
         }
 
         private long GetEndPositionTicks(StreamState state, int requestedIndex)
