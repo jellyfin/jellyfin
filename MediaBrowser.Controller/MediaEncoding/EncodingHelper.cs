@@ -2120,7 +2120,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (isVaapiH264Encoder)
                 {
-                    filters.Add(string.Format(CultureInfo.InvariantCulture, "deinterlace_vaapi"));
+                    filters.Add(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "deinterlace_vaapi=rate={0}",
+                            doubleRateDeinterlace ? "field" : "frame"));
                 }
             }
 
@@ -2378,6 +2382,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                         if (state.DeInterlace("h264", true))
                         {
                             inputModifier += " -deint 1";
+
+                            if (!encodingOptions.DeinterlaceDoubleRate || (videoStream?.RealFrameRate ?? 60) > 30)
+                            {
+                                inputModifier += " -drop_second_field 1";
+                            }
                         }
                     }
                 }
